@@ -42,7 +42,11 @@ func (s *IntegrationTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(mint.AppModuleBasic{})
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	testCtx := testutil.DefaultContextWithDB(
+		s.T(),
+		key,
+		storetypes.NewTransientStoreKey("transient_test"),
+	)
 	s.ctx = testCtx.Ctx
 
 	// gomock initializations
@@ -90,6 +94,8 @@ func (s *IntegrationTestSuite) TestAliasFunctions() {
 	s.Require().Nil(s.mintKeeper.MintCoins(s.ctx, coins))
 
 	fees := sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000)))
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToModule(s.ctx, types.EcosystemModuleName, emissionstypes.AlloraRewardsAccountName, fees).Return(nil)
+	s.bankKeeper.EXPECT().
+		SendCoinsFromModuleToModule(s.ctx, types.EcosystemModuleName, emissionstypes.AlloraRewardsAccountName, fees).
+		Return(nil)
 	s.Require().Nil(s.mintKeeper.PayAlloraRewardsFromEcosystem(s.ctx, fees))
 }

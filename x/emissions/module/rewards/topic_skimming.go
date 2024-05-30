@@ -18,7 +18,11 @@ type SortableTopicId struct {
 
 // Sorts the given slice of topics in descending order according to their corresponding return, using pseudorandom tiebreaker
 // e.g. ([]uint64{1, 2, 3}, map[uint64]uint64{1: 2, 2: 2, 3: 3}, 0) -> [3, 1, 2] or [3, 2, 1]
-func SortTopicsByWeightDescWithRandomTiebreaker(topicIds []TopicId, weights map[TopicId]*alloraMath.Dec, randSeed BlockHeight) []TopicId {
+func SortTopicsByWeightDescWithRandomTiebreaker(
+	topicIds []TopicId,
+	weights map[TopicId]*alloraMath.Dec,
+	randSeed BlockHeight,
+) []TopicId {
 	// Convert the slice of Ts to a slice of SortableItems, each with a random tiebreaker
 	r := rand.New(rand.NewSource(randSeed))
 	items := make([]SortableTopicId, len(topicIds))
@@ -45,7 +49,12 @@ func SortTopicsByWeightDescWithRandomTiebreaker(topicIds []TopicId, weights map[
 
 // Returns a map of topicId to weights of the top N topics by weight in descending order
 // It is assumed that topicIds is of a reasonable size, throttled by perhaps MaxTopicsPerBlock global param
-func SkimTopTopicsByWeightDesc(sdkCtx sdk.Context, weights map[TopicId]*alloraMath.Dec, N uint64, block BlockHeight) (map[TopicId]*alloraMath.Dec, []TopicId) {
+func SkimTopTopicsByWeightDesc(
+	sdkCtx sdk.Context,
+	weights map[TopicId]*alloraMath.Dec,
+	N uint64,
+	block BlockHeight,
+) (map[TopicId]*alloraMath.Dec, []TopicId) {
 	topicIds := make([]TopicId, 0, len(weights))
 	for topicId := range weights {
 		topicIds = append(topicIds, topicId)

@@ -16,7 +16,9 @@ import (
 )
 
 // Create a map from worker address to their inference or forecast-implied inference
-func MakeMapFromWorkerToTheirWork(inferences []*emissions.Inference) map[Worker]*emissions.Inference {
+func MakeMapFromWorkerToTheirWork(
+	inferences []*emissions.Inference,
+) map[Worker]*emissions.Inference {
 	inferencesByWorker := make(map[Worker]*emissions.Inference)
 	for _, inference := range inferences {
 		inferencesByWorker[inference.Inferer] = inference
@@ -89,11 +91,17 @@ func CalcTheStdDevOfRegretsAmongWorkersWithLosses(
 	}
 	stdDevInfererRegrets, err := alloraMath.StdDev(infererRegrets)
 	if err != nil {
-		return StdDevRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of inferer regrets")
+		return StdDevRegrets{}, errorsmod.Wrapf(
+			err,
+			"Error calculating standard deviation of inferer regrets",
+		)
 	}
 	stdDevInfererRegrets, err = stdDevInfererRegrets.Add(epsilon)
 	if err != nil {
-		return StdDevRegrets{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of inferer regrets")
+		return StdDevRegrets{}, errorsmod.Wrapf(
+			err,
+			"Error adding epsilon to standard deviation of inferer regrets",
+		)
 	}
 
 	forecasterRegrets := make([]Regret, 0)
@@ -106,36 +114,61 @@ func CalcTheStdDevOfRegretsAmongWorkersWithLosses(
 	}
 	stdDevForecasterRegrets, err := alloraMath.StdDev(forecasterRegrets)
 	if err != nil {
-		return StdDevRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of forecaster regrets")
+		return StdDevRegrets{}, errorsmod.Wrapf(
+			err,
+			"Error calculating standard deviation of forecaster regrets",
+		)
 	}
 	stdDevForecasterRegrets, err = stdDevForecasterRegrets.Add(epsilon)
 	if err != nil {
-		return StdDevRegrets{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of forecaster regrets")
+		return StdDevRegrets{}, errorsmod.Wrapf(
+			err,
+			"Error adding epsilon to standard deviation of forecaster regrets",
+		)
 	}
 
 	stdDevOneInForecasterRegrets := make(map[Worker]Regret, 0)
 	for _, forecaster := range sortedForecasters {
 		oneInForecasterRegrets := make([]Regret, 0)
 		for _, inferer := range sortedInferers {
-			oneInForecasterRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
+			oneInForecasterRegret, _, err := k.GetOneInForecasterNetworkRegret(
+				ctx,
+				topicId,
+				forecaster,
+				inferer,
+			)
 			if err != nil {
 				return StdDevRegrets{}, errorsmod.Wrapf(err, "Error getting forecaster regret")
 			}
 			oneInForecasterRegrets = append(oneInForecasterRegrets, oneInForecasterRegret.Value)
 		}
-		oneInForecasterSelfRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, forecaster)
+		oneInForecasterSelfRegret, _, err := k.GetOneInForecasterNetworkRegret(
+			ctx,
+			topicId,
+			forecaster,
+			forecaster,
+		)
 		if err != nil {
-			return StdDevRegrets{}, errorsmod.Wrapf(err, "Error getting one-in forecaster self regret: ")
+			return StdDevRegrets{}, errorsmod.Wrapf(
+				err,
+				"Error getting one-in forecaster self regret: ",
+			)
 		}
 		oneInForecasterRegrets = append(oneInForecasterRegrets, oneInForecasterSelfRegret.Value)
 
 		stdDevOneInForecasterRegret, err := alloraMath.StdDev(oneInForecasterRegrets)
 		if err != nil {
-			return StdDevRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of forecaster regrets")
+			return StdDevRegrets{}, errorsmod.Wrapf(
+				err,
+				"Error calculating standard deviation of forecaster regrets",
+			)
 		}
 		stdDevOneInForecasterRegret, err = stdDevOneInForecasterRegret.Add(epsilon)
 		if err != nil {
-			return StdDevRegrets{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of forecaster regrets")
+			return StdDevRegrets{}, errorsmod.Wrapf(
+				err,
+				"Error adding epsilon to standard deviation of forecaster regrets",
+			)
 		}
 		stdDevOneInForecasterRegrets[forecaster] = stdDevOneInForecasterRegret
 	}
@@ -171,11 +204,17 @@ func accumulateNormalizedI_iAndSumWeights(
 		// If all workers are new, then the weight is 1 for all workers; take regular average of inferences
 		unnormalizedI_i, err = unnormalizedI_i.Add(inference.Value)
 		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adding weight by worker value")
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(
+				err,
+				"Error adding weight by worker value",
+			)
 		}
 		sumWeights, err = sumWeights.Add(alloraMath.OneDec())
 		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adding weight")
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(
+				err,
+				"Error adding weight",
+			)
 		}
 	} else {
 		// If at least one worker is not new, then we take a weighted average of all workers' inferences
@@ -252,7 +291,10 @@ func CalcWeightedInference(
 			sumWeights,
 		)
 		if err != nil {
-			return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating i_i and weights for inferer")
+			return InferenceValue{}, errorsmod.Wrapf(
+				err,
+				"Error accumulating i_i and weights for inferer",
+			)
 		}
 	}
 
@@ -274,7 +316,10 @@ func CalcWeightedInference(
 			sumWeights,
 		)
 		if err != nil {
-			return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating i_i and weights for forecaster")
+			return InferenceValue{}, errorsmod.Wrapf(
+				err,
+				"Error accumulating i_i and weights for forecaster",
+			)
 		}
 	}
 
@@ -284,7 +329,10 @@ func CalcWeightedInference(
 	}
 	ret, err := unnormalizedNetworkInferece.Quo(sumWeights)
 	if err != nil {
-		return InferenceValue{}, errorsmod.Wrapf(err, "Error calculating network combined inference")
+		return InferenceValue{}, errorsmod.Wrapf(
+			err,
+			"Error calculating network combined inference",
+		)
 	}
 	return ret, nil // divide numerator by denominator to get network combined inference
 }
@@ -336,7 +384,10 @@ func CalcOneOutInferences(
 		)
 
 		if err != nil {
-			return nil, nil, errorsmod.Wrapf(err, "Error calculating forecast-implied inferences for held-out inference")
+			return nil, nil, errorsmod.Wrapf(
+				err,
+				"Error calculating forecast-implied inferences for held-out inference",
+			)
 		}
 
 		oneOutNetworkInferenceWithoutInferer, err := CalcWeightedInference(
@@ -393,12 +444,18 @@ func CalcOneOutInferences(
 			cNorm,
 		)
 		if err != nil {
-			return nil, nil, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
+			return nil, nil, errorsmod.Wrapf(
+				err,
+				"Error calculating one-out inference for forecaster",
+			)
 		}
-		oneOutImpliedInferences = append(oneOutImpliedInferences, &emissions.WithheldWorkerAttributedValue{
-			Worker: worker,
-			Value:  oneOutInference,
-		})
+		oneOutImpliedInferences = append(
+			oneOutImpliedInferences,
+			&emissions.WithheldWorkerAttributedValue{
+				Worker: worker,
+				Value:  oneOutInference,
+			},
+		)
 	}
 
 	return oneOutInferences, oneOutImpliedInferences, nil
@@ -428,7 +485,9 @@ func CalcOneInInferences(
 		forecastImpliedInferencesWithForecaster[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
 		// Calculate the network inference without the worker's forecast-implied inference
 
-		sortedForecastersWithForecaster := alloraMath.GetSortedKeys(forecastImpliedInferencesWithForecaster)
+		sortedForecastersWithForecaster := alloraMath.GetSortedKeys(
+			forecastImpliedInferencesWithForecaster,
+		)
 		oneInInference, err := CalcWeightedInference(
 			ctx,
 			k,
@@ -488,7 +547,8 @@ func CalcNetworkInferences(
 		cNorm,
 	)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error calculating forecast-implied inferences: %s", err.Error()))
+		ctx.Logger().
+			Warn(fmt.Sprintf("Error calculating forecast-implied inferences: %s", err.Error()))
 	}
 	sortedForecasters := alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker)
 
@@ -504,9 +564,13 @@ func CalcNetworkInferences(
 		epsilon,
 	)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error finding max regret among workers with losses: %s", err.Error()))
+		ctx.Logger().
+			Warn(fmt.Sprintf("Error finding max regret among workers with losses: %s", err.Error()))
 	}
-	maxStdDevCombinedRegret := alloraMath.Max(stdDevRegrets.StdDevInferenceRegret, stdDevRegrets.StdDevForecastRegret)
+	maxStdDevCombinedRegret := alloraMath.Max(
+		stdDevRegrets.StdDevInferenceRegret,
+		stdDevRegrets.StdDevForecastRegret,
+	)
 
 	// Calculate the combined network inference I_i
 	combinedNetworkInference, err := CalcWeightedInference(
@@ -524,7 +588,8 @@ func CalcNetworkInferences(
 		cNorm,
 	)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error calculating network combined inference: %s", err.Error()))
+		ctx.Logger().
+			Warn(fmt.Sprintf("Error calculating network combined inference: %s", err.Error()))
 	}
 
 	// Calculate the naive inference I^-_i
@@ -633,14 +698,22 @@ func GetNetworkInferencesAtBlock(
 
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferencesNonce)
 	if err != nil {
-		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, inferencesNonce)
+		return nil, errorsmod.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"no inferences found for topic %v at block %v",
+			topicId,
+			inferencesNonce,
+		)
 	}
 	// Add inferences in the bundle -> this bundle will be used as a fallback in case of error
 	for _, infererence := range inferences.Inferences {
-		networkInferences.InfererValues = append(networkInferences.InfererValues, &emissions.WorkerAttributedValue{
-			Worker: infererence.Inferer,
-			Value:  infererence.Value,
-		})
+		networkInferences.InfererValues = append(
+			networkInferences.InfererValues,
+			&emissions.WorkerAttributedValue{
+				Worker: infererence.Inferer,
+				Value:  infererence.Value,
+			},
+		)
 	}
 
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferencesNonce)
@@ -660,7 +733,11 @@ func GetNetworkInferencesAtBlock(
 			return nil, err
 		}
 
-		reputerReportedLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, previousLossNonce)
+		reputerReportedLosses, err := k.GetReputerLossBundlesAtBlock(
+			ctx,
+			topicId,
+			previousLossNonce,
+		)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error getting reputer losses: %s", err.Error()))
 			return networkInferences, nil
@@ -683,7 +760,8 @@ func GetNetworkInferencesAtBlock(
 			moduleParams.Epsilon,
 		)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
+			ctx.Logger().
+				Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
 			return networkInferences, nil
 		}
 		topic, err := k.GetTopic(ctx, topicId)
@@ -691,7 +769,17 @@ func GetNetworkInferencesAtBlock(
 			ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 			return networkInferences, nil
 		}
-		networkInferences, err = CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, moduleParams.Epsilon, topic.PNorm, moduleParams.CNorm)
+		networkInferences, err = CalcNetworkInferences(
+			ctx,
+			k,
+			topicId,
+			inferences,
+			forecasts,
+			networkCombinedLoss,
+			moduleParams.Epsilon,
+			topic.PNorm,
+			moduleParams.CNorm,
+		)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error calculating network inferences: %s", err.Error()))
 			return networkInferences, nil
@@ -722,7 +810,10 @@ func GetNetworkInferencesAtBlock(
 }
 
 // Filter nonces that are within the epoch length of the current block height
-func FilterNoncesWithinEpochLength(n emissions.Nonces, blockHeight, epochLength int64) emissions.Nonces {
+func FilterNoncesWithinEpochLength(
+	n emissions.Nonces,
+	blockHeight, epochLength int64,
+) emissions.Nonces {
 	var filtered emissions.Nonces
 	for _, nonce := range n.Nonces {
 		if blockHeight-nonce.BlockHeight <= epochLength {
@@ -740,7 +831,12 @@ func SortByBlockHeight(r []*emissions.ReputerRequestNonce) {
 }
 
 // Select the top N latest reputer nonces
-func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int, currentBlockHeight int64, groundTruthLag int64) []*emissions.ReputerRequestNonce {
+func SelectTopNReputerNonces(
+	reputerRequestNonces *emissions.ReputerRequestNonces,
+	N int,
+	currentBlockHeight int64,
+	groundTruthLag int64,
+) []*emissions.ReputerRequestNonce {
 	topN := make([]*emissions.ReputerRequestNonce, 0)
 	// sort reputerRequestNonces by reputer block height
 

@@ -54,9 +54,17 @@ type InferenceSynthesisTestSuite struct {
 func (s *InferenceSynthesisTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	testCtx := testutil.DefaultContextWithDB(
+		s.T(),
+		key,
+		storetypes.NewTransientStoreKey("transient_test"),
+	)
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
-	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
+	encCfg := moduletestutil.MakeTestEncodingConfig(
+		auth.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		module.AppModule{},
+	)
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
@@ -124,7 +132,11 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) inEpsilon(value alloraMath.Dec, target string, epsilon string) {
+func (s *InferenceSynthesisTestSuite) inEpsilon(
+	value alloraMath.Dec,
+	target string,
+	epsilon string,
+) {
 	require := s.Require()
 	epsilonDec := alloraMath.MustNewDecFromString(epsilon)
 	targetDec := alloraMath.MustNewDecFromString(target)
@@ -141,8 +153,18 @@ func (s *InferenceSynthesisTestSuite) inEpsilon(value alloraMath.Dec, target str
 	require.NoError(err)
 
 	if lowerBound.Lt(upperBound) { // positive values, lower < value < upper
-		require.True(value.Gte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
-		require.True(value.Lte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
+		require.True(
+			value.Gte(lowerBound),
+			"value: %s, lowerBound: %s",
+			value.String(),
+			lowerBound.String(),
+		)
+		require.True(
+			value.Lte(upperBound),
+			"value: %s, upperBound: %s",
+			value.String(),
+			upperBound.String(),
+		)
 	} else { // negative values, upper < value < lower
 		require.True(value.Lte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
 		require.True(value.Gte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())

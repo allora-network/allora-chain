@@ -61,9 +61,17 @@ type RewardsTestSuite struct {
 func (s *RewardsTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	testCtx := testutil.DefaultContextWithDB(
+		s.T(),
+		key,
+		storetypes.NewTransientStoreKey("transient_test"),
+	)
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
-	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
+	encCfg := moduletestutil.MakeTestEncodingConfig(
+		auth.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		module.AppModule{},
+	)
 
 	maccPerms := map[string][]string{
 		"fee_collector":                {"minter"},
@@ -162,9 +170,16 @@ func (s *RewardsTestSuite) SetupTest() {
 }
 
 func (s *RewardsTestSuite) FundAccount(amount int64, accAddress sdk.AccAddress) {
-	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(amount)))
+	initialStakeCoins := sdk.NewCoins(
+		sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(amount)),
+	)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, accAddress, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(
+		s.ctx,
+		types.AlloraStakingAccountName,
+		accAddress,
+		initialStakeCoins,
+	)
 }
 
 func TestModuleTestSuite(t *testing.T) {
@@ -175,7 +190,12 @@ func (s *RewardsTestSuite) MintTokensToAddress(address sdk.AccAddress, amount co
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(
+		s.ctx,
+		types.AlloraStakingAccountName,
+		address,
+		creatorInitialBalanceCoins,
+	)
 }
 
 func (s *RewardsTestSuite) MintTokensToModule(moduleName string, amount cosmosMath.Int) {
@@ -714,7 +734,13 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	reputerAddrs := getAddrsFromValues(reputerValues)
 
 	// Insert inference from workers
-	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, blockHeight, workerValues, reputerAddrs)
+	inferenceBundles := GenerateSimpleWorkerDataBundles(
+		s,
+		topicId,
+		blockHeight,
+		workerValues,
+		reputerAddrs,
+	)
 
 	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
 		Sender:            workerAddrs[0].String(),
@@ -762,7 +788,11 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	return rewardsDistributionByTopicParticipant
 }
 
-func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.TaskRewards, B []rewards.TaskRewards) bool {
+func areTaskRewardsEqualIgnoringTopicId(
+	s *RewardsTestSuite,
+	A []rewards.TaskRewards,
+	B []rewards.TaskRewards,
+) bool {
 	if len(A) != len(B) {
 		s.Fail("Lengths are different")
 	}
@@ -775,7 +805,11 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.TaskRew
 					s.Fail("Worker %v found twice", taskRewardA.Address)
 				}
 				found = true
-				if !alloraMath.InDelta(taskRewardA.Reward, taskRewardB.Reward, alloraMath.MustNewDecFromString("0.00001")) {
+				if !alloraMath.InDelta(
+					taskRewardA.Reward,
+					taskRewardB.Reward,
+					alloraMath.MustNewDecFromString("0.00001"),
+				) {
 					return false
 				}
 				if taskRewardA.Type != taskRewardB.Type {
@@ -900,8 +934,12 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		"0.1",
 	)
 
-	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
-	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
+	require.True(
+		areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0),
+	)
+	require.True(
+		areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1),
+	)
 }
 
 // We have 2 trials with 2 epochs each, and the first worker does better in the 2nd epoch in both trials,
@@ -1017,8 +1055,12 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 		"0.1",
 	)
 
-	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
-	require.False(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
+	require.True(
+		areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0),
+	)
+	require.False(
+		areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1),
+	)
 
 	var workerReward_0_0_1_Reward alloraMath.Dec
 	found := false
@@ -1206,8 +1248,20 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	require.False(notFound)
 
 	require.True(worker0_0.Value.Gt(worker0_1.Value))
-	require.True(alloraMath.InDelta(worker1_0.Value, worker1_1.Value, alloraMath.MustNewDecFromString("0.00001")))
-	require.True(alloraMath.InDelta(worker2_0.Value, worker2_1.Value, alloraMath.MustNewDecFromString("0.00001")))
+	require.True(
+		alloraMath.InDelta(
+			worker1_0.Value,
+			worker1_1.Value,
+			alloraMath.MustNewDecFromString("0.00001"),
+		),
+	)
+	require.True(
+		alloraMath.InDelta(
+			worker2_0.Value,
+			worker2_1.Value,
+			alloraMath.MustNewDecFromString("0.00001"),
+		),
+	)
 }
 
 func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMoreParticipants() {
@@ -1345,7 +1399,14 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
-	firstRewardsDistribution, firstTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	firstRewardsDistribution, firstTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		&topicTotalRewards,
+		block,
+		params,
+	)
 	s.Require().NoError(err)
 
 	calcFirstTotalReputerReward := alloraMath.ZeroDec()
@@ -1488,7 +1549,14 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	})
 	s.Require().NoError(err)
 
-	secondRewardsDistribution, secondTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	secondRewardsDistribution, secondTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		&topicTotalRewards,
+		block,
+		params,
+	)
 	s.Require().NoError(err)
 
 	calcSecondTotalReputerReward := alloraMath.ZeroDec()
@@ -1630,7 +1698,11 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	reputerStake := make([]cosmosMath.Int, 5)
 	for i, addr := range reputerAddrs {
 		reputerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
-		reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, addr.String())
+		reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(
+			s.ctx,
+			topicId,
+			addr.String(),
+		)
 		s.Require().NoError(err)
 	}
 
@@ -1677,7 +1749,11 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.Require().NoError(err)
 
 	for i, addr := range reputerAddrs {
-		reputerStakeCurrent, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, addr.String())
+		reputerStakeCurrent, err := s.emissionsKeeper.GetStakeOnReputerInTopic(
+			s.ctx,
+			topicId,
+			addr.String(),
+		)
 		s.Require().NoError(err)
 		s.Require().True(
 			reputerStakeCurrent.GT(reputerStake[i]),
@@ -1692,7 +1768,8 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	}
 
 	for i, addr := range workerAddrs {
-		s.Require().True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
+		s.Require().
+			True(s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom).Amount.GT(workerBalances[i].Amount))
 	}
 }
 
@@ -1802,9 +1879,16 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	// fund topic 1
 	var initialStake int64 = 1000
-	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	initialStakeCoins := sdk.NewCoins(
+		sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)),
+	)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(
+		s.ctx,
+		types.AlloraStakingAccountName,
+		reputerAddrs[0],
+		initialStakeCoins,
+	)
 	fundTopicMessage := types.MsgFundTopic{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId1,
@@ -1815,7 +1899,12 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	// fund topic 2
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(
+		s.ctx,
+		types.AlloraStakingAccountName,
+		reputerAddrs[0],
+		initialStakeCoins,
+	)
 	fundTopicMessage.TopicId = topicId2
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
@@ -1847,7 +1936,11 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	for i, addr := range reputerAddrs {
 		reputerBalances[i] = s.bankKeeper.GetBalance(s.ctx, addr, params.DefaultBondDenom)
 		if i > 2 {
-			reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId2, addr.String())
+			reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(
+				s.ctx,
+				topicId2,
+				addr.String(),
+			)
 			s.Require().NoError(err)
 		} else {
 			reputerStake[i], err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, addr.String())
@@ -1975,7 +2068,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 
 	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
 
-	s.MintTokensToAddress(reputer, cosmosMath.NewInt(1176644).Mul(cosmosMath.NewIntFromBigInt(cosmosOneE18.BigInt())))
+	s.MintTokensToAddress(
+		reputer,
+		cosmosMath.NewInt(1176644).Mul(cosmosMath.NewIntFromBigInt(cosmosOneE18.BigInt())),
+	)
 	// Add Stake for reputer
 	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
 		Sender:  reputer.String(),
@@ -1985,9 +2081,16 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 
 	var initialStake int64 = 1000
-	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	initialStakeCoins := sdk.NewCoins(
+		sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)),
+	)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputer, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(
+		s.ctx,
+		types.AlloraStakingAccountName,
+		reputer,
+		initialStakeCoins,
+	)
 	fundTopicMessage := types.MsgFundTopic{
 		Sender:  reputer.String(),
 		TopicId: topicId,
@@ -2043,10 +2146,12 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 				BlockHeight: blockHeight,
 			},
 		},
-		Reputer:                reputer.String(),
-		CombinedValue:          alloraMath.MustNewDecFromString("0.01127"),
-		NaiveValue:             alloraMath.MustNewDecFromString("0.0116"),
-		InfererValues:          []*types.WorkerAttributedValue{{Worker: worker.String(), Value: alloraMath.MustNewDecFromString("0.0112")}},
+		Reputer:       reputer.String(),
+		CombinedValue: alloraMath.MustNewDecFromString("0.01127"),
+		NaiveValue:    alloraMath.MustNewDecFromString("0.0116"),
+		InfererValues: []*types.WorkerAttributedValue{
+			{Worker: worker.String(), Value: alloraMath.MustNewDecFromString("0.0112")},
+		},
 		ForecasterValues:       []*types.WorkerAttributedValue{},
 		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
 		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
@@ -2234,8 +2339,10 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		*networkLossBundles)
 	s.Require().NoError(err)
 
-	s.Require().Equal(len(infererScores), int(params.GetMaxTopInferersToReward()), "Only few Top inferers can get reward")
-	s.Require().Equal(len(forecasterScores), int(params.GetMaxTopForecastersToReward()), "Only few Top forecasters can get reward")
+	s.Require().
+		Equal(len(infererScores), int(params.GetMaxTopInferersToReward()), "Only few Top inferers can get reward")
+	s.Require().
+		Equal(len(forecasterScores), int(params.GetMaxTopForecastersToReward()), "Only few Top forecasters can get reward")
 }
 
 func (s *RewardsTestSuite) TestGenerateRewardsDistributionByTopic() {
@@ -2752,5 +2859,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	}
 	thirdForecasterFraction, err := totalForecastersReward.Quo(totalReward)
 	s.Require().NoError(err)
-	s.Require().True(firstForecasterFraction.Lt(thirdForecasterFraction), "Third forecaster fraction must be bigger than first fraction")
+	s.Require().
+		True(firstForecasterFraction.Lt(thirdForecasterFraction), "Third forecaster fraction must be bigger than first fraction")
 }

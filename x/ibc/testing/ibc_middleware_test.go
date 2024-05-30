@@ -16,7 +16,13 @@ func (s *IBCTestSuite) TestGMPMessageFrom_Success() {
 		Type:          gmp.TypeGeneralMessage,
 	}
 	generalMsgJson, _ := json.Marshal(generalMsg)
-	s.IBCTransferProviderToAllora(s.providerAddr, s.alloraAddr, nativeDenom, ibcTransferAmount, string(generalMsgJson))
+	s.IBCTransferProviderToAllora(
+		s.providerAddr,
+		s.alloraAddr,
+		nativeDenom,
+		ibcTransferAmount,
+		string(generalMsgJson),
+	)
 
 	generalMsgWithToken := gmp.Message{
 		SourceChain:   "axelar",
@@ -25,7 +31,13 @@ func (s *IBCTestSuite) TestGMPMessageFrom_Success() {
 		Type:          gmp.TypeGeneralMessageWithToken,
 	}
 	generalMsgWithTokenJson, _ := json.Marshal(generalMsgWithToken)
-	s.IBCTransferProviderToAllora(s.providerAddr, s.alloraAddr, nativeDenom, ibcTransferAmount, string(generalMsgWithTokenJson))
+	s.IBCTransferProviderToAllora(
+		s.providerAddr,
+		s.alloraAddr,
+		nativeDenom,
+		ibcTransferAmount,
+		string(generalMsgWithTokenJson),
+	)
 }
 
 func (s *IBCTestSuite) TestGMPMessageTo_Success() {
@@ -36,5 +48,11 @@ func (s *IBCTestSuite) TestGMPMessageTo_Success() {
 		Type:          gmp.TypeGeneralMessage,
 	}
 	generalMsgJson, _ := json.Marshal(generalMsg)
-	s.IBCTransferAlloraToProvider(s.alloraAddr, s.providerAddr, nativeDenom, ibcTransferAmount, string(generalMsgJson))
+	s.IBCTransferAlloraToProvider(
+		s.alloraAddr,
+		s.providerAddr,
+		nativeDenom,
+		ibcTransferAmount,
+		string(generalMsgJson),
+	)
 }

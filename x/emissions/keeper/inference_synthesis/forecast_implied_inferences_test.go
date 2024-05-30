@@ -64,9 +64,18 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesRow2() {
 			{
 				Forecaster: "forecaster0",
 				ForecastElements: []*emissions.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.02089366880023640")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.3342267861383700")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("0.0002604615062174660")},
+					{
+						Inferer: "worker0",
+						Value:   alloraMath.MustNewDecFromString("0.02089366880023640"),
+					},
+					{
+						Inferer: "worker1",
+						Value:   alloraMath.MustNewDecFromString("0.3342267861383700"),
+					},
+					{
+						Inferer: "worker2",
+						Value:   alloraMath.MustNewDecFromString("0.0002604615062174660"),
+					},
 				},
 			},
 		},
@@ -116,9 +125,18 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesRow3() {
 			{
 				Forecaster: "forecaster0",
 				ForecastElements: []*emissions.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.00011708024633613200")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.013382222402411400")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("3.82471429104471e-05")},
+					{
+						Inferer: "worker0",
+						Value:   alloraMath.MustNewDecFromString("0.00011708024633613200"),
+					},
+					{
+						Inferer: "worker1",
+						Value:   alloraMath.MustNewDecFromString("0.013382222402411400"),
+					},
+					{
+						Inferer: "worker2",
+						Value:   alloraMath.MustNewDecFromString("3.82471429104471e-05"),
+					},
 				},
 			},
 		},

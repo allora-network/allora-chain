@@ -12,13 +12,25 @@ func (s *KeeperTestSuite) TestFundTopicSimple() {
 	sender := senderAddr.String()
 	topicId := s.CreateOneTopic()
 	// put some stake in the topic
-	err := s.emissionsKeeper.AddStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
+	err := s.emissionsKeeper.AddStake(
+		s.ctx,
+		topicId,
+		PKS[1].Address().String(),
+		cosmosMath.NewInt(500000),
+	)
 	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
 	var initialStake int64 = 1000
-	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
+	initialStakeCoins := sdk.NewCoins(
+		sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)),
+	)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(
+		s.ctx,
+		types.AlloraStakingAccountName,
+		senderAddr,
+		initialStakeCoins,
+	)
 	r := types.MsgFundTopic{
 		Sender:  sender,
 		TopicId: topicId,
@@ -55,8 +67,10 @@ func (s *KeeperTestSuite) TestFundTopicSimple() {
 		r.Amount,
 	)
 	s.Require().NoError(err)
-	s.Require().True(feeRevAfter.GT(feeRevBefore), "Topic fee revenue should be greater after funding the topic")
-	s.Require().True(topicWeightAfter.Gt(topicWeightBefore), "Topic weight should be greater after funding the topic")
+	s.Require().
+		True(feeRevAfter.GT(feeRevBefore), "Topic fee revenue should be greater after funding the topic")
+	s.Require().
+		True(topicWeightAfter.Gt(topicWeightBefore), "Topic weight should be greater after funding the topic")
 }
 
 func (s *KeeperTestSuite) TestHighWeightForHighFundedTopic() {
@@ -65,17 +79,34 @@ func (s *KeeperTestSuite) TestHighWeightForHighFundedTopic() {
 	topicId := s.CreateOneTopic()
 	topicId2 := s.CreateOneTopic()
 	// put some stake in the topic
-	err := s.emissionsKeeper.AddStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
+	err := s.emissionsKeeper.AddStake(
+		s.ctx,
+		topicId,
+		PKS[1].Address().String(),
+		cosmosMath.NewInt(500000),
+	)
 	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
-	err = s.emissionsKeeper.AddStake(s.ctx, topicId2, PKS[1].Address().String(), cosmosMath.NewInt(500000))
+	err = s.emissionsKeeper.AddStake(
+		s.ctx,
+		topicId2,
+		PKS[1].Address().String(),
+		cosmosMath.NewInt(500000),
+	)
 	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId2)
 	var initialStake int64 = 1000
 	var initialStake2 int64 = 10000
-	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake+initialStake2)))
+	initialStakeCoins := sdk.NewCoins(
+		sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake+initialStake2)),
+	)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	s.bankKeeper.SendCoinsFromModuleToAccount(
+		s.ctx,
+		types.AlloraStakingAccountName,
+		senderAddr,
+		initialStakeCoins,
+	)
 	r := types.MsgFundTopic{
 		Sender:  sender,
 		TopicId: topicId,
@@ -124,7 +155,8 @@ func (s *KeeperTestSuite) TestHighWeightForHighFundedTopic() {
 	)
 	s.Require().NoError(err)
 
-	s.Require().Equal(topic2Weight.Gt(topicWeight), true, "Topic1 weight should be greater than Topic2 weight")
+	s.Require().
+		Equal(topic2Weight.Gt(topicWeight), true, "Topic1 weight should be greater than Topic2 weight")
 }
 
 /*

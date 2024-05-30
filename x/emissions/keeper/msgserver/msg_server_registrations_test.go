@@ -47,14 +47,22 @@ func (s *KeeperTestSuite) TestMsgRegisterReputer() {
 	)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 
-	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr.String())
+	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(
+		ctx,
+		topicId,
+		reputerAddr.String(),
+	)
 	require.NoError(err)
 	require.False(isReputerRegistered, "Reputer should not be registered in topic")
 
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
-	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr.String())
+	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(
+		ctx,
+		topicId,
+		reputerAddr.String(),
+	)
 	require.NoError(err)
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 }
@@ -95,7 +103,11 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistration() {
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
-	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr.String())
+	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(
+		ctx,
+		topicId,
+		reputerAddr.String(),
+	)
 	require.NoError(err)
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 
@@ -108,7 +120,11 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistration() {
 	_, err = msgServer.RemoveRegistration(ctx, unregisterMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
-	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, reputerAddr.String())
+	isReputerRegistered, err = s.emissionsKeeper.IsReputerRegisteredInTopic(
+		ctx,
+		topicId,
+		reputerAddr.String(),
+	)
 	require.NoError(err)
 	require.False(isReputerRegistered, "Reputer should be registered in topic")
 }
@@ -146,18 +162,30 @@ func (s *KeeperTestSuite) TestMsgRegisterWorker() {
 	)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 
-	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topicId, workerAddr.String())
+	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegisteredInTopic(
+		ctx,
+		topicId,
+		workerAddr.String(),
+	)
 	require.NoError(err)
 	require.False(isWorkerRegistered, "Worker should not be registered in topic")
 
-	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(ctx, topicId, workerAddr.String())
+	isReputerRegistered, err := s.emissionsKeeper.IsReputerRegisteredInTopic(
+		ctx,
+		topicId,
+		workerAddr.String(),
+	)
 	require.NoError(err)
 	require.False(isReputerRegistered, "Reputer should not be registered in topic")
 
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering worker should not return an error")
 
-	isWorkerRegistered, err = s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topicId, workerAddr.String())
+	isWorkerRegistered, err = s.emissionsKeeper.IsWorkerRegisteredInTopic(
+		ctx,
+		topicId,
+		workerAddr.String(),
+	)
 	require.NoError(err)
 	require.True(isWorkerRegistered, "Worker should be registered in topic")
 }
@@ -198,7 +226,11 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistrationWorker() {
 	_, err = msgServer.Register(ctx, registerMsg)
 	require.NoError(err, "Registering worker should not return an error")
 
-	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topicId, workerAddr.String())
+	isWorkerRegistered, err := s.emissionsKeeper.IsWorkerRegisteredInTopic(
+		ctx,
+		topicId,
+		workerAddr.String(),
+	)
 	require.NoError(err)
 	require.True(isWorkerRegistered, "Worker should be registered in topic")
 
@@ -211,7 +243,11 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistrationWorker() {
 	_, err = msgServer.RemoveRegistration(ctx, unregisterMsg)
 	require.NoError(err, "Unregistering worker should not return an error")
 
-	isWorkerRegistered, err = s.emissionsKeeper.IsWorkerRegisteredInTopic(ctx, topicId, workerAddr.String())
+	isWorkerRegistered, err = s.emissionsKeeper.IsWorkerRegisteredInTopic(
+		ctx,
+		topicId,
+		workerAddr.String(),
+	)
 	require.NoError(err)
 	require.False(isWorkerRegistered, "Worker should be registered in topic")
 }
@@ -282,7 +318,12 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 		Owner:        reputerAddr.String(),
 	}
 
-	s.emissionsKeeper.AddStake(ctx, topicId, reputerAddr.String(), registrationInitialStake.QuoRaw(2))
+	s.emissionsKeeper.AddStake(
+		ctx,
+		topicId,
+		reputerAddr.String(),
+		registrationInitialStake.QuoRaw(2),
+	)
 
 	// Try to register without any funds to pay fees
 	_, err := msgServer.Register(ctx, reputerRegMsg)
@@ -360,7 +401,8 @@ func (s *KeeperTestSuite) TestBlocklistedAddressUnableToRegister() {
 		Owner:        reputer.String(),
 	}
 	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
-	s.Require().ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
+	s.Require().
+		ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
 }
 
 func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {

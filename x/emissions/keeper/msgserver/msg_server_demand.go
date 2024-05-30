@@ -10,7 +10,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*types.MsgFundTopicResponse, error) {
+func (ms msgServer) FundTopic(
+	ctx context.Context,
+	msg *types.MsgFundTopic,
+) (*types.MsgFundTopicResponse, error) {
 	// Check the topic is valid
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {

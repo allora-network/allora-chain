@@ -40,7 +40,11 @@ func TestGenesisTestSuite(t *testing.T) {
 
 func (s *GenesisTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey(types.StoreKey)
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	testCtx := testutil.DefaultContextWithDB(
+		s.T(),
+		key,
+		storetypes.NewTransientStoreKey("transient_test"),
+	)
 	encCfg := moduletestutil.MakeTestEncodingConfig(mint.AppModuleBasic{})
 
 	// gomock initializations
@@ -57,7 +61,16 @@ func (s *GenesisTestSuite) SetupTest() {
 	accountKeeper.EXPECT().GetModuleAddress(minterAcc.Name).Return(minterAcc.GetAddress())
 	accountKeeper.EXPECT().GetModuleAccount(s.sdkCtx, minterAcc.Name).Return(minterAcc)
 
-	s.keeper = keeper.NewKeeper(s.cdc, runtime.NewKVStoreService(key), stakingKeeper, accountKeeper, bankKeeper, emissionsKeeper, "", "")
+	s.keeper = keeper.NewKeeper(
+		s.cdc,
+		runtime.NewKVStoreService(key),
+		stakingKeeper,
+		accountKeeper,
+		bankKeeper,
+		emissionsKeeper,
+		"",
+		"",
+	)
 }
 
 func (s *GenesisTestSuite) TestImportExportGenesis() {
@@ -85,7 +98,11 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 
 	s.keeper.InitGenesis(s.sdkCtx, s.accountKeeper, genesisState)
 
-	invalidCtx := testutil.DefaultContextWithDB(s.T(), s.key, storetypes.NewTransientStoreKey("transient_test"))
+	invalidCtx := testutil.DefaultContextWithDB(
+		s.T(),
+		s.key,
+		storetypes.NewTransientStoreKey("transient_test"),
+	)
 	_, err := s.keeper.EcosystemTokensMinted.Get(invalidCtx.Ctx)
 	s.Require().ErrorIs(err, collections.ErrNotFound)
 
@@ -106,6 +123,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	// got to check the fields are equal one by one because the
 	// bigint params screw .Equal up
 	s.Require().Equal(genesisState.Params, genesisState2.Params)
-	s.Require().True(genesisState.PreviousRewardEmissionPerUnitStakedToken.Equal(genesisState2.PreviousRewardEmissionPerUnitStakedToken))
+	s.Require().
+		True(genesisState.PreviousRewardEmissionPerUnitStakedToken.Equal(genesisState2.PreviousRewardEmissionPerUnitStakedToken))
 	s.Require().True(genesisState.EcosystemTokensMinted.Equal(genesisState2.EcosystemTokensMinted))
 }

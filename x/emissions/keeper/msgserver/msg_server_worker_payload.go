@@ -52,7 +52,11 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 		// Ensure that we only have one inference per inferer. If not, we just take the first one
 		if _, ok := inferencesByInferer[inference.Inferer]; !ok {
 			// Check if the inferer is registered
-			isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
+			isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(
+				ctx,
+				topicId,
+				inference.Inferer,
+			)
 			if err != nil {
 				errors[workerDataBundle.Worker] = "Err to check if worker is registered in topic"
 				continue
@@ -75,7 +79,11 @@ func (ms msgServer) VerifyAndInsertInferencesFromTopInferers(
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topInferers := FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.BlockHeight)
+	topInferers := FindTopNByScoreDesc(
+		maxTopWorkersToReward,
+		latestInfererScores,
+		nonce.BlockHeight,
+	)
 
 	// Build list of inferences that pass all filters
 	// AND are from top performing inferers among those who have submitted inferences in this batch
@@ -146,7 +154,11 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 		// Ensure that we only have one forecast per forecaster. If not, we just take the first one
 		if _, ok := forecastsByForecaster[forecast.Forecaster]; !ok {
 			// Check if the forecaster is registered
-			isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
+			isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(
+				ctx,
+				topicId,
+				forecast.Forecaster,
+			)
 			if err != nil {
 				continue
 			}
@@ -183,13 +195,20 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topForecasters := FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.BlockHeight)
+	topForecasters := FindTopNByScoreDesc(
+		maxTopWorkersToReward,
+		latestForecasterScores,
+		nonce.BlockHeight,
+	)
 
 	// Build list of forecasts that pass all filters
 	// AND are from top performing forecasters among those who have submitted forecasts in this batch
 	forecastsFromTopForecasters := make([]*types.Forecast, 0)
 	for _, worker := range topForecasters {
-		forecastsFromTopForecasters = append(forecastsFromTopForecasters, forecastsByForecaster[worker])
+		forecastsFromTopForecasters = append(
+			forecastsFromTopForecasters,
+			forecastsByForecaster[worker],
+		)
 	}
 
 	// Though less than ideal because it produces less-acurate network inferences,
@@ -214,7 +233,10 @@ func (ms msgServer) VerifyAndInsertForecastsFromTopForecasters(
 
 // A tx function that accepts a list of forecasts and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
-func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgInsertBulkWorkerPayload) (*types.MsgInsertBulkWorkerPayloadResponse, error) {
+func (ms msgServer) InsertBulkWorkerPayload(
+	ctx context.Context,
+	msg *types.MsgInsertBulkWorkerPayload,
+) (*types.MsgInsertBulkWorkerPayloadResponse, error) {
 	err := ms.CheckInputLength(ctx, msg)
 	if err != nil {
 		return nil, err
@@ -285,7 +307,8 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		BlockHeight: msg.Nonce.BlockHeight - topic.EpochLength,
 	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.Logger().Debug(fmt.Sprintf("InsertBulkWorkerPayload workerNonce %d", workerNonce.BlockHeight))
+	sdkCtx.Logger().
+		Debug(fmt.Sprintf("InsertBulkWorkerPayload workerNonce %d", workerNonce.BlockHeight))
 
 	err = ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce, workerNonce)
 	if err != nil {

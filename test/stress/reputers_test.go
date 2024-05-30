@@ -28,12 +28,28 @@ func createReputerAddresses(
 		reputerAccountName := getReputerAccountName(m.Seed, reputerIndex, topicId)
 		reputerAccount, _, err := m.Client.AccountRegistryCreate(reputerAccountName)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error creating funder address: ", reputerAccountName, " - ", err))
+			m.T.Log(
+				topicLog(
+					topicId,
+					"Error creating funder address: ",
+					reputerAccountName,
+					" - ",
+					err,
+				),
+			)
 			continue
 		}
 		reputerAddressToFund, err := reputerAccount.Address(params.HumanCoinUnit)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error creating funder address: ", reputerAccountName, " - ", err))
+			m.T.Log(
+				topicLog(
+					topicId,
+					"Error creating funder address: ",
+					reputerAccountName,
+					" - ",
+					err,
+				),
+			)
 			continue
 		}
 		reputers[reputerAccountName] = AccountAndAddress{
@@ -68,7 +84,9 @@ func registerReputersForIteration(
 			topicId,
 		)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error registering reputer address: ", reputer.addr, " - ", err))
+			m.T.Log(
+				topicLog(topicId, "Error registering reputer address: ", reputer.addr, " - ", err),
+			)
 			if makeReport {
 				saveReputerError(topicId, reputerName, err)
 				saveTopicError(topicId, err)
@@ -122,7 +140,15 @@ func generateInsertReputerBulk(
 
 	startReputer := time.Now()
 	for i := 0; i < retryTimes; i++ {
-		err = insertReputerBulk(m, topic, leaderReputerAccountName, reputers, workers, blockHeightCurrent, blockHeightEval)
+		err = insertReputerBulk(
+			m,
+			topic,
+			leaderReputerAccountName,
+			reputers,
+			workers,
+			blockHeightCurrent,
+			blockHeightEval,
+		)
 		if err != nil {
 			if strings.Contains(err.Error(), "nonce already fulfilled") ||
 				strings.Contains(err.Error(), "nonce still unfulfilled") {
@@ -131,7 +157,18 @@ func generateInsertReputerBulk(
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
 					blockHeightEval = blockHeightCurrent - topic.EpochLength
-					m.T.Log(topicLog(topic.Id, "Reset ", leaderReputerAccountName, "blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")"))
+					m.T.Log(
+						topicLog(
+							topic.Id,
+							"Reset ",
+							leaderReputerAccountName,
+							"blockHeights to (",
+							blockHeightCurrent,
+							",",
+							blockHeightEval,
+							")",
+						),
+					)
 				} else {
 					m.T.Log(topicLog(topic.Id, "Error getting topic!"))
 					if makeReport {
@@ -198,14 +235,22 @@ func generateValueBundle(
 	workerNonce *emissionstypes.Nonce,
 ) emissionstypes.ValueBundle {
 	return emissionstypes.ValueBundle{
-		TopicId:                topicId,
-		CombinedValue:          alloraMath.NewDecFromInt64(100),
-		InfererValues:          generateWorkerAttributedValueLosses(workerAddresses, 3000, 3500),
-		ForecasterValues:       generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
-		NaiveValue:             alloraMath.NewDecFromInt64(100),
-		OneOutInfererValues:    generateWithheldWorkerAttributedValueLosses(workerAddresses, 50, 50),
-		OneOutForecasterValues: generateWithheldWorkerAttributedValueLosses(workerAddresses, 50, 50),
-		OneInForecasterValues:  generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
+		TopicId:          topicId,
+		CombinedValue:    alloraMath.NewDecFromInt64(100),
+		InfererValues:    generateWorkerAttributedValueLosses(workerAddresses, 3000, 3500),
+		ForecasterValues: generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
+		NaiveValue:       alloraMath.NewDecFromInt64(100),
+		OneOutInfererValues: generateWithheldWorkerAttributedValueLosses(
+			workerAddresses,
+			50,
+			50,
+		),
+		OneOutForecasterValues: generateWithheldWorkerAttributedValueLosses(
+			workerAddresses,
+			50,
+			50,
+		),
+		OneInForecasterValues: generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
 			WorkerNonce:  workerNonce,
@@ -226,7 +271,11 @@ func generateSingleReputerValueBundle(
 	src, err := valueBundle.XXX_Marshal(src, true)
 	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
 
-	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(reputerAddressName, src, signing.SignMode_SIGN_MODE_DIRECT)
+	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(
+		reputerAddressName,
+		src,
+		signing.SignMode_SIGN_MODE_DIRECT,
+	)
 	require.NoError(m.T, err, "Sign should not return an error")
 	reputerPublicKeyBytes := pubKey.Bytes()
 
@@ -282,7 +331,12 @@ func insertReputerBulk(
 	reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
 	for reputerAddressName := range reputerAddresses {
 		reputer := reputerAddresses[reputerAddressName]
-		reputerValueBundle := generateSingleReputerValueBundle(m, reputerAddressName, reputer.addr, valueBundle)
+		reputerValueBundle := generateSingleReputerValueBundle(
+			m,
+			reputerAddressName,
+			reputer.addr,
+			valueBundle,
+		)
 		reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
 	}
 
@@ -295,7 +349,15 @@ func insertReputerBulk(
 	)
 	LeaderAcc, err := m.Client.AccountRegistryGetByName(leaderReputerAccountName)
 	if err != nil {
-		m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderReputerAccountName, " - ", err))
+		m.T.Log(
+			topicLog(
+				topicId,
+				"Error getting leader worker account: ",
+				leaderReputerAccountName,
+				" - ",
+				err,
+			),
+		)
 		return err
 	}
 	txResp, err := m.Client.BroadcastTx(m.Ctx, LeaderAcc, reputerValueBundleMsg)
@@ -329,7 +391,9 @@ func checkReputersReceivedRewards(
 			reputer.addr,
 		)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error getting reputer stake for reputer: ", reputerName, err))
+			m.T.Log(
+				topicLog(topicId, "Error getting reputer stake for reputer: ", reputerName, err),
+			)
 			if makeReport {
 				saveReputerError(topicId, reputerName, err)
 				saveTopicError(topicId, err)

@@ -28,7 +28,11 @@ func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper) *TopicsHandler {
 }
 
 // Calculate approximate time for the previous block as epoch timestamp
-func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, inferenceBlockHeight int64, groundTruthLag int64) (uint64, error) {
+func (th *TopicsHandler) calculatePreviousBlockApproxTime(
+	ctx sdk.Context,
+	inferenceBlockHeight int64,
+	groundTruthLag int64,
+) (uint64, error) {
 	emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
 	if err != nil {
 		return 0, err
@@ -48,8 +52,9 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, infer
 }
 
 func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstypes.Topic) {
-	ctx.Logger().Debug(fmt.Sprintf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
-		topic.Id, topic.Metadata, topic.DefaultArg))
+	ctx.Logger().
+		Debug(fmt.Sprintf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
+			topic.Id, topic.Metadata, topic.DefaultArg))
 
 	workerNonces, err := th.emissionsKeeper.GetUnfulfilledWorkerNonces(ctx, topic.Id)
 	if err != nil {
@@ -58,29 +63,47 @@ func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstyp
 	}
 	// Filter workerNonces to only include those that are within the epoch length
 	// This is to avoid requesting inferences for epochs that have already ended
-	workerNonces = synth.FilterNoncesWithinEpochLength(workerNonces, ctx.BlockHeight(), topic.EpochLength)
+	workerNonces = synth.FilterNoncesWithinEpochLength(
+		workerNonces,
+		ctx.BlockHeight(),
+		topic.EpochLength,
+	)
 
 	maxRetriesToFulfilNoncesWorker := emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesWorker
 	emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
+		ctx.Logger().
+			Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
 	} else {
 		maxRetriesToFulfilNoncesWorker = emissionsParams.MaxRetriesToFulfilNoncesWorker
 	}
-	sortedWorkerNonces := synth.SelectTopNWorkerNonces(workerNonces, int(maxRetriesToFulfilNoncesWorker))
+	sortedWorkerNonces := synth.SelectTopNWorkerNonces(
+		workerNonces,
+		int(maxRetriesToFulfilNoncesWorker),
+	)
 	ctx.Logger().Debug(fmt.Sprintf("Iterating Top N Worker Nonces: %d", len(sortedWorkerNonces)))
 	// iterate over all the worker nonces to find if this is unfulfilled
 	for _, nonce := range sortedWorkerNonces {
 		nonceCopy := nonce
-		ctx.Logger().Debug(fmt.Sprintf("Current Worker block height has been found unfulfilled, requesting inferences %v", nonceCopy))
-		go generateInferencesRequest(ctx, topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, topic.AllowNegative, *nonceCopy)
+		ctx.Logger().
+			Debug(fmt.Sprintf("Current Worker block height has been found unfulfilled, requesting inferences %v", nonceCopy))
+		go generateInferencesRequest(
+			ctx,
+			topic.InferenceLogic,
+			topic.InferenceMethod,
+			topic.DefaultArg,
+			topic.Id,
+			topic.AllowNegative,
+			*nonceCopy,
+		)
 	}
 }
 
 func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionstypes.Topic) {
 	currentBlockHeight := ctx.BlockHeight()
-	ctx.Logger().Debug(fmt.Sprintf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
-		topic.Id, topic.Metadata, topic.DefaultArg))
+	ctx.Logger().
+		Debug(fmt.Sprintf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
+			topic.Id, topic.Metadata, topic.DefaultArg))
 	reputerNonces, err := th.emissionsKeeper.GetUnfulfilledReputerNonces(ctx, topic.Id)
 	if err != nil {
 		ctx.Logger().Error("Error getting reputer nonces: " + err.Error())
@@ -90,16 +113,23 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 	maxRetriesToFulfilNoncesReputer := emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
 	emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error getting max num of retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
+		ctx.Logger().
+			Warn(fmt.Sprintf("Error getting max num of retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
 	} else {
 		maxRetriesToFulfilNoncesReputer = emissionsParams.MaxRetriesToFulfilNoncesReputer
 	}
-	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag)
+	topNReputerNonces := synth.SelectTopNReputerNonces(
+		&reputerNonces,
+		int(maxRetriesToFulfilNoncesReputer),
+		currentBlockHeight,
+		topic.GroundTruthLag,
+	)
 	ctx.Logger().Warn(fmt.Sprintf("Iterating Top N Reputer Nonces: %v", len(topNReputerNonces)))
 	// iterate over all the reputer nonces to find if this is unfulfilled
 	for _, nonce := range topNReputerNonces {
 		nonceCopy := nonce
-		ctx.Logger().Warn(fmt.Sprintf("Reputer block height found unfulfilled, requesting reputers for block: %v, worker: %v", nonceCopy.ReputerNonce.BlockHeight, nonceCopy.WorkerNonce.BlockHeight))
+		ctx.Logger().
+			Warn(fmt.Sprintf("Reputer block height found unfulfilled, requesting reputers for block: %v, worker: %v", nonceCopy.ReputerNonce.BlockHeight, nonceCopy.WorkerNonce.BlockHeight))
 		reputerValueBundle, err := synth.GetNetworkInferencesAtBlock(
 			ctx,
 			th.emissionsKeeper,
@@ -108,7 +138,8 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 			nonceCopy.WorkerNonce.BlockHeight,
 		)
 		if err != nil {
-			ctx.Logger().Error(fmt.Sprintf("Error getting latest inferences at block: %d  error: %s", nonceCopy.ReputerNonce.BlockHeight, err.Error()))
+			ctx.Logger().
+				Error(fmt.Sprintf("Error getting latest inferences at block: %d  error: %s", nonceCopy.ReputerNonce.BlockHeight, err.Error()))
 			continue
 		}
 		if reputerValueBundle == nil || len(reputerValueBundle.InfererValues) == 0 {
@@ -116,14 +147,29 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 			continue
 		}
 
-		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, nonceCopy.ReputerNonce.BlockHeight, topic.GroundTruthLag)
+		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(
+			ctx,
+			nonceCopy.ReputerNonce.BlockHeight,
+			topic.GroundTruthLag,
+		)
 		if err != nil {
 			ctx.Logger().Error("Error calculating previous block approx time: " + err.Error())
 			continue
 		}
-		ctx.Logger().Debug(fmt.Sprintf("Requesting losses for topic: %d reputer nonce: %d worker nonce: %d previous block approx time: %d",
-			topic.Id, nonceCopy.ReputerNonce, nonceCopy.WorkerNonce, previousBlockApproxTime))
-		go generateLossesRequest(ctx, reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, topic.AllowNegative, *nonceCopy.ReputerNonce, *nonceCopy.WorkerNonce, previousBlockApproxTime)
+		ctx.Logger().
+			Debug(fmt.Sprintf("Requesting losses for topic: %d reputer nonce: %d worker nonce: %d previous block approx time: %d",
+				topic.Id, nonceCopy.ReputerNonce, nonceCopy.WorkerNonce, previousBlockApproxTime))
+		go generateLossesRequest(
+			ctx,
+			reputerValueBundle,
+			topic.LossLogic,
+			topic.LossMethod,
+			topic.Id,
+			topic.AllowNegative,
+			*nonceCopy.ReputerNonce,
+			*nonceCopy.WorkerNonce,
+			previousBlockApproxTime,
+		)
 	}
 }
 

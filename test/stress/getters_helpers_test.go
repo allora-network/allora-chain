@@ -47,12 +47,24 @@ func getTopicFunderAccountName(seed int, topicFunderIndex int) string {
 
 // return standardized account name for workers
 func getWorkerAccountName(seed int, workerIndex int, topicId uint64) string {
-	return "stress" + strconv.Itoa(seed) + "_topic" + strconv.Itoa(int(topicId)) + "_worker" + strconv.Itoa(workerIndex)
+	return "stress" + strconv.Itoa(
+		seed,
+	) + "_topic" + strconv.Itoa(
+		int(topicId),
+	) + "_worker" + strconv.Itoa(
+		workerIndex,
+	)
 }
 
 // return standardized account name for reputers
 func getReputerAccountName(seed int, reputerIndex int, topicId uint64) string {
-	return "stress" + strconv.Itoa(seed) + "_topic" + strconv.Itoa(int(topicId)) + "_reputer" + strconv.Itoa(reputerIndex)
+	return "stress" + strconv.Itoa(
+		seed,
+	) + "_topic" + strconv.Itoa(
+		int(topicId),
+	) + "_reputer" + strconv.Itoa(
+		reputerIndex,
+	)
 }
 
 // return the approximate block time in seconds
@@ -155,7 +167,16 @@ func getNonZeroTopicEpochLastRan(
 			m.T.Log(topicLog(topicId, "Error getting topic, retry...", err))
 		}
 		// Sleep for a while before retrying
-		m.T.Log(topicLog(topicId, "Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks, " blocks"))
+		m.T.Log(
+			topicLog(
+				topicId,
+				"Retrying sleeping for a default epoch, retry ",
+				retries,
+				" for sleeping time ",
+				sleepingTimeBlocks,
+				" blocks",
+			),
+		)
 		time.Sleep(time.Duration(sleepingTimeBlocks) * approximateSecondsPerBlock * time.Second)
 	}
 

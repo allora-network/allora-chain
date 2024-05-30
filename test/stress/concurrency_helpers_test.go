@@ -135,9 +135,24 @@ func reportSummaryStatistics(t *testing.T) {
 	percentReputersWithErrors := float64(countReputersWithErrors) / float64(countReputers) * 100
 	percentWorkersWithErrors := float64(countWorkersWithErrors) / float64(countWorkers) * 100
 	t.Logf("\n\nSummary Statistics:")
-	t.Logf("Topics with errors: %d/%d | %.2f%%\n", countTopicErrors, countTopics, percentTopicsWithErrors)
-	t.Logf("Reputers with errors: %d/%d | %.2f%%\n", countReputersWithErrors, countReputers, percentReputersWithErrors)
-	t.Logf("Workers with errors: %d/%d  | %.2f%%\n", countWorkersWithErrors, countWorkers, percentWorkersWithErrors)
+	t.Logf(
+		"Topics with errors: %d/%d | %.2f%%\n",
+		countTopicErrors,
+		countTopics,
+		percentTopicsWithErrors,
+	)
+	t.Logf(
+		"Reputers with errors: %d/%d | %.2f%%\n",
+		countReputersWithErrors,
+		countReputers,
+		percentReputersWithErrors,
+	)
+	t.Logf(
+		"Workers with errors: %d/%d  | %.2f%%\n",
+		countWorkersWithErrors,
+		countWorkers,
+		percentWorkersWithErrors,
+	)
 	mutexCountTopics.Unlock()
 	mutexCountWorkers.Unlock()
 	mutexCountReputers.Unlock()

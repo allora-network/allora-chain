@@ -56,18 +56,38 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:                                      cdc,
-		storeService:                             storeService,
-		stakingKeeper:                            sk,
-		accountKeeper:                            ak,
-		bankKeeper:                               bk,
-		emissionsKeeper:                          ek,
-		feeCollectorName:                         feeCollectorName,
-		authority:                                authority,
-		Params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", alloraMath.LegacyDecValue),
-		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
-		EcosystemTokensMinted:                    collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
+		cdc:              cdc,
+		storeService:     storeService,
+		stakingKeeper:    sk,
+		accountKeeper:    ak,
+		bankKeeper:       bk,
+		emissionsKeeper:  ek,
+		feeCollectorName: feeCollectorName,
+		authority:        authority,
+		Params: collections.NewItem(
+			sb,
+			types.ParamsKey,
+			"params",
+			codec.CollValue[types.Params](cdc),
+		),
+		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(
+			sb,
+			types.PreviousRewardEmissionPerUnitStakedTokenKey,
+			"previousrewardsemissionsperunitstakedtoken",
+			alloraMath.LegacyDecValue,
+		),
+		PreviousBlockEmission: collections.NewItem(
+			sb,
+			types.PreviousBlockEmissionKey,
+			"previousblockemission",
+			sdk.IntValue,
+		),
+		EcosystemTokensMinted: collections.NewItem(
+			sb,
+			types.EcosystemTokensMintedKey,
+			"ecosystemtokensminted",
+			sdk.IntValue,
+		),
 	}
 
 	schema, err := sb.Build()
@@ -197,7 +217,9 @@ func (k Keeper) GetValidatorsVsAlloraPercentReward(ctx context.Context) (alloraM
 
 // The last time we paid out rewards, what was the percentage of those rewards that went to staked reputers
 // (as opposed to forecaster workers and inferrer workers)
-func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (math.LegacyDec, error) {
+func (k Keeper) GetPreviousPercentageRewardToStakedReputers(
+	ctx context.Context,
+) (math.LegacyDec, error) {
 	stakedPercent, err := k.emissionsKeeper.GetPreviousPercentageRewardToStakedReputers(ctx)
 	if err != nil {
 		return math.LegacyDec{}, err

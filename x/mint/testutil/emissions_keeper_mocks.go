@@ -44,7 +44,12 @@ func (m *MockEmissionsKeeper) GetTotalStake(ctx context.Context) (math.Int, erro
 // GetTotalStake indicates an expected call of GetTotalStake.
 func (mr *MockEmissionsKeeperMockRecorder) GetTotalStake(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTotalStake", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetTotalStake), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetTotalStake",
+		reflect.TypeOf((*MockEmissionsKeeper)(nil).GetTotalStake),
+		ctx,
+	)
 }
 
 func (m *MockEmissionsKeeper) GetParams(ctx context.Context) (emissionstypes.Params, error) {
@@ -57,12 +62,22 @@ func (m *MockEmissionsKeeper) GetParams(ctx context.Context) (emissionstypes.Par
 
 func (mr *MockEmissionsKeeperMockRecorder) GetParams(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParams", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetParams), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetParams",
+		reflect.TypeOf((*MockEmissionsKeeper)(nil).GetParams),
+		ctx,
+	)
 }
 
 func (mr *MockEmissionsKeeperMockRecorder) GetParamsBlocksPerMonth(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParamsBlocksPerMonth", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetParamsBlocksPerMonth), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetParamsBlocksPerMonth",
+		reflect.TypeOf((*MockEmissionsKeeper)(nil).GetParamsBlocksPerMonth),
+		ctx,
+	)
 }
 
 func (m *MockEmissionsKeeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
@@ -73,12 +88,21 @@ func (m *MockEmissionsKeeper) GetParamsBlocksPerMonth(ctx context.Context) (uint
 	return ret0, ret1
 }
 
-func (mr *MockEmissionsKeeperMockRecorder) GetPreviousPercentageRewardToStakedReputers(ctx interface{}) *gomock.Call {
+func (mr *MockEmissionsKeeperMockRecorder) GetPreviousPercentageRewardToStakedReputers(
+	ctx interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPreviousPercentageRewardToStakedReputers", reflect.TypeOf((*MockEmissionsKeeper)(nil).GetPreviousPercentageRewardToStakedReputers), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetPreviousPercentageRewardToStakedReputers",
+		reflect.TypeOf((*MockEmissionsKeeper)(nil).GetPreviousPercentageRewardToStakedReputers),
+		ctx,
+	)
 }
 
-func (m *MockEmissionsKeeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error) {
+func (m *MockEmissionsKeeper) GetPreviousPercentageRewardToStakedReputers(
+	ctx context.Context,
+) (alloraMath.Dec, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPreviousPercentageRewardToStakedReputers", ctx)
 	ret0, _ := ret[0].(alloraMath.Dec)

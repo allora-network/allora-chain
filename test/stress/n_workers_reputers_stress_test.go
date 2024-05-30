@@ -75,7 +75,11 @@ func workerReputerCoordinationLoop(
 	// every iteration for each worker funding
 	initialFunderAccountAmount := int64(stakeToAdd) +
 		int64(topicsPerTopicIteration)*int64(maxWorkerReputerIterations+1)*topicFunds +
-		int64(maxWorkerReputerIterations+1)*initialWorkerReputerFundAmount*int64(maxReputersPerTopic+maxWorkersPerTopic)
+		int64(
+			maxWorkerReputerIterations+1,
+		)*initialWorkerReputerFundAmount*int64(
+			maxReputersPerTopic+maxWorkersPerTopic,
+		)
 
 	// 1. For every single topic that will be created over the duration of the test
 	//    create a topic funder that will create and fund the topic
@@ -211,7 +215,9 @@ func workerReputerLoop(
 	}
 
 	// Translate the epoch length into time
-	iterationTime := time.Duration(topic.EpochLength) * approximateSecondsBlockTime * iterationsInABatch
+	iterationTime := time.Duration(
+		topic.EpochLength,
+	) * approximateSecondsBlockTime * iterationsInABatch
 
 	countWorkers := 0
 	countReputers := 0
@@ -287,7 +293,18 @@ func workerReputerLoop(
 		// Sleep for an epoch
 		elapsedIteration := time.Since(startIteration)
 		sleepingTime := iterationTime - elapsedIteration
-		m.T.Log(topicLog(topicId, time.Now(), " Sleeping...", sleepingTime, ", elapsed: ", elapsedIteration, " epoch length seconds: ", iterationTime))
+		m.T.Log(
+			topicLog(
+				topicId,
+				time.Now(),
+				" Sleeping...",
+				sleepingTime,
+				", elapsed: ",
+				elapsedIteration,
+				" epoch length seconds: ",
+				iterationTime,
+			),
+		)
 		time.Sleep(sleepingTime)
 		if makeReport {
 			reportShortStatistics(m.T)
@@ -327,8 +344,20 @@ func workerReputerLoop(
 	}
 
 	// Check that only the top workers and reputers are rewarded
-	maxTopInferersCount, maxTopForecastersCount, maxTopReputersCount, _ := getMaxTopWorkersReputersToReward(m)
+	maxTopInferersCount, maxTopForecastersCount, maxTopReputersCount, _ := getMaxTopWorkersReputersToReward(
+		m,
+	)
 	require.Less(m.T, rewardedWorkersCount, maxTopInferersCount, "Only top workers can get reward")
-	require.Less(m.T, rewardedWorkersCount, maxTopForecastersCount, "Only top workers can get reward")
-	require.Less(m.T, rewardedReputersCount, maxTopReputersCount, "Only top reputers can get reward")
+	require.Less(
+		m.T,
+		rewardedWorkersCount,
+		maxTopForecastersCount,
+		"Only top workers can get reward",
+	)
+	require.Less(
+		m.T,
+		rewardedReputersCount,
+		maxTopReputersCount,
+		"Only top reputers can get reward",
+	)
 }

@@ -67,11 +67,20 @@ func SetAddressPrefixes() {
 		}
 
 		if len(bytes) > address.MaxAddrLen {
-			return errors.Wrapf(sdkerrors.ErrUnknownAddress, "address max length is %d, got %d", address.MaxAddrLen, len(bytes))
+			return errors.Wrapf(
+				sdkerrors.ErrUnknownAddress,
+				"address max length is %d, got %d",
+				address.MaxAddrLen,
+				len(bytes),
+			)
 		}
 
 		if len(bytes) != 20 && len(bytes) != 32 {
-			return errors.Wrapf(sdkerrors.ErrUnknownAddress, "address length must be 20 or 32 bytes, got %d", len(bytes))
+			return errors.Wrapf(
+				sdkerrors.ErrUnknownAddress,
+				"address length must be 20 or 32 bytes, got %d",
+				len(bytes),
+			)
 		}
 
 		return nil

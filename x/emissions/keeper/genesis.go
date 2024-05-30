@@ -15,7 +15,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
 	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraRewardsModuleAccount)
-	alloraPendingRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName)
+	alloraPendingRewardsModuleAccount := k.authKeeper.GetModuleAccount(
+		ctx,
+		types.AlloraPendingRewardForDelegatorAccountName,
+	)
 	k.authKeeper.SetModuleAccount(ctx, alloraPendingRewardsModuleAccount)
 	if err := k.SetTotalStake(ctx, cosmosMath.ZeroInt()); err != nil {
 		return err

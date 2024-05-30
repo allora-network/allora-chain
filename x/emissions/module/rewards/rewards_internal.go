@@ -29,7 +29,13 @@ func GetScoreFractions(
 	cReward alloraMath.Dec,
 	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
-	mappedValues, err := GetMappingFunctionValues(latestWorkerScores, latestTimeStepsScores, pReward, cReward, epsilon)
+	mappedValues, err := GetMappingFunctionValues(
+		latestWorkerScores,
+		latestTimeStepsScores,
+		pReward,
+		cReward,
+		epsilon,
+	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error in GetMappingFunctionValue")
 	}
@@ -183,7 +189,9 @@ func GetFinalWorkerScoreForecastTask(
 // Consider the losses and the stake of each reputer to calculate the stake-weighted loss.
 // The stake weighted loss is used to calculate the network-wide losses.
 // L_i / L_ij / L_ik / L^-_i / L^-_il / L^+_ik
-func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []alloraMath.Dec) (alloraMath.Dec, error) {
+func GetStakeWeightedLoss(
+	reputersStakes, reputersReportedLosses []alloraMath.Dec,
+) (alloraMath.Dec, error) {
 	if len(reputersStakes) != len(reputersReportedLosses) {
 		return alloraMath.ZeroDec(), types.ErrInvalidSliceLength
 	}
@@ -269,7 +277,9 @@ func GetStakeWeightedLossMatrix(
 		stakeWeightedLoss[j] = sum
 
 		// Find most distant value from consensus value
-		maxDistance, err := alloraMath.OneDec().Mul(alloraMath.MustNewDecFromString("-1")) // Initialize with an impossible value
+		maxDistance, err := alloraMath.OneDec().
+			Mul(alloraMath.MustNewDecFromString("-1"))
+			// Initialize with an impossible value
 		if err != nil {
 			return nil, nil, err
 		}
@@ -339,7 +349,9 @@ func GetConsensusScore(
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
-		rLossOverCLossSquared, err := rLossOverConsensusLoss.Mul(rLossOverConsensusLoss) // == Pow(x,2)
+		rLossOverCLossSquared, err := rLossOverConsensusLoss.Mul(
+			rLossOverConsensusLoss,
+		) // == Pow(x,2)
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
@@ -406,7 +418,13 @@ func GetAllConsensusScores(
 	scores := make([]alloraMath.Dec, numReputers)
 	for i := int64(0); i < numReputers; i++ {
 		losses := allLosses[i]
-		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues, fTolerance, epsilon)
+		scores[i], err = GetConsensusScore(
+			losses,
+			consensus,
+			mostDistantValues,
+			fTolerance,
+			epsilon,
+		)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error in GetConsensusScore")
 		}
@@ -454,7 +472,14 @@ func GetAllReputersOutput(
 			coeffs := make([]alloraMath.Dec, len(coefficients))
 			copy(coeffs, coefficients)
 
-			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, fTolerance, epsilon)
+			scores, err := GetAllConsensusScores(
+				allLosses,
+				stakes,
+				coeffs,
+				numReputers,
+				fTolerance,
+				epsilon,
+			)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
@@ -465,7 +490,14 @@ func GetAllReputersOutput(
 				return nil, nil, err
 			}
 
-			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, fTolerance, epsilon)
+			scores2, err := GetAllConsensusScores(
+				allLosses,
+				stakes,
+				coeffs2,
+				numReputers,
+				fTolerance,
+				epsilon,
+			)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
@@ -498,7 +530,9 @@ func GetAllReputersOutput(
 			if err != nil {
 				return nil, nil, err
 			}
-			coefficientsPlusLearningRateTimesGradient, err := coefficients[j].Add(learningRateTimesGradient)
+			coefficientsPlusLearningRateTimesGradient, err := coefficients[j].Add(
+				learningRateTimesGradient,
+			)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -549,11 +583,15 @@ func GetAllReputersOutput(
 				if err != nil {
 					return nil, nil, err
 				}
-				coefDiffTimesListenedDiffOverStakedFracDiff, err := coeffDiffTimesListenedDiff.Quo(stakedFracDiff)
+				coefDiffTimesListenedDiffOverStakedFracDiff, err := coeffDiffTimesListenedDiff.Quo(
+					stakedFracDiff,
+				)
 				if err != nil {
 					return nil, nil, err
 				}
-				coefficients[l], err = oldCoefficients[l].Add(coefDiffTimesListenedDiffOverStakedFracDiff)
+				coefficients[l], err = oldCoefficients[l].Add(
+					coefDiffTimesListenedDiffOverStakedFracDiff,
+				)
 				if err != nil {
 					return nil, nil, err
 				}

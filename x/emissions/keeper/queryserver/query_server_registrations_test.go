@@ -36,7 +36,8 @@ func (s *KeeperTestSuite) TestGetWorkerNodeInfo() {
 	s.Require().NoError(err, "GetWorkerNodeInfo should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().NotNil(response.NodeInfo, "The response NodeInfo should not be nil")
-	s.Require().Equal(&expectedNode, response.NodeInfo, "The retrieved node information should match the expected node information")
+	s.Require().
+		Equal(&expectedNode, response.NodeInfo, "The retrieved node information should match the expected node information")
 
 	invalidReq := &types.QueryWorkerNodeInfoRequest{
 		Libp2PKey: "nonexistent-libp2p-key",
@@ -73,7 +74,8 @@ func (s *KeeperTestSuite) TestGetReputerNodeInfo() {
 	s.Require().NoError(err, "GetReputerNodeInfo should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().NotNil(response.NodeInfo, "The response NodeInfo should not be nil")
-	s.Require().Equal(&expectedReputer, response.NodeInfo, "The retrieved node information should match the expected node information")
+	s.Require().
+		Equal(&expectedReputer, response.NodeInfo, "The retrieved node information should match the expected node information")
 
 	invalidReq := &types.QueryReputerNodeInfoRequest{
 		Libp2PKey: "nonExistentKey123",
@@ -112,7 +114,8 @@ func (s *KeeperTestSuite) TestGetWorkerAddressByP2PKey() {
 
 	s.Require().NoError(err, "GetWorkerAddressByP2PKey should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(worker, response.Address, "The retrieved worker address should match the expected worker address")
+	s.Require().
+		Equal(worker, response.Address, "The retrieved worker address should match the expected worker address")
 
 	invalidReq := &types.QueryWorkerAddressByP2PKeyRequest{
 		Libp2PKey: nonexistentWorkerP2pKey,
@@ -152,7 +155,8 @@ func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
 
 	s.Require().NoError(err, "GetReputerAddressByP2PKey should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(reputer, response.Address, "The retrieved reputer address should match the expected reputer address")
+	s.Require().
+		Equal(reputer, response.Address, "The retrieved reputer address should match the expected reputer address")
 
 	// Test invalid request
 	invalidReq := &types.QueryReputerAddressByP2PKeyRequest{
@@ -174,9 +178,11 @@ func (s *KeeperTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
 		Address: notRegisteredWorkerAddr,
 	}
 	invalidResponse, err := queryServer.IsWorkerRegisteredInTopicId(ctx, notRegisteredRequest)
-	s.Require().NoError(err, "IsWorkerRegisteredInTopicId should handle non-registered addresses without error")
+	s.Require().
+		NoError(err, "IsWorkerRegisteredInTopicId should handle non-registered addresses without error")
 	s.Require().NotNil(invalidResponse, "The response for non-registered worker should not be nil")
-	s.Require().False(invalidResponse.IsRegistered, "The worker should not be registered for the topic")
+	s.Require().
+		False(invalidResponse.IsRegistered, "The worker should not be registered for the topic")
 }
 
 func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
@@ -256,7 +262,12 @@ func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
 	err := s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
-	err = s.bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, reputerAddr, mintAmount)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(
+		ctx,
+		minttypes.ModuleName,
+		reputerAddr,
+		mintAmount,
+	)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
 
 	queryReq := &types.QueryIsReputerRegisteredInTopicIdRequest{

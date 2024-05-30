@@ -11,14 +11,20 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
+func (ms msgServer) CreateNewTopic(
+	ctx context.Context,
+	msg *types.MsgCreateNewTopic,
+) (*types.MsgCreateNewTopicResponse, error) {
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
 
 	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, msg.Creator)
 	if !hasEnoughBal {
-		return nil, errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover topic creation fee")
+		return nil, errors.Wrapf(
+			sdkerrors.ErrInsufficientFunds,
+			"sender has insufficient balance to cover topic creation fee",
+		)
 	}
 
 	id, err := ms.k.GetNextTopicId(ctx)
@@ -35,7 +41,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Creator, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
+	err = ms.k.SendCoinsFromAccountToModule(
+		ctx,
+		msg.Creator,
+		mintTypes.EcosystemModuleName,
+		sdk.NewCoins(fee),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +80,10 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
-func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address string) (bool, sdk.Coin, error) {
+func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(
+	ctx context.Context,
+	address string,
+) (bool, sdk.Coin, error) {
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err

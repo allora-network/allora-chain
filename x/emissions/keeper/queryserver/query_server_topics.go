@@ -10,7 +10,10 @@ import (
 )
 
 // NextTopicId is a monotonically increasing counter that is used to assign unique IDs to topics.
-func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.QueryNextTopicIdRequest) (*types.QueryNextTopicIdResponse, error) {
+func (qs queryServer) GetNextTopicId(
+	ctx context.Context,
+	req *types.QueryNextTopicIdRequest,
+) (*types.QueryNextTopicIdResponse, error) {
 	nextTopicId, err := qs.k.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
@@ -19,14 +22,20 @@ func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.QueryNextTo
 }
 
 // Topics defines the handler for the Query/Topics RPC method.
-func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest) (*types.QueryTopicResponse, error) {
+func (qs queryServer) GetTopic(
+	ctx context.Context,
+	req *types.QueryTopicRequest,
+) (*types.QueryTopicResponse, error) {
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 
 	return &types.QueryTopicResponse{Topic: &topic}, err
 }
 
 // Retrieves a list of active topics. Paginated.
-func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiveTopicsRequest) (*types.QueryActiveTopicsResponse, error) {
+func (qs queryServer) GetActiveTopics(
+	ctx context.Context,
+	req *types.QueryActiveTopicsRequest,
+) (*types.QueryActiveTopicsResponse, error) {
 	activeTopics, pageRes, err := qs.k.GetIdsOfActiveTopics(ctx, req.Pagination)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

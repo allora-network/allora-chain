@@ -33,7 +33,11 @@ func (suite *MintTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(mint.AppModuleBasic{})
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(suite.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	testCtx := testutil.DefaultContextWithDB(
+		suite.T(),
+		key,
+		storetypes.NewTransientStoreKey("transient_test"),
+	)
 	suite.ctx = testCtx.Ctx
 
 	// gomock initializations

@@ -43,7 +43,11 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 		},
 	)
 	require.NoError(m.T, err)
-	require.Equal(m.T, fmt.Sprint(stakeToAdd), aliceStakedAfter.Amount.Sub(aliceStakedBefore.Amount).String())
+	require.Equal(
+		m.T,
+		fmt.Sprint(stakeToAdd),
+		aliceStakedAfter.Amount.Sub(aliceStakedBefore.Amount).String(),
+	)
 }
 
 // func CheckTopic1Activated(m testCommon.TestConfig) {

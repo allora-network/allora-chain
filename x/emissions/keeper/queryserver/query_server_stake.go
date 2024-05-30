@@ -13,7 +13,10 @@ import (
 )
 
 // TotalStake defines the handler for the Query/TotalStake RPC method.
-func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalStakeRequest) (*types.QueryTotalStakeResponse, error) {
+func (qs queryServer) GetTotalStake(
+	ctx context.Context,
+	req *types.QueryTotalStakeRequest,
+) (*types.QueryTotalStakeResponse, error) {
 	totalStake, err := qs.k.GetTotalStake(ctx)
 	if err != nil {
 		return nil, err
@@ -24,7 +27,10 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalSt
 // Retrieves all stake in a topic for a given reputer address,
 // including reputer's stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
-func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.QueryReputerStakeInTopicRequest) (*types.QueryReputerStakeInTopicResponse, error) {
+func (qs queryServer) GetReputerStakeInTopic(
+	ctx context.Context,
+	req *types.QueryReputerStakeInTopicRequest,
+) (*types.QueryReputerStakeInTopicResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err
 	}
@@ -39,7 +45,10 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 // Retrieves all stake in a topic for a given set of reputer addresses,
 // including their stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
-func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *types.QueryMultiReputerStakeInTopicRequest) (*types.QueryMultiReputerStakeInTopicResponse, error) {
+func (qs queryServer) GetMultiReputerStakeInTopic(
+	ctx context.Context,
+	req *types.QueryMultiReputerStakeInTopicRequest,
+) (*types.QueryMultiReputerStakeInTopicResponse, error) {
 	maxLimit := types.DefaultParams().MaxPageLimit
 	moduleParams, err := qs.k.GetParams(ctx)
 	if err == nil {
@@ -47,7 +56,10 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 	}
 
 	if uint64(len(req.Addresses)) > maxLimit {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d addresses at once", maxLimit))
+		return nil, status.Error(
+			codes.InvalidArgument,
+			fmt.Sprintf("cannot query more than %d addresses at once", maxLimit),
+		)
 	}
 
 	stakes := make([]*types.StakePlacement, len(req.Addresses))
@@ -66,7 +78,10 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 }
 
 // Retrieves total delegate stake on a given reputer address in a given topic
-func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.QueryDelegateStakeInTopicInReputerRequest) (*types.QueryDelegateStakeInTopicInReputerResponse, error) {
+func (qs queryServer) GetDelegateStakeInTopicInReputer(
+	ctx context.Context,
+	req *types.QueryDelegateStakeInTopicInReputerRequest,
+) (*types.QueryDelegateStakeInTopicInReputerResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, err
 	}
@@ -78,22 +93,35 @@ func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req 
 	return &types.QueryDelegateStakeInTopicInReputerResponse{Amount: stake}, nil
 }
 
-func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicInReputerRequest) (*types.QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(
+	ctx context.Context,
+	req *types.QueryStakeFromDelegatorInTopicInReputerRequest,
+) (*types.QueryStakeFromDelegatorInTopicInReputerResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, errors.Wrapf(err, "reputer address")
 	}
 	if err := qs.k.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
 		return nil, errors.Wrapf(err, "delegator address")
 	}
-	stake, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, req.DelegatorAddress, req.ReputerAddress)
+	stake, err := qs.k.GetDelegateStakePlacement(
+		ctx,
+		req.TopicId,
+		req.DelegatorAddress,
+		req.ReputerAddress,
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: stake.Amount.SdkIntTrim()}, nil
+	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{
+		Amount: stake.Amount.SdkIntTrim(),
+	}, nil
 }
 
-func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicRequest) (*types.QueryStakeFromDelegatorInTopicResponse, error) {
+func (qs queryServer) GetStakeFromDelegatorInTopic(
+	ctx context.Context,
+	req *types.QueryStakeFromDelegatorInTopicRequest,
+) (*types.QueryStakeFromDelegatorInTopicResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
 		return nil, err
 	}
@@ -106,7 +134,10 @@ func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *typ
 }
 
 // Retrieves total stake in a given topic
-func (qs queryServer) GetTopicStake(ctx context.Context, req *types.QueryTopicStakeRequest) (*types.QueryTopicStakeResponse, error) {
+func (qs queryServer) GetTopicStake(
+	ctx context.Context,
+	req *types.QueryTopicStakeRequest,
+) (*types.QueryTopicStakeResponse, error) {
 	stake, err := qs.k.GetTopicStake(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

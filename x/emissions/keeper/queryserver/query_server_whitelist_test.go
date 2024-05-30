@@ -31,5 +31,6 @@ func (s *KeeperTestSuite) TestIsWhitelistAdmin() {
 	response, err = queryServer.IsWhitelistAdmin(ctx, req)
 	s.Require().NoError(err, "IsWhitelistAdmin should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().False(response.IsAdmin, "The IsAdmin field should be false for the anti test address")
+	s.Require().
+		False(response.IsAdmin, "The IsAdmin field should be false for the anti test address")
 }

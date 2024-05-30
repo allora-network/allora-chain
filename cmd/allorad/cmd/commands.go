@@ -27,7 +27,11 @@ import (
 	"github.com/allora-network/allora-chain/app"
 )
 
-func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager module.BasicManager) {
+func initRootCmd(
+	rootCmd *cobra.Command,
+	txConfig client.TxConfig,
+	basicManager module.BasicManager,
+) {
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(basicManager, app.DefaultNodeHome),
 		debug.Cmd(),
@@ -36,7 +40,13 @@ func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager 
 		snapshot.Cmd(newApp),
 	)
 
-	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, func(startCmd *cobra.Command) {})
+	server.AddCommands(
+		rootCmd,
+		app.DefaultNodeHome,
+		newApp,
+		appExport,
+		func(startCmd *cobra.Command) {},
+	)
 
 	// add keybase, auxiliary RPC, query, genesis, and tx child commands
 	rootCmd.AddCommand(
@@ -95,7 +105,12 @@ func txCommand() *cobra.Command {
 }
 
 // newApp is an appCreator
-func newApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts servertypes.AppOptions) servertypes.Application {
+func newApp(
+	logger log.Logger,
+	db dbm.DB,
+	traceStore io.Writer,
+	appOpts servertypes.AppOptions,
+) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
 	app, err := app.NewAlloraApp(logger, db, traceStore, true, appOpts, baseappOptions...)
 	if err != nil {

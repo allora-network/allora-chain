@@ -102,7 +102,11 @@ func GetCalcSetNetworkRegrets(
 		return networkLosses.InfererValues[i].Worker < networkLosses.InfererValues[j].Worker
 	})
 	for _, infererLoss := range networkLosses.InfererValues {
-		lastRegret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, infererLoss.Worker)
+		lastRegret, noPriorRegret, err := k.GetInfererNetworkRegret(
+			ctx,
+			topicId,
+			infererLoss.Worker,
+		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get inferer regret")
 		}
@@ -125,7 +129,11 @@ func GetCalcSetNetworkRegrets(
 		return networkLosses.ForecasterValues[i].Worker < networkLosses.ForecasterValues[j].Worker
 	})
 	for _, forecasterLoss := range networkLosses.ForecasterValues {
-		lastRegret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, forecasterLoss.Worker)
+		lastRegret, noPriorRegret, err := k.GetForecasterNetworkRegret(
+			ctx,
+			topicId,
+			forecasterLoss.Worker,
+		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
@@ -153,7 +161,12 @@ func GetCalcSetNetworkRegrets(
 			if infererLoss.Worker == oneInForecasterLoss.Worker {
 				continue
 			}
-			lastRegret, noPriorRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker)
+			lastRegret, noPriorRegret, err := k.GetOneInForecasterNetworkRegret(
+				ctx,
+				topicId,
+				oneInForecasterLoss.Worker,
+				infererLoss.Worker,
+			)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 			}
@@ -168,10 +181,21 @@ func GetCalcSetNetworkRegrets(
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error computing and building one-in forecaster regret")
 			}
-			k.SetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker, newOneInForecasterRegret)
+			k.SetOneInForecasterNetworkRegret(
+				ctx,
+				topicId,
+				oneInForecasterLoss.Worker,
+				infererLoss.Worker,
+				newOneInForecasterRegret,
+			)
 		}
 		// Self-regret for the forecaster given their own regret
-		lastRegret, noPriorRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker)
+		lastRegret, noPriorRegret, err := k.GetOneInForecasterNetworkRegret(
+			ctx,
+			topicId,
+			oneInForecasterLoss.Worker,
+			oneInForecasterLoss.Worker,
+		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting one-in forecaster self regret")
 		}
@@ -184,9 +208,18 @@ func GetCalcSetNetworkRegrets(
 			noPriorRegret,
 		)
 		if err != nil {
-			return errorsmod.Wrapf(err, "Error computing and building one-in forecaster self regret")
+			return errorsmod.Wrapf(
+				err,
+				"Error computing and building one-in forecaster self regret",
+			)
 		}
-		k.SetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker, oneInForecasterSelfRegret)
+		k.SetOneInForecasterNetworkRegret(
+			ctx,
+			topicId,
+			oneInForecasterLoss.Worker,
+			oneInForecasterLoss.Worker,
+			oneInForecasterSelfRegret,
+		)
 	}
 
 	return nil

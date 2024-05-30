@@ -103,7 +103,8 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	)
 	s.Require().NoError(err, "Retrieving latest inference should succeed")
 	s.Require().NotNil(response.LatestInference, "Response should contain a latest inference")
-	s.Require().Equal(&inference, response.LatestInference, "The latest inference should match the expected data")
+	s.Require().
+		Equal(&inference, response.LatestInference, "The latest inference should match the expected data")
 }
 
 func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {

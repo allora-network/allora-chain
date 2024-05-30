@@ -26,6 +26,7 @@ type LibP2pKey = string
 type ActorId = string
 type BlockHeight = int64
 type RequestId = string
+
 type RequestIndex = uint64 // A concept completely internal to the keeper. Each request in a topic is indexed by a unique request index.
 
 type Keeper struct {
@@ -169,55 +170,321 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
-		cdc:                                      cdc,
-		addressCodec:                             addressCodec,
-		feeCollectorName:                         feeCollectorName,
-		params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		authKeeper:                               ak,
-		bankKeeper:                               bk,
-		totalStake:                               collections.NewItem(sb, types.TotalStakeKey, "total_stake", sdk.IntValue),
-		topicStake:                               collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, sdk.IntValue),
-		nextTopicId:                              collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
-		topics:                                   collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
-		activeTopics:                             collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
-		churnReadyTopics:                         collections.NewKeySet(sb, types.ChurnReadyTopicsKey, "churn_ready_topics", collections.Uint64Key),
-		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
-		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
-		stakeByReputerAndTopicId:                 collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
-		stakeRemoval:                             collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.StakeRemoval](cdc)),
-		delegateStakeRemoval:                     collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegateStakeRemoval](cdc)),
-		stakeFromDelegator:                       collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
-		delegateStakePlacement:                   collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegatorInfo](cdc)),
-		stakeUponReputer:                         collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
-		delegateRewardPerShare:                   collections.NewMap(sb, types.DelegateRewardPerShare, "delegate_reward_per_share", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		topicFeeRevenue:                          collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
-		previousTopicWeight:                      collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
-		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
-		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
-		workers:                                  collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
-		reputers:                                 collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
-		allInferences:                            collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
-		allForecasts:                             collections.NewMap(sb, types.AllForecastsKey, "forecasts_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Forecasts](cdc)),
-		allLossBundles:                           collections.NewMap(sb, types.AllLossBundlesKey, "value_bundles_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ReputerValueBundles](cdc)),
-		networkLossBundles:                       collections.NewMap(sb, types.NetworkLossBundlesKey, "value_bundles_network", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.ValueBundle](cdc)),
-		previousPercentageRewardToStakedReputers: collections.NewItem(sb, types.PreviousPercentageRewardToStakedReputersKey, "previous_percentage_reward_to_staked_reputers", alloraMath.DecValue),
-		latestInfererNetworkRegrets:              collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
-		latestForecasterNetworkRegrets:           collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
-		latestOneInForecasterNetworkRegrets:      collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
-		whitelistAdmins:                          collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
-		infererScoresByBlock:                     collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		forecasterScoresByBlock:                  collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		latestInfererScoresByWorker:              collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		latestForecasterScoresByWorker:           collections.NewMap(sb, types.LatestForecasterScoresByWorkerKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		latestReputerScoresByReputer:             collections.NewMap(sb, types.LatestReputerScoresByReputerKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		previousReputerRewardFraction:            collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		previousInferenceRewardFraction:          collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		previousForecastRewardFraction:           collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		reputerScoresByBlock:                     collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		reputerListeningCoefficient:              collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ListeningCoefficient](cdc)),
-		unfulfilledWorkerNonces:                  collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
-		unfulfilledReputerNonces:                 collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
-		topicRewardNonce:                         collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
+		cdc:              cdc,
+		addressCodec:     addressCodec,
+		feeCollectorName: feeCollectorName,
+		params: collections.NewItem(
+			sb,
+			types.ParamsKey,
+			"params",
+			codec.CollValue[types.Params](cdc),
+		),
+		authKeeper: ak,
+		bankKeeper: bk,
+		totalStake: collections.NewItem(
+			sb,
+			types.TotalStakeKey,
+			"total_stake",
+			sdk.IntValue,
+		),
+		topicStake: collections.NewMap(
+			sb,
+			types.TopicStakeKey,
+			"topic_stake",
+			collections.Uint64Key,
+			sdk.IntValue,
+		),
+		nextTopicId: collections.NewSequence(
+			sb,
+			types.NextTopicIdKey,
+			"next_TopicId",
+		),
+		topics: collections.NewMap(
+			sb,
+			types.TopicsKey,
+			"topics",
+			collections.Uint64Key,
+			codec.CollValue[types.Topic](cdc),
+		),
+		activeTopics: collections.NewKeySet(
+			sb,
+			types.ActiveTopicsKey,
+			"active_topics",
+			collections.Uint64Key,
+		),
+		churnReadyTopics: collections.NewKeySet(
+			sb,
+			types.ChurnReadyTopicsKey,
+			"churn_ready_topics",
+			collections.Uint64Key,
+		),
+		topicWorkers: collections.NewKeySet(
+			sb,
+			types.TopicWorkersKey,
+			"topic_workers",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+		),
+		topicReputers: collections.NewKeySet(
+			sb,
+			types.TopicReputersKey,
+			"topic_reputers",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+		),
+		stakeByReputerAndTopicId: collections.NewMap(
+			sb,
+			types.StakeByReputerAndTopicIdKey,
+			"stake_by_reputer_and_TopicId",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			sdk.IntValue,
+		),
+		stakeRemoval: collections.NewMap(
+			sb,
+			types.StakeRemovalKey,
+			"stake_removal_queue",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			codec.CollValue[types.StakeRemoval](cdc),
+		),
+		delegateStakeRemoval: collections.NewMap(
+			sb,
+			types.DelegateStakeRemovalKey,
+			"delegate_stake_removal_queue",
+			collections.TripleKeyCodec(
+				collections.Uint64Key,
+				collections.StringKey,
+				collections.StringKey,
+			),
+			codec.CollValue[types.DelegateStakeRemoval](cdc),
+		),
+		stakeFromDelegator: collections.NewMap(
+			sb,
+			types.DelegatorStakeKey,
+			"stake_from_delegator",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			sdk.IntValue,
+		),
+		delegateStakePlacement: collections.NewMap(
+			sb,
+			types.DelegateStakePlacementKey,
+			"delegate_stake_placement",
+			collections.TripleKeyCodec(
+				collections.Uint64Key,
+				collections.StringKey,
+				collections.StringKey,
+			),
+			codec.CollValue[types.DelegatorInfo](cdc),
+		),
+		stakeUponReputer: collections.NewMap(
+			sb,
+			types.TargetStakeKey,
+			"stake_upon_reputer",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			sdk.IntValue,
+		),
+		delegateRewardPerShare: collections.NewMap(
+			sb,
+			types.DelegateRewardPerShare,
+			"delegate_reward_per_share",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			alloraMath.DecValue,
+		),
+		topicFeeRevenue: collections.NewMap(
+			sb,
+			types.TopicFeeRevenueKey,
+			"topic_fee_revenue",
+			collections.Uint64Key,
+			codec.CollValue[types.TopicFeeRevenue](cdc),
+		),
+		previousTopicWeight: collections.NewMap(
+			sb,
+			types.PreviousTopicWeightKey,
+			"previous_topic_weight",
+			collections.Uint64Key,
+			alloraMath.DecValue,
+		),
+		inferences: collections.NewMap(
+			sb,
+			types.InferencesKey,
+			"inferences",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			codec.CollValue[types.Inference](cdc),
+		),
+		forecasts: collections.NewMap(
+			sb,
+			types.ForecastsKey,
+			"forecasts",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			codec.CollValue[types.Forecast](cdc),
+		),
+		workers: collections.NewMap(
+			sb,
+			types.WorkerNodesKey,
+			"worker_nodes",
+			collections.StringKey,
+			codec.CollValue[types.OffchainNode](cdc),
+		),
+		reputers: collections.NewMap(
+			sb,
+			types.ReputerNodesKey,
+			"reputer_nodes",
+			collections.StringKey,
+			codec.CollValue[types.OffchainNode](cdc),
+		),
+		allInferences: collections.NewMap(
+			sb,
+			types.AllInferencesKey,
+			"inferences_all",
+			collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key),
+			codec.CollValue[types.Inferences](cdc),
+		),
+		allForecasts: collections.NewMap(
+			sb,
+			types.AllForecastsKey,
+			"forecasts_all",
+			collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key),
+			codec.CollValue[types.Forecasts](cdc),
+		),
+		allLossBundles: collections.NewMap(
+			sb,
+			types.AllLossBundlesKey,
+			"value_bundles_all",
+			collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key),
+			codec.CollValue[types.ReputerValueBundles](cdc),
+		),
+		networkLossBundles: collections.NewMap(
+			sb,
+			types.NetworkLossBundlesKey,
+			"value_bundles_network",
+			collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key),
+			codec.CollValue[types.ValueBundle](cdc),
+		),
+		previousPercentageRewardToStakedReputers: collections.NewItem(
+			sb,
+			types.PreviousPercentageRewardToStakedReputersKey,
+			"previous_percentage_reward_to_staked_reputers",
+			alloraMath.DecValue,
+		),
+		latestInfererNetworkRegrets: collections.NewMap(
+			sb,
+			types.InfererNetworkRegretsKey,
+			"inferer_network_regrets",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			codec.CollValue[types.TimestampedValue](cdc),
+		),
+		latestForecasterNetworkRegrets: collections.NewMap(
+			sb,
+			types.ForecasterNetworkRegretsKey,
+			"forecaster_network_regrets",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			codec.CollValue[types.TimestampedValue](cdc),
+		),
+		latestOneInForecasterNetworkRegrets: collections.NewMap(
+			sb,
+			types.OneInForecasterNetworkRegretsKey,
+			"one_in_forecaster_network_regrets",
+			collections.TripleKeyCodec(
+				collections.Uint64Key,
+				collections.StringKey,
+				collections.StringKey,
+			),
+			codec.CollValue[types.TimestampedValue](cdc),
+		),
+		whitelistAdmins: collections.NewKeySet(
+			sb,
+			types.WhitelistAdminsKey,
+			"whitelist_admins",
+			collections.StringKey,
+		),
+		infererScoresByBlock: collections.NewMap(
+			sb,
+			types.InferenceScoresKey,
+			"inferer_scores_by_block",
+			collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key),
+			codec.CollValue[types.Scores](cdc),
+		),
+		forecasterScoresByBlock: collections.NewMap(
+			sb,
+			types.ForecastScoresKey,
+			"forecaster_scores_by_block",
+			collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key),
+			codec.CollValue[types.Scores](cdc),
+		),
+		latestInfererScoresByWorker: collections.NewMap(
+			sb,
+			types.LatestInfererScoresByWorkerKey,
+			"latest_inferer_scores_by_worker",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			codec.CollValue[types.Score](cdc),
+		),
+		latestForecasterScoresByWorker: collections.NewMap(
+			sb,
+			types.LatestForecasterScoresByWorkerKey,
+			"latest_forecaster_scores_by_worker",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			codec.CollValue[types.Score](cdc),
+		),
+		latestReputerScoresByReputer: collections.NewMap(
+			sb,
+			types.LatestReputerScoresByReputerKey,
+			"latest_reputer_scores_by_reputer",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			codec.CollValue[types.Score](cdc),
+		),
+		previousReputerRewardFraction: collections.NewMap(
+			sb,
+			types.PreviousReputerRewardFractionKey,
+			"previous_reputer_reward_fraction",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			alloraMath.DecValue,
+		),
+		previousInferenceRewardFraction: collections.NewMap(
+			sb,
+			types.PreviousInferenceRewardFractionKey,
+			"previous_inference_reward_fraction",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			alloraMath.DecValue,
+		),
+		previousForecastRewardFraction: collections.NewMap(
+			sb,
+			types.PreviousForecastRewardFractionKey,
+			"previous_forecast_reward_fraction",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			alloraMath.DecValue,
+		),
+		reputerScoresByBlock: collections.NewMap(
+			sb,
+			types.ReputerScoresKey,
+			"reputer_scores_by_block",
+			collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key),
+			codec.CollValue[types.Scores](cdc),
+		),
+		reputerListeningCoefficient: collections.NewMap(
+			sb,
+			types.ReputerListeningCoefficientKey,
+			"reputer_listening_coefficient",
+			collections.PairKeyCodec(collections.Uint64Key, collections.StringKey),
+			codec.CollValue[types.ListeningCoefficient](cdc),
+		),
+		unfulfilledWorkerNonces: collections.NewMap(
+			sb,
+			types.UnfulfilledWorkerNoncesKey,
+			"unfulfilled_worker_nonces",
+			collections.Uint64Key,
+			codec.CollValue[types.Nonces](cdc),
+		),
+		unfulfilledReputerNonces: collections.NewMap(
+			sb,
+			types.UnfulfilledReputerNoncesKey,
+			"unfulfilled_reputer_nonces",
+			collections.Uint64Key,
+			codec.CollValue[types.ReputerRequestNonces](cdc),
+		),
+		topicRewardNonce: collections.NewMap(
+			sb,
+			types.TopicRewardNonceKey,
+			"topic_reward_nonce",
+			collections.Uint64Key,
+			collections.Int64Value,
+		),
 	}
 
 	schema, err := sb.Build()
@@ -235,7 +502,11 @@ func NewKeeper(
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
 // If the nonce is not present, then the function returns false.
-func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+func (k *Keeper) FulfillWorkerNonce(
+	ctx context.Context,
+	topicId TopicId,
+	nonce *types.Nonce,
+) (bool, error) {
 	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	if err != nil {
 		return false, err
@@ -245,7 +516,9 @@ func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce 
 	for i, n := range unfulfilledNonces.Nonces {
 		if n.BlockHeight == nonce.BlockHeight {
 			// Remove the nonce from the unfulfilled nonces
-			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
+			unfulfilledNonces.Nonces = append(
+				unfulfilledNonces.Nonces[:i],
+				unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledWorkerNonces.Set(ctx, topicId, unfulfilledNonces)
 			if err != nil {
 				return false, err
@@ -261,7 +534,11 @@ func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
 // If the nonce is not present, then the function returns false.
-func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+func (k *Keeper) FulfillReputerNonce(
+	ctx context.Context,
+	topicId TopicId,
+	nonce *types.Nonce,
+) (bool, error) {
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
 		return false, err
@@ -271,7 +548,9 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 	for i, n := range unfulfilledNonces.Nonces {
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			// Remove the nonce from the unfulfilled nonces
-			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
+			unfulfilledNonces.Nonces = append(
+				unfulfilledNonces.Nonces[:i],
+				unfulfilledNonces.Nonces[i+1:]...)
 			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
 			if err != nil {
 				return false, err
@@ -285,7 +564,11 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 }
 
 // True if nonce is unfulfilled, false otherwise.
-func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+func (k *Keeper) IsWorkerNonceUnfulfilled(
+	ctx context.Context,
+	topicId TopicId,
+	nonce *types.Nonce,
+) (bool, error) {
 	// Get the latest unfulfilled nonces
 	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	if err != nil {
@@ -306,7 +589,11 @@ func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, 
 }
 
 // True if nonce is unfulfilled, false otherwise.
-func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+func (k *Keeper) IsReputerNonceUnfulfilled(
+	ctx context.Context,
+	topicId TopicId,
+	nonce *types.Nonce,
+) (bool, error) {
 	// Get the latest unfulfilled nonces
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
@@ -361,7 +648,12 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
-func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce, associatedWorkerNonce *types.Nonce) error {
+func (k *Keeper) AddReputerNonce(
+	ctx context.Context,
+	topicId TopicId,
+	nonce *types.Nonce,
+	associatedWorkerNonce *types.Nonce,
+) error {
 	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
 		return err
@@ -406,7 +698,10 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
 }
 
-func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) (types.Nonces, error) {
+func (k *Keeper) GetUnfulfilledWorkerNonces(
+	ctx context.Context,
+	topicId TopicId,
+) (types.Nonces, error) {
 	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -417,7 +712,10 @@ func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId
 	return nonces, nil
 }
 
-func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (types.ReputerRequestNonces, error) {
+func (k *Keeper) GetUnfulfilledReputerNonces(
+	ctx context.Context,
+	topicId TopicId,
+) (types.ReputerRequestNonces, error) {
 	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -438,24 +736,44 @@ func (k *Keeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId Top
 
 /// REGRETS
 
-func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetInfererNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+	regret types.TimestampedValue,
+) error {
 	key := collections.Join(topicId, worker)
 	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetForecasterNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+	regret types.TimestampedValue,
+) error {
 	key := collections.Join(topicId, worker)
 	return k.latestForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetOneInForecasterNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	forecaster ActorId,
+	inferer ActorId,
+	regret types.TimestampedValue,
+) error {
 	key := collections.Join3(topicId, forecaster, inferer)
 	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetInfererNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (types.TimestampedValue, bool, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestInfererNetworkRegrets.Get(ctx, key)
 	if err != nil {
@@ -472,7 +790,11 @@ func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetForecasterNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (types.TimestampedValue, bool, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
@@ -489,7 +811,12 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetOneInForecasterNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	forecaster ActorId,
+	inferer ActorId,
+) (types.TimestampedValue, bool, error) {
 	key := collections.Join3(topicId, forecaster, inferer)
 	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
@@ -523,7 +850,11 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 
 /// INFERENCES, FORECASTS
 
-func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
+func (k *Keeper) GetInferencesAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+) (*types.Inferences, error) {
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if err != nil {
@@ -532,7 +863,11 @@ func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, bloc
 	return &inferences, nil
 }
 
-func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, error) {
+func (k *Keeper) GetForecastsAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+) (*types.Forecasts, error) {
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)
 	if err != nil {
@@ -542,7 +877,12 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
-func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
+func (k *Keeper) InsertInferences(
+	ctx context.Context,
+	topicId TopicId,
+	nonce types.Nonce,
+	inferences types.Inferences,
+) error {
 	block := nonce.BlockHeight
 
 	for _, inference := range inferences.Inferences {
@@ -558,7 +898,12 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
-func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce types.Nonce, forecasts types.Forecasts) error {
+func (k *Keeper) InsertForecasts(
+	ctx context.Context,
+	topicId TopicId,
+	nonce types.Nonce,
+	forecasts types.Forecasts,
+) error {
 	block := nonce.BlockHeight
 
 	for _, forecast := range forecasts.Forecasts {
@@ -596,7 +941,11 @@ func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (Bloc
 }
 
 // SetTopicRewardNonce sets the reward nonce for a given topic ID.
-func (k *Keeper) SetTopicRewardNonce(ctx context.Context, topicId TopicId, nonce BlockHeight) error {
+func (k *Keeper) SetTopicRewardNonce(
+	ctx context.Context,
+	topicId TopicId,
+	nonce BlockHeight,
+) error {
 	return k.topicRewardNonce.Set(ctx, topicId, nonce)
 }
 
@@ -608,13 +957,22 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 /// LOSS BUNDLES
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
-func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLossBundles types.ReputerValueBundles) error {
+func (k *Keeper) InsertReputerLossBundlesAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+	reputerLossBundles types.ReputerValueBundles,
+) error {
 	key := collections.Join(topicId, block)
 	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
 }
 
 // Get loss bundles for a topic/timestamp
-func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ReputerValueBundles, error) {
+func (k *Keeper) GetReputerLossBundlesAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+) (*types.ReputerValueBundles, error) {
 	key := collections.Join(topicId, block)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
 	if err != nil {
@@ -624,13 +982,22 @@ func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId Topic
 }
 
 // Insert a network loss bundle for a topic and block.
-func (k *Keeper) InsertNetworkLossBundleAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, lossBundle types.ValueBundle) error {
+func (k *Keeper) InsertNetworkLossBundleAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+	lossBundle types.ValueBundle,
+) error {
 	key := collections.Join(topicId, block)
 	return k.networkLossBundles.Set(ctx, key, lossBundle)
 }
 
 // A function that accepts a topicId and returns the network LossBundle at the block or error
-func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ValueBundle, error) {
+func (k *Keeper) GetNetworkLossBundleAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+) (*types.ValueBundle, error) {
 	key := collections.Join(topicId, block)
 	lossBundle, err := k.networkLossBundles.Get(ctx, key)
 	if err != nil {
@@ -642,7 +1009,12 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 /// STAKING
 
 // Adds stake to the system for a given topic and reputer
-func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer ActorId, stake cosmosMath.Int) error {
+func (k *Keeper) AddStake(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+	stake cosmosMath.Int,
+) error {
 	// Run checks to ensure that the stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return nil
@@ -687,13 +1059,22 @@ func (k *Keeper) AddStake(ctx context.Context, topicId TopicId, reputer ActorId,
 	}
 
 	if err := k.totalStake.Set(ctx, totalStakeNew); err != nil {
-		return errorsmod.Wrapf(err, "Setting total stake failed -- rolling back reputer and topic stake")
+		return errorsmod.Wrapf(
+			err,
+			"Setting total stake failed -- rolling back reputer and topic stake",
+		)
 	}
 
 	return nil
 }
 
-func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegator ActorId, reputer ActorId, stake cosmosMath.Int) error {
+func (k *Keeper) AddDelegateStake(
+	ctx context.Context,
+	topicId TopicId,
+	delegator ActorId,
+	reputer ActorId,
+	stake cosmosMath.Int,
+) error {
 	// Run checks to ensure that delegate stake can be added, and then update the types all at once
 	if stake.IsZero() {
 		return errorsmod.Wrapf(types.ErrInvalidValue, "stake must be greater than zero")
@@ -806,7 +1187,9 @@ func (k *Keeper) RemoveStake(
 	if err != nil {
 		return err
 	}
-	reputerStakeInTopicWithoutDelegateStake := reputerStakeInTopic.Sub(delegateStakeUponReputerInTopic)
+	reputerStakeInTopicWithoutDelegateStake := reputerStakeInTopic.Sub(
+		delegateStakeUponReputerInTopic,
+	)
 	// TODO Maybe we should check if reputerStakeInTopicWithoutDelegateStake is zero and remove the key from the map
 	if stake.GT(reputerStakeInTopicWithoutDelegateStake) {
 		return types.ErrIntegerUnderflowTopicReputerStake
@@ -1006,7 +1389,11 @@ func (k *Keeper) GetTopicStake(ctx context.Context, topicId TopicId) (cosmosMath
 
 // Returns the amount of stake placed by a specific reputer on a specific topic.
 // Includes the stake placed by delegators on the reputer in that topic.
-func (k *Keeper) GetStakeOnReputerInTopic(ctx context.Context, topicId TopicId, reputer ActorId) (cosmosMath.Int, error) {
+func (k *Keeper) GetStakeOnReputerInTopic(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+) (cosmosMath.Int, error) {
 	key := collections.Join(topicId, reputer)
 	stake, err := k.stakeByReputerAndTopicId.Get(ctx, key)
 	if err != nil {
@@ -1019,7 +1406,11 @@ func (k *Keeper) GetStakeOnReputerInTopic(ctx context.Context, topicId TopicId, 
 }
 
 // Returns the amount of stake placed by a specific delegator.
-func (k *Keeper) GetStakeFromDelegatorInTopic(ctx context.Context, topicId TopicId, delegator ActorId) (cosmosMath.Int, error) {
+func (k *Keeper) GetStakeFromDelegatorInTopic(
+	ctx context.Context,
+	topicId TopicId,
+	delegator ActorId,
+) (cosmosMath.Int, error) {
 	key := collections.Join(topicId, delegator)
 	stake, err := k.stakeFromDelegator.Get(ctx, key)
 	if err != nil {
@@ -1032,7 +1423,12 @@ func (k *Keeper) GetStakeFromDelegatorInTopic(ctx context.Context, topicId Topic
 }
 
 // Sets the amount of stake placed by a specific delegator.
-func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, delegator ActorId, stake cosmosMath.Int) error {
+func (k *Keeper) SetStakeFromDelegator(
+	ctx context.Context,
+	topicId TopicId,
+	delegator ActorId,
+	stake cosmosMath.Int,
+) error {
 	key := collections.Join(topicId, delegator)
 	if stake.IsZero() {
 		return k.stakeFromDelegator.Remove(ctx, key)
@@ -1041,12 +1437,20 @@ func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, del
 }
 
 // Returns the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator ActorId, target ActorId) (types.DelegatorInfo, error) {
+func (k *Keeper) GetDelegateStakePlacement(
+	ctx context.Context,
+	topicId TopicId,
+	delegator ActorId,
+	target ActorId,
+) (types.DelegatorInfo, error) {
 	key := collections.Join3(topicId, delegator, target)
 	stake, err := k.delegateStakePlacement.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.DelegatorInfo{Amount: alloraMath.NewDecFromInt64(0), RewardDebt: alloraMath.NewDecFromInt64(0)}, nil
+			return types.DelegatorInfo{
+				Amount:     alloraMath.NewDecFromInt64(0),
+				RewardDebt: alloraMath.NewDecFromInt64(0),
+			}, nil
 		}
 		return types.DelegatorInfo{}, err
 	}
@@ -1054,7 +1458,13 @@ func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId,
 }
 
 // Sets the amount of stake placed by a specific delegator on a specific target.
-func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator ActorId, target ActorId, stake types.DelegatorInfo) error {
+func (k *Keeper) SetDelegateStakePlacement(
+	ctx context.Context,
+	topicId TopicId,
+	delegator ActorId,
+	target ActorId,
+	stake types.DelegatorInfo,
+) error {
 	key := collections.Join3(topicId, delegator, target)
 	if stake.Amount.IsZero() {
 		return k.delegateStakePlacement.Remove(ctx, key)
@@ -1063,7 +1473,11 @@ func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId,
 }
 
 // Returns the share of reward by a specific topic and reputer
-func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer ActorId) (alloraMath.Dec, error) {
+func (k *Keeper) GetDelegateRewardPerShare(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+) (alloraMath.Dec, error) {
 	key := collections.Join(topicId, reputer)
 	share, err := k.delegateRewardPerShare.Get(ctx, key)
 	if err != nil {
@@ -1076,13 +1490,22 @@ func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId,
 }
 
 // Set the share on specific reputer and topicId
-func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer ActorId, share alloraMath.Dec) error {
+func (k *Keeper) SetDelegateRewardPerShare(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+	share alloraMath.Dec,
+) error {
 	key := collections.Join(topicId, reputer)
 	return k.delegateRewardPerShare.Set(ctx, key, share)
 }
 
 // Returns the amount of stake placed on a specific target.
-func (k *Keeper) GetDelegateStakeUponReputer(ctx context.Context, topicId TopicId, target ActorId) (cosmosMath.Int, error) {
+func (k *Keeper) GetDelegateStakeUponReputer(
+	ctx context.Context,
+	topicId TopicId,
+	target ActorId,
+) (cosmosMath.Int, error) {
 	key := collections.Join(topicId, target)
 	stake, err := k.stakeUponReputer.Get(ctx, key)
 	if err != nil {
@@ -1095,7 +1518,12 @@ func (k *Keeper) GetDelegateStakeUponReputer(ctx context.Context, topicId TopicI
 }
 
 // Sets the amount of stake placed on a specific target.
-func (k *Keeper) SetDelegateStakeUponReputer(ctx context.Context, topicId TopicId, target ActorId, stake cosmosMath.Int) error {
+func (k *Keeper) SetDelegateStakeUponReputer(
+	ctx context.Context,
+	topicId TopicId,
+	target ActorId,
+	stake cosmosMath.Int,
+) error {
 	key := collections.Join(topicId, target)
 	if stake.IsZero() {
 		return k.stakeUponReputer.Remove(ctx, key)
@@ -1104,7 +1532,11 @@ func (k *Keeper) SetDelegateStakeUponReputer(ctx context.Context, topicId TopicI
 }
 
 // For a given topic id and reputer address, get their stake removal information
-func (k *Keeper) GetStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, address ActorId) (types.StakeRemoval, error) {
+func (k *Keeper) GetStakeRemovalByTopicAndAddress(
+	ctx context.Context,
+	topicId TopicId,
+	address ActorId,
+) (types.StakeRemoval, error) {
 	key := collections.Join(topicId, address)
 	return k.stakeRemoval.Get(ctx, key)
 }
@@ -1112,13 +1544,22 @@ func (k *Keeper) GetStakeRemovalByTopicAndAddress(ctx context.Context, topicId T
 // For a given address, adds their stake removal information to the removal queue for delay waiting
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
-func (k *Keeper) SetStakeRemoval(ctx context.Context, address ActorId, removalInfo types.StakeRemoval) error {
+func (k *Keeper) SetStakeRemoval(
+	ctx context.Context,
+	address ActorId,
+	removalInfo types.StakeRemoval,
+) error {
 	key := collections.Join(removalInfo.Placement.TopicId, address)
 	return k.stakeRemoval.Set(ctx, key, removalInfo)
 }
 
 // For a given topic id and reputer address, get their stake removal information
-func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, reputer ActorId, delegator ActorId) (types.DelegateStakeRemoval, error) {
+func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+	delegator ActorId,
+) (types.DelegateStakeRemoval, error) {
 	key := collections.Join3(topicId, reputer, delegator)
 	return k.delegateStakeRemoval.Get(ctx, key)
 }
@@ -1126,15 +1567,27 @@ func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, t
 // For a given address, adds their stake removal information to the removal queue for delay waiting
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
-func (k *Keeper) SetDelegateStakeRemoval(ctx context.Context, removalInfo types.DelegateStakeRemoval) error {
-	key := collections.Join3(removalInfo.Placement.TopicId, removalInfo.Placement.Reputer, removalInfo.Placement.Delegator)
+func (k *Keeper) SetDelegateStakeRemoval(
+	ctx context.Context,
+	removalInfo types.DelegateStakeRemoval,
+) error {
+	key := collections.Join3(
+		removalInfo.Placement.TopicId,
+		removalInfo.Placement.Reputer,
+		removalInfo.Placement.Delegator,
+	)
 	return k.delegateStakeRemoval.Set(ctx, key, removalInfo)
 }
 
 /// REPUTERS
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
-func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer ActorId, reputerInfo types.OffchainNode) error {
+func (k *Keeper) InsertReputer(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+	reputerInfo types.OffchainNode,
+) error {
 	topicKey := collections.Join(topicId, reputer)
 	err := k.topicReputers.Set(ctx, topicKey)
 	if err != nil {
@@ -1157,14 +1610,22 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputer Act
 	return nil
 }
 
-func (k *Keeper) GetReputerByLibp2pKey(ctx sdk.Context, reputerKey string) (types.OffchainNode, error) {
+func (k *Keeper) GetReputerByLibp2pKey(
+	ctx sdk.Context,
+	reputerKey string,
+) (types.OffchainNode, error) {
 	return k.reputers.Get(ctx, reputerKey)
 }
 
 /// WORKERS
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
-func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker ActorId, workerInfo types.OffchainNode) error {
+func (k *Keeper) InsertWorker(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+	workerInfo types.OffchainNode,
+) error {
 	topickey := collections.Join(topicId, worker)
 	err := k.topicWorkers.Set(ctx, topickey)
 	if err != nil {
@@ -1187,11 +1648,17 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, worker Actor
 	return nil
 }
 
-func (k *Keeper) GetWorkerByLibp2pKey(ctx sdk.Context, workerKey string) (types.OffchainNode, error) {
+func (k *Keeper) GetWorkerByLibp2pKey(
+	ctx sdk.Context,
+	workerKey string,
+) (types.OffchainNode, error) {
 	return k.workers.Get(ctx, workerKey)
 }
 
-func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
+func (k *Keeper) GetWorkerAddressByP2PKey(
+	ctx context.Context,
+	p2pKey string,
+) (sdk.AccAddress, error) {
 	worker, err := k.workers.Get(ctx, p2pKey)
 	if err != nil {
 		return nil, err
@@ -1205,7 +1672,10 @@ func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (s
 	return workerAddress, nil
 }
 
-func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
+func (k *Keeper) GetReputerAddressByP2PKey(
+	ctx context.Context,
+	p2pKey string,
+) (sdk.AccAddress, error) {
 	reputer, err := k.reputers.Get(ctx, p2pKey)
 	if err != nil {
 		return nil, err
@@ -1223,7 +1693,10 @@ func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (
 
 // Get the previous weight during rewards calculation for a topic
 // Returns ((0,0), true) if there was no prior topic weight set, else ((x,y), false) where x,y!=0
-func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (alloraMath.Dec, bool, error) {
+func (k *Keeper) GetPreviousTopicWeight(
+	ctx context.Context,
+	topicId TopicId,
+) (alloraMath.Dec, bool, error) {
 	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
 		return alloraMath.ZeroDec(), true, nil
@@ -1232,7 +1705,11 @@ func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (a
 }
 
 // Set the previous weight during rewards calculation for a topic
-func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, weight alloraMath.Dec) error {
+func (k *Keeper) SetPreviousTopicWeight(
+	ctx context.Context,
+	topicId TopicId,
+	weight alloraMath.Dec,
+) error {
 	return k.previousTopicWeight.Set(ctx, topicId, weight)
 }
 
@@ -1304,7 +1781,10 @@ func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, erro
 	return k.activeTopics.Has(ctx, topicId)
 }
 
-func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
+func (k Keeper) GetIdsOfActiveTopics(
+	ctx context.Context,
+	pagination *types.SimpleCursorPaginationRequest,
+) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
 	limit, start, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	if err != nil {
 		return nil, nil, err
@@ -1330,7 +1810,11 @@ func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.Simp
 }
 
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
-func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId, epochLastEnded BlockHeight) error {
+func (k *Keeper) UpdateTopicEpochLastEnded(
+	ctx context.Context,
+	topicId TopicId,
+	epochLastEnded BlockHeight,
+) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
 		return err
@@ -1349,13 +1833,21 @@ func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TopicId) (B
 }
 
 // True if worker is registered in topic, else False
-func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId, worker ActorId) (bool, error) {
+func (k *Keeper) IsWorkerRegisteredInTopic(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (bool, error) {
 	topickey := collections.Join(topicId, worker)
 	return k.topicWorkers.Has(ctx, topickey)
 }
 
 // True if reputer is registered in topic, else False
-func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer ActorId) (bool, error) {
+func (k *Keeper) IsReputerRegisteredInTopic(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+) (bool, error) {
 	topickey := collections.Join(topicId, reputer)
 	return k.topicReputers.Has(ctx, topickey)
 }
@@ -1363,7 +1855,10 @@ func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId
 /// TOPIC FEE REVENUE
 
 // Get the amount of fee revenue collected by a topic
-func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types.TopicFeeRevenue, error) {
+func (k *Keeper) GetTopicFeeRevenue(
+	ctx context.Context,
+	topicId TopicId,
+) (types.TopicFeeRevenue, error) {
 	feeRev, err := k.topicFeeRevenue.Get(ctx, topicId)
 	if errors.Is(err, collections.ErrNotFound) {
 		return types.TopicFeeRevenue{
@@ -1375,7 +1870,11 @@ func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types
 }
 
 // Add to the fee revenue collected by a topic incurred at a block
-func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount cosmosMath.Int) error {
+func (k *Keeper) AddTopicFeeRevenue(
+	ctx context.Context,
+	topicId TopicId,
+	amount cosmosMath.Int,
+) error {
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return err
@@ -1388,7 +1887,11 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 }
 
 // Reset the fee revenue collected by a topic incurred at a block
-func (k *Keeper) ResetTopicFeeRevenue(ctx context.Context, topicId TopicId, block BlockHeight) error {
+func (k *Keeper) ResetTopicFeeRevenue(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+) error {
 	newTopicFeeRevenue := types.TopicFeeRevenue{
 		Epoch:   block,
 		Revenue: cosmosMath.ZeroInt(),
@@ -1448,7 +1951,12 @@ func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
 /// SCORES
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
+func (k *Keeper) SetLatestInfererScore(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+	score types.Score,
+) error {
 	oldScore, err := k.GetLatestInfererScore(ctx, topicId, worker)
 	if err != nil {
 		return err
@@ -1460,7 +1968,11 @@ func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 	return k.latestInfererScoresByWorker.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
+func (k *Keeper) GetLatestInfererScore(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (types.Score, error) {
 	key := collections.Join(topicId, worker)
 	score, err := k.latestInfererScoresByWorker.Get(ctx, key)
 	if err != nil {
@@ -1473,7 +1985,12 @@ func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 }
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
+func (k *Keeper) SetLatestForecasterScore(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+	score types.Score,
+) error {
 	oldScore, err := k.GetLatestForecasterScore(ctx, topicId, worker)
 	if err != nil {
 		return err
@@ -1485,7 +2002,11 @@ func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, 
 	return k.latestForecasterScoresByWorker.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
+func (k *Keeper) GetLatestForecasterScore(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (types.Score, error) {
 	key := collections.Join(topicId, worker)
 	score, err := k.latestForecasterScoresByWorker.Get(ctx, key)
 	if err != nil {
@@ -1498,7 +2019,12 @@ func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, 
 }
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, reputer ActorId, score types.Score) error {
+func (k *Keeper) SetLatestReputerScore(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+	score types.Score,
+) error {
 	oldScore, err := k.GetLatestReputerScore(ctx, topicId, reputer)
 	if err != nil {
 		return err
@@ -1510,7 +2036,11 @@ func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 	return k.latestReputerScoresByReputer.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, reputer ActorId) (types.Score, error) {
+func (k *Keeper) GetLatestReputerScore(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+) (types.Score, error) {
 	key := collections.Join(topicId, reputer)
 	score, err := k.latestReputerScoresByReputer.Get(ctx, key)
 	if err != nil {
@@ -1522,7 +2052,12 @@ func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 	return score, nil
 }
 
-func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
+func (k *Keeper) InsertWorkerInferenceScore(
+	ctx context.Context,
+	topicId TopicId,
+	blockNumber BlockHeight,
+	score types.Score,
+) error {
 	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
 		return err
@@ -1545,7 +2080,11 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 	return k.infererScoresByBlock.Set(ctx, key, scores)
 }
 
-func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) ([]*types.Score, error) {
+func (k *Keeper) GetInferenceScoresUntilBlock(
+	ctx context.Context,
+	topicId TopicId,
+	blockHeight BlockHeight,
+) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
 		EndInclusive(blockHeight).
@@ -1579,7 +2118,11 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 	return scores, nil
 }
 
-func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
+func (k *Keeper) GetWorkerInferenceScoresAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+) (types.Scores, error) {
 	key := collections.Join(topicId, block)
 	scores, err := k.infererScoresByBlock.Get(ctx, key)
 	if err != nil {
@@ -1591,7 +2134,12 @@ func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId To
 	return scores, nil
 }
 
-func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
+func (k *Keeper) InsertWorkerForecastScore(
+	ctx context.Context,
+	topicId TopicId,
+	blockNumber BlockHeight,
+	score types.Score,
+) error {
 	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
 		return err
@@ -1614,7 +2162,11 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 	return k.forecasterScoresByBlock.Set(ctx, key, scores)
 }
 
-func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicId, blockHeight BlockHeight) ([]*types.Score, error) {
+func (k *Keeper) GetForecastScoresUntilBlock(
+	ctx context.Context,
+	topicId TopicId,
+	blockHeight BlockHeight,
+) ([]*types.Score, error) {
 	rng := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
 		EndInclusive(blockHeight).
@@ -1648,7 +2200,11 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 	return scores, nil
 }
 
-func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
+func (k *Keeper) GetWorkerForecastScoresAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+) (types.Scores, error) {
 	key := collections.Join(topicId, block)
 	scores, err := k.forecasterScoresByBlock.Get(ctx, key)
 	if err != nil {
@@ -1660,7 +2216,12 @@ func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId Top
 	return scores, nil
 }
 
-func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
+func (k *Keeper) InsertReputerScore(
+	ctx context.Context,
+	topicId TopicId,
+	blockNumber BlockHeight,
+	score types.Score,
+) error {
 	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockNumber)
 	if err != nil {
 		return err
@@ -1683,7 +2244,11 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockN
 	return k.reputerScoresByBlock.Set(ctx, key, scores)
 }
 
-func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
+func (k *Keeper) GetReputersScoresAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+) (types.Scores, error) {
 	key := collections.Join(topicId, block)
 	scores, err := k.reputerScoresByBlock.Get(ctx, key)
 	if err != nil {
@@ -1695,12 +2260,21 @@ func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, 
 	return scores, nil
 }
 
-func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TopicId, reputer ActorId, coefficient types.ListeningCoefficient) error {
+func (k *Keeper) SetListeningCoefficient(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+	coefficient types.ListeningCoefficient,
+) error {
 	key := collections.Join(topicId, reputer)
 	return k.reputerListeningCoefficient.Set(ctx, key, coefficient)
 }
 
-func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, reputer ActorId) (types.ListeningCoefficient, error) {
+func (k *Keeper) GetListeningCoefficient(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+) (types.ListeningCoefficient, error) {
 	key := collections.Join(topicId, reputer)
 	coef, err := k.reputerListeningCoefficient.Get(ctx, key)
 	if err != nil {
@@ -1717,7 +2291,11 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 
 // Gets the previous W_{i-1,m}
 // Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
-func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer ActorId) (alloraMath.Dec, bool, error) {
+func (k *Keeper) GetPreviousReputerRewardFraction(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+) (alloraMath.Dec, bool, error) {
 	key := collections.Join(topicId, reputer)
 	reward, err := k.previousReputerRewardFraction.Get(ctx, key)
 	if err != nil {
@@ -1730,14 +2308,23 @@ func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId T
 }
 
 // Sets the previous W_{i-1,m}
-func (k *Keeper) SetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer ActorId, reward alloraMath.Dec) error {
+func (k *Keeper) SetPreviousReputerRewardFraction(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+	reward alloraMath.Dec,
+) error {
 	key := collections.Join(topicId, reputer)
 	return k.previousReputerRewardFraction.Set(ctx, key, reward)
 }
 
 // Gets the previous U_{i-1,m}
 // Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
-func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker ActorId) (alloraMath.Dec, bool, error) {
+func (k *Keeper) GetPreviousInferenceRewardFraction(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (alloraMath.Dec, bool, error) {
 	key := collections.Join(topicId, worker)
 	reward, err := k.previousInferenceRewardFraction.Get(ctx, key)
 	if err != nil {
@@ -1750,14 +2337,23 @@ func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId
 }
 
 // Sets the previous U_{i-1,m}
-func (k *Keeper) SetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker ActorId, reward alloraMath.Dec) error {
+func (k *Keeper) SetPreviousInferenceRewardFraction(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+	reward alloraMath.Dec,
+) error {
 	key := collections.Join(topicId, worker)
 	return k.previousInferenceRewardFraction.Set(ctx, key, reward)
 }
 
 // Gets the previous V_{i-1,m}
 // Returns previous reward fraction, and true if it has yet to be set for the first time (else false)
-func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker ActorId) (alloraMath.Dec, bool, error) {
+func (k *Keeper) GetPreviousForecastRewardFraction(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+) (alloraMath.Dec, bool, error) {
 	key := collections.Join(topicId, worker)
 	reward, err := k.previousForecastRewardFraction.Get(ctx, key)
 	if err != nil {
@@ -1770,16 +2366,26 @@ func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId 
 }
 
 // Sets the previous V_{i-1,m}
-func (k *Keeper) SetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker ActorId, reward alloraMath.Dec) error {
+func (k *Keeper) SetPreviousForecastRewardFraction(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+	reward alloraMath.Dec,
+) error {
 	key := collections.Join(topicId, worker)
 	return k.previousForecastRewardFraction.Set(ctx, key, reward)
 }
 
-func (k *Keeper) SetPreviousPercentageRewardToStakedReputers(ctx context.Context, percentageRewardToStakedReputers alloraMath.Dec) error {
+func (k *Keeper) SetPreviousPercentageRewardToStakedReputers(
+	ctx context.Context,
+	percentageRewardToStakedReputers alloraMath.Dec,
+) error {
 	return k.previousPercentageRewardToStakedReputers.Set(ctx, percentageRewardToStakedReputers)
 }
 
-func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error) {
+func (k Keeper) GetPreviousPercentageRewardToStakedReputers(
+	ctx context.Context,
+) (alloraMath.Dec, error) {
 	return k.previousPercentageRewardToStakedReputers.Get(ctx)
 }
 
@@ -1809,7 +2415,12 @@ func (k *Keeper) BankKeeper() BankKeeper {
 }
 
 // wrapper around bank keeper SendCoinsFromModuleToAccount
-func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipient ActorId, amt sdk.Coins) error {
+func (k *Keeper) SendCoinsFromModuleToAccount(
+	ctx context.Context,
+	senderModule string,
+	recipient ActorId,
+	amt sdk.Coins,
+) error {
 	recipientAddr, err := sdk.AccAddressFromBech32(recipient)
 	if err != nil {
 		return err
@@ -1818,7 +2429,12 @@ func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule 
 }
 
 // wrapper around bank keeper SendCoinsFromAccountToModule
-func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, sender ActorId, recipientModule string, amt sdk.Coins) error {
+func (k *Keeper) SendCoinsFromAccountToModule(
+	ctx context.Context,
+	sender ActorId,
+	recipientModule string,
+	amt sdk.Coins,
+) error {
 	senderAddr, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
 		return err
@@ -1827,14 +2443,20 @@ func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, sender ActorI
 }
 
 // wrapper around bank keeper SendCoinsFromModuleToModule
-func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error {
+func (k *Keeper) SendCoinsFromModuleToModule(
+	ctx context.Context,
+	senderModule, recipientModule string,
+	amt sdk.Coins,
+) error {
 	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, senderModule, recipientModule, amt)
 }
 
 // GetTotalRewardToDistribute
 func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec, error) {
 	// Get Allora Rewards Account
-	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
+	alloraRewardsAccountAddr := k.AccountKeeper().
+		GetModuleAccount(ctx, types.AlloraRewardsAccountName).
+		GetAddress()
 	// Get Total Allocation
 	totalReward := k.BankKeeper().GetBalance(
 		ctx,
@@ -1851,7 +2473,10 @@ func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec
 
 // Convert pagination.key from []bytes to uint64, if pagination is nil or [], len = 0
 // Get the limit from the pagination request, within acceptable bounds and defaulting as necessary
-func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) (uint64, uint64, error) {
+func (k Keeper) CalcAppropriatePaginationForUint64Cursor(
+	ctx context.Context,
+	pagination *types.SimpleCursorPaginationRequest,
+) (uint64, uint64, error) {
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return uint64(0), uint64(0), err
@@ -1877,7 +2502,11 @@ func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pa
 /// STATE MANAGEMENT
 
 // Iterate through topic state and prune records that are no longer needed
-func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, blockHeight int64) error {
+func (k *Keeper) PruneRecordsAfterRewards(
+	ctx context.Context,
+	topicId TopicId,
+	blockHeight int64,
+) error {
 	// Delete records until the blockHeight
 	blockRange := collections.
 		NewPrefixedPairRange[TopicId, BlockHeight](topicId).
@@ -1903,7 +2532,10 @@ func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, 
 	return nil
 }
 
-func (k *Keeper) pruneInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+func (k *Keeper) pruneInferences(
+	ctx context.Context,
+	blockRange *collections.PairRange[uint64, int64],
+) error {
 	iter, err := k.allInferences.Iterate(ctx, blockRange)
 	if err != nil {
 		return err
@@ -1930,7 +2562,10 @@ func (k *Keeper) pruneInferences(ctx context.Context, blockRange *collections.Pa
 	return nil
 }
 
-func (k *Keeper) pruneForecasts(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+func (k *Keeper) pruneForecasts(
+	ctx context.Context,
+	blockRange *collections.PairRange[uint64, int64],
+) error {
 	iter, err := k.allForecasts.Iterate(ctx, blockRange)
 	if err != nil {
 		return err
@@ -1957,7 +2592,10 @@ func (k *Keeper) pruneForecasts(ctx context.Context, blockRange *collections.Pai
 	return nil
 }
 
-func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+func (k *Keeper) pruneLossBundles(
+	ctx context.Context,
+	blockRange *collections.PairRange[uint64, int64],
+) error {
 	iter, err := k.allLossBundles.Iterate(ctx, blockRange)
 	if err != nil {
 		return err
@@ -1984,7 +2622,10 @@ func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.P
 	return nil
 }
 
-func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
+func (k *Keeper) pruneNetworkLosses(
+	ctx context.Context,
+	blockRange *collections.PairRange[uint64, int64],
+) error {
 	iter, err := k.networkLossBundles.Iterate(ctx, blockRange)
 	if err != nil {
 		return err
@@ -2011,7 +2652,11 @@ func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections
 	return nil
 }
 
-func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
+func (k *Keeper) PruneWorkerNonces(
+	ctx context.Context,
+	topicId uint64,
+	blockHeightThreshold int64,
+) error {
 	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
 	if err != nil {
 		return err
@@ -2034,7 +2679,11 @@ func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHei
 	return nil
 }
 
-func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
+func (k *Keeper) PruneReputerNonces(
+	ctx context.Context,
+	topicId uint64,
+	blockHeightThreshold int64,
+) error {
 	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
 	if err != nil {
 		return err

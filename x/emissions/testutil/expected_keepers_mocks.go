@@ -45,11 +45,23 @@ func (m *MockBankKeeper) BurnCoins(arg0 context.Context, arg1 []byte, arg2 types
 // BurnCoins indicates an expected call of BurnCoins.
 func (mr *MockBankKeeperMockRecorder) BurnCoins(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BurnCoins", reflect.TypeOf((*MockBankKeeper)(nil).BurnCoins), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"BurnCoins",
+		reflect.TypeOf((*MockBankKeeper)(nil).BurnCoins),
+		arg0,
+		arg1,
+		arg2,
+	)
 }
 
 // DelegateCoinsFromAccountToModule mocks base method.
-func (m *MockBankKeeper) DelegateCoinsFromAccountToModule(ctx context.Context, senderAddr types0.AccAddress, recipientModule string, amt types0.Coins) error {
+func (m *MockBankKeeper) DelegateCoinsFromAccountToModule(
+	ctx context.Context,
+	senderAddr types0.AccAddress,
+	recipientModule string,
+	amt types0.Coins,
+) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DelegateCoinsFromAccountToModule", ctx, senderAddr, recipientModule, amt)
 	ret0, _ := ret[0].(error)
@@ -57,9 +69,19 @@ func (m *MockBankKeeper) DelegateCoinsFromAccountToModule(ctx context.Context, s
 }
 
 // DelegateCoinsFromAccountToModule indicates an expected call of DelegateCoinsFromAccountToModule.
-func (mr *MockBankKeeperMockRecorder) DelegateCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) DelegateCoinsFromAccountToModule(
+	ctx, senderAddr, recipientModule, amt interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DelegateCoinsFromAccountToModule", reflect.TypeOf((*MockBankKeeper)(nil).DelegateCoinsFromAccountToModule), ctx, senderAddr, recipientModule, amt)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"DelegateCoinsFromAccountToModule",
+		reflect.TypeOf((*MockBankKeeper)(nil).DelegateCoinsFromAccountToModule),
+		ctx,
+		senderAddr,
+		recipientModule,
+		amt,
+	)
 }
 
 // GetAllBalances mocks base method.
@@ -73,11 +95,21 @@ func (m *MockBankKeeper) GetAllBalances(ctx context.Context, addr types0.AccAddr
 // GetAllBalances indicates an expected call of GetAllBalances.
 func (mr *MockBankKeeperMockRecorder) GetAllBalances(ctx, addr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllBalances", reflect.TypeOf((*MockBankKeeper)(nil).GetAllBalances), ctx, addr)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetAllBalances",
+		reflect.TypeOf((*MockBankKeeper)(nil).GetAllBalances),
+		ctx,
+		addr,
+	)
 }
 
 // GetBalance mocks base method.
-func (m *MockBankKeeper) GetBalance(ctx context.Context, addr types0.AccAddress, denom string) types0.Coin {
+func (m *MockBankKeeper) GetBalance(
+	ctx context.Context,
+	addr types0.AccAddress,
+	denom string,
+) types0.Coin {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBalance", ctx, addr, denom)
 	ret0, _ := ret[0].(types0.Coin)
@@ -87,7 +119,14 @@ func (m *MockBankKeeper) GetBalance(ctx context.Context, addr types0.AccAddress,
 // GetBalance indicates an expected call of GetBalance.
 func (mr *MockBankKeeperMockRecorder) GetBalance(ctx, addr, denom interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBalance", reflect.TypeOf((*MockBankKeeper)(nil).GetBalance), ctx, addr, denom)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetBalance",
+		reflect.TypeOf((*MockBankKeeper)(nil).GetBalance),
+		ctx,
+		addr,
+		denom,
+	)
 }
 
 // GetSupply mocks base method.
@@ -101,7 +140,13 @@ func (m *MockBankKeeper) GetSupply(ctx context.Context, denom string) types0.Coi
 // GetSupply indicates an expected call of GetSupply.
 func (mr *MockBankKeeperMockRecorder) GetSupply(ctx, denom interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupply", reflect.TypeOf((*MockBankKeeper)(nil).GetSupply), ctx, denom)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetSupply",
+		reflect.TypeOf((*MockBankKeeper)(nil).GetSupply),
+		ctx,
+		denom,
+	)
 }
 
 // LockedCoins mocks base method.
@@ -115,11 +160,22 @@ func (m *MockBankKeeper) LockedCoins(ctx context.Context, addr types0.AccAddress
 // LockedCoins indicates an expected call of LockedCoins.
 func (mr *MockBankKeeperMockRecorder) LockedCoins(ctx, addr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LockedCoins", reflect.TypeOf((*MockBankKeeper)(nil).LockedCoins), ctx, addr)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"LockedCoins",
+		reflect.TypeOf((*MockBankKeeper)(nil).LockedCoins),
+		ctx,
+		addr,
+	)
 }
 
 // SendCoinsFromAccountToModule mocks base method.
-func (m *MockBankKeeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr types0.AccAddress, recipientModule string, amt types0.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromAccountToModule(
+	ctx context.Context,
+	senderAddr types0.AccAddress,
+	recipientModule string,
+	amt types0.Coins,
+) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromAccountToModule", ctx, senderAddr, recipientModule, amt)
 	ret0, _ := ret[0].(error)
@@ -127,13 +183,27 @@ func (m *MockBankKeeper) SendCoinsFromAccountToModule(ctx context.Context, sende
 }
 
 // SendCoinsFromAccountToModule indicates an expected call of SendCoinsFromAccountToModule.
-func (mr *MockBankKeeperMockRecorder) SendCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) SendCoinsFromAccountToModule(
+	ctx, senderAddr, recipientModule, amt interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendCoinsFromAccountToModule", reflect.TypeOf((*MockBankKeeper)(nil).SendCoinsFromAccountToModule), ctx, senderAddr, recipientModule, amt)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SendCoinsFromAccountToModule",
+		reflect.TypeOf((*MockBankKeeper)(nil).SendCoinsFromAccountToModule),
+		ctx,
+		senderAddr,
+		recipientModule,
+		amt,
+	)
 }
 
 // SendCoinsFromModuleToModule mocks base method.
-func (m *MockBankKeeper) SendCoinsFromModuleToModule(ctx context.Context, senderPool, recipientPool string, amt types0.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromModuleToModule(
+	ctx context.Context,
+	senderPool, recipientPool string,
+	amt types0.Coins,
+) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromModuleToModule", ctx, senderPool, recipientPool, amt)
 	ret0, _ := ret[0].(error)
@@ -141,9 +211,19 @@ func (m *MockBankKeeper) SendCoinsFromModuleToModule(ctx context.Context, sender
 }
 
 // SendCoinsFromModuleToModule indicates an expected call of SendCoinsFromModuleToModule.
-func (mr *MockBankKeeperMockRecorder) SendCoinsFromModuleToModule(ctx, senderPool, recipientPool, amt interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) SendCoinsFromModuleToModule(
+	ctx, senderPool, recipientPool, amt interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendCoinsFromModuleToModule", reflect.TypeOf((*MockBankKeeper)(nil).SendCoinsFromModuleToModule), ctx, senderPool, recipientPool, amt)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SendCoinsFromModuleToModule",
+		reflect.TypeOf((*MockBankKeeper)(nil).SendCoinsFromModuleToModule),
+		ctx,
+		senderPool,
+		recipientPool,
+		amt,
+	)
 }
 
 // SpendableCoins mocks base method.
@@ -157,21 +237,49 @@ func (m *MockBankKeeper) SpendableCoins(ctx context.Context, addr types0.AccAddr
 // SpendableCoins indicates an expected call of SpendableCoins.
 func (mr *MockBankKeeperMockRecorder) SpendableCoins(ctx, addr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SpendableCoins", reflect.TypeOf((*MockBankKeeper)(nil).SpendableCoins), ctx, addr)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SpendableCoins",
+		reflect.TypeOf((*MockBankKeeper)(nil).SpendableCoins),
+		ctx,
+		addr,
+	)
 }
 
 // UndelegateCoinsFromModuleToAccount mocks base method.
-func (m *MockBankKeeper) UndelegateCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr types0.AccAddress, amt types0.Coins) error {
+func (m *MockBankKeeper) UndelegateCoinsFromModuleToAccount(
+	ctx context.Context,
+	senderModule string,
+	recipientAddr types0.AccAddress,
+	amt types0.Coins,
+) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UndelegateCoinsFromModuleToAccount", ctx, senderModule, recipientAddr, amt)
+	ret := m.ctrl.Call(
+		m,
+		"UndelegateCoinsFromModuleToAccount",
+		ctx,
+		senderModule,
+		recipientAddr,
+		amt,
+	)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UndelegateCoinsFromModuleToAccount indicates an expected call of UndelegateCoinsFromModuleToAccount.
-func (mr *MockBankKeeperMockRecorder) UndelegateCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) UndelegateCoinsFromModuleToAccount(
+	ctx, senderModule, recipientAddr, amt interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UndelegateCoinsFromModuleToAccount", reflect.TypeOf((*MockBankKeeper)(nil).UndelegateCoinsFromModuleToAccount), ctx, senderModule, recipientAddr, amt)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"UndelegateCoinsFromModuleToAccount",
+		reflect.TypeOf((*MockBankKeeper)(nil).UndelegateCoinsFromModuleToAccount),
+		ctx,
+		senderModule,
+		recipientAddr,
+		amt,
+	)
 }
 
 // BlockedAddr mocks base method.
@@ -185,7 +293,12 @@ func (m *MockBankKeeper) BlockedAddr(addr types0.AccAddress) bool {
 // BlockedAddr indicates an expected call of BlockedAddr.
 func (mr *MockBankKeeperMockRecorder) BlockedAddr(addr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BlockedAddr", reflect.TypeOf((*MockBankKeeper)(nil).BlockedAddr), addr)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"BlockedAddr",
+		reflect.TypeOf((*MockBankKeeper)(nil).BlockedAddr),
+		addr,
+	)
 }
 
 // MintCoins mocks base method.
@@ -199,11 +312,23 @@ func (m *MockBankKeeper) MintCoins(ctx context.Context, moduleName string, amt t
 // MintCoins indicates an expected call of MintCoins.
 func (mr *MockBankKeeperMockRecorder) MintCoins(ctx, moduleName, amt interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MintCoins", reflect.TypeOf((*MockBankKeeper)(nil).MintCoins), ctx, moduleName, amt)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"MintCoins",
+		reflect.TypeOf((*MockBankKeeper)(nil).MintCoins),
+		ctx,
+		moduleName,
+		amt,
+	)
 }
 
 // SendCoinsFromModuleToAccount mocks base method.
-func (m *MockBankKeeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr types0.AccAddress, amt types0.Coins) error {
+func (m *MockBankKeeper) SendCoinsFromModuleToAccount(
+	ctx context.Context,
+	senderModule string,
+	recipientAddr types0.AccAddress,
+	amt types0.Coins,
+) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendCoinsFromModuleToAccount", ctx, senderModule, recipientAddr, amt)
 	ret0, _ := ret[0].(error)
@@ -211,9 +336,19 @@ func (m *MockBankKeeper) SendCoinsFromModuleToAccount(ctx context.Context, sende
 }
 
 // SendCoinsFromModuleToAccount indicates an expected call of SendCoinsFromModuleToAccount.
-func (mr *MockBankKeeperMockRecorder) SendCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt interface{}) *gomock.Call {
+func (mr *MockBankKeeperMockRecorder) SendCoinsFromModuleToAccount(
+	ctx, senderModule, recipientAddr, amt interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendCoinsFromModuleToAccount", reflect.TypeOf((*MockBankKeeper)(nil).SendCoinsFromModuleToAccount), ctx, senderModule, recipientAddr, amt)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SendCoinsFromModuleToAccount",
+		reflect.TypeOf((*MockBankKeeper)(nil).SendCoinsFromModuleToAccount),
+		ctx,
+		senderModule,
+		recipientAddr,
+		amt,
+	)
 }
 
 // MockAccountKeeper is a mock of AccountKeeper interface.
@@ -250,11 +385,18 @@ func (m *MockAccountKeeper) AddressCodec() address.Codec {
 // AddressCodec indicates an expected call of AddressCodec.
 func (mr *MockAccountKeeperMockRecorder) AddressCodec() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressCodec", reflect.TypeOf((*MockAccountKeeper)(nil).AddressCodec))
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"AddressCodec",
+		reflect.TypeOf((*MockAccountKeeper)(nil).AddressCodec),
+	)
 }
 
 // GetAccount mocks base method.
-func (m *MockAccountKeeper) GetAccount(ctx context.Context, addr types0.AccAddress) types0.AccountI {
+func (m *MockAccountKeeper) GetAccount(
+	ctx context.Context,
+	addr types0.AccAddress,
+) types0.AccountI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAccount", ctx, addr)
 	ret0, _ := ret[0].(types0.AccountI)
@@ -264,7 +406,13 @@ func (m *MockAccountKeeper) GetAccount(ctx context.Context, addr types0.AccAddre
 // GetAccount indicates an expected call of GetAccount.
 func (mr *MockAccountKeeperMockRecorder) GetAccount(ctx, addr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccount", reflect.TypeOf((*MockAccountKeeper)(nil).GetAccount), ctx, addr)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetAccount",
+		reflect.TypeOf((*MockAccountKeeper)(nil).GetAccount),
+		ctx,
+		addr,
+	)
 }
 
 // GetAllAccounts mocks base method.
@@ -278,11 +426,19 @@ func (m *MockAccountKeeper) GetAllAccounts(ctx context.Context) []types0.Account
 // GetAllAccounts indicates an expected call of GetAllAccounts.
 func (mr *MockAccountKeeperMockRecorder) GetAllAccounts(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllAccounts", reflect.TypeOf((*MockAccountKeeper)(nil).GetAllAccounts), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetAllAccounts",
+		reflect.TypeOf((*MockAccountKeeper)(nil).GetAllAccounts),
+		ctx,
+	)
 }
 
 // GetModuleAccount mocks base method.
-func (m *MockAccountKeeper) GetModuleAccount(ctx context.Context, moduleName string) types0.ModuleAccountI {
+func (m *MockAccountKeeper) GetModuleAccount(
+	ctx context.Context,
+	moduleName string,
+) types0.ModuleAccountI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetModuleAccount", ctx, moduleName)
 	ret0, _ := ret[0].(types0.ModuleAccountI)
@@ -290,13 +446,24 @@ func (m *MockAccountKeeper) GetModuleAccount(ctx context.Context, moduleName str
 }
 
 // GetModuleAccount indicates an expected call of GetModuleAccount.
-func (mr *MockAccountKeeperMockRecorder) GetModuleAccount(ctx, moduleName interface{}) *gomock.Call {
+func (mr *MockAccountKeeperMockRecorder) GetModuleAccount(
+	ctx, moduleName interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModuleAccount", reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAccount), ctx, moduleName)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetModuleAccount",
+		reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAccount),
+		ctx,
+		moduleName,
+	)
 }
 
 // GetModuleAccountAndPermissions mocks base method.
-func (m *MockAccountKeeper) GetModuleAccountAndPermissions(ctx context.Context, moduleName string) (types0.ModuleAccountI, []string) {
+func (m *MockAccountKeeper) GetModuleAccountAndPermissions(
+	ctx context.Context,
+	moduleName string,
+) (types0.ModuleAccountI, []string) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetModuleAccountAndPermissions", ctx, moduleName)
 	ret0, _ := ret[0].(types0.ModuleAccountI)
@@ -305,9 +472,17 @@ func (m *MockAccountKeeper) GetModuleAccountAndPermissions(ctx context.Context, 
 }
 
 // GetModuleAccountAndPermissions indicates an expected call of GetModuleAccountAndPermissions.
-func (mr *MockAccountKeeperMockRecorder) GetModuleAccountAndPermissions(ctx, moduleName interface{}) *gomock.Call {
+func (mr *MockAccountKeeperMockRecorder) GetModuleAccountAndPermissions(
+	ctx, moduleName interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModuleAccountAndPermissions", reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAccountAndPermissions), ctx, moduleName)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetModuleAccountAndPermissions",
+		reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAccountAndPermissions),
+		ctx,
+		moduleName,
+	)
 }
 
 // GetModuleAddress mocks base method.
@@ -321,11 +496,18 @@ func (m *MockAccountKeeper) GetModuleAddress(moduleName string) types0.AccAddres
 // GetModuleAddress indicates an expected call of GetModuleAddress.
 func (mr *MockAccountKeeperMockRecorder) GetModuleAddress(moduleName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModuleAddress", reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAddress), moduleName)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetModuleAddress",
+		reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAddress),
+		moduleName,
+	)
 }
 
 // GetModuleAddressAndPermissions mocks base method.
-func (m *MockAccountKeeper) GetModuleAddressAndPermissions(moduleName string) (types0.AccAddress, []string) {
+func (m *MockAccountKeeper) GetModuleAddressAndPermissions(
+	moduleName string,
+) (types0.AccAddress, []string) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetModuleAddressAndPermissions", moduleName)
 	ret0, _ := ret[0].(types0.AccAddress)
@@ -334,9 +516,16 @@ func (m *MockAccountKeeper) GetModuleAddressAndPermissions(moduleName string) (t
 }
 
 // GetModuleAddressAndPermissions indicates an expected call of GetModuleAddressAndPermissions.
-func (mr *MockAccountKeeperMockRecorder) GetModuleAddressAndPermissions(moduleName interface{}) *gomock.Call {
+func (mr *MockAccountKeeperMockRecorder) GetModuleAddressAndPermissions(
+	moduleName interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModuleAddressAndPermissions", reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAddressAndPermissions), moduleName)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetModuleAddressAndPermissions",
+		reflect.TypeOf((*MockAccountKeeper)(nil).GetModuleAddressAndPermissions),
+		moduleName,
+	)
 }
 
 // GetModulePermissions mocks base method.
@@ -350,7 +539,11 @@ func (m *MockAccountKeeper) GetModulePermissions() map[string]types.PermissionsF
 // GetModulePermissions indicates an expected call of GetModulePermissions.
 func (mr *MockAccountKeeperMockRecorder) GetModulePermissions() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetModulePermissions", reflect.TypeOf((*MockAccountKeeper)(nil).GetModulePermissions))
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetModulePermissions",
+		reflect.TypeOf((*MockAccountKeeper)(nil).GetModulePermissions),
+	)
 }
 
 // HasAccount mocks base method.
@@ -364,11 +557,20 @@ func (m *MockAccountKeeper) HasAccount(ctx context.Context, addr types0.AccAddre
 // HasAccount indicates an expected call of HasAccount.
 func (mr *MockAccountKeeperMockRecorder) HasAccount(ctx, addr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasAccount", reflect.TypeOf((*MockAccountKeeper)(nil).HasAccount), ctx, addr)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"HasAccount",
+		reflect.TypeOf((*MockAccountKeeper)(nil).HasAccount),
+		ctx,
+		addr,
+	)
 }
 
 // IterateAccounts mocks base method.
-func (m *MockAccountKeeper) IterateAccounts(ctx context.Context, process func(types0.AccountI) bool) {
+func (m *MockAccountKeeper) IterateAccounts(
+	ctx context.Context,
+	process func(types0.AccountI) bool,
+) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "IterateAccounts", ctx, process)
 }
@@ -376,7 +578,13 @@ func (m *MockAccountKeeper) IterateAccounts(ctx context.Context, process func(ty
 // IterateAccounts indicates an expected call of IterateAccounts.
 func (mr *MockAccountKeeperMockRecorder) IterateAccounts(ctx, process interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IterateAccounts", reflect.TypeOf((*MockAccountKeeper)(nil).IterateAccounts), ctx, process)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"IterateAccounts",
+		reflect.TypeOf((*MockAccountKeeper)(nil).IterateAccounts),
+		ctx,
+		process,
+	)
 }
 
 // NewAccount mocks base method.
@@ -390,11 +598,20 @@ func (m *MockAccountKeeper) NewAccount(arg0 context.Context, arg1 types0.Account
 // NewAccount indicates an expected call of NewAccount.
 func (mr *MockAccountKeeperMockRecorder) NewAccount(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewAccount", reflect.TypeOf((*MockAccountKeeper)(nil).NewAccount), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"NewAccount",
+		reflect.TypeOf((*MockAccountKeeper)(nil).NewAccount),
+		arg0,
+		arg1,
+	)
 }
 
 // NewAccountWithAddress mocks base method.
-func (m *MockAccountKeeper) NewAccountWithAddress(ctx context.Context, addr types0.AccAddress) types0.AccountI {
+func (m *MockAccountKeeper) NewAccountWithAddress(
+	ctx context.Context,
+	addr types0.AccAddress,
+) types0.AccountI {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewAccountWithAddress", ctx, addr)
 	ret0, _ := ret[0].(types0.AccountI)
@@ -404,7 +621,13 @@ func (m *MockAccountKeeper) NewAccountWithAddress(ctx context.Context, addr type
 // NewAccountWithAddress indicates an expected call of NewAccountWithAddress.
 func (mr *MockAccountKeeperMockRecorder) NewAccountWithAddress(ctx, addr interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewAccountWithAddress", reflect.TypeOf((*MockAccountKeeper)(nil).NewAccountWithAddress), ctx, addr)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"NewAccountWithAddress",
+		reflect.TypeOf((*MockAccountKeeper)(nil).NewAccountWithAddress),
+		ctx,
+		addr,
+	)
 }
 
 // SetAccount mocks base method.
@@ -416,7 +639,13 @@ func (m *MockAccountKeeper) SetAccount(ctx context.Context, acc types0.AccountI)
 // SetAccount indicates an expected call of SetAccount.
 func (mr *MockAccountKeeperMockRecorder) SetAccount(ctx, acc interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAccount", reflect.TypeOf((*MockAccountKeeper)(nil).SetAccount), ctx, acc)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SetAccount",
+		reflect.TypeOf((*MockAccountKeeper)(nil).SetAccount),
+		ctx,
+		acc,
+	)
 }
 
 // SetModuleAccount mocks base method.
@@ -428,7 +657,13 @@ func (m *MockAccountKeeper) SetModuleAccount(ctx context.Context, macc types0.Mo
 // SetModuleAccount indicates an expected call of SetModuleAccount.
 func (mr *MockAccountKeeperMockRecorder) SetModuleAccount(ctx, macc interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetModuleAccount", reflect.TypeOf((*MockAccountKeeper)(nil).SetModuleAccount), ctx, macc)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"SetModuleAccount",
+		reflect.TypeOf((*MockAccountKeeper)(nil).SetModuleAccount),
+		ctx,
+		macc,
+	)
 }
 
 // ValidatePermissions mocks base method.
@@ -442,7 +677,12 @@ func (m *MockAccountKeeper) ValidatePermissions(macc types0.ModuleAccountI) erro
 // ValidatePermissions indicates an expected call of ValidatePermissions.
 func (mr *MockAccountKeeperMockRecorder) ValidatePermissions(macc interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidatePermissions", reflect.TypeOf((*MockAccountKeeper)(nil).ValidatePermissions), macc)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"ValidatePermissions",
+		reflect.TypeOf((*MockAccountKeeper)(nil).ValidatePermissions),
+		macc,
+	)
 }
 
 type MockTopicKeeper struct {
@@ -465,7 +705,10 @@ func (m *MockTopicKeeper) EXPECT() *MockTopicKeeperMockRecorder {
 }
 
 // GetTopicStake mocks base method
-func (m *MockTopicKeeper) GetTopicStake(ctx context.Context, topicId uint64) (cosmosMath.Int, error) {
+func (m *MockTopicKeeper) GetTopicStake(
+	ctx context.Context,
+	topicId uint64,
+) (cosmosMath.Int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTopicStake", ctx, topicId)
 	ret0, _ := ret[0].(cosmosMath.Int)
@@ -476,11 +719,20 @@ func (m *MockTopicKeeper) GetTopicStake(ctx context.Context, topicId uint64) (co
 // GetTopicStake indicates an expected call of GetTopicStake
 func (mr *MockTopicKeeperMockRecorder) GetTopicStake(ctx, topicId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTopicStake", reflect.TypeOf((*MockTopicKeeper)(nil).GetTopicStake), ctx, topicId)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetTopicStake",
+		reflect.TypeOf((*MockTopicKeeper)(nil).GetTopicStake),
+		ctx,
+		topicId,
+	)
 }
 
 // GetTopicFeeRevenue mocks base method
-func (m *MockTopicKeeper) GetTopicFeeRevenue(ctx context.Context, topicId uint64) (keeperTypes.TopicFeeRevenue, error) {
+func (m *MockTopicKeeper) GetTopicFeeRevenue(
+	ctx context.Context,
+	topicId uint64,
+) (keeperTypes.TopicFeeRevenue, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTopicFeeRevenue", ctx, topicId)
 	ret0, _ := ret[0].(keeperTypes.TopicFeeRevenue)
@@ -491,7 +743,13 @@ func (m *MockTopicKeeper) GetTopicFeeRevenue(ctx context.Context, topicId uint64
 // GetTopicFeeRevenue indicates an expected call of GetTopicFeeRevenue
 func (mr *MockTopicKeeperMockRecorder) GetTopicFeeRevenue(ctx, topicId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTopicFeeRevenue", reflect.TypeOf((*MockTopicKeeper)(nil).GetTopicFeeRevenue), ctx, topicId)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetTopicFeeRevenue",
+		reflect.TypeOf((*MockTopicKeeper)(nil).GetTopicFeeRevenue),
+		ctx,
+		topicId,
+	)
 }
 
 // NewDecFromSdkUint mocks base method
@@ -506,7 +764,12 @@ func (m *MockTopicKeeper) NewDecFromSdkUint(u cosmosMath.Uint) (alloraMath.Dec, 
 // NewDecFromSdkUint indicates an expected call of NewDecFromSdkUint
 func (mr *MockTopicKeeperMockRecorder) NewDecFromSdkUint(u interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewDecFromSdkUint", reflect.TypeOf((*MockTopicKeeper)(nil).NewDecFromSdkUint), u)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"NewDecFromSdkUint",
+		reflect.TypeOf((*MockTopicKeeper)(nil).NewDecFromSdkUint),
+		u,
+	)
 }
 
 // NewDecFromSdkInt mocks base method
@@ -521,26 +784,59 @@ func (m *MockTopicKeeper) NewDecFromSdkInt(i cosmosMath.Int) (alloraMath.Dec, er
 // NewDecFromSdkInt indicates an expected call of NewDecFromSdkInt
 func (mr *MockTopicKeeperMockRecorder) NewDecFromSdkInt(i interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewDecFromSdkInt", reflect.TypeOf((*MockTopicKeeper)(nil).NewDecFromSdkInt), i)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"NewDecFromSdkInt",
+		reflect.TypeOf((*MockTopicKeeper)(nil).NewDecFromSdkInt),
+		i,
+	)
 }
 
 // GetTargetWeight mocks base method
-func (m *MockTopicKeeper) GetTargetWeight(stakeDec alloraMath.Dec, epochLength keeperTypes.BlockHeight, feeRevenue alloraMath.Dec, stakeImportance alloraMath.Dec, feeImportance alloraMath.Dec) (alloraMath.Dec, error) {
+func (m *MockTopicKeeper) GetTargetWeight(
+	stakeDec alloraMath.Dec,
+	epochLength keeperTypes.BlockHeight,
+	feeRevenue alloraMath.Dec,
+	stakeImportance alloraMath.Dec,
+	feeImportance alloraMath.Dec,
+) (alloraMath.Dec, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTargetWeight", stakeDec, epochLength, feeRevenue, stakeImportance, feeImportance)
+	ret := m.ctrl.Call(
+		m,
+		"GetTargetWeight",
+		stakeDec,
+		epochLength,
+		feeRevenue,
+		stakeImportance,
+		feeImportance,
+	)
 	ret0, _ := ret[0].(alloraMath.Dec)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTargetWeight indicates an expected call of GetTargetWeight
-func (mr *MockTopicKeeperMockRecorder) GetTargetWeight(stakeDec, epochLength, feeRevenue, stakeImportance, feeImportance interface{}) *gomock.Call {
+func (mr *MockTopicKeeperMockRecorder) GetTargetWeight(
+	stakeDec, epochLength, feeRevenue, stakeImportance, feeImportance interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTargetWeight", reflect.TypeOf((*MockTopicKeeper)(nil).GetTargetWeight), stakeDec, epochLength, feeRevenue, stakeImportance, feeImportance)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetTargetWeight",
+		reflect.TypeOf((*MockTopicKeeper)(nil).GetTargetWeight),
+		stakeDec,
+		epochLength,
+		feeRevenue,
+		stakeImportance,
+		feeImportance,
+	)
 }
 
 // GetPreviousTopicWeight mocks base method
-func (m *MockTopicKeeper) GetPreviousTopicWeight(ctx context.Context, topicId uint64) (alloraMath.Dec, bool, error) {
+func (m *MockTopicKeeper) GetPreviousTopicWeight(
+	ctx context.Context,
+	topicId uint64,
+) (alloraMath.Dec, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPreviousTopicWeight", ctx, topicId)
 	ret0, _ := ret[0].(alloraMath.Dec)
@@ -550,13 +846,24 @@ func (m *MockTopicKeeper) GetPreviousTopicWeight(ctx context.Context, topicId ui
 }
 
 // GetPreviousTopicWeight indicates an expected call of GetPreviousTopicWeight
-func (mr *MockTopicKeeperMockRecorder) GetPreviousTopicWeight(ctx, topicId interface{}) *gomock.Call {
+func (mr *MockTopicKeeperMockRecorder) GetPreviousTopicWeight(
+	ctx, topicId interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPreviousTopicWeight", reflect.TypeOf((*MockTopicKeeper)(nil).GetPreviousTopicWeight), ctx, topicId)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"GetPreviousTopicWeight",
+		reflect.TypeOf((*MockTopicKeeper)(nil).GetPreviousTopicWeight),
+		ctx,
+		topicId,
+	)
 }
 
 // CalcEma mocks base method
-func (m *MockTopicKeeper) CalcEma(alpha, current, previous alloraMath.Dec, noPrior bool) (alloraMath.Dec, error) {
+func (m *MockTopicKeeper) CalcEma(
+	alpha, current, previous alloraMath.Dec,
+	noPrior bool,
+) (alloraMath.Dec, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CalcEma", alpha, current, previous, noPrior)
 	ret0, _ := ret[0].(alloraMath.Dec)
@@ -565,7 +872,17 @@ func (m *MockTopicKeeper) CalcEma(alpha, current, previous alloraMath.Dec, noPri
 }
 
 // CalcEma indicates an expected call of CalcEma
-func (mr *MockTopicKeeperMockRecorder) CalcEma(alpha, current, previous, noPrior interface{}) *gomock.Call {
+func (mr *MockTopicKeeperMockRecorder) CalcEma(
+	alpha, current, previous, noPrior interface{},
+) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CalcEma", reflect.TypeOf((*MockTopicKeeper)(nil).CalcEma), alpha, current, previous, noPrior)
+	return mr.mock.ctrl.RecordCallWithMethodType(
+		mr.mock,
+		"CalcEma",
+		reflect.TypeOf((*MockTopicKeeper)(nil).CalcEma),
+		alpha,
+		current,
+		previous,
+		noPrior,
+	)
 }

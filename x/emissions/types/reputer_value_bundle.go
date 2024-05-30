@@ -22,7 +22,10 @@ func (bundle *ReputerValueBundle) Validate() error {
 	}
 
 	if bundle.ValueBundle.ReputerRequestNonce == nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle's reputer request nonce cannot be nil")
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"value bundle's reputer request nonce cannot be nil",
+		)
 	}
 
 	// Validate all the values within bundle

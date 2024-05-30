@@ -40,7 +40,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 	/// All filters should be done in order of increasing computational complexity
 
 	// Check if the worker nonce is unfulfilled
-	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
+	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(
+		ctx,
+		msg.TopicId,
+		msg.ReputerRequestNonce.WorkerNonce,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +59,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// Check if the reputer nonce is unfulfilled
-	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
+	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(
+		ctx,
+		msg.TopicId,
+		msg.ReputerRequestNonce.ReputerNonce,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +108,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
 			// Check that the reputer is registered in the topic
-			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
+			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(
+				ctx,
+				bundle.ValueBundle.TopicId,
+				reputer,
+			)
 			if err != nil {
 				continue
 			}
@@ -122,7 +134,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 			// A check of their registration and other filters have already been applied when their inferences were inserted.
 			// We keep what we can, ignoring the reputer and their contribution (losses) entirely
 			// if they're left with no valid losses.
-			filteredBundle, err := ms.FilterUnacceptedWorkersFromReputerValueBundle(ctx, msg.TopicId, *msg.ReputerRequestNonce, bundle)
+			filteredBundle, err := ms.FilterUnacceptedWorkersFromReputerValueBundle(
+				ctx,
+				msg.TopicId,
+				*msg.ReputerRequestNonce,
+				bundle,
+			)
 			if err != nil {
 				continue
 			}
@@ -142,7 +159,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	topReputers := FindTopNByScoreDesc(
+		params.MaxTopReputersToReward,
+		latestReputerScores,
+		msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+	)
 
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
 	stakesByReputer := make(map[string]cosmosMath.Int)
@@ -153,7 +174,10 @@ func (ms msgServer) InsertBulkReputerPayload(
 			continue
 		}
 
-		lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, lossBundlesByReputer[reputer])
+		lossBundlesFromTopReputers = append(
+			lossBundlesFromTopReputers,
+			lossBundlesByReputer[reputer],
+		)
 		stakesByReputer[reputer] = stake
 	}
 	// sort by reputer score descending
@@ -173,7 +197,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 	bundles := types.ReputerValueBundles{
 		ReputerValueBundles: lossBundlesFromTopReputers,
 	}
-	err = ms.k.InsertReputerLossBundlesAtBlock(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, bundles)
+	err = ms.k.InsertReputerLossBundlesAtBlock(
+		ctx,
+		msg.TopicId,
+		msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		bundles,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -183,18 +212,38 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle))
+	sdkCtx.Logger().
+		Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle))
 
-	err = ms.k.InsertNetworkLossBundleAtBlock(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
+	err = ms.k.InsertNetworkLossBundleAtBlock(
+		ctx,
+		msg.TopicId,
+		msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		networkLossBundle,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	err = synth.GetCalcSetNetworkRegrets(sdkCtx, ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, topic.AlphaRegret)
+	err = synth.GetCalcSetNetworkRegrets(
+		sdkCtx,
+		ms.k,
+		msg.TopicId,
+		networkLossBundle,
+		*msg.ReputerRequestNonce.ReputerNonce,
+		topic.AlphaRegret,
+	)
 	if err != nil {
 		return nil, err
 	}
-	err = synth.GetCalcSetNetworkRegrets(sdkCtx, ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, topic.AlphaRegret)
+	err = synth.GetCalcSetNetworkRegrets(
+		sdkCtx,
+		ms.k,
+		msg.TopicId,
+		networkLossBundle,
+		*msg.ReputerRequestNonce.ReputerNonce,
+		topic.AlphaRegret,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +255,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// Update topic reward nonce
-	err = ms.k.SetTopicRewardNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	err = ms.k.SetTopicRewardNonce(
+		ctx,
+		msg.TopicId,
+		msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -223,10 +276,17 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	reputerValueBundle *types.ReputerValueBundle,
 ) (*types.ReputerValueBundle, error) {
 	// Get the accepted inferers of the associated worker response payload
-	inferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.WorkerNonce.BlockHeight)
+	inferences, err := ms.k.GetInferencesAtBlock(
+		ctx,
+		topicId,
+		reputerRequestNonce.WorkerNonce.BlockHeight,
+	)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "no inferences found at block height")
+			return nil, errorsmod.Wrap(
+				sdkerrors.ErrInvalidRequest,
+				"no inferences found at block height",
+			)
 		} else {
 			return nil, err
 		}
@@ -237,7 +297,11 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	}
 
 	// Get the accepted forecasters of the associated worker response payload
-	forecasts, err := ms.k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.WorkerNonce.BlockHeight)
+	forecasts, err := ms.k.GetForecastsAtBlock(
+		ctx,
+		topicId,
+		reputerRequestNonce.WorkerNonce.BlockHeight,
+	)
 	if err != nil {
 		// If no forecasts, we'll just assume there are 0 forecasters
 		if errors.Is(err, collections.ErrNotFound) {

@@ -20,11 +20,17 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			blockHeight))
 
 	// Get unnormalized weights of active topics
-	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight, true)
+	weights, sumWeight, totalRevenue, err := rewards.GetAndOptionallyUpdateActiveTopicWeights(
+		sdkCtx,
+		am.keeper,
+		blockHeight,
+		true,
+	)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
 	}
-	sdkCtx.Logger().Debug(fmt.Sprintf("EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
+	sdkCtx.Logger().
+		Debug(fmt.Sprintf("EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
 	// REWARDS (will internally filter any non-RewardReady topics)
 	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
@@ -51,15 +57,17 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 			// to avoid potential situations where the block is missed
 			if keeper.CheckCadence(blockHeight, topic) {
-				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
-					topic.Id,
-					topic.Metadata,
-					topic.DefaultArg))
+				sdkCtx.Logger().
+					Debug(fmt.Sprintf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
+						topic.Id,
+						topic.Metadata,
+						topic.DefaultArg))
 
 				// Update the last inference ran
 				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, blockHeight)
 				if err != nil {
-					sdkCtx.Logger().Warn(fmt.Sprintf("Error updating last inference ran: %s", err.Error()))
+					sdkCtx.Logger().
+						Warn(fmt.Sprintf("Error updating last inference ran: %s", err.Error()))
 				}
 				// Add Worker Nonces
 				nextNonce := types.Nonce{BlockHeight: blockHeight + topic.EpochLength}
@@ -68,29 +76,34 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					sdkCtx.Logger().Warn(fmt.Sprintf("Error adding worker nonce: %s", err.Error()))
 					return
 				}
-				sdkCtx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
+				sdkCtx.Logger().
+					Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
 				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
 				err = am.keeper.AddChurnReadyTopic(ctx, topic.Id)
 				if err != nil {
-					sdkCtx.Logger().Warn(fmt.Sprintf("Error setting churn ready topic: %s", err.Error()))
+					sdkCtx.Logger().
+						Warn(fmt.Sprintf("Error setting churn ready topic: %s", err.Error()))
 					return
 				}
 
 				MaxUnfulfilledReputerRequests := types.DefaultParams().MaxUnfulfilledReputerRequests
 				moduleParams, err := am.keeper.GetParams(ctx)
 				if err != nil {
-					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
+					sdkCtx.Logger().
+						Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
 				} else {
 					MaxUnfulfilledReputerRequests = moduleParams.MaxUnfulfilledReputerRequests
 				}
 				reputerPruningBlock := blockHeight - (int64(MaxUnfulfilledReputerRequests)*topic.EpochLength + topic.GroundTruthLag)
 				if reputerPruningBlock > 0 {
-					sdkCtx.Logger().Warn(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, blockHeight))
+					sdkCtx.Logger().
+						Warn(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, blockHeight))
 					am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
 
 					workerPruningBlock := reputerPruningBlock - topic.EpochLength
 					if workerPruningBlock > 0 {
-						sdkCtx.Logger().Debug("Pruning worker nonces before block: ", workerPruningBlock, " for topic: ", topic.Id)
+						sdkCtx.Logger().
+							Debug("Pruning worker nonces before block: ", workerPruningBlock, " for topic: ", topic.Id)
 						// Prune old worker nonces previous to current blockHeight to avoid inserting inferences after its time has passed
 						// Reputer nonces need to check worker nonces one epoch before the reputer nonces
 						am.keeper.PruneWorkerNonces(sdkCtx, topic.Id, workerPruningBlock)

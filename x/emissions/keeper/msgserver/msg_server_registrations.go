@@ -11,7 +11,10 @@ import (
 )
 
 // Registers a new network participant to the network for the first time for worker or reputer
-func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*types.MsgRegisterResponse, error) {
+func (ms msgServer) Register(
+	ctx context.Context,
+	msg *types.MsgRegister,
+) (*types.MsgRegisterResponse, error) {
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -30,7 +33,12 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
+	err = ms.k.SendCoinsFromAccountToModule(
+		ctx,
+		msg.Sender,
+		mintTypes.EcosystemModuleName,
+		sdk.NewCoins(fee),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +70,10 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 }
 
 // Remove registration from a topic for worker or reputer
-func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemoveRegistration) (*types.MsgRemoveRegistrationResponse, error) {
+func (ms msgServer) RemoveRegistration(
+	ctx context.Context,
+	msg *types.MsgRemoveRegistration,
+) (*types.MsgRemoveRegistrationResponse, error) {
 	// Check if topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
@@ -113,7 +124,10 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 	}, nil
 }
 
-func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address string) (bool, sdk.Coin, error) {
+func (ms msgServer) CheckBalanceForRegistration(
+	ctx context.Context,
+	address string,
+) (bool, sdk.Coin, error) {
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err

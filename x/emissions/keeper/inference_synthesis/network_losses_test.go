@@ -18,28 +18,46 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 		expectedErr         error
 	}{
 		{
-			name:                "normal operation",
-			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.5"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
-			nextWeight:          alloraMath.MustNewDecFromString("1.0"),
-			nextValue:           alloraMath.MustNewDecFromString("2.0"),
-			expectedLoss:        inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("2.5"), SumWeight: alloraMath.MustNewDecFromString("2.0")},
-			expectedErr:         nil,
+			name: "normal operation",
+			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{
+				UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.5"),
+				SumWeight:                alloraMath.MustNewDecFromString("1.0"),
+			},
+			nextWeight: alloraMath.MustNewDecFromString("1.0"),
+			nextValue:  alloraMath.MustNewDecFromString("2.0"),
+			expectedLoss: inference_synthesis.RunningWeightedLoss{
+				UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("2.5"),
+				SumWeight:                alloraMath.MustNewDecFromString("2.0"),
+			},
+			expectedErr: nil,
 		},
 		{
-			name:                "simple example",
-			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
-			nextWeight:          alloraMath.MustNewDecFromString("1.0"),
-			nextValue:           alloraMath.MustNewDecFromString("0.1"),
-			expectedLoss:        inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.1"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
-			expectedErr:         nil,
+			name: "simple example",
+			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{
+				UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
+				SumWeight:                alloraMath.ZeroDec(),
+			},
+			nextWeight: alloraMath.MustNewDecFromString("1.0"),
+			nextValue:  alloraMath.MustNewDecFromString("0.1"),
+			expectedLoss: inference_synthesis.RunningWeightedLoss{
+				UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.1"),
+				SumWeight:                alloraMath.MustNewDecFromString("1.0"),
+			},
+			expectedErr: nil,
 		},
 		{
-			name:                "simple example2",
-			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
-			nextWeight:          alloraMath.MustNewDecFromString("1.0"),
-			nextValue:           alloraMath.MustNewDecFromString("0.2"),
-			expectedLoss:        inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.2"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
-			expectedErr:         nil,
+			name: "simple example2",
+			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{
+				UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
+				SumWeight:                alloraMath.ZeroDec(),
+			},
+			nextWeight: alloraMath.MustNewDecFromString("1.0"),
+			nextValue:  alloraMath.MustNewDecFromString("0.2"),
+			expectedLoss: inference_synthesis.RunningWeightedLoss{
+				UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.2"),
+				SumWeight:                alloraMath.MustNewDecFromString("1.0"),
+			},
+			expectedErr: nil,
 		},
 	}
 
@@ -78,9 +96,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLossSimpleCaseWithO
 	expectedLoss := alloraMath.MustNewDecFromString("0.1") // exp(0.1) ≈ 1.258925
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 
-	loss, err := inference_synthesis.CalcCombinedNetworkLoss(stakesByReputer, reportedLosses, epsilon)
+	loss, err := inference_synthesis.CalcCombinedNetworkLoss(
+		stakesByReputer,
+		reportedLosses,
+		epsilon,
+	)
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(expectedLoss, loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match expected value within a small epsilon")
+	s.Require().
+		True(alloraMath.InDelta(expectedLoss, loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match expected value within a small epsilon")
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLossTwoReputers() {
@@ -110,9 +133,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLossTwoReputers() {
 		alloraMath.MustNewDecFromString("1e-4")
 	expectedLoss :=
 		alloraMath.MustNewDecFromString("0.16666666666")
-	loss, err := inference_synthesis.CalcCombinedNetworkLoss(stakesByReputer, reportedLosses, epsilon)
+	loss, err := inference_synthesis.CalcCombinedNetworkLoss(
+		stakesByReputer,
+		reportedLosses,
+		epsilon,
+	)
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(expectedLoss, loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match expected value within a small epsilon")
+	s.Require().
+		True(alloraMath.InDelta(expectedLoss, loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match expected value within a small epsilon")
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLossEpoch3() {
@@ -170,10 +198,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLossEpoch3() {
 	}
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 	expectedLoss := alloraMath.MustNewDecFromString(".000015456633")
-	loss, err := inference_synthesis.CalcCombinedNetworkLoss(stakesByReputer, reportedLosses, epsilon)
+	loss, err := inference_synthesis.CalcCombinedNetworkLoss(
+		stakesByReputer,
+		reportedLosses,
+		epsilon,
+	)
 
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(expectedLoss, loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match expected value within a small epsilon")
+	s.Require().
+		True(alloraMath.InDelta(expectedLoss, loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match expected value within a small epsilon")
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLossOneReporterZeroCombinedLoss() {
@@ -193,10 +226,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcCombinedNetworkLossOneReporterZero
 			},
 		}
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	expectedLoss := alloraMath.MustNewDecFromString("1e-4") // Should be equal to zero, since the combined loss is allowed to be zero
-	loss, err := inference_synthesis.CalcCombinedNetworkLoss(stakesByReputer, reportedLosses, epsilon)
+	expectedLoss := alloraMath.MustNewDecFromString(
+		"1e-4",
+	) // Should be equal to zero, since the combined loss is allowed to be zero
+	loss, err := inference_synthesis.CalcCombinedNetworkLoss(
+		stakesByReputer,
+		reportedLosses,
+		epsilon,
+	)
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(expectedLoss, loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match expected value within a small epsilon")
+	s.Require().
+		True(alloraMath.InDelta(expectedLoss, loss, alloraMath.MustNewDecFromString("0.00001")), "Loss should match expected value within a small epsilon")
 }
 
 func getTestCasesOneWorker() []struct {
@@ -508,7 +548,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			output, err := inference_synthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
+			output, err := inference_synthesis.CalcNetworkLosses(
+				tc.stakesByReputer,
+				tc.reportedLosses,
+				tc.epsilon,
+			)
 			if tc.expectedError != nil {
 				require.Error(err)
 				require.EqualError(err, tc.expectedError.Error())
@@ -559,7 +603,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesCombined() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			output, err := inference_synthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
+			output, err := inference_synthesis.CalcNetworkLosses(
+				tc.stakesByReputer,
+				tc.reportedLosses,
+				tc.epsilon,
+			)
 			if tc.expectedError != nil {
 				require.Error(err)
 				require.EqualError(err, tc.expectedError.Error())

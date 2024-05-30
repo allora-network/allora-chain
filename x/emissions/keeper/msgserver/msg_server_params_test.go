@@ -118,21 +118,39 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxGradientThreshold[0], updatedParams.MaxGradientThreshold)
 	require.Equal(newParams.MinStakeFraction[0], updatedParams.MinStakeFraction)
 	require.Equal(newParams.Epsilon[0], updatedParams.Epsilon)
-	require.Equal(newParams.MaxUnfulfilledWorkerRequests[0], updatedParams.MaxUnfulfilledWorkerRequests)
-	require.Equal(newParams.MaxUnfulfilledReputerRequests[0], updatedParams.MaxUnfulfilledReputerRequests)
+	require.Equal(
+		newParams.MaxUnfulfilledWorkerRequests[0],
+		updatedParams.MaxUnfulfilledWorkerRequests,
+	)
+	require.Equal(
+		newParams.MaxUnfulfilledReputerRequests[0],
+		updatedParams.MaxUnfulfilledReputerRequests,
+	)
 	require.Equal(newParams.TopicRewardStakeImportance[0], updatedParams.TopicRewardStakeImportance)
-	require.Equal(newParams.TopicRewardFeeRevenueImportance[0], updatedParams.TopicRewardFeeRevenueImportance)
+	require.Equal(
+		newParams.TopicRewardFeeRevenueImportance[0],
+		updatedParams.TopicRewardFeeRevenueImportance,
+	)
 	require.Equal(newParams.TopicRewardAlpha[0], updatedParams.TopicRewardAlpha)
 	require.Equal(newParams.TaskRewardAlpha[0], updatedParams.TaskRewardAlpha)
-	require.Equal(newParams.ValidatorsVsAlloraPercentReward[0], updatedParams.ValidatorsVsAlloraPercentReward)
+	require.Equal(
+		newParams.ValidatorsVsAlloraPercentReward[0],
+		updatedParams.ValidatorsVsAlloraPercentReward,
+	)
 	require.Equal(newParams.MaxSamplesToScaleScores[0], updatedParams.MaxSamplesToScaleScores)
 	require.Equal(newParams.MaxTopInferersToReward[0], updatedParams.MaxTopInferersToReward)
 	require.Equal(newParams.MaxTopForecastersToReward[0], updatedParams.MaxTopForecastersToReward)
 	require.Equal(newParams.MaxTopReputersToReward[0], updatedParams.MaxTopReputersToReward)
 	require.Equal(newParams.CreateTopicFee[0], updatedParams.CreateTopicFee)
 	require.Equal(newParams.GradientDescentMaxIters[0], updatedParams.GradientDescentMaxIters)
-	require.Equal(newParams.MaxRetriesToFulfilNoncesWorker[0], updatedParams.MaxRetriesToFulfilNoncesWorker)
-	require.Equal(newParams.MaxRetriesToFulfilNoncesReputer[0], updatedParams.MaxRetriesToFulfilNoncesReputer)
+	require.Equal(
+		newParams.MaxRetriesToFulfilNoncesWorker[0],
+		updatedParams.MaxRetriesToFulfilNoncesWorker,
+	)
+	require.Equal(
+		newParams.MaxRetriesToFulfilNoncesReputer[0],
+		updatedParams.MaxRetriesToFulfilNoncesReputer,
+	)
 	require.Equal(newParams.RegistrationFee[0], updatedParams.RegistrationFee)
 	require.Equal(newParams.DefaultPageLimit[0], updatedParams.DefaultPageLimit)
 	require.Equal(newParams.MaxPageLimit[0], updatedParams.MaxPageLimit)

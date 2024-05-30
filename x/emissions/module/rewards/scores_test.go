@@ -285,7 +285,12 @@ func (s *RewardsTestSuite) TestEnsureAllWorkersPresentWithheld() {
 	}
 }
 
-func GenerateReputerLatestScores(s *RewardsTestSuite, reputers []sdk.AccAddress, blockHeight int64, topicId uint64) error {
+func GenerateReputerLatestScores(
+	s *RewardsTestSuite,
+	reputers []sdk.AccAddress,
+	blockHeight int64,
+	topicId uint64,
+) error {
 	var scores = []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("17.53436"),
 		alloraMath.MustNewDecFromString("20.29489"),
@@ -320,24 +325,62 @@ func PrepareMockLosses(reputersCount int, workersCount int) (
 ) {
 	rnd := rand.New(rand.NewSource(20))
 	for i := 0; i < reputersCount; i++ {
-		reputersLosses = append(reputersLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-		reputersNaiveLosses = append(reputersNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
+		reputersLosses = append(
+			reputersLosses,
+			alloraMath.MustNewDecFromString(
+				strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64),
+			),
+		)
+		reputersNaiveLosses = append(
+			reputersNaiveLosses,
+			alloraMath.MustNewDecFromString(
+				strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64),
+			),
+		)
 		var infererLosses = make([]alloraMath.Dec, 0)
 		var forecasterLosses = make([]alloraMath.Dec, 0)
 		var infererOneOutLosses = make([]alloraMath.Dec, 0)
 		var forecasterOneOutLosses = make([]alloraMath.Dec, 0)
 		var oneInNaiveLosses = make([]alloraMath.Dec, 0)
 		for j := 0; j < workersCount; j++ {
-			infererLosses = append(infererLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-			forecasterLosses = append(forecasterLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-			infererOneOutLosses = append(infererOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-			forecasterOneOutLosses = append(forecasterOneOutLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
-			oneInNaiveLosses = append(oneInNaiveLosses, alloraMath.MustNewDecFromString(strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64)))
+			infererLosses = append(
+				infererLosses,
+				alloraMath.MustNewDecFromString(
+					strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64),
+				),
+			)
+			forecasterLosses = append(
+				forecasterLosses,
+				alloraMath.MustNewDecFromString(
+					strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64),
+				),
+			)
+			infererOneOutLosses = append(
+				infererOneOutLosses,
+				alloraMath.MustNewDecFromString(
+					strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64),
+				),
+			)
+			forecasterOneOutLosses = append(
+				forecasterOneOutLosses,
+				alloraMath.MustNewDecFromString(
+					strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64),
+				),
+			)
+			oneInNaiveLosses = append(
+				oneInNaiveLosses,
+				alloraMath.MustNewDecFromString(
+					strconv.FormatFloat(float64(rnd.Intn(1000)+1), 'f', -1, 64),
+				),
+			)
 		}
 		reputersInfererLosses = append(reputersInfererLosses, infererLosses)
 		reputersForecasterLosses = append(reputersForecasterLosses, forecasterLosses)
 		reputersInfererOneOutLosses = append(reputersInfererOneOutLosses, infererOneOutLosses)
-		reputersForecasterOneOutLosses = append(reputersForecasterOneOutLosses, forecasterOneOutLosses)
+		reputersForecasterOneOutLosses = append(
+			reputersForecasterOneOutLosses,
+			forecasterOneOutLosses,
+		)
 		reputersOneInNaiveLosses = append(reputersOneInNaiveLosses, oneInNaiveLosses)
 	}
 	return reputersLosses,
@@ -348,7 +391,13 @@ func PrepareMockLosses(reputersCount int, workersCount int) (
 		reputersForecasterOneOutLosses,
 		reputersOneInNaiveLosses
 }
-func GenerateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputers []sdk.AccAddress) types.ReputerValueBundles {
+
+func GenerateLossBundles(
+	s *RewardsTestSuite,
+	blockHeight int64,
+	topicId uint64,
+	reputers []sdk.AccAddress,
+) types.ReputerValueBundles {
 	workers := []sdk.AccAddress{
 		s.addrs[5],
 		s.addrs[6],
@@ -579,11 +628,26 @@ func GenerateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64,
 		}
 
 		for j, worker := range workers {
-			valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.String(), Value: reputersInfererLosses[i][j]}
-			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.String(), Value: reputersForecasterLosses[i][j]}
-			valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.String(), Value: reputersInfererOneOutLosses[i][j]}
-			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.String(), Value: reputersForecasterOneOutLosses[i][j]}
-			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.String(), Value: reputersOneInNaiveLosses[i][j]}
+			valueBundle.InfererValues[j] = &types.WorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersInfererLosses[i][j],
+			}
+			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersForecasterLosses[i][j],
+			}
+			valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersInfererOneOutLosses[i][j],
+			}
+			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersForecasterOneOutLosses[i][j],
+			}
+			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersOneInNaiveLosses[i][j],
+			}
 		}
 
 		sig, err := GenerateReputerSignature(s, valueBundle, reputer)
@@ -594,13 +658,22 @@ func GenerateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64,
 			Signature:   sig,
 			ValueBundle: valueBundle,
 		}
-		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)
+		reputerValueBundles.ReputerValueBundles = append(
+			reputerValueBundles.ReputerValueBundles,
+			bundle,
+		)
 	}
 
 	return reputerValueBundles
 }
 
-func GenerateHugeLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputers []sdk.AccAddress, workers []sdk.AccAddress) types.ReputerValueBundles {
+func GenerateHugeLossBundles(
+	s *RewardsTestSuite,
+	blockHeight int64,
+	topicId uint64,
+	reputers []sdk.AccAddress,
+	workers []sdk.AccAddress,
+) types.ReputerValueBundles {
 
 	var (
 		reputersLosses,
@@ -635,11 +708,26 @@ func GenerateHugeLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uin
 		}
 
 		for j, worker := range workers {
-			valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.String(), Value: reputersInfererLosses[i][j]}
-			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.String(), Value: reputersForecasterLosses[i][j]}
-			valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.String(), Value: reputersInfererOneOutLosses[i][j]}
-			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.String(), Value: reputersForecasterOneOutLosses[i][j]}
-			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.String(), Value: reputersOneInNaiveLosses[i][j]}
+			valueBundle.InfererValues[j] = &types.WorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersInfererLosses[i][j],
+			}
+			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersForecasterLosses[i][j],
+			}
+			valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersInfererOneOutLosses[i][j],
+			}
+			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersForecasterOneOutLosses[i][j],
+			}
+			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{
+				Worker: worker.String(),
+				Value:  reputersOneInNaiveLosses[i][j],
+			}
 		}
 
 		sig, err := GenerateReputerSignature(s, valueBundle, reputer)
@@ -650,13 +738,21 @@ func GenerateHugeLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uin
 			Signature:   sig,
 			ValueBundle: valueBundle,
 		}
-		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)
+		reputerValueBundles.ReputerValueBundles = append(
+			reputerValueBundles.ReputerValueBundles,
+			bundle,
+		)
 	}
 
 	return reputerValueBundles
 }
 
-func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, workers []sdk.AccAddress) []*types.WorkerDataBundle {
+func GenerateHugeWorkerDataBundles(
+	s *RewardsTestSuite,
+	blockHeight int64,
+	topicId uint64,
+	workers []sdk.AccAddress,
+) []*types.WorkerDataBundle {
 	var inferences []*types.WorkerDataBundle
 	for _, worker := range workers {
 		workerInferenceForecastBundle := &types.InferenceForecastBundle{
@@ -664,7 +760,9 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     worker.String(),
-				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10)),
+				Value: alloraMath.MustNewDecFromString(
+					strconv.FormatInt(int64(rand.Intn(1000)+1), 10),
+				),
 			},
 			Forecast: &types.Forecast{
 				TopicId:     topicId,
@@ -673,11 +771,15 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 				ForecastElements: []*types.ForecastElement{
 					{
 						Inferer: s.addrs[26].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10)),
+						Value: alloraMath.MustNewDecFromString(
+							strconv.FormatInt(int64(rand.Intn(1000)+1), 10),
+						),
 					},
 					{
 						Inferer: s.addrs[27].String(),
-						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10)),
+						Value: alloraMath.MustNewDecFromString(
+							strconv.FormatInt(int64(rand.Intn(1000)+1), 10),
+						),
 					},
 				},
 			},
@@ -694,7 +796,12 @@ func GenerateHugeWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topic
 	}
 	return inferences
 }
-func GenerateReputerSignature(s *RewardsTestSuite, valueBundle *types.ValueBundle, account sdk.AccAddress) ([]byte, error) {
+
+func GenerateReputerSignature(
+	s *RewardsTestSuite,
+	valueBundle *types.ValueBundle,
+	account sdk.AccAddress,
+) ([]byte, error) {
 	protoBytesIn := make([]byte, 0)
 	protoBytesIn, err := valueBundle.XXX_Marshal(protoBytesIn, true)
 	if err != nil {
@@ -710,7 +817,11 @@ func GenerateReputerSignature(s *RewardsTestSuite, valueBundle *types.ValueBundl
 	return sig, nil
 }
 
-func GenerateWorkerSignature(s *RewardsTestSuite, valueBundle *types.InferenceForecastBundle, account sdk.AccAddress) ([]byte, error) {
+func GenerateWorkerSignature(
+	s *RewardsTestSuite,
+	valueBundle *types.InferenceForecastBundle,
+	account sdk.AccAddress,
+) ([]byte, error) {
 	protoBytesIn := make([]byte, 0)
 	protoBytesIn, err := valueBundle.XXX_Marshal(protoBytesIn, true)
 	if err != nil {
@@ -731,7 +842,11 @@ func GetAccPubKey(s *RewardsTestSuite, address sdk.AccAddress) string {
 	return hex.EncodeToString(pk)
 }
 
-func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
+func GenerateWorkerDataBundles(
+	s *RewardsTestSuite,
+	blockHeight int64,
+	topicId uint64,
+) []*types.WorkerDataBundle {
 	var inferences []*types.WorkerDataBundle
 	worker1Addr := s.addrs[5]
 	worker2Addr := s.addrs[6]
@@ -908,7 +1023,11 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	return inferences
 }
 
-func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
+func GenerateMoreInferencesDataBundles(
+	s *RewardsTestSuite,
+	blockHeight int64,
+	topicId uint64,
+) []*types.WorkerDataBundle {
 	var newInferences []*types.WorkerDataBundle
 	oldForecaster := s.addrs[5]
 	worker1Addr := s.addrs[10]
@@ -983,7 +1102,11 @@ func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 	return newInferences
 }
 
-func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
+func GenerateMoreForecastersDataBundles(
+	s *RewardsTestSuite,
+	blockHeight int64,
+	topicId uint64,
+) []*types.WorkerDataBundle {
 	var newForecasts []*types.WorkerDataBundle
 	oldInferencer1 := s.addrs[5]
 	oldInferencer2 := s.addrs[6]
@@ -1116,7 +1239,11 @@ func GenerateSimpleWorkerDataBundles(
 				},
 			},
 		}
-		workerSig, err := GenerateWorkerSignature(s, newWorkerInferenceForecastBundle, workerValue.Address)
+		workerSig, err := GenerateWorkerSignature(
+			s,
+			newWorkerInferenceForecastBundle,
+			workerValue.Address,
+		)
 		s.Require().NoError(err)
 		workerBundle := &types.WorkerDataBundle{
 			Worker:                             workerValue.Address.String(),
@@ -1165,18 +1292,33 @@ func GenerateSimpleLossBundles(
 
 		for j, worker := range workerValues {
 			if worker.Address.Equals(workerZeroAddress) {
-				valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(workerZeroInfererValue)}
+				valueBundle.InfererValues[j] = &types.WorkerAttributedValue{
+					Worker: worker.Address.String(),
+					Value:  alloraMath.MustNewDecFromString(workerZeroInfererValue),
+				}
 			} else {
 				valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
 			}
-			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{
+				Worker: worker.Address.String(),
+				Value:  alloraMath.MustNewDecFromString(worker.Value),
+			}
 			if worker.Address.Equals(workerZeroAddress) {
-				valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(workerZeroOneOutInfererValue)}
+				valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{
+					Worker: worker.Address.String(),
+					Value:  alloraMath.MustNewDecFromString(workerZeroOneOutInfererValue),
+				}
 			} else {
 				valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
 			}
-			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
-			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{
+				Worker: worker.Address.String(),
+				Value:  alloraMath.MustNewDecFromString(worker.Value),
+			}
+			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{
+				Worker: worker.Address.String(),
+				Value:  alloraMath.MustNewDecFromString(worker.Value),
+			}
 		}
 
 		sig, err := GenerateReputerSignature(s, valueBundle, reputer.Address)
@@ -1187,7 +1329,10 @@ func GenerateSimpleLossBundles(
 			Signature:   sig,
 			ValueBundle: valueBundle,
 		}
-		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, bundle)
+		reputerValueBundles.ReputerValueBundles = append(
+			reputerValueBundles.ReputerValueBundles,
+			bundle,
+		)
 	}
 
 	return reputerValueBundles

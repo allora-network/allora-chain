@@ -19,7 +19,8 @@ func (s *KeeperTestSuite) TestGetTotalStake() {
 	response, err := queryServer.GetTotalStake(ctx, req)
 	s.Require().NoError(err, "GetTotalStake should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(expectedTotalStake, response.Amount, "The retrieved total stake should match the expected value")
+	s.Require().
+		Equal(expectedTotalStake, response.Amount, "The retrieved total stake should match the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
@@ -43,7 +44,8 @@ func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
 	response, err := queryServer.GetReputerStakeInTopic(ctx, req)
 	s.Require().NoError(err, "GetReputerStakeInTopic should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(initialStake, response.Amount, "The retrieved stake should match the initial stake set for the reputer in the topic")
+	s.Require().
+		Equal(initialStake, response.Amount, "The retrieved stake should match the initial stake set for the reputer in the topic")
 }
 
 func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
@@ -72,9 +74,12 @@ func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
 	response, err := queryServer.GetMultiReputerStakeInTopic(ctx, req)
 	s.Require().NoError(err, "GetReputerStakeInTopic should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Len(response.Amounts, 2, "The retrieved set of stakes should have length equal to the number of reputers queried")
-	s.Require().Equal(initialStake1, response.Amounts[0].Amount, "The retrieved stake should match the initial stake set for the first reputer in the topic")
-	s.Require().Equal(initialStake2, response.Amounts[1].Amount, "The retrieved stake should match the initial stake set for the second reputer in the topic")
+	s.Require().
+		Len(response.Amounts, 2, "The retrieved set of stakes should have length equal to the number of reputers queried")
+	s.Require().
+		Equal(initialStake1, response.Amounts[0].Amount, "The retrieved stake should match the initial stake set for the first reputer in the topic")
+	s.Require().
+		Equal(initialStake2, response.Amounts[1].Amount, "The retrieved stake should match the initial stake set for the second reputer in the topic")
 }
 
 func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
@@ -101,7 +106,8 @@ func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
 	response, err := queryServer.GetDelegateStakeInTopicInReputer(ctx, req)
 	s.Require().NoError(err, "GetDelegateStakeInTopicInReputer should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(initialStakeAmount, response.Amount, "The retrieved delegate stake should match the initial stake set for the reputer in the topic")
+	s.Require().
+		Equal(initialStakeAmount, response.Amount, "The retrieved delegate stake should match the initial stake set for the reputer in the topic")
 }
 
 func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
@@ -130,7 +136,8 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 	response, err := queryServer.GetStakeFromDelegatorInTopicInReputer(ctx, req)
 	s.Require().NoError(err, "GetStakeFromDelegatorInTopicInReputer should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(stakeAmount, response.Amount, "The retrieved stake amount should match the delegated stake")
+	s.Require().
+		Equal(stakeAmount, response.Amount, "The retrieved stake amount should match the delegated stake")
 }
 
 func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
@@ -145,10 +152,22 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
 	initialStakeAmount := cosmosMath.NewInt(500)
 	additionalStakeAmount := cosmosMath.NewInt(300)
 
-	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, PKS[1].Address().String(), initialStakeAmount)
+	err = keeper.AddDelegateStake(
+		ctx,
+		topicId,
+		delegatorAddr,
+		PKS[1].Address().String(),
+		initialStakeAmount,
+	)
 	s.Require().NoError(err)
 
-	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, PKS[1].Address().String(), additionalStakeAmount)
+	err = keeper.AddDelegateStake(
+		ctx,
+		topicId,
+		delegatorAddr,
+		PKS[1].Address().String(),
+		additionalStakeAmount,
+	)
 	s.Require().NoError(err)
 
 	req := &types.QueryStakeFromDelegatorInTopicRequest{
@@ -160,7 +179,8 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
 	s.Require().NoError(err, "GetStakeFromDelegatorInTopic should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
 	expectedTotalStake := initialStakeAmount.Add(additionalStakeAmount)
-	s.Require().Equal(expectedTotalStake, response.Amount, "The retrieved stake amount should match the total delegated stake")
+	s.Require().
+		Equal(expectedTotalStake, response.Amount, "The retrieved stake amount should match the total delegated stake")
 }
 
 func (s *KeeperTestSuite) TestGetTopicStake() {
@@ -182,5 +202,6 @@ func (s *KeeperTestSuite) TestGetTopicStake() {
 	response, err := queryServer.GetTopicStake(ctx, req)
 	s.Require().NoError(err, "GetTopicStake should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(stakeAmount, response.Amount, "The retrieved topic stake should match the stake amount added")
+	s.Require().
+		Equal(stakeAmount, response.Amount, "The retrieved topic stake should match the stake amount added")
 }

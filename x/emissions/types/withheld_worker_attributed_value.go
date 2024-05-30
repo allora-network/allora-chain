@@ -9,7 +9,11 @@ import (
 func (withheldWorkerValue *WithheldWorkerAttributedValue) Validate() error {
 	_, err := sdk.AccAddressFromBech32(withheldWorkerValue.Worker)
 	if err != nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidAddress,
+			"invalid withheld worker address (%s)",
+			err,
+		)
 	}
 
 	if withheldWorkerValue.Value.IsNaN() {

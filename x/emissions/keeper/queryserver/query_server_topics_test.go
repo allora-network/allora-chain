@@ -29,7 +29,8 @@ func (s *KeeperTestSuite) TestGetNextTopicId() {
 	s.Require().NoError(err, "GetNextTopicId should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
 	expectedNextTopicId := initialNextTopicId + uint64(topicsToCreate)
-	s.Require().Equal(expectedNextTopicId, response.NextTopicId, "The next topic ID should match the expected value after topic creation")
+	s.Require().
+		Equal(expectedNextTopicId, response.NextTopicId, "The next topic ID should match the expected value after topic creation")
 }
 
 func (s *KeeperTestSuite) TestGetTopic() {
@@ -46,7 +47,8 @@ func (s *KeeperTestSuite) TestGetTopic() {
 	s.Require().NotNil(response, "Response should not be nil even if the topic does not exist")
 	s.Require().NotNil(response.Topic, "Topic should be nil for a non-existent topic")
 	s.Require().Equal(response.Topic.Id, uint64(0), "Topic should be nil for a non-existent topic")
-	s.Require().Error(err, "No error should be returned; the response should gracefully handle not found")
+	s.Require().
+		Error(err, "No error should be returned; the response should gracefully handle not found")
 
 	// Setting up a new topic
 	newTopic := types.Topic{Id: topicId, Metadata: metadata}
@@ -59,7 +61,8 @@ func (s *KeeperTestSuite) TestGetTopic() {
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().NotNil(response.Topic, "The response's Topic should not be nil")
 	s.Require().Equal(newTopic, *response.Topic, "Retrieved topic should match the set topic")
-	s.Require().Equal(metadata, response.Topic.Metadata, "The metadata of the retrieved topic should match")
+	s.Require().
+		Equal(metadata, response.Topic.Metadata, "The metadata of the retrieved topic should match")
 }
 
 func (s *KeeperTestSuite) TestGetActiveTopics() {
@@ -90,7 +93,8 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	s.Require().Equal(len(response.Topics), 2, "Should retrieve exactly two active topics")
 
 	for _, topic := range response.Topics {
-		s.Require().True(topic.Id == 1 || topic.Id == 3, "Only active topic IDs (1 or 3) should be returned")
+		s.Require().
+			True(topic.Id == 1 || topic.Id == 3, "Only active topic IDs (1 or 3) should be returned")
 		isActive, err := keeper.IsTopicActive(ctx, topic.Id)
 		s.Require().NoError(err, "Checking topic activity should not fail")
 		s.Require().True(isActive, "Only active topics should be returned")

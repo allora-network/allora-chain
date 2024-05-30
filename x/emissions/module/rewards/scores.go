@@ -37,7 +37,11 @@ func GenerateReputerScores(
 		reputers = append(reputers, reportedLoss.ValueBundle.Reputer)
 
 		// Get reputer topic stake
-		reputerStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reportedLoss.ValueBundle.Reputer)
+		reputerStake, err := keeper.GetStakeOnReputerInTopic(
+			ctx,
+			topicId,
+			reportedLoss.ValueBundle.Reputer,
+		)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting GetStakeOnReputerInTopic")
 		}
@@ -115,7 +119,13 @@ func GenerateReputerScores(
 }
 
 // GenerateInferenceScores calculates and persists scores for workers based on their inference task performance.
-func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, networkLosses types.ValueBundle) ([]types.Score, error) {
+func GenerateInferenceScores(
+	ctx sdk.Context,
+	keeper keeper.Keeper,
+	topicId uint64,
+	block int64,
+	networkLosses types.ValueBundle,
+) ([]types.Score, error) {
 	var newScores []types.Score
 
 	// If there is only one inferer, set score to 0
@@ -212,9 +222,16 @@ func GenerateForecastScores(
 		}
 
 		// Calculate forecast score
-		workerFinalScore, err := GetFinalWorkerScoreForecastTask(workerScoreOneIn, workersScoresOneOut[i], fUniqueAgg)
+		workerFinalScore, err := GetFinalWorkerScoreForecastTask(
+			workerScoreOneIn,
+			workersScoresOneOut[i],
+			fUniqueAgg,
+		)
 		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error getting final worker score forecast task")
+			return []types.Score{}, errors.Wrapf(
+				err,
+				"Error getting final worker score forecast task",
+			)
 		}
 
 		newScore := types.Score{
@@ -259,9 +276,18 @@ func ensureWorkerPresence(reportedLosses types.ReputerValueBundles) types.Repute
 
 	// Ensure each set has all workers, add NaN value for missing workers
 	for _, bundle := range reportedLosses.ReputerValueBundles {
-		bundle.ValueBundle.OneOutInfererValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutInfererValues, allWorkersOneOutInferer)
-		bundle.ValueBundle.OneOutForecasterValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutForecasterValues, allWorkersOneOutForecaster)
-		bundle.ValueBundle.OneInForecasterValues = EnsureAllWorkersPresent(bundle.ValueBundle.OneInForecasterValues, allWorkersOneInForecaster)
+		bundle.ValueBundle.OneOutInfererValues = EnsureAllWorkersPresentWithheld(
+			bundle.ValueBundle.OneOutInfererValues,
+			allWorkersOneOutInferer,
+		)
+		bundle.ValueBundle.OneOutForecasterValues = EnsureAllWorkersPresentWithheld(
+			bundle.ValueBundle.OneOutForecasterValues,
+			allWorkersOneOutForecaster,
+		)
+		bundle.ValueBundle.OneInForecasterValues = EnsureAllWorkersPresent(
+			bundle.ValueBundle.OneInForecasterValues,
+			allWorkersOneInForecaster,
+		)
 	}
 
 	return reportedLosses

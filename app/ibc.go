@@ -56,8 +56,10 @@ func (app *AlloraApp) registerIBCModules() {
 	keyTable := ibcclienttypes.ParamKeyTable()
 	keyTable.RegisterParamSet(&ibcconnectiontypes.Params{})
 	app.ParamsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
-	app.ParamsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())
-	app.ParamsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
+	app.ParamsKeeper.Subspace(ibctransfertypes.ModuleName).
+		WithKeyTable(ibctransfertypes.ParamKeyTable())
+	app.ParamsKeeper.Subspace(icacontrollertypes.SubModuleName).
+		WithKeyTable(icacontrollertypes.ParamKeyTable())
 	app.ParamsKeeper.Subspace(icahosttypes.SubModuleName).WithKeyTable(icahosttypes.ParamKeyTable())
 
 	// add capability keeper and ScopeToModule for ibc module
@@ -70,7 +72,9 @@ func (app *AlloraApp) registerIBCModules() {
 	// add capability keeper and ScopeToModule for ibc module
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
 	scopedIBCTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
+	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(
+		icacontrollertypes.SubModuleName,
+	)
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
 
 	// Create IBC keeper
@@ -151,7 +155,10 @@ func (app *AlloraApp) registerIBCModules() {
 		app.IBCFeeKeeper,
 	)
 
-	icaHostIBCModule := ibcfee.NewIBCMiddleware(icahost.NewIBCModule(app.ICAHostKeeper), app.IBCFeeKeeper)
+	icaHostIBCModule := ibcfee.NewIBCMiddleware(
+		icahost.NewIBCModule(app.ICAHostKeeper),
+		app.IBCFeeKeeper,
+	)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter().

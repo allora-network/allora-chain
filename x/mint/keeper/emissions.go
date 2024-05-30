@@ -144,7 +144,8 @@ func GetTargetRewardEmissionPerUnitStakedToken(
 	// N_{circ,i} = circulatingSupply
 	// N_{total,i} = totalSupply
 	ratioCirculating := circulatingSupply.ToLegacyDec().Quo(maxSupply.ToLegacyDec())
-	ratioEcosystemToStaked := ecosystemMintableRemaining.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
+	ratioEcosystemToStaked := ecosystemMintableRemaining.ToLegacyDec().
+		Quo(networkStaked.ToLegacyDec())
 	ret := fEmission.
 		Mul(ratioEcosystemToStaked).
 		Mul(ratioCirculating)

@@ -1,10 +1,11 @@
 package testing
 
 import (
-	"cosmossdk.io/log"
 	"encoding/json"
 	"fmt"
 	"testing"
+
+	"cosmossdk.io/log"
 
 	"cosmossdk.io/math"
 	app2 "github.com/allora-network/allora-chain/app"

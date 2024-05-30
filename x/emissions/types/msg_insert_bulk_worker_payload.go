@@ -17,7 +17,10 @@ func (msg *MsgInsertBulkWorkerPayload) ValidateTopLevel() error {
 	}
 
 	if len(msg.WorkerDataBundles) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one worker data bundle must be provided")
+		return errors.Wrap(
+			sdkerrors.ErrInvalidRequest,
+			"at least one worker data bundle must be provided",
+		)
 	}
 
 	return nil

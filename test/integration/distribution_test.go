@@ -168,6 +168,8 @@ func DistributionChecks(m testCommon.TestConfig) {
 	// on the existing tests to do each of the above.
 	m.T.Log("--- Check Validator Balance Goes Up When New Blocks Are Mined  ---")
 	CheckValidatorBalancesIncreaseOnNewBlock(m)
-	m.T.Log("--- Check Allora Rewards Module Account Balance Goes Up When New Blocks Are Mined  ---")
+	m.T.Log(
+		"--- Check Allora Rewards Module Account Balance Goes Up When New Blocks Are Mined  ---",
+	)
 	CheckAlloraRewardsBalanceGoesUpOnNewBlock(m)
 }

@@ -7,7 +7,11 @@ import (
 )
 
 // InitGenesis new mint genesis
-func (keeper Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, data *types.GenesisState) {
+func (keeper Keeper) InitGenesis(
+	ctx context.Context,
+	ak types.AccountKeeper,
+	data *types.GenesisState,
+) {
 	if err := keeper.Params.Set(ctx, data.Params); err != nil {
 		panic(err)
 	}
@@ -39,7 +43,9 @@ func (keeper Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		panic(err)
 	}
 
-	previousRewardEmissionPerUnitStakedToken, err := keeper.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
+	previousRewardEmissionPerUnitStakedToken, err := keeper.PreviousRewardEmissionPerUnitStakedToken.Get(
+		ctx,
+	)
 	if err != nil {
 		panic(err)
 	}

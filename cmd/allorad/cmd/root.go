@@ -80,9 +80,17 @@ func NewRootCmd() *cobra.Command {
 			// sign mode textual is only available in online mode
 			if !clientCtx.Offline {
 				// This needs to go after ReadFromClientConfig, as that function ets the RPC client needed for SIGN_MODE_TEXTUAL.
-				txConfigOpts.EnabledSignModes = append(txConfigOpts.EnabledSignModes, signing.SignMode_SIGN_MODE_TEXTUAL)
-				txConfigOpts.TextualCoinMetadataQueryFn = txmodule.NewGRPCCoinMetadataQueryFn(clientCtx)
-				txConfigWithTextual, err := tx.NewTxConfigWithOptions(codec.NewProtoCodec(clientCtx.InterfaceRegistry), txConfigOpts)
+				txConfigOpts.EnabledSignModes = append(
+					txConfigOpts.EnabledSignModes,
+					signing.SignMode_SIGN_MODE_TEXTUAL,
+				)
+				txConfigOpts.TextualCoinMetadataQueryFn = txmodule.NewGRPCCoinMetadataQueryFn(
+					clientCtx,
+				)
+				txConfigWithTextual, err := tx.NewTxConfigWithOptions(
+					codec.NewProtoCodec(clientCtx.InterfaceRegistry),
+					txConfigOpts,
+				)
 				if err != nil {
 					return err
 				}
@@ -107,7 +115,12 @@ func NewRootCmd() *cobra.Command {
 			cmtCfg.Consensus.TimeoutCommit = 3 * time.Second
 			cmtCfg.LogLevel = "*:error,p2p:info,state:info" // better default logging
 
-			return server.InterceptConfigsPreRunHandler(cmd, serverconfig.DefaultConfigTemplate, srvCfg, cmtCfg)
+			return server.InterceptConfigsPreRunHandler(
+				cmd,
+				serverconfig.DefaultConfigTemplate,
+				srvCfg,
+				cmtCfg,
+			)
 		},
 	}
 
@@ -152,7 +165,10 @@ func ProvideClientContext(
 	return clientCtx
 }
 
-func ProvideKeyring(clientCtx client.Context, addressCodec address.Codec) (clientv2keyring.Keyring, error) {
+func ProvideKeyring(
+	clientCtx client.Context,
+	addressCodec address.Codec,
+) (clientv2keyring.Keyring, error) {
 	kb, err := client.NewKeyringFromBackend(clientCtx, clientCtx.Keyring.Backend())
 	if err != nil {
 		return nil, err

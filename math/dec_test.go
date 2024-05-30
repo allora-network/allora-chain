@@ -22,10 +22,22 @@ func TestDec(t *testing.T) {
 
 	// Properties about *FromString functions
 	t.Run("TestInvalidNewDecFromString", rapid.MakeCheck(testInvalidNewDecFromString))
-	t.Run("TestInvalidNewNonNegativeDecFromString", rapid.MakeCheck(testInvalidNewNonNegativeDecFromString))
-	t.Run("TestInvalidNewNonNegativeFixedDecFromString", rapid.MakeCheck(testInvalidNewNonNegativeFixedDecFromString))
-	t.Run("TestInvalidNewPositiveDecFromString", rapid.MakeCheck(testInvalidNewPositiveDecFromString))
-	t.Run("TestInvalidNewPositiveFixedDecFromString", rapid.MakeCheck(testInvalidNewPositiveFixedDecFromString))
+	t.Run(
+		"TestInvalidNewNonNegativeDecFromString",
+		rapid.MakeCheck(testInvalidNewNonNegativeDecFromString),
+	)
+	t.Run(
+		"TestInvalidNewNonNegativeFixedDecFromString",
+		rapid.MakeCheck(testInvalidNewNonNegativeFixedDecFromString),
+	)
+	t.Run(
+		"TestInvalidNewPositiveDecFromString",
+		rapid.MakeCheck(testInvalidNewPositiveDecFromString),
+	)
+	t.Run(
+		"TestInvalidNewPositiveFixedDecFromString",
+		rapid.MakeCheck(testInvalidNewPositiveFixedDecFromString),
+	)
 
 	// Properties about addition
 	t.Run("TestAddLeftIdentity", rapid.MakeCheck(testAddLeftIdentity))
@@ -606,7 +618,9 @@ func testNumDecimalPlaces(t *rapid.T) {
 }
 
 func floatDecimalPlaces(t *rapid.T, f float64) uint32 {
-	reScientific := regexp.MustCompile(`^\-?(?:[[:digit:]]+(?:\.([[:digit:]]+))?|\.([[:digit:]]+))(?:e?(?:\+?([[:digit:]]+)|(-[[:digit:]]+)))?$`)
+	reScientific := regexp.MustCompile(
+		`^\-?(?:[[:digit:]]+(?:\.([[:digit:]]+))?|\.([[:digit:]]+))(?:e?(?:\+?([[:digit:]]+)|(-[[:digit:]]+)))?$`,
+	)
 	fStr := fmt.Sprintf("%g", f)
 	matches := reScientific.FindAllStringSubmatch(fStr, 1)
 	if len(matches) != 1 {
@@ -790,12 +804,42 @@ func TestInDelta(t *testing.T) {
 		epsilon        Dec
 		expectedResult bool
 	}{
-		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(1), true},   // expected == result, within epsilon
-		{NewDecFromInt64(10), NewDecFromInt64(9), NewDecFromInt64(1), true},    // expected != result, but within epsilon
-		{NewDecFromInt64(10), NewDecFromInt64(8), NewDecFromInt64(1), false},   // expected != result, outside epsilon
-		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(0), true},   // expected == result, epsilon is zero
-		{NewDecFromInt64(10), NewDecFromInt64(-10), NewDecFromInt64(1), false}, // expected != result, outside epsilon
-		{NewDecFromInt64(-10), NewDecFromInt64(-10), NewDecFromInt64(0), true}, // expected == result, epsilon is zero
+		{
+			NewDecFromInt64(10),
+			NewDecFromInt64(10),
+			NewDecFromInt64(1),
+			true,
+		}, // expected == result, within epsilon
+		{
+			NewDecFromInt64(10),
+			NewDecFromInt64(9),
+			NewDecFromInt64(1),
+			true,
+		}, // expected != result, but within epsilon
+		{
+			NewDecFromInt64(10),
+			NewDecFromInt64(8),
+			NewDecFromInt64(1),
+			false,
+		}, // expected != result, outside epsilon
+		{
+			NewDecFromInt64(10),
+			NewDecFromInt64(10),
+			NewDecFromInt64(0),
+			true,
+		}, // expected == result, epsilon is zero
+		{
+			NewDecFromInt64(10),
+			NewDecFromInt64(-10),
+			NewDecFromInt64(1),
+			false,
+		}, // expected != result, outside epsilon
+		{
+			NewDecFromInt64(-10),
+			NewDecFromInt64(-10),
+			NewDecFromInt64(0),
+			true,
+		}, // expected == result, epsilon is zero
 	}
 
 	// Run test cases

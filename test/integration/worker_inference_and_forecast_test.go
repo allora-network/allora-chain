@@ -18,7 +18,12 @@ const defaultEpochLength = 10
 const approximateBlockLengthSeconds = 5
 const minWaitingNumberofEpochs = 3
 
-func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, topicID uint64, maxRetries int) (*types.Topic, error) {
+func getNonZeroTopicEpochLastRan(
+	ctx context.Context,
+	query types.QueryClient,
+	topicID uint64,
+	maxRetries int,
+) (*types.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
 	for retries := 0; retries < maxRetries; retries++ {
@@ -26,7 +31,9 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, t
 		if err == nil {
 			storedTopic := topicResponse.Topic
 			if storedTopic.EpochLastEnded != 0 {
-				sleepingTime := time.Duration(minWaitingNumberofEpochs*storedTopic.EpochLength*approximateBlockLengthSeconds) * time.Second
+				sleepingTime := time.Duration(
+					minWaitingNumberofEpochs*storedTopic.EpochLength*approximateBlockLengthSeconds,
+				) * time.Second
 				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTime)
 				time.Sleep(sleepingTime)
 				fmt.Println(time.Now(), " Slept.")
@@ -37,7 +44,12 @@ func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, t
 			fmt.Println("Error getting topic, retry...", err)
 		}
 		// Sleep for a while before retrying
-		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
+		fmt.Println(
+			"Retrying sleeping for a default epoch, retry ",
+			retries,
+			" for sleeping time ",
+			sleepingTimeBlocks,
+		)
 		time.Sleep(time.Duration(sleepingTimeBlocks*approximateBlockLengthSeconds) * time.Second)
 	}
 
@@ -86,7 +98,11 @@ func InsertSingleWorkerBulk(m testCommon.TestConfig, topic *types.Topic, blockHe
 	src, err := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.XXX_Marshal(src, true)
 	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
 
-	sig, pubKey, err := m.Client.Context().Keyring.Sign(m.BobAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
+	sig, pubKey, err := m.Client.Context().Keyring.Sign(
+		m.BobAcc.Name,
+		src,
+		signing.SignMode_SIGN_MODE_DIRECT,
+	)
 	require.NoError(m.T, err, "Sign should not return an error")
 	workerPublicKeyBytes := pubKey.Bytes()
 	workerMsg.WorkerDataBundles[0].InferencesForecastsBundleSignature = sig
@@ -107,7 +123,11 @@ func InsertSingleWorkerBulk(m testCommon.TestConfig, topic *types.Topic, blockHe
 		},
 	)
 	require.NoError(m.T, err)
-	require.Equal(m.T, latestInference.LatestInference.Value, alloraMath.MustNewDecFromString("100"))
+	require.Equal(
+		m.T,
+		latestInference.LatestInference.Value,
+		alloraMath.MustNewDecFromString("100"),
+	)
 	require.Equal(m.T, latestInference.LatestInference.BlockHeight, blockHeight)
 	require.Equal(m.T, latestInference.LatestInference.TopicId, topicId)
 	require.Equal(m.T, latestInference.LatestInference.Inferer, InfererAddress1)
@@ -115,7 +135,8 @@ func InsertSingleWorkerBulk(m testCommon.TestConfig, topic *types.Topic, blockHe
 
 // Worker Bob inserts bulk inference and forecast
 func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, int64) {
-	topicResponse, err := m.Client.QueryEmissions().GetTopic(m.Ctx, &types.QueryTopicRequest{TopicId: topic.Id})
+	topicResponse, err := m.Client.QueryEmissions().
+		GetTopic(m.Ctx, &types.QueryTopicRequest{TopicId: topic.Id})
 	require.NoError(m.T, err)
 	freshTopic := topicResponse.Topic
 
@@ -131,7 +152,11 @@ func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, int64
 }
 
 // register alice as a reputer in topic 1, then check success
-func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
+func InsertReputerBulk(
+	m testCommon.TestConfig,
+	topic *types.Topic,
+	BlockHeightCurrent, BlockHeightEval int64,
+) {
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	// Define inferer address as Bob's address, reputer as Alice's
@@ -195,7 +220,11 @@ func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightC
 	src, err := reputerValueBundle.XXX_Marshal(src, true)
 	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
 
-	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(m.AliceAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
+	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(
+		m.AliceAcc.Name,
+		src,
+		signing.SignMode_SIGN_MODE_DIRECT,
+	)
 	require.NoError(m.T, err, "Sign should not return an error")
 	reputerPublicKeyBytes := pubKey.Bytes()
 

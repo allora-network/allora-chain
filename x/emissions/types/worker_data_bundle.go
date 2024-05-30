@@ -27,7 +27,8 @@ func (bundle *WorkerDataBundle) Validate() error {
 	}
 
 	// Validate the inference and forecast of the bundle
-	if bundle.InferenceForecastsBundle.Inference == nil && bundle.InferenceForecastsBundle.Forecast == nil {
+	if bundle.InferenceForecastsBundle.Inference == nil &&
+		bundle.InferenceForecastsBundle.Forecast == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference and forecast cannot both be nil")
 	}
 	if bundle.InferenceForecastsBundle.Inference != nil {

@@ -60,7 +60,10 @@ func SafeApplyFuncOnAllActiveTopics(
 	topicPageKey := make([]byte, 0)
 	i := uint64(0)
 	for {
-		topicPageRequest := &types.SimpleCursorPaginationRequest{Limit: topicPageLimit, Key: topicPageKey}
+		topicPageRequest := &types.SimpleCursorPaginationRequest{
+			Limit: topicPageLimit,
+			Key:   topicPageKey,
+		}
 		topicsActive, topicPageResponse, err := k.GetIdsOfActiveTopics(ctx, topicPageRequest)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error getting ids of active topics: %s", err.Error()))
@@ -78,7 +81,8 @@ func SafeApplyFuncOnAllActiveTopics(
 				// All checks passed => Apply function on the topic
 				err = fn(ctx, &topic)
 				if err != nil {
-					ctx.Logger().Warn(fmt.Sprintf("Error applying function on topic: %s", err.Error()))
+					ctx.Logger().
+						Warn(fmt.Sprintf("Error applying function on topic: %s", err.Error()))
 					continue
 				}
 			}
@@ -193,9 +197,19 @@ func GetAndOptionallyUpdateActiveTopicWeights(
 
 	// default page limit for the max because default is 100 and max is 1000
 	// 1000 is excessive for the topic query
-	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, moduleParams.DefaultPageLimit, moduleParams.DefaultPageLimit)
+	err = SafeApplyFuncOnAllActiveTopics(
+		ctx,
+		k,
+		block,
+		fn,
+		moduleParams.DefaultPageLimit,
+		moduleParams.DefaultPageLimit,
+	)
 	if err != nil {
-		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all reward ready topics to get weights")
+		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(
+			err,
+			"failed to apply function on all reward ready topics to get weights",
+		)
 	}
 
 	return weights, sumWeight, totalRevenue, nil

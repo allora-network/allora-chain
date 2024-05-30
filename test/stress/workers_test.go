@@ -28,12 +28,16 @@ func createWorkerAddresses(
 		workerAccountName := getWorkerAccountName(m.Seed, workerIndex, topicId)
 		workerAccount, _, err := m.Client.AccountRegistryCreate(workerAccountName)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error creating funder address: ", workerAccountName, " - ", err))
+			m.T.Log(
+				topicLog(topicId, "Error creating funder address: ", workerAccountName, " - ", err),
+			)
 			continue
 		}
 		workerAddressToFund, err := workerAccount.Address(params.HumanCoinUnit)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error creating funder address: ", workerAccountName, " - ", err))
+			m.T.Log(
+				topicLog(topicId, "Error creating funder address: ", workerAccountName, " - ", err),
+			)
 			continue
 		}
 		workers[workerAccountName] = AccountAndAddress{
@@ -67,7 +71,9 @@ func registerWorkersForIteration(
 			topicId,
 		)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error registering worker address: ", worker.addr, " - ", err))
+			m.T.Log(
+				topicLog(topicId, "Error registering worker address: ", worker.addr, " - ", err),
+			)
 			if makeReport {
 				saveWorkerError(topicId, workerName, err)
 				saveTopicError(topicId, err)
@@ -111,7 +117,16 @@ func generateInsertWorkerBundle(
 				topic, err = getLastTopic(m.Ctx, m.Client.QueryEmissions(), topic.Id)
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
-					m.T.Log(topicLog(topic.Id, "Reset ", leaderWorkerAccountName, "blockHeight to (", blockHeightCurrent, ")"))
+					m.T.Log(
+						topicLog(
+							topic.Id,
+							"Reset ",
+							leaderWorkerAccountName,
+							"blockHeight to (",
+							blockHeightCurrent,
+							")",
+						),
+					)
 				} else {
 					m.T.Log(topicLog(topic.Id, "Error getting topic!"))
 					if makeReport {
@@ -153,7 +168,14 @@ func insertWorkerBulk(
 			generateSingleWorkerBundle(m, topic.Id, blockHeight, key, workers))
 	}
 	leaderWorker := workers[leaderWorkerAccountName]
-	return insertLeaderWorkerBulk(m, topic.Id, blockHeight, leaderWorkerAccountName, leaderWorker.addr, workerDataBundles)
+	return insertLeaderWorkerBulk(
+		m,
+		topic.Id,
+		blockHeight,
+		leaderWorkerAccountName,
+		leaderWorker.addr,
+		workerDataBundles,
+	)
 }
 
 // create inferences and forecasts for a worker
@@ -199,7 +221,11 @@ func generateSingleWorkerBundle(
 	src, err := workerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
 	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
 
-	sig, pubKey, err := m.Client.Context().Keyring.Sign(workerAddressName, src, signing.SignMode_SIGN_MODE_DIRECT)
+	sig, pubKey, err := m.Client.Context().Keyring.Sign(
+		workerAddressName,
+		src,
+		signing.SignMode_SIGN_MODE_DIRECT,
+	)
 	require.NoError(m.T, err, "Sign should not return an error")
 	workerPublicKeyBytes := pubKey.Bytes()
 	workerDataBundle.InferencesForecastsBundleSignature = sig
@@ -228,7 +254,15 @@ func insertLeaderWorkerBulk(
 	// serialize workerMsg to json and print
 	LeaderAcc, err := m.Client.AccountRegistryGetByName(leaderWorkerAccountName)
 	if err != nil {
-		m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderWorkerAccountName, " - ", err))
+		m.T.Log(
+			topicLog(
+				topicId,
+				"Error getting leader worker account: ",
+				leaderWorkerAccountName,
+				" - ",
+				err,
+			),
+		)
 		return err
 	}
 	txResp, err := m.Client.BroadcastTx(m.Ctx, LeaderAcc, workerMsg)
@@ -265,7 +299,15 @@ func checkWorkersReceivedRewards(
 		if err != nil {
 			m.T.Log(topicLog(topicId, "Error getting worker balance for worker: ", workerName, err))
 			if maxIterations > 20 && workerIndex < 10 {
-				m.T.Log(topicLog(topicId, "ERROR: Worker", workerName, "has insufficient stake:", balance))
+				m.T.Log(
+					topicLog(
+						topicId,
+						"ERROR: Worker",
+						workerName,
+						"has insufficient stake:",
+						balance,
+					),
+				)
 			}
 			if makeReport {
 				saveWorkerError(topicId, workerName, err)

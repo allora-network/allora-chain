@@ -61,7 +61,9 @@ func CalcForecastImpliedInferences(
 
 				for _, inferer := range sortedInferersInForecast {
 					if inferenceByWorker[inferer] != nil {
-						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(inferenceByWorker[inferer].Value)
+						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(
+							inferenceByWorker[inferer].Value,
+						)
 						if err != nil {
 							return nil, errorsmod.Wrapf(err, "error adding dot product")
 						}

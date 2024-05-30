@@ -6,7 +6,10 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddToWhitelistAdmin) (*types.MsgAddToWhitelistAdminResponse, error) {
+func (ms msgServer) AddToWhitelistAdmin(
+	ctx context.Context,
+	msg *types.MsgAddToWhitelistAdmin,
+) (*types.MsgAddToWhitelistAdminResponse, error) {
 	// Check that sender is also a whitelist admin
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {
@@ -27,7 +30,10 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddTo
 	return &types.MsgAddToWhitelistAdminResponse{}, nil
 }
 
-func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.MsgRemoveFromWhitelistAdmin) (*types.MsgRemoveFromWhitelistAdminResponse, error) {
+func (ms msgServer) RemoveFromWhitelistAdmin(
+	ctx context.Context,
+	msg *types.MsgRemoveFromWhitelistAdmin,
+) (*types.MsgRemoveFromWhitelistAdminResponse, error) {
 	// Check that sender is also a whitelist admin
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {

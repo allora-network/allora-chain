@@ -29,5 +29,6 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 
 	s.Require().NoError(err)
 	s.Require().NotNil(response.LossBundle)
-	s.Require().Equal(expectedBundle, response.LossBundle, "Retrieved loss bundle should match the expected bundle")
+	s.Require().
+		Equal(expectedBundle, response.LossBundle, "Retrieved loss bundle should match the expected bundle")
 }

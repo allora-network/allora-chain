@@ -22,7 +22,10 @@ func (msg *MsgInsertBulkReputerPayload) ValidateTopLevel() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "reputer nonce cannot be nil")
 	}
 	if len(msg.ReputerValueBundles) == 0 {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "at least one reputer value bundle needs to be provided")
+		return errors.Wrapf(
+			sdkerrors.ErrInvalidRequest,
+			"at least one reputer value bundle needs to be provided",
+		)
 	}
 
 	return nil

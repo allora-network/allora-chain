@@ -44,16 +44,22 @@ func DefaultParams() Params {
 		panic("failed to parse max supply")
 	}
 	return Params{
-		MintDenom:                              sdk.DefaultBondDenom,
-		MaxSupply:                              maxSupply,                              // 1 billion allo * 1e18 (exponent) = 1e27 uallo
-		FEmission:                              math.LegacyMustNewDecFromStr("0.025"),  // 0.025 per month
-		OneMonthSmoothingDegree:                math.LegacyMustNewDecFromStr("0.1"),    // 0.1 at 1 month cadence
+		MintDenom: sdk.DefaultBondDenom,
+		MaxSupply: maxSupply, // 1 billion allo * 1e18 (exponent) = 1e27 uallo
+		FEmission: math.LegacyMustNewDecFromStr(
+			"0.025",
+		), // 0.025 per month
+		OneMonthSmoothingDegree: math.LegacyMustNewDecFromStr(
+			"0.1",
+		), // 0.1 at 1 month cadence
 		EcosystemTreasuryPercentOfTotalSupply:  math.LegacyMustNewDecFromStr("0.3595"), // 35.95%
 		FoundationTreasuryPercentOfTotalSupply: math.LegacyMustNewDecFromStr("0.1"),    // 10%
 		ParticipantsPercentOfTotalSupply:       math.LegacyMustNewDecFromStr("0.055"),  // 5.5%
 		InvestorsPercentOfTotalSupply:          math.LegacyMustNewDecFromStr("0.3105"), // 31.05%
 		TeamPercentOfTotalSupply:               math.LegacyMustNewDecFromStr("0.175"),  // 17.5%
-		MaximumMonthlyPercentageYield:          math.LegacyMustNewDecFromStr("0.0095"), // .95% per month
+		MaximumMonthlyPercentageYield: math.LegacyMustNewDecFromStr(
+			"0.0095",
+		), // .95% per month
 	}
 }
 
@@ -156,7 +162,10 @@ func validateAFractionValue(i interface{}) error {
 		return fmt.Errorf("fractional value cannot be nil: %s", v)
 	}
 	if v.LT(math.LegacyNewDec(0)) {
-		return fmt.Errorf("fractional value should be between 0 and 1, greater or equal to 0: %s", v)
+		return fmt.Errorf(
+			"fractional value should be between 0 and 1, greater or equal to 0: %s",
+			v,
+		)
 	}
 	if v.GT(math.LegacyNewDec(1)) {
 		return fmt.Errorf("fractional value should be between 0 and 1, less or equal to 1: %s", v)

@@ -62,7 +62,10 @@ func TestStdDev(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := alloraMath.StdDev(tt.data)
 			require.NoError(t, err)
-			require.True(t, alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.0001")))
+			require.True(
+				t,
+				alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.0001")),
+			)
 		})
 	}
 }
@@ -74,7 +77,14 @@ func TestPhiSimple(t *testing.T) {
 	// we expect a value very very close to 64
 	result, err := alloraMath.Phi(p, c, x)
 	require.NoError(t, err)
-	require.False(t, alloraMath.InDelta(alloraMath.NewDecFromInt64(64), result, alloraMath.MustNewDecFromString("0.001")))
+	require.False(
+		t,
+		alloraMath.InDelta(
+			alloraMath.NewDecFromInt64(64),
+			result,
+			alloraMath.MustNewDecFromString("0.001"),
+		),
+	)
 }
 
 // φ'_p(x) = p / (exp(p * (c - x)) + 1)

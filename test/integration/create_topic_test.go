@@ -63,7 +63,13 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Equal(m.T, createTopicRequest.GroundTruthLag, storedTopic.GroundTruthLag)
 	require.Equal(m.T, createTopicRequest.DefaultArg, storedTopic.DefaultArg)
 	require.Equal(m.T, createTopicRequest.PNorm, storedTopic.PNorm)
-	require.True(m.T, createTopicRequest.AlphaRegret.Equal(storedTopic.AlphaRegret), "Alpha Regret not equal %s != %s", createTopicRequest.AlphaRegret, storedTopic.AlphaRegret)
+	require.True(
+		m.T,
+		createTopicRequest.AlphaRegret.Equal(storedTopic.AlphaRegret),
+		"Alpha Regret not equal %s != %s",
+		createTopicRequest.AlphaRegret,
+		storedTopic.AlphaRegret,
+	)
 
 	return topicId
 }

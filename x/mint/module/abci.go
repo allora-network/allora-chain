@@ -64,7 +64,9 @@ func GetEmissionPerMonth(
 		targetRewardEmissionPerUnitStakedToken,
 		maximumMonthlyEmissionPerUnitStakedToken,
 	)
-	previousRewardEmissionPerUnitStakedToken, err := k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
+	previousRewardEmissionPerUnitStakedToken, err := k.PreviousRewardEmissionPerUnitStakedToken.Get(
+		ctx,
+	)
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}

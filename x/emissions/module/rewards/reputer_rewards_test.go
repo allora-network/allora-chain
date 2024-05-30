@@ -172,15 +172,25 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldGenerateRewardsForDelegat
 	s.Require().NoError(err)
 
 	// Add balance to the reward account
-	rewardToDistribute := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(100000000)))
+	rewardToDistribute := sdk.NewCoins(
+		sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(100000000)),
+	)
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraRewardsAccountName, rewardToDistribute)
 
 	// Check delegator rewards account balance
-	moduleAccAddr := s.accountKeeper.GetModuleAddress(types.AlloraPendingRewardForDelegatorAccountName)
+	moduleAccAddr := s.accountKeeper.GetModuleAddress(
+		types.AlloraPendingRewardForDelegatorAccountName,
+	)
 	inicialBalance := s.bankKeeper.GetBalance(s.ctx, moduleAccAddr, params.DefaultBondDenom)
 
 	// Add delegator for the reputer 1
-	err = s.emissionsKeeper.AddDelegateStake(s.ctx, topicId, s.addrs[5].String(), reputerAddrs[0], cosmosMath.NewInt(10000000000))
+	err = s.emissionsKeeper.AddDelegateStake(
+		s.ctx,
+		topicId,
+		s.addrs[5].String(),
+		reputerAddrs[0],
+		cosmosMath.NewInt(10000000000),
+	)
 	s.Require().NoError(err)
 
 	// Reputers fractions of total reward
@@ -357,7 +367,13 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := rewards.GenerateReputerScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		reputerValueBundles,
+	)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -420,7 +436,13 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := rewards.GenerateReputerScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		reputerValueBundles,
+	)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -440,7 +462,12 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 }
 
 // mockReputersData generates reputer scores, stakes and losses
-func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerAddrs []string) (types.ReputerValueBundles, error) {
+func mockReputersData(
+	s *RewardsTestSuite,
+	topicId uint64,
+	block int64,
+	reputerAddrs []string,
+) (types.ReputerValueBundles, error) {
 	var scores = []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("17.53436"),
 		alloraMath.MustNewDecFromString("20.29489"),
@@ -482,10 +509,18 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 				NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
 			},
 		}
-		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
+		reputerValueBundles.ReputerValueBundles = append(
+			reputerValueBundles.ReputerValueBundles,
+			reputerValueBundle,
+		)
 	}
 
-	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
+	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(
+		s.ctx,
+		topicId,
+		block,
+		reputerValueBundles,
+	)
 	if err != nil {
 		return types.ReputerValueBundles{}, err
 	}

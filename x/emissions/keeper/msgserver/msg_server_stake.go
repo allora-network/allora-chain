@@ -13,7 +13,10 @@ import (
 )
 
 // Function for reputers to call to add stake to an existing stake position.
-func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*types.MsgAddStakeResponse, error) {
+func (ms msgServer) AddStake(
+	ctx context.Context,
+	msg *types.MsgAddStake,
+) (*types.MsgAddStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -60,7 +63,10 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 // once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
 // if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
 // and one must start the stake removal process again and wait the delay again.
-func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRemoveStake) (*types.MsgStartRemoveStakeResponse, error) {
+func (ms msgServer) StartRemoveStake(
+	ctx context.Context,
+	msg *types.MsgStartRemoveStake,
+) (*types.MsgStartRemoveStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -71,7 +77,11 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 		return nil, err
 	}
 
-	delegateStakeUponReputerInTopic, err := ms.k.GetDelegateStakeUponReputer(ctx, msg.TopicId, msg.Sender)
+	delegateStakeUponReputerInTopic, err := ms.k.GetDelegateStakeUponReputer(
+		ctx,
+		msg.TopicId,
+		msg.Sender,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +109,10 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 }
 
 // Function for reputers or workers to call to remove stake from an existing stake position.
-func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfirmRemoveStake) (*types.MsgConfirmRemoveStakeResponse, error) {
+func (ms msgServer) ConfirmRemoveStake(
+	ctx context.Context,
+	msg *types.MsgConfirmRemoveStake,
+) (*types.MsgConfirmRemoveStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Pull the stake removal from the delayed queue
 	stakeRemoval, err := ms.k.GetStakeRemovalByTopicAndAddress(ctx, msg.TopicId, msg.Sender)
@@ -129,7 +142,12 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 	}
 
 	// Update the stake data structures
-	err = ms.k.RemoveStake(ctx, stakeRemoval.Placement.TopicId, msg.Sender, stakeRemoval.Placement.Amount)
+	err = ms.k.RemoveStake(
+		ctx,
+		stakeRemoval.Placement.TopicId,
+		msg.Sender,
+		stakeRemoval.Placement.Amount,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +155,10 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 }
 
 // Delegates a stake to a reputer. Sender need not be registered to delegate stake.
-func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateStake) (*types.MsgDelegateStakeResponse, error) {
+func (ms msgServer) DelegateStake(
+	ctx context.Context,
+	msg *types.MsgDelegateStake,
+) (*types.MsgDelegateStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -183,7 +204,10 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 // once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
 // if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
 // and one must start the stake removal process again and wait the delay again.
-func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.MsgStartRemoveDelegateStake) (*types.MsgStartRemoveDelegateStakeResponse, error) {
+func (ms msgServer) StartRemoveDelegateStake(
+	ctx context.Context,
+	msg *types.MsgStartRemoveDelegateStake,
+) (*types.MsgStartRemoveDelegateStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -198,7 +222,12 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	}
 
 	// Check the reputer has enough stake already placed on the topic to remove the stake
-	delegateStakePlaced, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
+	delegateStakePlaced, err := ms.k.GetDelegateStakePlacement(
+		ctx,
+		msg.TopicId,
+		msg.Sender,
+		msg.Reputer,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -230,10 +259,18 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 }
 
 // Function for delegators to call to remove stake from an existing delegate stake position.
-func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.MsgConfirmDelegateRemoveStake) (*types.MsgConfirmRemoveDelegateStakeResponse, error) {
+func (ms msgServer) ConfirmRemoveDelegateStake(
+	ctx context.Context,
+	msg *types.MsgConfirmDelegateRemoveStake,
+) (*types.MsgConfirmRemoveDelegateStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// Pull the stake removal from the delayed queue
-	stakeRemoval, err := ms.k.GetDelegateStakeRemovalByTopicAndAddress(ctx, msg.TopicId, msg.Reputer, msg.Sender)
+	stakeRemoval, err := ms.k.GetDelegateStakeRemovalByTopicAndAddress(
+		ctx,
+		msg.TopicId,
+		msg.Reputer,
+		msg.Sender,
+	)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return nil, types.ErrConfirmRemoveStakeNoRemovalStarted
@@ -261,7 +298,13 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	}
 
 	// Update the stake data structures
-	err = ms.k.RemoveDelegateStake(ctx, stakeRemoval.Placement.TopicId, msg.Sender, msg.Reputer, stakeRemoval.Placement.Amount)
+	err = ms.k.RemoveDelegateStake(
+		ctx,
+		stakeRemoval.Placement.TopicId,
+		msg.Sender,
+		msg.Reputer,
+		stakeRemoval.Placement.Amount,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +312,10 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	return &types.MsgConfirmRemoveDelegateStakeResponse{}, nil
 }
 
-func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {
+func (ms msgServer) RewardDelegateStake(
+	ctx context.Context,
+	msg *types.MsgRewardDelegateStake,
+) (*types.MsgRewardDelegateStakeResponse, error) {
 	// Check the target reputer exists and is registered
 	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
@@ -297,7 +343,12 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 	}
 	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim()))
-		err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, msg.Sender, coins)
+		err = ms.k.SendCoinsFromModuleToAccount(
+			ctx,
+			types.AlloraPendingRewardForDelegatorAccountName,
+			msg.Sender,
+			coins,
+		)
 		if err != nil {
 			return nil, err
 		}

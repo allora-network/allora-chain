@@ -34,7 +34,16 @@ func (im IBCMiddleware) OnChanOpenInit(
 	version string,
 ) (string, error) {
 	// call underlying callback
-	return im.app.OnChanOpenInit(ctx, order, connectionHops, portID, channelID, chanCap, counterparty, version)
+	return im.app.OnChanOpenInit(
+		ctx,
+		order,
+		connectionHops,
+		portID,
+		channelID,
+		chanCap,
+		counterparty,
+		version,
+	)
 }
 
 // OnChanOpenTry implements the IBCMiddleware interface
@@ -48,7 +57,16 @@ func (im IBCMiddleware) OnChanOpenTry(
 	counterparty channeltypes.Counterparty,
 	counterpartyVersion string,
 ) (string, error) {
-	return im.app.OnChanOpenTry(ctx, order, connectionHops, portID, channelID, channelCap, counterparty, counterpartyVersion)
+	return im.app.OnChanOpenTry(
+		ctx,
+		order,
+		connectionHops,
+		portID,
+		channelID,
+		channelCap,
+		counterparty,
+		counterpartyVersion,
+	)
 }
 
 // OnChanOpenAck implements the IBCMiddleware interface
@@ -97,7 +115,9 @@ func (im IBCMiddleware) OnRecvPacket(
 ) ibcexported.Acknowledgement {
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("cannot unmarshal ICS-20 transfer packet data"))
+		return channeltypes.NewErrorAcknowledgement(
+			fmt.Errorf("cannot unmarshal ICS-20 transfer packet data"),
+		)
 	}
 
 	var msg Message
@@ -146,12 +166,16 @@ func (im IBCMiddleware) OnRecvPacket(
 		data.Memo = string(msg.Payload)
 		var dataBytes []byte
 		if dataBytes, err = transfertypes.ModuleCdc.MarshalJSON(&data); err != nil {
-			return channeltypes.NewErrorAcknowledgement(fmt.Errorf("cannot marshal ICS-20 post-processed transfer packet data"))
+			return channeltypes.NewErrorAcknowledgement(
+				fmt.Errorf("cannot marshal ICS-20 post-processed transfer packet data"),
+			)
 		}
 		packet.Data = dataBytes
 		return im.app.OnRecvPacket(ctx, packet, relayer)
 	default:
-		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("unrecognized mesasge type: %d", msg.Type))
+		return channeltypes.NewErrorAcknowledgement(
+			fmt.Errorf("unrecognized mesasge type: %d", msg.Type),
+		)
 	}
 }
 

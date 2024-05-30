@@ -18,7 +18,10 @@ type queryServer struct {
 }
 
 // Params returns params of the mint module.
-func (q queryServer) Params(ctx context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+func (q queryServer) Params(
+	ctx context.Context,
+	_ *types.QueryParamsRequest,
+) (*types.QueryParamsResponse, error) {
 	params, err := q.k.Params.Get(ctx)
 	if err != nil {
 		return nil, err
@@ -29,7 +32,10 @@ func (q queryServer) Params(ctx context.Context, _ *types.QueryParamsRequest) (*
 
 // Inflation returns the annual inflation rate of the mint module.
 // note this is the _current_ inflation rate, could change at any time
-func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationRequest) (*types.QueryInflationResponse, error) {
+func (q queryServer) Inflation(
+	ctx context.Context,
+	_ *types.QueryInflationRequest,
+) (*types.QueryInflationResponse, error) {
 	// as a crude approximation we take the last blockEmission
 	// multiply by the amount of blocks in a year,
 	// then use that relative to the current supply as "inflation"

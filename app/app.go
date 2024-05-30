@@ -140,7 +140,9 @@ type AlloraApp struct {
 }
 
 func init() {
-	sdk.DefaultPowerReduction = math.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
+	sdk.DefaultPowerReduction = math.NewIntFromBigInt(
+		new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil),
+	)
 	userHomeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -156,7 +158,9 @@ func AppConfig() depinject.Config {
 		depinject.Supply(
 			// supply custom module basics
 			map[string]module.AppModuleBasic{
-				genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+				genutiltypes.ModuleName: genutil.NewAppModuleBasic(
+					genutiltypes.DefaultMessageValidator,
+				),
 				govtypes.ModuleName: gov.NewAppModuleBasic(
 					[]govclient.ProposalHandler{
 						paramsclient.ProposalHandler,
@@ -253,7 +257,10 @@ func NewAlloraApp(
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
 	// NOTE: this is not required apps that don't use the simulator for fuzz testing transactions
-	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, make(map[string]module.AppModuleSimulation, 0))
+	app.sm = module.NewSimulationManagerFromAppModules(
+		app.ModuleManager.Modules,
+		make(map[string]module.AppModuleSimulation, 0),
+	)
 	app.sm.RegisterStoreDecoders()
 
 	topicsHandler := NewTopicsHandler(app.EmissionsKeeper)

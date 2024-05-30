@@ -62,8 +62,17 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.PKS = simtestutil.CreateTestPubKeys(4)
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
-	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, staking.AppModuleBasic{}, bank.AppModuleBasic{}, mint.AppModuleBasic{})
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	encCfg := moduletestutil.MakeTestEncodingConfig(
+		auth.AppModuleBasic{},
+		staking.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		mint.AppModuleBasic{},
+	)
+	testCtx := testutil.DefaultContextWithDB(
+		s.T(),
+		key,
+		storetypes.NewTransientStoreKey("transient_test"),
+	)
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 
 	maccPerms := map[string][]string{
@@ -164,7 +173,11 @@ func (s *MintModuleTestSuite) TestMintingAtMaxSupply() {
 func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown() {
 	params, err := s.mintKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
-	ecosystemMintSupplyRemaining, err := mint.GetEcosystemMintSupplyRemaining(s.ctx, s.mintKeeper, params)
+	ecosystemMintSupplyRemaining, err := mint.GetEcosystemMintSupplyRemaining(
+		s.ctx,
+		s.mintKeeper,
+		params,
+	)
 	s.Require().NoError(err)
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
@@ -244,7 +257,9 @@ func (s *MintModuleTestSuite) TestEcosystemMintableRemainingGoDownTargetEmission
 	s.Require().True(ok)
 	maxSupply, ok := cosmosMath.NewIntFromString("1000000000000000000000000000") // 1e27
 	s.Require().True(ok)
-	ecosystemMintableRemainingBefore, ok := cosmosMath.NewIntFromString("367500000000000000000000000") // 1e27 * 0.3675
+	ecosystemMintableRemainingBefore, ok := cosmosMath.NewIntFromString(
+		"367500000000000000000000000",
+	) // 1e27 * 0.3675
 	s.Require().True(ok)
 
 	e_iBefore, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
@@ -256,7 +271,9 @@ func (s *MintModuleTestSuite) TestEcosystemMintableRemainingGoDownTargetEmission
 	)
 	s.Require().NoError(err)
 
-	ecosystemMintableRemainingAfter, ok := cosmosMath.NewIntFromString("300000000000000000000000000") // 1e27 * 0.3
+	ecosystemMintableRemainingAfter, ok := cosmosMath.NewIntFromString(
+		"300000000000000000000000000",
+	) // 1e27 * 0.3
 	s.Require().True(ok)
 	e_iAfter, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		fEmission,
@@ -275,10 +292,20 @@ func (s *MintModuleTestSuite) TestEcosystemMintableRemainingGoDownTargetEmission
 
 func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughToCoverInflation() {
 	feeCollectorAddress := s.accountKeeper.GetModuleAddress("fee_collector")
-	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissionstypes.AlloraRewardsAccountName)
+	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(
+		emissionstypes.AlloraRewardsAccountName,
+	)
 	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
-	feeCollectorBalBefore := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
-	alloraRewardsBalBefore := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
+	feeCollectorBalBefore := s.bankKeeper.GetBalance(
+		s.ctx,
+		feeCollectorAddress,
+		sdk.DefaultBondDenom,
+	)
+	alloraRewardsBalBefore := s.bankKeeper.GetBalance(
+		s.ctx,
+		alloraRewardsAddress,
+		sdk.DefaultBondDenom,
+	)
 	s.ctx = s.ctx.WithBlockHeight(1)
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("40000000000000000000")
@@ -313,8 +340,16 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
-	feeCollectorBalAfter := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
-	alloraRewardsBalAfter := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
+	feeCollectorBalAfter := s.bankKeeper.GetBalance(
+		s.ctx,
+		feeCollectorAddress,
+		sdk.DefaultBondDenom,
+	)
+	alloraRewardsBalAfter := s.bankKeeper.GetBalance(
+		s.ctx,
+		alloraRewardsAddress,
+		sdk.DefaultBondDenom,
+	)
 	ecosystemBalAfter := s.bankKeeper.GetBalance(s.ctx, ecosystemAddress, sdk.DefaultBondDenom)
 	tokenSupplyAfter := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
 
@@ -346,10 +381,20 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 
 func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnoughToCoverInflation() {
 	feeCollectorAddress := s.accountKeeper.GetModuleAddress("fee_collector")
-	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissionstypes.AlloraRewardsAccountName)
+	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(
+		emissionstypes.AlloraRewardsAccountName,
+	)
 	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
-	feeCollectorBalBefore := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
-	alloraRewardsBalBefore := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
+	feeCollectorBalBefore := s.bankKeeper.GetBalance(
+		s.ctx,
+		feeCollectorAddress,
+		sdk.DefaultBondDenom,
+	)
+	alloraRewardsBalBefore := s.bankKeeper.GetBalance(
+		s.ctx,
+		alloraRewardsAddress,
+		sdk.DefaultBondDenom,
+	)
 	ecosystemBalBefore := s.bankKeeper.GetBalance(s.ctx, ecosystemAddress, sdk.DefaultBondDenom)
 	ecosystemTokensMintedBefore, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
 	s.Require().NoError(err)
@@ -385,8 +430,16 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)
 
-	feeCollectorBalAfter := s.bankKeeper.GetBalance(s.ctx, feeCollectorAddress, sdk.DefaultBondDenom)
-	alloraRewardsBalAfter := s.bankKeeper.GetBalance(s.ctx, alloraRewardsAddress, sdk.DefaultBondDenom)
+	feeCollectorBalAfter := s.bankKeeper.GetBalance(
+		s.ctx,
+		feeCollectorAddress,
+		sdk.DefaultBondDenom,
+	)
+	alloraRewardsBalAfter := s.bankKeeper.GetBalance(
+		s.ctx,
+		alloraRewardsAddress,
+		sdk.DefaultBondDenom,
+	)
 	ecosystemBalAfter := s.bankKeeper.GetBalance(s.ctx, ecosystemAddress, sdk.DefaultBondDenom)
 	tokenSupplyAfter := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
 	ecosystemTokensMintedAfter, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)

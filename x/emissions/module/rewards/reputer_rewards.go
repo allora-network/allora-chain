@@ -27,17 +27,28 @@ func GetReputersRewardFractions(
 		reputers[i] = scorePtr.Address
 		stake, err := k.GetStakeOnReputerInTopic(ctx, topicId, scorePtr.Address)
 		if err != nil {
-			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer stake on topic %d", topicId)
+			return []string{}, []alloraMath.Dec{}, errors.Wrapf(
+				err,
+				"failed to get reputer stake on topic %d",
+				topicId,
+			)
 		}
 		stakes[i], err = alloraMath.NewDecFromSdkInt(stake)
 		if err != nil {
-			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to convert reputer stake %d", stake)
+			return []string{}, []alloraMath.Dec{}, errors.Wrapf(
+				err,
+				"failed to convert reputer stake %d",
+				stake,
+			)
 		}
 	}
 
 	rewardFractions, err := CalculateReputerRewardFractions(stakes, scores, pReward)
 	if err != nil {
-		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer reward fractions")
+		return []string{}, []alloraMath.Dec{}, errors.Wrapf(
+			err,
+			"failed to get reputer reward fractions",
+		)
 	}
 
 	return reputers, rewardFractions, nil
@@ -58,9 +69,16 @@ func GetReputerTaskEntropy(
 	numReputers := len(reputers)
 	emaReputerRewards := make([]alloraMath.Dec, numReputers)
 	for i, reputer := range reputers {
-		previousReputerRewardFraction, noPriorRegret, err := k.GetPreviousReputerRewardFraction(ctx, topicId, reputer)
+		previousReputerRewardFraction, noPriorRegret, err := k.GetPreviousReputerRewardFraction(
+			ctx,
+			topicId,
+			reputer,
+		)
 		if err != nil {
-			return alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous reputer reward fraction")
+			return alloraMath.Dec{}, errors.Wrapf(
+				err,
+				"failed to get previous reputer reward fraction",
+			)
 		}
 		emaReputerRewards[i], err = alloraMath.CalcEma(
 			emaAlpha,
@@ -85,7 +103,10 @@ func GetReputerTaskEntropy(
 	for i, reputer := range reputers {
 		err := k.SetPreviousReputerRewardFraction(ctx, topicId, reputer, modifiedRewardFractions[i])
 		if err != nil {
-			return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous reputer reward fraction")
+			return alloraMath.Dec{}, errors.Wrapf(
+				err,
+				"failed to set previous reputer reward fraction",
+			)
 		}
 	}
 
@@ -182,7 +203,9 @@ func GetRewardForReputerFromTotalReward(
 		if delegatorReward.Gt(alloraMath.NewDecFromInt64(0)) {
 			// update reward share
 			// new_share = current_share + (reward / total_stake)
-			totalDelegatorStakeAmountDec, err := alloraMath.NewDecFromSdkInt(totalDelegatorStakeAmount)
+			totalDelegatorStakeAmountDec, err := alloraMath.NewDecFromSdkInt(
+				totalDelegatorStakeAmount,
+			)
 			if err != nil {
 				return nil, err
 			}

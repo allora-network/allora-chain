@@ -17,7 +17,10 @@ func (forecast *Forecast) Validate() error {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecaster cannot be empty")
 	}
 	if len(forecast.ForecastElements) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
+		return errors.Wrap(
+			sdkerrors.ErrInvalidRequest,
+			"at least one forecast element must be provided",
+		)
 	}
 	for _, elem := range forecast.ForecastElements {
 		_, err := sdk.AccAddressFromBech32(elem.Inferer)

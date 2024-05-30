@@ -10,7 +10,11 @@ import (
 type TopicId = uint64
 type Allo = cosmosMath.Int
 
-func (ms *msgServer) ActivateTopicIfWeightAtLeastGlobalMin(ctx context.Context, topicId TopicId, amount Allo) error {
+func (ms *msgServer) ActivateTopicIfWeightAtLeastGlobalMin(
+	ctx context.Context,
+	topicId TopicId,
+	amount Allo,
+) error {
 	isActivated, err := ms.k.IsTopicActive(ctx, topicId)
 	if err != nil {
 		return errors.Wrapf(err, "error getting topic activation status")

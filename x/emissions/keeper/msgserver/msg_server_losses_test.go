@@ -30,7 +30,10 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	minStakeScaled := params.RequiredMinimumStake.Mul(inference_synthesis.CosmosIntOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
-	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()))
+	s.MintTokensToAddress(
+		reputerAddr,
+		cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()),
+	)
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -57,7 +60,9 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	expectedInferences := types.Inferences{
 		Inferences: []*types.Inference{
 			{
-				Value:   alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Value: alloraMath.NewDecFromInt64(
+					1,
+				), // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer: workerAddr.String(),
 			},
 		},
@@ -163,7 +168,10 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 
-	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()))
+	s.MintTokensToAddress(
+		reputerAddr,
+		cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()),
+	)
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -190,7 +198,9 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 	expectedInferences := types.Inferences{
 		Inferences: []*types.Inference{
 			{
-				Value:   alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Value: alloraMath.NewDecFromInt64(
+					1,
+				), // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer: workerAddr.String(),
 			},
 		},
@@ -311,7 +321,10 @@ func (s *KeeperTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 
-	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()))
+	s.MintTokensToAddress(
+		reputerAddr,
+		cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()),
+	)
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -338,7 +351,9 @@ func (s *KeeperTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 	expectedInferences := types.Inferences{
 		Inferences: []*types.Inference{
 			{
-				Value:   alloraMath.NewDecFromInt64(1), // Assuming NewDecFromInt64 exists and is appropriate
+				Value: alloraMath.NewDecFromInt64(
+					1,
+				), // Assuming NewDecFromInt64 exists and is appropriate
 				Inferer: workerAddr.String(),
 			},
 		},

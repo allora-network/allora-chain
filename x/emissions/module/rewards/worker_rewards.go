@@ -35,7 +35,16 @@ func GetInferenceTaskRewardFractions(
 	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pReward, cReward, latestScores)
+	return GetWorkersRewardFractions(
+		ctx,
+		k,
+		topicId,
+		blockHeight,
+		TASK_INFERENCE,
+		pReward,
+		cReward,
+		latestScores,
+	)
 }
 
 func GetForecastingTaskRewardFractions(
@@ -47,7 +56,16 @@ func GetForecastingTaskRewardFractions(
 	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pReward, cReward, latestScores)
+	return GetWorkersRewardFractions(
+		ctx,
+		k,
+		topicId,
+		blockHeight,
+		TASK_FORECAST,
+		pReward,
+		cReward,
+		latestScores,
+	)
 }
 
 func GetWorkersRewardFractions(
@@ -73,9 +91,16 @@ func GetWorkersRewardFractions(
 		}
 
 		// Get worker scores from the latest time steps
-		latestScoresFromLastestTimeSteps, err := k.GetInferenceScoresUntilBlock(ctx, topicId, blockHeight)
+		latestScoresFromLastestTimeSteps, err := k.GetInferenceScoresUntilBlock(
+			ctx,
+			topicId,
+			blockHeight,
+		)
 		if err != nil {
-			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get worker inference scores from the latest time steps")
+			return []string{}, []alloraMath.Dec{}, errors.Wrapf(
+				err,
+				"failed to get worker inference scores from the latest time steps",
+			)
 		}
 		var workerLastScoresDec []alloraMath.Dec
 		for _, score := range latestScoresFromLastestTimeSteps {
@@ -106,7 +131,13 @@ func GetWorkersRewardFractions(
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get epsilon")
 	}
-	rewardFractions, err := GetScoreFractions(latestWorkerScores, flatten(scores), pReward, cReward, moduleParams.Epsilon)
+	rewardFractions, err := GetScoreFractions(
+		latestWorkerScores,
+		flatten(scores),
+		pReward,
+		cReward,
+		moduleParams.Epsilon,
+	)
 	if err != nil {
 		return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get score fractions")
 	}
@@ -126,7 +157,16 @@ func GetInferenceTaskEntropy(
 	entropy alloraMath.Dec,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, betaEntropy, TASK_INFERENCE, workers, workersFractions)
+	return getInferenceOrForecastTaskEntropy(
+		ctx,
+		k,
+		topicId,
+		emaAlpha,
+		betaEntropy,
+		TASK_INFERENCE,
+		workers,
+		workersFractions,
+	)
 }
 
 func GetForecastingTaskEntropy(
@@ -141,7 +181,16 @@ func GetForecastingTaskEntropy(
 	entropy alloraMath.Dec,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, betaEntropy, TASK_FORECAST, workers, workersFractions)
+	return getInferenceOrForecastTaskEntropy(
+		ctx,
+		k,
+		topicId,
+		emaAlpha,
+		betaEntropy,
+		TASK_FORECAST,
+		workers,
+		workersFractions,
+	)
 }
 
 func getInferenceOrForecastTaskEntropy(
@@ -163,9 +212,16 @@ func getInferenceOrForecastTaskEntropy(
 	for i, worker := range workers {
 		noPriorScore := false
 		if which == TASK_INFERENCE {
-			previousRewardFraction, noPriorScore, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+			previousRewardFraction, noPriorScore, err = k.GetPreviousInferenceRewardFraction(
+				ctx,
+				topicId,
+				worker,
+			)
 			if err != nil {
-				return alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous inference reward fraction")
+				return alloraMath.Dec{}, errors.Wrapf(
+					err,
+					"failed to get previous inference reward fraction",
+				)
 			}
 		} else { // TASK_FORECAST
 			previousRewardFraction, noPriorScore, err = k.GetPreviousForecastRewardFraction(ctx, topicId, worker)
@@ -195,9 +251,17 @@ func getInferenceOrForecastTaskEntropy(
 	}
 	if which == TASK_INFERENCE {
 		for i, worker := range workers {
-			err := k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, modifiedRewardFractions[i])
+			err := k.SetPreviousInferenceRewardFraction(
+				ctx,
+				topicId,
+				worker,
+				modifiedRewardFractions[i],
+			)
 			if err != nil {
-				return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous inference reward fraction")
+				return alloraMath.Dec{}, errors.Wrapf(
+					err,
+					"failed to set previous inference reward fraction",
+				)
 			}
 		}
 	} else { // TASK_FORECAST
@@ -300,7 +364,9 @@ func NormalizationFactor(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	oneMinusForecastingUtilityTimesEntropyInference, err := oneMinusForecastingUtility.Mul(entropyInference)
+	oneMinusForecastingUtilityTimesEntropyInference, err := oneMinusForecastingUtility.Mul(
+		entropyInference,
+	)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -308,7 +374,9 @@ func NormalizationFactor(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	denominator, err := oneMinusForecastingUtilityTimesEntropyInference.Add(forecastingUtilityTimesEntropyForecasting)
+	denominator, err := oneMinusForecastingUtilityTimesEntropyInference.Add(
+		forecastingUtilityTimesEntropyForecasting,
+	)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -331,13 +399,19 @@ func getChiAndGamma(
 		networkInferenceLoss,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting performance score")
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(
+			err,
+			"failed to calculate forecasting performance score",
+		)
 	}
 	chi, err = ForecastingUtility(
 		forecastingTaskUtilityScore,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(
+			err,
+			"failed to calculate forecasting utility",
+		)
 	}
 	gamma, err = NormalizationFactor(
 		entropyInference,
@@ -345,7 +419,10 @@ func getChiAndGamma(
 		chi,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate normalization factor")
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(
+			err,
+			"failed to calculate normalization factor",
+		)
 	}
 	return chi, gamma, nil
 }

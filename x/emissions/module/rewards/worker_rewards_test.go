@@ -33,11 +33,21 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 			}
 
 			// Persist worker inference score
-			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err := s.emissionsKeeper.InsertWorkerInferenceScore(
+				s.ctx,
+				topicId,
+				blockHeight,
+				scoreToAdd,
+			)
 			s.Require().NoError(err)
 
 			// Persist worker forecast score
-			err = s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err = s.emissionsKeeper.InsertWorkerForecastScore(
+				s.ctx,
+				topicId,
+				blockHeight,
+				scoreToAdd,
+			)
 			s.Require().NoError(err)
 		}
 
@@ -120,11 +130,21 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 			}
 
 			// Persist worker inference score
-			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err := s.emissionsKeeper.InsertWorkerInferenceScore(
+				s.ctx,
+				topicId,
+				blockHeight,
+				scoreToAdd,
+			)
 			s.Require().NoError(err)
 
 			// Persist worker forecast score
-			err = s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			err = s.emissionsKeeper.InsertWorkerForecastScore(
+				s.ctx,
+				topicId,
+				blockHeight,
+				scoreToAdd,
+			)
 			s.Require().NoError(err)
 		}
 
@@ -241,7 +261,11 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 	s.Require().Equal(5, len(forecastRewards))
 }
 
-func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {
+func mockNetworkLosses(
+	s *RewardsTestSuite,
+	topicId uint64,
+	block int64,
+) (types.ValueBundle, error) {
 	oneOutInfererLosses := []*types.WithheldWorkerAttributedValue{
 		{
 			Worker: s.addrs[0].String(),
@@ -397,11 +421,31 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, e
 		1003,
 	}
 	var scores = [][]alloraMath.Dec{
-		{alloraMath.MustNewDecFromString("-0.00675"), alloraMath.MustNewDecFromString("-0.00622"), alloraMath.MustNewDecFromString("-0.00388")},
-		{alloraMath.MustNewDecFromString("-0.01502"), alloraMath.MustNewDecFromString("-0.01214"), alloraMath.MustNewDecFromString("-0.01554")},
-		{alloraMath.MustNewDecFromString("0.00392"), alloraMath.MustNewDecFromString("0.00559"), alloraMath.MustNewDecFromString("0.00545")},
-		{alloraMath.MustNewDecFromString("0.0438"), alloraMath.MustNewDecFromString("0.04304"), alloraMath.MustNewDecFromString("0.03906")},
-		{alloraMath.MustNewDecFromString("0.09719"), alloraMath.MustNewDecFromString("0.09675"), alloraMath.MustNewDecFromString("0.09418")},
+		{
+			alloraMath.MustNewDecFromString("-0.00675"),
+			alloraMath.MustNewDecFromString("-0.00622"),
+			alloraMath.MustNewDecFromString("-0.00388"),
+		},
+		{
+			alloraMath.MustNewDecFromString("-0.01502"),
+			alloraMath.MustNewDecFromString("-0.01214"),
+			alloraMath.MustNewDecFromString("-0.01554"),
+		},
+		{
+			alloraMath.MustNewDecFromString("0.00392"),
+			alloraMath.MustNewDecFromString("0.00559"),
+			alloraMath.MustNewDecFromString("0.00545"),
+		},
+		{
+			alloraMath.MustNewDecFromString("0.0438"),
+			alloraMath.MustNewDecFromString("0.04304"),
+			alloraMath.MustNewDecFromString("0.03906"),
+		},
+		{
+			alloraMath.MustNewDecFromString("0.09719"),
+			alloraMath.MustNewDecFromString("0.09675"),
+			alloraMath.MustNewDecFromString("0.09418"),
+		},
 	}
 
 	lastScores := make([]types.Score, 0)
@@ -415,7 +459,12 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, e
 			}
 
 			// Persist worker inference score
-			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blocks[j], scoreToAdd)
+			err := s.emissionsKeeper.InsertWorkerInferenceScore(
+				s.ctx,
+				topicId,
+				blocks[j],
+				scoreToAdd,
+			)
 			if err != nil {
 				return nil, err
 			}
