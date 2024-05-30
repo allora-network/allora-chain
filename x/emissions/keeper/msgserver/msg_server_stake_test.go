@@ -24,19 +24,16 @@ func (s *KeeperTestSuite) commonStakingSetup(
 
 	// Create Topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:          reputerAddr.String(),
-		Metadata:         "Some metadata for the new topic",
-		LossLogic:        "logic",
-		LossMethod:       "method",
-		EpochLength:      10800,
-		InferenceLogic:   "Ilogic",
-		InferenceMethod:  "Imethod",
-		DefaultArg:       "ETH",
-		AlphaRegret:      alloraMath.NewDecFromInt64(10),
-		PrewardReputer:   alloraMath.NewDecFromInt64(11),
-		PrewardInference: alloraMath.NewDecFromInt64(12),
-		PrewardForecast:  alloraMath.NewDecFromInt64(13),
-		FTolerance:       alloraMath.NewDecFromInt64(14),
+		Creator:         reputerAddr.String(),
+		Metadata:        "Some metadata for the new topic",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
 	}
 
 	reputerInitialBalance := types.DefaultParams().CreateTopicFee.Add(cosmosMath.Int(reputerInitialBalanceUint))

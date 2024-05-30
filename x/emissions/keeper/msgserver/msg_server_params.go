@@ -59,9 +59,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.Epsilon) == 1 {
 		existingParams.Epsilon = newParams.Epsilon[0]
 	}
-	if len(newParams.PRewardSpread) == 1 {
-		existingParams.PRewardSpread = newParams.PRewardSpread[0]
-	}
 	if len(newParams.MaxUnfulfilledWorkerRequests) == 1 {
 		existingParams.MaxUnfulfilledWorkerRequests = newParams.MaxUnfulfilledWorkerRequests[0]
 	}
@@ -98,12 +95,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.CreateTopicFee) == 1 {
 		existingParams.CreateTopicFee = newParams.CreateTopicFee[0]
 	}
-	if len(newParams.SigmoidA) == 1 {
-		existingParams.SigmoidA = newParams.SigmoidA[0]
-	}
-	if len(newParams.SigmoidB) == 1 {
-		existingParams.SigmoidB = newParams.SigmoidB[0]
-	}
 	if len(newParams.MaxRetriesToFulfilNoncesWorker) == 1 {
 		existingParams.MaxRetriesToFulfilNoncesWorker = newParams.MaxRetriesToFulfilNoncesWorker[0]
 	}
@@ -127,6 +118,27 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.BlocksPerMonth) == 1 {
 		existingParams.BlocksPerMonth = newParams.BlocksPerMonth[0]
+	}
+	if len(newParams.PRewardInference) == 1 {
+		existingParams.PRewardInference = newParams.PRewardInference[0]
+	}
+	if len(newParams.PRewardForecast) == 1 {
+		existingParams.PRewardForecast = newParams.PRewardForecast[0]
+	}
+	if len(newParams.PRewardReputer) == 1 {
+		existingParams.PRewardReputer = newParams.PRewardReputer[0]
+	}
+	if len(newParams.CRewardInference) == 1 {
+		existingParams.CRewardInference = newParams.CRewardInference[0]
+	}
+	if len(newParams.CRewardForecast) == 1 {
+		existingParams.CRewardForecast = newParams.CRewardForecast[0]
+	}
+	if len(newParams.FTolerance) == 1 {
+		existingParams.FTolerance = newParams.FTolerance[0]
+	}
+	if len(newParams.CNorm) == 1 {
+		existingParams.CNorm = newParams.CNorm[0]
 	}
 	err = existingParams.Validate()
 	if err != nil {
