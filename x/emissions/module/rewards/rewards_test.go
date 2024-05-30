@@ -3206,7 +3206,7 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 	stdlog.Printf("reputer5Reward: %s", reputer5Reward)
 
 	require.True(reputer0Reward.Equal(reputer1Reward))
-	require.True(reputer2Reward.LT(reputer1Reward))
+	require.True(reputer5Reward.LT(reputer1Reward))
 }
 
 func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
