@@ -12,7 +12,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Create a map from worker address to their inference or forecast-implied inference
@@ -501,6 +500,18 @@ func CalcOneInInferences(
 		forecastImpliedInferencesWithForecaster[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
 		// Calculate the network inference without the worker's forecast-implied inference
 
+		// Get Inferer normalized regrets and max regret
+		infererNormalizedRegrets, err := GetInfererNormalizedRegretsWithMax(ctx, k, topicId, sortedInferers, epsilon)
+		if err != nil {
+			ctx.Logger().Warn(fmt.Sprintf("Error getting inferer normalized regrets: %s", err.Error()))
+		}
+
+		// Get Forecaster normalized regrets and max regret
+		forecastNormalizedRegrets, err := GetForecasterNormalizedRegretsWithMax(ctx, k, topicId, sortedForecasters, epsilon)
+		if err != nil {
+			ctx.Logger().Warn(fmt.Sprintf("Error getting forecaster normalized regrets: %s", err.Error()))
+		}
+
 		sortedForecastersWithForecaster := alloraMath.GetSortedKeys(forecastImpliedInferencesWithForecaster)
 		oneInInference, err := CalcWeightedInference(
 			ctx,
@@ -510,14 +521,15 @@ func CalcOneInInferences(
 			sortedInferers,
 			forecastImpliedInferencesWithForecaster,
 			sortedForecastersWithForecaster,
+			infererNormalizedRegrets,
+			forecastNormalizedRegrets,
 			allWorkersAreNew,
-			maxRegretsByOneInForecaster[oneInForecaster],
 			epsilon,
 			pNorm,
 			cNorm,
 		)
 		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating one-in inference")
+			return make([]*emissions.WorkerAttributedValue, 0), errorsmod.Wrapf(err, "Error calculating one-in inference")
 		}
 		oneInInferences = append(oneInInferences, &emissions.WorkerAttributedValue{
 			Worker: oneInForecaster,
@@ -546,7 +558,7 @@ func CalcNetworkInferences(
 
 	allWorkersAreNew, err := AreAllWorkersNew(ctx, k, topicId, sortedInferers, forecasts)
 	if err != nil {
-		return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error checking if all workers are new")
+		return &emissions.ValueBundle{}, errorsmod.Wrapf(err, fmt.Sprintf("Error calculating forecast-implied inferences: %s", err.Error()))
 	}
 
 	// Calculate forecast-implied inferences I_ik
@@ -642,13 +654,16 @@ func CalcNetworkInferences(
 	}
 
 	// Calculate the one-in inference I^+_ki
-	oneInInferences, err := CalcOneInInferences(ctx, k,
+	oneInInferences, err := CalcOneInInferences(
+		ctx,
+		k,
 		topicId,
 		inferenceByWorker,
 		sortedInferers,
 		forecastImpliedInferenceByWorker,
 		sortedForecasters,
 		allWorkersAreNew,
+		// TODO
 		stdDevRegrets.StdDevOneInForecastRegret,
 		epsilon,
 		pNorm,
@@ -705,7 +720,8 @@ func GetNetworkInferencesAtBlock(
 
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferencesNonce)
 	if err != nil {
-		return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, inferencesNonce)
+		ctx.Logger().Warn(fmt.Sprintf("no inferences found for topic %v at block %v, %v", topicId, inferencesNonce, err.Error()))
+		return networkInferences, nil
 	}
 	// Add inferences in the bundle -> this bundle will be used as a fallback in case of error
 	for _, infererence := range inferences.Inferences {
