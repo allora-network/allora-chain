@@ -603,7 +603,7 @@ func (s *RewardsTestSuite) setUpTopic(
 	stake cosmosMath.Int,
 	alphaRegret alloraMath.Dec,
 ) uint64 {
-	return s.setUpTopicWithEpochLength(blockHeight, workerAddrs, reputerAddrs, stake, 10800)
+	return s.setUpTopicWithEpochLength(blockHeight, workerAddrs, reputerAddrs, stake, alphaRegret, 10800)
 }
 
 func (s *RewardsTestSuite) setUpTopicWithEpochLength(
@@ -2770,6 +2770,8 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	/// SETUP
 	require := s.Require()
 
+	alphaRegret := alloraMath.MustNewDecFromString("0.1")
+
 	block := int64(100)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
@@ -2793,8 +2795,8 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, 1)
-	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer1Addrs, stake, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
+	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer1Addrs, stake, alphaRegret, 1)
 
 	reputer0Values := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.1"},
