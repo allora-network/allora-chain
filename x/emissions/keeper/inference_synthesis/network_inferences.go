@@ -504,12 +504,14 @@ func CalcOneInInferences(
 		infererNormalizedRegrets, err := GetInfererNormalizedRegretsWithMax(ctx, k, topicId, sortedInferers, epsilon)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error getting inferer normalized regrets: %s", err.Error()))
+			return make([]*emissions.WorkerAttributedValue, 0), errorsmod.Wrapf(err, "Error calculating infererNormalizedRegrets in calc one-in inference")
 		}
 
 		// Get Forecaster normalized regrets and max regret
 		forecastNormalizedRegrets, err := GetForecasterNormalizedRegretsWithMax(ctx, k, topicId, sortedForecasters, epsilon)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error getting forecaster normalized regrets: %s", err.Error()))
+			return make([]*emissions.WorkerAttributedValue, 0), errorsmod.Wrapf(err, "Error calculating forecastNormalizedRegrets in calc one-in inference")
 		}
 
 		sortedForecastersWithForecaster := alloraMath.GetSortedKeys(forecastImpliedInferencesWithForecaster)
