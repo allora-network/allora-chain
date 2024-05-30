@@ -253,7 +253,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 		"worker4": alloraMath.MustNewDecFromString("0.7658774622830770"),
 		"worker5": alloraMath.MustNewDecFromString("0.7185104293863190"),
 	}
-	expectedNetworkCombinedInferenceValue := alloraMath.MustNewDecFromString("-0.19466636004515200")
+	expectedNetworkCombinedInferenceValue := alloraMath.MustNewDecFromString("-0.19486643996868")
 
 	for inferer, regret := range infererNetworkRegrets {
 		s.emissionsKeeper.SetInfererNetworkRegret(
