@@ -51,6 +51,7 @@ func DefaultParams() Params {
 		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),   // fiducial value for rewards calculation
 		FTolerance:                      alloraMath.MustNewDecFromString("0.01"),   // fiducial value for rewards calculation
 		CNorm:                           alloraMath.MustNewDecFromString("0.75"),   // fiducial value for inference synthesis
+		TopicFeeRevenueDecayRate:        alloraMath.MustNewDecFromString("0.025"),  // rate at which topic fee revenue decays over time
 	}
 }
 
@@ -171,6 +172,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateCNorm(p.CNorm); err != nil {
+		return err
+	}
+	if err := validateTopicFeeRevenueDecayRate(p.TopicFeeRevenueDecayRate); err != nil {
 		return err
 	}
 
@@ -502,6 +506,15 @@ func validateMaxSerializedMsgLength(i int64) error {
 func validateBlocksPerMonth(i uint64) error {
 	if i == 0 {
 		return fmt.Errorf("blocks per month must be positive: %d", i)
+	}
+	return nil
+}
+
+// percent reward to go to cosmos network validators.
+// Should be a value between 0 and 1.
+func validateTopicFeeRevenueDecayRate(i alloraMath.Dec) error {
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
 }

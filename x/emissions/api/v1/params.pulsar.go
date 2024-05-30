@@ -56,6 +56,7 @@ var (
 	fd_Params_c_reward_forecast                    protoreflect.FieldDescriptor
 	fd_Params_f_tolerance                          protoreflect.FieldDescriptor
 	fd_Params_c_norm                               protoreflect.FieldDescriptor
+	fd_Params_topic_fee_revenue_decay_rate         protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -100,6 +101,7 @@ func init() {
 	fd_Params_c_reward_forecast = md_Params.Fields().ByName("c_reward_forecast")
 	fd_Params_f_tolerance = md_Params.Fields().ByName("f_tolerance")
 	fd_Params_c_norm = md_Params.Fields().ByName("c_norm")
+	fd_Params_topic_fee_revenue_decay_rate = md_Params.Fields().ByName("topic_fee_revenue_decay_rate")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -401,6 +403,12 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.TopicFeeRevenueDecayRate != "" {
+		value := protoreflect.ValueOfString(x.TopicFeeRevenueDecayRate)
+		if !f(fd_Params_topic_fee_revenue_decay_rate, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -494,6 +502,8 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.FTolerance != ""
 	case "emissions.v1.Params.c_norm":
 		return x.CNorm != ""
+	case "emissions.v1.Params.topic_fee_revenue_decay_rate":
+		return x.TopicFeeRevenueDecayRate != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -588,6 +598,8 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.FTolerance = ""
 	case "emissions.v1.Params.c_norm":
 		x.CNorm = ""
+	case "emissions.v1.Params.topic_fee_revenue_decay_rate":
+		x.TopicFeeRevenueDecayRate = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -721,6 +733,9 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.v1.Params.c_norm":
 		value := x.CNorm
 		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Params.topic_fee_revenue_decay_rate":
+		value := x.TopicFeeRevenueDecayRate
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -819,6 +834,8 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.FTolerance = value.Interface().(string)
 	case "emissions.v1.Params.c_norm":
 		x.CNorm = value.Interface().(string)
+	case "emissions.v1.Params.topic_fee_revenue_decay_rate":
+		x.TopicFeeRevenueDecayRate = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -917,6 +934,8 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field f_tolerance of message emissions.v1.Params is not mutable"))
 	case "emissions.v1.Params.c_norm":
 		panic(fmt.Errorf("field c_norm of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.topic_fee_revenue_decay_rate":
+		panic(fmt.Errorf("field topic_fee_revenue_decay_rate of message emissions.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -1007,6 +1026,8 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "emissions.v1.Params.f_tolerance":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.Params.c_norm":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.Params.topic_fee_revenue_decay_rate":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -1216,6 +1237,10 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
 		}
+		l = len(x.TopicFeeRevenueDecayRate)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -1244,6 +1269,15 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.TopicFeeRevenueDecayRate) > 0 {
+			i -= len(x.TopicFeeRevenueDecayRate)
+			copy(dAtA[i:], x.TopicFeeRevenueDecayRate)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.TopicFeeRevenueDecayRate)))
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xc2
 		}
 		if len(x.CNorm) > 0 {
 			i -= len(x.CNorm)
@@ -2608,6 +2642,38 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.CNorm = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 40:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicFeeRevenueDecayRate", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.TopicFeeRevenueDecayRate = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -2662,17 +2728,21 @@ type Params struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Version                         string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`                                                                                               // version of the protocol should be in lockstep with github release tag version
-	MaxSerializedMsgLength          int64  `protobuf:"varint,2,opt,name=max_serialized_msg_length,json=maxSerializedMsgLength,proto3" json:"max_serialized_msg_length,omitempty"`                              // max length of input data for msg and query server calls
-	MinTopicWeight                  string `protobuf:"bytes,3,opt,name=min_topic_weight,json=minTopicWeight,proto3" json:"min_topic_weight,omitempty"`                                                         // total unmet demand for a topic < this => don't run inference solicatation or weight-adjustment
-	MaxTopicsPerBlock               uint64 `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                                             // max number of topics to run cadence for per block
-	RequiredMinimumStake            string `protobuf:"bytes,5,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`                                       // minimum amount of tokens to send to stake as a reputer or worker
-	RemoveStakeDelayWindow          int64  `protobuf:"varint,6,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"`                              // how long to wait before allowed to remove stake
-	MinEpochLength                  int64  `protobuf:"varint,7,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                                                        // fastest allowable topic epoch and cadence of a repeating inference request
-	BetaEntropy                     string `protobuf:"bytes,8,opt,name=beta_entropy,json=betaEntropy,proto3" json:"beta_entropy,omitempty"`                                                                    // controls resilience of reward payouts against copycat workers
-	LearningRate                    string `protobuf:"bytes,9,opt,name=learning_rate,json=learningRate,proto3" json:"learning_rate,omitempty"`                                                                 // speed of gradient descent
-	MaxGradientThreshold            string `protobuf:"bytes,10,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3" json:"max_gradient_threshold,omitempty"`                                      // gradient descent stops when gradient falls below this
-	MinStakeFraction                string `protobuf:"bytes,11,opt,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`                                                  // minimum fraction of stake to listen to when setting consensus listening coefficients
+	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"` // version of the protocol should be in lockstep with
+	// github release tag version
+	MaxSerializedMsgLength int64  `protobuf:"varint,2,opt,name=max_serialized_msg_length,json=maxSerializedMsgLength,proto3" json:"max_serialized_msg_length,omitempty"` // max length of input data for msg and query server calls
+	MinTopicWeight         string `protobuf:"bytes,3,opt,name=min_topic_weight,json=minTopicWeight,proto3" json:"min_topic_weight,omitempty"`                            // total unmet demand for a topic < this => don't run inference
+	// solicatation or weight-adjustment
+	MaxTopicsPerBlock      uint64 `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                // max number of topics to run cadence for per block
+	RequiredMinimumStake   string `protobuf:"bytes,5,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`          // minimum amount of tokens to send to stake as a reputer or worker
+	RemoveStakeDelayWindow int64  `protobuf:"varint,6,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"` // how long to wait before allowed to remove stake
+	MinEpochLength         int64  `protobuf:"varint,7,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                           // fastest allowable topic epoch and cadence of a
+	// repeating inference request
+	BetaEntropy          string `protobuf:"bytes,8,opt,name=beta_entropy,json=betaEntropy,proto3" json:"beta_entropy,omitempty"`                               // controls resilience of reward payouts against copycat workers
+	LearningRate         string `protobuf:"bytes,9,opt,name=learning_rate,json=learningRate,proto3" json:"learning_rate,omitempty"`                            // speed of gradient descent
+	MaxGradientThreshold string `protobuf:"bytes,10,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3" json:"max_gradient_threshold,omitempty"` // gradient descent stops when gradient falls below this
+	MinStakeFraction     string `protobuf:"bytes,11,opt,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`             // minimum fraction of stake to listen to when setting consensus listening
+	// coefficients
 	Epsilon                         string `protobuf:"bytes,12,opt,name=epsilon,proto3" json:"epsilon,omitempty"`                                                                                              // small number to prevent division by zero
 	MaxUnfulfilledWorkerRequests    uint64 `protobuf:"varint,13,opt,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`           // max num worker request nonces to keep track of per topic
 	MaxUnfulfilledReputerRequests   uint64 `protobuf:"varint,14,opt,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"`        // max num reputer request nonces to keep track of per topic
@@ -2694,16 +2764,18 @@ type Params struct {
 	RegistrationFee                 string `protobuf:"bytes,28,opt,name=registration_fee,json=registrationFee,proto3" json:"registration_fee,omitempty"`                                                          // registration fee for reputer or worker
 	DefaultPageLimit                uint64 `protobuf:"varint,29,opt,name=default_page_limit,json=defaultPageLimit,proto3" json:"default_page_limit,omitempty"`                                                    // default limit for pagination
 	MaxPageLimit                    uint64 `protobuf:"varint,30,opt,name=max_page_limit,json=maxPageLimit,proto3" json:"max_page_limit,omitempty"`                                                                // max limit for pagination
-	MinEpochLengthRecordLimit       int64  `protobuf:"varint,31,opt,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`                     // min number of epochs to keep network losses, reputer losses, inferences, forecasts
+	// min number of epochs to keep network losses, reputer losses, inferences, forecasts
+	MinEpochLengthRecordLimit int64 `protobuf:"varint,31,opt,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`
 	// block emission rate in number of blocks expected per month
-	BlocksPerMonth   uint64 `protobuf:"varint,32,opt,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
-	PRewardInference string `protobuf:"bytes,33,opt,name=p_reward_inference,json=pRewardInference,proto3" json:"p_reward_inference,omitempty"`
-	PRewardForecast  string `protobuf:"bytes,34,opt,name=p_reward_forecast,json=pRewardForecast,proto3" json:"p_reward_forecast,omitempty"`
-	PRewardReputer   string `protobuf:"bytes,35,opt,name=p_reward_reputer,json=pRewardReputer,proto3" json:"p_reward_reputer,omitempty"`
-	CRewardInference string `protobuf:"bytes,36,opt,name=c_reward_inference,json=cRewardInference,proto3" json:"c_reward_inference,omitempty"`
-	CRewardForecast  string `protobuf:"bytes,37,opt,name=c_reward_forecast,json=cRewardForecast,proto3" json:"c_reward_forecast,omitempty"`
-	FTolerance       string `protobuf:"bytes,38,opt,name=f_tolerance,json=fTolerance,proto3" json:"f_tolerance,omitempty"`
-	CNorm            string `protobuf:"bytes,39,opt,name=c_norm,json=cNorm,proto3" json:"c_norm,omitempty"`
+	BlocksPerMonth           uint64 `protobuf:"varint,32,opt,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
+	PRewardInference         string `protobuf:"bytes,33,opt,name=p_reward_inference,json=pRewardInference,proto3" json:"p_reward_inference,omitempty"`
+	PRewardForecast          string `protobuf:"bytes,34,opt,name=p_reward_forecast,json=pRewardForecast,proto3" json:"p_reward_forecast,omitempty"`
+	PRewardReputer           string `protobuf:"bytes,35,opt,name=p_reward_reputer,json=pRewardReputer,proto3" json:"p_reward_reputer,omitempty"`
+	CRewardInference         string `protobuf:"bytes,36,opt,name=c_reward_inference,json=cRewardInference,proto3" json:"c_reward_inference,omitempty"`
+	CRewardForecast          string `protobuf:"bytes,37,opt,name=c_reward_forecast,json=cRewardForecast,proto3" json:"c_reward_forecast,omitempty"`
+	FTolerance               string `protobuf:"bytes,38,opt,name=f_tolerance,json=fTolerance,proto3" json:"f_tolerance,omitempty"`
+	CNorm                    string `protobuf:"bytes,39,opt,name=c_norm,json=cNorm,proto3" json:"c_norm,omitempty"`
+	TopicFeeRevenueDecayRate string `protobuf:"bytes,40,opt,name=topic_fee_revenue_decay_rate,json=topicFeeRevenueDecayRate,proto3" json:"topic_fee_revenue_decay_rate,omitempty"` // decay rate for topic fee revenue
 }
 
 func (x *Params) Reset() {
@@ -2999,6 +3071,13 @@ func (x *Params) GetCNorm() string {
 	return ""
 }
 
+func (x *Params) GetTopicFeeRevenueDecayRate() string {
+	if x != nil {
+		return x.TopicFeeRevenueDecayRate
+	}
+	return ""
+}
+
 var File_emissions_v1_params_proto protoreflect.FileDescriptor
 
 var file_emissions_v1_params_proto_rawDesc = []byte{
@@ -3008,7 +3087,7 @@ var file_emissions_v1_params_proto_rawDesc = []byte{
 	0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e,
 	0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf8, 0x18,
+	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf1, 0x19,
 	0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73,
 	0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69,
 	0x6f, 0x6e, 0x12, 0x39, 0x0a, 0x19, 0x6d, 0x61, 0x78, 0x5f, 0x73, 0x65, 0x72, 0x69, 0x61, 0x6c,
@@ -3208,20 +3287,27 @@ var file_emissions_v1_params_proto_rawDesc = []byte{
 	0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c,
 	0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
 	0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65,
-	0x63, 0x52, 0x05, 0x63, 0x4e, 0x6f, 0x72, 0x6d, 0x42, 0xc1, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d,
-	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0b, 0x50,
-	0x61, 0x72, 0x61, 0x6d, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
-	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63,
-	0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76,
-	0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31, 0xa2, 0x02, 0x03,
-	0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56,
-	0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31,
-	0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x63, 0x52, 0x05, 0x63, 0x4e, 0x6f, 0x72, 0x6d, 0x12, 0x77, 0x0a, 0x1c, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x5f, 0x64, 0x65,
+	0x63, 0x61, 0x79, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x28, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72,
+	0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d,
+	0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x18, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x46, 0x65,
+	0x65, 0x52, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x44, 0x65, 0x63, 0x61, 0x79, 0x52, 0x61, 0x74,
+	0x65, 0x42, 0xc1, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0b, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x50, 0x72,
+	0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74,
+	0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
