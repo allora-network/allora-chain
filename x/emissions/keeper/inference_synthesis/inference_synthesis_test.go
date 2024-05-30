@@ -140,12 +140,12 @@ func (s *InferenceSynthesisTestSuite) inEpsilon(value alloraMath.Dec, target str
 	upperBound, err := targetDec.Mul(upperMultiplier)
 	require.NoError(err)
 
-	if lowerBound.Lt(upperBound) {
-		require.True(value.Gte(lowerBound))
-		require.True(value.Lte(upperBound))
-	} else {
-		require.True(value.Lte(lowerBound))
-		require.True(value.Gte(upperBound))
+	if lowerBound.Lt(upperBound) { // positive values, lower < value < upper
+		require.True(value.Gte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
+		require.True(value.Lte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
+	} else { // negative values, upper < value < lower
+		require.True(value.Lte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
+		require.True(value.Gte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
 	}
 }
 
