@@ -47,9 +47,10 @@ func GetTopicRewardFraction(
 	return (*topicWeight).Quo(totalWeight)
 }
 
+// Apply a function on all active topics that also have an epoch ending at this block
 // Active topics have more than a globally-set minimum weight, a function of revenue and stake
-// "Safe" because bounded by max number of pages and apply running, online operations
-func SafeApplyFuncOnAllActiveTopics(
+// "Safe" because bounded by max number of pages and apply running, online operations.
+func SafeApplyFuncOnAllActiveEpochEndingTopics(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
@@ -74,7 +75,7 @@ func SafeApplyFuncOnAllActiveTopics(
 				continue
 			}
 
-			if keeper.CheckCadence(block, topic) {
+			if k.CheckCadence(block, topic) {
 				// All checks passed => Apply function on the topic
 				err = fn(ctx, &topic)
 				if err != nil {
@@ -140,7 +141,7 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 // Iterates through every active topic, computes its target weight, then exponential moving average to get weight.
 // Returns the total sum of weight, topic revenue, map of all of the weights by topic.
 // Note that the outputted weights are not normalized => not dependent on pan-topic data.
-func GetAndUpdateActiveTopicWeightsOfBlock(
+func GetAndUpdateActiveTopicWeights(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
@@ -204,7 +205,7 @@ func GetAndUpdateActiveTopicWeightsOfBlock(
 
 	// default page limit for the max because default is 100 and max is 1000
 	// 1000 is excessive for the topic query
-	err = SafeApplyFuncOnAllActiveTopics(ctx, k, block, fn, moduleParams.DefaultPageLimit, moduleParams.DefaultPageLimit)
+	err = SafeApplyFuncOnAllActiveEpochEndingTopics(ctx, k, block, fn, moduleParams.DefaultPageLimit, moduleParams.DefaultPageLimit)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all rewardable topics to get weights")
 	}

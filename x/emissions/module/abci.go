@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"cosmossdk.io/errors"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,7 +19,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			blockHeight))
 
 	// Get unnormalized weights of active topics and the sum weight and revenue they have generated
-	weights, sumWeight, totalRevenue, err := rewards.GetAndUpdateActiveTopicWeightsOfBlock(sdkCtx, am.keeper, blockHeight)
+	weights, sumWeight, totalRevenue, err := rewards.GetAndUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
 	}
@@ -50,7 +49,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			defer wg.Done()
 			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 			// to avoid potential situations where the block is missed
-			if keeper.CheckCadence(blockHeight, topic) {
+			if am.keeper.CheckCadence(blockHeight, topic) {
 				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
 					topic.Id,
 					topic.Metadata,
