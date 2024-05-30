@@ -178,25 +178,92 @@ func accumulateNormalizedI_iAndSumWeights(
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adding weight")
 		}
 	} else {
-		// If at least one worker is not new, then we take a weighted average of all workers' inferences
-		// Normalize forecaster regret then calculate gradient => weight per forecaster for network combined inference
+		// Normalize forecaster regret
+		// regretFrac = regret / maxRegret
 		regretFrac, err := regret.Value.Quo(maxRegret.Abs())
 		if err != nil {
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
+
+		// Calculate the upper and lower bounds for regret normalization
+		// upper bound: c + 6.75 / p
+		v6Point75OverP, err := alloraMath.MustNewDecFromString("6.75").Quo(pNorm)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
+		}
+		cPlus6Point75OverP, err := cNorm.Add(v6Point75OverP)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
+		}
+
+		// lower bound: c - 8.25 / p
+		v8Point25OverP, err := alloraMath.MustNewDecFromString("8.25").Quo(pNorm)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
+		}
+		cMinus8Point25OverP, err := cNorm.Sub(v8Point25OverP)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
+		}
+
+		// threshold for zero weight: c - 17.25 / p
+		v17Point25OverP, err := alloraMath.MustNewDecFromString("17.25").Quo(pNorm)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
+		}
+		cMinus17Point25OverP, err := cNorm.Sub(v17Point25OverP)
+		if err != nil {
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower threshold for zero weight")
+		}
+
+		// Cap the normalized regrets at an upper value
+		// regretFrac = min(regretFrac, c + 6.75 / p)
+		if regretFrac.Gt(cPlus6Point75OverP) {
+			regretFrac = cPlus6Point75OverP
+		}
+
+		// Anchor normalized regrets at zero if the maximum of the normalized regrets is below the lower bound
+		// if max(regretFrac) < c - 8.25 / p, then regretFrac = regretFrac - max(regretFrac) + (c - 8.25 / p)
+		if regretFrac.Lt(cMinus8Point25OverP) {
+			maxRegretNormalized, err := maxRegret.Quo(maxRegret.Abs())
+			if err != nil {
+				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating normalized maximum regret")
+			}
+			regretFrac, err = regretFrac.Sub(maxRegretNormalized)
+			if err != nil {
+				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error anchoring normalized regrets at zero")
+			}
+			regretFrac, err = regretFrac.Add(cMinus8Point25OverP)
+			if err != nil {
+				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adjusting anchored normalized regrets")
+			}
+		}
+
+		// Calculate the weight using the gradient function
+		// weight = Gradient(p, c, regretFrac)
 		weight, err := alloraMath.Gradient(pNorm, cNorm, regretFrac)
 		if err != nil {
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating gradient")
 		}
+
+		// Set weight to zero for low regrets
+		// if regretFrac < c - 17.25 / p, then weight = 0
+		if regretFrac.Lt(cMinus17Point25OverP) {
+			weight = alloraMath.ZeroDec()
+		}
+
+		// Update unnormalized inference and sum of weights
 		if !weight.Equal(alloraMath.ZeroDec()) && inference != nil {
-			weightTimesInference, err := weight.Mul(inference.Value) // numerator of network combined inference calculation
+			weightTimesInference, err := weight.Mul(inference.Value)
 			if err != nil {
 				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating weight by worker value")
 			}
+
 			unnormalizedI_i, err = unnormalizedI_i.Add(weightTimesInference)
 			if err != nil {
 				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adding weight by worker value")
 			}
+
 			sumWeights, err = sumWeights.Add(weight)
 			if err != nil {
 				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adding weight")
