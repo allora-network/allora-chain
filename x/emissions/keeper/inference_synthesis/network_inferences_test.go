@@ -494,19 +494,19 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		Worker string
 		Value  string
 	}{
-		{Worker: "worker0", Value: "-0.0888082967"},
-		{Worker: "worker1", Value: "-0.0842514842874"},
-		{Worker: "worker2", Value: "-0.075812109550"},
-		{Worker: "worker3", Value: "-0.077749163491"},
-		{Worker: "worker4", Value: "-0.097732445271"},
+		{Worker: "worker0", Value: "-0.0878179883784"},
+		{Worker: "worker1", Value: "-0.0834415833800"},
+		{Worker: "worker2", Value: "-0.0760530852479"},
+		{Worker: "worker3", Value: "-0.0769113408092"},
+		{Worker: "worker4", Value: "-0.0977096283034"},
 	}
 	expectedOneOutImpliedInferences := []struct {
 		Worker string
 		Value  string
 	}{
-		{Worker: "forecaster0", Value: "-0.085038635957"},
-		{Worker: "forecaster1", Value: "-0.088343056465"},
-		{Worker: "forecaster2", Value: "-0.0874661064571"},
+		{Worker: "forecaster0", Value: "-0.0847805342051"},
+		{Worker: "forecaster1", Value: "-0.0882088249132"},
+		{Worker: "forecaster2", Value: "-0.0872998460256"},
 	}
 
 	for inferer, regret := range infererNetworkRegrets {

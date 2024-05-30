@@ -1,6 +1,7 @@
 package inference_synthesis_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -140,10 +141,18 @@ func (s *InferenceSynthesisTestSuite) inEpsilon(value alloraMath.Dec, target str
 	upperBound, err := targetDec.Mul(upperMultiplier)
 	require.NoError(err)
 
-	if lowerBound.Lt(upperBound) {
+	fmt.Println("Epsilon: ", epsilon)
+	fmt.Println("1 - epsilon: ", lowerMultiplier.String())
+	fmt.Println("1 + epsilon: ", upperMultiplier.String())
+	fmt.Println("value: ", value.String())
+	fmt.Println("target: ", target)
+	fmt.Println("lowerBound: ", lowerBound.String())
+	fmt.Println("upperBound: ", upperBound.String())
+
+	if lowerBound.Lt(upperBound) { // positive values, lower < value < upper
 		require.True(value.Gte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
 		require.True(value.Lte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
-	} else {
+	} else { // negative values, upper < value < lower
 		require.True(value.Lte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
 		require.True(value.Gte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
 	}
