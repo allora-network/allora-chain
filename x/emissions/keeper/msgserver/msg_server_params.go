@@ -140,6 +140,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.CNorm) == 1 {
 		existingParams.CNorm = newParams.CNorm[0]
 	}
+	if len(newParams.TopicFeeRevenueDecayRate) == 1 {
+		existingParams.TopicFeeRevenueDecayRate = newParams.TopicFeeRevenueDecayRate[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err
