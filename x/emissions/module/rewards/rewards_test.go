@@ -2,7 +2,6 @@ package rewards_test
 
 import (
 	"fmt"
-	stdlog "log"
 	"testing"
 	"time"
 
@@ -3198,14 +3197,10 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 	reputer4Reward := reputer4_Stake1.Sub(reputer4_Stake0)
 	reputer5Reward := reputer5_Stake1.Sub(reputer5_Stake0)
 
-	stdlog.Printf("reputer0Reward: %s", reputer0Reward)
-	stdlog.Printf("reputer1Reward: %s", reputer1Reward)
-	stdlog.Printf("reputer2Reward: %s", reputer2Reward)
-	stdlog.Printf("reputer3Reward: %s", reputer3Reward)
-	stdlog.Printf("reputer4Reward: %s", reputer4Reward)
-	stdlog.Printf("reputer5Reward: %s", reputer5Reward)
-
 	require.True(reputer0Reward.Equal(reputer1Reward))
+	require.True(reputer1Reward.Equal(reputer2Reward))
+	require.True(reputer2Reward.Equal(reputer3Reward))
+	require.True(reputer3Reward.Equal(reputer4Reward))
 	require.True(reputer5Reward.LT(reputer1Reward))
 }
 
@@ -3297,13 +3292,9 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 	reputer4Reward := reputer4_Stake1.Sub(reputer4_Stake0)
 	reputer5Reward := reputer5_Stake1.Sub(reputer5_Stake0)
 
-	stdlog.Printf("reputer0Reward: %s", reputer0Reward)
-	stdlog.Printf("reputer1Reward: %s", reputer1Reward)
-	stdlog.Printf("reputer2Reward: %s", reputer2Reward)
-	stdlog.Printf("reputer3Reward: %s", reputer3Reward)
-	stdlog.Printf("reputer4Reward: %s", reputer4Reward)
-	stdlog.Printf("reputer5Reward: %s", reputer5Reward)
-
 	require.True(reputer0Reward.Equal(reputer1Reward))
+	require.True(reputer1Reward.Equal(reputer2Reward))
+	require.True(reputer2Reward.Equal(reputer3Reward))
+	require.True(reputer3Reward.Equal(reputer4Reward))
 	require.True(reputer5Reward.LT(reputer1Reward))
 }
