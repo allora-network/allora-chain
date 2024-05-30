@@ -162,13 +162,11 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 
 func (s *MathTestSuite) TestForecastRewardsSimple() {
 	// T_i = log L naive - log L = 2 - 1 = 1
-	// X = 0.1 + 0.4 * sigma(a * T_i - b) = 0.1 + 0.4 * sigma(8 * 1 - 7.5)
-	// sigma(0.5) = 0.6224593312018959
-	// X = 0.1 + 0.4 * 0.6224593312018959 =	0.3489837324807583
+	// X = 0.5 if T_i >= 1
 	// V_i = (X * γ * G_i * E_i) / (F_i + G_i + H_i)
-	// V_i = (0.3489837324807583 * 2 * 2 * 2 ) / (2 + 2 + 4)
-	// V_i = 0.3489837324807583 * 8 / 8
-	// V_i = 0.3489837324807583
+	// V_i = (0.5 * 2 * 2 * 2 ) / (2 + 2 + 4)
+	// V_i = 0.5 * 8 / 8
+	// V_i = 0.5
 	totalReward := alloraMath.MustNewDecFromString("2.0")
 	result, err := rewards.GetRewardForForecastingTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
@@ -178,10 +176,17 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
 	)
-
-	println("V_i = ", result.String())
+	expected := alloraMath.MustNewDecFromString("0.5")
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.3489837324807583"), result, alloraMath.MustNewDecFromString("0.0001")))
+	s.Require().True(
+		alloraMath.InDelta(
+			expected, result, alloraMath.MustNewDecFromString("0.0001"),
+		),
+		"Expected ",
+		expected.String(),
+		" but got ",
+		result.String(),
+	)
 }
 
 // Cross test of U_i / V_i

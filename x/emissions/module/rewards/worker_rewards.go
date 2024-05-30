@@ -248,8 +248,8 @@ func ForecastingPerformanceScore(
 
 // Implements the utility function for forecasting performance score
 // with the new specification:
-// χ = 0.1 for score < 0, 
-// χ = 0.5 for score > 1, 
+// χ = 0.1 for score < 0,
+// χ = 0.5 for score > 1,
 // χ = 0.4 * score + 0.1 in between
 func ForecastingUtility(
 	forecastingTaskUtilityScore alloraMath.Dec,
@@ -259,17 +259,17 @@ func ForecastingUtility(
 	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
 	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
 	zeroPointFive := alloraMath.MustNewDecFromString("0.5")
-	
+
 	// If score < 0, return 0.1
 	if forecastingTaskUtilityScore.Lt(zero) {
 		return zeroPointOne, nil
 	}
-	
+
 	// If score > 1, return 0.5
 	if forecastingTaskUtilityScore.Gt(one) {
 		return zeroPointFive, nil
 	}
-	
+
 	// For 0 <= score <= 1, return 0.4 * score + 0.1
 	scoreTimesZeroPointFour, err := zeroPointFour.Mul(forecastingTaskUtilityScore)
 	if err != nil {
@@ -279,7 +279,7 @@ func ForecastingUtility(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	
+
 	return ret, nil
 }
 
