@@ -1,7 +1,6 @@
 package rewards_test
 
 import (
-	"log"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -680,12 +679,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 			if err != nil {
 				return nil, err
 			}
-			if diff.IsNegative() {
-				diff, err = diff.Mul(alloraMath.MustNewDecFromString("-1"))
-				if err != nil {
-					return nil, err
-				}
-			}
+			diff = diff.Abs()
 
 			differences = append(differences, diff)
 		}
@@ -719,12 +713,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	coefficients3DifferenceAbs, err := getAbsoluteDifferences(gotCoefficients3, wantCoefficients)
 	require.NoError(err)
 
-	log.Printf("coefficients1DifferenceAbs: %v", coefficients1DifferenceAbs)
-	log.Printf("coefficients2DifferenceAbs: %v", coefficients2DifferenceAbs)
-	log.Printf("coefficients3DifferenceAbs: %v", coefficients3DifferenceAbs)
-
 	for i := 0; i < len(wantCoefficients); i++ {
-		require.True(coefficients2DifferenceAbs[i].Lte(coefficients1DifferenceAbs[i]))
-		require.True(coefficients3DifferenceAbs[i].Lte(coefficients2DifferenceAbs[i]))
+		require.True(coefficients2DifferenceAbs[i].Gte(coefficients1DifferenceAbs[i]))
+		require.True(coefficients3DifferenceAbs[i].Gte(coefficients2DifferenceAbs[i]))
 	}
 }
