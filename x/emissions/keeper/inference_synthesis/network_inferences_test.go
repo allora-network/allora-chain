@@ -80,6 +80,10 @@ func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcTheStdDevOfRegretsAmongWorkersWithLosses() {
+	s.Require().Fail("Test not implemented")
+}
+
+/*
 	k := s.emissionsKeeper
 	ctx := s.ctx
 	topicId := uint64(1)
@@ -150,8 +154,13 @@ func (s *InferenceSynthesisTestSuite) TestCalcTheStdDevOfRegretsAmongWorkersWith
 	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker3].Equal(expectedStdDevOneInForecastRegretWorker3), "StdDevOneInForecastRegret[worker3] mismatch")
 	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker4].Equal(expectedStdDevOneInForecastRegretWorker4), "StdDevOneInForecastRegret[worker4] mismatch")
 }
+*/
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1() {
+	s.Require().Fail("Test not implemented")
+}
+
+/*
 	topicId := inference_synthesis.TopicId(1)
 
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -226,7 +235,13 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 		networkCombinedInferenceValue.String(),
 	)
 }
+*/
+
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2() {
+	s.Require().Fail("Test not implemented")
+}
+
+/*
 	topicId := inference_synthesis.TopicId(1)
 
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -301,8 +316,13 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 		networkCombinedInferenceValue.String(),
 	)
 }
+*/
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() {
+	s.Require().Fail("Test not implemented")
+}
+
+/*
 	topicId := inference_synthesis.TopicId(1)
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("-0.0514234892489971")},
@@ -440,8 +460,13 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 		}
 	}
 }
+*/
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecasters() {
+	s.Require().Fail("Test not implemented")
+}
+
+/*
 	topicId := inference_synthesis.TopicId(1)
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("-0.035995138925040600")},
@@ -595,6 +620,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		}
 	}
 }
+*/
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 	topicId := inference_synthesis.TopicId(1)
@@ -680,7 +706,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				tc.forecastImpliedInferences,
 				alloraMath.GetSortedKeys(tc.forecastImpliedInferences),
 				NewWorkersAreNew(false),
-				tc.maxRegretsByOneInForecaster,
 				tc.epsilon,
 				tc.pNorm,
 				tc.cNorm,
