@@ -158,7 +158,7 @@ func CalcForecastImpliedInferences(
 					}
 
 					// if max(regretFrac) < c - 8.25 / p, then regretFrac = regretFrac - max(regretFrac) + (c - 8.25 / p)
-					if regretFrac.Lt(cMinus8Point25OverP) {
+					if maxNormalizedForecastedRegret.Lt(cMinus8Point25OverP) {
 						regretFrac, err = regretFrac.Sub(maxNormalizedForecastedRegret)
 						if err != nil {
 							return nil, errorsmod.Wrapf(err, "Error anchoring normalized regrets at zero")
