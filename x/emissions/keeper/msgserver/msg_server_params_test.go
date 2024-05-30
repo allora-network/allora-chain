@@ -67,7 +67,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		MaxGradientThreshold:            []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
 		MinStakeFraction:                []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
 		Epsilon:                         []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		PRewardSpread:                   []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxUnfulfilledWorkerRequests:    []uint64{1234},
 		MaxUnfulfilledReputerRequests:   []uint64{1234},
 		TopicRewardStakeImportance:      []alloraMath.Dec{alloraMath.MustNewDecFromString(".1234")},
@@ -80,8 +79,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		MaxTopForecastersToReward:       []uint64{1234},
 		MaxTopReputersToReward:          []uint64{1234},
 		CreateTopicFee:                  []cosmosMath.Int{cosmosMath.NewInt(1234)},
-		SigmoidA:                        []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		SigmoidB:                        []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 		MaxRetriesToFulfilNoncesWorker:  []int64{1234},
 		MaxRetriesToFulfilNoncesReputer: []int64{1234},
 		RegistrationFee:                 []cosmosMath.Int{cosmosMath.NewInt(1234)},
@@ -89,6 +86,13 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 		MaxPageLimit:                    []uint64{1234},
 		MinEpochLengthRecordLimit:       []int64{1234},
 		MaxSerializedMsgLength:          []int64{1234},
+		PRewardInference:                []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		PRewardForecast:                 []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		PRewardReputer:                  []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		CRewardInference:                []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		CRewardForecast:                 []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		FTolerance:                      []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
+		CNorm:                           []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 	}
 
 	updateMsg := &types.MsgUpdateParams{
@@ -114,7 +118,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxGradientThreshold[0], updatedParams.MaxGradientThreshold)
 	require.Equal(newParams.MinStakeFraction[0], updatedParams.MinStakeFraction)
 	require.Equal(newParams.Epsilon[0], updatedParams.Epsilon)
-	require.Equal(newParams.PRewardSpread[0], updatedParams.PRewardSpread)
 	require.Equal(newParams.MaxUnfulfilledWorkerRequests[0], updatedParams.MaxUnfulfilledWorkerRequests)
 	require.Equal(newParams.MaxUnfulfilledReputerRequests[0], updatedParams.MaxUnfulfilledReputerRequests)
 	require.Equal(newParams.TopicRewardStakeImportance[0], updatedParams.TopicRewardStakeImportance)
@@ -127,8 +130,6 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxTopForecastersToReward[0], updatedParams.MaxTopForecastersToReward)
 	require.Equal(newParams.MaxTopReputersToReward[0], updatedParams.MaxTopReputersToReward)
 	require.Equal(newParams.CreateTopicFee[0], updatedParams.CreateTopicFee)
-	require.Equal(newParams.SigmoidA[0], updatedParams.SigmoidA)
-	require.Equal(newParams.SigmoidB[0], updatedParams.SigmoidB)
 	require.Equal(newParams.GradientDescentMaxIters[0], updatedParams.GradientDescentMaxIters)
 	require.Equal(newParams.MaxRetriesToFulfilNoncesWorker[0], updatedParams.MaxRetriesToFulfilNoncesWorker)
 	require.Equal(newParams.MaxRetriesToFulfilNoncesReputer[0], updatedParams.MaxRetriesToFulfilNoncesReputer)
@@ -137,6 +138,13 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxPageLimit[0], updatedParams.MaxPageLimit)
 	require.Equal(newParams.MinEpochLengthRecordLimit[0], updatedParams.MinEpochLengthRecordLimit)
 	require.Equal(newParams.MaxSerializedMsgLength[0], updatedParams.MaxSerializedMsgLength)
+	require.Equal(newParams.PRewardInference[0], updatedParams.PRewardInference)
+	require.Equal(newParams.PRewardForecast[0], updatedParams.PRewardForecast)
+	require.Equal(newParams.PRewardReputer[0], updatedParams.PRewardReputer)
+	require.Equal(newParams.CRewardInference[0], updatedParams.CRewardInference)
+	require.Equal(newParams.CRewardForecast[0], updatedParams.CRewardForecast)
+	require.Equal(newParams.FTolerance[0], updatedParams.FTolerance)
+	require.Equal(newParams.CNorm[0], updatedParams.CNorm)
 }
 
 func (s *KeeperTestSuite) TestUpdateParamsNonWhitelistedUser() {
