@@ -255,45 +255,60 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	// Filter out values submitted by unaccepted workers
 
 	acceptedInfererValues := make([]*types.WorkerAttributedValue, 0)
+	infererAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.InfererValues {
-		if notYetSeen, ok := acceptedInferersOfBatch[workerVal.Worker]; ok && notYetSeen {
-			acceptedInfererValues = append(acceptedInfererValues, workerVal)
-			acceptedInferersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
+		if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
+			if _, ok := infererAlreadySeen[workerVal.Worker]; !ok {
+				acceptedInfererValues = append(acceptedInfererValues, workerVal)
+				infererAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+			}
 		}
 	}
 
 	acceptedForecasterValues := make([]*types.WorkerAttributedValue, 0)
+	forecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.ForecasterValues {
-		if notYetSeen, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok && notYetSeen {
-			acceptedForecasterValues = append(acceptedForecasterValues, workerVal)
-			acceptedForecastersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
+		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
+			if _, ok := forecasterAlreadySeen[workerVal.Worker]; !ok {
+				acceptedForecasterValues = append(acceptedForecasterValues, workerVal)
+				forecasterAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+			}
 		}
 	}
 
 	acceptedOneOutInfererValues := make([]*types.WithheldWorkerAttributedValue, 0)
 	// If 1 or fewer inferers, there's no one-out inferer data to receive
 	if len(acceptedInfererValues) > 1 {
+		oneOutInfererAlreadySeen := make(map[string]bool)
 		for _, workerVal := range reputerValueBundle.ValueBundle.OneOutInfererValues {
-			if notYetSeen, ok := acceptedInferersOfBatch[workerVal.Worker]; ok && notYetSeen {
-				acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
-				acceptedInferersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
+			if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
+				if _, ok := oneOutInfererAlreadySeen[workerVal.Worker]; !ok {
+					acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
+					oneOutInfererAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+				}
 			}
 		}
 	}
 
 	acceptedOneOutForecasterValues := make([]*types.WithheldWorkerAttributedValue, 0)
+	oneOutForecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.OneOutForecasterValues {
-		if notYetSeen, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok && notYetSeen {
-			acceptedOneOutForecasterValues = append(acceptedOneOutForecasterValues, workerVal)
-			acceptedForecastersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
+		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
+			if _, ok := oneOutForecasterAlreadySeen[workerVal.Worker]; !ok {
+				acceptedOneOutForecasterValues = append(acceptedOneOutForecasterValues, workerVal)
+				oneOutForecasterAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+			}
 		}
 	}
 
 	acceptedOneInForecasterValues := make([]*types.WorkerAttributedValue, 0)
+	oneInForecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.OneInForecasterValues {
-		if notYetSeen, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok && notYetSeen {
-			acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
-			acceptedForecastersOfBatch[workerVal.Worker] = false // Mark as seen => no duplicates
+		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
+			if _, ok := oneInForecasterAlreadySeen[workerVal.Worker]; !ok {
+				acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
+				oneInForecasterAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+			}
 		}
 	}
 
