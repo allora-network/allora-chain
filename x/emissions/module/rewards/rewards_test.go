@@ -3186,7 +3186,7 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 	block := int64(100)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
-	reputer0Addrs := []sdk.AccAddress{
+	reputerAddrs := []sdk.AccAddress{
 		s.addrs[0],
 		s.addrs[1],
 		s.addrs[2],
@@ -3200,9 +3200,9 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 
 	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, 1)
 
-	reputer0Values := []TestWorkerValue{
+	reputerValues := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.2"},
 		{Address: s.addrs[1], Value: "0.2"},
 		{Address: s.addrs[2], Value: "0.1"},
@@ -3225,7 +3225,7 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 		topicId0,
 		block,
 		workerValues,
-		reputer0Values,
+		reputerValues,
 		workerAddrs[0],
 		"0.1",
 		"0.1",
