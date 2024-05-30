@@ -178,7 +178,9 @@ func accumulateNormalizedI_iAndSumWeights(
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adding weight")
 		}
 	} else {
-		// Normalize forecaster regret
+		// If at least one worker is not new, then we take a weighted average of all workers' inferences
+		// Normalize forecaster regret then calculate gradient => weight per forecaster for network combined inference
+	
 		// regretFrac = regret / maxRegret
 		regretFrac, err := regret.Value.Quo(maxRegret.Abs())
 		if err != nil {
@@ -222,7 +224,6 @@ func accumulateNormalizedI_iAndSumWeights(
 			regretFrac = cPlus6Point75OverP
 		}
 
-		// Anchor normalized regrets at zero if the maximum of the normalized regrets is below the lower bound
 		// if max(regretFrac) < c - 8.25 / p, then regretFrac = regretFrac - max(regretFrac) + (c - 8.25 / p)
 		if regretFrac.Lt(cMinus8Point25OverP) {
 			maxRegretNormalized, err := maxRegret.Quo(maxRegret.Abs())
