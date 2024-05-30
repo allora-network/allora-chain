@@ -6,44 +6,6 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// Implements function phi prime from litepaper
-// φ'_p(x) = p * (ln(1 + e^x))^(p-1) * e^x / (1 + e^x)
-func Gradient(p alloraMath.Dec, x Regret) (Weight, error) {
-	eToTheX, err := alloraMath.Exp(x)
-	if err != nil {
-		return Weight{}, err
-	}
-	onePlusEToTheX, err := alloraMath.OneDec().Add(eToTheX)
-	if err != nil {
-		return Weight{}, err
-	}
-	naturalLog, err := alloraMath.Ln(onePlusEToTheX)
-	if err != nil {
-		return Weight{}, err
-	}
-	pMinusOne, err := p.Sub(alloraMath.OneDec())
-	if err != nil {
-		return Weight{}, err
-	}
-	result, err := alloraMath.Pow(naturalLog, pMinusOne)
-	if err != nil {
-		return Weight{}, err
-	}
-	pResult, err := p.Mul(result)
-	if err != nil {
-		return Weight{}, err
-	}
-	numerator, err := pResult.Mul(eToTheX)
-	if err != nil {
-		return Weight{}, err
-	}
-	ret, err := numerator.Quo(onePlusEToTheX)
-	if err != nil {
-		return Weight{}, err
-	}
-	return ret, nil
-}
-
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
 // Calculates R_ijk, w_ijk, and I_ik for each forecast k and forecast element (forcast of worker loss) j
 //
@@ -56,7 +18,8 @@ func CalcForecastImpliedInferences(
 	networkCombinedLoss Loss,
 	allInferersAreNew bool,
 	epsilon alloraMath.Dec,
-	pInferenceSynthesis alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
 ) (map[Worker]*emissions.Inference, error) {
 	// Possibly add a small value to previous network loss avoid infinite logarithm
 	if networkCombinedLoss.Equal(alloraMath.ZeroDec()) {
@@ -146,7 +109,7 @@ func CalcForecastImpliedInferences(
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}
-					w_ijk, err := Gradient(pInferenceSynthesis, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
+					w_ijk, err := alloraMath.Gradient(pNorm, cNorm, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating gradient")
 					}

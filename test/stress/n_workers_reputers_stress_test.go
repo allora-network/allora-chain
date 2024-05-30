@@ -327,7 +327,8 @@ func workerReputerLoop(
 	}
 
 	// Check that only the top workers and reputers are rewarded
-	maxTopWorkersCount, maxTopReputersCount, _ := getMaxTopWorkersReputersToReward(m)
-	require.Less(m.T, rewardedWorkersCount, maxTopWorkersCount, "Only top workers can get reward")
+	maxTopInferersCount, maxTopForecastersCount, maxTopReputersCount, _ := getMaxTopWorkersReputersToReward(m)
+	require.Less(m.T, rewardedWorkersCount, maxTopInferersCount, "Only top workers can get reward")
+	require.Less(m.T, rewardedWorkersCount, maxTopForecastersCount, "Only top workers can get reward")
 	require.Less(m.T, rewardedReputersCount, maxTopReputersCount, "Only top reputers can get reward")
 }

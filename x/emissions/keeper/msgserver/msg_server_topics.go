@@ -26,11 +26,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 
-	fastestCadence, err := ms.k.GetParamsMinEpochLength(ctx)
+	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if msg.EpochLength < fastestCadence {
+	if msg.EpochLength < params.MinEpochLength {
 		return nil, types.ErrTopicCadenceBelowMinimum
 	}
 
@@ -41,24 +41,20 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	topic := types.Topic{
-		Id:               id,
-		Creator:          msg.Creator,
-		Metadata:         msg.Metadata,
-		LossLogic:        msg.LossLogic,
-		LossMethod:       msg.LossMethod,
-		InferenceLogic:   msg.InferenceLogic,
-		InferenceMethod:  msg.InferenceMethod,
-		EpochLastEnded:   0,
-		EpochLength:      msg.EpochLength,
-		GroundTruthLag:   msg.GroundTruthLag,
-		DefaultArg:       msg.DefaultArg,
-		Pnorm:            msg.Pnorm,
-		AlphaRegret:      msg.AlphaRegret,
-		PrewardReputer:   msg.PrewardReputer,
-		PrewardInference: msg.PrewardInference,
-		PrewardForecast:  msg.PrewardForecast,
-		FTolerance:       msg.FTolerance,
-		AllowNegative:    msg.AllowNegative,
+		Id:              id,
+		Creator:         msg.Creator,
+		Metadata:        msg.Metadata,
+		LossLogic:       msg.LossLogic,
+		LossMethod:      msg.LossMethod,
+		InferenceLogic:  msg.InferenceLogic,
+		InferenceMethod: msg.InferenceMethod,
+		EpochLastEnded:  0,
+		EpochLength:     msg.EpochLength,
+		GroundTruthLag:  msg.GroundTruthLag,
+		DefaultArg:      msg.DefaultArg,
+		PNorm:           msg.PNorm,
+		AlphaRegret:     msg.AlphaRegret,
+		AllowNegative:   msg.AllowNegative,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
@@ -74,11 +70,11 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 }
 
 func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address string) (bool, sdk.Coin, error) {
-	amountInt, err := ms.k.GetParamsTopicCreationFee(ctx)
+	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err
 	}
-	fee := sdk.NewCoin(params.DefaultBondDenom, amountInt)
+	fee := sdk.NewCoin(params.DefaultBondDenom, moduleParams.CreateTopicFee)
 	accAddress, err := sdk.AccAddressFromBech32(address)
 	if err != nil {
 		return false, sdk.Coin{}, err

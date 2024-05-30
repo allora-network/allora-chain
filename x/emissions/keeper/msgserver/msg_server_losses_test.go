@@ -9,6 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
@@ -23,13 +24,13 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
+	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
-	minStakeScaled := minStake.Mul(inference_synthesis.CosmosIntOneE18())
+	minStakeScaled := params.RequiredMinimumStake.Mul(inference_synthesis.CosmosIntOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
-	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -155,14 +156,14 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
+	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
-	minStakeScaled := minStake.Mul(inference_synthesis.CosmosIntOneE18())
+	minStakeScaled := params.RequiredMinimumStake.Mul(inference_synthesis.CosmosIntOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 
-	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
@@ -275,7 +276,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 	// Send to the wrong topic should error
 	lossesMsg.TopicId = topicId + 999
 	_, err = msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
-	require.ErrorIs(err, types.ErrTopicDoesNotExist)
+	require.ErrorIs(err, sdkerrors.ErrNotFound)
 
 	// Fix topic
 	lossesMsg.TopicId = topicId
@@ -303,14 +304,14 @@ func (s *KeeperTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	minStake, err := keeper.GetParamsRequiredMinimumStake(ctx)
+	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
-	minStakeScaled := minStake.Mul(inference_synthesis.CosmosIntOneE18())
+	minStakeScaled := params.RequiredMinimumStake.Mul(inference_synthesis.CosmosIntOneE18())
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 
-	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(minStake.BigInt()))
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewIntFromBigInt(params.RequiredMinimumStake.BigInt()))
 
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
