@@ -158,12 +158,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 	// sort by reputer score descending
 	sort.Slice(lossBundlesFromTopReputers, func(i, j int) bool {
-		if lossBundlesFromTopReputers[i] == nil || lossBundlesFromTopReputers[j] == nil ||
-			lossBundlesFromTopReputers[i].ValueBundle == nil || lossBundlesFromTopReputers[j].ValueBundle == nil {
-			return false
-		} else {
-			return lossBundlesFromTopReputers[i].ValueBundle.Reputer < lossBundlesFromTopReputers[j].ValueBundle.Reputer
-		}
+		return lossBundlesFromTopReputers[i].ValueBundle.Reputer < lossBundlesFromTopReputers[j].ValueBundle.Reputer
 	})
 
 	if len(lossBundlesFromTopReputers) == 0 {
@@ -211,11 +206,17 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
+	err = ms.k.AddRewardableTopic(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &types.MsgInsertBulkReputerPayloadResponse{}, nil
 }
 
 // Filter out values of unaccepted workers.
 // It is assumed that the work of inferers and forecasters stored at the nonce is already filtered for acceptance.
+// This also removes duplicate values of the same worker.
 func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	ctx context.Context,
 	topicId uint64,
@@ -254,40 +255,60 @@ func (ms msgServer) FilterUnacceptedWorkersFromReputerValueBundle(
 	// Filter out values submitted by unaccepted workers
 
 	acceptedInfererValues := make([]*types.WorkerAttributedValue, 0)
+	infererAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.InfererValues {
 		if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
-			acceptedInfererValues = append(acceptedInfererValues, workerVal)
+			if _, ok := infererAlreadySeen[workerVal.Worker]; !ok {
+				acceptedInfererValues = append(acceptedInfererValues, workerVal)
+				infererAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+			}
 		}
 	}
 
 	acceptedForecasterValues := make([]*types.WorkerAttributedValue, 0)
+	forecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.ForecasterValues {
 		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
-			acceptedForecasterValues = append(acceptedForecasterValues, workerVal)
+			if _, ok := forecasterAlreadySeen[workerVal.Worker]; !ok {
+				acceptedForecasterValues = append(acceptedForecasterValues, workerVal)
+				forecasterAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+			}
 		}
 	}
 
 	acceptedOneOutInfererValues := make([]*types.WithheldWorkerAttributedValue, 0)
 	// If 1 or fewer inferers, there's no one-out inferer data to receive
 	if len(acceptedInfererValues) > 1 {
+		oneOutInfererAlreadySeen := make(map[string]bool)
 		for _, workerVal := range reputerValueBundle.ValueBundle.OneOutInfererValues {
 			if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
-				acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
+				if _, ok := oneOutInfererAlreadySeen[workerVal.Worker]; !ok {
+					acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
+					oneOutInfererAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+				}
 			}
 		}
 	}
 
 	acceptedOneOutForecasterValues := make([]*types.WithheldWorkerAttributedValue, 0)
+	oneOutForecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.OneOutForecasterValues {
 		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
-			acceptedOneOutForecasterValues = append(acceptedOneOutForecasterValues, workerVal)
+			if _, ok := oneOutForecasterAlreadySeen[workerVal.Worker]; !ok {
+				acceptedOneOutForecasterValues = append(acceptedOneOutForecasterValues, workerVal)
+				oneOutForecasterAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+			}
 		}
 	}
 
 	acceptedOneInForecasterValues := make([]*types.WorkerAttributedValue, 0)
+	oneInForecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.OneInForecasterValues {
 		if _, ok := acceptedForecastersOfBatch[workerVal.Worker]; ok {
-			acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
+			if _, ok := oneInForecasterAlreadySeen[workerVal.Worker]; !ok {
+				acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
+				oneInForecasterAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+			}
 		}
 	}
 

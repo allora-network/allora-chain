@@ -130,7 +130,7 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
 		ctx.Logger().Debug("\n ---------------- TopicsHandler ------------------- \n")
-		churnReadyTopics, err := th.emissionsKeeper.GetChurnReadyTopics(ctx)
+		churnableTopics, err := th.emissionsKeeper.GetChurnableTopics(ctx)
 		if err != nil {
 			ctx.Logger().Error("Error getting max number of topics per block: " + err.Error())
 			return nil, err
@@ -139,7 +139,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		var wg sync.WaitGroup
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
-		for _, churnReadyTopicId := range churnReadyTopics {
+		for _, churnableTopicId := range churnableTopics {
 			wg.Add(1)
 			go func(topicId TopicId) {
 				defer wg.Done()
@@ -150,7 +150,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				}
 				th.requestTopicWorkers(ctx, topic)
 				th.requestTopicReputers(ctx, topic)
-			}(churnReadyTopicId)
+			}(churnableTopicId)
 		}
 		wg.Wait()
 		// Return the transactions as they came

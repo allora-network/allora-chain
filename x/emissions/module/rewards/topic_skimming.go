@@ -50,8 +50,11 @@ func SkimTopTopicsByWeightDesc(sdkCtx sdk.Context, weights map[TopicId]*alloraMa
 	for topicId := range weights {
 		topicIds = append(topicIds, topicId)
 	}
-	// sort topicIds to ensure deterministic order
+	// Sort topicIds by weight desc to ensure deterministic order. Tiebreak with topicId ascending
 	sort.Slice(topicIds, func(i, j int) bool {
+		if (*weights[topicIds[i]]).Equal(*weights[topicIds[j]]) {
+			return topicIds[i] < topicIds[j]
+		}
 		return (*weights[topicIds[i]]).Gt(*weights[topicIds[j]])
 	})
 	sortedTopicIds := SortTopicsByWeightDescWithRandomTiebreaker(topicIds, weights, block)
