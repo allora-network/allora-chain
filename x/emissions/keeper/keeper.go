@@ -1443,23 +1443,7 @@ func (k *Keeper) AddChurnReadyTopic(ctx context.Context, topicId TopicId) error 
 
 // ResetChurnReadyTopics clears all topics from the churn-ready set and resets related states.
 func (k *Keeper) ResetChurnReadyTopics(ctx context.Context) error {
-	iter, err := k.churnReadyTopics.Iterate(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		topicId, err := iter.Key()
-		if err != nil {
-			return err
-		}
-
-		if err := k.churnReadyTopics.Remove(ctx, topicId); err != nil {
-			return err
-		}
-	}
-
+	k.churnReadyTopics.Clear(ctx, nil)
 	return nil
 }
 
@@ -1922,111 +1906,19 @@ func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, 
 }
 
 func (k *Keeper) pruneInferences(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	iter, err := k.allInferences.Iterate(ctx, blockRange)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	// Make array of keys to data to remove
-	keysToDelete := make([]collections.Pair[uint64, int64], 0)
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.KeyValue()
-		if err != nil {
-			return err
-		}
-		keysToDelete = append(keysToDelete, key.Key)
-	}
-
-	// Remove data at all keys
-	for _, key := range keysToDelete {
-		if err := k.allInferences.Remove(ctx, key); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return k.allInferences.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) pruneForecasts(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	iter, err := k.allForecasts.Iterate(ctx, blockRange)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	// Make array of keys to data to remove
-	keysToDelete := make([]collections.Pair[uint64, int64], 0)
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.KeyValue()
-		if err != nil {
-			return err
-		}
-		keysToDelete = append(keysToDelete, key.Key)
-	}
-
-	// Remove data at all keys
-	for _, key := range keysToDelete {
-		if err := k.allForecasts.Remove(ctx, key); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return k.allForecasts.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) pruneLossBundles(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	iter, err := k.allLossBundles.Iterate(ctx, blockRange)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	// Make array of keys to data to remove
-	keysToDelete := make([]collections.Pair[uint64, int64], 0)
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.KeyValue()
-		if err != nil {
-			return err
-		}
-		keysToDelete = append(keysToDelete, key.Key)
-	}
-
-	// Remove data at all keys
-	for _, key := range keysToDelete {
-		if err := k.allLossBundles.Remove(ctx, key); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return k.allLossBundles.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections.PairRange[uint64, int64]) error {
-	iter, err := k.networkLossBundles.Iterate(ctx, blockRange)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
-
-	// Make array of keys to data to remove
-	keysToDelete := make([]collections.Pair[uint64, int64], 0)
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.KeyValue()
-		if err != nil {
-			return err
-		}
-		keysToDelete = append(keysToDelete, key.Key)
-	}
-
-	// Remove data at all keys
-	for _, key := range keysToDelete {
-		if err := k.networkLossBundles.Remove(ctx, key); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return k.networkLossBundles.Clear(ctx, blockRange)
 }
 
 func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
