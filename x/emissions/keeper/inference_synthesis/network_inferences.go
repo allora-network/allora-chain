@@ -232,7 +232,7 @@ func accumulateNormalizedI_iAndSumWeights(
 		}
 
 		// if max(normalizedRegret) < c - 8.25 / p, then normalizedRegret = normalizedRegret - max(normalizedRegret) + (c - 8.25 / p)
-		if normalizedRegret.Lt(cMinus8Point25OverP) {
+		if maxRegret.Lt(cMinus8Point25OverP) {
 			normalizedRegret, err = normalizedRegret.Sub(maxRegret)
 			if err != nil {
 				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error anchoring normalized regrets at zero")
