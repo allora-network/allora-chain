@@ -1054,12 +1054,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set Loss bundles
 
+	// EOOCH 2 reputer_x_loss_network_inference
 	reputerLossBundles := emissionstypes.ReputerValueBundles{
 		ReputerValueBundles: []*emissionstypes.ReputerValueBundle{
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer0,
-					CombinedValue:       alloraMath.MustNewDecFromString(".0000117005278862668"),
+					CombinedValue:       alloraMath.MustNewDecFromString("-4.931794543987090"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -1067,7 +1068,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer1,
-					CombinedValue:       alloraMath.MustNewDecFromString(".00000962701954026944"),
+					CombinedValue:       alloraMath.MustNewDecFromString("-5.01650814668254"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -1075,7 +1076,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer2,
-					CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
+					CombinedValue:       alloraMath.MustNewDecFromString("-4.590153669869230"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -1083,7 +1084,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer3,
-					CombinedValue:       alloraMath.MustNewDecFromString(".0000123986052417188"),
+					CombinedValue:       alloraMath.MustNewDecFromString("-4.906627167248600"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -1091,7 +1092,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer4,
-					CombinedValue:       alloraMath.MustNewDecFromString(".0000115363240547692"),
+					CombinedValue:       alloraMath.MustNewDecFromString("-4.937932553142900"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -1104,29 +1105,31 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set Stake
 
-	stake1, ok := cosmosMath.NewIntFromString("210535101370326000000000")
+	// epoch 2 reputer_stake_x
+	stake1, ok := cosmosMath.NewIntFromString("210535178682986000000000")
 	s.Require().True(ok)
 	err = keeper.AddStake(s.ctx, topicId, reputer0, stake1)
 	require.NoError(err)
-	stake2, ok := cosmosMath.NewIntFromString("216697093951021000000000")
+	stake2, ok := cosmosMath.NewIntFromString("216697599345612000000000")
 	s.Require().True(ok)
 	err = keeper.AddStake(s.ctx, topicId, reputer1, stake2)
 	require.NoError(err)
-	stake3, ok := cosmosMath.NewIntFromString("161740241803855000000000")
+	stake3, ok := cosmosMath.NewIntFromString("161740203770469000000000")
 	s.Require().True(ok)
 	err = keeper.AddStake(s.ctx, topicId, reputer2, stake3)
 	require.NoError(err)
-	stake4, ok := cosmosMath.NewIntFromString("394848305052250000000000")
+	stake4, ok := cosmosMath.NewIntFromString("394847513168064000000000")
 	s.Require().True(ok)
 	err = keeper.AddStake(s.ctx, topicId, reputer3, stake4)
 	require.NoError(err)
-	stake5, ok := cosmosMath.NewIntFromString("206169717590569000000000")
+	stake5, ok := cosmosMath.NewIntFromString("206170060245451000000000")
 	s.Require().True(ok)
 	err = keeper.AddStake(s.ctx, topicId, reputer4, stake5)
 	require.NoError(err)
 
 	// Set Inferences
 
+	// epoch 3 inference_x
 	inferences := emissionstypes.Inferences{
 		Inferences: []*emissionstypes.Inference{
 			{
@@ -1167,6 +1170,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set Forecasts
 
+	// EPOCH 3 forecated_loss_x_for_y
 	forecasts := emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
 			{
@@ -1174,23 +1178,23 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{
 						Inferer: reputer0,
-						Value:   alloraMath.MustNewDecFromString("0.003305466418410120"),
+						Value:   alloraMath.MustNewDecFromString("-2.480767250656480"),
 					},
 					{
 						Inferer: reputer1,
-						Value:   alloraMath.MustNewDecFromString("0.0002788248228566030"),
+						Value:   alloraMath.MustNewDecFromString("-3.5546685650440400"),
 					},
 					{
 						Inferer: reputer2,
-						Value:   alloraMath.MustNewDecFromString(".0000240536828602367"),
+						Value:   alloraMath.MustNewDecFromString("-4.6188184193555700"),
 					},
 					{
 						Inferer: reputer3,
-						Value:   alloraMath.MustNewDecFromString("0.0008240378476798250"),
+						Value:   alloraMath.MustNewDecFromString("-3.084052840898730"),
 					},
 					{
 						Inferer: reputer4,
-						Value:   alloraMath.MustNewDecFromString(".0000186192181193532"),
+						Value:   alloraMath.MustNewDecFromString("-4.73003856038905"),
 					},
 				},
 				TopicId:     topicId,
@@ -1201,23 +1205,23 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{
 						Inferer: reputer0,
-						Value:   alloraMath.MustNewDecFromString("0.002308441286328890"),
+						Value:   alloraMath.MustNewDecFromString("-2.6366811669641100"),
 					},
 					{
 						Inferer: reputer1,
-						Value:   alloraMath.MustNewDecFromString(".0000214380788596749"),
+						Value:   alloraMath.MustNewDecFromString("-4.668814135864770"),
 					},
 					{
 						Inferer: reputer2,
-						Value:   alloraMath.MustNewDecFromString("0.012560171044167200"),
+						Value:   alloraMath.MustNewDecFromString("-1.901004446344670"),
 					},
 					{
 						Inferer: reputer3,
-						Value:   alloraMath.MustNewDecFromString("0.017998563880697900"),
+						Value:   alloraMath.MustNewDecFromString("-1.7447621462061600"),
 					},
 					{
 						Inferer: reputer4,
-						Value:   alloraMath.MustNewDecFromString("0.00020024906252089700"),
+						Value:   alloraMath.MustNewDecFromString("-3.6984295084170300"),
 					},
 				},
 				TopicId:     topicId,
@@ -1228,23 +1232,23 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{
 						Inferer: reputer0,
-						Value:   alloraMath.MustNewDecFromString("0.005369218152594270"),
+						Value:   alloraMath.MustNewDecFromString("-2.27008895019151"),
 					},
 					{
 						Inferer: reputer1,
-						Value:   alloraMath.MustNewDecFromString("0.0002578158768320300"),
+						Value:   alloraMath.MustNewDecFromString("-3.5886903414115300"),
 					},
 					{
 						Inferer: reputer2,
-						Value:   alloraMath.MustNewDecFromString("0.0076008583603885900"),
+						Value:   alloraMath.MustNewDecFromString("-2.119137360333620"),
 					},
 					{
 						Inferer: reputer3,
-						Value:   alloraMath.MustNewDecFromString("0.0076269073955871000"),
+						Value:   alloraMath.MustNewDecFromString("-2.1176515266976500"),
 					},
 					{
 						Inferer: reputer4,
-						Value:   alloraMath.MustNewDecFromString("0.00035670236460009500"),
+						Value:   alloraMath.MustNewDecFromString("-3.447694011689490"),
 					},
 				},
 				TopicId:     topicId,
@@ -1258,12 +1262,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set inferer network regrets
 
+	// EPOCH 2 inference_regret_worker_x
 	infererNetworkRegrets := map[string]inferencesynthesis.Regret{
-		reputer0: alloraMath.MustNewDecFromString("0.29240710390153500"),
-		reputer1: alloraMath.MustNewDecFromString("0.4182220944854450"),
-		reputer2: alloraMath.MustNewDecFromString("0.17663501719135000"),
-		reputer3: alloraMath.MustNewDecFromString("0.49617463489106400"),
-		reputer4: alloraMath.MustNewDecFromString("0.27996060999688600"),
+		reputer0: alloraMath.MustNewDecFromString("0.29240709744359700"),
+		reputer1: alloraMath.MustNewDecFromString("0.41822210449254600"),
+		reputer2: alloraMath.MustNewDecFromString("0.17663500756729100"),
+		reputer3: alloraMath.MustNewDecFromString("0.4961746382998650"),
+		reputer4: alloraMath.MustNewDecFromString("0.27996059439471200"),
 	}
 
 	for inferer, regret := range infererNetworkRegrets {
@@ -1277,10 +1282,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// set forecaster network regrets
 
+	// EPOCH 2 inference_regret_worker_5-7
 	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
-		forecaster0: alloraMath.MustNewDecFromString("0.816066375505268"),
-		forecaster1: alloraMath.MustNewDecFromString("0.8234558901838660"),
-		forecaster2: alloraMath.MustNewDecFromString("0.8196673550408280"),
+		forecaster0: alloraMath.MustNewDecFromString("0.8160663799969630"),
+		forecaster1: alloraMath.MustNewDecFromString("0.8234558968607070"),
+		forecaster2: alloraMath.MustNewDecFromString("0.8196673491058460"),
 	}
 
 	for forecaster, regret := range forecasterNetworkRegrets {
@@ -1307,31 +1313,31 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	}
 
-	/// Epoch 3 values
+	/// Epoch 3 values inference_regret_worker_x_onein_y
 
-	setOneInForecasterNetworkRegret(forecaster0, reputer0, "-0.005488956369080480")
-	setOneInForecasterNetworkRegret(forecaster0, reputer1, "0.17091263821766800")
-	setOneInForecasterNetworkRegret(forecaster0, reputer2, "-0.15988639638192800")
-	setOneInForecasterNetworkRegret(forecaster0, reputer3, "0.28690775330189800")
-	setOneInForecasterNetworkRegret(forecaster0, reputer4, "-0.019476319822263300")
+	setOneInForecasterNetworkRegret(forecaster0, reputer0, "-0.0053184502499764600")
+	setOneInForecasterNetworkRegret(forecaster0, reputer1, "0.17108317418750000")
+	setOneInForecasterNetworkRegret(forecaster0, reputer2, "-0.15971590834870200")
+	setOneInForecasterNetworkRegret(forecaster0, reputer3, "0.28707827253180900")
+	setOneInForecasterNetworkRegret(forecaster0, reputer4, "-0.019305832050424900")
 
-	setOneInForecasterNetworkRegret(forecaster0, forecaster0, "0.7370268872154170")
+	setOneInForecasterNetworkRegret(forecaster0, forecaster0, "0.7377753950814930")
 
-	setOneInForecasterNetworkRegret(forecaster1, reputer0, "-0.023601485104528100")
-	setOneInForecasterNetworkRegret(forecaster1, reputer1, "0.1528001094822210")
-	setOneInForecasterNetworkRegret(forecaster1, reputer2, "-0.1779989251173760")
-	setOneInForecasterNetworkRegret(forecaster1, reputer3, "0.2687952245664510")
-	setOneInForecasterNetworkRegret(forecaster1, reputer4, "-0.03758884855771100")
+	setOneInForecasterNetworkRegret(forecaster1, reputer0, "-0.023527930610206600")
+	setOneInForecasterNetworkRegret(forecaster1, reputer1, "0.152873693827269")
+	setOneInForecasterNetworkRegret(forecaster1, reputer2, "-0.17792538870893200")
+	setOneInForecasterNetworkRegret(forecaster1, reputer3, "0.26886879217157900")
+	setOneInForecasterNetworkRegret(forecaster1, reputer4, "-0.03751531241065500")
 
-	setOneInForecasterNetworkRegret(forecaster1, forecaster1, "0.7307121775422120")
+	setOneInForecasterNetworkRegret(forecaster1, forecaster1, "0.7307092967948180")
 
-	setOneInForecasterNetworkRegret(forecaster2, reputer0, "-0.025084585281804600")
-	setOneInForecasterNetworkRegret(forecaster2, reputer1, "0.15131700930494400")
-	setOneInForecasterNetworkRegret(forecaster2, reputer2, "-0.17948202529465200")
-	setOneInForecasterNetworkRegret(forecaster2, reputer3, "0.26731212438917400")
-	setOneInForecasterNetworkRegret(forecaster2, reputer4, "-0.03907194873498750")
+	setOneInForecasterNetworkRegret(forecaster2, reputer0, "-0.0249860078679687")
+	setOneInForecasterNetworkRegret(forecaster2, reputer1, "0.15141561656950700")
+	setOneInForecasterNetworkRegret(forecaster2, reputer2, "-0.1793834659666940")
+	setOneInForecasterNetworkRegret(forecaster2, reputer3, "0.26741071491381700")
+	setOneInForecasterNetworkRegret(forecaster2, reputer4, "-0.0389733896684171")
 
-	setOneInForecasterNetworkRegret(forecaster2, forecaster2, "0.722844746771044")
+	setOneInForecasterNetworkRegret(forecaster2, forecaster2, "0.7231311719266530")
 
 	// Calculate
 
@@ -1345,8 +1351,10 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	require.NoError(err)
 
-	s.inEpsilon5(valueBundle.CombinedValue, "-0.08418238013037833391277949761424359")
-	s.inEpsilon3(valueBundle.NaiveValue, "-0.09089296942031617121265381217201911")
+	// epoch 3 network_inference
+	s.inEpsilon2(valueBundle.CombinedValue, "-0.08595551799339320")
+	// epoch 3 network_naive_inference
+	s.inEpsilon2(valueBundle.NaiveValue, "-0.0903194538050178")
 
 	for _, inference := range inferences.Inferences {
 		found := false
@@ -1358,57 +1366,62 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		}
 		require.True(found, "Inference not found")
 	}
+
+	// epoch 3 forecast_implied_inference_x
 	for _, forecasterValue := range valueBundle.ForecasterValues {
 		switch string(forecasterValue.Worker) {
 		case forecaster0:
-			s.inEpsilon2(forecasterValue.Value, "-0.07360672083447152549990990449686835")
+			s.inEpsilon2(forecasterValue.Value, "-0.1025675327315210")
 		case forecaster1:
-			s.inEpsilon2(forecasterValue.Value, "-0.07263773178885971876894786458169429")
+			s.inEpsilon2(forecasterValue.Value, "-0.07302318589259440")
 		case forecaster2:
-			s.inEpsilon2(forecasterValue.Value, "-0.07333303938740419999999999999997501")
+			s.inEpsilon2(forecasterValue.Value, "-0.07233832253513270")
 		default:
 			require.Fail("Unexpected forecaster %v", forecasterValue.Worker)
 		}
 	}
 
+	// epoch 3 network_inference_oneout_x
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch string(oneOutInfererValue.Worker) {
 		case reputer0:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.09112256843970400263910853205529701")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.09193875537568730")
 		case reputer1:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.0849762526781571419651680849185323")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.08725723597921200")
 		case reputer2:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.07508631218815497306553765277306250")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.07611975173450570")
 		case reputer3:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.07762408532626815421861778958359602")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.07876098982982720")
 		case reputer4:
-			s.inEpsilon2(oneOutInfererValue.Value, "-0.097732445271841")
+			s.inEpsilon2(oneOutInfererValue.Value, "-0.09549195980225840")
 		default:
 			require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}
 	}
 
+	// epoch 3 network_naive_inference_onein_x
 	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
 		switch string(oneInForecasterValue.Worker) {
 		case forecaster0:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.08562185282145071310963674889631515")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.09101522746174310")
 		case forecaster1:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.0857186447720307")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.08506554261579950")
 		case forecaster2:
-			s.inEpsilon2(oneInForecasterValue.Value, "-0.0853937827718047")
+			s.inEpsilon2(oneInForecasterValue.Value, "-0.08491153277529740")
 		default:
 			require.Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}
 	}
 
+	// epoch 3 network_inference_oneout_5-7
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch string(oneOutForecasterValue.Worker) {
 		case forecaster0:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.08571218484894173358533220915281566")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0831086124651002")
 		case forecaster1:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.08575177379258356927513673523336433")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.0880928742443665")
 		case forecaster2:
-			s.inEpsilon2(oneOutForecasterValue.Value, "-0.08585235237690237323017634246068422")
+			s.inEpsilon2(oneOutForecasterValue.Value, "-0.08821296390705380")
 		default:
 			require.Fail("Unexpected worker %v", oneOutForecasterValue.Worker)
 		}
