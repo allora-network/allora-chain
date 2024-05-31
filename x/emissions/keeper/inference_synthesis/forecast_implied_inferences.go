@@ -84,6 +84,7 @@ func CalcForecastImpliedInferences(
 	networkCombinedLoss Loss,
 	allInferersAreNew bool,
 	epsilon alloraMath.Dec,
+	fTolerance alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
 ) (map[Worker]*emissions.Inference, error) {
@@ -160,22 +161,22 @@ func CalcForecastImpliedInferences(
 				}
 
 				var err error
-				// Calc std dev of forecasted regrets + epsilon
+				// Calc std dev of forecasted regrets + f_tolerance
 				// σ(R_ijk) + ε
 				stdDevForecastedRegrets, err := alloraMath.StdDev(forecastedRegrets)
 				if err != nil {
 					return nil, errorsmod.Wrapf(err, "error calculating standard deviation")
 				}
-				stdDevForecastedRegretsPlusEpsilon, err := stdDevForecastedRegrets.Add(epsilon)
+				stdDevForecastedRegretsPlusFTolerance, err := stdDevForecastedRegrets.Add(fTolerance)
 				if err != nil {
-					return nil, errorsmod.Wrapf(err, "error adding epsilon to standard deviation")
+					return nil, errorsmod.Wrapf(err, "error adding f_tolerance to standard deviation")
 				}
 
 				// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
 				maxNormalizedForecastedRegret := alloraMath.ZeroDec()
 				for _, j := range sortedInferersInForecast {
-					R_ik[j], err = R_ik[j].Quo(stdDevForecastedRegretsPlusEpsilon) // \hatR_ijk = R_ijk / σ(R_ijk) + ε
+					R_ik[j], err = R_ik[j].Quo(stdDevForecastedRegretsPlusFTolerance) // \hatR_ijk = R_ijk / σ(R_ijk) + ε
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}

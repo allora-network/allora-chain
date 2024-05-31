@@ -20,6 +20,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissions.Inference{
@@ -37,6 +38,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		networkCombinedLoss,
 		false,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)
@@ -64,24 +66,29 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesRow2() {
 			{
 				Forecaster: "forecaster0",
 				ForecastElements: []*emissions.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.02089366880023640")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.3342267861383700")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("0.0002604615062174660")},
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.016939367157794778")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("86.02632796566829")},
+					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("0.01605410001733962")},
+					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString("0.00028323381523028235")},
+					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString("0.0006370285636800774")},
 				},
 			},
 		},
 	}
-	networkCombinedLoss := alloraMath.MustNewDecFromString("0.018593036157667700") // <- from Row 1
+	networkCombinedLoss := alloraMath.MustNewDecFromString("0.0063383456367833045") // <- from Row 1
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	pNorm := alloraMath.MustNewDecFromString("2.0")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
+	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissions.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.05053616")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("0.14563229779895506")},
 	}
 	inferenceByWorker := map[string]*emissions.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("-0.2797477698393250")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("0.26856211587161100")},
-		"worker2": {Value: alloraMath.MustNewDecFromString("0.003934174100448460")},
+		"worker0": {Value: alloraMath.MustNewDecFromString("0.5005160001195263")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("0.03671041849236615")},
+		"worker2": {Value: alloraMath.MustNewDecFromString("0.00221032107970949")},
+		"worker3": {Value: alloraMath.MustNewDecFromString("0.07899592241246256")},
+		"worker4": {Value: alloraMath.MustNewDecFromString("0.10972882689071076")},
 	}
 	result, err := inference_synthesis.CalcForecastImpliedInferences(
 		inferenceByWorker,
@@ -90,6 +97,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesRow2() {
 		networkCombinedLoss,
 		false,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)
@@ -125,6 +133,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesRow3() {
 	}
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.01569376583279220")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissions.Inference{
@@ -142,6 +151,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesRow3() {
 		networkCombinedLoss,
 		false,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)

@@ -329,6 +329,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 	}
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.0156937658327922")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expectedOneOutInferences := []struct {
@@ -403,6 +404,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 		forecastNormalizedRegrets,
 		networkCombinedLoss,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)
@@ -508,6 +510,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 	// epoch 2
 	networkCombinedLoss := alloraMath.MustNewDecFromString(".0000127791308799785")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expectedOneOutInferences := []struct {
@@ -584,6 +587,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		forecastNormalizedRegrets,
 		networkCombinedLoss,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)

@@ -367,6 +367,7 @@ func CalcOneOutInferences(
 	forecasterNormalizedRegrets NormalizedRegrets,
 	networkCombinedLoss Loss,
 	epsilon alloraMath.Dec,
+	fTolerance alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
 ) ([]*emissions.WithheldWorkerAttributedValue, []*emissions.WithheldWorkerAttributedValue, error) {
@@ -392,6 +393,7 @@ func CalcOneOutInferences(
 			networkCombinedLoss,
 			allWorkersAreNew.AllInferersAreNew,
 			epsilon,
+			fTolerance,
 			pNorm,
 			cNorm,
 		)
@@ -564,6 +566,7 @@ func CalcNetworkInferences(
 		networkCombinedLoss,
 		allWorkersAreNew.AllInferersAreNew,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)
@@ -639,6 +642,7 @@ func CalcNetworkInferences(
 		forecastNormalizedRegrets,
 		networkCombinedLoss,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)
