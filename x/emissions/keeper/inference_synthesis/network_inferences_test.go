@@ -1704,25 +1704,25 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 			{
 				Forecaster: forecaster1,
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.4")},
-					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.5")},
-					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.6")},
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.1")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.1")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.1")},
 				},
 			},
 			{
 				Forecaster: forecaster2,
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.7")},
-					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.8")},
-					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.9")},
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.1")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.1")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.1")},
 				},
 			},
 			{
 				Forecaster: forecaster3,
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.1")},
-					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.2")},
-					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.3")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.1")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.1")},
 				},
 			},
 		},
@@ -1731,7 +1731,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.3")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
 	fTolerance := alloraMath.MustNewDecFromString("0.01")
-	pNorm := alloraMath.MustNewDecFromString("2")
+	pNorm := alloraMath.MustNewDecFromString("3")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
 	// Set inferer network regrets
