@@ -488,7 +488,6 @@ func CalcOneInInferences(
 	forecastImpliedInferences map[Worker]*emissions.Inference,
 	sortedForecasters []Worker,
 	allWorkersAreNew AllWorkersAreNew,
-	// maxRegretsByOneInForecaster map[Worker]Regret,
 	epsilon alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
