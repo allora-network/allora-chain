@@ -46,5 +46,5 @@ func TopicFundingChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Check funding Topic 1 ---")
 	FundTopic1(m)
 	m.T.Log("--- Check reactivating Topic 1 ---")
-	CheckTopic1Activated(m)
+	CheckTopic1Activated(m) // Should have stake (from earlier test) AND funds by now
 }

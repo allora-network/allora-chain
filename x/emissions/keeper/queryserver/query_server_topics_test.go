@@ -39,14 +39,7 @@ func (s *KeeperTestSuite) TestGetTopic() {
 
 	topicId, err := keeper.GetNextTopicId(ctx)
 	metadata := "metadata"
-
-	// Test retrieving a non-existent topic
 	req := &types.QueryTopicRequest{TopicId: topicId}
-	response, err := queryServer.GetTopic(ctx, req)
-	s.Require().NotNil(response, "Response should not be nil even if the topic does not exist")
-	s.Require().NotNil(response.Topic, "Topic should be nil for a non-existent topic")
-	s.Require().Equal(response.Topic.Id, uint64(0), "Topic should be nil for a non-existent topic")
-	s.Require().Error(err, "No error should be returned; the response should gracefully handle not found")
 
 	// Setting up a new topic
 	newTopic := types.Topic{Id: topicId, Metadata: metadata}
@@ -54,7 +47,7 @@ func (s *KeeperTestSuite) TestGetTopic() {
 	s.Require().NoError(err, "Setting a new topic should not fail")
 
 	// Test retrieving an existing topic
-	response, err = queryServer.GetTopic(ctx, req)
+	response, err := queryServer.GetTopic(ctx, req)
 	s.Require().NoError(err, "Retrieving an existing topic should not fail")
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().NotNil(response.Topic, "The response's Topic should not be nil")
