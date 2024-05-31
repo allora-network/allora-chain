@@ -3,6 +3,8 @@ package queryserver
 import (
 	"context"
 
+	"cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -21,8 +23,33 @@ func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.QueryNextTo
 // Topics defines the handler for the Query/Topics RPC method.
 func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest) (*types.QueryTopicResponse, error) {
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting topic")
+	}
 
-	return &types.QueryTopicResponse{Topic: &topic}, err
+	params, err := qs.k.GetParams(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting params")
+	}
+
+	currentTopicWeight, currentTopicRevenue, err := qs.k.GetCurrentTopicWeight(
+		ctx,
+		req.TopicId,
+		topic.EpochLength,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+		cosmosMath.ZeroInt(),
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error getting current topic weight")
+	}
+
+	return &types.QueryTopicResponse{
+		Topic:            &topic,
+		Weight:           currentTopicWeight.String(),
+		EffectiveRevenue: currentTopicRevenue.String(),
+	}, nil
 }
 
 // Retrieves a list of active topics. Paginated.

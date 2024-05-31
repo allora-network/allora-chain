@@ -56,7 +56,7 @@ func CalcExpDecay(
 	return newRev, nil
 }
 
-// generic function that sorts the keys of a map
+// Generic function that sorts the keys of a map
 // Used for deterministic ranging of maps
 func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 	keys := make([]K, len(m))
@@ -67,6 +67,31 @@ func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 	}
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
 	return keys
+}
+
+// Generic function that sorts the keys of a map.
+// Used for deterministic ranging of arrays with weights in a map
+// whose keys may not include some values in the array.
+// When an array element is not in the map, it is not included in the output array.
+func GetSortedElementsByDecWeightDesc[K cmp.Ordered](l []K, m map[K]*Dec) []K {
+	// Create a new array that only contains unique elements that are in the map
+	newL := make([]K, 0)
+	hasKeyBeenSeen := make(map[K]bool)
+	for _, el := range l {
+		if _, ok := m[el]; ok {
+			if _, ok := hasKeyBeenSeen[el]; !ok {
+				newL = append(newL, el)
+				hasKeyBeenSeen[el] = true
+			}
+		}
+	}
+	sort.Slice(newL, func(i, j int) bool {
+		if (*m[newL[i]]).Equal(*m[newL[j]]) {
+			return newL[i] < newL[j]
+		}
+		return (*m[newL[i]]).Gt(*m[newL[j]])
+	})
+	return newL
 }
 
 // StdDev calculates the standard deviation of a slice of `Dec`
