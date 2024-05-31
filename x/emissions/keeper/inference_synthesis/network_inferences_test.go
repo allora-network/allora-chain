@@ -1621,15 +1621,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 			{
 				Forecaster: worker3,
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.6")},
-					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.8")},
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.1")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.1")},
 				},
 			},
 			{
 				Forecaster: worker4,
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.4")},
-					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.9")},
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.1")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.1")},
 				},
 			},
 		},
@@ -1638,7 +1638,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.2")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
 	fTolerance := alloraMath.MustNewDecFromString("0.01")
-	pNorm := alloraMath.MustNewDecFromString("2")
+	pNorm := alloraMath.MustNewDecFromString("3")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
 	// Set inferer network regrets
