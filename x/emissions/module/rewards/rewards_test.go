@@ -2,6 +2,7 @@ package rewards_test
 
 import (
 	"fmt"
+	slog "log"
 	"testing"
 	"time"
 
@@ -2690,7 +2691,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 }
 
 func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
-	/// SETUP
+	// setup
 	require := s.Require()
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
@@ -2704,6 +2705,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		s.addrs[2],
 	}
 
+	// separate addresses for the second topic
 	reputer1Addrs := []sdk.AccAddress{
 		s.addrs[3],
 		s.addrs[4],
@@ -2716,11 +2718,13 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		s.addrs[8],
 	}
 
+	// setup topics
 	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
 
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
 	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer1Addrs, stake, alphaRegret, 1)
 
+	// setup values to be identical for both topics
 	reputer0Values := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.1"},
 		{Address: s.addrs[1], Value: "0.2"},
@@ -2739,6 +2743,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		{Address: s.addrs[8], Value: "0.3"},
 	}
 
+	// record the stakes on each topic so we can see the reward differences
 	reputer0_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
 	require.NoError(err)
 	reputer1_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
@@ -2753,6 +2758,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer5_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
 	require.NoError(err)
 
+	// do work on the topics to earn rewards
 	s.getRewardsDistribution(
 		topicId0,
 		block,
@@ -2773,6 +2779,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		"0.1",
 	)
 
+	// force rewards to be distributed
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
 	err = s.emissionsAppModule.EndBlock(s.ctx)
@@ -2828,9 +2835,15 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	})
 	require.NoError(err)
 
+	// record the updated stakes
 	reputer3_Stake1, err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
 	require.NoError(err)
+	reputer4_Stake1, err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	require.NoError(err)
+	reputer5_Stake1, err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	require.NoError(err)
 
+	// do work on the topics to earn rewards
 	s.getRewardsDistribution(
 		topicId0,
 		block,
@@ -2851,6 +2864,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		"0.1",
 	)
 
+	// force rewards to be distributed
 	block++
 	s.ctx = s.ctx.WithBlockHeight(block)
 
@@ -2859,6 +2873,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
+	// record the stakes after
 	reputer0_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
 	require.NoError(err)
 	reputer1_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
@@ -2873,6 +2888,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer5_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
 	require.NoError(err)
 
+	// calculate rewards
 	reputer0_Reward1 := reputer0_Stake2.Sub(reputer0_Stake1)
 	reputer1_Reward1 := reputer1_Stake2.Sub(reputer1_Stake1)
 	reputer2_Reward1 := reputer2_Stake2.Sub(reputer2_Stake1)
@@ -2880,11 +2896,23 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer4_Reward1 := reputer4_Stake2.Sub(reputer4_Stake1)
 	reputer5_Reward1 := reputer5_Stake2.Sub(reputer5_Stake1)
 
+	// calculate total rewards for each topic
 	topic0RewardTotal1 := reputer0_Reward1.Add(reputer1_Reward1).Add(reputer2_Reward1)
 	topic1RewardTotal1 := reputer3_Reward1.Add(reputer4_Reward1).Add(reputer5_Reward1)
 
-	require.True(topic0RewardTotal1.LT(topic0RewardTotal0))
-	require.True(topic1RewardTotal1.GT(topic1RewardTotal0))
+	slog.Printf("topic0RewardTotal0: %s", topic0RewardTotal0.String())
+	slog.Printf("topic1RewardTotal0: %s", topic1RewardTotal0.String())
+	slog.Printf("topic0RewardTotal1: %s", topic0RewardTotal1.String())
+	slog.Printf("topic1RewardTotal1: %s", topic1RewardTotal1.String())
+
+	// in the first round, the rewards should be equal for each topic
+	require.True(topic0RewardTotal0.Equal(topic1RewardTotal0))
+	// for topic 0, the rewards should be less in the second round
+	require.True(topic0RewardTotal0.GT(topic0RewardTotal1))
+	// in the second round, the rewards should be greater for topic 1
+	require.True(topic0RewardTotal1.LT(topic1RewardTotal1))
+	// the rewards for topic 1 should be greater in the second round
+	require.True(topic1RewardTotal0.LT(topic1RewardTotal1))
 }
 
 func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipantDropsOut() {
