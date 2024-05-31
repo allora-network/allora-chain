@@ -3083,3 +3083,145 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 	require.True(reputer3Reward.Equal(reputer4Reward))
 	require.True(reputer5Reward.LT(reputer1Reward))
 }
+
+func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipantDropsOut() {
+	// SETUP
+	require := s.Require()
+
+	block := int64(100)
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	alphaRegret := alloraMath.MustNewDecFromString("0.1")
+
+	reputer0Addrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+	}
+
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[3],
+		s.addrs[4],
+		s.addrs[5],
+	}
+
+	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
+
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
+
+	// Define values to test
+	reputer0Values := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.2"},
+		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[2], Value: "0.2"},
+	}
+
+	workerValues := []TestWorkerValue{
+		{Address: s.addrs[3], Value: "0.2"},
+		{Address: s.addrs[4], Value: "0.2"},
+		{Address: s.addrs[5], Value: "0.2"},
+	}
+
+	// Define second round values to test with one less reputer
+	reputer1Values := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.2"},
+		{Address: s.addrs[1], Value: "0.2"},
+	}
+
+	// record the stakes before rewards
+	reputer0_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	require.NoError(err)
+	reputer1_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	require.NoError(err)
+	reputer2_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	require.NoError(err)
+
+	// do work on the current block
+	s.getRewardsDistribution(
+		topicId0,
+		block,
+		workerValues,
+		reputer0Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	// create tokens to reward with
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	// force rewards to be distributed
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	require.NoError(err)
+
+	// record the updated stakes after rewards
+	reputer0_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	require.NoError(err)
+	reputer1_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	require.NoError(err)
+	reputer2_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	require.NoError(err)
+
+	// calculate the rewards for each reputer
+	reputer0_Reward0 := reputer0_Stake1.Sub(reputer0_Stake0)
+	reputer1_Reward0 := reputer1_Stake1.Sub(reputer1_Stake0)
+	reputer2_Reward0 := reputer2_Stake1.Sub(reputer2_Stake0)
+
+	// fund the topic again for future rewards
+	const topicFundAmount int64 = 1000
+
+	fundTopic := func(topicId uint64, funderAddr sdk.AccAddress, amount int64) {
+		s.MintTokensToAddress(funderAddr, cosmosMath.NewInt(amount))
+		fundTopicMessage := types.MsgFundTopic{
+			Sender:  funderAddr.String(),
+			TopicId: topicId,
+			Amount:  cosmosMath.NewInt(amount),
+		}
+		_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+		require.NoError(err)
+	}
+
+	fundTopic(topicId0, s.addrs[0], topicFundAmount)
+
+	// do work on the current block, but with one less reputer
+	s.getRewardsDistribution(
+		topicId0,
+		block,
+		workerValues,
+		reputer1Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	// increase the block height
+	block++
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	// create tokens to reward with
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	// force rewards to be distributed
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	require.NoError(err)
+
+	// check the updated stakes after rewards
+	reputer0_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	require.NoError(err)
+	reputer1_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	require.NoError(err)
+	reputer2_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	require.NoError(err)
+
+	// calculate the rewards for each reputer
+	reputer0_Reward1 := reputer0_Stake2.Sub(reputer0_Stake1)
+	reputer1_Reward1 := reputer1_Stake2.Sub(reputer1_Stake1)
+	reputer2_Reward1 := reputer2_Stake2.Sub(reputer2_Stake1)
+
+	// sanity check that participating reputer rewards went up, but non participating reputer
+	// rewards went to zero
+	require.True(reputer0_Reward1.GT(reputer0_Reward0))
+	require.True(reputer1_Reward1.GT(reputer1_Reward0))
+	require.True(reputer2_Reward0.GT(cosmosMath.ZeroInt()))
+	require.True(reputer2_Reward1.Equal(cosmosMath.ZeroInt()))
+}
