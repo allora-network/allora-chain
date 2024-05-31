@@ -184,7 +184,7 @@ func GetForecasterOneInNormilizedRegretsWithMax(
 		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of one-in forecaster regrets")
 	}
 	// Add f_tolerance to standard deviation
-	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Add(fTolerance)
+	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Abs().Add(fTolerance)
 	if err != nil {
 		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error adding f_tolerance to standard deviation of one-in forecaster regrets")
 	}
@@ -193,7 +193,7 @@ func GetForecasterOneInNormilizedRegretsWithMax(
 	normalizedRegrets := make(map[string]Regret)
 	maxRegret := alloraMath.ZeroDec()
 	for i, inferer := range inferers {
-		regretFrac, err := oneInForecasterRegrets[i].Quo(stdDevRegretsPlusFTolerance.Abs())
+		regretFrac, err := oneInForecasterRegrets[i].Quo(stdDevRegretsPlusFTolerance)
 		if err != nil {
 			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating one-in forecaster regret fraction")
 		}
