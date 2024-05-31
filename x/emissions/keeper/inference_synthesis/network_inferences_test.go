@@ -79,88 +79,7 @@ func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) TestCalcTheStdDevOfRegretsAmongWorkersWithLosses() {
-	s.Require().Fail("Test not implemented")
-}
-
-/*
-	k := s.emissionsKeeper
-	ctx := s.ctx
-	topicId := uint64(1)
-
-	worker1 := "worker1"
-	worker2 := "worker2"
-	worker3 := "worker3"
-	worker4 := "worker4"
-
-	inferenceByWorker := map[string]*emissionstypes.Inference{
-		worker1: {Value: alloraMath.MustNewDecFromString("0.5")},
-		worker2: {Value: alloraMath.MustNewDecFromString("0.7")},
-	}
-
-	forecastImpliedInferenceByWorker := map[string]*emissionstypes.Inference{
-		worker3: {Value: alloraMath.MustNewDecFromString("0.6")},
-		worker4: {Value: alloraMath.MustNewDecFromString("0.8")},
-	}
-
-	epsilon := alloraMath.MustNewDecFromString("0.001")
-
-	err := k.SetInfererNetworkRegret(ctx, topicId, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
-	s.Require().NoError(err)
-	err = k.SetInfererNetworkRegret(ctx, topicId, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
-	s.Require().NoError(err)
-
-	err = k.SetForecasterNetworkRegret(ctx, topicId, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-	err = k.SetForecasterNetworkRegret(ctx, topicId, worker4, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
-	s.Require().NoError(err)
-
-	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.3")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker3, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.6")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
-	s.Require().NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker4, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
-	s.Require().NoError(err)
-
-	stdDevRegrets, err := inference_synthesis.CalcTheStdDevOfRegretsAmongWorkersWithLosses(
-		ctx,
-		k,
-		topicId,
-		inferenceByWorker,
-		alloraMath.GetSortedKeys(inferenceByWorker),
-		forecastImpliedInferenceByWorker,
-		alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker),
-		epsilon,
-	)
-	s.Require().NoError(err)
-
-	expectedStdDevInferenceRegret, err := alloraMath.MustNewDecFromString("0.050").Add(epsilon)
-	s.Require().NoError(err)
-	expectedStdDevForecastRegret, err := alloraMath.MustNewDecFromString("0.050").Add(epsilon)
-	s.Require().NoError(err)
-	expectedStdDevOneInForecastRegretWorker3, err := alloraMath.MustNewDecFromString("0.08164965809277260327324280249019638").Add(epsilon)
-	s.Require().NoError(err)
-	expectedStdDevOneInForecastRegretWorker4, err := alloraMath.MustNewDecFromString("0.08164965809277260327324280249019638").Add(epsilon)
-	s.Require().NoError(err)
-
-	s.Require().True(stdDevRegrets.StdDevInferenceRegret.Equal(expectedStdDevInferenceRegret), "StdDevInferenceRegret mismatch")
-	s.Require().True(stdDevRegrets.StdDevForecastRegret.Equal(expectedStdDevForecastRegret), "StdDevForecastRegret mismatch")
-	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker3].Equal(expectedStdDevOneInForecastRegretWorker3), "StdDevOneInForecastRegret[worker3] mismatch")
-	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker4].Equal(expectedStdDevOneInForecastRegretWorker4), "StdDevOneInForecastRegret[worker4] mismatch")
-}
-*/
-
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1() {
-	s.Require().Fail("Test not implemented")
-}
-
-/*
 	topicId := inference_synthesis.TopicId(1)
 
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -173,7 +92,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 		"worker4": {Value: alloraMath.MustNewDecFromString("-0.0646463841210426")},
 		"worker5": {Value: alloraMath.MustNewDecFromString("-0.0634099113416666")},
 	}
-	maxRegret := alloraMath.MustNewDecFromString("0.9871536722074480")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
@@ -207,16 +125,40 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 		)
 	}
 
+	sortedInferers := alloraMath.GetSortedKeys(inferenceByWorker)
+
+	infererNormalizedRegrets, err := inference_synthesis.GetInfererNormalizedRegretsWithMax(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		sortedInferers,
+		epsilon,
+	)
+	s.Require().NoError(err)
+
+	sortedForecasters := alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker)
+
+	// Get Forecaster normalized regrets and max regret
+	forecastNormalizedRegrets, err := inference_synthesis.GetForecasterNormalizedRegretsWithMax(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		sortedForecasters,
+		epsilon,
+	)
+	s.Require().NoError(err)
+
 	networkCombinedInferenceValue, err := inference_synthesis.CalcWeightedInference(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
 		inferenceByWorker,
-		alloraMath.GetSortedKeys(inferenceByWorker),
+		sortedInferers,
 		forecastImpliedInferenceByWorker,
-		alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker),
+		sortedForecasters,
+		infererNormalizedRegrets,
+		forecastNormalizedRegrets,
 		NewWorkersAreNew(false),
-		maxRegret,
 		epsilon,
 		pNorm,
 		cNorm,
@@ -235,13 +177,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 		networkCombinedInferenceValue.String(),
 	)
 }
-*/
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2() {
-	s.Require().Fail("Test not implemented")
-}
-
-/*
 	topicId := inference_synthesis.TopicId(1)
 
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -254,7 +191,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 		"worker4": {Value: alloraMath.MustNewDecFromString("-0.19696044261177800")},
 		"worker5": {Value: alloraMath.MustNewDecFromString("-0.20289734770434400")},
 	}
-	maxRegret := alloraMath.MustNewDecFromString("0.9737035757621540")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.NewDecFromInt64(2)
 	cNorm := alloraMath.MustNewDecFromString("0.75")
@@ -288,16 +224,40 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 		)
 	}
 
+	sortedInferers := alloraMath.GetSortedKeys(inferenceByWorker)
+
+	infererNormalizedRegrets, err := inference_synthesis.GetInfererNormalizedRegretsWithMax(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		sortedInferers,
+		epsilon,
+	)
+	s.Require().NoError(err)
+
+	sortedForecasters := alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker)
+
+	// Get Forecaster normalized regrets and max regret
+	forecastNormalizedRegrets, err := inference_synthesis.GetForecasterNormalizedRegretsWithMax(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		sortedForecasters,
+		epsilon,
+	)
+	s.Require().NoError(err)
+
 	networkCombinedInferenceValue, err := inference_synthesis.CalcWeightedInference(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
 		inferenceByWorker,
-		alloraMath.GetSortedKeys(inferenceByWorker),
+		sortedInferers,
 		forecastImpliedInferenceByWorker,
-		alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker),
+		sortedForecasters,
+		infererNormalizedRegrets,
+		forecastNormalizedRegrets,
 		NewWorkersAreNew(false),
-		maxRegret,
 		epsilon,
 		pNorm,
 		cNorm,
@@ -316,13 +276,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 		networkCombinedInferenceValue.String(),
 	)
 }
-*/
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() {
-	s.Require().Fail("Test not implemented")
-}
-
-/*
 	topicId := inference_synthesis.TopicId(1)
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("-0.0514234892489971")},
@@ -372,7 +327,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 		"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
 		"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
 	}
-	maxRegret := alloraMath.MustNewDecFromString("0.987153672207448")
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.0156937658327922")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
@@ -412,17 +366,41 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 		)
 	}
 
+	sortedInferers := alloraMath.GetSortedKeys(inferenceByWorker)
+
+	infererNormalizedRegrets, err := inference_synthesis.GetInfererNormalizedRegretsWithMax(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		sortedInferers,
+		epsilon,
+	)
+	s.Require().NoError(err)
+
+	sortedForecasters := alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker)
+
+	// Get Forecaster normalized regrets and max regret
+	forecastNormalizedRegrets, err := inference_synthesis.GetForecasterNormalizedRegretsWithMax(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		sortedForecasters,
+		epsilon,
+	)
+	s.Require().NoError(err)
+
 	oneOutInfererValues, oneOutForecasterValues, err := inference_synthesis.CalcOneOutInferences(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
 		inferenceByWorker,
-		alloraMath.GetSortedKeys(inferenceByWorker),
+		sortedInferers,
 		forecastImpliedInferenceByWorker,
-		alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker),
+		sortedForecasters,
 		forecasts,
 		NewWorkersAreNew(false),
-		maxRegret,
+		infererNormalizedRegrets,
+		forecastNormalizedRegrets,
 		networkCombinedLoss,
 		epsilon,
 		pNorm,
@@ -460,13 +438,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 		}
 	}
 }
-*/
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecasters() {
-	s.Require().Fail("Test not implemented")
-}
-
-/*
+	require := s.Require()
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
 	topicId := inference_synthesis.TopicId(1)
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("-0.035995138925040600")},
@@ -529,7 +505,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		"forecaster1": alloraMath.MustNewDecFromString("0.8234558901838660"),
 		"forecaster2": alloraMath.MustNewDecFromString("0.8196673550408280"),
 	}
-	maxRegret := alloraMath.MustNewDecFromString("0.8234558901838660")
 	// epoch 2
 	networkCombinedLoss := alloraMath.MustNewDecFromString(".0000127791308799785")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
@@ -572,17 +547,41 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		)
 	}
 
+	sortedInferers := alloraMath.GetSortedKeys(inferenceByWorker)
+
+	infererNormalizedRegrets, err := inference_synthesis.GetInfererNormalizedRegretsWithMax(
+		ctx,
+		keeper,
+		topicId,
+		sortedInferers,
+		epsilon,
+	)
+	require.NoError(err)
+
+	sortedForecasters := alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker)
+
+	// Get Forecaster normalized regrets and max regret
+	forecastNormalizedRegrets, err := inference_synthesis.GetForecasterNormalizedRegretsWithMax(
+		ctx,
+		keeper,
+		topicId,
+		sortedForecasters,
+		epsilon,
+	)
+	require.NoError(err)
+
 	oneOutInfererValues, oneOutForecasterValues, err := inference_synthesis.CalcOneOutInferences(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
 		inferenceByWorker,
-		alloraMath.GetSortedKeys(inferenceByWorker),
+		sortedInferers,
 		forecastImpliedInferenceByWorker,
-		alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker),
+		sortedForecasters,
 		forecasts,
 		NewWorkersAreNew(false),
-		maxRegret,
+		infererNormalizedRegrets,
+		forecastNormalizedRegrets,
 		networkCombinedLoss,
 		epsilon,
 		pNorm,
@@ -620,7 +619,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		}
 	}
 }
-*/
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 	topicId := inference_synthesis.TopicId(1)
