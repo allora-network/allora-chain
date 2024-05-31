@@ -6,6 +6,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -1023,7 +1024,6 @@ func (s *KeeperTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 func (s *KeeperTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	ctx := s.ctx
 	require := s.Require()
-	requireEpsilon := s.util.GetEpsilon(require)
 	block := int64(1000)
 	score := alloraMath.MustNewDecFromString("17.53436")
 
@@ -1135,6 +1135,7 @@ func (s *KeeperTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	s.Require().Equal(delegatorReward2, reputerReward2, "Delegator and reputer rewards must be equal in all rounds")
 
 	normalizedLargeDelegatorReward, err := alloraMath.NewDecFromInt64(largeDelegatorReward2.Int64()).Quo(alloraMath.NewDecFromInt64(largeDelegatorRatio.Int64()))
+	s.Require().NoError(err)
 
 	s.Require().Equal(normalizedLargeDelegatorReward.SdkIntTrim(), reputerReward2, "Normalized large delegator rewards must be equal to reputer rewards")
 	s.Require().Equal(normalizedLargeDelegatorReward.SdkIntTrim(), delegatorReward2, "Normalized large delegator rewards must be equal to delegator rewards")
@@ -1142,5 +1143,5 @@ func (s *KeeperTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	totalRewardsSecondRound := reputerReward1.Add(delegatorReward1)
 	totalRewardsThirdRound := reputerReward2.Add(delegatorReward2).Add(largeDelegatorReward2)
 
-	requireEpsilon(3, alloraMath.MustNewDecFromString(totalRewardsSecondRound.String()), totalRewardsThirdRound.String())
+	testutil.InEpsilon3(s.T(), alloraMath.MustNewDecFromString(totalRewardsSecondRound.String()), totalRewardsThirdRound.String())
 }

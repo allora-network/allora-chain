@@ -12,7 +12,6 @@ import (
 	// cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	alloratestutil "github.com/allora-network/allora-chain/test/util"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
@@ -49,7 +48,6 @@ type InferenceSynthesisTestSuite struct {
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
-	util            alloratestutil.AlloraTestUtilSuite
 }
 
 func (s *InferenceSynthesisTestSuite) SetupTest() {
