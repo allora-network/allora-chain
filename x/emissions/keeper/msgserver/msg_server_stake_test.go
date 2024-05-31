@@ -1023,6 +1023,7 @@ func (s *KeeperTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 func (s *KeeperTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	ctx := s.ctx
 	require := s.Require()
+	requireEpsilon := s.util.GetEpsilon(require)
 	block := int64(1000)
 	score := alloraMath.MustNewDecFromString("17.53436")
 
@@ -1141,5 +1142,5 @@ func (s *KeeperTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	totalRewardsSecondRound := reputerReward1.Add(delegatorReward1)
 	totalRewardsThirdRound := reputerReward2.Add(delegatorReward2).Add(largeDelegatorReward2)
 
-	s.inEpsilon3(alloraMath.MustNewDecFromString(totalRewardsSecondRound.String()), totalRewardsThirdRound.String())
+	requireEpsilon(3, alloraMath.MustNewDecFromString(totalRewardsSecondRound.String()), totalRewardsThirdRound.String())
 }
