@@ -83,29 +83,29 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 	topicId := inferencesynthesis.TopicId(1)
 
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("-0.0514234892489971")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("-0.0316532211989242")},
-		"worker2": {Value: alloraMath.MustNewDecFromString("-0.1018014248041400")},
+		"worker0": {Value: alloraMath.MustNewDecFromString("-0.230622933739544")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("-0.19693894066605602")},
+		"worker2": {Value: alloraMath.MustNewDecFromString("0.048704500498029504")},
+		"worker3": {Value: alloraMath.MustNewDecFromString("0.054145121711977245")},
+		"worker4": {Value: alloraMath.MustNewDecFromString("0.22919548623217473")},
 	}
 	forecastImpliedInferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker3": {Value: alloraMath.MustNewDecFromString("-0.0707517711518230")},
-		"worker4": {Value: alloraMath.MustNewDecFromString("-0.0646463841210426")},
-		"worker5": {Value: alloraMath.MustNewDecFromString("-0.0634099113416666")},
+		"worker5": {Value: alloraMath.MustNewDecFromString("0.05403102080389692")},
 	}
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
-	pNorm := alloraMath.MustNewDecFromString("2")
+	pNorm := alloraMath.MustNewDecFromString("3")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	infererNetworkRegrets := map[string]inferencesynthesis.Regret{
-		"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
-		"worker1": alloraMath.MustNewDecFromString("0.910174442412618"),
-		"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
+		"worker0": alloraMath.MustNewDecFromString("0.6244348454149327"),
+		"worker1": alloraMath.MustNewDecFromString("0.692277772835371"),
+		"worker2": alloraMath.MustNewDecFromString("0.5643643585741522"),
+		"worker3": alloraMath.MustNewDecFromString("0.7350459785583141"),
+		"worker4": alloraMath.MustNewDecFromString("0.6152990250605652"),
 	}
 	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
-		"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
-		"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
-		"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
+		"worker5": alloraMath.MustNewDecFromString("0.9021613542996348"),
 	}
-	expectedNetworkCombinedInferenceValue := alloraMath.MustNewDecFromString("-0.06470631905627390")
+	expectedNetworkCombinedInferenceValue := alloraMath.MustNewDecFromString("-0.006914290859920283")
 
 	for inferer, regret := range infererNetworkRegrets {
 		s.emissionsKeeper.SetInfererNetworkRegret(
