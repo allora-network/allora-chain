@@ -482,6 +482,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := inferencesynthesis.TopicId(1)
+
+	// epoch 3 inference_x
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("-0.035995138925040600")},
 		"worker1": {Value: alloraMath.MustNewDecFromString("-0.07333303938740420")},
@@ -489,83 +491,92 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		"worker3": {Value: alloraMath.MustNewDecFromString("-0.12952123274063800")},
 		"worker4": {Value: alloraMath.MustNewDecFromString("-0.0703055329498285")},
 	}
+
+	// epoch 3 forecast_implied_inference_x
 	forecastImpliedInferenceByWorker := map[string]*emissionstypes.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.08944493117005920")},
-		"forecaster1": {Value: alloraMath.MustNewDecFromString("-0.07333218290300560")},
-		"forecaster2": {Value: alloraMath.MustNewDecFromString("-0.07756206109376570")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("-0.1025675327315210")},
+		"forecaster1": {Value: alloraMath.MustNewDecFromString("-0.07302318589259440")},
+		"forecaster2": {Value: alloraMath.MustNewDecFromString("-0.07233832253513270")},
 	}
-	// epoch 3
+
+	// epoch 3 forecasted_loss_x_for_y
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
 			{
 				Forecaster: "forecaster0",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.003305466418410120")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.0002788248228566030")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString(".0000240536828602367")},
-					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString("0.0008240378476798250")},
-					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString("0.0000186192181193532")},
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("-2.480767250656480")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("-3.5546685650440400")},
+					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("-4.6188184193555700")},
+					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString("-3.084052840898730")},
+					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString("-4.73003856038905")},
 				},
 			},
 			{
 				Forecaster: "forecaster1",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.002308441286328890")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.0000214380788596749")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("0.012560171044167200")},
-					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString("0.017998563880697900")},
-					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString("0.00020024906252089700")},
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("-2.6366811669641100")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("-4.668814135864770")},
+					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("-1.901004446344670")},
+					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString("-1.7447621462061600")},
+					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString("-3.6984295084170300")},
 				},
 			},
 			{
 				Forecaster: "forecaster2",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.005369218152594270")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.0002578158768320300")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("0.0076008583603885900")},
-					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString("0.0076269073955871000")},
-					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString("0.00035670236460009500")},
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("-2.2700889501915100")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("-3.5886903414115300")},
+					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("-2.119137360333620")},
+					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString("-2.1176515266976500")},
+					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString("-3.447694011689490")},
 				},
 			},
 		},
 	}
-	// epoch 2
+	// epoch 2 inference_regret_worker_x
 	infererNetworkRegrets :=
 		map[string]inferencesynthesis.Regret{
-			"worker0": alloraMath.MustNewDecFromString("0.29240710390153500"),
-			"worker1": alloraMath.MustNewDecFromString("0.4182220944854450"),
-			"worker2": alloraMath.MustNewDecFromString("0.17663501719135000"),
-			"worker3": alloraMath.MustNewDecFromString("0.49617463489106400"),
-			"worker4": alloraMath.MustNewDecFromString("0.27996060999688600"),
+			"worker0": alloraMath.MustNewDecFromString("0.29240709744359700"),
+			"worker1": alloraMath.MustNewDecFromString("0.41822210449254600"),
+			"worker2": alloraMath.MustNewDecFromString("0.17663500756729100"),
+			"worker3": alloraMath.MustNewDecFromString("0.4961746382998650"),
+			"worker4": alloraMath.MustNewDecFromString("0.27996059439471200"),
 		}
+
+	// epoch 2 inference_regret_worker_5-7
 	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
-		"forecaster0": alloraMath.MustNewDecFromString("0.816066375505268"),
-		"forecaster1": alloraMath.MustNewDecFromString("0.8234558901838660"),
-		"forecaster2": alloraMath.MustNewDecFromString("0.8196673550408280"),
+		"forecaster0": alloraMath.MustNewDecFromString("0.8160663799969630"),
+		"forecaster1": alloraMath.MustNewDecFromString("0.8234558968607070"),
+		"forecaster2": alloraMath.MustNewDecFromString("0.8196673491058460"),
 	}
-	// epoch 2
-	networkCombinedLoss := alloraMath.MustNewDecFromString(".0000127791308799785")
+	// epoch 2 network_loss
+	networkCombinedLoss := alloraMath.MustNewDecFromString("-4.89349875041023")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 	fTolerance := alloraMath.MustNewDecFromString("0.01")
-	pNorm := alloraMath.MustNewDecFromString("2.0")
+	pNorm := alloraMath.MustNewDecFromString("3")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	// epoch 3 network_inference_oneout_x ?
 	expectedOneOutInferences := []struct {
 		Worker string
 		Value  string
 	}{
-		{Worker: "worker0", Value: "-0.0878179883784"},
-		{Worker: "worker1", Value: "-0.0834415833800"},
-		{Worker: "worker2", Value: "-0.0760530852479"},
-		{Worker: "worker3", Value: "-0.0769113408092"},
-		{Worker: "worker4", Value: "-0.0977096283034"},
+		{Worker: "worker0", Value: "-0.09193875537568730"},
+		{Worker: "worker1", Value: "-0.08725723597921200"},
+		{Worker: "worker2", Value: "-0.07611975173450570"},
+		{Worker: "worker3", Value: "-0.07876098982982720"},
+		{Worker: "worker4", Value: "-0.09549195980225840"},
 	}
+
+	// epoch 3 network_inference_oneout_5-7
 	expectedOneOutImpliedInferences := []struct {
 		Worker string
 		Value  string
 	}{
-		{Worker: "forecaster0", Value: "-0.0847805342051"},
-		{Worker: "forecaster1", Value: "-0.0882088249132"},
-		{Worker: "forecaster2", Value: "-0.0872998460256"},
+		{Worker: "forecaster0", Value: "-0.0831086124651002"},
+		{Worker: "forecaster1", Value: "-0.0880928742443665"},
+		{Worker: "forecaster2", Value: "-0.08821296390705380"},
 	}
 
 	for inferer, regret := range infererNetworkRegrets {
