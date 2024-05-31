@@ -2820,13 +2820,16 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	require.Equal(topic0RewardTotal0, topic1RewardTotal0)
 
-	s.MintTokensToAddress(s.addrs[3], stake)
-	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
-		Sender:  s.addrs[3].String(),
-		Amount:  stake,
-		TopicId: topicId1,
-	})
-	require.NoError(err)
+	// Now, in second trial, increase stake for all reputers in topic 1
+	for i := 3; i < 6; i++ {
+		s.MintTokensToAddress(s.addrs[i], stake)
+		_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+			Sender:  s.addrs[i].String(),
+			Amount:  stake,
+			TopicId: topicId1,
+		})
+		require.NoError(err)
+	}
 
 	reputer3_Stake1, err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
 	require.NoError(err)
@@ -2883,7 +2886,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	topic0RewardTotal1 := reputer0_Reward1.Add(reputer1_Reward1).Add(reputer2_Reward1)
 	topic1RewardTotal1 := reputer3_Reward1.Add(reputer4_Reward1).Add(reputer5_Reward1)
 
-	require.True(topic0RewardTotal1.LT(topic0RewardTotal0))
+	require.True(topic0RewardTotal1.LT(topic1RewardTotal1))
 	require.True(topic1RewardTotal1.GT(topic1RewardTotal0))
 }
 

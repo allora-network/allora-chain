@@ -335,23 +335,16 @@ func GetConsensusScore(
 		if consensusLosses[i].IsZero() {
 			consensusLosses[i] = epsilon
 		}
-		var rLossOverConsensusLoss alloraMath.Dec
-		if rLoss.Gt(consensusLosses[i]) {
-			rLossOverConsensusLoss, err = rLoss.Quo(consensusLosses[i])
-			if err != nil {
-				return alloraMath.ZeroDec(), err
-			}
-		} else {
-			rLossOverConsensusLoss, err = consensusLosses[i].Quo(rLoss)
-			if err != nil {
-				return alloraMath.ZeroDec(), err
-			}
-		}
-		rLossOverCLossSquared, err := rLossOverConsensusLoss.Mul(rLossOverConsensusLoss) // == Pow(x,2)
+		// We have the log losses and the identity: log(Loss_im / Loss_i) = log(Loss_im) - log(Loss_i)
+		rLossLessConsensusLoss, err := rLoss.Sub(consensusLosses[i])
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
-		distanceSquared, err = distanceSquared.Add(rLossOverCLossSquared)
+		rLossLessCLossSquared, err := rLossLessConsensusLoss.Mul(rLossLessConsensusLoss) // == Pow(x,2)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+		distanceSquared, err = distanceSquared.Add(rLossLessCLossSquared)
 		if err != nil {
 			return alloraMath.ZeroDec(), err
 		}
