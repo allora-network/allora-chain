@@ -3,6 +3,7 @@ package inference_synthesis
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sort"
 
 	"cosmossdk.io/collections"
@@ -492,6 +493,13 @@ func CalcOneInInferences(
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
 ) ([]*emissions.WorkerAttributedValue, error) {
+	// Get Inferer normalized regrets and max regret
+	infererNormalizedRegrets, err := GetInfererNormalizedRegretsWithMax(ctx, k, topicId, sortedInferers, epsilon)
+	if err != nil {
+		ctx.Logger().Warn(fmt.Sprintf("Error getting inferer normalized regrets: %s", err.Error()))
+		return make([]*emissions.WorkerAttributedValue, 0), errorsmod.Wrapf(err, "Error calculating infererNormalizedRegrets in calc one-in inference")
+	}
+
 	// Loop over all forecast-implied inferences and set it as the only forecast-implied inference one at a time, then calculate the network inference given that one held out
 	oneInInferences := make([]*emissions.WorkerAttributedValue, 0)
 	for _, oneInForecaster := range sortedForecasters {
@@ -500,21 +508,17 @@ func CalcOneInInferences(
 		forecastImpliedInferencesWithForecaster[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
 		// Calculate the network inference without the worker's forecast-implied inference
 
-		// Get Inferer normalized regrets and max regret
-		infererNormalizedRegrets, err := GetInfererNormalizedRegretsWithMax(ctx, k, topicId, sortedInferers, epsilon)
-		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error getting inferer normalized regrets: %s", err.Error()))
-			return make([]*emissions.WorkerAttributedValue, 0), errorsmod.Wrapf(err, "Error calculating infererNormalizedRegrets in calc one-in inference")
-		}
+		sortedForecastersWithForecaster := alloraMath.GetSortedKeys(forecastImpliedInferencesWithForecaster)
 
 		// Get Forecaster normalized regrets and max regret
-		forecastNormalizedRegrets, err := GetForecasterNormalizedRegretsWithMax(ctx, k, topicId, sortedForecasters, epsilon)
+		forecastNormalizedRegrets, err := GetForecasterNormalizedRegretsWithMax(ctx, k, topicId, sortedForecastersWithForecaster, epsilon)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error getting forecaster normalized regrets: %s", err.Error()))
 			return make([]*emissions.WorkerAttributedValue, 0), errorsmod.Wrapf(err, "Error calculating forecastNormalizedRegrets in calc one-in inference")
 		}
 
-		sortedForecastersWithForecaster := alloraMath.GetSortedKeys(forecastImpliedInferencesWithForecaster)
+		log.Printf("forecastNormalizedRegrets %v", forecastNormalizedRegrets)
+		log.Printf("sortedForecastersWithForecaster %v", sortedForecastersWithForecaster)
 		oneInInference, err := CalcWeightedInference(
 			ctx,
 			k,
