@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	"strconv"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -624,20 +625,13 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		alloraMath.MustNewDecFromString("0.011649"),
 		alloraMath.MustNewDecFromString("0.013453"),
 	}
-	wantCoefficients := []alloraMath.Dec{
-		alloraMath.MustNewDecFromString("0.99987"),
-		alloraMath.OneDec(),
-		alloraMath.OneDec(),
-		alloraMath.MustNewDecFromString("0.98634"),
-		alloraMath.MustNewDecFromString("0.98154"),
-	}
-	gotScores1, gotCoefficients1, err := rewards.GetAllReputersOutput(
+	gotScores0, gotCoefficients0, err := rewards.GetAllReputersOutput(
 		allLosses,
 		stakes,
 		initialCoefficients,
 		numReputers,
 		params.LearningRate,
-		1,
+		0,
 		fTolerance,
 		params.Epsilon,
 		params.MinStakeFraction,
@@ -645,7 +639,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	)
 	require.NoError(err)
 
-	gotScores2, gotCoefficients2, err := rewards.GetAllReputersOutput(
+	gotScores1, gotCoefficients1, err := rewards.GetAllReputersOutput(
 		allLosses,
 		stakes,
 		initialCoefficients,
@@ -659,13 +653,13 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	)
 	require.NoError(err)
 
-	gotScores3, gotCoefficients3, err := rewards.GetAllReputersOutput(
+	gotScores2, gotCoefficients2, err := rewards.GetAllReputersOutput(
 		allLosses,
 		stakes,
 		initialCoefficients,
 		numReputers,
 		params.LearningRate,
-		3,
+		5,
 		fTolerance,
 		params.Epsilon,
 		params.MinStakeFraction,
@@ -673,49 +667,94 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	)
 	require.NoError(err)
 
-	getAbsoluteDifferences := func(gotScores []alloraMath.Dec, wantScores []alloraMath.Dec) ([]alloraMath.Dec, error) {
-		differences := []alloraMath.Dec{}
-		for i, score := range gotScores {
-			diff, err := score.Sub(wantScores[i])
-			if err != nil {
-				return nil, err
-			}
-			diff = diff.Abs()
+	gotScores3, gotCoefficients3, err := rewards.GetAllReputersOutput(
+		allLosses,
+		stakes,
+		initialCoefficients,
+		numReputers,
+		params.LearningRate,
+		20,
+		fTolerance,
+		params.Epsilon,
+		params.MinStakeFraction,
+		params.MaxGradientThreshold,
+	)
+	require.NoError(err)
 
-			differences = append(differences, diff)
+	// Assumes that the inputs are of the same length
+	getAdjustedStakes := func(coefficients []alloraMath.Dec) ([]alloraMath.Dec, error) {
+		N_r := alloraMath.NewDecFromInt64(int64(len(stakes)))
+		adjustedStakes := make([]alloraMath.Dec, len(stakes))
+		adjustedStakeNumerators := make([]alloraMath.Dec, len(stakes))
+		sumAdjustedStakes := alloraMath.ZeroDec()
+		for i, stake := range stakes {
+			adjustedStake, err := stake.Mul(coefficients[i])
+			require.NoError(err)
+			adjustedStake, err = adjustedStake.Mul(N_r)
+			require.NoError(err)
+			adjustedStakeNumerators[i] = adjustedStake
+			sumAdjustedStakes, err = sumAdjustedStakes.Add(adjustedStake)
+			require.NoError(err)
 		}
-		return differences, nil
+		for i, adjustedStakeNumerator := range adjustedStakeNumerators {
+			adjustedStake, err := adjustedStakeNumerator.Quo(sumAdjustedStakes)
+			require.NoError(err)
+			adjustedStakes[i] = alloraMath.Min(alloraMath.OneDec(), adjustedStake)
+		}
+		return adjustedStakes, nil
 	}
 
+	// Assumes that the inputs are the same length as the `stakes` array
+	getTotalConsensusScore := func(scores []alloraMath.Dec, coefficients []alloraMath.Dec) (float64, error) {
+		adjustedStakes, err := getAdjustedStakes(coefficients)
+		require.NoError(err)
+		require.Len(adjustedStakes, len(stakes))
+		totalScore := alloraMath.ZeroDec()
+		sumStake := alloraMath.ZeroDec()
+		for i, score := range scores {
+			stakeTimesScore, err := score.Mul(adjustedStakes[i])
+			require.NoError(err)
+			totalScore, err = totalScore.Add(stakeTimesScore)
+			require.NoError(err)
+			sumStake, err = sumStake.Add(adjustedStakes[i])
+			require.NoError(err)
+		}
+		totalScore, err = totalScore.Quo(sumStake)
+		require.NoError(err)
+		output, err := strconv.ParseFloat(totalScore.String(), 64)
+		require.NoError(err)
+		return output, nil
+	}
+
+	startCoefficients := []alloraMath.Dec{
+		alloraMath.OneDec(),
+		alloraMath.OneDec(),
+		alloraMath.OneDec(),
+		alloraMath.OneDec(),
+		alloraMath.OneDec(),
+	}
+
+	require.True(len(gotCoefficients0) == len(stakes))
+	require.True(len(gotCoefficients1) == len(stakes))
+	require.True(len(gotCoefficients2) == len(stakes))
+	require.True(len(gotCoefficients3) == len(stakes))
+
+	// Check that the total consensus score improves with successive invocations of the function with more iterations
+	totalScore0, _ := getTotalConsensusScore(gotScores0, startCoefficients)
+	totalScore1, _ := getTotalConsensusScore(gotScores1, gotCoefficients1)
+	totalScore2, _ := getTotalConsensusScore(gotScores2, gotCoefficients2)
+	totalScore3, _ := getTotalConsensusScore(gotScores3, gotCoefficients3)
+
+	require.LessOrEqual(totalScore0, totalScore1)
+	require.LessOrEqual(totalScore1, totalScore2)
+	require.LessOrEqual(totalScore2, totalScore3)
+
+	// Some simple checks of the scores
 	require.True(len(gotScores1) == len(wantScores))
 	require.True(len(gotScores2) == len(wantScores))
 	require.True(len(gotScores3) == len(wantScores))
 
-	scores1DifferenceAbs, err := getAbsoluteDifferences(gotScores1, wantScores)
-	require.NoError(err)
-	scores2DifferenceAbs, err := getAbsoluteDifferences(gotScores2, wantScores)
-	require.NoError(err)
-	scores3DifferenceAbs, err := getAbsoluteDifferences(gotScores3, wantScores)
-	require.NoError(err)
-
-	for i := 0; i < len(wantScores); i++ {
-		require.True(scores2DifferenceAbs[i].Lt(scores1DifferenceAbs[i]))
-		require.True(scores3DifferenceAbs[i].Lt(scores2DifferenceAbs[i]))
-	}
-
-	require.True(len(gotCoefficients1) == len(wantCoefficients))
-	require.True(len(gotCoefficients2) == len(wantCoefficients))
-	require.True(len(gotCoefficients3) == len(wantCoefficients))
-
-	coefficients1DifferenceAbs, err := getAbsoluteDifferences(gotCoefficients1, wantCoefficients)
-	require.NoError(err)
-	coefficients2DifferenceAbs, err := getAbsoluteDifferences(gotCoefficients2, wantCoefficients)
-	require.NoError(err)
-	coefficients3DifferenceAbs, err := getAbsoluteDifferences(gotCoefficients3, wantCoefficients)
-	require.NoError(err)
-
-	for i := 0; i < len(wantCoefficients); i++ {
-		require.True(coefficients2DifferenceAbs[i].Gte(coefficients1DifferenceAbs[i]))
-		require.True(coefficients3DifferenceAbs[i].Gte(coefficients2DifferenceAbs[i]))
-	}
+	//
+	// TODO verify score output matches that of GetAllConsensusScores()
+	//
 }

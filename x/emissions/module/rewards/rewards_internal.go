@@ -440,12 +440,12 @@ func GetAllReputersOutput(
 	oldCoefficients := make([]alloraMath.Dec, numReputers)
 	var i uint64 = 0
 	var maxGradient alloraMath.Dec = alloraMath.OneDec()
-	finalScores := make([]alloraMath.Dec, numReputers)
+	// finalScores := make([]alloraMath.Dec, numReputers)
+	newScores := make([]alloraMath.Dec, numReputers)
 
 	for maxGradient.Gt(maxGradientThreshold) && i < gradientDescentMaxIters {
 		copy(oldCoefficients, coefficients)
 		gradient := make([]alloraMath.Dec, numReputers)
-		newScores := make([]alloraMath.Dec, numReputers)
 
 		for l := range coefficients {
 			dcoeff := alloraMath.MustNewDecFromString("0.001")
@@ -470,15 +470,15 @@ func GetAllReputersOutput(
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
-			sumScores, err := alloraMath.SumDecSlice(scores)
+			weightedSumScores, err := sumWeighted(scores, stakes)
 			if err != nil {
 				return nil, nil, err
 			}
-			sumScores2, err := alloraMath.SumDecSlice(scores2)
+			weightedSumScores2, err := sumWeighted(scores2, stakes)
 			if err != nil {
 				return nil, nil, err
 			}
-			sumScoresOverSumScores2, err := sumScores.Quo(sumScores2)
+			sumScoresOverSumScores2, err := weightedSumScores.Quo(weightedSumScores2)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -571,11 +571,11 @@ func GetAllReputersOutput(
 			return nil, nil, err
 		}
 
-		copy(finalScores, newScores)
+		// copy(finalScores, newScores)
 		i++
 	}
 
-	return finalScores, coefficients, nil
+	return newScores, coefficients, nil
 }
 
 // sumWeighted calculates the weighted sum of values based on the given weights.
