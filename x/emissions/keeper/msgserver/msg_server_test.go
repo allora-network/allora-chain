@@ -14,7 +14,6 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	alloratestutil "github.com/allora-network/allora-chain/test/util"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
@@ -70,7 +69,6 @@ type KeeperTestSuite struct {
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
-	util            alloratestutil.AlloraTestUtilSuite
 }
 
 func TestKeeperTestSuite(t *testing.T) {
