@@ -46,26 +46,18 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.Equal(m.T, fmt.Sprint(stakeToAdd), aliceStakedAfter.Amount.Sub(aliceStakedBefore.Amount).String())
 }
 
-// func CheckTopic1Activated(m testCommon.TestConfig) {
-// 	// Fetch only active topics
-// 	pagi := &emissionstypes.QueryActiveTopicsRequest{
-// 		Pagination: &emissionstypes.SimpleCursorPaginationRequest{
-// 			Limit: 10,
-// 		},
-// 	}
-// 	activeTopics, err := m.Client.QueryEmissions().GetActiveTopics(
-// 		m.Ctx,
-// 		pagi)
-// 	require.NoError(m.t, err, "Fetching active topics should not produce an error")
-
-// 	// Verify the correct number of active topics is retrieved
-// 	require.Equal(m.t, len(activeTopics.Topics), 1, "Should retrieve exactly one active topic")
-// }
-
 // Register two actors and check their registrations went through
 func StakingChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Staking Alice as Reputer ---")
 	StakeAliceAsReputerTopic1(m)
-	m.T.Log("--- Check reactivating Topic 1 ---")
-	CheckTopic1Activated(m)
+
+	res, _ := m.Client.QueryEmissions().GetTopic(m.Ctx, &emissionstypes.QueryTopicRequest{
+		TopicId: uint64(1),
+	})
+	// Topic is not expected to be funded yet => expect 0 weight => topic not active!
+	// But we still have this conditional just in case there are > 0 funds
+	if res.EffectiveRevenue != "0" {
+		m.T.Log("--- Check reactivating Topic 1 ---")
+		CheckTopic1Activated(m)
+	}
 }

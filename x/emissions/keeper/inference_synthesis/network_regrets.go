@@ -85,6 +85,7 @@ func ComputeAndBuildEMRegret(
 
 // Calculate the new network regrets by taking EMAs between the previous network regrets
 // and the new regrets admitted by the inputted network losses
+// It is assumed the workers are uniquely represented in the network losses
 func GetCalcSetNetworkRegrets(
 	ctx sdk.Context,
 	k keeper.Keeper,
