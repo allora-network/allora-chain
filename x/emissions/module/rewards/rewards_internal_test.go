@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	"log"
 	"strconv"
 	"testing"
 
@@ -574,7 +575,7 @@ func TestGetAllConsensusScores(t *testing.T) {
 	var numReputers int64 = 5
 	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	want := []alloraMath.Dec{alloraMath.MustNewDecFromString("0.0169833"), alloraMath.MustNewDecFromString("0.01706869"), alloraMath.MustNewDecFromString("0.016047"), alloraMath.MustNewDecFromString("0.01164"), alloraMath.MustNewDecFromString("0.01345")}
+	want := []alloraMath.Dec{alloraMath.MustNewDecFromString("5.114259531"), alloraMath.MustNewDecFromString("5.339287075"), alloraMath.MustNewDecFromString("6.538380081"), alloraMath.MustNewDecFromString("2.5952235325"), alloraMath.MustNewDecFromString("3.5870524743")}
 	wantErr := false
 
 	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers, fTolerance, epsilon)
@@ -754,7 +755,10 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require.True(len(gotScores2) == len(wantScores))
 	require.True(len(gotScores3) == len(wantScores))
 
-	//
-	// TODO verify score output matches that of GetAllConsensusScores()
-	//
+	// Verify score output matches that of GetAllConsensusScores()
+	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, params.FTolerance, params.Epsilon)
+	require.NoError(err)
+	if !alloraMath.SlicesInDelta(gotScores3, wantScores3, alloraMath.MustNewDecFromString("0.01")) {
+		log.Println("GetAllConsensusScores() got", gotScores3, "want", wantScores3)
+	}
 }
