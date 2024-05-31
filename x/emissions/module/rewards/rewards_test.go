@@ -588,12 +588,18 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Topic 1 should have less revenue after rewards distribution -> rewards distributed
 	s.Require().True(
 		beforeRewardsTopic1FeeRevenue.Revenue.GT(afterRewardsTopic1FeeRevenue.Revenue),
-		"Topic 1 should have more fee revenue: %s > %s",
+		"Topic 1 should lose influence of their fee revenue: %s > %s",
 		beforeRewardsTopic1FeeRevenue.Revenue.String(),
 		afterRewardsTopic1FeeRevenue.Revenue.String(),
 	)
-	// Topic 2 should have the same revenue after rewards distribution -> no rewards distributed
-	s.Require().Equal(beforeRewardsTopic2FeeRevenue.Revenue, afterRewardsTopic2FeeRevenue.Revenue)
+	// Topic 2 should also have less revenue after rewards distribution as topic rewards
+	// are shared among all topics whose epoch lengths modulo the current block height are 0
+	s.Require().True(
+		beforeRewardsTopic2FeeRevenue.Revenue.GT(afterRewardsTopic2FeeRevenue.Revenue),
+		"Topic 2 should lose influence of their fee revenue: %s > %s",
+		beforeRewardsTopic2FeeRevenue.Revenue.String(),
+		afterRewardsTopic2FeeRevenue.Revenue.String(),
+	)
 }
 
 func (s *RewardsTestSuite) setUpTopic(
@@ -602,6 +608,17 @@ func (s *RewardsTestSuite) setUpTopic(
 	reputerAddrs []sdk.AccAddress,
 	stake cosmosMath.Int,
 	alphaRegret alloraMath.Dec,
+) uint64 {
+	return s.setUpTopicWithEpochLength(blockHeight, workerAddrs, reputerAddrs, stake, alphaRegret, 10800)
+}
+
+func (s *RewardsTestSuite) setUpTopicWithEpochLength(
+	blockHeight int64,
+	workerAddrs []sdk.AccAddress,
+	reputerAddrs []sdk.AccAddress,
+	stake cosmosMath.Int,
+	alphaRegret alloraMath.Dec,
+	epochLength int64,
 ) uint64 {
 	require := s.Require()
 	s.ctx = s.ctx.WithBlockHeight(blockHeight)
@@ -612,7 +629,7 @@ func (s *RewardsTestSuite) setUpTopic(
 		Metadata:        "test",
 		LossLogic:       "logic",
 		LossMethod:      "method",
-		EpochLength:     10800,
+		EpochLength:     epochLength,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -2238,89 +2255,6 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	s.Require().Equal(len(forecasterScores), int(params.GetMaxTopForecastersToReward()), "Only few Top forecasters can get reward")
 }
 
-func (s *RewardsTestSuite) TestGenerateRewardsDistributionByTopic() {
-	topic1Weight := alloraMath.NewDecFromInt64(100)
-	topic2Weight := alloraMath.NewDecFromInt64(10)
-	topic3Weight := alloraMath.NewDecFromInt64(500)
-	topic4Weight := alloraMath.NewDecFromInt64(600)
-
-	// Define topics with varying weights
-	weights := map[uint64]*alloraMath.Dec{
-		1: &topic1Weight, // Above the minimum weight
-		2: &topic2Weight, // Below the minimum weight, should be inactivated
-		3: &topic3Weight, // Above the minimum weight
-		4: &topic4Weight, // Above the minimum weight, but no reward nonce
-	}
-	sumWeight := alloraMath.NewDecFromInt64(1210)
-	sumRevenue := cosmosMath.NewInt(3000)
-	totalReward := alloraMath.NewDecFromInt64(1000)
-
-	err := s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 1, 1)
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 2, 1)
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 3, 1)
-	s.Require().NoError(err)
-
-	topicRewards, err := rewards.GenerateRewardsDistributionByTopic(
-		s.ctx,
-		s.emissionsKeeper,
-		1, // assuming 1 topic per block
-		1,
-		totalReward,
-		weights,
-		[]uint64{1, 2, 3, 4},
-		sumWeight,
-		sumRevenue,
-	)
-	s.Require().NoError(err)
-	s.Require().NotNil(topicRewards)
-	s.Require().Equal(1, len(topicRewards))
-}
-
-func (s *RewardsTestSuite) TestFilterAndInactivateTopicsUpdatingSums() {
-	topic1Weight := alloraMath.NewDecFromInt64(100)
-	topic2Weight := alloraMath.NewDecFromInt64(10)
-	topic3Weight := alloraMath.NewDecFromInt64(500)
-	topic4Weight := alloraMath.NewDecFromInt64(600)
-
-	// Define topics with varying weights
-	weights := map[uint64]*alloraMath.Dec{
-		1: &topic1Weight, // Above the minimum weight
-		2: &topic2Weight, // Below the minimum weight, should be inactivated
-		3: &topic3Weight, // Above the minimum weight
-		4: &topic4Weight, // Above the minimum weight, but no reward nonce
-	}
-	sumWeight := alloraMath.NewDecFromInt64(1210)
-	totalReward := alloraMath.NewDecFromInt64(1000)
-
-	err := s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 1, 1)
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 2, 1)
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicRewardNonce(s.ctx, 3, 1)
-	s.Require().NoError(err)
-
-	// Test execution
-	filteredWeights, _, err := rewards.FilterAndInactivateTopicsUpdatingSums(
-		s.ctx,
-		s.emissionsKeeper,
-		weights,
-		[]uint64{1, 2, 3, 4},
-		sumWeight,
-		totalReward,
-		1,
-	)
-
-	s.Require().NoError(err)
-	s.Require().NotNil(filteredWeights)
-
-	s.Require().Equal(len(filteredWeights), 2)
-	for topicId := range filteredWeights {
-		s.Require().NotEqual(topicId, uint64(2))
-	}
-}
-
 func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers() {
 	block := int64(100)
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -2753,4 +2687,202 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	thirdForecasterFraction, err := totalForecastersReward.Quo(totalReward)
 	s.Require().NoError(err)
 	s.Require().True(firstForecasterFraction.Lt(thirdForecasterFraction), "Third forecaster fraction must be bigger than first fraction")
+}
+
+func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
+	/// SETUP
+	require := s.Require()
+
+	alphaRegret := alloraMath.MustNewDecFromString("0.1")
+
+	block := int64(100)
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	reputer0Addrs := []sdk.AccAddress{
+		s.addrs[0],
+		s.addrs[1],
+		s.addrs[2],
+	}
+
+	reputer1Addrs := []sdk.AccAddress{
+		s.addrs[3],
+		s.addrs[4],
+		s.addrs[5],
+	}
+
+	workerAddrs := []sdk.AccAddress{
+		s.addrs[6],
+		s.addrs[7],
+		s.addrs[8],
+	}
+
+	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
+
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
+	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer1Addrs, stake, alphaRegret, 1)
+
+	reputer0Values := []TestWorkerValue{
+		{Address: s.addrs[0], Value: "0.1"},
+		{Address: s.addrs[1], Value: "0.2"},
+		{Address: s.addrs[2], Value: "0.3"},
+	}
+
+	reputer1Values := []TestWorkerValue{
+		{Address: s.addrs[3], Value: "0.1"},
+		{Address: s.addrs[4], Value: "0.2"},
+		{Address: s.addrs[5], Value: "0.3"},
+	}
+
+	workerValues := []TestWorkerValue{
+		{Address: s.addrs[6], Value: "0.1"},
+		{Address: s.addrs[7], Value: "0.2"},
+		{Address: s.addrs[8], Value: "0.3"},
+	}
+
+	reputer0_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	require.NoError(err)
+	reputer1_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	require.NoError(err)
+	reputer2_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	require.NoError(err)
+
+	reputer3_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	require.NoError(err)
+	reputer4_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	require.NoError(err)
+	reputer5_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	require.NoError(err)
+
+	s.getRewardsDistribution(
+		topicId0,
+		block,
+		workerValues,
+		reputer0Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	s.getRewardsDistribution(
+		topicId1,
+		block,
+		workerValues,
+		reputer1Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	require.NoError(err)
+
+	const topicFundAmount int64 = 1000
+
+	fundTopic := func(topicId uint64, funderAddr sdk.AccAddress, amount int64) {
+		s.MintTokensToAddress(funderAddr, cosmosMath.NewInt(amount))
+		fundTopicMessage := types.MsgFundTopic{
+			Sender:  funderAddr.String(),
+			TopicId: topicId,
+			Amount:  cosmosMath.NewInt(amount),
+		}
+		_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+		require.NoError(err)
+	}
+
+	fundTopic(topicId0, s.addrs[0], topicFundAmount)
+	fundTopic(topicId1, s.addrs[3], topicFundAmount)
+
+	reputer0_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	require.NoError(err)
+	reputer1_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	require.NoError(err)
+	reputer2_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	require.NoError(err)
+
+	reputer3_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	require.NoError(err)
+	reputer4_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	require.NoError(err)
+	reputer5_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	require.NoError(err)
+
+	reputer0_Reward0 := reputer0_Stake1.Sub(reputer0_Stake0)
+	reputer1_Reward0 := reputer1_Stake1.Sub(reputer1_Stake0)
+	reputer2_Reward0 := reputer2_Stake1.Sub(reputer2_Stake0)
+	reputer3_Reward0 := reputer3_Stake1.Sub(reputer3_Stake0)
+	reputer4_Reward0 := reputer4_Stake1.Sub(reputer4_Stake0)
+	reputer5_Reward0 := reputer5_Stake1.Sub(reputer5_Stake0)
+
+	topic0RewardTotal0 := reputer0_Reward0.Add(reputer1_Reward0).Add(reputer2_Reward0)
+	topic1RewardTotal0 := reputer3_Reward0.Add(reputer4_Reward0).Add(reputer5_Reward0)
+
+	require.Equal(topic0RewardTotal0, topic1RewardTotal0)
+
+	s.MintTokensToAddress(s.addrs[3], stake)
+	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		Sender:  s.addrs[3].String(),
+		Amount:  stake,
+		TopicId: topicId1,
+	})
+	require.NoError(err)
+
+	reputer3_Stake1, err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	require.NoError(err)
+
+	s.getRewardsDistribution(
+		topicId0,
+		block,
+		workerValues,
+		reputer0Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	s.getRewardsDistribution(
+		topicId1,
+		block,
+		workerValues,
+		reputer1Values,
+		workerAddrs[0],
+		"0.1",
+		"0.1",
+	)
+
+	block++
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	require.NoError(err)
+
+	reputer0_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	require.NoError(err)
+	reputer1_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	require.NoError(err)
+	reputer2_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	require.NoError(err)
+
+	reputer3_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	require.NoError(err)
+	reputer4_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	require.NoError(err)
+	reputer5_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	require.NoError(err)
+
+	reputer0_Reward1 := reputer0_Stake2.Sub(reputer0_Stake1)
+	reputer1_Reward1 := reputer1_Stake2.Sub(reputer1_Stake1)
+	reputer2_Reward1 := reputer2_Stake2.Sub(reputer2_Stake1)
+	reputer3_Reward1 := reputer3_Stake2.Sub(reputer3_Stake1)
+	reputer4_Reward1 := reputer4_Stake2.Sub(reputer4_Stake1)
+	reputer5_Reward1 := reputer5_Stake2.Sub(reputer5_Stake1)
+
+	topic0RewardTotal1 := reputer0_Reward1.Add(reputer1_Reward1).Add(reputer2_Reward1)
+	topic1RewardTotal1 := reputer3_Reward1.Add(reputer4_Reward1).Add(reputer5_Reward1)
+
+	require.True(topic0RewardTotal1.LT(topic0RewardTotal0))
+	require.True(topic1RewardTotal1.GT(topic1RewardTotal0))
 }
