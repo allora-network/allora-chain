@@ -3,7 +3,6 @@ package inference_synthesis
 import (
 	"errors"
 	"fmt"
-	"log"
 	"sort"
 
 	"cosmossdk.io/collections"
@@ -516,8 +515,6 @@ func CalcOneInInferences(
 			return make([]*emissions.WorkerAttributedValue, 0), errorsmod.Wrapf(err, "Error calculating forecastNormalizedRegrets in calc one-in inference")
 		}
 
-		log.Printf("forecastNormalizedRegrets %v", forecastNormalizedRegrets)
-		log.Printf("sortedForecastersWithForecaster %v", sortedForecastersWithForecaster)
 		oneInInference, err := CalcWeightedInference(
 			ctx,
 			k,
