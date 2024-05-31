@@ -192,66 +192,9 @@ func accumulateNormalizedI_iAndSumWeights(
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adding weight")
 		}
 	} else {
-		// If at least one worker is not new, then we take a weighted average of all workers' inferences
-
-		// Calculate the upper and lower bounds for regret normalization
-		// upper bound: c + 6.75 / p
-		v6Point75OverP, err := alloraMath.MustNewDecFromString("6.75").Quo(pNorm)
+		weight, err := calcWeightFromRegret(normalizedRegret, maxRegret, pNorm, cNorm)
 		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
-		}
-		cPlus6Point75OverP, err := cNorm.Add(v6Point75OverP)
-		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
-		}
-
-		// lower bound: c - 8.25 / p
-		v8Point25OverP, err := alloraMath.MustNewDecFromString("8.25").Quo(pNorm)
-		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
-		}
-		cMinus8Point25OverP, err := cNorm.Sub(v8Point25OverP)
-		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
-		}
-
-		// threshold for zero weight: c - 17.25 / p
-		v17Point25OverP, err := alloraMath.MustNewDecFromString("17.25").Quo(pNorm)
-		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
-		}
-		cMinus17Point25OverP, err := cNorm.Sub(v17Point25OverP)
-		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower threshold for zero weight")
-		}
-
-		// Cap the normalized regrets at an upper value
-		// normalizedRegret = min(normalizedRegret, c + 6.75 / p)
-		if normalizedRegret.Gt(cPlus6Point75OverP) {
-			normalizedRegret = cPlus6Point75OverP
-		}
-
-		// if max(normalizedRegret) < c - 8.25 / p, then normalizedRegret = normalizedRegret - max(normalizedRegret) + (c - 8.25 / p)
-		if maxRegret.Lt(cMinus8Point25OverP) {
-			normalizedRegret, err = normalizedRegret.Sub(maxRegret)
-			if err != nil {
-				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error anchoring normalized regrets at zero")
-			}
-			normalizedRegret, err = normalizedRegret.Add(cMinus8Point25OverP)
-			if err != nil {
-				return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adjusting anchored normalized regrets")
-			}
-		}
-
-		weight, err := alloraMath.Gradient(pNorm, cNorm, normalizedRegret)
-		if err != nil {
-			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating gradient")
-		}
-
-		// Set weight to zero for low regrets
-		// if regretFrac < c - 17.25 / p, then weight = 0
-		if normalizedRegret.Lt(cMinus17Point25OverP) {
-			weight = alloraMath.ZeroDec()
+			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating weight")
 		}
 
 		if !weight.Equal(alloraMath.ZeroDec()) && inference != nil {
