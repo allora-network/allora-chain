@@ -14,6 +14,39 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+const headers = "epoch,time,returns,inference_0,inference_1,inference_2,inference_3,inference_4,forecasted_loss_0_for_0,forecasted_loss_0_for_1,forecasted_loss_0_for_2,forecasted_loss_0_for_3,forecasted_loss_0_for_4,forecasted_loss_1_for_0,forecasted_loss_1_for_1,forecasted_loss_1_for_2,forecasted_loss_1_for_3,forecasted_loss_1_for_4,forecasted_loss_2_for_0,forecasted_loss_2_for_1,forecasted_loss_2_for_2,forecasted_loss_2_for_3,forecasted_loss_2_for_4,forecast_implied_inference_0,forecast_implied_inference_1,forecast_implied_inference_2,forecast_implied_inference_0_oneout_0,forecast_implied_inference_0_oneout_1,forecast_implied_inference_0_oneout_2,forecast_implied_inference_0_oneout_3,forecast_implied_inference_0_oneout_4,forecast_implied_inference_1_oneout_0,forecast_implied_inference_1_oneout_1,forecast_implied_inference_1_oneout_2,forecast_implied_inference_1_oneout_3,forecast_implied_inference_1_oneout_4,forecast_implied_inference_2_oneout_0,forecast_implied_inference_2_oneout_1,forecast_implied_inference_2_oneout_2,forecast_implied_inference_2_oneout_3,forecast_implied_inference_2_oneout_4,network_inference,network_naive_inference,network_inference_oneout_0,network_inference_oneout_1,network_inference_oneout_2,network_inference_oneout_3,network_inference_oneout_4,network_inference_oneout_5,network_inference_oneout_6,network_inference_oneout_7,network_naive_inference_onein_0,network_naive_inference_onein_1,network_naive_inference_onein_2,network_loss,reputer_stake_0,reputer_stake_1,reputer_stake_2,reputer_stake_3,reputer_stake_4,reputer_0_loss_inference_0,reputer_0_loss_inference_1,reputer_0_loss_inference_2,reputer_0_loss_inference_3,reputer_0_loss_inference_4,reputer_1_loss_inference_0,reputer_1_loss_inference_1,reputer_1_loss_inference_2,reputer_1_loss_inference_3,reputer_1_loss_inference_4,reputer_2_loss_inference_0,reputer_2_loss_inference_1,reputer_2_loss_inference_2,reputer_2_loss_inference_3,reputer_2_loss_inference_4,reputer_3_loss_inference_0,reputer_3_loss_inference_1,reputer_3_loss_inference_2,reputer_3_loss_inference_3,reputer_3_loss_inference_4,reputer_4_loss_inference_0,reputer_4_loss_inference_1,reputer_4_loss_inference_2,reputer_4_loss_inference_3,reputer_4_loss_inference_4,reputer_0_loss_forecast_implied_inference_0,reputer_0_loss_forecast_implied_inference_1,reputer_0_loss_forecast_implied_inference_2,reputer_1_loss_forecast_implied_inference_0,reputer_1_loss_forecast_implied_inference_1,reputer_1_loss_forecast_implied_inference_2,reputer_2_loss_forecast_implied_inference_0,reputer_2_loss_forecast_implied_inference_1,reputer_2_loss_forecast_implied_inference_2,reputer_3_loss_forecast_implied_inference_0,reputer_3_loss_forecast_implied_inference_1,reputer_3_loss_forecast_implied_inference_2,reputer_4_loss_forecast_implied_inference_0,reputer_4_loss_forecast_implied_inference_1,reputer_4_loss_forecast_implied_inference_2,inference_loss_0,inference_loss_1,inference_loss_2,inference_loss_3,inference_loss_4,forecast_implied_inference_loss_0,forecast_implied_inference_loss_1,forecast_implied_inference_loss_2,inference_regret_worker_0,inference_regret_worker_1,inference_regret_worker_2,inference_regret_worker_3,inference_regret_worker_4,inference_regret_worker_5,inference_regret_worker_6,inference_regret_worker_7,inference_regret_worker_0_onein_0,inference_regret_worker_1_onein_0,inference_regret_worker_2_onein_0,inference_regret_worker_3_onein_0,inference_regret_worker_4_onein_0,inference_regret_worker_5_onein_0,inference_regret_worker_0_onein_1,inference_regret_worker_1_onein_1,inference_regret_worker_2_onein_1,inference_regret_worker_3_onein_1,inference_regret_worker_4_onein_1,inference_regret_worker_5_onein_1,inference_regret_worker_0_onein_2,inference_regret_worker_1_onein_2,inference_regret_worker_2_onein_2,inference_regret_worker_3_onein_2,inference_regret_worker_4_onein_2,inference_regret_worker_5_onein_2,reputer_0_loss_network_inference,reputer_1_loss_network_inference,reputer_2_loss_network_inference,reputer_3_loss_network_inference,reputer_4_loss_network_inference,network_loss_reputers"
+
+func GetCsvToSimulatedValuesMap(
+	headers string,
+	values string,
+) (
+	simulatedValuesStr map[string]string,
+	simulatedValuesDec map[string]alloraMath.Dec,
+) {
+	r := csv.NewReader(strings.NewReader(headers + "\n" + values + "\n"))
+	headersRead, err := r.Read()
+	if err != nil {
+		panic(err)
+	}
+	valuesRead, err := r.Read()
+	if err != nil {
+		panic(err)
+	}
+	simulatedValuesStr = make(map[string]string)
+	simulatedValuesDec = make(map[string]alloraMath.Dec)
+	if len(headersRead) != len(valuesRead) {
+		panic("Header and values length mismatch")
+	}
+	for i := 0; i < len(headersRead); i++ {
+		simulatedValuesStr[headersRead[i]] = valuesRead[i]
+		decVal, err := alloraMath.NewDecFromString(valuesRead[i])
+		if err == nil {
+			simulatedValuesDec[headersRead[i]] = decVal
+		}
+	}
+	return simulatedValuesStr, simulatedValuesDec
+}
+
 // instantiate a AllWorkersAreNew struct
 func NewWorkersAreNew(v bool) inferencesynthesis.AllWorkersAreNew {
 	return inferencesynthesis.AllWorkersAreNew{
@@ -83,32 +116,41 @@ func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1() {
 	topicId := inferencesynthesis.TopicId(1)
+	epoch1 := "1,2020-12-02 00:00:00,0.08290039236125041,0.02905393909123362,0.14451360970082316,0.24140254750009996,-0.024901742038025046,0.06783123836746127,-1.788924771500234,-4.933035320168331,-1.8802902124453127,-1.9836578582550644,-0.796936567997003,-2.667637909568831,-2.9152075223759946,-2.124289856934157,-2.4668422234226295,-2.974245167711838,-2.5209310106534204,-2.906120469109913,-0.7339391004380008,-2.0913144053608934,-2.8330167420021035,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.09157991852431857,0.1005122013004736,0.0840179626419608,0.07017668581349269,0.10822015574751055,0.09497258711815537,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,0.0915799185243186,-4.9196819027651495,210150.9321900143,216316.619889842,161451.73318335626,394151.55122023926,205705.2717820282,-2.2286806355560502,-2.7996519386759973,-1.543339291620877,-3.2359909515400442,-2.2471494166894765,-2.1156443518238133,-3.0416963274786792,-1.549281026385266,-3.4499788131793196,-1.9381930340847044,-2.139120638363718,-2.8077860035649795,-1.7658817069115689,-3.2006418063475492,-2.055424871031586,-2.1424866687998136,-2.778862230042374,-1.5354869413262946,-3.265820755056018,-2.0565779761476453,-2.2602868036272192,-2.87634248550558,-1.5434650590847583,-3.2293353040475563,-2.130806492365704,-4.877511659649782,-5.071175272791933,-4.84303511943602,-5.087731113530607,-5.0436118804321275,-4.928267908068103,-4.72236496146053,-5.055283638140658,-5.1098237661794945,-4.950048965819536,-4.887812939978951,-4.954365454280479,-5.0581185505230035,-5.014283008708997,-5.09540885532074,-2.172792010216437,-2.8512212844208205,-1.572087141808633,-3.278903341650252,-2.081433806672764,-4.950057099063459,-4.993295495836582,-4.975472865206469,0.6253110107451287,0.6931539381655671,0.5652405239043483,0.7359221438885103,0.6161751903907615,0.9030375196298309,0.9073613593071433,0.905579096244132,0.6244348454149327,0.692277772835371,0.5643643585741522,0.7350459785583141,0.6152990250605652,0.9021613542996348,0.6173870404932691,0.6852299679137074,0.5573165536524887,0.7279981736366505,0.6082512201389016,0.8994373890552836,0.6168416306591564,0.6846845580795947,0.556771143818376,0.7274527638025379,0.607705810304789,0.8971097161581596,-4.940603611195221,-5.029165147104658,-4.647875837737493,-4.936600201502898,-4.96409216331972,-4.9196819027651495"
+	epoch2 := "2,2020-12-03 00:00:00,0.03178207880760021,-0.230622933739544,-0.19693894066605602,0.048704500498029504,0.054145121711977245,0.22919548623217473,-1.18172420646634,0.26621077264804827,-3.3897339254838474,-2.571846047295651,-2.0259184257783027,-0.5499700025611789,-1.7328740794514994,-4.338275221094591,-2.724483852551699,-2.1336429998512143,-0.5019942929743771,-0.6804897420817917,-3.792402810523422,-2.811890974392894,-1.4041161461317468,0.05403102080389692,0.04922834703615315,0.04954788276682784,0.05685567279701529,0.05000352194763739,0.08022256316427133,0.05481428931368454,0.047321301762175076,0.04889426405222525,0.050203045157962686,0.06563711044975742,0.04928523873520655,0.047878442353090994,0.04951209695386524,0.04968602947180613,0.055508789681751255,0.04913573002937966,0.04878697422828431,0.007161310580432416,-0.019103353192683702,0.04148117165417589,0.035902110182863385,0.00816388526204742,0.0005104814861249907,-0.025817933407434695,0.00046563769136606246,0.001151733943900887,0.0011060859823759312,-0.006914290859920277,-0.007714736487877573,-0.007661480532765125,-4.893498750410228,210535.17868298586,216697.59934561152,161740.20377046912,394847.51316806424,206170.06024545094,-2.2343006528249094,-2.792550873320775,-1.5440642777461833,-3.2179096445281856,-2.266891105877178,-2.121183041048061,-3.0327585803388817,-1.5537651318034542,-3.4287428212464928,-1.9692816101769068,-2.1920231037407203,-2.785811084367808,-1.753455977343409,-3.1195990096203157,-2.2110795616014465,-2.1571031771226314,-2.761718838699133,-1.5380057584990876,-3.19672982116354,-2.1369799918404144,-2.2771837795724736,-2.8628982847566364,-1.5463939783257883,-3.195013388928508,-2.1833305864744603,-4.867574982517031,-5.059471261766153,-4.834883795282288,-5.074813464108836,-5.028848891826424,-4.915862550163092,-4.6834319708821806,-4.979989953804598,-5.004204282733437,-4.921832064816302,-4.846165908785239,-4.9183980418244335,-5.032287470995465,-4.998807039058706,-5.063485917337664,-2.1897706281400366,-2.8373343518455867,-1.572684110944005,-3.231945838412287,-2.147527980840491,-4.926824873711378,-4.9618054852530085,-4.939960375271497,0.29240709744359666,0.41822210449254626,0.17663500756729117,0.4961746382998652,0.27996059439471166,0.8160663799969627,0.8234558968607071,0.8196673491058456,0.29086859544474397,0.4166836024936934,0.17509650556843842,0.49463613630101233,0.27842209239585874,0.8145278779981101,0.2780533480954255,0.4038683551443749,0.16228125821911993,0.48182088895169384,0.26560684504654025,0.8091021475125357,0.27692565343841374,0.40274066048736323,0.1611535635621082,0.48069319429468216,0.2644791503895285,0.8041859051006626,-4.931794543987086,-5.01650814668254,-4.590153669869233,-4.906627167248604,-4.937932553142897,-4.893498750410228"
+	_, simulatedEpoch1 := GetCsvToSimulatedValuesMap(headers, epoch1)
+	_, simulatedEpoch2 := GetCsvToSimulatedValuesMap(headers, epoch2)
 
 	// EPOCH 2
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("-0.230622933739544")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("-0.19693894066605602")},
-		"worker2": {Value: alloraMath.MustNewDecFromString("0.048704500498029504")},
-		"worker3": {Value: alloraMath.MustNewDecFromString("0.054145121711977245")},
-		"worker4": {Value: alloraMath.MustNewDecFromString("0.22919548623217473")},
+		"worker0": {Value: simulatedEpoch2["inference_0"]},
+		"worker1": {Value: simulatedEpoch2["inference_1"]},
+		"worker2": {Value: simulatedEpoch2["inference_2"]},
+		"worker3": {Value: simulatedEpoch2["inference_3"]},
+		"worker4": {Value: simulatedEpoch2["inference_4"]},
 	}
+
 	forecastImpliedInferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker5": {Value: alloraMath.MustNewDecFromString("0.05403102080389692")},
+		"worker5": {Value: simulatedEpoch2["forecast_implied_inference_0"]},
 	}
+
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("3")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	infererNetworkRegrets := map[string]inferencesynthesis.Regret{ // FROM EPOCH 1
-		"worker0": alloraMath.MustNewDecFromString("0.6244348454149327"),
-		"worker1": alloraMath.MustNewDecFromString("0.692277772835371"),
-		"worker2": alloraMath.MustNewDecFromString("0.5643643585741522"),
-		"worker3": alloraMath.MustNewDecFromString("0.7350459785583141"),
-		"worker4": alloraMath.MustNewDecFromString("0.6152990250605652"),
+		"worker0": simulatedEpoch1["inference_regret_worker_0_onein_0"],
+		"worker1": simulatedEpoch1["inference_regret_worker_1_onein_0"],
+		"worker2": simulatedEpoch1["inference_regret_worker_2_onein_0"],
+		"worker3": simulatedEpoch1["inference_regret_worker_3_onein_0"],
+		"worker4": simulatedEpoch1["inference_regret_worker_4_onein_0"],
 	}
+
 	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{ // FROM EPOCH 1
-		"worker5": alloraMath.MustNewDecFromString("0.9021613542996348"),
+		"worker5": simulatedEpoch1["inference_regret_worker_5_onein_0"],
 	}
-	expectedNetworkCombinedInferenceValue := alloraMath.MustNewDecFromString("-0.006914290859920283")
+
+	// FROM EPOCH 2
+	expectedNetworkCombinedInferenceValue := simulatedEpoch2["network_naive_inference_onein_0"]
 
 	for inferer, regret := range infererNetworkRegrets {
 		s.emissionsKeeper.SetInfererNetworkRegret(
@@ -183,32 +225,42 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2() {
 	topicId := inferencesynthesis.TopicId(1)
+	epoch2 := "2,2020-12-03 00:00:00,0.03178207880760021,-0.230622933739544,-0.19693894066605602,0.048704500498029504,0.054145121711977245,0.22919548623217473,-1.18172420646634,0.26621077264804827,-3.3897339254838474,-2.571846047295651,-2.0259184257783027,-0.5499700025611789,-1.7328740794514994,-4.338275221094591,-2.724483852551699,-2.1336429998512143,-0.5019942929743771,-0.6804897420817917,-3.792402810523422,-2.811890974392894,-1.4041161461317468,0.05403102080389692,0.04922834703615315,0.04954788276682784,0.05685567279701529,0.05000352194763739,0.08022256316427133,0.05481428931368454,0.047321301762175076,0.04889426405222525,0.050203045157962686,0.06563711044975742,0.04928523873520655,0.047878442353090994,0.04951209695386524,0.04968602947180613,0.055508789681751255,0.04913573002937966,0.04878697422828431,0.007161310580432416,-0.019103353192683702,0.04148117165417589,0.035902110182863385,0.00816388526204742,0.0005104814861249907,-0.025817933407434695,0.00046563769136606246,0.001151733943900887,0.0011060859823759312,-0.006914290859920277,-0.007714736487877573,-0.007661480532765125,-4.893498750410228,210535.17868298586,216697.59934561152,161740.20377046912,394847.51316806424,206170.06024545094,-2.2343006528249094,-2.792550873320775,-1.5440642777461833,-3.2179096445281856,-2.266891105877178,-2.121183041048061,-3.0327585803388817,-1.5537651318034542,-3.4287428212464928,-1.9692816101769068,-2.1920231037407203,-2.785811084367808,-1.753455977343409,-3.1195990096203157,-2.2110795616014465,-2.1571031771226314,-2.761718838699133,-1.5380057584990876,-3.19672982116354,-2.1369799918404144,-2.2771837795724736,-2.8628982847566364,-1.5463939783257883,-3.195013388928508,-2.1833305864744603,-4.867574982517031,-5.059471261766153,-4.834883795282288,-5.074813464108836,-5.028848891826424,-4.915862550163092,-4.6834319708821806,-4.979989953804598,-5.004204282733437,-4.921832064816302,-4.846165908785239,-4.9183980418244335,-5.032287470995465,-4.998807039058706,-5.063485917337664,-2.1897706281400366,-2.8373343518455867,-1.572684110944005,-3.231945838412287,-2.147527980840491,-4.926824873711378,-4.9618054852530085,-4.939960375271497,0.29240709744359666,0.41822210449254626,0.17663500756729117,0.4961746382998652,0.27996059439471166,0.8160663799969627,0.8234558968607071,0.8196673491058456,0.29086859544474397,0.4166836024936934,0.17509650556843842,0.49463613630101233,0.27842209239585874,0.8145278779981101,0.2780533480954255,0.4038683551443749,0.16228125821911993,0.48182088895169384,0.26560684504654025,0.8091021475125357,0.27692565343841374,0.40274066048736323,0.1611535635621082,0.48069319429468216,0.2644791503895285,0.8041859051006626,-4.931794543987086,-5.01650814668254,-4.590153669869233,-4.906627167248604,-4.937932553142897,-4.893498750410228"
+	epoch3 := "3,2020-12-04 00:00:00,-0.07990917965471393,-0.035995138925040554,-0.07333303938740415,-0.1495482917094787,-0.12952123274063815,-0.0703055329498285,-2.480767250656477,-3.5546685650440417,-4.6188184193555735,-3.084052840898731,-4.73003856038905,-2.6366811669641064,-4.668814135864767,-1.901004446344669,-1.7447621462061556,-3.6984295084170293,-2.2700889501915076,-3.5886903414115316,-2.119137360333619,-2.1176515266976472,-3.447694011689486,-0.1025675327315208,-0.07302318589259435,-0.07233832253513268,-0.10102068312719244,-0.10364793148967034,-0.0705067589574468,-0.10275234779836752,-0.14807539029121972,-0.07319270251459319,-0.0698427104144564,-0.0729888677103869,-0.07305532421316024,-0.07321629821257045,-0.07243222844764322,-0.07036013256420398,-0.07226434253912817,-0.07228409928815509,-0.0733821377291926,-0.08595551799339318,-0.0903194538050178,-0.09193875537568731,-0.08725723597921196,-0.07611975173450566,-0.07876098982982715,-0.09549195980225844,-0.0831086124651002,-0.0880928742443665,-0.08821296390705377,-0.09101522746174305,-0.08506554261579953,-0.08491153277529744,-4.83458359235066,210936.14772502996,217043.74857975644,162033.2054079192,395516.59487132856,206620.42964977756,-2.217852686051446,-2.7711015061857087,-1.5734375187707184,-3.2199574954128085,-2.254909150156216,-2.108880385172198,-3.007950683438181,-1.585144682537212,-3.4266914775613926,-1.960502548939211,-2.077444340504019,-2.6673314342959764,-1.900240284607539,-3.154663369533265,-2.142815319485575,-2.112662627942502,-2.6900735880222775,-1.633512574150124,-3.1988046047983345,-2.1048421628128926,-2.243965671368461,-2.811499693808028,-1.6115919229427993,-3.2021438541666454,-2.16498558347734,-4.847406907619317,-5.039758132164747,-4.817671740563477,-5.048913731669618,-5.006006193860714,-4.893551054567161,-4.575929170587921,-4.867617557617695,-4.874937265335567,-4.839456170853645,-4.786611853071776,-4.851181928372789,-4.974365559800201,-4.9547049150212645,-5.013835876725157,-2.1485564569077433,-2.780237637841959,-1.6465306848072383,-3.23861581701918,-2.1207011663432267,-4.866561367242139,-4.911489536203998,-4.884385989893725,-0.0054363258450547125,0.1709652985924215,-0.15983378394378017,0.28696039693673064,-0.019423707645502886,0.7376575194864143,0.7488009015599703,0.7426808539495675,-0.0053184502499764585,0.17108317418749958,-0.15971590834870197,0.28707827253180873,-0.019305832050424854,0.7377753950814926,-0.023527930610206638,0.15287369382726942,-0.17792538870893213,0.26886879217157855,-0.03751531241065495,0.7307092967948181,-0.0249860078679687,0.15141561656950742,-0.1793834659666942,0.26741071491381657,-0.0389733896684171,0.7231311719266534,-4.908209314287179,-4.990058152230002,-4.484965901600792,-4.827068818323691,-4.884659886876155,-4.83458359235066"
+
+	_, simulatedEpoch2 := GetCsvToSimulatedValuesMap(headers, epoch2)
+	_, simulatedEpoch3 := GetCsvToSimulatedValuesMap(headers, epoch3)
 
 	// EPOCH 3
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("-0.035995138925040600")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("-0.07333303938740420")},
-		"worker2": {Value: alloraMath.MustNewDecFromString("-0.1495482917094790")},
-		"worker3": {Value: alloraMath.MustNewDecFromString("-0.12952123274063800")},
-		"worker4": {Value: alloraMath.MustNewDecFromString("-0.0703055329498285")},
+		"worker0": {Value: simulatedEpoch3["inference_0"]},
+		"worker1": {Value: simulatedEpoch3["inference_1"]},
+		"worker2": {Value: simulatedEpoch3["inference_2"]},
+		"worker3": {Value: simulatedEpoch3["inference_3"]},
+		"worker4": {Value: simulatedEpoch3["inference_4"]},
 	}
+
 	forecastImpliedInferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker5": {Value: alloraMath.MustNewDecFromString("-0.1025675327315210")},
+		"worker5": {Value: simulatedEpoch3["forecast_implied_inference_0"]},
 	}
+
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("3")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	infererNetworkRegrets := map[string]inferencesynthesis.Regret{ // FROM EPOCH 2
-		"worker0": alloraMath.MustNewDecFromString("0.29086859544474400"),
-		"worker1": alloraMath.MustNewDecFromString("0.4166836024936930"),
-		"worker2": alloraMath.MustNewDecFromString("0.17509650556843800"),
-		"worker3": alloraMath.MustNewDecFromString("0.49463613630101200"),
-		"worker4": alloraMath.MustNewDecFromString("0.27842209239585900"),
+		"worker0": simulatedEpoch2["inference_regret_worker_0_onein_0"],
+		"worker1": simulatedEpoch2["inference_regret_worker_1_onein_0"],
+		"worker2": simulatedEpoch2["inference_regret_worker_2_onein_0"],
+		"worker3": simulatedEpoch2["inference_regret_worker_3_onein_0"],
+		"worker4": simulatedEpoch2["inference_regret_worker_4_onein_0"],
 	}
+
 	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{ // FROM EPOCH 2
-		"worker5": alloraMath.MustNewDecFromString("0.8145278779981100"),
+		"worker5": simulatedEpoch2["inference_regret_worker_5_onein_0"],
 	}
-	expectedNetworkCombinedInferenceValue := alloraMath.MustNewDecFromString("-0.09101522746174310")
+
+	// FROM EPOCH 3
+	expectedNetworkCombinedInferenceValue := simulatedEpoch3["network_naive_inference_onein_0"]
 
 	for inferer, regret := range infererNetworkRegrets {
 		s.emissionsKeeper.SetInfererNetworkRegret(
@@ -280,109 +332,76 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 	)
 }
 
-func csvToSimulatedValuesMap(headers string, values string) map[string]string {
-	r := csv.NewReader(strings.NewReader(headers + "\n" + values + "\n"))
-	headersRead, err := r.Read()
-	if err != nil {
-		panic(err)
-	}
-	valuesRead, err := r.Read()
-	if err != nil {
-		panic(err)
-	}
-	simulatedValues := make(map[string]string)
-	if len(headersRead) != len(valuesRead) {
-		panic("Header and values length mismatch")
-	}
-	for i := 0; i < len(headersRead); i++ {
-		simulatedValues[headersRead[i]] = valuesRead[i]
-	}
-	return simulatedValues
-}
-
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() {
-	headers := "epoch,time,returns,inference_0,inference_1,inference_2,inference_3,inference_4,forecasted_loss_0_for_0,forecasted_loss_0_for_1,forecasted_loss_0_for_2,forecasted_loss_0_for_3,forecasted_loss_0_for_4,forecasted_loss_1_for_0,forecasted_loss_1_for_1,forecasted_loss_1_for_2,forecasted_loss_1_for_3,forecasted_loss_1_for_4,forecasted_loss_2_for_0,forecasted_loss_2_for_1,forecasted_loss_2_for_2,forecasted_loss_2_for_3,forecasted_loss_2_for_4,forecast_implied_inference_0,forecast_implied_inference_1,forecast_implied_inference_2,forecast_implied_inference_0_oneout_0,forecast_implied_inference_0_oneout_1,forecast_implied_inference_0_oneout_2,forecast_implied_inference_0_oneout_3,forecast_implied_inference_0_oneout_4,forecast_implied_inference_1_oneout_0,forecast_implied_inference_1_oneout_1,forecast_implied_inference_1_oneout_2,forecast_implied_inference_1_oneout_3,forecast_implied_inference_1_oneout_4,forecast_implied_inference_2_oneout_0,forecast_implied_inference_2_oneout_1,forecast_implied_inference_2_oneout_2,forecast_implied_inference_2_oneout_3,forecast_implied_inference_2_oneout_4,network_inference,network_naive_inference,network_inference_oneout_0,network_inference_oneout_1,network_inference_oneout_2,network_inference_oneout_3,network_inference_oneout_4,network_inference_oneout_5,network_inference_oneout_6,network_inference_oneout_7,network_naive_inference_onein_0,network_naive_inference_onein_1,network_naive_inference_onein_2,network_loss,reputer_stake_0,reputer_stake_1,reputer_stake_2,reputer_stake_3,reputer_stake_4,reputer_0_loss_inference_0,reputer_0_loss_inference_1,reputer_0_loss_inference_2,reputer_0_loss_inference_3,reputer_0_loss_inference_4,reputer_1_loss_inference_0,reputer_1_loss_inference_1,reputer_1_loss_inference_2,reputer_1_loss_inference_3,reputer_1_loss_inference_4,reputer_2_loss_inference_0,reputer_2_loss_inference_1,reputer_2_loss_inference_2,reputer_2_loss_inference_3,reputer_2_loss_inference_4,reputer_3_loss_inference_0,reputer_3_loss_inference_1,reputer_3_loss_inference_2,reputer_3_loss_inference_3,reputer_3_loss_inference_4,reputer_4_loss_inference_0,reputer_4_loss_inference_1,reputer_4_loss_inference_2,reputer_4_loss_inference_3,reputer_4_loss_inference_4,reputer_0_loss_forecast_implied_inference_0,reputer_0_loss_forecast_implied_inference_1,reputer_0_loss_forecast_implied_inference_2,reputer_1_loss_forecast_implied_inference_0,reputer_1_loss_forecast_implied_inference_1,reputer_1_loss_forecast_implied_inference_2,reputer_2_loss_forecast_implied_inference_0,reputer_2_loss_forecast_implied_inference_1,reputer_2_loss_forecast_implied_inference_2,reputer_3_loss_forecast_implied_inference_0,reputer_3_loss_forecast_implied_inference_1,reputer_3_loss_forecast_implied_inference_2,reputer_4_loss_forecast_implied_inference_0,reputer_4_loss_forecast_implied_inference_1,reputer_4_loss_forecast_implied_inference_2,inference_loss_0,inference_loss_1,inference_loss_2,inference_loss_3,inference_loss_4,forecast_implied_inference_loss_0,forecast_implied_inference_loss_1,forecast_implied_inference_loss_2,inference_regret_worker_0,inference_regret_worker_1,inference_regret_worker_2,inference_regret_worker_3,inference_regret_worker_4,inference_regret_worker_5,inference_regret_worker_6,inference_regret_worker_7,inference_regret_worker_0_onein_0,inference_regret_worker_1_onein_0,inference_regret_worker_2_onein_0,inference_regret_worker_3_onein_0,inference_regret_worker_4_onein_0,inference_regret_worker_5_onein_0,inference_regret_worker_0_onein_1,inference_regret_worker_1_onein_1,inference_regret_worker_2_onein_1,inference_regret_worker_3_onein_1,inference_regret_worker_4_onein_1,inference_regret_worker_5_onein_1,inference_regret_worker_0_onein_2,inference_regret_worker_1_onein_2,inference_regret_worker_2_onein_2,inference_regret_worker_3_onein_2,inference_regret_worker_4_onein_2,inference_regret_worker_5_onein_2,reputer_0_loss_network_inference,reputer_1_loss_network_inference,reputer_2_loss_network_inference,reputer_3_loss_network_inference,reputer_4_loss_network_inference,network_loss_reputers"
-	values29 := "29,2020-12-30 00:00:00,0.06341995255869896,-0.06262282658758557,-0.08500102820757845,0.1083013406965205,0.13289465377115978,-0.0020728060388181396,-2.422236320166231,-0.9550590853619685,-2.6561235232710487,-3.992824396454848,-1.3539124887770135,-2.0431234533437306,-1.3049462512050782,-2.516728365710576,-2.2831238837514998,-2.4161858720575324,-1.7438228344282494,-1.237972718945092,-3.5749814295705225,-2.2295539861627254,-2.3928531254578873,0.12975349726041235,0.07529420218026293,0.10702750866768636,0.13174378501001557,0.13115344212350366,0.12895451648780984,0.06110891885060462,0.1297272967707113,0.0780031183660436,0.09067649885451183,0.03141943526549712,0.06519658466273871,0.1062000193152707,0.10686999536993497,0.10770465469690327,0.03152656148467134,0.10593349994233268,0.1081544730767232,0.10438540944589664,0.1276687789799889,0.10343577578111743,0.11151407656645225,0.05550377434717742,0.08026710963540105,0.11320915913040085,0.09142901134172764,0.11809058790109367,0.10325645526728987,0.12936327609140083,0.07541026807871372,0.10685190746623384,-4.648411655468548,225229.16522285485,228783.23029247465,168405.32077728235,418743.21152128006,242954.12805949515,-2.379091982254331,-2.6986244617833206,-1.9745779715150662,-3.151866665890307,-2.349999063676661,-2.338327816174232,-2.870994527824424,-2.0493458053693727,-3.3041969177528756,-2.1882495089861997,-2.6347834355050574,-2.494572740722586,-2.7287438173119583,-3.0312441801041126,-2.5286095438322036,-2.4990491033212052,-2.474511540253177,-2.4359496261654905,-3.015858026672051,-2.3496357576379374,-2.517049325503982,-2.6537993764967283,-2.3451088424879343,-3.0976847404413146,-2.419806332131773,-4.599757416923247,-4.722922865140425,-4.600459506813928,-4.738253353905239,-4.681297889651852,-4.6254898463174365,-4.088712724774769,-4.097757960454803,-4.174720726841145,-4.197887686208278,-4.172352853345479,-4.233839651700592,-4.4406432700049905,-4.438788441669191,-4.4532418186314215,-2.4705808089216754,-2.621011308206566,-2.307359227234206,-3.10858450211525,-2.35769401409519,-4.396259485214029,-4.4002233712107115,-4.401679130149749,-2.113359620837304,-1.8444197517192997,-2.3038543625669226,-1.4089558166932068,-2.2284865306421415,-0.0829717665704939,-0.10429837601342462,-0.08870102599961535,-1.9426733748851683,-1.6737335057671638,-2.1331681166147867,-1.2382695707410705,-2.057800284690005,0.08771447938164224,-1.9578219954396046,-1.6888821263215998,-2.148316737169223,-1.2534181912955071,-2.072948905244442,0.05123924938427502,-2.0274393228316687,-1.7584994537136645,-2.2179340645612875,-1.3230355186875713,-2.1425662326365056,-0.002780727993979862,-4.755363807454225,-4.8338102065662145,-4.502250715646263,-4.5408188288754765,-4.661431489307927,-4.648411655468548"
-	values30 := "30,2020-12-31 00:00:00,-0.048661295981826246,-0.024383006893380528,0.04399633190425988,0.12696315824633808,-0.06222734684262579,-0.18544136371380426,-2.6492503602777937,-0.5743936470328908,-3.9064625801146042,-3.618414606693211,-2.5248666099131825,-2.2887881178533793,-1.783946273333383,-1.706371355285912,-3.8755284922835096,-2.0748194138264906,-2.9152626306451186,-1.674120828193758,-0.8357453545873608,-4.253336822227785,-1.4104783184173797,0.057942589626760244,-0.06217410949633049,-0.060647852586817576,0.055004591992690643,0.08967790690951748,-0.06550940521226968,0.11139206935025397,0.05880193202802593,-0.06229496160012768,-0.062213326593970025,-0.06223262890694136,-0.03480628188598846,-0.0618476113702539,-0.0620291321687006,-0.06046552604373999,-0.061057082073298005,-0.024253600520809285,-0.060165142996311746,-0.02074499588729473,-0.06006827066436784,-0.025559213291971458,-0.0028945451097527612,-0.06239408906368381,0.01042958639353237,-0.028578886859456525,-0.061193717439573345,-0.0012304119204419976,-0.0005535129944102879,0.05701819115919576,-0.062018476973073826,-0.06051063298493267,-4.580734991779338,225570.5681415406,229103.55218038158,168602.58035442166,419465.5443936611,244644.5672539627,-2.3710787653755685,-2.684750022648258,-1.9852985212678498,-3.1418125479078314,-2.351992812869071,-2.3344641301319826,-2.855730537188912,-2.061927488878044,-3.2904195339675595,-2.193702831619839,-2.5723239747504327,-2.4277222508417675,-2.7323362861550384,-2.9687082394702733,-2.5193021794883705,-2.4698159005560774,-2.440874398769401,-2.4418347532769347,-2.9732991498142955,-2.345096423577895,-2.498248978595617,-2.619734004871709,-2.3616127961144415,-3.0787434988685156,-2.42323381270577,-4.570615467734497,-4.711715940119585,-4.577882071601022,-4.70018171996458,-4.670486258131893,-4.5953423056176215,-3.9365817187758263,-4.105050381924702,-4.0568427343757625,-4.107989392629676,-4.155658543009392,-4.163814355156637,-4.3807099828507345,-4.418919805816289,-4.40247281125215,-2.4472565276385003,-2.5896996943310495,-2.317034811704988,-3.078696700838115,-2.357026202815353,-4.323812659092131,-4.388107570438046,-4.344503544731199,-2.1153715051676576,-1.8590813062921987,-2.2998389443176652,-1.4182640641180084,-2.228008756474326,-0.10036682318216522,-0.11313128054621141,-0.10345406810446772,-1.9296310911991135,-1.6733408923236546,-2.1140985303491213,-1.2325236501494639,-2.0422683425057815,0.0853735907863792,-1.9559915392295468,-1.6997013403540875,-2.1404589783795545,-1.2588840981798974,-2.068628790536215,0.046248685391899524,-2.0181773033801322,-1.7618871045046736,-2.2026447425301403,-1.321069862330483,-2.1308145546868,-0.006259866316942325,-4.72849229621568,-4.805343770098079,-4.367063631685487,-4.451868846475796,-4.602366710154445,-4.580734991779338"
-	simulatedValues29 := csvToSimulatedValuesMap(headers, values29)
-	simulatedValues30 := csvToSimulatedValuesMap(headers, values30)
-
 	topicId := inferencesynthesis.TopicId(1)
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString(simulatedValues30["inference_0"])},
-		"worker1": {Value: alloraMath.MustNewDecFromString(simulatedValues30["inference_1"])},
-		"worker2": {Value: alloraMath.MustNewDecFromString(simulatedValues30["inference_2"])},
-		"worker3": {Value: alloraMath.MustNewDecFromString(simulatedValues30["inference_3"])},
-		"worker4": {Value: alloraMath.MustNewDecFromString(simulatedValues30["inference_4"])},
+		"worker0": {Value: alloraMath.MustNewDecFromString("-0.0514234892489971")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("-0.0316532211989242")},
+		"worker2": {Value: alloraMath.MustNewDecFromString("-0.1018014248041400")},
 	}
 	forecastImpliedInferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker5": {Value: alloraMath.MustNewDecFromString(simulatedValues29["forecast_implied_inference_0"])},
+		"worker3": {Value: alloraMath.MustNewDecFromString("-0.0707517711518230")},
+		"worker4": {Value: alloraMath.MustNewDecFromString("-0.0646463841210426")},
+		"worker5": {Value: alloraMath.MustNewDecFromString("-0.0634099113416666")},
 	}
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
 			{
-				Forecaster: "worker0",
+				Forecaster: "worker3",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString(simulatedValues29["forecasted_loss_0_for_2"])},
-					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString(simulatedValues29["forecasted_loss_0_for_3"])},
-					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString(simulatedValues29["forecasted_loss_0_for_4"])},
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.00011708024633613200")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.013382222402411400")},
+					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("3.82471429104471e-05")},
 				},
 			},
 			{
-				Forecaster: "worker1",
+				Forecaster: "worker4",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString(simulatedValues29["forecasted_loss_1_for_2"])},
-					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString(simulatedValues29["forecasted_loss_1_for_2"])},
-					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString(simulatedValues29["forecasted_loss_1_for_2"])},
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.00011486217283808300")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.0060528036329761000")},
+					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("0.0005337255825785730")},
 				},
 			},
 			{
-				Forecaster: "worker2",
+				Forecaster: "worker5",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString(simulatedValues29["forecasted_loss_2_for_2"])},
-					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString(simulatedValues29["forecasted_loss_2_for_3"])},
-					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString(simulatedValues29["forecasted_loss_2_for_4"])},
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("0.001810780808278390")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.0018544539679880700")},
+					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("0.001251454152216520")},
 				},
 			},
 		},
 	}
 	infererNetworkRegrets := map[string]inferencesynthesis.Regret{
-		"worker0": alloraMath.MustNewDecFromString(simulatedValues29["inference_regret_worker_0_onein_0"]),
-		"worker1": alloraMath.MustNewDecFromString(simulatedValues29["inference_regret_worker_1_onein_0"]),
-		"worker2": alloraMath.MustNewDecFromString(simulatedValues29["inference_regret_worker_2_onein_0"]),
-		"worker3": alloraMath.MustNewDecFromString(simulatedValues29["inference_regret_worker_3_onein_0"]),
-		"worker4": alloraMath.MustNewDecFromString(simulatedValues29["inference_regret_worker_4_onein_0"]),
+		"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
+		"worker1": alloraMath.MustNewDecFromString("0.9101744424126180"),
+		"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
 	}
 	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
-		"worker5": alloraMath.MustNewDecFromString(simulatedValues29["inference_regret_worker_5"]),
-		"worker6": alloraMath.MustNewDecFromString(simulatedValues29["inference_regret_worker_6"]),
-		"worker7": alloraMath.MustNewDecFromString(simulatedValues29["inference_regret_worker_7"]),
+		"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
+		"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
+		"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
 	}
-	networkCombinedLoss := alloraMath.MustNewDecFromString(simulatedValues29["network_loss"])
+	networkCombinedLoss := alloraMath.MustNewDecFromString("0.0156937658327922")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 	fTolerance := alloraMath.MustNewDecFromString("0.01")
-	pNorm := alloraMath.MustNewDecFromString("3")
+	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expectedOneOutInferences := []struct {
 		Worker string
 		Value  string
 	}{
-		{Worker: "worker0", Value: simulatedValues30["network_inference_oneout_0"]},
-		{Worker: "worker1", Value: simulatedValues30["network_inference_oneout_1"]},
-		{Worker: "worker2", Value: simulatedValues30["network_inference_oneout_2"]},
-		{Worker: "worker3", Value: simulatedValues30["network_inference_oneout_3"]},
-		{Worker: "worker4", Value: simulatedValues30["network_inference_oneout_4"]},
-		{Worker: "worker5", Value: simulatedValues30["network_inference_oneout_5"]},
-		{Worker: "worker6", Value: simulatedValues30["network_inference_oneout_6"]},
-		{Worker: "worker7", Value: simulatedValues30["network_inference_oneout_7"]},
+		{Worker: "worker0", Value: "-0.0711130346780"},
+		{Worker: "worker1", Value: "-0.077954217717"},
+		{Worker: "worker2", Value: "-0.0423024599518"},
 	}
 	expectedOneOutImpliedInferences := []struct {
 		Worker string
 		Value  string
 	}{
-		{Worker: "worker0", Value: simulatedValues30["forecast_implied_inference_0_oneout_0"]},
-		{Worker: "worker1", Value: simulatedValues30["forecast_implied_inference_1_oneout_1"]},
-		{Worker: "worker2", Value: simulatedValues30["forecast_implied_inference_2_oneout_2"]},
+		{Worker: "worker3", Value: "-0.06351714496"},
+		{Worker: "worker4", Value: "-0.06471822091"},
+		{Worker: "worker5", Value: "-0.06495348528"},
 	}
 
 	for inferer, regret := range infererNetworkRegrets {
