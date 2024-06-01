@@ -355,7 +355,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 	maxRegret := alloraMath.MustNewDecFromString("0.987153672207448")
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.0156937658327922")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
-	fTolerance := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expectedOneOutInferences := []struct {
@@ -510,7 +510,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 	// epoch 2
 	networkCombinedLoss := alloraMath.MustNewDecFromString(".0000127791308799785")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
-	fTolerance := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expectedOneOutInferences := []struct {
@@ -706,8 +706,10 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 									actual.Value,
 									alloraMath.MustNewDecFromString("0.0001"),
 								),
-								"Mismatch in value for one-in inference of worker %s",
+								"Mismatch in value for one-in inference of worker %s, expected %v, actual %v",
 								expected.Worker,
+								expected.Value,
+								actual.Value,
 							)
 							found = true
 							break
@@ -761,7 +763,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferences() {
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.2")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
-	fTolerance := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -854,7 +856,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesSameInfererForeca
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("1")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
-	fTolerance := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -946,7 +948,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesIncompleteData() 
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("1")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
-	fTolerance := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -1626,7 +1628,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.2")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
-	fTolerance := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -1719,7 +1721,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.3")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
-	fTolerance := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
