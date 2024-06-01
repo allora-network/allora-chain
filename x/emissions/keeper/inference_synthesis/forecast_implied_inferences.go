@@ -149,7 +149,8 @@ func CalcForecastImpliedInferences(
 				w_ik := make(map[Worker]Weight, len(forecastElementsByInferer))
 
 				// Define variable to store maximum regret for forecast k
-				var forecastedRegrets []alloraMath.Dec
+				first := true
+				var maxjRijk alloraMath.Dec
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
 				for _, j := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
@@ -157,47 +158,28 @@ func CalcForecastImpliedInferences(
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating network loss per value")
 					}
-					forecastedRegrets = append(forecastedRegrets, R_ik[j])
-				}
-
-				var err error
-				// Calc std dev of forecasted regrets + f_tolerance
-				// σ(R_ijk) + ε
-				stdDevForecastedRegrets, err := alloraMath.StdDev(forecastedRegrets)
-				if err != nil {
-					return nil, errorsmod.Wrapf(err, "error calculating standard deviation")
-				}
-				stdDevForecastedRegretsPlusFTolerance, err := stdDevForecastedRegrets.Abs().Add(fTolerance)
-				if err != nil {
-					return nil, errorsmod.Wrapf(err, "error adding f_tolerance to standard deviation")
+					if first {
+						maxjRijk = R_ik[j]
+						first = false
+					} else {
+						if R_ik[j].Gt(maxjRijk) {
+							maxjRijk = R_ik[j]
+						}
+					}
 				}
 
 				// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
+				var err error
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
-				maxNormalizedForecastedRegret := alloraMath.ZeroDec()
-				for iteration, j := range sortedInferersInForecast {
-					R_ik[j], err = R_ik[j].Quo(stdDevForecastedRegretsPlusFTolerance) // \hatR_ijk = R_ijk / σ(R_ijk) + ε
+				for _, j := range sortedInferersInForecast {
+					R_ik[j], err = R_ik[j].Quo(maxjRijk.Abs()) // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}
-
-					// this handles the case that R_ik[j] < 0
-					if iteration == 0 || R_ik[j].Gt(maxNormalizedForecastedRegret) {
-						maxNormalizedForecastedRegret = R_ik[j]
-					}
-				}
-
-				for _, j := range sortedInferersInForecast {
-					w_ijk, err := CalcWeightFromRegret(
-						R_ik[j],
-						maxNormalizedForecastedRegret,
-						pNorm,
-						cNorm,
-					)
+					w_ijk, err := alloraMath.Gradient(pNorm, cNorm, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
 					if err != nil {
-						return nil, errorsmod.Wrapf(err, "Error calculating regret frac")
+						return nil, errorsmod.Wrapf(err, "error calculating gradient")
 					}
-
 					w_ik[j] = w_ijk
 				}
 
