@@ -294,12 +294,10 @@ func CalcWeightedInference(
 		if err != nil {
 			return InferenceValue{}, errorsmod.Wrapf(err, "Error getting inferer regret")
 		}
-		// Get normalized regret of the inferer
-		normalizedRegret := infererNormalizedRegrets.Regrets[inferer]
 
 		unnormalizedNetworkInferece, sumWeights, err = accumulateNormalizedI_iAndSumWeights(
 			inferenceByWorker[inferer],
-			normalizedRegret,
+			infererNormalizedRegrets.Regrets[inferer],
 			noPriorRegret,
 			allWorkersAreNew.AllInferersAreNew,
 			infererNormalizedRegrets.MaxRegret,
@@ -319,12 +317,10 @@ func CalcWeightedInference(
 		if err != nil {
 			return InferenceValue{}, errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
-		// Get normalized regret of the forecaster
-		normalizedRegret := forecasterNormalizedRegrets.Regrets[forecaster]
 
 		unnormalizedNetworkInferece, sumWeights, err = accumulateNormalizedI_iAndSumWeights(
 			forecastImpliedInferenceByWorker[forecaster],
-			normalizedRegret,
+			forecasterNormalizedRegrets.Regrets[forecaster],
 			noPriorRegret,
 			allWorkersAreNew.AllForecastersAreNew,
 			forecasterNormalizedRegrets.MaxRegret,

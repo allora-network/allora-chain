@@ -167,7 +167,7 @@ func CalcForecastImpliedInferences(
 				if err != nil {
 					return nil, errorsmod.Wrapf(err, "error calculating standard deviation")
 				}
-				stdDevForecastedRegretsPlusFTolerance, err := stdDevForecastedRegrets.Add(fTolerance)
+				stdDevForecastedRegretsPlusFTolerance, err := stdDevForecastedRegrets.Abs().Add(fTolerance)
 				if err != nil {
 					return nil, errorsmod.Wrapf(err, "error adding f_tolerance to standard deviation")
 				}
@@ -175,13 +175,14 @@ func CalcForecastImpliedInferences(
 				// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
 				maxNormalizedForecastedRegret := alloraMath.ZeroDec()
-				for _, j := range sortedInferersInForecast {
+				for iteration, j := range sortedInferersInForecast {
 					R_ik[j], err = R_ik[j].Quo(stdDevForecastedRegretsPlusFTolerance) // \hatR_ijk = R_ijk / σ(R_ijk) + ε
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}
 
-					if R_ik[j].Gt(maxNormalizedForecastedRegret) {
+					// this handles the case that R_ik[j] < 0
+					if iteration == 0 || R_ik[j].Gt(maxNormalizedForecastedRegret) {
 						maxNormalizedForecastedRegret = R_ik[j]
 					}
 				}
