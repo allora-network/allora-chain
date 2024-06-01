@@ -3,6 +3,7 @@ package inference_synthesis
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sort"
 
 	"cosmossdk.io/collections"
@@ -398,20 +399,21 @@ func CalcOneOutInferences(
 			}
 		}
 
-		sortedForecastersWithoutWorker := alloraMath.GetSortedKeys(impliedInferenceWithoutForecaster)
+		sortedForecastersWithoutForecaster := alloraMath.GetSortedKeys(impliedInferenceWithoutForecaster)
 
 		// Get one-in forecaster normalized regrets and max regret
-		forecastOneOutNormalizedRegrets, err := GetForecasterOneInNormalizedRegretsWithMax(
+		forecastOneOutNormalizedRegrets, err := GetForecasterNormalizedRegretsWithMax(
 			ctx,
 			k,
 			topicId,
-			forecaster,
-			sortedForecastersWithoutWorker,
+			sortedForecastersWithoutForecaster,
 			fTolerance,
 		)
 		if err != nil {
 			return nil, nil, errorsmod.Wrapf(err, "Error getting one-in forecaster normalized regrets")
 		}
+		log.Printf("sortedForecastersWithoutWorker: %v", sortedForecastersWithoutForecaster)
+		log.Printf("forecastOneOutNormalizedRegrets: %v", forecastOneOutNormalizedRegrets)
 
 		// Calculate the network inference without the worker's inference
 		oneOutInference, err := CalcWeightedInference(
@@ -421,7 +423,7 @@ func CalcOneOutInferences(
 			inferenceByWorker,
 			sortedInferers,
 			impliedInferenceWithoutForecaster,
-			sortedForecastersWithoutWorker,
+			sortedForecastersWithoutForecaster,
 			infererNormalizedRegrets,
 			forecastOneOutNormalizedRegrets,
 			allWorkersAreNew,
