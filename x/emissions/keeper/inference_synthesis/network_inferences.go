@@ -322,22 +322,22 @@ func CalcOneOutInferences(
 ) ([]*emissions.WithheldWorkerAttributedValue, []*emissions.WithheldWorkerAttributedValue, error) {
 	// Loop over inferences and reclculate forecast-implied inferences before calculating the network inference
 	oneOutInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
-	for _, worker := range sortedInferers {
+	for _, inferer := range sortedInferers {
 		// Remove the inference of the worker from the inferences
-		inferencesWithoutWorker := make(map[Worker]*emissions.Inference)
+		inferencesWithoutInferer := make(map[Worker]*emissions.Inference)
 
-		for _, workerOfInference := range sortedInferers {
-			if workerOfInference != worker {
-				inferencesWithoutWorker[workerOfInference] = inferenceByWorker[workerOfInference]
+		for _, infererOfInference := range sortedInferers {
+			if infererOfInference != inferer {
+				inferencesWithoutInferer[infererOfInference] = inferenceByWorker[infererOfInference]
 			}
 		}
 
-		sortedInferersWithoutWorker := alloraMath.GetSortedKeys(inferencesWithoutWorker)
+		sortedInferersWithoutInferer := alloraMath.GetSortedKeys(inferencesWithoutInferer)
 
 		// Recalculate the forecast-implied inferences without the worker's inference
 		forecastImpliedInferencesWithoutWorkerByWorker, err := CalcForecastImpliedInferences(
-			inferencesWithoutWorker,
-			sortedInferersWithoutWorker,
+			inferencesWithoutInferer,
+			sortedInferersWithoutInferer,
 			forecasts,
 			networkCombinedLoss,
 			allWorkersAreNew.AllInferersAreNew,
@@ -346,20 +346,30 @@ func CalcOneOutInferences(
 			pNorm,
 			cNorm,
 		)
-
 		if err != nil {
 			return nil, nil, errorsmod.Wrapf(err, "Error calculating forecast-implied inferences for held-out inference")
+		}
+
+		infererNormalizedRegretsWithoutInferer, err := GetInfererNormalizedRegretsWithMax(
+			ctx,
+			k,
+			topicId,
+			sortedInferersWithoutInferer,
+			epsilon,
+		)
+		if err != nil {
+			return nil, nil, errorsmod.Wrapf(err, "Error calculating normalize regrets")
 		}
 
 		oneOutNetworkInferenceWithoutInferer, err := CalcWeightedInference(
 			ctx,
 			k,
 			topicId,
-			inferencesWithoutWorker,
-			sortedInferersWithoutWorker,
+			inferencesWithoutInferer,
+			sortedInferersWithoutInferer,
 			forecastImpliedInferencesWithoutWorkerByWorker,
 			sortedForecasters,
-			infererNormalizedRegrets,
+			infererNormalizedRegretsWithoutInferer,
 			forecasterNormalizedRegrets,
 			allWorkersAreNew,
 			epsilon,
@@ -371,24 +381,37 @@ func CalcOneOutInferences(
 		}
 
 		oneOutInferences = append(oneOutInferences, &emissions.WithheldWorkerAttributedValue{
-			Worker: worker,
+			Worker: inferer,
 			Value:  oneOutNetworkInferenceWithoutInferer,
 		})
 	}
 
 	// Loop over forecast-implied inferences and set it as the only forecast-implied inference one at a time, then calculate the network inference given that one held out
 	oneOutImpliedInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
-	for _, worker := range sortedForecasters {
+	for _, forecaster := range sortedForecasters {
 		// Remove the inference of the worker from the inferences
-		impliedInferenceWithoutWorker := make(map[Worker]*emissions.Inference)
+		impliedInferenceWithoutForecaster := make(map[Worker]*emissions.Inference)
 
-		for _, workerOfImpliedInference := range sortedForecasters {
-			if workerOfImpliedInference != worker {
-				impliedInferenceWithoutWorker[workerOfImpliedInference] = forecastImpliedInferenceByWorker[workerOfImpliedInference]
+		for _, forecasterOfImpliedInference := range sortedForecasters {
+			if forecasterOfImpliedInference != forecaster {
+				impliedInferenceWithoutForecaster[forecasterOfImpliedInference] = forecastImpliedInferenceByWorker[forecasterOfImpliedInference]
 			}
 		}
 
-		sortedForecastersWithoutWorker := alloraMath.GetSortedKeys(impliedInferenceWithoutWorker)
+		sortedForecastersWithoutWorker := alloraMath.GetSortedKeys(impliedInferenceWithoutForecaster)
+
+		// Get one-in forecaster normalized regrets and max regret
+		forecastOneOutNormalizedRegrets, err := GetForecasterOneInNormalizedRegretsWithMax(
+			ctx,
+			k,
+			topicId,
+			forecaster,
+			sortedForecastersWithoutWorker,
+			fTolerance,
+		)
+		if err != nil {
+			return nil, nil, errorsmod.Wrapf(err, "Error getting one-in forecaster normalized regrets")
+		}
 
 		// Calculate the network inference without the worker's inference
 		oneOutInference, err := CalcWeightedInference(
@@ -397,10 +420,10 @@ func CalcOneOutInferences(
 			topicId,
 			inferenceByWorker,
 			sortedInferers,
-			impliedInferenceWithoutWorker,
+			impliedInferenceWithoutForecaster,
 			sortedForecastersWithoutWorker,
 			infererNormalizedRegrets,
-			forecasterNormalizedRegrets,
+			forecastOneOutNormalizedRegrets,
 			allWorkersAreNew,
 			epsilon,
 			pNorm,
@@ -410,7 +433,7 @@ func CalcOneOutInferences(
 			return nil, nil, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
 		}
 		oneOutImpliedInferences = append(oneOutImpliedInferences, &emissions.WithheldWorkerAttributedValue{
-			Worker: worker,
+			Worker: forecaster,
 			Value:  oneOutInference,
 		})
 	}
