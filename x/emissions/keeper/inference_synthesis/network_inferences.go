@@ -66,6 +66,44 @@ type NormalizedRegrets struct {
 	MaxRegret Regret
 }
 
+func GetNormalizedRegretsWithMax(
+	workers []Worker,
+	regrets []alloraMath.Dec,
+	fTolerance alloraMath.Dec,
+) (NormalizedRegrets, error) {
+	// Calc std dev of regrets + f_tolerance
+	// σ(R_ijk) + ε
+	stdDevRegrets, err := alloraMath.StdDev(regrets)
+	if err != nil {
+		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of inferer regrets")
+	}
+	// Add f_tolerance to standard deviation
+	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Abs().Add(fTolerance)
+	if err != nil {
+		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error adding f_tolerance to standard deviation of inferer regrets")
+	}
+
+	// Normalize the regrets
+	normalizedRegrets := make(map[string]Regret)
+	maxRegret := alloraMath.ZeroDec()
+	for i, inferer := range workers {
+		regretFrac, err := regrets[i].Quo(stdDevRegretsPlusFTolerance)
+		if err != nil {
+			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
+		}
+		normalizedRegrets[inferer] = regretFrac
+		if i == 0 || regretFrac.Gt(maxRegret) {
+			maxRegret = regretFrac
+		}
+	}
+
+	return NormalizedRegrets{
+		Regrets:   normalizedRegrets,
+		MaxRegret: maxRegret,
+	}, nil
+
+}
+
 func GetInfererNormalizedRegretsWithMax(
 	ctx sdk.Context,
 	k keeper.Keeper,
@@ -82,36 +120,7 @@ func GetInfererNormalizedRegretsWithMax(
 		infererRegrets = append(infererRegrets, regret.Value)
 	}
 
-	// Calc std dev of regrets + f_tolerance
-	// σ(R_ijk) + ε
-	stdDevRegrets, err := alloraMath.StdDev(infererRegrets)
-	if err != nil {
-		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of inferer regrets")
-	}
-	// Add f_tolerance to standard deviation
-	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Abs().Add(fTolerance)
-	if err != nil {
-		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error adding f_tolerance to standard deviation of inferer regrets")
-	}
-
-	// Normalize the regrets
-	normalizedRegrets := make(map[string]Regret)
-	maxRegret := alloraMath.ZeroDec()
-	for i, inferer := range sortedInferers {
-		regretFrac, err := infererRegrets[i].Quo(stdDevRegretsPlusFTolerance)
-		if err != nil {
-			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
-		}
-		normalizedRegrets[inferer] = regretFrac
-		if i == 0 || regretFrac.Gt(maxRegret) {
-			maxRegret = regretFrac
-		}
-	}
-
-	return NormalizedRegrets{
-		Regrets:   normalizedRegrets,
-		MaxRegret: maxRegret,
-	}, nil
+	return GetNormalizedRegretsWithMax(sortedInferers, infererRegrets, fTolerance)
 }
 
 func GetForecasterNormalizedRegretsWithMax(
@@ -130,35 +139,7 @@ func GetForecasterNormalizedRegretsWithMax(
 		forecasterRegrets = append(forecasterRegrets, regret.Value)
 	}
 
-	// Calc std dev of regrets + f_tolerance
-	stdDevRegrets, err := alloraMath.StdDev(forecasterRegrets)
-	if err != nil {
-		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of forecaster regrets")
-	}
-	// Add f_tolerance to standard deviation
-	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Abs().Add(fTolerance)
-	if err != nil {
-		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error adding f_tolerance to standard deviation of forecaster regrets")
-	}
-
-	// Normalize the regrets
-	normalizedRegrets := make(map[string]Regret)
-	maxRegret := alloraMath.ZeroDec()
-	for i, forecaster := range sortedForecasters {
-		regretFrac, err := forecasterRegrets[i].Quo(stdDevRegretsPlusFTolerance)
-		if err != nil {
-			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
-		}
-		normalizedRegrets[forecaster] = regretFrac
-		if i == 0 || regretFrac.Gt(maxRegret) {
-			maxRegret = regretFrac
-		}
-	}
-
-	return NormalizedRegrets{
-		Regrets:   normalizedRegrets,
-		MaxRegret: maxRegret,
-	}, nil
+	return GetNormalizedRegretsWithMax(sortedForecasters, forecasterRegrets, fTolerance)
 }
 
 func GetForecasterOneInNormilizedRegretsWithMax(
@@ -178,35 +159,7 @@ func GetForecasterOneInNormilizedRegretsWithMax(
 		oneInForecasterRegrets = append(oneInForecasterRegrets, oneInForecasterRegret.Value)
 	}
 
-	// Calc std dev of regrets + f_tolerance
-	stdDevRegrets, err := alloraMath.StdDev(oneInForecasterRegrets)
-	if err != nil {
-		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of one-in forecaster regrets")
-	}
-	// Add f_tolerance to standard deviation
-	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Abs().Add(fTolerance)
-	if err != nil {
-		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error adding f_tolerance to standard deviation of one-in forecaster regrets")
-	}
-
-	// Normalize the regrets
-	normalizedRegrets := make(map[string]Regret)
-	maxRegret := alloraMath.ZeroDec()
-	for i, inferer := range inferers {
-		regretFrac, err := oneInForecasterRegrets[i].Quo(stdDevRegretsPlusFTolerance)
-		if err != nil {
-			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating one-in forecaster regret fraction")
-		}
-		normalizedRegrets[inferer] = regretFrac
-		if i == 0 || regretFrac.Gt(maxRegret) {
-			maxRegret = regretFrac
-		}
-	}
-
-	return NormalizedRegrets{
-		Regrets:   normalizedRegrets,
-		MaxRegret: maxRegret,
-	}, nil
+	return GetNormalizedRegretsWithMax(inferers, oneInForecasterRegrets, fTolerance)
 }
 
 func accumulateNormalizedI_iAndSumWeights(
