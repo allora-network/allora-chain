@@ -121,8 +121,8 @@ func CalcForecastImpliedInferences(
 	forecasts *emissions.Forecasts,
 	networkCombinedLoss Loss,
 	allInferersAreNew bool,
-	fTolerance alloraMath.Dec,
 	epsilon alloraMath.Dec,
+	fTolerance alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
 ) (map[Worker]*emissions.Inference, error) {

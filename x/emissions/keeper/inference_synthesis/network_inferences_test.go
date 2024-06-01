@@ -355,6 +355,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 	maxRegret := alloraMath.MustNewDecFromString("0.987153672207448")
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.0156937658327922")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expectedOneOutInferences := []struct {
@@ -405,6 +406,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 		maxRegret,
 		networkCombinedLoss,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)
@@ -508,6 +510,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 	// epoch 2
 	networkCombinedLoss := alloraMath.MustNewDecFromString(".0000127791308799785")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expectedOneOutInferences := []struct {
@@ -560,6 +563,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		maxRegret,
 		networkCombinedLoss,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)
@@ -757,6 +761,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferences() {
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.2")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
+	fTolerance := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -783,7 +788,18 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferences() {
 	s.Require().NoError(err)
 
 	// Call the function
-	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, pNorm, cNorm)
+	valueBundle, err := inference_synthesis.CalcNetworkInferences(
+		ctx,
+		k,
+		topicId,
+		inferences,
+		forecasts,
+		networkCombinedLoss,
+		epsilon,
+		fTolerance,
+		pNorm,
+		cNorm,
+	)
 	s.Require().NoError(err)
 
 	// Check the results
@@ -838,11 +854,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesSameInfererForeca
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("1")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
+	fTolerance := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
 	// Call the function
-	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, pNorm, cNorm)
+	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, fTolerance, pNorm, cNorm)
 	s.Require().NoError(err)
 	s.Require().NotNil(valueBundle)
 	s.Require().NotNil(valueBundle.CombinedValue)
@@ -874,7 +891,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesSameInfererForeca
 	s.Require().NoError(err)
 
 	// Call the function
-	valueBundle, err = inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, pNorm, cNorm)
+	valueBundle, err = inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, fTolerance, pNorm, cNorm)
 	s.Require().NoError(err)
 
 	// Check the results
@@ -928,12 +945,13 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesIncompleteData() 
 	}
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("1")
-	epsilon := alloraMath.MustNewDecFromString("0.001")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
 	// Call the function without setting regrets
-	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, pNorm, cNorm)
+	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, fTolerance, pNorm, cNorm)
 	s.Require().NoError(err)
 	s.Require().NotNil(valueBundle)
 	s.Require().NotNil(valueBundle.CombinedValue)
@@ -1607,7 +1625,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 	}
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.2")
-	epsilon := alloraMath.MustNewDecFromString("0.001")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -1634,7 +1653,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 	s.Require().NoError(err)
 
 	// Call the function
-	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, pNorm, cNorm)
+	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, fTolerance, pNorm, cNorm)
 	s.Require().NoError(err)
 
 	// Check the results
@@ -1700,6 +1719,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.3")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
+	fTolerance := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -1742,7 +1762,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 	s.Require().NoError(err)
 
 	// Call the function
-	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, pNorm, cNorm)
+	valueBundle, err := inference_synthesis.CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, epsilon, fTolerance, pNorm, cNorm)
 	s.Require().NoError(err)
 
 	// Check the results

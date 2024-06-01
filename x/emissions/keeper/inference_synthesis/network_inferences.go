@@ -335,6 +335,7 @@ func CalcOneOutInferences(
 	maxRegret Regret,
 	networkCombinedLoss Loss,
 	epsilon alloraMath.Dec,
+	fTolerance alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
 ) ([]*emissions.WithheldWorkerAttributedValue, []*emissions.WithheldWorkerAttributedValue, error) {
@@ -360,6 +361,7 @@ func CalcOneOutInferences(
 			networkCombinedLoss,
 			allWorkersAreNew.AllInferersAreNew,
 			epsilon,
+			fTolerance,
 			pNorm,
 			cNorm,
 		)
@@ -493,6 +495,7 @@ func CalcNetworkInferences(
 	forecasts *emissions.Forecasts,
 	networkCombinedLoss Loss,
 	epsilon alloraMath.Dec,
+	fTolerance alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
 ) (*emissions.ValueBundle, error) {
@@ -513,6 +516,7 @@ func CalcNetworkInferences(
 		networkCombinedLoss,
 		allWorkersAreNew.AllInferersAreNew,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)
@@ -589,6 +593,7 @@ func CalcNetworkInferences(
 		maxStdDevCombinedRegret,
 		networkCombinedLoss,
 		epsilon,
+		fTolerance,
 		pNorm,
 		cNorm,
 	)
@@ -720,7 +725,18 @@ func GetNetworkInferencesAtBlock(
 			ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 			return networkInferences, nil
 		}
-		networkInferences, err = CalcNetworkInferences(ctx, k, topicId, inferences, forecasts, networkCombinedLoss, moduleParams.Epsilon, topic.PNorm, moduleParams.CNorm)
+		networkInferences, err = CalcNetworkInferences(
+			ctx,
+			k,
+			topicId,
+			inferences,
+			forecasts,
+			networkCombinedLoss,
+			moduleParams.Epsilon,
+			moduleParams.FTolerance,
+			topic.PNorm,
+			moduleParams.CNorm,
+		)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error calculating network inferences: %s", err.Error()))
 			return networkInferences, nil
