@@ -6,7 +6,7 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func calcWeightFromRegret(
+func CalcWeightFromRegret(
 	regretFrac alloraMath.Dec,
 	maxRegret alloraMath.Dec,
 	pNorm alloraMath.Dec,
@@ -187,7 +187,7 @@ func CalcForecastImpliedInferences(
 				}
 
 				for _, j := range sortedInferersInForecast {
-					w_ijk, err := calcWeightFromRegret(
+					w_ijk, err := CalcWeightFromRegret(
 						R_ik[j],
 						maxNormalizedForecastedRegret,
 						pNorm,

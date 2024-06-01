@@ -240,7 +240,7 @@ func accumulateNormalizedI_iAndSumWeights(
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adding weight")
 		}
 	} else {
-		weight, err := calcWeightFromRegret(normalizedRegret, maxRegret, pNorm, cNorm)
+		weight, err := CalcWeightFromRegret(normalizedRegret, maxRegret, pNorm, cNorm)
 		if err != nil {
 			return alloraMath.ZeroDec(), alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating weight")
 		}

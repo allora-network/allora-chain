@@ -6,6 +6,41 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	testCases := []struct {
+		regretFrac     string
+		maxRegret      string
+		expectedWeight string
+	}{
+		{"-24.5", "-24.5", "0.0007835709572871582"},
+		{"-20.0", "-19.5", "0.00017487379698341595"},
+		{"-15.0", "-14.0", "0.0000390213853994281"},
+		{"-10.5", "-10.0", "0.00017487379698341595"},
+		{"-5.75", "-5.0", "0.00008260707334375042"},
+		{"-1.0", "-0.5", "0.015660377080675192"},
+		{"-0.25", "0.0", "0.14227761953270035"},
+		{"0.0", "0.0", "0.28604839469732846"},
+		{"0.5", "0.5", "0.9624639024738211"},
+		{"1.0", "1.0", "2.037536097526179"},
+		{"-1.32345", "0.1238729", "0.00595380787049663"},
+		{"-0.8712641", "-0.8712641", "0.022985964160663532"},
+		{"0.01987392", "0.01987392", "0.30185357993405315"},
+	}
+
+	for _, tc := range testCases {
+		regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
+		maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
+
+		weight, err := inference_synthesis.CalcWeightFromRegret(regretFrac, maxRegret, pNorm, cNorm)
+		s.Require().NoError(err)
+
+		s.inEpsilon5(weight, tc.expectedWeight)
+	}
+}
+
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorkersOneForecaster() {
 	forecasts := &emissions.Forecasts{
 		Forecasts: []*emissions.Forecast{
