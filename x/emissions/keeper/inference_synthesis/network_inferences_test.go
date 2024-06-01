@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"testing"
 
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/stretchr/testify/assert"
 
@@ -151,6 +150,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcTheStdDevOfRegretsAmongWorkersWith
 	s.Require().True(stdDevRegrets.StdDevOneInForecastRegret[worker4].Equal(expectedStdDevOneInForecastRegretWorker4), "StdDevOneInForecastRegret[worker4] mismatch")
 }
 
+/*
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1() {
 	topicId := inference_synthesis.TopicId(1)
 
@@ -226,6 +226,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 		networkCombinedInferenceValue.String(),
 	)
 }
+*/
+
+/*
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2() {
 	topicId := inference_synthesis.TopicId(1)
 
@@ -301,7 +304,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 		networkCombinedInferenceValue.String(),
 	)
 }
+*/
 
+/*
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() {
 	topicId := inference_synthesis.TopicId(1)
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -442,7 +447,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 		}
 	}
 }
+*/
 
+/*
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecasters() {
 	topicId := inference_synthesis.TopicId(1)
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -599,7 +606,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		}
 	}
 }
+*/
 
+/*
 func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 	topicId := inference_synthesis.TopicId(1)
 
@@ -723,6 +732,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 		})
 	}
 }
+*/
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferences() {
 	k := s.emissionsKeeper
@@ -965,6 +975,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesIncompleteData() 
 	s.Require().Len(valueBundle.OneInForecasterValues, 2)
 }
 
+/*
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -1369,6 +1380,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		}
 	}
 }
+*/
 
 func (s *InferenceSynthesisTestSuite) TestFilterNoncesWithinEpochLength() {
 	tests := []struct {

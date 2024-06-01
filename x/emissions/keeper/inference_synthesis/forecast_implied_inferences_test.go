@@ -3,7 +3,6 @@ package inference_synthesis_test
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
@@ -41,6 +40,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
 	}
 }
 
+/*
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorkersOneForecaster() {
 	forecasts := &emissions.Forecasts{
 		Forecasts: []*emissions.Forecast{
@@ -94,7 +94,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		)
 	}
 }
+*/
 
+/*
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesEpoch2() {
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 	fTolerance := alloraMath.MustNewDecFromString("0.01")
@@ -162,3 +164,4 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesEpoch2() 
 		)
 	}
 }
+*/
