@@ -67,44 +67,6 @@ type NormalizedRegrets struct {
 	MaxRegret Regret
 }
 
-func GetNormalizedRegretsWithMax(
-	workers []Worker,
-	regrets []alloraMath.Dec,
-	fTolerance alloraMath.Dec,
-) (NormalizedRegrets, error) {
-	// Calc std dev of regrets + f_tolerance
-	// σ(R_ijk) + ε
-	stdDevRegrets, err := alloraMath.StdDev(regrets)
-	if err != nil {
-		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating standard deviation of inferer regrets")
-	}
-	// Add f_tolerance to standard deviation
-	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Abs().Add(fTolerance)
-	if err != nil {
-		return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error adding f_tolerance to standard deviation of inferer regrets")
-	}
-
-	// Normalize the regrets
-	normalizedRegrets := make(map[string]Regret)
-	maxRegret := alloraMath.ZeroDec()
-	for i, inferer := range workers {
-		regretFrac, err := regrets[i].Quo(stdDevRegretsPlusFTolerance)
-		if err != nil {
-			return NormalizedRegrets{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
-		}
-		normalizedRegrets[inferer] = regretFrac
-		if i == 0 || regretFrac.Gt(maxRegret) {
-			maxRegret = regretFrac
-		}
-	}
-
-	return NormalizedRegrets{
-		Regrets:   normalizedRegrets,
-		MaxRegret: maxRegret,
-	}, nil
-
-}
-
 type StdDevRegrets struct {
 	StdDevInferenceRegret     Regret
 	StdDevForecastRegret      Regret
