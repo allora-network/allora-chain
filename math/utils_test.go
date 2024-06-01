@@ -1,6 +1,7 @@
 package math_test
 
 import (
+	"log"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -91,6 +92,20 @@ func TestStdDev(t *testing.T) {
 			require.True(t, alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.0001")))
 		})
 	}
+}
+
+func TestStdDevOneValueShouldBeZero(t *testing.T) {
+	stdDev, err := alloraMath.StdDev([]alloraMath.Dec{alloraMath.MustNewDecFromString("-0.00675")})
+	log.Printf("stdDev: %v", stdDev)
+	require.NoError(t, err)
+	require.True(
+		t,
+		alloraMath.InDelta(
+			alloraMath.MustNewDecFromString("0"),
+			stdDev,
+			alloraMath.MustNewDecFromString("0.0001"),
+		),
+	)
 }
 
 func TestPhiSimple(t *testing.T) {
