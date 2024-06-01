@@ -412,8 +412,6 @@ func CalcOneOutInferences(
 		if err != nil {
 			return nil, nil, errorsmod.Wrapf(err, "Error getting one-in forecaster normalized regrets")
 		}
-		log.Printf("sortedForecastersWithoutWorker: %v", sortedForecastersWithoutForecaster)
-		log.Printf("forecastOneOutNormalizedRegrets: %v", forecastOneOutNormalizedRegrets)
 
 		// Calculate the network inference without the worker's inference
 		oneOutInference, err := CalcWeightedInference(
@@ -468,7 +466,7 @@ func CalcOneInInferences(
 		forecastImpliedInferencesWithForecaster[oneInForecaster] = forecastImpliedInferences[oneInForecaster]
 		// Calculate the network inference without the worker's forecast-implied inference
 
-		sortedForecastersWithForecaster := alloraMath.GetSortedKeys(forecastImpliedInferencesWithForecaster)
+		sortedInferersWithForecaster := alloraMath.GetSortedKeys(forecastImpliedInferencesWithForecaster)
 
 		// Get one-in forecaster normalized regrets and max regret
 		forecastOneInNormalizedRegrets, err := GetForecasterOneInNormalizedRegretsWithMax(
@@ -476,7 +474,7 @@ func CalcOneInInferences(
 			k,
 			topicId,
 			oneInForecaster,
-			sortedForecastersWithForecaster,
+			sortedInferersWithForecaster,
 			fTolerance,
 		)
 		if err != nil {
@@ -490,7 +488,7 @@ func CalcOneInInferences(
 			inferencesByWorker,
 			sortedInferers,
 			forecastImpliedInferencesWithForecaster,
-			sortedForecastersWithForecaster,
+			sortedInferersWithForecaster,
 			infererNormalizedRegrets,
 			forecastOneInNormalizedRegrets,
 			allWorkersAreNew,
