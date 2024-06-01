@@ -187,8 +187,7 @@ func CalcForecastImpliedInferences(
 				w_ik := make(map[Worker]Weight, len(forecastElementsByInferer))
 
 				// Define variable to store maximum regret for forecast k
-				first := true
-				var maxjRijk alloraMath.Dec
+				var forecastedRegrets []alloraMath.Dec
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
 				for _, j := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
@@ -196,28 +195,25 @@ func CalcForecastImpliedInferences(
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating network loss per value")
 					}
-					if first {
-						maxjRijk = R_ik[j]
-						first = false
-					} else {
-						if R_ik[j].Gt(maxjRijk) {
-							maxjRijk = R_ik[j]
-						}
-					}
+					forecastedRegrets = append(forecastedRegrets, R_ik[j])
 				}
 
-				// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
-				var err error
-				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
+				normalizedRegrets, err := GetNormalizedRegretsWithMax(sortedInferersInForecast, forecastedRegrets, fTolerance)
+				if err != nil {
+					return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
+				}
+
 				for _, j := range sortedInferersInForecast {
-					R_ik[j], err = R_ik[j].Quo(maxjRijk.Abs()) // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
+					w_ijk, err := CalcWeightFromRegret(
+						normalizedRegrets.Regrets[j],
+						normalizedRegrets.MaxRegret,
+						pNorm,
+						cNorm,
+					)
 					if err != nil {
-						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
+						return nil, errorsmod.Wrapf(err, "Error calculating regret frac")
 					}
-					w_ijk, err := alloraMath.Gradient(pNorm, cNorm, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
-					if err != nil {
-						return nil, errorsmod.Wrapf(err, "error calculating gradient")
-					}
+
 					w_ik[j] = w_ijk
 				}
 
