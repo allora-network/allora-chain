@@ -10,6 +10,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/stretchr/testify/assert"
 
+	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -694,18 +695,19 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 	topicId := inferencesynthesis.TopicId(1)
 
 	tests := []struct {
-		name                        string
-		inferenceByWorker           map[string]*emissionstypes.Inference
-		forecastImpliedInferences   map[string]*emissionstypes.Inference
-		maxRegretsByOneInForecaster map[string]inferencesynthesis.Regret
-		epsilon                     alloraMath.Dec
-		fTolerance                  alloraMath.Dec
-		pNorm                       alloraMath.Dec
-		cNorm                       alloraMath.Dec
-		infererNetworkRegrets       inferencesynthesis.NormalizedRegrets
-		forecasterNetworkRegrets    map[string]inferencesynthesis.Regret
-		expectedOneInInferences     []*emissionstypes.WorkerAttributedValue
-		expectedErr                 error
+		name                            string
+		inferenceByWorker               map[string]*emissionstypes.Inference
+		forecastImpliedInferences       map[string]*emissionstypes.Inference
+		maxRegretsByOneInForecaster     map[string]inferencesynthesis.Regret
+		epsilon                         alloraMath.Dec
+		fTolerance                      alloraMath.Dec
+		pNorm                           alloraMath.Dec
+		cNorm                           alloraMath.Dec
+		infererNetworkRegrets           map[string]inference_synthesis.Regret
+		infererNetworkNormalizedRegrets inferencesynthesis.NormalizedRegrets
+		forecasterNetworkRegrets        map[string]inferencesynthesis.Regret
+		expectedOneInInferences         []*emissionstypes.WorkerAttributedValue
+		expectedErr                     error
 	}{
 		{ // EPOCH 3
 			name: "basic functionality",
@@ -728,7 +730,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 			fTolerance: alloraMath.MustNewDecFromString("0.01"),
 			pNorm:      alloraMath.MustNewDecFromString("2.0"),
 			cNorm:      alloraMath.MustNewDecFromString("0.75"),
-			infererNetworkRegrets: inferencesynthesis.NormalizedRegrets{
+			infererNetworkRegrets: map[string]inference_synthesis.Regret{
+				"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
+				"worker1": alloraMath.MustNewDecFromString("0.9101744424126180"),
+				"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
+			},
+			infererNetworkNormalizedRegrets: inferencesynthesis.NormalizedRegrets{
 				Regrets: map[string]inferencesynthesis.Regret{
 					"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
 					"worker1": alloraMath.MustNewDecFromString("0.9101744424126180"),
@@ -752,6 +759,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
+			for inferer, regret := range tc.infererNetworkRegrets {
+				s.emissionsKeeper.SetInfererNetworkRegret(
+					s.ctx,
+					topicId,
+					inferer,
+					emissionstypes.TimestampedValue{BlockHeight: 0, Value: regret},
+				)
+			}
+
 			for forecaster, regret := range tc.forecasterNetworkRegrets {
 				err := s.emissionsKeeper.SetForecasterNetworkRegret(
 					s.ctx,
@@ -771,7 +787,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				tc.forecastImpliedInferences,
 				alloraMath.GetSortedKeys(tc.forecastImpliedInferences),
 				NewWorkersAreNew(false),
-				tc.infererNetworkRegrets,
+				tc.infererNetworkNormalizedRegrets,
 				tc.epsilon,
 				tc.fTolerance,
 				tc.pNorm,
