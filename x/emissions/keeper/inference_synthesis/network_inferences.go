@@ -142,7 +142,7 @@ func GetForecasterNormalizedRegretsWithMax(
 	return GetNormalizedRegretsWithMax(sortedForecasters, forecasterRegrets, fTolerance)
 }
 
-func GetForecasterOneInNormilizedRegretsWithMax(
+func GetForecasterOneInNormalizedRegretsWithMax(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
@@ -446,7 +446,7 @@ func CalcOneInInferences(
 		sortedForecastersWithForecaster := alloraMath.GetSortedKeys(forecastImpliedInferencesWithForecaster)
 
 		// Get one-in forecaster normalized regrets and max regret
-		forecastOneInNormalizedRegrets, err := GetForecasterOneInNormilizedRegretsWithMax(
+		forecastOneInNormalizedRegrets, err := GetForecasterOneInNormalizedRegretsWithMax(
 			ctx,
 			k,
 			topicId,
