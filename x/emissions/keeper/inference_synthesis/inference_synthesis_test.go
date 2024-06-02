@@ -12,7 +12,6 @@ import (
 	// cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
@@ -122,48 +121,6 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 	for _, addr := range addrsStr {
 		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
 	}
-}
-
-func (s *InferenceSynthesisTestSuite) inEpsilon(value alloraMath.Dec, target string, epsilon string) {
-	require := s.Require()
-	epsilonDec := alloraMath.MustNewDecFromString(epsilon)
-	targetDec := alloraMath.MustNewDecFromString(target)
-	one := alloraMath.MustNewDecFromString("1")
-
-	lowerMultiplier, err := one.Sub(epsilonDec)
-	require.NoError(err)
-	lowerBound, err := targetDec.Mul(lowerMultiplier)
-	require.NoError(err)
-
-	upperMultiplier, err := one.Add(epsilonDec)
-	require.NoError(err)
-	upperBound, err := targetDec.Mul(upperMultiplier)
-	require.NoError(err)
-
-	if lowerBound.Lt(upperBound) { // positive values, lower < value < upper
-		require.True(value.Gte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
-		require.True(value.Lte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
-	} else { // negative values, upper < value < lower
-		require.True(value.Lte(lowerBound), "value: %s, lowerBound: %s", value.String(), lowerBound.String())
-		require.True(value.Gte(upperBound), "value: %s, upperBound: %s", value.String(), upperBound.String())
-	}
-}
-
-func (s *InferenceSynthesisTestSuite) inEpsilon2(value alloraMath.Dec, target string) {
-	s.inEpsilon(value, target, "0.01")
-}
-
-func (s *InferenceSynthesisTestSuite) inEpsilon3(value alloraMath.Dec, target string) {
-	s.inEpsilon(value, target, "0.001")
-}
-
-/*unused
-func (s *InferenceSynthesisTestSuite) inEpsilon4(value alloraMath.Dec, target string) {
-	s.inEpsilon(value, target, "0.0001")
-}*/
-
-func (s *InferenceSynthesisTestSuite) inEpsilon5(value alloraMath.Dec, target string) {
-	s.inEpsilon(value, target, "0.00001")
 }
 
 func TestModuleTestSuite(t *testing.T) {
