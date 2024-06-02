@@ -198,7 +198,7 @@ func validateVersion(v string) error {
 // Should be >= 0
 func validateMinTopicWeight(i alloraMath.Dec) error {
 	if i.IsNegative() {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -213,7 +213,7 @@ func validateMaxTopicsPerBlock(_ uint64) error {
 // Should be >= 0.
 func validateRequiredMinimumStake(i cosmosMath.Int) error {
 	if i.IsNegative() {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -222,7 +222,7 @@ func validateRequiredMinimumStake(i cosmosMath.Int) error {
 // Should be >= 0.
 func validateRemoveStakeDelayWindow(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -230,8 +230,8 @@ func validateRemoveStakeDelayWindow(i int64) error {
 // Minumum number of blocks per epoch a topic can set.
 // Should be >= 0.
 func validateMinEpochLength(i BlockHeight) error {
-	if i < 0 {
-		return ErrValidationMustBeNonNegative
+	if i < 1 {
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -441,7 +441,7 @@ func validateMaxTopReputersToReward(_ uint64) error {
 // must be positive or zero
 func validateCreateTopicFee(i cosmosMath.Int) error {
 	if i.IsNegative() {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -450,7 +450,7 @@ func validateCreateTopicFee(i cosmosMath.Int) error {
 // Should be non negative.
 func validateMaxRetriesToFulfilNoncesWorker(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -459,7 +459,7 @@ func validateMaxRetriesToFulfilNoncesWorker(i int64) error {
 // Should be non negative.
 func validateMaxRetriesToFulfilNoncesReputer(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -468,7 +468,7 @@ func validateMaxRetriesToFulfilNoncesReputer(i int64) error {
 // Should be non-negative.
 func validateRegistrationFee(i cosmosMath.Int) error {
 	if i.IsNegative() {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -489,7 +489,7 @@ func validateMaxPageLimit(_ uint64) error {
 // Should be non-negative.
 func validateMinEpochLengthRecordLimit(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -498,7 +498,7 @@ func validateMinEpochLengthRecordLimit(i int64) error {
 // Should be non-negative.
 func validateMaxSerializedMsgLength(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
