@@ -127,9 +127,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcTheStdDevOfRegretsAmongWorkersWith
 		ctx,
 		k,
 		topicId,
-		inferenceByWorker,
 		alloraMath.GetSortedKeys(inferenceByWorker),
-		forecastImpliedInferenceByWorker,
 		alloraMath.GetSortedKeys(forecastImpliedInferenceByWorker),
 		epsilon,
 	)

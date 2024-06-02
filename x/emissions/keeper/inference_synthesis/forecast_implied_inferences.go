@@ -107,7 +107,6 @@ func GetNormalizedRegretsWithMax(
 		Regrets:   normalizedRegrets,
 		MaxRegret: maxRegret,
 	}, nil
-
 }
 
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.

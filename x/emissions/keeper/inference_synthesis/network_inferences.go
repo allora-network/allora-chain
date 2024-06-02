@@ -77,13 +77,10 @@ func CalcTheStdDevOfRegretsAmongWorkersWithLosses(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId TopicId,
-	inferenceByWorker map[Worker]*emissions.Inference,
 	sortedInferers []Worker,
-	forecastImpliedInferenceByWorker map[Worker]*emissions.Inference,
 	sortedForecasters []Worker,
 	epsilon alloraMath.Dec,
 ) (StdDevRegrets, error) {
-
 	infererRegrets := make([]Regret, 0)
 	for _, inferer := range sortedInferers {
 		infererRegret, _, err := k.GetInfererNetworkRegret(ctx, topicId, inferer)
@@ -530,9 +527,7 @@ func CalcNetworkInferences(
 		ctx,
 		k,
 		topicId,
-		inferenceByWorker,
 		sortedInferers,
-		forecastImpliedInferenceByWorker,
 		sortedForecasters,
 		epsilon,
 	)
