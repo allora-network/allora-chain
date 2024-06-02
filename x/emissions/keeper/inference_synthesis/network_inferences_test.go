@@ -7,7 +7,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/allora-network/allora-chain/test/testutil"
 	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
