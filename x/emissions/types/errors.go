@@ -61,7 +61,6 @@ var (
 	ErrCantSelfDelegate                         = errors.Register(ModuleName, 57, "cant self delegate")
 	ErrValidationVersionEmpty                   = errors.Register(ModuleName, 58, "version cannot be empty")
 	ErrValidationVersionTooLong                 = errors.Register(ModuleName, 59, "version length cannot exceed 32 characters")
-	ErrValidationMustBeNonNegative              = errors.Register(ModuleName, 60, "value must be non-negative")
 	ErrValidationMustBeBetweenZeroAndOne        = errors.Register(ModuleName, 61, "value must be between 0 and 1")
 	ErrValidationMustBeGreaterthanZero          = errors.Register(ModuleName, 62, "value must be greater than 0")
 )
