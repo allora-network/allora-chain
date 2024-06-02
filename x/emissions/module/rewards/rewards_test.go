@@ -2102,6 +2102,28 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 }
 
+func (s *RewardsTestSuite) SetParamsForTest(numInferers uint64) {
+	// Setup a sender address
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	s.emissionsKeeper.AddWhitelistAdmin(s.ctx, adminAddr.String())
+
+	newParams := &types.OptionalParams{
+		MaxTopInferersToReward: []uint64{24},
+		MinEpochLength:         []int64{1},
+		RegistrationFee:        []cosmosMath.Int{cosmosMath.NewInt(6)},
+	}
+
+	updateMsg := &types.MsgUpdateParams{
+		Sender: adminAddr.String(),
+		Params: newParams,
+	}
+
+	response, err := s.msgServer.UpdateParams(s.ctx, updateMsg)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+}
+
 func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	block := int64(600)
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -2112,6 +2134,8 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	var workerAddrs = make([]sdk.AccAddress, 0)
 	var stakes = make([]cosmosMath.Int, 0)
 	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+
+	s.SetParamsForTest(24)
 
 	for i := 0; i < 25; i++ {
 		reputerAddrs = append(reputerAddrs, s.addrs[i])
@@ -2698,6 +2722,8 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	block := int64(100)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
+	s.SetParamsForTest(24)
+
 	reputer0Addrs := []sdk.AccAddress{
 		s.addrs[0],
 		s.addrs[1],
@@ -2898,6 +2924,8 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 
+	s.SetParamsForTest(24)
+
 	reputer0Addrs := []sdk.AccAddress{
 		s.addrs[0],
 		s.addrs[1],
@@ -2994,6 +3022,8 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
+
+	s.SetParamsForTest(24)
 
 	reputerAddrs := []sdk.AccAddress{
 		s.addrs[0],
@@ -3092,6 +3122,8 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
+
+	s.SetParamsForTest(24)
 
 	reputer0Addrs := []sdk.AccAddress{
 		s.addrs[0],

@@ -395,7 +395,6 @@ func validateTopicRewardAlpha(i alloraMath.Dec) error {
 // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 // should be 0 < x <= 1 (note the difference on both sides!)
 func validateTaskRewardAlpha(i alloraMath.Dec) error {
-
 	if i.Lte(alloraMath.ZeroDec()) || i.Gt(alloraMath.OneDec()) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -412,8 +411,11 @@ func validateValidatorsVsAlloraPercentReward(i alloraMath.Dec) error {
 }
 
 // maximum number of previous scores to store and use for standard deviation calculation
-// Should be zero or positive. Enforced by uint type
-func validateMaxSamplesToScaleScores(_ uint64) error {
+// Should be greater than zero. Enforced by conditional + uint type
+func validateMaxSamplesToScaleScores(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
 	return nil
 }
 
