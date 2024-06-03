@@ -10,8 +10,8 @@ import (
 )
 
 type NetworkInferenceBuilder struct {
-	ctx                        sdk.Context
-	palette                    SynthPalette
+	ctx     sdk.Context
+	palette SynthPalette
 	// Network Inferences Properties
 	inferences                 []*emissions.WorkerAttributedValue
 	forecastImpliedInferences  []*emissions.WorkerAttributedValue
@@ -28,7 +28,7 @@ func NewNetworkInferenceBuilderFromSynthRequest(
 	paletteFactory := SynthPaletteFactory{}
 	palette := paletteFactory.BuildPaletteFromRequest(req)
 	return &NetworkInferenceBuilder{
-		ctx: req.Ctx,
+		ctx:     req.Ctx,
 		palette: palette,
 	}
 }
@@ -211,17 +211,22 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
 	for _, inferer := range palette.Inferers {
-		//
-		// TODO MULTIPLY BY INFERENCES + 1-EXTRA FORECAST-IMPLIED INFERENCES
-		//
 		regret, noPriorRegret, err := palette.K.GetOneInForecasterNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 		}
-		palette.ForecasterRegrets[inferer] = StatefulRegret{
+		palette.InfererRegrets[inferer] = StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
+	}
+	regret, noPriorRegret, err := palette.K.GetOneInForecasterSelfNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster)
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
+	}
+	palette.ForecasterRegrets[oneInForecaster] = StatefulRegret{
+		regret:        regret.Value,
+		noPriorRegret: noPriorRegret,
 	}
 
 	weights, err := palette.CalcWeightsGivenWorkers()
