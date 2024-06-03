@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
@@ -21,8 +22,6 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
 
-const govModuleNameStr = "cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn"
-
 type IntegrationTestSuite struct {
 	suite.Suite
 
@@ -32,6 +31,8 @@ type IntegrationTestSuite struct {
 	stakingKeeper   *minttestutil.MockStakingKeeper
 	bankKeeper      *minttestutil.MockBankKeeper
 	emissionsKeeper *minttestutil.MockEmissionsKeeper
+	adminPrivateKey secp256k1.PrivKey
+	adminAddr       string
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -62,11 +63,14 @@ func (s *IntegrationTestSuite) SetupTest() {
 		bankKeeper,
 		emissionsKeeper,
 		authtypes.FeeCollectorName,
-		govModuleNameStr,
 	)
 	s.stakingKeeper = stakingKeeper
 	s.bankKeeper = bankKeeper
 	s.emissionsKeeper = emissionsKeeper
+
+	// Setup a sender address
+	s.adminPrivateKey = secp256k1.GenPrivKey()
+	s.adminAddr = sdk.AccAddress(s.adminPrivateKey.PubKey().Address()).String()
 
 	s.Require().Equal(testCtx.Ctx.Logger().With("module", "x/"+types.ModuleName),
 		s.mintKeeper.Logger(testCtx.Ctx))

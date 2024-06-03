@@ -178,17 +178,6 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		feeCollectorName = authtypes.FeeCollectorName
 	}
 
-	// default to governance authority if not provided
-	authority := authtypes.NewModuleAddress(types.GovModuleName)
-	if in.Config.Authority != "" {
-		authority = authtypes.NewModuleAddressOrBech32Address(in.Config.Authority)
-	}
-
-	as, err := in.AccountKeeper.AddressCodec().BytesToString(authority)
-	if err != nil {
-		panic(err)
-	}
-
 	k := keeper.NewKeeper(
 		in.Cdc,
 		in.StoreService,
@@ -197,7 +186,6 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.BankKeeper,
 		in.EmissionsKeeper,
 		feeCollectorName,
-		as,
 	)
 
 	// when no inflation calculation function is provided it will use the default types.DefaultInflationCalculationFn

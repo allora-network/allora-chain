@@ -53,7 +53,6 @@ func (suite *MintTestSuite) SetupTest() {
 		bankKeeper,
 		emissionsKeeper,
 		authtypes.FeeCollectorName,
-		govModuleNameStr,
 	)
 
 	err := suite.mintKeeper.Params.Set(suite.ctx, types.DefaultParams())
