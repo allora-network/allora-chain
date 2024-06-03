@@ -6,92 +6,9 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (p *SynthPalette) calcWeightFromNormalizedRegret(
-	normalizedRegret alloraMath.Dec,
-	maxNormalizedRegret alloraMath.Dec,
-) (alloraMath.Dec, error) {
-	// upper bound: c + 6.75 / p
-	v6Point75OverP, err := alloraMath.MustNewDecFromString("6.75").Quo(p.pNorm)
-	if err != nil {
-		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
-	}
-	cPlus6Point75OverP, err := p.cNorm.Add(v6Point75OverP)
-	if err != nil {
-		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
-	}
-
-	// Cap the normalized regrets at an upper value
-	// regretFrac = min(regretFrac, c + 6.75 / p)
-	if normalizedRegret.Gt(cPlus6Point75OverP) {
-		normalizedRegret = cPlus6Point75OverP
-	}
-
-	// lower bound: c - 8.25 / p
-	v8Point25OverP, err := alloraMath.MustNewDecFromString("8.25").Quo(p.pNorm)
-	if err != nil {
-		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
-	}
-	cMinus8Point25OverP, err := p.cNorm.Sub(v8Point25OverP)
-	if err != nil {
-		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
-	}
-
-	// if max(regretFrac) < c - 8.25 / p, then regretFrac = regretFrac - max(regretFrac) + (c - 8.25 / p)
-	if maxNormalizedRegret.Lt(cMinus8Point25OverP) {
-		normalizedRegret, err = normalizedRegret.Sub(maxNormalizedRegret)
-		if err != nil {
-			return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error anchoring normalized regrets at zero")
-		}
-		normalizedRegret, err = normalizedRegret.Add(cMinus8Point25OverP)
-		if err != nil {
-			return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adjusting anchored normalized regrets")
-		}
-	}
-
-	v17Point25OverP, err := alloraMath.MustNewDecFromString("17.25").Quo(p.pNorm)
-	if err != nil {
-		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
-	}
-	cMinus17Point25OverP, err := p.cNorm.Sub(v17Point25OverP)
-	if err != nil {
-		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower threshold for zero weight")
-	}
-
-	// if regretFrac < c - 17.25 / p, then weight = 0
-	if normalizedRegret.Lt(cMinus17Point25OverP) {
-		return alloraMath.ZeroDec(), nil
-	}
-
-	weight, err := alloraMath.Gradient(p.pNorm, p.cNorm, normalizedRegret) // w_ijk = φ'_p(\hatR_ijk)
-	if err != nil {
-		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "error calculating gradient")
-	}
-
-	return weight, nil
-}
-
-func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
-	regrets := make([]alloraMath.Dec, len(p.inferers))
-	for i, worker := range p.inferers {
-		regrets[i] = p.infererRegrets[worker].regret
-	}
-	return regrets
-}
-
-func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
-	regrets := make([]alloraMath.Dec, len(p.forecasters))
-	for i, worker := range p.forecasters {
-		regrets[i] = p.forecasterRegrets[worker].regret
-	}
-	return regrets
-}
-
 // Given the current set of inferers and forecasters in the palette, calculate their
 // weights using the current regrets
 func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) {
-	//
-	// TODO make dependent on inferers/forecasters
-	//
 	// Calc std dev of regrets + epsilon
 	// σ(R_ijk) + ε
 	stdDevRegrets, err := alloraMath.StdDev(append(p.GetInfererRegretsSlice(), p.GetForecasterRegretsSlice()...))
@@ -99,17 +16,16 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
 	}
 	// Add epsilon to standard deviation
-	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.epsilon)
+	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.Epsilon)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of regrets")
 	}
 
 	// Normalize the regrets and find the max normalized regret among them
-
 	normalizedInfererRegrets := make(map[Worker]Regret)
 	maxRegret := alloraMath.ZeroDec()
-	for i, worker := range p.inferers {
-		regretFrac, err := p.infererRegrets[worker].regret.Quo(stdDevRegretsPlusEpsilon)
+	for i, worker := range p.Inferers {
+		regretFrac, err := p.InfererRegrets[worker].regret.Quo(stdDevRegretsPlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
@@ -120,8 +36,8 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	}
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
-	for i, worker := range p.forecasters {
-		regretFrac, err := p.forecasterRegrets[worker].regret.Quo(stdDevRegretsPlusEpsilon)
+	for i, worker := range p.Forecasters {
+		regretFrac, err := p.ForecasterRegrets[worker].regret.Quo(stdDevRegretsPlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
@@ -132,10 +48,9 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	}
 
 	// Calculate the weights from the normalized regrets
-
 	infererWeights := make(map[Worker]Weight)
-	for _, worker := range p.inferers {
-		infererWeight, err := p.calcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret)
+	for _, worker := range p.Inferers {
+		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
 		}
@@ -143,8 +58,8 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	}
 
 	forecasterWeights := make(map[Worker]Weight)
-	for _, worker := range p.forecasters {
-		forecasterWeight, err := p.calcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret)
+	for _, worker := range p.Forecasters {
+		forecasterWeight, err := CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, p.PNorm, p.CNorm)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
 		}
@@ -164,13 +79,78 @@ func (p SynthPalette) CalcWeightsWithForecastedRegretOverride(
 	forecastedRegrets map[string]StatefulRegret,
 ) (RegretInformedWeights, error) {
 	if inferers != nil && len(inferers) > 0 && forecastedRegrets != nil {
-		p.infererRegrets = forecastedRegrets
-		p.forecasterRegrets = map[Worker]StatefulRegret{}
+		p.InfererRegrets = forecastedRegrets
+		p.ForecasterRegrets = map[Worker]StatefulRegret{}
 	}
 	return p.CalcWeightsGivenWorkers()
 }
 
-func (p *SynthPalette) weightAccumulator(
+// Calculates network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper:
+// I_i = Σ_l w_il I_il / Σ_l w_il
+// w_il = φ'_p(\hatR_i-1,l)
+// \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
+// given inferences, forecast-implied inferences, and network regrets
+func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (InferenceValue, error) {
+	runningUnnormalizedI_i := alloraMath.ZeroDec()
+	sumWeights := alloraMath.ZeroDec()
+	err := error(nil)
+
+	for _, inferer := range p.Inferers {
+		runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
+			p.InferenceByWorker[inferer],
+			weights.inferers[inferer],
+			p.InfererRegrets[inferer].noPriorRegret,
+			p.AllInferersAreNew,
+			runningUnnormalizedI_i,
+			sumWeights,
+		)
+		if err != nil {
+			return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of inferer")
+		}
+	}
+
+	for _, forecaster := range p.Forecasters {
+		runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
+			p.InferenceByWorker[forecaster],
+			weights.forecasters[forecaster],
+			p.ForecasterRegrets[forecaster].noPriorRegret,
+			p.AllForecastersAreNew,
+			runningUnnormalizedI_i,
+			sumWeights,
+		)
+		if err != nil {
+			return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of forecaster")
+		}
+	}
+
+	// Normalize the running unnormalized network inference to yield output
+	if sumWeights.Lt(p.Epsilon) {
+		sumWeights = p.Epsilon
+	}
+	ret, err := runningUnnormalizedI_i.Quo(sumWeights)
+	if err != nil {
+		return InferenceValue{}, errorsmod.Wrapf(err, "Error normalizing network inference")
+	}
+	return ret, nil
+}
+
+func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
+	regrets := make([]alloraMath.Dec, len(p.Inferers))
+	for i, worker := range p.Inferers {
+		regrets[i] = p.InfererRegrets[worker].regret
+	}
+	return regrets
+}
+
+func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
+	regrets := make([]alloraMath.Dec, len(p.Forecasters))
+	for i, worker := range p.Forecasters {
+		regrets[i] = p.ForecasterRegrets[worker].regret
+	}
+	return regrets
+}
+
+func AccumulateWeights(
 	inference *emissions.Inference,
 	weight alloraMath.Dec,
 	noPriorRegret bool,
@@ -221,51 +201,68 @@ func (p *SynthPalette) weightAccumulator(
 	return runningUnnormalizedI_i, sumWeights, nil
 }
 
-// Calculates network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper:
-// I_i = Σ_l w_il I_il / Σ_l w_il
-// w_il = φ'_p(\hatR_i-1,l)
-// \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
-// given inferences, forecast-implied inferences, and network regrets
-func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (InferenceValue, error) {
-	runningUnnormalizedI_i := alloraMath.ZeroDec()
-	sumWeights := alloraMath.ZeroDec()
-	err := error(nil)
-
-	for _, inferer := range p.inferers {
-		runningUnnormalizedI_i, sumWeights, err = p.weightAccumulator(
-			p.inferenceByWorker[inferer],
-			weights.inferers[inferer],
-			p.infererRegrets[inferer].noPriorRegret,
-			p.allInferersAreNew,
-			runningUnnormalizedI_i,
-			sumWeights,
-		)
-		if err != nil {
-			return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of inferer")
-		}
-	}
-
-	for _, forecaster := range p.forecasters {
-		runningUnnormalizedI_i, sumWeights, err = p.weightAccumulator(
-			p.inferenceByWorker[forecaster],
-			weights.forecasters[forecaster],
-			p.forecasterRegrets[forecaster].noPriorRegret,
-			p.allForecastersAreNew,
-			runningUnnormalizedI_i,
-			sumWeights,
-		)
-		if err != nil {
-			return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of forecaster")
-		}
-	}
-
-	// Normalize the running unnormalized network inference to yield output
-	if sumWeights.Lt(p.epsilon) {
-		sumWeights = p.epsilon
-	}
-	ret, err := runningUnnormalizedI_i.Quo(sumWeights)
+func CalcWeightFromNormalizedRegret(
+	normalizedRegret alloraMath.Dec,
+	maxNormalizedRegret alloraMath.Dec,
+	cNorm alloraMath.Dec,
+	pNorm alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	// upper bound: c + 6.75 / p
+	v6Point75OverP, err := alloraMath.MustNewDecFromString("6.75").Quo(pNorm)
 	if err != nil {
-		return InferenceValue{}, errorsmod.Wrapf(err, "Error normalizing network inference")
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
 	}
-	return ret, nil
+	cPlus6Point75OverP, err := cNorm.Add(v6Point75OverP)
+	if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating upper bound for regret normalization")
+	}
+
+	// Cap the normalized regrets at an upper value
+	// regretFrac = min(regretFrac, c + 6.75 / p)
+	if normalizedRegret.Gt(cPlus6Point75OverP) {
+		normalizedRegret = cPlus6Point75OverP
+	}
+
+	// lower bound: c - 8.25 / p
+	v8Point25OverP, err := alloraMath.MustNewDecFromString("8.25").Quo(pNorm)
+	if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
+	}
+	cMinus8Point25OverP, err := cNorm.Sub(v8Point25OverP)
+	if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
+	}
+
+	// if max(regretFrac) < c - 8.25 / p, then regretFrac = regretFrac - max(regretFrac) + (c - 8.25 / p)
+	if maxNormalizedRegret.Lt(cMinus8Point25OverP) {
+		normalizedRegret, err = normalizedRegret.Sub(maxNormalizedRegret)
+		if err != nil {
+			return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error anchoring normalized regrets at zero")
+		}
+		normalizedRegret, err = normalizedRegret.Add(cMinus8Point25OverP)
+		if err != nil {
+			return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error adjusting anchored normalized regrets")
+		}
+	}
+
+	v17Point25OverP, err := alloraMath.MustNewDecFromString("17.25").Quo(pNorm)
+	if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower bound for regret normalization")
+	}
+	cMinus17Point25OverP, err := cNorm.Sub(v17Point25OverP)
+	if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating lower threshold for zero weight")
+	}
+
+	// if regretFrac < c - 17.25 / p, then weight = 0
+	if normalizedRegret.Lt(cMinus17Point25OverP) {
+		return alloraMath.ZeroDec(), nil
+	}
+
+	weight, err := alloraMath.Gradient(pNorm, cNorm, normalizedRegret) // w_ijk = φ'_p(\hatR_ijk)
+	if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "error calculating gradient")
+	}
+
+	return weight, nil
 }

@@ -54,10 +54,10 @@ func (b *NetworkInferenceBuilder) SetCombinedValue() *NetworkInferenceBuilder {
 // Map inferences to a WorkerAttributedValue array and set
 func (b *NetworkInferenceBuilder) SetInfererValues() *NetworkInferenceBuilder {
 	infererValues := make([]*emissions.WorkerAttributedValue, 0)
-	for _, inferer := range b.palette.inferers {
+	for _, inferer := range b.palette.Inferers {
 		infererValues = append(infererValues, &emissions.WorkerAttributedValue{
 			Worker: inferer,
-			Value:  b.palette.inferenceByWorker[inferer].Value,
+			Value:  b.palette.InferenceByWorker[inferer].Value,
 		})
 	}
 	b.inferences = infererValues
@@ -67,10 +67,10 @@ func (b *NetworkInferenceBuilder) SetInfererValues() *NetworkInferenceBuilder {
 // Map forecast-implied inferences to a WorkerAttributedValue array and set
 func (b *NetworkInferenceBuilder) SetForecasterValues() *NetworkInferenceBuilder {
 	forecastImpliedValues := make([]*emissions.WorkerAttributedValue, 0)
-	for _, forecaster := range b.palette.forecasters {
+	for _, forecaster := range b.palette.Forecasters {
 		forecastImpliedValues = append(forecastImpliedValues, &emissions.WorkerAttributedValue{
-			Worker: b.palette.forecastImpliedInferenceByWorker[forecaster].Inferer,
-			Value:  b.palette.forecastImpliedInferenceByWorker[forecaster].Value,
+			Worker: b.palette.ForecastImpliedInferenceByWorker[forecaster].Inferer,
+			Value:  b.palette.ForecastImpliedInferenceByWorker[forecaster].Value,
 		})
 	}
 	b.forecastImpliedInferences = forecastImpliedValues
@@ -81,7 +81,7 @@ func (b *NetworkInferenceBuilder) SetForecasterValues() *NetworkInferenceBuilder
 func (b *NetworkInferenceBuilder) SetNaiveValue() *NetworkInferenceBuilder {
 	palette := b.palette.Clone()
 
-	palette.forecasters = nil
+	palette.Forecasters = nil
 	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
 		b.ctx.Logger().Warn(fmt.Sprintf("Error calculating weights for naive inference: %s", err.Error()))
@@ -104,12 +104,12 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
-	for _, inferer := range palette.inferers {
+	for _, inferer := range palette.Inferers {
 		if inferer != withheldInferer {
 			remainingInferers = append(remainingInferers, inferer)
 		}
 	}
-	palette.inferers = remainingInferers // Override the inferers in the palette
+	palette.Inferers = remainingInferers // Override the inferers in the palette
 
 	// Recalculate the forecast-implied inferences without the worker's inference
 	// This is necessary because the forecast-implied inferences are calculated based on the inferences of the inferers
@@ -135,10 +135,10 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 func (b *NetworkInferenceBuilder) SetOneOutInfererValues() *NetworkInferenceBuilder {
 	// Calculate the one-out inferences per inferer
 	oneOutInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
-	for _, worker := range b.palette.inferers {
+	for _, worker := range b.palette.Inferers {
 		oneOutInference, err := b.calcOneOutInfererInference(worker)
 		if err != nil {
-			b.palette.ctx.Logger().Warn(fmt.Sprintf("Error calculating one-out inferer inferences: %s", err.Error()))
+			b.palette.Ctx.Logger().Warn(fmt.Sprintf("Error calculating one-out inferer inferences: %s", err.Error()))
 			b.oneOutInfererInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
 			return b
 		}
@@ -157,12 +157,12 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 	palette := b.palette.Clone()
 	// Remove the withheldForecaster from the palette's forecasters
 	remainingForecasters := make([]Worker, 0)
-	for _, forecaster := range palette.forecasters {
+	for _, forecaster := range palette.Forecasters {
 		if forecaster != withheldForecaster {
 			remainingForecasters = append(remainingForecasters, forecaster)
 		}
 	}
-	palette.forecasters = remainingForecasters // Override the forecasters in the palette
+	palette.Forecasters = remainingForecasters // Override the forecasters in the palette
 
 	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
@@ -183,10 +183,10 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 func (b *NetworkInferenceBuilder) SetOneOutForecasterValues() *NetworkInferenceBuilder {
 	// Calculate the one-out forecast-implied inferences per forecaster
 	oneOutImpliedInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
-	for _, worker := range b.palette.forecasters {
+	for _, worker := range b.palette.Forecasters {
 		oneOutInference, err := b.calcOneOutForecasterInference(worker)
 		if err != nil {
-			b.palette.ctx.Logger().Warn(fmt.Sprintf("Error calculating one-out forecaster inferences: %s", err.Error()))
+			b.palette.Ctx.Logger().Warn(fmt.Sprintf("Error calculating one-out forecaster inferences: %s", err.Error()))
 			b.oneOutForecasterInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
 			return b
 		}
@@ -205,20 +205,20 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 
 	// In each loop, remove all forecast-implied inferences except one
 	forecastImpliedInferencesWithForecaster := make(map[Worker]*emissions.Inference)
-	forecastImpliedInferencesWithForecaster[oneInForecaster] = palette.forecastImpliedInferenceByWorker[oneInForecaster]
-	palette.forecastImpliedInferenceByWorker = forecastImpliedInferencesWithForecaster
-	palette.forecasters = []Worker{oneInForecaster}
+	forecastImpliedInferencesWithForecaster[oneInForecaster] = palette.ForecastImpliedInferenceByWorker[oneInForecaster]
+	palette.ForecastImpliedInferenceByWorker = forecastImpliedInferencesWithForecaster
+	palette.Forecasters = []Worker{oneInForecaster}
 
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
-	for _, inferer := range palette.inferers {
+	for _, inferer := range palette.Inferers {
 		//
 		// TODO MULTIPLY BY INFERENCES + 1-EXTRA FORECAST-IMPLIED INFERENCES
 		//
-		regret, noPriorRegret, err := palette.k.GetOneInForecasterNetworkRegret(palette.ctx, palette.topicId, oneInForecaster, inferer)
+		regret, noPriorRegret, err := palette.K.GetOneInForecasterNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 		}
-		palette.forecasterRegrets[inferer] = StatefulRegret{
+		palette.ForecasterRegrets[inferer] = StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
@@ -245,7 +245,7 @@ func (b *NetworkInferenceBuilder) SetOneInValues() *NetworkInferenceBuilder {
 	// Loop over all forecast-implied inferences and set it as the only forecast-implied inference
 	// one at a time, then calculate the network inference given that one held out
 	oneInInferences := make([]*emissions.WorkerAttributedValue, 0)
-	for _, oneInForecaster := range b.palette.forecasters {
+	for _, oneInForecaster := range b.palette.Forecasters {
 		oneInValue, err := b.calcOneInValue(oneInForecaster)
 		if err != nil {
 			b.ctx.Logger().Warn(fmt.Sprintf("Error calculating one-in inferences: %s", err.Error()))
@@ -278,7 +278,7 @@ func (b *NetworkInferenceBuilder) CalcAndSetNetworkInferences() *NetworkInferenc
 func (b *NetworkInferenceBuilder) Build() *emissions.ValueBundle {
 	// Build value bundle to return all the calculated inferences
 	return &emissions.ValueBundle{
-		TopicId:                b.palette.topicId,
+		TopicId:                b.palette.TopicId,
 		CombinedValue:          b.combinedInference,
 		InfererValues:          b.inferences,
 		ForecasterValues:       b.forecastImpliedInferences,

@@ -12,32 +12,32 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) SynthPal
 
 	// Those values not from req are to be considered defaults
 	palette := SynthPalette{
-		ctx:                              req.Ctx,
-		k:                                req.K,
-		topicId:                          req.TopicId,
-		inferers:                         sortedInferers,
-		inferenceByWorker:                inferenceByWorker,
-		infererRegrets:                   make(map[string]StatefulRegret), // Populated below
-		forecasters:                      nil,                             // Populated below
-		forecastByWorker:                 forecastByWorker,
-		forecastImpliedInferenceByWorker: nil,                             // Populated below
-		forecasterRegrets:                make(map[string]StatefulRegret), // Populated below
-		allInferersAreNew:                true,                            // Populated below
-		allForecastersAreNew:             true,                            // Populated below
-		allWorkersAreNew:                 true,                            // Populated below
-		networkCombinedLoss:              req.NetworkCombinedLoss,
-		epsilon:                          req.Epsilon,
-		pNorm:                            req.PNorm,
-		cNorm:                            req.CNorm,
+		Ctx:                              req.Ctx,
+		K:                                req.K,
+		TopicId:                          req.TopicId,
+		Inferers:                         sortedInferers,
+		InferenceByWorker:                inferenceByWorker,
+		InfererRegrets:                   make(map[string]StatefulRegret), // Populated below
+		Forecasters:                      nil,                             // Populated below
+		ForecastByWorker:                 forecastByWorker,
+		ForecastImpliedInferenceByWorker: nil,                             // Populated below
+		ForecasterRegrets:                make(map[string]StatefulRegret), // Populated below
+		AllInferersAreNew:                true,                            // Populated below
+		AllForecastersAreNew:             true,                            // Populated below
+		AllWorkersAreNew:                 true,                            // Populated below
+		NetworkCombinedLoss:              req.NetworkCombinedLoss,
+		Epsilon:                          req.Epsilon,
+		PNorm:                            req.PNorm,
+		CNorm:                            req.CNorm,
 	}
 
 	// Populates: forecastImpliedInferenceByWorker, forecasters
 	palette.UpdateForecastImpliedInferences()
-	palette.forecasters = alloraMath.GetSortedKeys(palette.forecastImpliedInferenceByWorker)
+	palette.Forecasters = alloraMath.GetSortedKeys(palette.ForecastImpliedInferenceByWorker)
 
 	// Populates: infererRegrets, forecasterRegrets, allInferersAreNew, allForecastersAreNew
 	palette.BootstrapRegretData()
-	palette.allWorkersAreNew = palette.allInferersAreNew && palette.allForecastersAreNew
+	palette.AllWorkersAreNew = palette.AllInferersAreNew && palette.AllForecastersAreNew
 
 	return palette
 }

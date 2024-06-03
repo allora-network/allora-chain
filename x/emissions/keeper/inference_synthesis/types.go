@@ -50,29 +50,29 @@ type SynthRequest struct {
 type SynthPaletteFactory struct{}
 
 type SynthPalette struct {
-	ctx     sdk.Context
-	k       keeper.Keeper
-	topicId TopicId
+	Ctx     sdk.Context
+	K       keeper.Keeper
+	TopicId TopicId
 	// Should use this as a source of truth regarding for which inferers to have data calculated
 	// i.e. if an inferer is not present here, calculate a network inference without their data
 	// Must be unique values
-	inferers          []Worker
-	inferenceByWorker map[Worker]*emissions.Inference
+	Inferers          []Worker
+	InferenceByWorker map[Worker]*emissions.Inference
 	// Must respect the order of sister `inferers` property
-	infererRegrets map[Worker]StatefulRegret
+	InfererRegrets map[Worker]StatefulRegret
 	// Should use this as a source of truth regarding for which forecasters to have data calculated
 	// i.e. if an forecaster is not present here, calculate a network inference without their data
 	// Must be unique values
-	forecasters                      []Worker
-	forecastByWorker                 map[Worker]*emissions.Forecast
-	forecastImpliedInferenceByWorker map[Worker]*emissions.Inference
+	Forecasters                      []Worker
+	ForecastByWorker                 map[Worker]*emissions.Forecast
+	ForecastImpliedInferenceByWorker map[Worker]*emissions.Inference
 	// Must respect the order of sister `forecasters` property
-	forecasterRegrets    map[Worker]StatefulRegret
-	allInferersAreNew    bool
-	allForecastersAreNew bool
-	allWorkersAreNew     bool // Simple conjunction of the two above
-	networkCombinedLoss  Loss
-	epsilon              alloraMath.Dec
-	pNorm                alloraMath.Dec
-	cNorm                alloraMath.Dec
+	ForecasterRegrets    map[Worker]StatefulRegret
+	AllInferersAreNew    bool
+	AllForecastersAreNew bool
+	AllWorkersAreNew     bool // Simple conjunction of the two above
+	NetworkCombinedLoss  Loss
+	Epsilon              alloraMath.Dec
+	PNorm                alloraMath.Dec
+	CNorm                alloraMath.Dec
 }
