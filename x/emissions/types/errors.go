@@ -63,4 +63,5 @@ var (
 	ErrValidationVersionTooLong                 = errors.Register(ModuleName, 59, "version length cannot exceed 32 characters")
 	ErrValidationMustBeBetweenZeroAndOne        = errors.Register(ModuleName, 61, "value must be between 0 and 1")
 	ErrValidationMustBeGreaterthanZero          = errors.Register(ModuleName, 62, "value must be greater than 0")
+	ErrEmptyArray                               = errors.Register(ModuleName, 63, "empty array")
 )

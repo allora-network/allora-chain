@@ -98,6 +98,7 @@ func GetNetworkInferencesAtBlock(
 				Forecasts:           forecasts,
 				NetworkCombinedLoss: networkCombinedLoss,
 				Epsilon:             moduleParams.Epsilon,
+				FTolerance:          moduleParams.FTolerance,
 				PNorm:               topic.PNorm,
 				CNorm:               moduleParams.CNorm,
 			},

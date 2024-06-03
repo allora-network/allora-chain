@@ -16,7 +16,7 @@ func (p *SynthPalette) BootstrapRegretData() error {
 		}
 
 		p.AllInferersAreNew = p.AllInferersAreNew && noPriorRegret
-		p.InfererRegrets[inferer] = StatefulRegret{
+		p.InfererRegrets[inferer] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
@@ -30,7 +30,7 @@ func (p *SynthPalette) BootstrapRegretData() error {
 		}
 
 		p.AllForecastersAreNew = p.AllForecastersAreNew && noPriorRegret
-		p.ForecasterRegrets[forecaster] = StatefulRegret{
+		p.ForecasterRegrets[forecaster] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
@@ -54,11 +54,11 @@ func (p SynthPalette) Clone() SynthPalette {
 		inferenceCopy := *v
 		forecastImpliedInferenceByWorker[k] = &inferenceCopy
 	}
-	infererRegrets := make(map[Worker]StatefulRegret, len(p.InfererRegrets))
+	infererRegrets := make(map[Worker]*StatefulRegret, len(p.InfererRegrets))
 	for k, v := range p.InfererRegrets {
 		infererRegrets[k] = v
 	}
-	forecasterRegrets := make(map[Worker]StatefulRegret, len(p.ForecasterRegrets))
+	forecasterRegrets := make(map[Worker]*StatefulRegret, len(p.ForecasterRegrets))
 	for k, v := range p.ForecasterRegrets {
 		forecasterRegrets[k] = v
 	}
@@ -78,6 +78,7 @@ func (p SynthPalette) Clone() SynthPalette {
 		AllWorkersAreNew:                 p.AllWorkersAreNew,
 		NetworkCombinedLoss:              p.NetworkCombinedLoss,
 		Epsilon:                          p.Epsilon,
+		FTolerance:                       p.FTolerance,
 		PNorm:                            p.PNorm,
 		CNorm:                            p.CNorm,
 	}

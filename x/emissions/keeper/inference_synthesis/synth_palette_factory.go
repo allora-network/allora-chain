@@ -17,16 +17,17 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) SynthPal
 		TopicId:                          req.TopicId,
 		Inferers:                         sortedInferers,
 		InferenceByWorker:                inferenceByWorker,
-		InfererRegrets:                   make(map[string]StatefulRegret), // Populated below
-		Forecasters:                      nil,                             // Populated below
+		InfererRegrets:                   make(map[string]*StatefulRegret), // Populated below
+		Forecasters:                      nil,                              // Populated below
 		ForecastByWorker:                 forecastByWorker,
-		ForecastImpliedInferenceByWorker: nil,                             // Populated below
-		ForecasterRegrets:                make(map[string]StatefulRegret), // Populated below
-		AllInferersAreNew:                true,                            // Populated below
-		AllForecastersAreNew:             true,                            // Populated below
-		AllWorkersAreNew:                 true,                            // Populated below
+		ForecastImpliedInferenceByWorker: nil,                              // Populated below
+		ForecasterRegrets:                make(map[string]*StatefulRegret), // Populated below
+		AllInferersAreNew:                true,                             // Populated below
+		AllForecastersAreNew:             true,                             // Populated below
+		AllWorkersAreNew:                 true,                             // Populated below
 		NetworkCombinedLoss:              req.NetworkCombinedLoss,
 		Epsilon:                          req.Epsilon,
+		FTolerance:                       req.FTolerance,
 		PNorm:                            req.PNorm,
 		CNorm:                            req.CNorm,
 	}

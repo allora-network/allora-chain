@@ -1,6 +1,8 @@
 package inference_synthesis
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -15,7 +17,7 @@ import (
 //
 // Requires: forecasts, inferenceByWorker, allInferersAreNew, networkCombinedLoss, epsilon, pNorm, cNorm
 // Updates: forecastImpliedInferenceByWorker
-func (p SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstypes.Inference, error) {
+func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstypes.Inference, error) {
 	// "k" here is the forecaster's address
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
 	I_i := make(map[Worker]*emissionstypes.Inference, len(p.Forecasters))
@@ -62,7 +64,7 @@ func (p SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstype
 
 				// Approximate forecast regrets of the network inference
 				// Map inferer -> regret
-				R_ik := make(map[Worker]StatefulRegret, len(forecastElementsByInferer))
+				R_ik := make(map[Worker]*StatefulRegret, len(forecastElementsByInferer))
 				// Forecast-regret-informed weights dot product with inferences to yield forecast-implied inferences
 				// Map inferer -> weight
 				w_ik := make(map[Worker]Weight, len(forecastElementsByInferer))
@@ -75,10 +77,15 @@ func (p SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstype
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating network loss per value")
 					}
-					R_ik[j] = StatefulRegret{regret: R_ijk, noPriorRegret: false}
+					R_ik[j] = &StatefulRegret{regret: R_ijk, noPriorRegret: false}
 				}
 
-				weights, err := p.CalcWeightsWithForecastedRegretOverride(sortedInferersInForecast, R_ik)
+				if sortedInferersInForecast != nil && len(sortedInferersInForecast) > 0 {
+					p.InfererRegrets = R_ik
+					p.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
+				}
+
+				weights, err := p.CalcWeightsGivenWorkers()
 				if err != nil {
 					return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 				}
@@ -103,6 +110,8 @@ func (p SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstype
 					}
 				}
 			}
+			fmt.Println("weightSum :::", weightSum)
+			fmt.Println("weightInferenceDotProduct :::", weightInferenceDotProduct)
 
 			forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
 			if err != nil {

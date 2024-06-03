@@ -43,6 +43,7 @@ type SynthRequest struct {
 	Forecasts           *emissions.Forecasts
 	NetworkCombinedLoss Loss
 	Epsilon             alloraMath.Dec
+	FTolerance          alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }
@@ -59,7 +60,7 @@ type SynthPalette struct {
 	Inferers          []Worker
 	InferenceByWorker map[Worker]*emissions.Inference
 	// Must respect the order of sister `inferers` property
-	InfererRegrets map[Worker]StatefulRegret
+	InfererRegrets map[Worker]*StatefulRegret
 	// Should use this as a source of truth regarding for which forecasters to have data calculated
 	// i.e. if an forecaster is not present here, calculate a network inference without their data
 	// Must be unique values
@@ -67,12 +68,13 @@ type SynthPalette struct {
 	ForecastByWorker                 map[Worker]*emissions.Forecast
 	ForecastImpliedInferenceByWorker map[Worker]*emissions.Inference
 	// Must respect the order of sister `forecasters` property
-	ForecasterRegrets    map[Worker]StatefulRegret
+	ForecasterRegrets    map[Worker]*StatefulRegret
 	AllInferersAreNew    bool
 	AllForecastersAreNew bool
 	AllWorkersAreNew     bool // Simple conjunction of the two above
 	NetworkCombinedLoss  Loss
 	Epsilon              alloraMath.Dec
+	FTolerance           alloraMath.Dec
 	PNorm                alloraMath.Dec
 	CNorm                alloraMath.Dec
 }

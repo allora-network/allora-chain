@@ -215,7 +215,7 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 		}
-		palette.InfererRegrets[inferer] = StatefulRegret{
+		palette.InfererRegrets[inferer] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
@@ -224,7 +224,7 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 	}
-	palette.ForecasterRegrets[oneInForecaster] = StatefulRegret{
+	palette.ForecasterRegrets[oneInForecaster] = &StatefulRegret{
 		regret:        regret.Value,
 		noPriorRegret: noPriorRegret,
 	}
