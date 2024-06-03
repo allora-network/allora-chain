@@ -72,7 +72,7 @@ func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			result := inference_synthesis.MakeMapFromWorkerToTheirWork(tc.inferences)
+			result := inference_synthesis.MakeMapFromInfererToTheirInference(tc.inferences)
 			assert.True(t, reflect.DeepEqual(result, tc.expected), "Expected and actual maps should be equal")
 		})
 	}
@@ -123,7 +123,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcTheStdDevOfRegretsAmongWorkersWith
 	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker4, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.5")})
 	s.Require().NoError(err)
 
-	stdDevRegrets, err := inference_synthesis.CalcTheStdDevOfRegretsAmongWorkersWithLosses(
+	stdDevRegrets, err := inference_synthesis.CalcStdDevOfRegrets(
 		ctx,
 		k,
 		topicId,

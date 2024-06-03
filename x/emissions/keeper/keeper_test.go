@@ -1973,7 +1973,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	newTopic := types.Topic{Id: topicId}
 	err := keeper.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
-	err = keeper.DripTopicFeeRevenue(ctx, topicId, block)
+	err = keeper.DropTopicFeeRevenue(ctx, topicId, block)
 	s.Require().NoError(err, "Resetting topic fee revenue should not fail")
 
 	// Add initial revenue in the first epoch
