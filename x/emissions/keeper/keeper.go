@@ -152,8 +152,10 @@ type Keeper struct {
 	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other forecasters
 	latestForecasterNetworkRegrets collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
 	// map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
-	// all network inferer losses L_ij including the network forecast-implied inference L_ik^* of the forecaster
+	// all network inferer (3rd index) regrets L_ij made under the regime of the one-in forecaster (2nd index)
 	latestOneInForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	// the forecaster (2nd index) regrets made under the regime of the same forecaster as a one-in forecaster
+	latestOneInForecasterSelfNetworkRegrets collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
 
 	/// WHITELISTS
 
@@ -207,6 +209,7 @@ func NewKeeper(
 		latestInfererNetworkRegrets:              collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestForecasterNetworkRegrets:           collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneInForecasterNetworkRegrets:      collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestOneInForecasterSelfNetworkRegrets:  collections.NewMap(sb, types.OneInForecasterSelfNetworkRegretsKey, "one_in_forecaster_self_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
 		whitelistAdmins:                          collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
 		infererScoresByBlock:                     collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		forecasterScoresByBlock:                  collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
@@ -456,6 +459,11 @@ func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
+func (k *Keeper) SetOneInForecasterSelfNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, regret types.TimestampedValue) error {
+	key := collections.Join(topicId, forecaster)
+	return k.latestOneInForecasterSelfNetworkRegrets.Set(ctx, key, regret)
+}
+
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
@@ -495,6 +503,21 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
 	key := collections.Join3(topicId, forecaster, inferer)
 	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.TimestampedValue{
+				BlockHeight: 0,
+				Value:       alloraMath.NewDecFromInt64(0),
+			}, true, nil
+		}
+		return types.TimestampedValue{}, false, err
+	}
+	return regret, false, nil
+}
+
+func (k *Keeper) GetOneInForecasterSelfNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join(topicId, forecaster)
+	regret, err := k.latestOneInForecasterSelfNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.TimestampedValue{
