@@ -23,8 +23,12 @@ func NewMsgServerImpl(k Keeper) types.MsgServer {
 
 // UpdateParams updates the params.
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	if ms.authority != msg.Authority {
-		return nil, errors.Wrapf(types.ErrInvalidSigner, "invalid authority; expected %s, got %s", ms.authority, msg.Authority)
+	isAdmin, err := ms.IsWhitelistAdmin(ctx, msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, errors.Wrapf(types.ErrUnauthorized, " %s not whitelist admin for mint update params", msg.Sender)
 	}
 
 	if err := msg.Params.Validate(); err != nil {
