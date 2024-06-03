@@ -36,15 +36,15 @@ type RegretInformedWeights struct {
 }
 
 type SynthRequest struct {
-	ctx                 sdk.Context
-	k                   keeper.Keeper
-	topicId             TopicId
-	inferences          *emissions.Inferences
-	forecasts           *emissions.Forecasts
-	networkCombinedLoss Loss
-	epsilon             alloraMath.Dec
-	pNorm               alloraMath.Dec
-	cNorm               alloraMath.Dec
+	Ctx                 sdk.Context
+	K                   keeper.Keeper
+	TopicId             TopicId
+	Inferences          *emissions.Inferences
+	Forecasts           *emissions.Forecasts
+	NetworkCombinedLoss Loss
+	Epsilon             alloraMath.Dec
+	PNorm               alloraMath.Dec
+	CNorm               alloraMath.Dec
 }
 
 type SynthPaletteFactory struct{}
