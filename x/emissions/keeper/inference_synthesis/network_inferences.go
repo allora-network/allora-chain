@@ -89,7 +89,7 @@ func GetNetworkInferencesAtBlock(
 			ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 			return networkInferences, nil
 		}
-		builder := newNetworkInferenceValueBundleBuilderFromSynthRequest(SynthRequest{
+		builder := newNetworkInferenceVbBuilderFromSynthRequest(SynthRequest{
 			ctx:                 ctx,
 			k:                   k,
 			topicId:             topicId,

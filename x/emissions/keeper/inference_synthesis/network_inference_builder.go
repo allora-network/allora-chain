@@ -20,7 +20,7 @@ type NetworkInferenceVbBuilder struct {
 	oneInInferences            []*emissions.WorkerAttributedValue
 }
 
-func newNetworkInferenceValueBundleBuilderFromSynthRequest(
+func newNetworkInferenceVbBuilderFromSynthRequest(
 	req SynthRequest,
 ) *NetworkInferenceVbBuilder {
 	paletteFactory := SynthPaletteFactory{}
