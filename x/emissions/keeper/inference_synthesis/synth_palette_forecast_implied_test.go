@@ -34,7 +34,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
 		regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
 		maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
 
-		weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm)
+		weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, cNorm, pNorm)
 		s.Require().NoError(err)
 
 		testutil.InEpsilon5(s.T(), weight, tc.expectedWeight)
