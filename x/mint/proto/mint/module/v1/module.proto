@@ -11,5 +11,4 @@ message Module {
   };
 
   string fee_collector_name = 1;
-
 }
