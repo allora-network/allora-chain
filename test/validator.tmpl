@@ -9,7 +9,7 @@
       - ${LOCALNET_DATADIR}:/data
     user: "${UID_GID}"
     entrypoint:
-      - "cosmovisor"
+      - cosmovisor
     command:
       - run 
       - --home=/data/${moniker}
