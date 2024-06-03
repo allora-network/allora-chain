@@ -36,13 +36,13 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	}
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
-	for i, worker := range p.Forecasters {
+	for _, worker := range p.Forecasters {
 		regretFrac, err := p.ForecasterRegrets[worker].regret.Quo(stdDevRegretsPlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
 		normalizedForecasterRegrets[worker] = regretFrac
-		if i == 0 || regretFrac.Gt(maxRegret) {
+		if regretFrac.Gt(maxRegret) {
 			maxRegret = regretFrac
 		}
 	}

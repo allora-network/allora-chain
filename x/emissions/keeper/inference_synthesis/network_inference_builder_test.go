@@ -276,8 +276,8 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
 			Forecasts:           forecasts,
 			NetworkCombinedLoss: epoch2Get("network_loss"),
 			Epsilon:             alloraMath.MustNewDecFromString("0.001"),
-			PNorm:               alloraMath.MustNewDecFromString("0.75"),
-			CNorm:               alloraMath.MustNewDecFromString("3.0"),
+			PNorm:               alloraMath.MustNewDecFromString("3.0"),
+			CNorm:               alloraMath.MustNewDecFromString("0.75"),
 		},
 	)
 	require.NoError(s.T(), err)
