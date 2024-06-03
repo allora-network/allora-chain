@@ -177,10 +177,8 @@ func (p *SynthPalette) weightAccumulator(
 ) (alloraMath.Dec, alloraMath.Dec, error) {
 	err := error(nil)
 
-	//
-	// !!!! AHHHHH see below !!!!!
-	//
-	// If there is no prior regret and there is at least 1 non-new forecaster => skip this forecaster (set weight=0)
+	// If there is no prior regret and there is at least 1 worker of the same type (inferer/forecaster)
+	// already with a reget => skip this worker (set weight=0)
 	if noPriorRegret && !allPeersAreNew {
 		return runningUnnormalizedI_i, sumWeights, nil
 	}
@@ -268,85 +266,3 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	}
 	return ret, nil
 }
-
-// func GetRegretsThenMapToWeights(
-// 	inferers []Worker,
-// 	forecasters []Worker,
-// 	epsilon alloraMath.Dec,
-// 	pNorm alloraMath.Dec,
-// 	cNorm alloraMath.Dec,
-// ) (RegretInformedWeights, error) {
-// 	// Calc std dev of regrets + epsilon
-// 	// σ(R_ijk) + ε
-// 	stdDevRegrets, err := alloraMath.StdDev(append(infererRegrets, forecasterRegrets...))
-// 	if err != nil {
-// 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
-// 	}
-// 	// Add epsilon to standard deviation
-// 	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(epsilon)
-// 	if err != nil {
-// 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of regrets")
-// 	}
-
-// 	// Normalize the regrets and find the max normalized regret among them
-
-// 	normalizedInfererRegrets := make(map[Worker]Regret)
-// 	maxRegret := alloraMath.ZeroDec()
-// 	for i, worker := range inferers {
-// 		regretFrac, err := infererRegrets[i].Quo(stdDevRegretsPlusEpsilon)
-// 		if err != nil {
-// 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
-// 		}
-// 		normalizedInfererRegrets[worker] = regretFrac
-// 		if i == 0 || regretFrac.Gt(maxRegret) {
-// 			maxRegret = regretFrac
-// 		}
-// 	}
-
-// 	normalizedForecasterRegrets := make(map[Worker]Regret)
-// 	for i, worker := range forecasters {
-// 		regretFrac, err := forecasterRegrets[i].Quo(stdDevRegretsPlusEpsilon)
-// 		if err != nil {
-// 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
-// 		}
-// 		normalizedForecasterRegrets[worker] = regretFrac
-// 		if i == 0 || regretFrac.Gt(maxRegret) {
-// 			maxRegret = regretFrac
-// 		}
-// 	}
-
-// 	// Calculate the weights from the normalized regrets
-
-// 	infererWeights := make(map[Worker]Weight)
-// 	for _, worker := range inferers {
-// 		infererWeight, err := CalcWeightFromNormalizedRegret(
-// 			normalizedInfererRegrets[worker],
-// 			maxRegret,
-// 			pNorm,
-// 			cNorm,
-// 		)
-// 		if err != nil {
-// 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
-// 		}
-// 		infererWeights[worker] = infererWeight
-// 	}
-
-// 	forecasterWeights := make(map[Worker]Weight)
-// 	for _, worker := range forecasters {
-// 		forecasterWeight, err := CalcWeightFromNormalizedRegret(
-// 			normalizedForecasterRegrets[worker],
-// 			maxRegret,
-// 			pNorm,
-// 			cNorm,
-// 		)
-// 		if err != nil {
-// 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
-// 		}
-// 		forecasterWeights[worker] = forecasterWeight
-// 	}
-
-// 	return RegretInformedWeights{
-// 		inferers:    infererWeights,
-// 		forecasters: forecasterWeights,
-// 	}, nil
-// }
