@@ -18,7 +18,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inferencesynthesis"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -150,7 +150,7 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
 
 	// SET EPOCH 2 VALUES IN THE SYSTEM
 	infererNetworkRegrets :=
-		map[string]inference_synthesis.Regret{
+		map[string]inferencesynthesis.Regret{
 			"worker0": epoch2Get("inference_regret_worker_0"),
 			"worker1": epoch2Get("inference_regret_worker_1"),
 			"worker2": epoch2Get("inference_regret_worker_2"),
@@ -167,7 +167,7 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
 		)
 	}
 
-	forecasterNetworkRegrets := map[string]inference_synthesis.Regret{
+	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
 		"forecaster0": epoch2Get("inference_regret_worker_5"),
 		"forecaster1": epoch2Get("inference_regret_worker_6"),
 		"forecaster2": epoch2Get("inference_regret_worker_7"),
@@ -267,8 +267,8 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
 		})
 	}
 
-	networkInferenceBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferenceBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
 			TopicId:             topicId,
@@ -358,8 +358,8 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferences() {
 
 	// Call the function
 
-	networkInferenceBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferenceBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
 			TopicId:             topicId,
@@ -429,8 +429,8 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesSameInfererForec
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
-	networkInferenceBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferenceBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
 			TopicId:             topicId,
@@ -473,8 +473,8 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesSameInfererForec
 	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker2, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
 	s.Require().NoError(err)
 
-	networkInferenceBuilder = inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferenceBuilder = inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
 			TopicId:             topicId,
@@ -545,8 +545,8 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
 	// Call the function without setting regrets
-	networkInferenceBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferenceBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
 			TopicId:             topicId,
@@ -635,8 +635,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
 	s.Require().NoError(err)
 
-	networkInferenceBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferenceBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
 			TopicId:             topicId,
@@ -755,8 +755,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster3, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.6")})
 	s.Require().NoError(err)
 
-	networkInferenceBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferenceBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
 			TopicId:             topicId,
@@ -782,7 +782,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 
 /*
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1() {
-	topicId := inference_synthesis.TopicId(1)
+	topicId := inferencesynthesis.TopicId(1)
 	ctx := s.ctx
 	k := s.emissionsKeeper
 
@@ -806,12 +806,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
-	infererNetworkRegrets := map[string]inference_synthesis.Regret{
+	infererNetworkRegrets := map[string]inferencesynthesis.Regret{
 		"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
 		"worker1": alloraMath.MustNewDecFromString("0.910174442412618"),
 		"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
 	}
-	forecasterNetworkRegrets := map[string]inference_synthesis.Regret{
+	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
 		"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
 		"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
 		"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
@@ -836,8 +836,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 		)
 	}
 
-	networkInferecesBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferecesBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
 			TopicId:             topicId,
@@ -850,7 +850,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 		},
 	)
 
-	networkCombinedInferenceValue, err := inference_synthesis.CalcWeightedInference(
+	networkCombinedInferenceValue, err := inferencesynthesis.CalcWeightedInference(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -882,7 +882,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation1(
 
 /*
 func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2() {
-	topicId := inference_synthesis.TopicId(1)
+	topicId := inferencesynthesis.TopicId(1)
 
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("-0.14361768314408600")},
@@ -898,12 +898,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 	pNorm := alloraMath.NewDecFromInt64(2)
 	cNorm := alloraMath.MustNewDecFromString("0.75")
-	infererNetworkRegrets := map[string]inference_synthesis.Regret{
+	infererNetworkRegrets := map[string]inferencesynthesis.Regret{
 		"worker0": alloraMath.MustNewDecFromString("0.5576393860961080"),
 		"worker1": alloraMath.MustNewDecFromString("0.8588215562008240"),
 		"worker2": alloraMath.MustNewDecFromString("0.9737035757621540"),
 	}
-	forecasterNetworkRegrets := map[string]inference_synthesis.Regret{
+	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
 		"worker3": alloraMath.MustNewDecFromString("0.7535724745797420"),
 		"worker4": alloraMath.MustNewDecFromString("0.7658774622830770"),
 		"worker5": alloraMath.MustNewDecFromString("0.7185104293863190"),
@@ -928,7 +928,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 		)
 	}
 
-	networkCombinedInferenceValue, err := inference_synthesis.CalcWeightedInference(
+	networkCombinedInferenceValue, err := inferencesynthesis.CalcWeightedInference(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -959,7 +959,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightedInferenceNormalOperation2(
 */
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() {
-	topicId := inference_synthesis.TopicId(1)
+	topicId := inferencesynthesis.TopicId(1)
 
 	inferences := emissionstypes.Inferences{
 		Inferences: []*emissionstypes.Inference{
@@ -1004,12 +1004,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 			},
 		},
 	}
-	infererNetworkRegrets := map[string]inference_synthesis.Regret{
+	infererNetworkRegrets := map[string]inferencesynthesis.Regret{
 		"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
 		"worker1": alloraMath.MustNewDecFromString("0.9101744424126180"),
 		"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
 	}
-	forecasterNetworkRegrets := map[string]inference_synthesis.Regret{
+	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
 		"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
 		"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
 		"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
@@ -1039,8 +1039,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 		)
 	}
 
-	networkInferenceBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferenceBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 s.ctx,
 			K:                   s.emissionsKeeper,
 			TopicId:             topicId,
@@ -1107,7 +1107,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferencesMultipleWorkers() 
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecasters() {
-	topicId := inference_synthesis.TopicId(1)
+	topicId := inferencesynthesis.TopicId(1)
 
 	inferences := emissionstypes.Inferences{
 		Inferences: []*emissionstypes.Inference{
@@ -1164,14 +1164,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 	}
 	// epoch 2
 	infererNetworkRegrets :=
-		map[string]inference_synthesis.Regret{
+		map[string]inferencesynthesis.Regret{
 			"worker0": alloraMath.MustNewDecFromString("0.29240710390153500"),
 			"worker1": alloraMath.MustNewDecFromString("0.4182220944854450"),
 			"worker2": alloraMath.MustNewDecFromString("0.17663501719135000"),
 			"worker3": alloraMath.MustNewDecFromString("0.49617463489106400"),
 			"worker4": alloraMath.MustNewDecFromString("0.27996060999688600"),
 		}
-	forecasterNetworkRegrets := map[string]inference_synthesis.Regret{
+	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
 		"forecaster0": alloraMath.MustNewDecFromString("0.816066375505268"),
 		"forecaster1": alloraMath.MustNewDecFromString("0.8234558901838660"),
 		"forecaster2": alloraMath.MustNewDecFromString("0.8196673550408280"),
@@ -1202,8 +1202,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 		)
 	}
 
-	networkInferenceBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-		inference_synthesis.SynthRequest{
+	networkInferenceBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+		inferencesynthesis.SynthRequest{
 			Ctx:                 s.ctx,
 			K:                   s.emissionsKeeper,
 			TopicId:             topicId,
@@ -1271,18 +1271,18 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneOutInferences5Workers3Forecaste
 
 /*
 func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
-	topicId := inference_synthesis.TopicId(1)
+	topicId := inferencesynthesis.TopicId(1)
 
 	tests := []struct {
 		name                        string
 		inferences                  emissionstypes.Inferences
 		forecastImpliedInferences   map[string]*emissionstypes.Inference
-		maxRegretsByOneInForecaster map[string]inference_synthesis.Regret
+		maxRegretsByOneInForecaster map[string]inferencesynthesis.Regret
 		epsilon                     alloraMath.Dec
 		pNorm                       alloraMath.Dec
 		cNorm                       alloraMath.Dec
-		infererNetworkRegrets       map[string]inference_synthesis.Regret
-		forecasterNetworkRegrets    map[string]inference_synthesis.Regret
+		infererNetworkRegrets       map[string]inferencesynthesis.Regret
+		forecasterNetworkRegrets    map[string]inferencesynthesis.Regret
 		expectedOneInInferences     []*emissionstypes.WorkerAttributedValue
 		expectedErr                 error
 	}{
@@ -1300,7 +1300,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				"worker4": {Value: alloraMath.MustNewDecFromString("-0.0646463841210426")},
 				"worker5": {Value: alloraMath.MustNewDecFromString("-0.0634099113416666")},
 			},
-			maxRegretsByOneInForecaster: map[string]inference_synthesis.Regret{
+			maxRegretsByOneInForecaster: map[string]inferencesynthesis.Regret{
 				"worker3": alloraMath.MustNewDecFromString("0.9871536722074480"),
 				"worker4": alloraMath.MustNewDecFromString("0.9871536722074480"),
 				"worker5": alloraMath.MustNewDecFromString("0.9871536722074480"),
@@ -1308,12 +1308,12 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 			epsilon: alloraMath.MustNewDecFromString("0.0001"),
 			pNorm:   alloraMath.MustNewDecFromString("2.0"),
 			cNorm:   alloraMath.MustNewDecFromString("0.75"),
-			infererNetworkRegrets: map[string]inference_synthesis.Regret{
+			infererNetworkRegrets: map[string]inferencesynthesis.Regret{
 				"worker0": alloraMath.MustNewDecFromString("0.6975029322458370"),
 				"worker1": alloraMath.MustNewDecFromString("0.9101744424126180"),
 				"worker2": alloraMath.MustNewDecFromString("0.9871536722074480"),
 			},
-			forecasterNetworkRegrets: map[string]inference_synthesis.Regret{
+			forecasterNetworkRegrets: map[string]inferencesynthesis.Regret{
 				"worker3": alloraMath.MustNewDecFromString("0.8308330665491310"),
 				"worker4": alloraMath.MustNewDecFromString("0.8396961220162480"),
 				"worker5": alloraMath.MustNewDecFromString("0.8017696138115460"),
@@ -1347,8 +1347,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 				)
 			}
 
-			networkInferenceBuilder := inference_synthesis.NewNetworkInferenceBuilderFromSynthRequest(
-				inference_synthesis.SynthRequest{
+			networkInferenceBuilder := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+				inferencesynthesis.SynthRequest{
 					Ctx:                 s.ctx,
 					K:                   s.emissionsKeeper,
 					TopicId:             topicId,
@@ -1362,7 +1362,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcOneInInferences() {
 			)
 			valueBundle := networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
 
-			oneInInferences, err := inference_synthesis.CalcOneInInferences(
+			oneInInferences, err := inferencesynthesis.CalcOneInInferences(
 				s.ctx,
 				s.emissionsKeeper,
 				topicId,
