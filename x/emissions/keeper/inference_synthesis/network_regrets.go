@@ -151,9 +151,10 @@ func GetCalcSetNetworkRegrets(
 	for _, oneInForecasterLoss := range networkLosses.OneInForecasterValues {
 		// Loop over the inferer losses so that their losses may be compared against the one-in forecaster's loss, for each forecaster
 		for _, infererLoss := range networkLosses.InfererValues {
-			if infererLoss.Worker == oneInForecasterLoss.Worker {
-				continue
-			}
+			// TODO
+			// if infererLoss.Worker == oneInForecasterLoss.Worker {
+			// 	continue
+			// }
 			lastRegret, noPriorRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-in forecaster regret")

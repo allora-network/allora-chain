@@ -193,6 +193,9 @@ func (b *NetworkInferenceVbBuilder) calcOneInValue(oneInForecaster Worker) (allo
 
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
 	for _, inferer := range b.palette.inferers {
+		//
+		// TODO MULTIPLY BY INFERENCES + 1-EXTRA FORECAST-IMPLIED INFERENCES
+		//
 		regret, noPriorRegret, err := b.palette.k.GetOneInForecasterNetworkRegret(b.palette.ctx, b.palette.topicId, oneInForecaster, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")

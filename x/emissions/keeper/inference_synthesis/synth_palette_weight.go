@@ -89,6 +89,9 @@ func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
 // Given the current set of inferers and forecasters in the palette, calculate their
 // weights using the current regrets
 func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) {
+	//
+	// TODO make dependent on inferers/forecasters
+	//
 	// Calc std dev of regrets + epsilon
 	// σ(R_ijk) + ε
 	stdDevRegrets, err := alloraMath.StdDev(append(p.GetInfererRegretsSlice(), p.GetForecasterRegretsSlice()...))
