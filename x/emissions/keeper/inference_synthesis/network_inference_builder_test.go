@@ -135,23 +135,27 @@ func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(InferenceSynthesisTestSuite))
 }
 
-func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() *emissionstypes.ValueBundle {
+func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
+	*emissionstypes.ValueBundle,
+	map[int]func(header string) alloraMath.Dec,
+) {
 	k := s.emissionsKeeper
 	ctx := s.ctx
 	topicId := uint64(1)
 	blockHeight := int64(1)
 
-	epoch2Get := GetSimulatedValuesGetterForEpoch(2)
-	epoch3Get := GetSimulatedValuesGetterForEpoch(3)
+	epochGet := GetSimulatedValuesGetterForEpochs()
+	epoch2Get := epochGet[2]
+	epoch3Get := epochGet[2]
 
 	// SET EPOCH 2 VALUES IN THE SYSTEM
 	infererNetworkRegrets :=
 		map[string]inference_synthesis.Regret{
-			"worker0": epoch2Get("inference_regret_worker0"),
-			"worker1": epoch2Get("inference_regret_worker1"),
-			"worker2": epoch2Get("inference_regret_worker2"),
-			"worker3": epoch2Get("inference_regret_worker3"),
-			"worker4": epoch2Get("inference_regret_worker4"),
+			"worker0": epoch2Get("inference_regret_worker_0"),
+			"worker1": epoch2Get("inference_regret_worker_1"),
+			"worker2": epoch2Get("inference_regret_worker_2"),
+			"worker3": epoch2Get("inference_regret_worker_3"),
+			"worker4": epoch2Get("inference_regret_worker_4"),
 		}
 
 	for inferer, regret := range infererNetworkRegrets {
@@ -164,9 +168,9 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() *emissionstypes.Val
 	}
 
 	forecasterNetworkRegrets := map[string]inference_synthesis.Regret{
-		"forecaster0": epoch2Get("inference_regret_worker5"),
-		"forecaster1": epoch2Get("inference_regret_worker6"),
-		"forecaster2": epoch2Get("inference_regret_worker7"),
+		"forecaster0": epoch2Get("inference_regret_worker_5"),
+		"forecaster1": epoch2Get("inference_regret_worker_6"),
+		"forecaster2": epoch2Get("inference_regret_worker_7"),
 	}
 
 	for forecaster, regret := range forecasterNetworkRegrets {
@@ -178,10 +182,10 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() *emissionstypes.Val
 		)
 	}
 
-	setOneInForecasterNetworkRegret := func(forecaster int, inferer int, epochGetter func(string) alloraMath.Dec) {
-		forecasterName := "forecaster" + strconv.Itoa(forecaster)
-		infererName := "worker" + strconv.Itoa(inferer)
-		headerName := "inference_regret_" + infererName + "_onein_" + strconv.Itoa(forecaster)
+	setOneInForecasterNetworkRegret := func(forecasterIndex int, infererIndex int, epochGetter func(string) alloraMath.Dec) {
+		forecasterName := "forecaster" + strconv.Itoa(forecasterIndex)
+		infererName := "worker" + strconv.Itoa(infererIndex)
+		headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_onein_" + strconv.Itoa(forecasterIndex)
 
 		k.SetOneInForecasterNetworkRegret(
 			s.ctx,
@@ -218,10 +222,18 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() *emissionstypes.Val
 	}
 
 	for workerIndex := 0; workerIndex < 5; workerIndex++ {
-		stake3, ok := cosmosMath.NewIntFromString(epoch3Get("stake_reputer_" + strconv.Itoa(workerIndex)).String())
+		stakeValue := epoch2Get("reputer_stake_" + strconv.Itoa(workerIndex))
+		stakeValueScaled, err := stakeValue.Mul(alloraMath.MustNewDecFromString("1e18"))
+		require.NoError(s.T(), err)
+
+		stakeValueFloored, err := stakeValueScaled.Floor()
+		require.NoError(s.T(), err)
+
+		stakeInt, ok := cosmosMath.NewIntFromString(stakeValueFloored.String())
+
 		s.Require().True(ok)
 		workerString := "worker" + strconv.Itoa(workerIndex)
-		err := k.AddStake(s.ctx, topicId, workerString, stake3)
+		err = k.AddStake(s.ctx, topicId, workerString, stakeInt)
 		require.NoError(s.T(), err)
 	}
 
@@ -268,7 +280,15 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() *emissionstypes.Val
 			CNorm:               alloraMath.MustNewDecFromString("3.0"),
 		},
 	)
-	return networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
+	return networkInferenceBuilder.CalcAndSetNetworkInferences().Build(), epochGet
+}
+
+func (s *InferenceSynthesisTestSuite) TestCorrectCombinedValue() {
+
+	valueBundle, epochGet := s.getEpoch3ValueBundle()
+	s.Require().NotNil(valueBundle)
+	s.Require().NotNil(valueBundle.CombinedValue)
+	alloratestutil.InEpsilon2(s.T(), epochGet[3]("network_inference"), valueBundle.CombinedValue.String())
 }
 
 func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferences() {
