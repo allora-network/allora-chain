@@ -3,7 +3,7 @@ package inference_synthesis_test
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
-	inference_synthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 )
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
@@ -34,7 +34,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
 		regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
 		maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
 
-		weight, err := inference_synthesis.CalcWeightFromRegret(regretFrac, maxRegret, pNorm, cNorm)
+		weight, err := inferencesynthesis.CalcWeightFromRegret(regretFrac, maxRegret, pNorm, cNorm)
 		s.Require().NoError(err)
 
 		testutil.InEpsilon5(s.T(), weight, tc.expectedWeight)
