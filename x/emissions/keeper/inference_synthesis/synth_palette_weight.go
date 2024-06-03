@@ -95,12 +95,14 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	sumWeights := alloraMath.ZeroDec()
 	err := error(nil)
 
+	allPeersAreNew := p.AllForecastersAreNew && p.AllInferersAreNew
+
 	for _, inferer := range p.Inferers {
 		runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
 			p.InferenceByWorker[inferer],
 			weights.inferers[inferer],
 			p.InfererRegrets[inferer].noPriorRegret,
-			p.AllInferersAreNew,
+			allPeersAreNew,
 			runningUnnormalizedI_i,
 			sumWeights,
 		)
@@ -114,7 +116,7 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 			p.InferenceByWorker[forecaster],
 			weights.forecasters[forecaster],
 			p.ForecasterRegrets[forecaster].noPriorRegret,
-			p.AllForecastersAreNew,
+			allPeersAreNew,
 			runningUnnormalizedI_i,
 			sumWeights,
 		)
