@@ -24,13 +24,16 @@ type NetworkInferenceBuilder struct {
 
 func NewNetworkInferenceBuilderFromSynthRequest(
 	req SynthRequest,
-) *NetworkInferenceBuilder {
+) (*NetworkInferenceBuilder, error) {
 	paletteFactory := SynthPaletteFactory{}
-	palette := paletteFactory.BuildPaletteFromRequest(req)
+	palette, err := paletteFactory.BuildPaletteFromRequest(req)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error building palette from request")
+	}
 	return &NetworkInferenceBuilder{
 		ctx:     req.Ctx,
 		palette: palette,
-	}
+	}, nil
 }
 
 // Calculates the network combined naive inference I_i
