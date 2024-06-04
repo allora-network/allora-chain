@@ -1844,7 +1844,7 @@ func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context)
 
 /// WHITELISTS
 
-func (k *Keeper) IsWhitelistAdmin(ctx context.Context, admin ActorId) (bool, error) {
+func (k Keeper) IsWhitelistAdmin(ctx context.Context, admin ActorId) (bool, error) {
 	return k.whitelistAdmins.Has(ctx, admin)
 }
 

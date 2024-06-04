@@ -26,10 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MsgClient interface {
-	// UpdateParams defines a governance operation for updating the x/mint module
-	// parameters. The authority is defaults to the x/gov module account.
-	//
-	// Since: cosmos-sdk 0.47
+	// update params. Only callable by someone on the emissions module whitelist
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 }
 
@@ -54,10 +51,7 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
-	// UpdateParams defines a governance operation for updating the x/mint module
-	// parameters. The authority is defaults to the x/gov module account.
-	//
-	// Since: cosmos-sdk 0.47
+	// update params. Only callable by someone on the emissions module whitelist
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }

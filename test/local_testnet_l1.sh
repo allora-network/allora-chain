@@ -73,6 +73,7 @@ echo "Whitelist faucet account"
 FAUCET_ADDRESS=$(docker run -t \
     -u $(id -u):$(id -g) \
     -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=allorad \
     -e HOME=/data/genesis \
     $DOCKER_IMAGE \
         --home=/data/genesis keys show faucet -a --keyring-backend=test)
@@ -87,6 +88,16 @@ docker run -t \
         put -t string -v "$FAUCET_ADDRESS" 'app_state.emissions.core_team_addresses.append()' -f /data/genesis/config/genesis.json
 echo "Faucet addr: $FAUCET_ADDRESS"
 
+echo "Running cosmovisor init"
+docker run -t \
+    -u $(id -u):$(id -g) \
+    -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=cosmovisor \
+    --env DAEMON_HOME=/data \
+    --env DAEMON_NAME=allorad \
+    $DOCKER_IMAGE \
+        init /usr/local/bin/allorad
+
 echo "Generate L1 peers"
 PEERS=""
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
@@ -95,6 +106,7 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     addr=$(docker run -t \
         -v ${LOCALNET_DATADIR}:/data \
         -u $(id -u):$(id -g) \
+        --entrypoint=allorad \
         -e HOME=/data/${valName} \
         $DOCKER_IMAGE \
         --home=/data/${valName} tendermint show-node-id)
@@ -118,7 +130,7 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
 done
 
 echo "Launching the network"
-docker compose -f $L1_COMPOSE up -d
+DAEMON_HOME=/data DAEMON_NAME=allorad docker compose -f $L1_COMPOSE up -d
 
 echo "Waiting validator is up"
 curl -o /dev/null --connect-timeout 5 \
@@ -154,6 +166,7 @@ docker run -t \
     -u $(id -u):$(id -g) \
     -v ${LOCALNET_DATADIR}:/data \
     -e HOME=/data/${valName} \
+    --entrypoint=allorad \
     $DOCKER_IMAGE \
     --home /data/genesis config set client keyring-backend test
 
