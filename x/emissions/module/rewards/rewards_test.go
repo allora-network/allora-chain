@@ -698,7 +698,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	workerZeroAddress sdk.AccAddress,
 	workerZeroOneOutInfererValue string,
 	workerZeroInfererValue string,
-) []rewards.TaskRewards {
+) []types.TaskReward {
 	require := s.Require()
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -778,7 +778,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	return rewardsDistributionByTopicParticipant
 }
 
-func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []rewards.TaskRewards, B []rewards.TaskRewards) bool {
+func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []types.TaskReward, B []types.TaskReward) bool {
 	if len(A) != len(B) {
 		s.Fail("Lengths are different")
 	}
@@ -1366,7 +1366,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	calcFirstTotalReputerReward := alloraMath.ZeroDec()
 	for _, reward := range firstRewardsDistribution {
-		if reward.Type == rewards.ReputerRewardType {
+		if reward.Type == types.ReputerAndDelegatorRewardType {
 			calcFirstTotalReputerReward, err = calcFirstTotalReputerReward.Add(reward.Reward)
 			s.Require().NoError(err)
 		}
@@ -1509,7 +1509,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	calcSecondTotalReputerReward := alloraMath.ZeroDec()
 	for _, reward := range secondRewardsDistribution {
-		if reward.Type == rewards.ReputerRewardType {
+		if reward.Type == types.ReputerAndDelegatorRewardType {
 			calcSecondTotalReputerReward, err = calcSecondTotalReputerReward.Add(reward.Reward)
 			s.Require().NoError(err)
 		}
@@ -2421,11 +2421,11 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	totalForecastersReward := alloraMath.ZeroDec()
 	totalReputersReward := alloraMath.ZeroDec()
 	for _, reward := range firstRewardsDistribution {
-		if reward.Type == rewards.WorkerInferenceRewardType {
+		if reward.Type == types.WorkerInferenceRewardType {
 			totalInferersReward, _ = totalInferersReward.Add(reward.Reward)
-		} else if reward.Type == rewards.WorkerForecastRewardType {
+		} else if reward.Type == types.WorkerForecastRewardType {
 			totalForecastersReward, _ = totalForecastersReward.Add(reward.Reward)
-		} else if reward.Type == rewards.ReputerRewardType {
+		} else if reward.Type == types.ReputerAndDelegatorRewardType {
 			totalReputersReward, _ = totalReputersReward.Add(reward.Reward)
 		}
 	}
@@ -2565,7 +2565,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	totalInferersReward = alloraMath.ZeroDec()
 	totalReward = alloraMath.ZeroDec()
 	for _, reward := range secondRewardsDistribution {
-		if reward.Type == rewards.WorkerInferenceRewardType {
+		if reward.Type == types.WorkerInferenceRewardType {
 			totalInferersReward, _ = totalInferersReward.Add(reward.Reward)
 		}
 		totalReward, _ = totalReward.Add(reward.Reward)
@@ -2702,7 +2702,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	totalForecastersReward = alloraMath.ZeroDec()
 	totalReward = alloraMath.ZeroDec()
 	for _, reward := range thirdRewardsDistribution {
-		if reward.Type == rewards.WorkerForecastRewardType {
+		if reward.Type == types.WorkerForecastRewardType {
 			totalForecastersReward, _ = totalForecastersReward.Add(reward.Reward)
 		}
 		totalReward, _ = totalReward.Add(reward.Reward)
