@@ -60,17 +60,17 @@ type Keeper struct {
 
 	/// SCORES
 
-	// map of (topic, block_number, worker) -> score
+	// map of (topic, block_height, worker) -> score
 	infererScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
-	// map of (topic, block_number, worker) -> score
+	// map of (topic, block_height, worker) -> score
 	forecasterScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
-	// map of (topic, block_number, reputer) -> score
+	// map of (topic, block_height, reputer) -> score
 	reputerScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
-	// map of (topic, block_number, worker) -> score
+	// map of (topic, block_height, worker) -> score
 	latestInfererScoresByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
-	// map of (topic, block_number, worker) -> score
+	// map of (topic, block_height, worker) -> score
 	latestForecasterScoresByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
-	// map of (topic, block_number, reputer) -> score
+	// map of (topic, block_height, reputer) -> score
 	latestReputerScoresByReputer collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, reputer) -> listening coefficient
 	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, ActorId], types.ListeningCoefficient]
@@ -1512,7 +1512,7 @@ func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 	if err != nil {
 		return err
 	}
-	if oldScore.BlockNumber >= score.BlockNumber {
+	if oldScore.BlockHeight >= score.BlockHeight {
 		return nil
 	}
 	key := collections.Join(topicId, worker)
@@ -1537,7 +1537,7 @@ func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, 
 	if err != nil {
 		return err
 	}
-	if oldScore.BlockNumber >= score.BlockNumber {
+	if oldScore.BlockHeight >= score.BlockHeight {
 		return nil
 	}
 	key := collections.Join(topicId, worker)
@@ -1562,7 +1562,7 @@ func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 	if err != nil {
 		return err
 	}
-	if oldScore.BlockNumber >= score.BlockNumber {
+	if oldScore.BlockHeight >= score.BlockHeight {
 		return nil
 	}
 	key := collections.Join(topicId, reputer)
@@ -1581,8 +1581,8 @@ func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, rep
 	return score, nil
 }
 
-func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockNumber)
+func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockHeight BlockHeight, score types.Score) error {
+	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return err
 	}
@@ -1600,7 +1600,7 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 		scores.Scores = scores.Scores[diff:]
 	}
 
-	key := collections.Join(topicId, blockNumber)
+	key := collections.Join(topicId, blockHeight)
 	return k.infererScoresByBlock.Set(ctx, key, scores)
 }
 
@@ -1650,8 +1650,8 @@ func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId To
 	return scores, nil
 }
 
-func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockNumber)
+func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockHeight BlockHeight, score types.Score) error {
+	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return err
 	}
@@ -1669,7 +1669,7 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 		scores.Scores = scores.Scores[diff:]
 	}
 
-	key := collections.Join(topicId, blockNumber)
+	key := collections.Join(topicId, blockHeight)
 	return k.forecasterScoresByBlock.Set(ctx, key, scores)
 }
 
@@ -1719,8 +1719,8 @@ func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId Top
 	return scores, nil
 }
 
-func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockNumber BlockHeight, score types.Score) error {
-	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockNumber)
+func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockHeight BlockHeight, score types.Score) error {
+	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return err
 	}
@@ -1738,7 +1738,7 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockN
 			scores.Scores = scores.Scores[diff:]
 		}
 	}
-	key := collections.Join(topicId, blockNumber)
+	key := collections.Join(topicId, blockHeight)
 	return k.reputerScoresByBlock.Set(ctx, key, scores)
 }
 

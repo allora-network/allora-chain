@@ -296,7 +296,7 @@ func GenerateReputerLatestScores(s *RewardsTestSuite, reputers []sdk.AccAddress,
 	for i, reputerAddr := range reputers {
 		scoreToAdd := types.Score{
 			TopicId:     topicId,
-			BlockNumber: blockHeight,
+			BlockHeight: blockHeight,
 			Address:     reputerAddr.String(),
 			Score:       scores[i],
 		}
