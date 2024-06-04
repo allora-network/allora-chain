@@ -225,7 +225,6 @@ func GenerateRewardsDistributionByTopicParticipant(
 	if err != nil {
 		return nil, alloraMath.Dec{}, err
 	}
-	// ctx.EventManager().EmitTypedEvent()
 
 	// Calculate and Set the worker scores for their inference work
 	infererScores, err := GenerateInferenceScores(ctx, k, topicId, blockHeight, *lossBundles)
@@ -471,9 +470,9 @@ func payoutRewards(
 		}
 	}
 
-	types.EmitNewInfererRewardsSetEvent(ctx, blockHeight, infererRewards)
-	types.EmitNewForecasterRewardsSetEvent(ctx, blockHeight, forecasterRewards)
-	types.EmitNewReputererAndDelegaterRewardsSetEvent(ctx, blockHeight, reputerAndDelegatorRewards)
+	types.EmitNewInfererRewardsSettledEvent(ctx, blockHeight, infererRewards)
+	types.EmitNewForecasterRewardsSettledEvent(ctx, blockHeight, forecasterRewards)
+	types.EmitNewReputererAndDelegaterRewardsSettledEvent(ctx, blockHeight, reputerAndDelegatorRewards)
 	return ret
 }
 
