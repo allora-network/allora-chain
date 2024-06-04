@@ -67,7 +67,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 
 	infererWeights := make(map[Worker]Weight)
 	forecasterWeights := make(map[Worker]Weight)
-	if !p.SingleInfererNotNew {
+	if p.InferersNewStatus != InferersAllNewExceptOne {
 		// Calculate the weights from the normalized regrets
 		for _, worker := range p.Inferers {
 			// If there is more than one not-new inferer, calculate the weight for the ones that are not new
@@ -112,8 +112,8 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	err := error(nil)
 
 	// If there is only one not-new inferer, then just consider that inferer
-	if p.SingleInfererNotNew {
-		singleInferer := p.SingleInfererNotNewAddress
+	if p.InferersNewStatus == InferersAllNewExceptOne {
+		singleInferer := p.SingleNotNewInferer
 
 		runningUnnormalizedI_i, err = runningUnnormalizedI_i.Add(p.InferenceByWorker[singleInferer].Value)
 		if err != nil {
@@ -129,7 +129,7 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 				p.InferenceByWorker[inferer],
 				weights.inferers[inferer],
 				p.InfererRegrets[inferer].noPriorRegret,
-				p.AllInferersAreNew,
+				p.InferersNewStatus == InferersAllNew,
 				runningUnnormalizedI_i,
 				sumWeights,
 			)
@@ -139,7 +139,7 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 		}
 
 		// If all inferers are new, forecasters are not considered
-		if !p.AllInferersAreNew {
+		if p.InferersNewStatus != InferersAllNew {
 			for _, forecaster := range p.Forecasters {
 				runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
 					p.ForecastImpliedInferenceByWorker[forecaster],

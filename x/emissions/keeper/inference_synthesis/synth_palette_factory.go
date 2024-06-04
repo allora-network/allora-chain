@@ -23,9 +23,8 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 		ForecastByWorker:                 forecastByWorker,
 		ForecastImpliedInferenceByWorker: nil,                              // Populated below
 		ForecasterRegrets:                make(map[string]*StatefulRegret), // Populated below
-		AllInferersAreNew:                true,                             // Populated below
-		SingleInfererNotNewAddress:       "",                               // Populated below
-		SingleInfererNotNew:              false,                            // Populated below
+		InferersNewStatus:                InferersAllNew,                   // Populated below
+		SingleNotNewInferer:              "",
 		NetworkCombinedLoss:              req.NetworkCombinedLoss,
 		Epsilon:                          req.Epsilon,
 		FTolerance:                       req.FTolerance,
