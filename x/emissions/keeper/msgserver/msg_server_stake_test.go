@@ -700,7 +700,7 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 	var reputerValueBundles types.ReputerValueBundles
 	scoreToAdd := types.Score{
 		TopicId:     topicId,
-		BlockNumber: block,
+		BlockHeight: block,
 		Address:     reputerAddr.String(),
 		Score:       score,
 	}
@@ -756,7 +756,7 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 	var newReputerValueBundles types.ReputerValueBundles
 	newScoreToAdd := types.Score{
 		TopicId:     topicId,
-		BlockNumber: newBlock,
+		BlockHeight: newBlock,
 		Address:     reputerAddr.String(),
 		Score:       score,
 	}
@@ -826,12 +826,12 @@ func (s *KeeperTestSuite) insertValueBundlesAndGetRewards(
 	topicId uint64,
 	block int64,
 	score alloraMath.Dec,
-) []rewards.TaskRewards {
+) []types.TaskReward {
 	keeper := s.emissionsKeeper
 	var reputerValueBundles types.ReputerValueBundles
 	scoreToAdd := types.Score{
 		TopicId:     topicId,
-		BlockNumber: block,
+		BlockHeight: block,
 		Address:     reputerAddr.String(),
 		Score:       score,
 	}

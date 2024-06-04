@@ -145,10 +145,10 @@ func GetRewardForReputerFromTotalReward(
 	ctx sdk.Context,
 	keeper keeper.Keeper,
 	topicId uint64,
-	reputerDelegatorRewards []TaskRewards,
-) ([]TaskRewards, error) {
+	reputerDelegatorRewards []types.TaskReward,
+) ([]types.TaskReward, error) {
 
-	var reputerRewards []TaskRewards
+	var reputerRewards []types.TaskReward
 	for _, reputerReward := range reputerDelegatorRewards {
 		reputer := reputerReward.Address
 		reward := reputerReward.Reward
@@ -217,11 +217,11 @@ func GetRewardForReputerFromTotalReward(
 		if err != nil {
 			return nil, err
 		}
-		reputerRewards = append(reputerRewards, TaskRewards{
+		reputerRewards = append(reputerRewards, types.TaskReward{
 			Address: reputerReward.Address,
 			Reward:  reputerRw,
 			TopicId: reputerReward.TopicId,
-			Type:    ReputerRewardType,
+			Type:    types.ReputerAndDelegatorRewardType,
 		})
 	}
 
@@ -237,18 +237,18 @@ func GetRewardPerReputer(
 	totalReputerRewards alloraMath.Dec,
 	reputerAddresses []string,
 	reputersFractions []alloraMath.Dec,
-) ([]TaskRewards, error) {
-	var reputerDelegatorTotalRewards []TaskRewards
+) ([]types.TaskReward, error) {
+	var reputerDelegatorTotalRewards []types.TaskReward
 	for i, reputerFraction := range reputersFractions {
 		reward, err := reputerFraction.Mul(totalReputerRewards)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to calculate reputer rewards")
 		}
-		reputerDelegatorTotalRewards = append(reputerDelegatorTotalRewards, TaskRewards{
+		reputerDelegatorTotalRewards = append(reputerDelegatorTotalRewards, types.TaskReward{
 			Address: reputerAddresses[i],
 			Reward:  reward,
 			TopicId: topicId,
-			Type:    ReputerRewardType,
+			Type:    types.ReputerAndDelegatorRewardType,
 		})
 	}
 
