@@ -32,15 +32,15 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 		CNorm:                            req.CNorm,
 	}
 
+	// Populates: infererRegrets, forecasterRegrets, allInferersAreNew, allForecastersAreNew
+	palette.BootstrapRegretData()
+	palette.AllWorkersAreNew = palette.AllInferersAreNew && palette.AllForecastersAreNew
+
 	// Populates: forecastImpliedInferenceByWorker,
 	err := palette.UpdateForecastImpliedInferences()
 	if err != nil {
 		return SynthPalette{}, err
 	}
-
-	// Populates: infererRegrets, forecasterRegrets, allInferersAreNew, allForecastersAreNew
-	palette.BootstrapRegretData()
-	palette.AllWorkersAreNew = palette.AllInferersAreNew && palette.AllForecastersAreNew
 
 	return palette, nil
 }

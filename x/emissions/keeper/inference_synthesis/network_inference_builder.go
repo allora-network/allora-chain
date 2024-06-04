@@ -2,6 +2,7 @@ package inference_synthesis
 
 import (
 	"fmt"
+	"log"
 
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -36,7 +37,7 @@ func NewNetworkInferenceBuilderFromSynthRequest(
 	}, nil
 }
 
-// Calculates the network combined naive inference I_i
+// Calculates the network combined inference I_i, Equation 9
 func (b *NetworkInferenceBuilder) SetCombinedValue() *NetworkInferenceBuilder {
 	weights, err := b.palette.CalcWeightsGivenWorkers()
 	if err != nil {
