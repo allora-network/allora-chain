@@ -40,7 +40,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 			err := error(nil)
 
 			// Calculate the forecast-implied inferences I_ik
-			if p.AllInferersAreNew {
+			if p.InferersNewStatus == InferersAllNew {
 				// If all inferers are new, take regular average of inferences
 				// This means that forecasters won't be able to influence the network inference when all inferers are new
 				// However this seeds losses for forecasters for future rounds
