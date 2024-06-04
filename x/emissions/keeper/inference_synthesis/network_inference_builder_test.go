@@ -300,17 +300,16 @@ func (s *InferenceSynthesisTestSuite) TestCorrectCombinedValue() {
 	alloratestutil.InEpsilon2(s.T(), actual, expected.String())
 }
 
-/*
 func (s *InferenceSynthesisTestSuite) TestCorrectNaiveValue() {
 
-	valueBundle, epochGet := s.getEpoch3ValueBundle()
-	s.Require().NotNil(valueBundle.CombinedValue)
-	alloratestutil.InEpsilon2(s.T(), epochGet[3]("network_naive_inference"), valueBundle.NaiveValue.String())
+	networkInferenceBuilder, epochGet := s.getEpoch3ValueBundle()
+	valueBundle := networkInferenceBuilder.SetNaiveValue().Build()
+	alloratestutil.InEpsilon2(s.T(), valueBundle.NaiveValue, epochGet[3]("network_naive_inference").String())
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValues() {
 
-	valueBundle, epochGet := s.getEpoch3ValueBundle()
+	networkInferenceBuilder, epochGet := s.getEpoch3ValueBundle()
 
 	expectedValues := map[string]alloraMath.Dec{
 		"worker0": epochGet[3]("network_inference_oneout_0"),
@@ -319,6 +318,8 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValues() {
 		"worker3": epochGet[3]("network_inference_oneout_3"),
 		"worker4": epochGet[3]("network_inference_oneout_4"),
 	}
+
+	valueBundle := networkInferenceBuilder.SetOneOutInfererValues().Build()
 
 	for worker, expectedValue := range expectedValues {
 		found := false
@@ -332,6 +333,7 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValues() {
 	}
 }
 
+/*
 func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValues() {
 	valueBundle, epochGet := s.getEpoch3ValueBundle()
 
