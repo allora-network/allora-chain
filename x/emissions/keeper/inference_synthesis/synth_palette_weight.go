@@ -52,13 +52,13 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
-		for i, worker := range p.Forecasters {
+		for _, worker := range p.Forecasters {
 			regretFrac, err := p.ForecasterRegrets[worker].regret.Quo(stdDevRegretsPlusFTolerance)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}
 			normalizedForecasterRegrets[worker] = regretFrac
-			if i == 0 || regretFrac.Gt(maxRegret) {
+			if regretFrac.Gt(maxRegret) {
 				maxRegret = regretFrac
 			}
 		}
@@ -88,20 +88,6 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		forecasters: forecasterWeights,
 	}, nil
 }
-
-// // Given the current set of inferers and forecasters in the palette, calculate their
-// // weights using the provided forecasted regrets
-// func (p *SynthPalette) CalcWeightsWithForecastedRegretOverride(
-// 	inferers []Worker,
-// 	forecastedRegrets map[string]StatefulRegret,
-// ) (RegretInformedWeights, error) {
-// 	if inferers != nil && len(inferers) > 0 && forecastedRegrets != nil {
-// 		p.InfererRegrets = forecastedRegrets
-// 		p.ForecasterRegrets = forecastedRegrets
-// 	}
-
-// 	return p.CalcWeightsGivenWorkers()
-// }
 
 // Calculates network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper:
 // I_i = Σ_l w_il I_il / Σ_l w_il
