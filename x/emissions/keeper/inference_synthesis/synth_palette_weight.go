@@ -14,6 +14,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	infererRegrets := p.GetInfererRegretsSlice()
 	forecasterRegrets := p.GetForecasterRegretsSlice()
 	var err error
+
 	if len(infererRegrets) > 0 {
 		regrets = append(regrets, infererRegrets...)
 	}
@@ -64,23 +65,34 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		}
 	}
 
-	// Calculate the weights from the normalized regrets
 	infererWeights := make(map[Worker]Weight)
-	for _, worker := range p.Inferers {
-		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
-		if err != nil {
-			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
-		}
-		infererWeights[worker] = infererWeight
-	}
-
 	forecasterWeights := make(map[Worker]Weight)
-	for _, worker := range p.Forecasters {
-		forecasterWeight, err := CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, p.PNorm, p.CNorm)
-		if err != nil {
-			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
+	if p.InferersNewStatus != InferersAllNewExceptOne {
+		// Calculate the weights from the normalized regrets
+		for _, worker := range p.Inferers {
+			// If there is more than one not-new inferer, calculate the weight for the ones that are not new
+			var infererWeight = alloraMath.ZeroDec()
+			if !p.InfererRegrets[worker].noPriorRegret {
+				infererWeight, err = CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
+				if err != nil {
+					return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
+				}
+			}
+			infererWeights[worker] = infererWeight
 		}
-		forecasterWeights[worker] = forecasterWeight
+
+		if len(p.ForecasterRegrets) > 0 {
+			for _, worker := range p.Forecasters {
+				var forecasterWeight = alloraMath.ZeroDec()
+				if !p.ForecasterRegrets[worker].noPriorRegret {
+					forecasterWeight, err = CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, p.PNorm, p.CNorm)
+					if err != nil {
+						return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
+					}
+				}
+				forecasterWeights[worker] = forecasterWeight
+			}
+		}
 	}
 
 	return RegretInformedWeights{
@@ -99,31 +111,48 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	sumWeights := alloraMath.ZeroDec()
 	err := error(nil)
 
-	for _, inferer := range p.Inferers {
-		runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
-			p.InferenceByWorker[inferer],
-			weights.inferers[inferer],
-			p.InfererRegrets[inferer].noPriorRegret,
-			p.AllInferersAreNew,
-			runningUnnormalizedI_i,
-			sumWeights,
-		)
-		if err != nil {
-			return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of inferer")
-		}
-	}
+	// If there is only one not-new inferer, then just consider that inferer
+	if p.InferersNewStatus == InferersAllNewExceptOne {
+		singleInferer := p.SingleNotNewInferer
 
-	for _, forecaster := range p.Forecasters {
-		runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
-			p.ForecastImpliedInferenceByWorker[forecaster],
-			weights.forecasters[forecaster],
-			p.ForecasterRegrets[forecaster].noPriorRegret,
-			p.AllForecastersAreNew,
-			runningUnnormalizedI_i,
-			sumWeights,
-		)
+		runningUnnormalizedI_i, err = runningUnnormalizedI_i.Add(p.InferenceByWorker[singleInferer].Value)
 		if err != nil {
-			return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of forecaster")
+			return InferenceValue{}, errorsmod.Wrapf(err, "Error adding weight by worker value")
+		}
+		sumWeights, err = sumWeights.Add(alloraMath.OneDec())
+		if err != nil {
+			return InferenceValue{}, errorsmod.Wrapf(err, "Error adding weight")
+		}
+	} else {
+		for _, inferer := range p.Inferers {
+			runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
+				p.InferenceByWorker[inferer],
+				weights.inferers[inferer],
+				p.InfererRegrets[inferer].noPriorRegret,
+				p.InferersNewStatus == InferersAllNew,
+				runningUnnormalizedI_i,
+				sumWeights,
+			)
+			if err != nil {
+				return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of inferer")
+			}
+		}
+
+		// If all inferers are new, forecasters are not considered
+		if p.InferersNewStatus != InferersAllNew {
+			for _, forecaster := range p.Forecasters {
+				runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
+					p.ForecastImpliedInferenceByWorker[forecaster],
+					weights.forecasters[forecaster],
+					p.ForecasterRegrets[forecaster].noPriorRegret,
+					false,
+					runningUnnormalizedI_i,
+					sumWeights,
+				)
+				if err != nil {
+					return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of forecaster")
+				}
+			}
 		}
 	}
 

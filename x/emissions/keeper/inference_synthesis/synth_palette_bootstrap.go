@@ -8,28 +8,36 @@ import (
 // Bootstraps xRegrets, allxsAreNew (x="inferer"|"forecasters") for the inferers and forecasters in the palette
 // Just requires these props:: ctx, k, topicId, inferers, forecasts
 func (p *SynthPalette) BootstrapRegretData() error {
-	p.AllInferersAreNew = true
+	p.InferersNewStatus = InferersAllNew
+
 	for _, inferer := range p.Inferers {
 		regret, noPriorRegret, err := p.K.GetInfererNetworkRegret(p.Ctx, p.TopicId, inferer)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting inferer regret")
 		}
 
-		p.AllInferersAreNew = p.AllInferersAreNew && noPriorRegret
+		if !noPriorRegret {
+			if p.InferersNewStatus == InferersAllNew {
+				p.InferersNewStatus = InferersAllNewExceptOne
+				p.SingleNotNewInferer = inferer
+			} else {
+				p.InferersNewStatus = InferersNotNew
+				p.SingleNotNewInferer = ""
+			}
+		}
+
 		p.InfererRegrets[inferer] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
 	}
 
-	p.AllForecastersAreNew = true
 	for _, forecaster := range p.Forecasters {
 		regret, noPriorRegret, err := p.K.GetForecasterNetworkRegret(p.Ctx, p.TopicId, forecaster)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
 
-		p.AllForecastersAreNew = p.AllForecastersAreNew && noPriorRegret
 		p.ForecasterRegrets[forecaster] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
@@ -78,8 +86,8 @@ func (p SynthPalette) Clone() SynthPalette {
 		ForecastByWorker:                 forecastByWorker,
 		ForecastImpliedInferenceByWorker: forecastImpliedInferenceByWorker,
 		ForecasterRegrets:                forecasterRegrets,
-		AllForecastersAreNew:             p.AllForecastersAreNew,
-		AllWorkersAreNew:                 p.AllWorkersAreNew,
+		InferersNewStatus:                p.InferersNewStatus,
+		SingleNotNewInferer:              p.SingleNotNewInferer,
 		NetworkCombinedLoss:              p.NetworkCombinedLoss,
 		Epsilon:                          p.Epsilon,
 		FTolerance:                       p.FTolerance,

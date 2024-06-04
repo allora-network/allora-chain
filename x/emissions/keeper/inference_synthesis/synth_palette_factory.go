@@ -23,9 +23,8 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 		ForecastByWorker:                 forecastByWorker,
 		ForecastImpliedInferenceByWorker: nil,                              // Populated below
 		ForecasterRegrets:                make(map[string]*StatefulRegret), // Populated below
-		AllInferersAreNew:                true,                             // Populated below
-		AllForecastersAreNew:             true,                             // Populated below
-		AllWorkersAreNew:                 true,                             // Populated below
+		InferersNewStatus:                InferersAllNew,                   // Populated below
+		SingleNotNewInferer:              "",
 		NetworkCombinedLoss:              req.NetworkCombinedLoss,
 		Epsilon:                          req.Epsilon,
 		FTolerance:                       req.FTolerance,
@@ -33,9 +32,8 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 		CNorm:                            req.CNorm,
 	}
 
-	// Populates: infererRegrets, forecasterRegrets, allInferersAreNew, allForecastersAreNew
+	// Populates: infererRegrets, forecasterRegrets, allInferersAreNew
 	palette.BootstrapRegretData()
-	palette.AllWorkersAreNew = palette.AllInferersAreNew && palette.AllForecastersAreNew
 
 	paletteCopy := palette.Clone()
 	// Populates: forecastImpliedInferenceByWorker,
