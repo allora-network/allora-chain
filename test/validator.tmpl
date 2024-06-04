@@ -3,12 +3,15 @@
     image: allorad
     environment:
       - HOME=/data/${moniker}
+      - DAEMON_NAME=allorad 
+      - DAEMON_HOME=/data
     volumes:
       - ${LOCALNET_DATADIR}:/data
     user: "${UID_GID}"
     entrypoint:
-      - allorad
+      - cosmovisor
     command:
+      - run 
       - --home=/data/${moniker}
       - start
       - --moniker=${moniker}

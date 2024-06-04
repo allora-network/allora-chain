@@ -85,3 +85,16 @@ func (m *MockEmissionsKeeper) GetPreviousPercentageRewardToStakedReputers(ctx co
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
+
+func (mr *MockEmissionsKeeperMockRecorder) IsWhitelistAdmin(ctx interface{}, admin interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsWhitelistAdmin", reflect.TypeOf((*MockEmissionsKeeper)(nil).IsWhitelistAdmin), ctx, admin)
+}
+
+func (m *MockEmissionsKeeper) IsWhitelistAdmin(ctx context.Context, admin string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsWhitelistAdmin", ctx, admin)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
