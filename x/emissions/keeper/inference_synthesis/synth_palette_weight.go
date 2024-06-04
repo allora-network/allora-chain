@@ -1,8 +1,6 @@
 package inference_synthesis
 
 import (
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -26,20 +24,17 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		return RegretInformedWeights{}, errorsmod.Wrapf(emissions.ErrEmptyArray, "No regrets to calculate weights")
 	}
 
-	fmt.Println("regrets :::", regrets)
 	// Calc std dev of regrets + f_tolerance
 	// σ(R_ijk) + ε
 	stdDevRegrets, err := alloraMath.StdDev(regrets)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
 	}
-	fmt.Println("stdDevRegrets :::", stdDevRegrets)
 	// Add f_tolerance to standard deviation
 	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Abs().Add(p.FTolerance)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding f_tolerance to standard deviation of regrets")
 	}
-	fmt.Println("stdDevRegretsPlusFTolerance :::", stdDevRegretsPlusFTolerance)
 
 	// Normalize the regrets and find the max normalized regret among them
 	normalizedInfererRegrets := make(map[Worker]Regret)
@@ -54,8 +49,6 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 			maxRegret = regretFrac
 		}
 	}
-	fmt.Println("normalizedInfererRegrets :::", normalizedInfererRegrets)
-	fmt.Println("maxRegret :::", maxRegret)
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
@@ -80,7 +73,6 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		}
 		infererWeights[worker] = infererWeight
 	}
-	fmt.Println("infererWeights :::", infererWeights)
 
 	forecasterWeights := make(map[Worker]Weight)
 	for _, worker := range p.Forecasters {
@@ -90,7 +82,6 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		}
 		forecasterWeights[worker] = forecasterWeight
 	}
-	fmt.Println("forecasterWeights :::", forecasterWeights)
 
 	return RegretInformedWeights{
 		inferers:    infererWeights,

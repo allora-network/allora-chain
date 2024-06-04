@@ -1,8 +1,6 @@
 package inference_synthesis
 
 import (
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -80,16 +78,16 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 					R_ik[j] = &StatefulRegret{regret: R_ijk, noPriorRegret: false}
 				}
 
-				if sortedInferersInForecast != nil && len(sortedInferersInForecast) > 0 {
+				if len(sortedInferersInForecast) > 0 {
 					p.InfererRegrets = R_ik
 					p.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
-				}
 
-				weights, err := p.CalcWeightsGivenWorkers()
-				if err != nil {
-					return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
+					weights, err := p.CalcWeightsGivenWorkers()
+					if err != nil {
+						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
+					}
+					w_ik = weights.inferers
 				}
-				w_ik = weights.inferers
 
 				// Calculate the forecast-implied inferences I_ik
 				for _, j := range sortedInferersInForecast {
@@ -110,8 +108,6 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 					}
 				}
 			}
-			fmt.Println("weightSum :::", weightSum)
-			fmt.Println("weightInferenceDotProduct :::", weightInferenceDotProduct)
 
 			forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
 			if err != nil {

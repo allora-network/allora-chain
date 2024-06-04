@@ -37,11 +37,13 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 	palette.BootstrapRegretData()
 	palette.AllWorkersAreNew = palette.AllInferersAreNew && palette.AllForecastersAreNew
 
+	paletteCopy := palette.Clone()
 	// Populates: forecastImpliedInferenceByWorker,
-	err := palette.UpdateForecastImpliedInferences()
+	err := paletteCopy.UpdateForecastImpliedInferences()
 	if err != nil {
 		return SynthPalette{}, err
 	}
+	palette.ForecastImpliedInferenceByWorker = paletteCopy.ForecastImpliedInferenceByWorker
 
 	return palette, nil
 }

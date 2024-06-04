@@ -38,13 +38,15 @@ func NewNetworkInferenceBuilderFromSynthRequest(
 
 // Calculates the network combined inference I_i, Equation 9
 func (b *NetworkInferenceBuilder) SetCombinedValue() *NetworkInferenceBuilder {
-	weights, err := b.palette.CalcWeightsGivenWorkers()
+	palette := b.palette.Clone()
+
+	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
 		b.ctx.Logger().Warn(fmt.Sprintf("Error calculating weights for combined inference: %s", err.Error()))
 		return b
 	}
 
-	combinedInference, err := b.palette.CalcWeightedInference(weights)
+	combinedInference, err := palette.CalcWeightedInference(weights)
 	if err != nil {
 		b.ctx.Logger().Warn(fmt.Sprintf("Error calculating combined inference: %s", err.Error()))
 		return b
