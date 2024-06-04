@@ -67,7 +67,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 
 	infererWeights := make(map[Worker]Weight)
 	forecasterWeights := make(map[Worker]Weight)
-	if p.SingleInfererNotNew {
+	if !p.SingleInfererNotNew {
 		// Calculate the weights from the normalized regrets
 		for _, worker := range p.Inferers {
 			// If there is more than one not-new inferer, calculate the weight for the ones that are not new

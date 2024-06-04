@@ -133,16 +133,18 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 		"worker4": {Value: epoch2Get("inference_4")},
 	}
 	palette := inferencesynthesis.SynthPalette{
-		InferenceByWorker:   inferenceByWorker,
-		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
-		Forecasters:         []string{"forecaster0"},
-		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
-		AllInferersAreNew:   false,
-		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
-		FTolerance:          fTolerance,
-		PNorm:               pNorm,
-		CNorm:               cNorm,
+		InferenceByWorker:          inferenceByWorker,
+		ForecastByWorker:           map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
+		Forecasters:                []string{"forecaster0"},
+		Inferers:                   []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
+		AllInferersAreNew:          false,
+		SingleInfererNotNew:        false,
+		SingleInfererNotNewAddress: "",
+		NetworkCombinedLoss:        networkCombinedLoss,
+		Epsilon:                    epsilon,
+		FTolerance:                 fTolerance,
+		PNorm:                      pNorm,
+		CNorm:                      cNorm,
 	}
 	result, err := palette.CalcForecastImpliedInferences()
 	s.Require().NoError(err)
