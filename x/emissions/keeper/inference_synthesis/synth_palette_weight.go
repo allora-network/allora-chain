@@ -15,8 +15,8 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
 	}
-	// Add epsilon to standard deviation
-	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.Epsilon)
+	// Add f Tolerance to standard deviation
+	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.FTolerance)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of regrets")
 	}

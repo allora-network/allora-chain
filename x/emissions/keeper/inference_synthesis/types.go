@@ -43,6 +43,7 @@ type SynthRequest struct {
 	Forecasts           *emissions.Forecasts
 	NetworkCombinedLoss Loss
 	Epsilon             alloraMath.Dec
+	FTolerance          alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }
@@ -73,6 +74,7 @@ type SynthPalette struct {
 	AllWorkersAreNew     bool // Simple conjunction of the two above
 	NetworkCombinedLoss  Loss
 	Epsilon              alloraMath.Dec
+	FTolerance           alloraMath.Dec
 	PNorm                alloraMath.Dec
 	CNorm                alloraMath.Dec
 }

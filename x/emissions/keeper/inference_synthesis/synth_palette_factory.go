@@ -28,6 +28,7 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 		AllWorkersAreNew:                 true,                            // Populated below
 		NetworkCombinedLoss:              req.NetworkCombinedLoss,
 		Epsilon:                          req.Epsilon,
+		FTolerance:                       req.FTolerance,
 		PNorm:                            req.PNorm,
 		CNorm:                            req.CNorm,
 	}
