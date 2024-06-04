@@ -138,7 +138,7 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 
 	for _, forecaster := range p.Forecasters {
 		runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
-			p.InferenceByWorker[forecaster],
+			p.ForecastImpliedInferenceByWorker[forecaster],
 			weights.forecasters[forecaster],
 			p.ForecasterRegrets[forecaster].noPriorRegret,
 			p.AllForecastersAreNew,
