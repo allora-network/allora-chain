@@ -5,10 +5,11 @@ import (
 )
 
 // Could use Builder pattern in the future to make this cleaner
-func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) SynthPalette {
+func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPalette, error) {
 	inferenceByWorker := MakeMapFromInfererToTheirInference(req.Inferences.Inferences)
 	forecastByWorker := MakeMapFromForecasterToTheirForecast(req.Forecasts.Forecasts)
 	sortedInferers := alloraMath.GetSortedKeys(inferenceByWorker)
+	sortedForecasters := alloraMath.GetSortedKeys(forecastByWorker)
 
 	// Those values not from req are to be considered defaults
 	palette := SynthPalette{
@@ -18,7 +19,7 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) SynthPal
 		Inferers:                         sortedInferers,
 		InferenceByWorker:                inferenceByWorker,
 		InfererRegrets:                   make(map[string]StatefulRegret), // Populated below
-		Forecasters:                      nil,                             // Populated below
+		Forecasters:                      sortedForecasters,
 		ForecastByWorker:                 forecastByWorker,
 		ForecastImpliedInferenceByWorker: nil,                             // Populated below
 		ForecasterRegrets:                make(map[string]StatefulRegret), // Populated below
@@ -27,17 +28,20 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) SynthPal
 		AllWorkersAreNew:                 true,                            // Populated below
 		NetworkCombinedLoss:              req.NetworkCombinedLoss,
 		Epsilon:                          req.Epsilon,
+		FTolerance:                       req.FTolerance,
 		PNorm:                            req.PNorm,
 		CNorm:                            req.CNorm,
 	}
-
-	// Populates: forecastImpliedInferenceByWorker, forecasters
-	palette.UpdateForecastImpliedInferences()
-	palette.Forecasters = alloraMath.GetSortedKeys(palette.ForecastImpliedInferenceByWorker)
 
 	// Populates: infererRegrets, forecasterRegrets, allInferersAreNew, allForecastersAreNew
 	palette.BootstrapRegretData()
 	palette.AllWorkersAreNew = palette.AllInferersAreNew && palette.AllForecastersAreNew
 
-	return palette
+	// Populates: forecastImpliedInferenceByWorker,
+	err := palette.UpdateForecastImpliedInferences()
+	if err != nil {
+		return SynthPalette{}, err
+	}
+
+	return palette, nil
 }

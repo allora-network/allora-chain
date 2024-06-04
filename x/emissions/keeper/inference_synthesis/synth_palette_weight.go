@@ -15,8 +15,8 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
 	}
-	// Add epsilon to standard deviation
-	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.Epsilon)
+	// Add f Tolerance to standard deviation
+	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.FTolerance)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of regrets")
 	}
@@ -36,13 +36,13 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	}
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
-	for i, worker := range p.Forecasters {
+	for _, worker := range p.Forecasters {
 		regretFrac, err := p.ForecasterRegrets[worker].regret.Quo(stdDevRegretsPlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
 		normalizedForecasterRegrets[worker] = regretFrac
-		if i == 0 || regretFrac.Gt(maxRegret) {
+		if regretFrac.Gt(maxRegret) {
 			maxRegret = regretFrac
 		}
 	}
@@ -111,7 +111,7 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 
 	for _, forecaster := range p.Forecasters {
 		runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
-			p.InferenceByWorker[forecaster],
+			p.ForecastImpliedInferenceByWorker[forecaster],
 			weights.forecasters[forecaster],
 			p.ForecasterRegrets[forecaster].noPriorRegret,
 			p.AllForecastersAreNew,

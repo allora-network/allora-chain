@@ -89,7 +89,7 @@ func GetNetworkInferencesAtBlock(
 			ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 			return networkInferences, nil
 		}
-		networkInferecesBuilder := NewNetworkInferenceBuilderFromSynthRequest(
+		networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
 			SynthRequest{
 				Ctx:                 ctx,
 				K:                   k,
@@ -102,7 +102,11 @@ func GetNetworkInferencesAtBlock(
 				CNorm:               moduleParams.CNorm,
 			},
 		)
-		networkInferences = networkInferecesBuilder.CalcAndSetNetworkInferences().Build()
+		if err != nil {
+			ctx.Logger().Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
+			return nil, err
+		}
+		networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
 	} else {
 		// If there is only one valid inference, then the network inference is the same as the single inference
 		// For the forecasts to be meaningful, there should be at least 2 inferences
