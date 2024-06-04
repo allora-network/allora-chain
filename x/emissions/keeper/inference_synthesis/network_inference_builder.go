@@ -106,6 +106,7 @@ func (b *NetworkInferenceBuilder) SetNaiveValue() *NetworkInferenceBuilder {
 // Calculate the one-out inference given a withheld inferer
 func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Worker) (alloraMath.Dec, error) {
 	palette := b.palette.Clone()
+	paletteCopy := palette.Clone()
 
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
@@ -115,17 +116,20 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 		}
 	}
 	palette.Inferers = remainingInferers // Override the inferers in the palette
+	paletteCopy.Inferers = remainingInferers
 
 	// Recalculate the forecast-implied inferences without the worker's inference
 	// This is necessary because the forecast-implied inferences are calculated based on the inferences of the inferers
 	palette.UpdateForecastImpliedInferences()
 
-	weights, err := palette.CalcWeightsGivenWorkers()
+	paletteCopy.ForecastImpliedInferenceByWorker = palette.ForecastImpliedInferenceByWorker
+
+	weights, err := paletteCopy.CalcWeightsGivenWorkers()
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
 	}
 
-	oneOutNetworkInferenceWithoutInferer, err := palette.CalcWeightedInference(weights)
+	oneOutNetworkInferenceWithoutInferer, err := paletteCopy.CalcWeightedInference(weights)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for inferer")
 	}
