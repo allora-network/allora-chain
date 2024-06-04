@@ -472,7 +472,7 @@ func payoutRewards(
 
 	types.EmitNewInfererRewardsSettledEvent(ctx, blockHeight, infererRewards)
 	types.EmitNewForecasterRewardsSettledEvent(ctx, blockHeight, forecasterRewards)
-	types.EmitNewReputererAndDelegaterRewardsSettledEvent(ctx, blockHeight, reputerAndDelegatorRewards)
+	types.EmitNewReputerAndDelegaterRewardsSettledEvent(ctx, blockHeight, reputerAndDelegatorRewards)
 	return ret
 }
 

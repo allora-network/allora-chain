@@ -60,7 +60,7 @@ func EmitNewForecasterRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeig
 	ctx.EventManager().EmitEvent(NewRewardsSetEventBase(EventTypeForecasterRewardsSettled, blockHeight, rewards))
 }
 
-func EmitNewReputererAndDelegaterRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
+func EmitNewReputerAndDelegaterRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
