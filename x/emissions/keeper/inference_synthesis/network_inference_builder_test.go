@@ -333,11 +333,9 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValues() {
 	}
 }
 
-/*
 func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValues() {
-	valueBundle, epochGet := s.getEpoch3ValueBundle()
-
-	slog.Printf("ValueBundle.OneOutForecasterValues: %v", valueBundle.OneOutForecasterValues)
+	networkInferenceBuilder, epochGet := s.getEpoch3ValueBundle()
+	valueBundle := networkInferenceBuilder.SetOneOutForecasterValues().Build()
 
 	expectedValues := map[string]alloraMath.Dec{
 		"forecaster0": epochGet[3]("network_inference_oneout_5"),
@@ -358,9 +356,8 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValues() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValues() {
-	valueBundle, epochGet := s.getEpoch3ValueBundle()
-
-	slog.Printf("ValueBundle.OneInForecasterValues: %v", valueBundle.OneInForecasterValues)
+	networkInferenceBuilder, epochGet := s.getEpoch3ValueBundle()
+	valueBundle := networkInferenceBuilder.SetOneInValues().Build()
 
 	expectedValues := map[string]alloraMath.Dec{
 		"forecaster0": epochGet[3]("network_naive_inference_onein_0"),
@@ -423,6 +420,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("1")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -666,5 +664,3 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 	s.Require().Len(valueBundle.OneOutForecasterValues, 3)
 	s.Require().Len(valueBundle.OneInForecasterValues, 3)
 }
-
-*/
