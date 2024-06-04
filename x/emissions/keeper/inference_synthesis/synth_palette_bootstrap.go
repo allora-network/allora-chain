@@ -9,10 +9,17 @@ import (
 // Just requires these props:: ctx, k, topicId, inferers, forecasts
 func (p *SynthPalette) BootstrapRegretData() error {
 	p.AllInferersAreNew = true
+	var notNewInfererAddress string
+	notNewInfererCount := 0
 	for _, inferer := range p.Inferers {
 		regret, noPriorRegret, err := p.K.GetInfererNetworkRegret(p.Ctx, p.TopicId, inferer)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting inferer regret")
+		}
+
+		if !noPriorRegret {
+			notNewInfererCount++
+			notNewInfererAddress = inferer
 		}
 
 		p.AllInferersAreNew = p.AllInferersAreNew && noPriorRegret
@@ -22,14 +29,19 @@ func (p *SynthPalette) BootstrapRegretData() error {
 		}
 	}
 
-	p.AllForecastersAreNew = true
+	if notNewInfererCount == 1 {
+		// There is exactly one not-new inferer
+		// Save the address of the not-new inferer
+		p.SingleInfererNotNewAddress = notNewInfererAddress
+		p.SingleInfererNotNew = true
+	}
+
 	for _, forecaster := range p.Forecasters {
 		regret, noPriorRegret, err := p.K.GetForecasterNetworkRegret(p.Ctx, p.TopicId, forecaster)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
 
-		p.AllForecastersAreNew = p.AllForecastersAreNew && noPriorRegret
 		p.ForecasterRegrets[forecaster] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
@@ -78,8 +90,8 @@ func (p SynthPalette) Clone() SynthPalette {
 		ForecastByWorker:                 forecastByWorker,
 		ForecastImpliedInferenceByWorker: forecastImpliedInferenceByWorker,
 		ForecasterRegrets:                forecasterRegrets,
-		AllForecastersAreNew:             p.AllForecastersAreNew,
-		AllWorkersAreNew:                 p.AllWorkersAreNew,
+		SingleInfererNotNewAddress:       p.SingleInfererNotNewAddress,
+		SingleInfererNotNew:              p.SingleInfererNotNew,
 		NetworkCombinedLoss:              p.NetworkCombinedLoss,
 		Epsilon:                          p.Epsilon,
 		FTolerance:                       p.FTolerance,

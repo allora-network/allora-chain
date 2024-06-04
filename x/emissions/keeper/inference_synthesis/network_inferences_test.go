@@ -14,14 +14,6 @@ import (
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// instantiate a AllWorkersAreNew struct
-// func NewWorkersAreNew(v bool) inference_synthesis.AllWorkersAreNew {
-// 	return inference_synthesis.AllWorkersAreNew{
-// 		AllInferersAreNew:    v,
-// 		AllForecastersAreNew: v,
-// 	}
-// }
-
 // TestMakeMapFromWorkerToTheirWork tests the makeMapFromWorkerToTheirWork function for correctly mapping workers to their inferences.
 func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 	tests := []struct {
