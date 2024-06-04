@@ -4,6 +4,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
@@ -34,121 +35,116 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
 		regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
 		maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
 
-		weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, cNorm, pNorm)
+		weight, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm, cNorm)
 		s.Require().NoError(err)
 
 		testutil.InEpsilon5(s.T(), weight, tc.expectedWeight)
 	}
 }
 
-/*
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorkersOneForecaster() {
-	forecasts := &emissions.Forecasts{
-		Forecasts: []*emissions.Forecast{
-			{
-				Forecaster: "forecaster0",
-				ForecastElements: []*emissions.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("4")},
-				},
-			},
-		},
-	}
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
-	expected := map[string]*emissions.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.31351720")},
-	}
 
-	inferenceByWorker := map[string]*emissions.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("2")},
-	}
-	result, err := inference_synthesis.CalcForecastImpliedInferences(
-		inferenceByWorker,
-		alloraMath.GetSortedKeys(inferenceByWorker),
-		forecasts,
-		networkCombinedLoss,
-		false,
-		epsilon,
-		fTolerance,
-		pNorm,
-		cNorm,
-	)
-	s.Require().NoError(err)
-
-	for key, expectedValue := range expected {
-		actualValue, exists := result[key]
-		s.Require().True(exists, "Expected key does not exist in result map")
-		s.Require().True(
-			alloraMath.InDelta(
-				expectedValue.Value,
-				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.00001"),
-			), "Values do not match for key: %s %s %s",
-			key,
-			expectedValue.Value.String(),
-			actualValue.Value.String(),
-		)
-	}
-}
-*/
-
-/*
-func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesEpoch2() {
-	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	fTolerance := alloraMath.MustNewDecFromString("0.01")
-	pNorm := alloraMath.MustNewDecFromString("2.0")
-	cNorm := alloraMath.MustNewDecFromString("0.75")
-
-	// EPOCH 2 forecasted_loss_x_for_y
-	forecasts := &emissions.Forecasts{
-		Forecasts: []*emissions.Forecast{
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
 			{
 				Forecaster: "forecaster0",
-				ForecastElements: []*emissions.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("-1.18172420646634")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("0.26621077264804827")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("-3.3897339254838474")},
-					{Inferer: "worker3", Value: alloraMath.MustNewDecFromString("-2.571846047295651")},
-					{Inferer: "worker4", Value: alloraMath.MustNewDecFromString("-2.0259184257783027")},
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("3")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("4")},
 				},
 			},
 		},
 	}
 
-	// EPOCH 2 inference_x
-	inferenceByWorker := map[string]*emissions.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("-0.230622933739544")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("-0.19693894066605602")},
-		"worker2": {Value: alloraMath.MustNewDecFromString("0.048704500498029504")},
-		"worker3": {Value: alloraMath.MustNewDecFromString("0.054145121711977245")},
-		"worker4": {Value: alloraMath.MustNewDecFromString("0.22919548623217473")},
+	expected := map[string]*emissionstypes.Inference{
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.019430060840596847626563741935871")},
 	}
-
-	// EPOCH 1 network_loss
-	networkCombinedLoss := alloraMath.MustNewDecFromString("-4.9196819027651495")
-
-	// EPOCH 2 forecast_implied_inference_0
-	expected := map[string]*emissions.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("0.05403102080389692")},
+	inferenceByWorker := map[string]*emissionstypes.Inference{
+		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("2")},
 	}
+	palette := inferencesynthesis.SynthPalette{
+		InferenceByWorker:   inferenceByWorker,
+		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
+		Forecasters:         []string{"forecaster0"},
+		Inferers:            []string{"worker0", "worker1"},
+		AllInferersAreNew:   false,
+		NetworkCombinedLoss: networkCombinedLoss,
+		Epsilon:             epsilon,
+		FTolerance:          fTolerance,
+		PNorm:               pNorm,
+		CNorm:               cNorm,
+	}
+	result, err := palette.CalcForecastImpliedInferences()
+	s.Require().NoError(err)
 
-	result, err := inference_synthesis.CalcForecastImpliedInferences(
-		inferenceByWorker,
-		alloraMath.GetSortedKeys(inferenceByWorker),
-		forecasts,
-		networkCombinedLoss,
-		false,
-		epsilon,
-		fTolerance,
-		pNorm,
-		cNorm,
-	)
+	for key, expectedValue := range expected {
+		actualValue, exists := result[key]
+		s.Require().True(exists, "Expected key does not exist in result map")
+		s.Require().True(
+			alloraMath.InDelta(
+				expectedValue.Value,
+				actualValue.Value,
+				alloraMath.MustNewDecFromString("0.00001"),
+			), "Values do not match for key: %s %s %s",
+			key,
+			expectedValue.Value.String(),
+			actualValue.Value.String(),
+		)
+	}
+}
 
+func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
+	epochGet := GetSimulatedValuesGetterForEpochs()
+	epoch2Get := epochGet[2]
+
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				Forecaster: "forecaster0",
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: "worker0", Value: epoch2Get("forecasted_loss_0_for_0")},
+					{Inferer: "worker1", Value: epoch2Get("forecasted_loss_0_for_1")},
+					{Inferer: "worker2", Value: epoch2Get("forecasted_loss_0_for_2")},
+					{Inferer: "worker3", Value: epoch2Get("forecasted_loss_0_for_3")},
+					{Inferer: "worker4", Value: epoch2Get("forecasted_loss_0_for_4")},
+				},
+			},
+		},
+	}
+	networkCombinedLoss := epoch2Get("network_loss")
+	epsilon := alloraMath.MustNewDecFromString("1e-4")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+	expected := map[string]*emissionstypes.Inference{
+		"forecaster0": {Value: epoch2Get("forecast_implied_inference_0")},
+	}
+	inferenceByWorker := map[string]*emissionstypes.Inference{
+		"worker0": {Value: epoch2Get("inference_0")},
+		"worker1": {Value: epoch2Get("inference_1")},
+		"worker2": {Value: epoch2Get("inference_2")},
+		"worker3": {Value: epoch2Get("inference_3")},
+		"worker4": {Value: epoch2Get("inference_4")},
+	}
+	palette := inferencesynthesis.SynthPalette{
+		InferenceByWorker:   inferenceByWorker,
+		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
+		Forecasters:         []string{"forecaster0"},
+		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
+		AllInferersAreNew:   false,
+		NetworkCombinedLoss: networkCombinedLoss,
+		Epsilon:             epsilon,
+		FTolerance:          fTolerance,
+		PNorm:               pNorm,
+		CNorm:               cNorm,
+	}
+	result, err := palette.CalcForecastImpliedInferences()
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
@@ -165,4 +161,67 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesEpoch2() 
 		)
 	}
 }
-*/
+
+func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
+	epochGet := GetSimulatedValuesGetterForEpochs()
+	epoch3Get := epochGet[3]
+
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				Forecaster: "forecaster0",
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: "worker0", Value: epoch3Get("forecasted_loss_0_for_0")},
+					{Inferer: "worker1", Value: epoch3Get("forecasted_loss_0_for_1")},
+					{Inferer: "worker2", Value: epoch3Get("forecasted_loss_0_for_2")},
+					{Inferer: "worker3", Value: epoch3Get("forecasted_loss_0_for_3")},
+					{Inferer: "worker4", Value: epoch3Get("forecasted_loss_0_for_4")},
+				},
+			},
+		},
+	}
+
+	networkCombinedLoss := epoch3Get("network_loss")
+	epsilon := alloraMath.MustNewDecFromString("1e-4")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+	expected := map[string]*emissionstypes.Inference{
+		"forecaster0": {Value: epoch3Get("forecast_implied_inference_0")},
+	}
+	inferenceByWorker := map[string]*emissionstypes.Inference{
+		"worker0": {Value: epoch3Get("inference_0")},
+		"worker1": {Value: epoch3Get("inference_1")},
+		"worker2": {Value: epoch3Get("inference_2")},
+		"worker3": {Value: epoch3Get("inference_3")},
+		"worker4": {Value: epoch3Get("inference_4")},
+	}
+	palette := inferencesynthesis.SynthPalette{
+		InferenceByWorker:   inferenceByWorker,
+		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
+		Forecasters:         []string{"forecaster0"},
+		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
+		AllInferersAreNew:   false,
+		NetworkCombinedLoss: networkCombinedLoss,
+		Epsilon:             epsilon,
+		FTolerance:          fTolerance,
+		PNorm:               pNorm,
+		CNorm:               cNorm,
+	}
+	result, err := palette.CalcForecastImpliedInferences()
+	s.Require().NoError(err)
+	for key, expectedValue := range expected {
+		actualValue, exists := result[key]
+		s.Require().True(exists, "Expected key does not exist in result map")
+		s.Require().True(
+			alloraMath.InDelta(
+				expectedValue.Value,
+				actualValue.Value,
+				alloraMath.MustNewDecFromString("0.0001"),
+			), "Values do not match for key: %s %s %s",
+			key,
+			expectedValue.Value.String(),
+			actualValue.Value.String(),
+		)
+	}
+}

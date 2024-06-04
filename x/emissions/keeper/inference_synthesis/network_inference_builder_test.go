@@ -436,6 +436,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 			Forecasts:           forecasts,
 			NetworkCombinedLoss: networkCombinedLoss,
 			Epsilon:             epsilon,
+			FTolerance:          fTolerance,
 			PNorm:               pNorm,
 			CNorm:               cNorm,
 		},
@@ -597,7 +598,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.3")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
-	// fTolerance := alloraMath.MustNewDecFromString("0.01")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -648,6 +649,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 			Forecasts:           forecasts,
 			NetworkCombinedLoss: networkCombinedLoss,
 			Epsilon:             epsilon,
+			FTolerance:          fTolerance,
 			PNorm:               pNorm,
 			CNorm:               cNorm,
 		},

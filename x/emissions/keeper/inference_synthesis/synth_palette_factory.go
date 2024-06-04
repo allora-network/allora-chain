@@ -18,14 +18,14 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 		TopicId:                          req.TopicId,
 		Inferers:                         sortedInferers,
 		InferenceByWorker:                inferenceByWorker,
-		InfererRegrets:                   make(map[string]StatefulRegret), // Populated below
+		InfererRegrets:                   make(map[string]*StatefulRegret), // Populated below
 		Forecasters:                      sortedForecasters,
 		ForecastByWorker:                 forecastByWorker,
-		ForecastImpliedInferenceByWorker: nil,                             // Populated below
-		ForecasterRegrets:                make(map[string]StatefulRegret), // Populated below
-		AllInferersAreNew:                true,                            // Populated below
-		AllForecastersAreNew:             true,                            // Populated below
-		AllWorkersAreNew:                 true,                            // Populated below
+		ForecastImpliedInferenceByWorker: nil,                              // Populated below
+		ForecasterRegrets:                make(map[string]*StatefulRegret), // Populated below
+		AllInferersAreNew:                true,                             // Populated below
+		AllForecastersAreNew:             true,                             // Populated below
+		AllWorkersAreNew:                 true,                             // Populated below
 		NetworkCombinedLoss:              req.NetworkCombinedLoss,
 		Epsilon:                          req.Epsilon,
 		FTolerance:                       req.FTolerance,
@@ -37,11 +37,13 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 	palette.BootstrapRegretData()
 	palette.AllWorkersAreNew = palette.AllInferersAreNew && palette.AllForecastersAreNew
 
+	paletteCopy := palette.Clone()
 	// Populates: forecastImpliedInferenceByWorker,
-	err := palette.UpdateForecastImpliedInferences()
+	err := paletteCopy.UpdateForecastImpliedInferences()
 	if err != nil {
 		return SynthPalette{}, err
 	}
+	palette.ForecastImpliedInferenceByWorker = paletteCopy.ForecastImpliedInferenceByWorker
 
 	return palette, nil
 }

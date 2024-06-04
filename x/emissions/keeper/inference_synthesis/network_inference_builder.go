@@ -38,13 +38,15 @@ func NewNetworkInferenceBuilderFromSynthRequest(
 
 // Calculates the network combined inference I_i, Equation 9
 func (b *NetworkInferenceBuilder) SetCombinedValue() *NetworkInferenceBuilder {
-	weights, err := b.palette.CalcWeightsGivenWorkers()
+	palette := b.palette.Clone()
+
+	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
 		b.ctx.Logger().Warn(fmt.Sprintf("Error calculating weights for combined inference: %s", err.Error()))
 		return b
 	}
 
-	combinedInference, err := b.palette.CalcWeightedInference(weights)
+	combinedInference, err := palette.CalcWeightedInference(weights)
 	if err != nil {
 		b.ctx.Logger().Warn(fmt.Sprintf("Error calculating combined inference: %s", err.Error()))
 		return b
@@ -104,6 +106,7 @@ func (b *NetworkInferenceBuilder) SetNaiveValue() *NetworkInferenceBuilder {
 // Calculate the one-out inference given a withheld inferer
 func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Worker) (alloraMath.Dec, error) {
 	palette := b.palette.Clone()
+	paletteCopy := palette.Clone()
 
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
@@ -113,17 +116,20 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 		}
 	}
 	palette.Inferers = remainingInferers // Override the inferers in the palette
+	paletteCopy.Inferers = remainingInferers
 
 	// Recalculate the forecast-implied inferences without the worker's inference
 	// This is necessary because the forecast-implied inferences are calculated based on the inferences of the inferers
 	palette.UpdateForecastImpliedInferences()
 
-	weights, err := palette.CalcWeightsGivenWorkers()
+	paletteCopy.ForecastImpliedInferenceByWorker = palette.ForecastImpliedInferenceByWorker
+
+	weights, err := paletteCopy.CalcWeightsGivenWorkers()
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
 	}
 
-	oneOutNetworkInferenceWithoutInferer, err := palette.CalcWeightedInference(weights)
+	oneOutNetworkInferenceWithoutInferer, err := paletteCopy.CalcWeightedInference(weights)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for inferer")
 	}
@@ -218,7 +224,7 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 		}
-		palette.InfererRegrets[inferer] = StatefulRegret{
+		palette.InfererRegrets[inferer] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
@@ -227,7 +233,7 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 	}
-	palette.ForecasterRegrets[oneInForecaster] = StatefulRegret{
+	palette.ForecasterRegrets[oneInForecaster] = &StatefulRegret{
 		regret:        regret.Value,
 		noPriorRegret: noPriorRegret,
 	}

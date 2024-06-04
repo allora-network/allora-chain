@@ -16,7 +16,7 @@ func (p *SynthPalette) BootstrapRegretData() error {
 		}
 
 		p.AllInferersAreNew = p.AllInferersAreNew && noPriorRegret
-		p.InfererRegrets[inferer] = StatefulRegret{
+		p.InfererRegrets[inferer] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
@@ -30,7 +30,7 @@ func (p *SynthPalette) BootstrapRegretData() error {
 		}
 
 		p.AllForecastersAreNew = p.AllForecastersAreNew && noPriorRegret
-		p.ForecasterRegrets[forecaster] = StatefulRegret{
+		p.ForecasterRegrets[forecaster] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
@@ -43,24 +43,28 @@ func (p *SynthPalette) BootstrapRegretData() error {
 func (p SynthPalette) Clone() SynthPalette {
 	inferenceByWorker := make(map[Worker]*emissionstypes.Inference, len(p.InferenceByWorker))
 	for k, v := range p.InferenceByWorker {
-		inferenceByWorker[k] = v
+		inferenceCopy := *v
+		inferenceByWorker[k] = &inferenceCopy
 	}
 	forecastByWorker := make(map[Worker]*emissionstypes.Forecast, len(p.ForecastByWorker))
 	for k, v := range p.ForecastByWorker {
-		forecastByWorker[k] = v
+		forecastCopy := *v
+		forecastByWorker[k] = &forecastCopy
 	}
 	forecastImpliedInferenceByWorker := make(map[Worker]*emissionstypes.Inference, len(p.ForecastImpliedInferenceByWorker))
 	for k, v := range p.ForecastImpliedInferenceByWorker {
 		inferenceCopy := *v
 		forecastImpliedInferenceByWorker[k] = &inferenceCopy
 	}
-	infererRegrets := make(map[Worker]StatefulRegret, len(p.InfererRegrets))
+	infererRegrets := make(map[Worker]*StatefulRegret, len(p.InfererRegrets))
 	for k, v := range p.InfererRegrets {
-		infererRegrets[k] = v
+		regretCopy := *v
+		infererRegrets[k] = &regretCopy
 	}
-	forecasterRegrets := make(map[Worker]StatefulRegret, len(p.ForecasterRegrets))
+	forecasterRegrets := make(map[Worker]*StatefulRegret, len(p.ForecasterRegrets))
 	for k, v := range p.ForecasterRegrets {
-		forecasterRegrets[k] = v
+		regretCopy := *v
+		forecasterRegrets[k] = &regretCopy
 	}
 
 	return SynthPalette{
@@ -78,6 +82,7 @@ func (p SynthPalette) Clone() SynthPalette {
 		AllWorkersAreNew:                 p.AllWorkersAreNew,
 		NetworkCombinedLoss:              p.NetworkCombinedLoss,
 		Epsilon:                          p.Epsilon,
+		FTolerance:                       p.FTolerance,
 		PNorm:                            p.PNorm,
 		CNorm:                            p.CNorm,
 	}
