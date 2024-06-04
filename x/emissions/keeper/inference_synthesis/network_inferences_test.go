@@ -2,11 +2,12 @@ package inference_synthesis_test
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 
-	// cosmosMath "cosmossdk.io/math"
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	// "github.com/allora-network/allora-chain/test/testutil"
+	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/stretchr/testify/assert"
 
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
@@ -80,9 +81,9 @@ func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 	}
 }
 
-/*
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	epochGet := GetSimulatedValuesGetterForEpochs()
+	epoch2Get := epochGet[2]
 	epoch3Get := epochGet[3]
 
 	require := s.Require()
@@ -132,7 +133,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer0,
-					CombinedValue:       epoch3Get("reputer_0_loss_network_inference"),
+					CombinedValue:       epoch2Get("reputer_0_loss_network_inference"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -140,7 +141,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer1,
-					CombinedValue:       epoch3Get("reputer_1_loss_network_inference"),
+					CombinedValue:       epoch2Get("reputer_1_loss_network_inference"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -148,7 +149,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer2,
-					CombinedValue:       epoch3Get("reputer_2_loss_network_inference"),
+					CombinedValue:       epoch2Get("reputer_2_loss_network_inference"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -156,7 +157,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer3,
-					CombinedValue:       epoch3Get("reputer_3_loss_network_inference"),
+					CombinedValue:       epoch2Get("reputer_3_loss_network_inference"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -164,7 +165,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			{
 				ValueBundle: &emissionstypes.ValueBundle{
 					Reputer:             reputer4,
-					CombinedValue:       epoch3Get("reputer_4_loss_network_inference"),
+					CombinedValue:       epoch2Get("reputer_4_loss_network_inference"),
 					ReputerRequestNonce: reputerRequestNonce,
 					TopicId:             topicId,
 				},
@@ -193,6 +194,23 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	stake5 := cosmosMath.NewInt(205385).Mul(cosmosOneE18)
 	err = keeper.AddStake(s.ctx, topicId, reputer4, stake5)
 	require.NoError(err)
+
+	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
+	for workerIndex, reputer := range reputerAddresses {
+		stakeValue := epoch3Get("reputer_stake_" + strconv.Itoa(workerIndex))
+
+		stakeValueScaled, err := stakeValue.Mul(alloraMath.MustNewDecFromString("1e18"))
+		s.Require().NoError(err)
+
+		stakeValueFloored, err := stakeValueScaled.Floor()
+		s.Require().NoError(err)
+
+		stakeInt, ok := cosmosMath.NewIntFromString(stakeValueFloored.String())
+		s.Require().True(ok)
+
+		err = keeper.AddStake(s.ctx, topicId, reputer, stakeInt)
+		s.Require().NoError(err)
+	}
 
 	// Set Inferences
 	inferences := emissionstypes.Inferences{
@@ -325,11 +343,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set inferer network regrets
 	infererNetworkRegrets := map[string]inferencesynthesis.Regret{
-		reputer0: epoch3Get("inference_regret_worker_0"),
-		reputer1: epoch3Get("inference_regret_worker_1"),
-		reputer2: epoch3Get("inference_regret_worker_2"),
-		reputer3: epoch3Get("inference_regret_worker_3"),
-		reputer4: epoch3Get("inference_regret_worker_4"),
+		reputer0: epoch2Get("inference_regret_worker_0"),
+		reputer1: epoch2Get("inference_regret_worker_1"),
+		reputer2: epoch2Get("inference_regret_worker_2"),
+		reputer3: epoch2Get("inference_regret_worker_3"),
+		reputer4: epoch2Get("inference_regret_worker_4"),
 	}
 
 	for inferer, regret := range infererNetworkRegrets {
@@ -343,9 +361,9 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set forecaster network regrets
 	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
-		forecaster0: epoch3Get("inference_regret_worker_5"),
-		forecaster1: epoch3Get("inference_regret_worker_6"),
-		forecaster2: epoch3Get("inference_regret_worker_7"),
+		forecaster0: epoch2Get("inference_regret_worker_5"),
+		forecaster1: epoch2Get("inference_regret_worker_6"),
+		forecaster2: epoch2Get("inference_regret_worker_7"),
 	}
 
 	for forecaster, regret := range forecasterNetworkRegrets {
@@ -372,29 +390,38 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	}
 
 	/// Epoch 3 values
-	setOneInForecasterNetworkRegret(forecaster0, reputer0, epoch3Get("inference_regret_worker_0_onein_0").String())
-	setOneInForecasterNetworkRegret(forecaster0, reputer1, epoch3Get("inference_regret_worker_1_onein_0").String())
-	setOneInForecasterNetworkRegret(forecaster0, reputer2, epoch3Get("inference_regret_worker_2_onein_0").String())
-	setOneInForecasterNetworkRegret(forecaster0, reputer3, epoch3Get("inference_regret_worker_3_onein_0").String())
-	setOneInForecasterNetworkRegret(forecaster0, reputer4, epoch3Get("inference_regret_worker_4_onein_0").String())
+	setOneInForecasterNetworkRegret(forecaster0, reputer0, epoch2Get("inference_regret_worker_0_onein_0").String())
+	setOneInForecasterNetworkRegret(forecaster0, reputer1, epoch2Get("inference_regret_worker_1_onein_0").String())
+	setOneInForecasterNetworkRegret(forecaster0, reputer2, epoch2Get("inference_regret_worker_2_onein_0").String())
+	setOneInForecasterNetworkRegret(forecaster0, reputer3, epoch2Get("inference_regret_worker_3_onein_0").String())
+	setOneInForecasterNetworkRegret(forecaster0, reputer4, epoch2Get("inference_regret_worker_4_onein_0").String())
 
-	setOneInForecasterNetworkRegret(forecaster0, forecaster0, epoch3Get("inference_regret_worker_5_onein_0").String())
+	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster0, emissionstypes.TimestampedValue{
+		BlockHeight: blockHeight,
+		Value:       epoch2Get("inference_regret_worker_5_onein_0"),
+	})
 
-	setOneInForecasterNetworkRegret(forecaster1, reputer0, epoch3Get("inference_regret_worker_0_onein_1").String())
-	setOneInForecasterNetworkRegret(forecaster1, reputer1, epoch3Get("inference_regret_worker_1_onein_1").String())
-	setOneInForecasterNetworkRegret(forecaster1, reputer2, epoch3Get("inference_regret_worker_2_onein_1").String())
-	setOneInForecasterNetworkRegret(forecaster1, reputer3, epoch3Get("inference_regret_worker_3_onein_1").String())
-	setOneInForecasterNetworkRegret(forecaster1, reputer4, epoch3Get("inference_regret_worker_4_onein_1").String())
+	setOneInForecasterNetworkRegret(forecaster1, reputer0, epoch2Get("inference_regret_worker_0_onein_1").String())
+	setOneInForecasterNetworkRegret(forecaster1, reputer1, epoch2Get("inference_regret_worker_1_onein_1").String())
+	setOneInForecasterNetworkRegret(forecaster1, reputer2, epoch2Get("inference_regret_worker_2_onein_1").String())
+	setOneInForecasterNetworkRegret(forecaster1, reputer3, epoch2Get("inference_regret_worker_3_onein_1").String())
+	setOneInForecasterNetworkRegret(forecaster1, reputer4, epoch2Get("inference_regret_worker_4_onein_1").String())
 
-	setOneInForecasterNetworkRegret(forecaster1, forecaster1, epoch3Get("inference_regret_worker_5_onein_1").String())
+	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster1, emissionstypes.TimestampedValue{
+		BlockHeight: blockHeight,
+		Value:       epoch2Get("inference_regret_worker_5_onein_1"),
+	})
 
-	setOneInForecasterNetworkRegret(forecaster2, reputer0, epoch3Get("inference_regret_worker_0_onein_2").String())
-	setOneInForecasterNetworkRegret(forecaster2, reputer1, epoch3Get("inference_regret_worker_1_onein_2").String())
-	setOneInForecasterNetworkRegret(forecaster2, reputer2, epoch3Get("inference_regret_worker_2_onein_2").String())
-	setOneInForecasterNetworkRegret(forecaster2, reputer3, epoch3Get("inference_regret_worker_3_onein_2").String())
-	setOneInForecasterNetworkRegret(forecaster2, reputer4, epoch3Get("inference_regret_worker_4_onein_2").String())
+	setOneInForecasterNetworkRegret(forecaster2, reputer0, epoch2Get("inference_regret_worker_0_onein_2").String())
+	setOneInForecasterNetworkRegret(forecaster2, reputer1, epoch2Get("inference_regret_worker_1_onein_2").String())
+	setOneInForecasterNetworkRegret(forecaster2, reputer2, epoch2Get("inference_regret_worker_2_onein_2").String())
+	setOneInForecasterNetworkRegret(forecaster2, reputer3, epoch2Get("inference_regret_worker_3_onein_2").String())
+	setOneInForecasterNetworkRegret(forecaster2, reputer4, epoch2Get("inference_regret_worker_4_onein_2").String())
 
-	setOneInForecasterNetworkRegret(forecaster2, forecaster2, epoch3Get("inference_regret_worker_5_onein_2").String())
+	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster2, emissionstypes.TimestampedValue{
+		BlockHeight: blockHeight,
+		Value:       epoch2Get("inference_regret_worker_5_onein_2"),
+	})
 
 	// Calculate
 	valueBundle, err :=
@@ -407,7 +434,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		)
 	require.NoError(err)
 	testutil.InEpsilon2(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
-	testutil.InEpsilon3(s.T(), valueBundle.NaiveValue, epoch3Get("network_naive_inference").String())
+	testutil.InEpsilon2(s.T(), valueBundle.NaiveValue, epoch3Get("network_naive_inference").String())
 
 	for _, inference := range inferences.Inferences {
 		found := false
@@ -422,11 +449,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, forecasterValue := range valueBundle.ForecasterValues {
 		switch string(forecasterValue.Worker) {
 		case forecaster0:
-			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_loss_0").String())
+			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_0").String())
 		case forecaster1:
-			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_loss_1").String())
+			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_1").String())
 		case forecaster2:
-			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_loss_2").String())
+			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_2").String())
 		default:
 			require.Fail("Unexpected forecaster %v", forecasterValue.Worker)
 		}
@@ -475,4 +502,3 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		}
 	}
 }
-*/
