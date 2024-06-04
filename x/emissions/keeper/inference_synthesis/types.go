@@ -48,6 +48,14 @@ type SynthRequest struct {
 	CNorm               alloraMath.Dec
 }
 
+type InferersNewStatus int
+
+const (
+	InferersAllNew InferersNewStatus = iota
+	InferersAllNewExceptOne
+	InferersNotNew
+)
+
 type SynthPaletteFactory struct{}
 
 type SynthPalette struct {
@@ -68,9 +76,10 @@ type SynthPalette struct {
 	ForecastByWorker                 map[Worker]*emissions.Forecast
 	ForecastImpliedInferenceByWorker map[Worker]*emissions.Inference
 	// Must respect the order of sister `forecasters` property
-	ForecasterRegrets   map[Worker]*StatefulRegret
-	AllInferersAreNew   bool
-	SingleInfererNotNew Worker
+	ForecasterRegrets map[Worker]*StatefulRegret
+
+	InferersNewStatus   InferersNewStatus
+	SingleNotNewInferer Worker
 	NetworkCombinedLoss Loss
 	Epsilon             alloraMath.Dec
 	FTolerance          alloraMath.Dec
