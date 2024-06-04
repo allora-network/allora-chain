@@ -1,7 +1,6 @@
 package inference_synthesis_test
 
 import (
-	slog "log"
 	"strconv"
 	"testing"
 	"time"
