@@ -68,12 +68,13 @@ type SynthPalette struct {
 	ForecastByWorker                 map[Worker]*emissions.Forecast
 	ForecastImpliedInferenceByWorker map[Worker]*emissions.Inference
 	// Must respect the order of sister `forecasters` property
-	ForecasterRegrets   map[Worker]*StatefulRegret
-	AllInferersAreNew   bool
-	SingleInfererNotNew Worker
-	NetworkCombinedLoss Loss
-	Epsilon             alloraMath.Dec
-	FTolerance          alloraMath.Dec
-	PNorm               alloraMath.Dec
-	CNorm               alloraMath.Dec
+	ForecasterRegrets          map[Worker]*StatefulRegret
+	AllInferersAreNew          bool
+	SingleInfererNotNew        bool
+	SingleInfererNotNewAddress Worker
+	NetworkCombinedLoss        Loss
+	Epsilon                    alloraMath.Dec
+	FTolerance                 alloraMath.Dec
+	PNorm                      alloraMath.Dec
+	CNorm                      alloraMath.Dec
 }

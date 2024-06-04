@@ -65,33 +65,33 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		}
 	}
 
-	moreThanOneNotNewInferer := p.SingleInfererNotNew == ""
-
-	// Calculate the weights from the normalized regrets
 	infererWeights := make(map[Worker]Weight)
-	for _, worker := range p.Inferers {
-		// If there is more than one not-new inferer, calculate the weight for the ones that are not new
-		var infererWeight = alloraMath.ZeroDec()
-		if moreThanOneNotNewInferer && !p.InfererRegrets[worker].noPriorRegret {
-			infererWeight, err = CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
-			if err != nil {
-				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
-			}
-		}
-		infererWeights[worker] = infererWeight
-	}
-
 	forecasterWeights := make(map[Worker]Weight)
-	if len(p.ForecasterRegrets) > 0 {
-		for _, worker := range p.Forecasters {
-			var forecasterWeight = alloraMath.ZeroDec()
-			if moreThanOneNotNewInferer && !p.ForecasterRegrets[worker].noPriorRegret {
-				forecasterWeight, err = CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, p.PNorm, p.CNorm)
+	if p.SingleInfererNotNew {
+		// Calculate the weights from the normalized regrets
+		for _, worker := range p.Inferers {
+			// If there is more than one not-new inferer, calculate the weight for the ones that are not new
+			var infererWeight = alloraMath.ZeroDec()
+			if !p.InfererRegrets[worker].noPriorRegret {
+				infererWeight, err = CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
 				if err != nil {
-					return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
+					return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
 				}
 			}
-			forecasterWeights[worker] = forecasterWeight
+			infererWeights[worker] = infererWeight
+		}
+
+		if len(p.ForecasterRegrets) > 0 {
+			for _, worker := range p.Forecasters {
+				var forecasterWeight = alloraMath.ZeroDec()
+				if !p.ForecasterRegrets[worker].noPriorRegret {
+					forecasterWeight, err = CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, p.PNorm, p.CNorm)
+					if err != nil {
+						return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
+					}
+				}
+				forecasterWeights[worker] = forecasterWeight
+			}
 		}
 	}
 
@@ -112,8 +112,8 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	err := error(nil)
 
 	// If there is only one not-new inferer, then just consider that inferer
-	if p.SingleInfererNotNew != "" {
-		singleInferer := p.SingleInfererNotNew
+	if p.SingleInfererNotNew {
+		singleInferer := p.SingleInfererNotNewAddress
 
 		runningUnnormalizedI_i, err = runningUnnormalizedI_i.Add(p.InferenceByWorker[singleInferer].Value)
 		if err != nil {

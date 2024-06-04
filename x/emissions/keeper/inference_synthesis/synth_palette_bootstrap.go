@@ -32,7 +32,8 @@ func (p *SynthPalette) BootstrapRegretData() error {
 	if notNewInfererCount == 1 {
 		// There is exactly one not-new inferer
 		// Save the address of the not-new inferer
-		p.SingleInfererNotNew = notNewInfererAddress
+		p.SingleInfererNotNewAddress = notNewInfererAddress
+		p.SingleInfererNotNew = true
 	}
 
 	for _, forecaster := range p.Forecasters {
@@ -89,6 +90,7 @@ func (p SynthPalette) Clone() SynthPalette {
 		ForecastByWorker:                 forecastByWorker,
 		ForecastImpliedInferenceByWorker: forecastImpliedInferenceByWorker,
 		ForecasterRegrets:                forecasterRegrets,
+		SingleInfererNotNewAddress:       p.SingleInfererNotNewAddress,
 		SingleInfererNotNew:              p.SingleInfererNotNew,
 		NetworkCombinedLoss:              p.NetworkCombinedLoss,
 		Epsilon:                          p.Epsilon,
