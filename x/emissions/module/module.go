@@ -73,6 +73,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
 	}
+	fmt.Println(">>>>>>>>>>>>>>>>>>> RegisterServices new migrator")
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the module.

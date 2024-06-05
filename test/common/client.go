@@ -180,6 +180,10 @@ func (c *Client) WaitForTx(ctx context.Context, hash string) (*coretypes.ResultT
 	return c.Clients[c.getNextClientNumber()].WaitForTx(ctx, hash)
 }
 
+func (c *Client) BlockHeight(ctx context.Context) (int64, error) {
+	return c.Clients[c.getNextClientNumber()].LatestBlockHeight(ctx)
+}
+
 // account code has to be concurrency aware
 
 func (c *Client) AccountRegistryCreate(name string) (

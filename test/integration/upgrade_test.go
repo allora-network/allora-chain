@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"fmt"
+	"time"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	testCommon "github.com/allora-network/allora-chain/test/common"
@@ -50,11 +51,16 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 func proposeUpgrade(m testCommon.TestConfig) uint64 {
 	name := "vIntegration"
 	summary := "Upgrade to vIntegration software version"
+
+	currHeight, err := m.Client.BlockHeight(m.Ctx)
+	require.NoError(m.T, err)
+	proposalHeight := currHeight + 50 // 4 1/6 minutes
+	m.T.Logf("Current Height: %d, proposing upgrade for %d", currHeight, proposalHeight)
 	msgSoftwareUpgrade := &upgradetypes.MsgSoftwareUpgrade{
 		Authority: authtypes.NewModuleAddress("gov").String(),
 		Plan: upgradetypes.Plan{
 			Name:   name,
-			Height: 1e6,
+			Height: proposalHeight,
 			Info:   "{}",
 		},
 	}
@@ -82,9 +88,32 @@ func proposeUpgrade(m testCommon.TestConfig) uint64 {
 	return submitProposalMsgResponse.ProposalId
 }
 
+func waitforProposalPass(m testCommon.TestConfig, proposalId uint64) {
+	proposalRequest := &govtypesv1.QueryProposalRequest{
+		ProposalId: proposalId,
+	}
+	proposal, err := m.Client.QueryGov().Proposal(m.Ctx, proposalRequest)
+	require.NoError(m.T, err)
+	require.NotNil(m.T, proposal)
+	require.NotNil(m.T, proposal.Proposal)
+	endTime := proposal.Proposal.VotingEndTime
+	require.NotNil(m.T, endTime)
+	diff := time.Until(*endTime) + 5*time.Second
+	m.T.Logf("Voting End Time: %s, sleeping %s seconds", endTime, diff)
+	time.Sleep(diff)
+
+	proposal, err = m.Client.QueryGov().Proposal(m.Ctx, proposalRequest)
+	require.NoError(m.T, err)
+	require.NotNil(m.T, proposal)
+	require.NotNil(m.T, proposal.Proposal)
+	require.Equal(m.T, govtypesv1.StatusPassed, proposal.Proposal.Status)
+}
+
 func UpgradeChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Propose Upgrade to vIntegration software version from v0 ---")
 	proposalId := proposeUpgrade(m)
 	m.T.Logf("--- Vote on Upgrade Proposal %d ---", proposalId)
 	voteOnProposal(m, proposalId)
+	m.T.Logf("--- Wating for Proposal %d to Pass ---", proposalId)
+	waitforProposalPass(m, proposalId)
 }
