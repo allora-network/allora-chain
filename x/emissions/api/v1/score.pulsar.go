@@ -18,7 +18,7 @@ import (
 var (
 	md_Score              protoreflect.MessageDescriptor
 	fd_Score_topic_id     protoreflect.FieldDescriptor
-	fd_Score_block_number protoreflect.FieldDescriptor
+	fd_Score_block_height protoreflect.FieldDescriptor
 	fd_Score_address      protoreflect.FieldDescriptor
 	fd_Score_score        protoreflect.FieldDescriptor
 )
@@ -27,7 +27,7 @@ func init() {
 	file_emissions_v1_score_proto_init()
 	md_Score = File_emissions_v1_score_proto.Messages().ByName("Score")
 	fd_Score_topic_id = md_Score.Fields().ByName("topic_id")
-	fd_Score_block_number = md_Score.Fields().ByName("block_number")
+	fd_Score_block_height = md_Score.Fields().ByName("block_height")
 	fd_Score_address = md_Score.Fields().ByName("address")
 	fd_Score_score = md_Score.Fields().ByName("score")
 }
@@ -103,9 +103,9 @@ func (x *fastReflection_Score) Range(f func(protoreflect.FieldDescriptor, protor
 			return
 		}
 	}
-	if x.BlockNumber != int64(0) {
-		value := protoreflect.ValueOfInt64(x.BlockNumber)
-		if !f(fd_Score_block_number, value) {
+	if x.BlockHeight != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockHeight)
+		if !f(fd_Score_block_height, value) {
 			return
 		}
 	}
@@ -138,8 +138,8 @@ func (x *fastReflection_Score) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
 	case "emissions.v1.Score.topic_id":
 		return x.TopicId != uint64(0)
-	case "emissions.v1.Score.block_number":
-		return x.BlockNumber != int64(0)
+	case "emissions.v1.Score.block_height":
+		return x.BlockHeight != int64(0)
 	case "emissions.v1.Score.address":
 		return x.Address != ""
 	case "emissions.v1.Score.score":
@@ -162,8 +162,8 @@ func (x *fastReflection_Score) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
 	case "emissions.v1.Score.topic_id":
 		x.TopicId = uint64(0)
-	case "emissions.v1.Score.block_number":
-		x.BlockNumber = int64(0)
+	case "emissions.v1.Score.block_height":
+		x.BlockHeight = int64(0)
 	case "emissions.v1.Score.address":
 		x.Address = ""
 	case "emissions.v1.Score.score":
@@ -187,8 +187,8 @@ func (x *fastReflection_Score) Get(descriptor protoreflect.FieldDescriptor) prot
 	case "emissions.v1.Score.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
-	case "emissions.v1.Score.block_number":
-		value := x.BlockNumber
+	case "emissions.v1.Score.block_height":
+		value := x.BlockHeight
 		return protoreflect.ValueOfInt64(value)
 	case "emissions.v1.Score.address":
 		value := x.Address
@@ -218,8 +218,8 @@ func (x *fastReflection_Score) Set(fd protoreflect.FieldDescriptor, value protor
 	switch fd.FullName() {
 	case "emissions.v1.Score.topic_id":
 		x.TopicId = value.Uint()
-	case "emissions.v1.Score.block_number":
-		x.BlockNumber = value.Int()
+	case "emissions.v1.Score.block_height":
+		x.BlockHeight = value.Int()
 	case "emissions.v1.Score.address":
 		x.Address = value.Interface().(string)
 	case "emissions.v1.Score.score":
@@ -246,8 +246,8 @@ func (x *fastReflection_Score) Mutable(fd protoreflect.FieldDescriptor) protoref
 	switch fd.FullName() {
 	case "emissions.v1.Score.topic_id":
 		panic(fmt.Errorf("field topic_id of message emissions.v1.Score is not mutable"))
-	case "emissions.v1.Score.block_number":
-		panic(fmt.Errorf("field block_number of message emissions.v1.Score is not mutable"))
+	case "emissions.v1.Score.block_height":
+		panic(fmt.Errorf("field block_height of message emissions.v1.Score is not mutable"))
 	case "emissions.v1.Score.address":
 		panic(fmt.Errorf("field address of message emissions.v1.Score is not mutable"))
 	case "emissions.v1.Score.score":
@@ -267,7 +267,7 @@ func (x *fastReflection_Score) NewField(fd protoreflect.FieldDescriptor) protore
 	switch fd.FullName() {
 	case "emissions.v1.Score.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
-	case "emissions.v1.Score.block_number":
+	case "emissions.v1.Score.block_height":
 		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.Score.address":
 		return protoreflect.ValueOfString("")
@@ -345,8 +345,8 @@ func (x *fastReflection_Score) ProtoMethods() *protoiface.Methods {
 		if x.TopicId != 0 {
 			n += 1 + runtime.Sov(uint64(x.TopicId))
 		}
-		if x.BlockNumber != 0 {
-			n += 1 + runtime.Sov(uint64(x.BlockNumber))
+		if x.BlockHeight != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockHeight))
 		}
 		l = len(x.Address)
 		if l > 0 {
@@ -399,8 +399,8 @@ func (x *fastReflection_Score) ProtoMethods() *protoiface.Methods {
 			i--
 			dAtA[i] = 0x1a
 		}
-		if x.BlockNumber != 0 {
-			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockNumber))
+		if x.BlockHeight != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockHeight))
 			i--
 			dAtA[i] = 0x10
 		}
@@ -479,9 +479,9 @@ func (x *fastReflection_Score) ProtoMethods() *protoiface.Methods {
 				}
 			case 2:
 				if wireType != 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockNumber", wireType)
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
 				}
-				x.BlockNumber = 0
+				x.BlockHeight = 0
 				for shift := uint(0); ; shift += 7 {
 					if shift >= 64 {
 						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
@@ -491,7 +491,7 @@ func (x *fastReflection_Score) ProtoMethods() *protoiface.Methods {
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.BlockNumber |= int64(b&0x7F) << shift
+					x.BlockHeight |= int64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -1108,7 +1108,7 @@ type Score struct {
 	unknownFields protoimpl.UnknownFields
 
 	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	BlockNumber int64  `protobuf:"varint,2,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 	Address     string `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
 	Score       string `protobuf:"bytes,4,opt,name=score,proto3" json:"score,omitempty"`
 }
@@ -1140,9 +1140,9 @@ func (x *Score) GetTopicId() uint64 {
 	return 0
 }
 
-func (x *Score) GetBlockNumber() int64 {
+func (x *Score) GetBlockHeight() int64 {
 	if x != nil {
-		return x.BlockNumber
+		return x.BlockHeight
 	}
 	return 0
 }
@@ -1208,9 +1208,9 @@ var file_emissions_v1_score_proto_rawDesc = []byte{
 	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xae, 0x01, 0x0a,
 	0x05, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
 	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49,
-	0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x6e, 0x75, 0x6d, 0x62, 0x65,
-	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x4e, 0x75,
-	0x6d, 0x62, 0x65, 0x72, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
+	0x64, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68,
+	0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65,
+	0x69, 0x67, 0x68, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18,
 	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x4d,
 	0x0a, 0x05, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8,
 	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,

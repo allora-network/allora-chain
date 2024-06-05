@@ -2,17 +2,8 @@ package inference_synthesis
 
 import (
 	cosmosMath "cosmossdk.io/math"
-	alloraMath "github.com/allora-network/allora-chain/math"
+	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
-
-type Worker = string
-type BlockHeight = int64
-type TopicId = uint64
-type Regret = alloraMath.Dec
-type Loss = alloraMath.Dec
-type Weight = alloraMath.Dec
-type InferenceValue = alloraMath.Dec
-type Stake = cosmosMath.Int
 
 func CosmosIntOneE18() cosmosMath.Int {
 	ret, ok := cosmosMath.NewIntFromString("1000000000000000000")
@@ -20,4 +11,22 @@ func CosmosIntOneE18() cosmosMath.Int {
 		panic("1*10^18 is not a valid cosmos int")
 	}
 	return ret
+}
+
+// Create a map from worker address to their inference or forecast-implied inference
+func MakeMapFromInfererToTheirInference(inferences []*emissions.Inference) map[Worker]*emissions.Inference {
+	inferencesByWorker := make(map[Worker]*emissions.Inference)
+	for _, inference := range inferences {
+		inferencesByWorker[inference.Inferer] = inference
+	}
+	return inferencesByWorker
+}
+
+// Create a map from worker address to their inference or forecast-implied inference
+func MakeMapFromForecasterToTheirForecast(forecasts []*emissions.Forecast) map[Worker]*emissions.Forecast {
+	forecastsByWorker := make(map[Worker]*emissions.Forecast)
+	for _, forecast := range forecasts {
+		forecastsByWorker[forecast.Forecaster] = forecast
+	}
+	return forecastsByWorker
 }

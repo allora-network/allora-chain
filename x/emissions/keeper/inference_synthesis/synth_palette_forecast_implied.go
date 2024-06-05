@@ -3,7 +3,7 @@ package inference_synthesis
 import (
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
@@ -11,41 +11,27 @@ import (
 //
 // Forecast without inference => weight in calculation of I_ik and I_i set to 0. Use latest available regret R_i-1,l
 // Inference without forecast => only weight in calculation of I_ik set to 0
-func CalcForecastImpliedInferences(
-	inferenceByWorker map[Worker]*emissions.Inference,
-	sortedWorkers []Worker,
-	forecasts *emissions.Forecasts,
-	networkCombinedLoss Loss,
-	allInferersAreNew bool,
-	epsilon alloraMath.Dec,
-	pNorm alloraMath.Dec,
-	cNorm alloraMath.Dec,
-) (map[Worker]*emissions.Inference, error) {
-	// Possibly add a small value to previous network loss avoid infinite logarithm
-	if networkCombinedLoss.Equal(alloraMath.ZeroDec()) {
-		// Take max of epsilon and 1 to avoid division by 0
-		networkCombinedLoss = alloraMath.Max(epsilon, alloraMath.OneDec())
-	}
-
+// A value of 0 => no inference corresponded to any of the forecasts from a forecaster
+//
+// Requires: forecasts, inferenceByWorker, allInferersAreNew, networkCombinedLoss, epsilon, pNorm, cNorm
+// Updates: forecastImpliedInferenceByWorker
+func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstypes.Inference, error) {
 	// "k" here is the forecaster's address
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
-	I_i := make(map[Worker]*emissions.Inference, len(forecasts.Forecasts))
-	for _, forecast := range forecasts.Forecasts {
-		if len(forecast.ForecastElements) > 0 {
+	I_i := make(map[Worker]*emissionstypes.Inference, len(p.Forecasters))
+	for _, forecaster := range p.Forecasters {
+		if len(p.ForecastByWorker[forecaster].ForecastElements) > 0 {
 			// Filter away all forecast elements that do not have an associated inference (match by worker)
 			// Will effectively set weight in formulas for forcast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
 			// Map inferer -> forecast element => only one (latest in array) forecast element per inferer
-			forecastElementsByInferer := make(map[Worker]*emissions.ForecastElement, 0)
+			forecastElementsByInferer := make(map[Worker]*emissionstypes.ForecastElement, 0)
 			sortedInferersInForecast := make([]Worker, 0)
-			for _, el := range forecast.ForecastElements {
-				for _, worker := range sortedWorkers {
+			for _, el := range p.ForecastByWorker[forecaster].ForecastElements {
+				if _, ok := p.InferenceByWorker[el.Inferer]; ok {
 					// Check that there is an inference for the worker forecasted before including the forecast element
 					// otherwise the max value below will be incorrect.
-					if el.Inferer == worker {
-						forecastElementsByInferer[el.Inferer] = el
-						sortedInferersInForecast = append(sortedInferersInForecast, el.Inferer)
-						break
-					}
+					forecastElementsByInferer[el.Inferer] = el
+					sortedInferersInForecast = append(sortedInferersInForecast, el.Inferer)
 				}
 			}
 
@@ -54,14 +40,14 @@ func CalcForecastImpliedInferences(
 			err := error(nil)
 
 			// Calculate the forecast-implied inferences I_ik
-			if allInferersAreNew {
+			if p.InferersNewStatus == InferersAllNew {
 				// If all inferers are new, take regular average of inferences
 				// This means that forecasters won't be able to influence the network inference when all inferers are new
 				// However this seeds losses for forecasters for future rounds
 
 				for _, inferer := range sortedInferersInForecast {
-					if inferenceByWorker[inferer] != nil {
-						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(inferenceByWorker[inferer].Value)
+					if p.InferenceByWorker[inferer] != nil {
+						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(p.InferenceByWorker[inferer].Value)
 						if err != nil {
 							return nil, errorsmod.Wrapf(err, "error adding dot product")
 						}
@@ -76,51 +62,38 @@ func CalcForecastImpliedInferences(
 
 				// Approximate forecast regrets of the network inference
 				// Map inferer -> regret
-				R_ik := make(map[Worker]Regret, len(forecastElementsByInferer))
-				// Weights used to map inferences to forecast-implied inferences
+				R_ik := make(map[Worker]*StatefulRegret, len(forecastElementsByInferer))
+				// Forecast-regret-informed weights dot product with inferences to yield forecast-implied inferences
 				// Map inferer -> weight
 				w_ik := make(map[Worker]Weight, len(forecastElementsByInferer))
 
 				// Define variable to store maximum regret for forecast k
-				first := true
-				var maxjRijk alloraMath.Dec
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
 				for _, j := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
-					R_ik[j], err = networkCombinedLoss.Sub(forecastElementsByInferer[j].Value)
+					R_ijk, err := p.NetworkCombinedLoss.Sub(forecastElementsByInferer[j].Value)
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating network loss per value")
 					}
-					if first {
-						maxjRijk = R_ik[j]
-						first = false
-					} else {
-						if R_ik[j].Gt(maxjRijk) {
-							maxjRijk = R_ik[j]
-						}
-					}
+					R_ik[j] = &StatefulRegret{regret: R_ijk, noPriorRegret: false}
 				}
 
-				// Calculate normalized forecasted regrets per forecaster R_ijk then weights w_ijk per forecaster
-				var err error
-				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
-				for _, j := range sortedInferersInForecast {
-					R_ik[j], err = R_ik[j].Quo(maxjRijk.Abs()) // \hatR_ijk = R_ijk / |max_{j'}(R_ijk)|
+				if len(sortedInferersInForecast) > 0 {
+					p.InfererRegrets = R_ik
+					p.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
+
+					weights, err := p.CalcWeightsGivenWorkers()
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}
-					w_ijk, err := alloraMath.Gradient(pNorm, cNorm, R_ik[j]) // w_ijk = φ'_p(\hatR_ijk)
-					if err != nil {
-						return nil, errorsmod.Wrapf(err, "error calculating gradient")
-					}
-					w_ik[j] = w_ijk
+					w_ik = weights.inferers
 				}
 
 				// Calculate the forecast-implied inferences I_ik
 				for _, j := range sortedInferersInForecast {
 					w_ijk := w_ik[j]
-					if inferenceByWorker[j] != nil && !(w_ijk.Equal(alloraMath.ZeroDec())) {
-						thisDotProduct, err := w_ijk.Mul(inferenceByWorker[j].Value)
+					if p.InferenceByWorker[j] != nil && !(w_ijk.Equal(alloraMath.ZeroDec())) {
+						thisDotProduct, err := w_ijk.Mul(p.InferenceByWorker[j].Value)
 						if err != nil {
 							return nil, errorsmod.Wrapf(err, "error calculating dot product")
 						}
@@ -140,14 +113,28 @@ func CalcForecastImpliedInferences(
 			if err != nil {
 				return nil, errorsmod.Wrapf(err, "error calculating forecast value")
 			}
-			forecastImpliedInference := emissions.Inference{
-				Inferer: forecast.Forecaster,
+			forecastImpliedInference := emissionstypes.Inference{
+				Inferer: forecaster,
 				Value:   forecastValue,
 			}
-			I_i[forecast.Forecaster] = &forecastImpliedInference
+			I_i[forecaster] = &forecastImpliedInference
 		}
 	}
 
-	// A value of 0 => no inference corresponded to any of the forecasts from a forecaster
 	return I_i, nil
+}
+
+// Calculate the forecast-implied inferences I_ik given inferences, forecasts and network losses.
+// See docs of CalcForecastImpliedInferences for more details on calculation.
+// This calculates and then sets the forecastImpliedInferenceByWorker property of the palette.
+// Requires: forecasts, inferenceByWorker, allInferersAreNew, networkCombinedLoss, epsilon, pNorm, cNorm
+// Updates: forecastImpliedInferenceByWorker
+func (p *SynthPalette) UpdateForecastImpliedInferences() error {
+	I_i, err := p.CalcForecastImpliedInferences()
+	if err != nil {
+		return errorsmod.Wrapf(err, "error calculating forecast-implied inferences")
+	}
+
+	p.ForecastImpliedInferenceByWorker = I_i
+	return nil
 }

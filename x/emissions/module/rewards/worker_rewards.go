@@ -8,21 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-type TaskRewardType int
-
-const (
-	ReputerRewardType TaskRewardType = iota // iota resets to 0 for the first constant in the block.
-	WorkerInferenceRewardType
-	WorkerForecastRewardType
-)
-
-type TaskRewards struct {
-	Address string
-	Reward  alloraMath.Dec
-	TopicId TopicId
-	Type    TaskRewardType
-}
-
 var TASK_FORECAST = true
 var TASK_INFERENCE = false
 
@@ -451,18 +436,18 @@ func GetRewardForForecastingTaskInTopic(
 // V_ik = v_ik * Vi
 func GetRewardPerWorker(
 	topicId uint64,
-	taskRewardType TaskRewardType,
+	taskRewardType types.TaskRewardType,
 	totalRewards alloraMath.Dec,
 	workerAddresses []string,
 	workerFractions []alloraMath.Dec,
-) ([]TaskRewards, error) {
-	var rewards []TaskRewards
+) ([]types.TaskReward, error) {
+	var rewards []types.TaskReward
 	for i, fraction := range workerFractions {
 		reward, err := fraction.Mul(totalRewards)
 		if err != nil {
 			return nil, err
 		}
-		rewards = append(rewards, TaskRewards{
+		rewards = append(rewards, types.TaskReward{
 			Address: workerAddresses[i],
 			Reward:  reward,
 			TopicId: topicId,
