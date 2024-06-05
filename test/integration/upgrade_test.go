@@ -17,6 +17,10 @@ func getDepositRequired(m testCommon.TestConfig) sdktypes.Coin {
 	return queryGovParamsResponse.Params.ExpeditedMinDeposit[0]
 }
 
+func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
+	fmt.Println("todo")
+}
+
 func proposeUpgrade(m testCommon.TestConfig) uint64 {
 	name := "vIntegration"
 	summary := "Upgrade to vIntegration software version"
@@ -31,7 +35,7 @@ func proposeUpgrade(m testCommon.TestConfig) uint64 {
 	submitProposalMsg := &govtypesv1.MsgSubmitProposal{
 		Title:    name,
 		Summary:  summary,
-		Proposer: m.AliceAddr,
+		Proposer: m.Validator0Addr,
 		Metadata: fmt.Sprintf(
 			"{title:\"%s\",summary:\"%s\"}", name, summary,
 		), // metadata must match title and summary exactly
@@ -41,7 +45,7 @@ func proposeUpgrade(m testCommon.TestConfig) uint64 {
 		),
 	}
 	submitProposalMsg.SetMsgs([]sdktypes.Msg{msgSoftwareUpgrade})
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, submitProposalMsg)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, m.Validator0Acc, submitProposalMsg)
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
 	require.NoError(m.T, err)
@@ -56,4 +60,5 @@ func UpgradeChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Propose Upgrade to vIntegration software version from v0 ---")
 	proposalId := proposeUpgrade(m)
 	m.T.Logf("--- Vote on Upgrade Proposal %d ---", proposalId)
+	voteOnProposal(m, proposalId)
 }
