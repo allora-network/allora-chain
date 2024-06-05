@@ -2,7 +2,6 @@ package rewards_test
 
 import (
 	"fmt"
-	slog "log"
 	"testing"
 	"time"
 
@@ -2751,21 +2750,21 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	// setup values to be identical for both topics
 	reputer0Values := []TestWorkerValue{
-		{Address: s.addrs[0], Value: "0.1"},
+		{Address: s.addrs[0], Value: "0.2"},
 		{Address: s.addrs[1], Value: "0.2"},
-		{Address: s.addrs[2], Value: "0.3"},
+		{Address: s.addrs[2], Value: "0.2"},
 	}
 
 	reputer1Values := []TestWorkerValue{
-		{Address: s.addrs[3], Value: "0.1"},
+		{Address: s.addrs[3], Value: "0.2"},
 		{Address: s.addrs[4], Value: "0.2"},
-		{Address: s.addrs[5], Value: "0.3"},
+		{Address: s.addrs[5], Value: "0.2"},
 	}
 
 	workerValues := []TestWorkerValue{
-		{Address: s.addrs[6], Value: "0.1"},
+		{Address: s.addrs[6], Value: "0.2"},
 		{Address: s.addrs[7], Value: "0.2"},
-		{Address: s.addrs[8], Value: "0.3"},
+		{Address: s.addrs[8], Value: "0.2"},
 	}
 
 	// record the stakes on each topic so we can see the reward differences
@@ -2843,6 +2842,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer0_Reward0 := reputer0_Stake1.Sub(reputer0_Stake0)
 	reputer1_Reward0 := reputer1_Stake1.Sub(reputer1_Stake0)
 	reputer2_Reward0 := reputer2_Stake1.Sub(reputer2_Stake0)
+
 	reputer3_Reward0 := reputer3_Stake1.Sub(reputer3_Stake0)
 	reputer4_Reward0 := reputer4_Stake1.Sub(reputer4_Stake0)
 	reputer5_Reward0 := reputer5_Stake1.Sub(reputer5_Stake0)
@@ -2852,23 +2852,17 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	require.Equal(topic0RewardTotal0, topic1RewardTotal0)
 
-	// Now, in second trial, increase stake for all reputers in topic 1
-	for i := 3; i < 6; i++ {
-		s.MintTokensToAddress(s.addrs[i], stake)
-		_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
-			Sender:  s.addrs[i].String(),
-			Amount:  stake,
-			TopicId: topicId1,
-		})
-		require.NoError(err)
-	}
+	// Now, in second trial, increase stake for all first reputer in topic1
+	s.MintTokensToAddress(s.addrs[3], stake)
+	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		Sender:  s.addrs[3].String(),
+		Amount:  stake,
+		TopicId: topicId1,
+	})
+	require.NoError(err)
 
 	// record the updated stakes
 	reputer3_Stake1, err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
-	require.NoError(err)
-	reputer4_Stake1, err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
-	require.NoError(err)
-	reputer5_Stake1, err = s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
 	require.NoError(err)
 
 	// do work on the topics to earn rewards
@@ -2920,6 +2914,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer0_Reward1 := reputer0_Stake2.Sub(reputer0_Stake1)
 	reputer1_Reward1 := reputer1_Stake2.Sub(reputer1_Stake1)
 	reputer2_Reward1 := reputer2_Stake2.Sub(reputer2_Stake1)
+
 	reputer3_Reward1 := reputer3_Stake2.Sub(reputer3_Stake1)
 	reputer4_Reward1 := reputer4_Stake2.Sub(reputer4_Stake1)
 	reputer5_Reward1 := reputer5_Stake2.Sub(reputer5_Stake1)
@@ -2927,11 +2922,6 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	// calculate total rewards for each topic
 	topic0RewardTotal1 := reputer0_Reward1.Add(reputer1_Reward1).Add(reputer2_Reward1)
 	topic1RewardTotal1 := reputer3_Reward1.Add(reputer4_Reward1).Add(reputer5_Reward1)
-
-	slog.Printf("topic0RewardTotal0: %s", topic0RewardTotal0.String())
-	slog.Printf("topic1RewardTotal0: %s", topic1RewardTotal0.String())
-	slog.Printf("topic0RewardTotal1: %s", topic0RewardTotal1.String())
-	slog.Printf("topic1RewardTotal1: %s", topic1RewardTotal1.String())
 
 	// in the first round, the rewards should be equal for each topic
 	require.True(topic0RewardTotal0.Equal(topic1RewardTotal0))
