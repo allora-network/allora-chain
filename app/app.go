@@ -261,6 +261,8 @@ func NewAlloraApp(
 
 	app.SetInitChainer(app.InitChainer)
 
+	app.setupUpgradeHandlers()
+
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err
 	}

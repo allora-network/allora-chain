@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	upgrade "cosmossdk.io/x/upgrade"
 	"github.com/allora-network/allora-chain/app/params"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
@@ -12,6 +13,7 @@ import (
 	auth "github.com/cosmos/cosmos-sdk/x/auth"
 	bank "github.com/cosmos/cosmos-sdk/x/bank"
 	distribution "github.com/cosmos/cosmos-sdk/x/distribution"
+	gov "github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 	"github.com/stretchr/testify/require"
 )
@@ -85,6 +87,8 @@ func NewTestConfig(
 		auth.AppModule{},
 		bank.AppModule{},
 		distribution.AppModule{},
+		gov.AppModule{},
+		upgrade.AppModule{},
 	)
 	nodeConfig.Cdc = codec.NewProtoCodec(encCfg.InterfaceRegistry)
 
