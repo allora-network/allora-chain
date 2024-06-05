@@ -641,7 +641,6 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 	// Get Topic Id
 	topicId := res.TopicId
 
-	// Register 5 workers
 	for _, workerAddr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
 			Sender:       workerAddr.String(),
@@ -667,6 +666,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		require.NoError(err)
 	}
+
 	for _, reputerAddr := range reputerAddrs {
 		s.MintTokensToAddress(reputerAddr, stake)
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
@@ -2723,63 +2723,50 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	s.SetParamsForTest(24)
 
-	reputer0Addrs := []sdk.AccAddress{
+	reputerAddrs := []sdk.AccAddress{
 		s.addrs[0],
 		s.addrs[1],
 		s.addrs[2],
 	}
 
-	// separate addresses for the second topic
-	reputer1Addrs := []sdk.AccAddress{
+	workerAddrs := []sdk.AccAddress{
 		s.addrs[3],
 		s.addrs[4],
 		s.addrs[5],
 	}
 
-	workerAddrs := []sdk.AccAddress{
-		s.addrs[6],
-		s.addrs[7],
-		s.addrs[8],
-	}
-
 	// setup topics
 	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
-	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer1Addrs, stake, alphaRegret, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 1)
+	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 1)
 
 	// setup values to be identical for both topics
-	reputer0Values := []TestWorkerValue{
-		{Address: s.addrs[0], Value: "0.2"},
-		{Address: s.addrs[1], Value: "0.2"},
-		{Address: s.addrs[2], Value: "0.2"},
-	}
-
-	reputer1Values := []TestWorkerValue{
-		{Address: s.addrs[3], Value: "0.2"},
-		{Address: s.addrs[4], Value: "0.2"},
-		{Address: s.addrs[5], Value: "0.2"},
+	reputerValues := []TestWorkerValue{
+		{Address: reputerAddrs[0], Value: "0.2"},
+		{Address: reputerAddrs[1], Value: "0.2"},
+		{Address: reputerAddrs[2], Value: "0.2"},
 	}
 
 	workerValues := []TestWorkerValue{
-		{Address: s.addrs[6], Value: "0.2"},
-		{Address: s.addrs[7], Value: "0.2"},
-		{Address: s.addrs[8], Value: "0.2"},
+		{Address: workerAddrs[0], Value: "0.2"},
+		{Address: workerAddrs[1], Value: "0.2"},
+		{Address: workerAddrs[2], Value: "0.2"},
 	}
 
 	// record the stakes on each topic so we can see the reward differences
-	reputer0_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	reputer0_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, reputerAddrs[0].String())
 	require.NoError(err)
-	reputer1_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	reputer1_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, reputerAddrs[1].String())
 	require.NoError(err)
-	reputer2_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	reputer2_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, reputerAddrs[2].String())
 	require.NoError(err)
 
-	reputer3_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	reputer3_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, reputerAddrs[0].String())
 	require.NoError(err)
-	reputer4_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	reputer4_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, reputerAddrs[1].String())
 	require.NoError(err)
-	reputer5_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	reputer5_Stake0, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, reputerAddrs[2].String())
 	require.NoError(err)
 
 	// do work on the topics to earn rewards
@@ -2787,7 +2774,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		topicId0,
 		block,
 		workerValues,
-		reputer0Values,
+		reputerValues,
 		workerAddrs[0],
 		"0.1",
 		"0.1",
@@ -2797,7 +2784,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		topicId1,
 		block,
 		workerValues,
-		reputer1Values,
+		reputerValues,
 		workerAddrs[0],
 		"0.1",
 		"0.1",
@@ -2825,18 +2812,18 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	fundTopic(topicId0, s.addrs[0], topicFundAmount)
 	fundTopic(topicId1, s.addrs[3], topicFundAmount)
 
-	reputer0_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	reputer0_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, reputerAddrs[0].String())
 	require.NoError(err)
-	reputer1_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	reputer1_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, reputerAddrs[1].String())
 	require.NoError(err)
-	reputer2_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	reputer2_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, reputerAddrs[2].String())
 	require.NoError(err)
 
-	reputer3_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	reputer3_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, reputerAddrs[0].String())
 	require.NoError(err)
-	reputer4_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	reputer4_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, reputerAddrs[1].String())
 	require.NoError(err)
-	reputer5_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	reputer5_Stake1, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, reputerAddrs[2].String())
 	require.NoError(err)
 
 	reputer0_Reward0 := reputer0_Stake1.Sub(reputer0_Stake0)
@@ -2852,10 +2839,10 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	require.Equal(topic0RewardTotal0, topic1RewardTotal0)
 
-	// Now, in second trial, increase stake for all first reputer in topic1
-	s.MintTokensToAddress(s.addrs[3], stake)
+	// Now, in second trial, increase stake for first reputer in topic1
+	s.MintTokensToAddress(reputerAddrs[0], stake)
 	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
-		Sender:  s.addrs[3].String(),
+		Sender:  reputerAddrs[0].String(),
 		Amount:  stake,
 		TopicId: topicId1,
 	})
@@ -2870,7 +2857,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		topicId0,
 		block,
 		workerValues,
-		reputer0Values,
+		reputerValues,
 		workerAddrs[0],
 		"0.1",
 		"0.1",
@@ -2880,7 +2867,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		topicId1,
 		block,
 		workerValues,
-		reputer1Values,
+		reputerValues,
 		workerAddrs[0],
 		"0.1",
 		"0.1",
@@ -2896,18 +2883,18 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	require.NoError(err)
 
 	// record the stakes after
-	reputer0_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[0].String())
+	reputer0_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, reputerAddrs[0].String())
 	require.NoError(err)
-	reputer1_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[1].String())
+	reputer1_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, reputerAddrs[1].String())
 	require.NoError(err)
-	reputer2_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, s.addrs[2].String())
+	reputer2_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId0, reputerAddrs[2].String())
 	require.NoError(err)
 
-	reputer3_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[3].String())
+	reputer3_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, reputerAddrs[0].String())
 	require.NoError(err)
-	reputer4_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[4].String())
+	reputer4_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, reputerAddrs[1].String())
 	require.NoError(err)
-	reputer5_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, s.addrs[5].String())
+	reputer5_Stake2, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId1, reputerAddrs[2].String())
 	require.NoError(err)
 
 	// calculate rewards
