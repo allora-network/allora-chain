@@ -9,6 +9,9 @@ COPY go.mod .
 COPY go.sum .
 RUN mkdir -p $GOMODCACHE
 RUN --mount=type=cache,target=/gocache go mod download
+RUN --mount=type=cache,target=/gocache \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@latest
 
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
@@ -55,4 +58,7 @@ WORKDIR ${APP_PATH}
 
 USER ${USERNAME}
 
-ENTRYPOINT ["allorad"]
+ENV DAEMON_NAME="allorad"
+ENV DAEMON_HOME="/data"
+
+ENTRYPOINT ["cosmovisor" "run" "start"]

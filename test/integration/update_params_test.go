@@ -37,6 +37,9 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 		Sender: m.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
 			Epsilon: input,
+			// These are set for subsequent tests
+			MaxTopReputersToReward: []uint64{24},
+			MinEpochLength:         []int64{1},
 		},
 	}
 	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, updateParamRequest)

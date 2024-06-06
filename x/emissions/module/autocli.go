@@ -39,7 +39,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetReputerStakeInTopic",
-					Use:       "reputer-topic-stake [address] [topic_id]",
+					Use:       "stake-in-topic-reputer [address] [topic_id]",
 					Short:     "Get reputer stake in a topic, including stake delegated to them in that topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "address"},
@@ -48,8 +48,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetDelegateStakeInTopicInReputer",
-					Use:       "reputer-topic-stake [reputer_address] [topic_id]",
-					Short:     "Get total delegate stake in a reputer in a topic",
+					Use:       "stake-total-delegated-in-topic-reputer [reputer_address] [topic_id]",
+					Short:     "Get total delegate stake in a topic and reputer",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "reputer_address"},
 						{ProtoField: "topic_id"},
@@ -57,7 +57,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetStakeFromDelegatorInTopicInReputer",
-					Use:       "delegate-topic-stake-in-reputer [delegator_address] [reputer_address] [topic_id]",
+					Use:       "stake-delegator-in-topic-reputer [delegator_address] [reputer_address] [topic_id]",
 					Short:     "Get amount of stake from delegator in a topic for a reputer",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "delegator_address"},
@@ -67,8 +67,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetStakeFromDelegatorInTopic",
-					Use:       "delegator-topic-stake [delegator_address] [topic_id]",
-					Short:     "Get Account Stake in a topic",
+					Use:       "stake-delegator-in-topic [delegator_address] [topic_id]",
+					Short:     "Get amount of stake in a topic for a delegator",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "delegator_address"},
 						{ProtoField: "topic_id"},
@@ -85,7 +85,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetInferencesAtBlock",
-					Use:       "inference [topic_id] [block_height]",
+					Use:       "inferences-at-block [topic_id] [block_height]",
 					Short:     "Get All Inferences produced for a topic in a particular timestamp",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -149,7 +149,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetForecastsAtBlock",
-					Use:       "get-forecasts-at-block [topic_id] [block]",
+					Use:       "forecasts-at-block [topic_id] [block]",
 					Short:     "Get the Forecasts for a topic at block height ",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -158,7 +158,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetNetworkInferencesAtBlock",
-					Use:       "get-network-inferences-at-block [topic_id] [block_height_last_inference] [block_height_last_reward]",
+					Use:       "network-inferences-at-block [topic_id] [block_height_last_inference] [block_height_last_reward]",
 					Short:     "Get the Network Inferences for a topic at a block height where the last inference was made and the last reward was given",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -168,7 +168,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetNetworkLossBundleAtBlock",
-					Use:       "get-network-loss-bundle-at-block [topic_id] [block]",
+					Use:       "network-loss-bundle-at-block [topic_id] [block]",
 					Short:     "Get the network loss bundle for a topic at given block height",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},

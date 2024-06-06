@@ -27,7 +27,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 			blockHeight := blockHeight - int64(j)
 			scoreToAdd := types.Score{
 				TopicId:     topicId,
-				BlockNumber: blockHeight,
+				BlockHeight: blockHeight,
 				Address:     workerAddr.String(),
 				Score:       alloraMath.MustNewDecFromString("0"),
 			}
@@ -43,7 +43,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 
 		lastScores = append(lastScores, types.Score{
 			TopicId:     topicId,
-			BlockNumber: blockHeight,
+			BlockHeight: blockHeight,
 			Address:     workerAddr.String(),
 			Score:       alloraMath.MustNewDecFromString("0"),
 		})
@@ -114,7 +114,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 			blockHeight := blockHeight - int64(j)
 			scoreToAdd := types.Score{
 				TopicId:     topicId,
-				BlockNumber: blockHeight,
+				BlockHeight: blockHeight,
 				Address:     workerAddr.String(),
 				Score:       alloraMath.MustNewDecFromString("0.5"),
 			}
@@ -130,7 +130,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 
 		lastScores = append(lastScores, types.Score{
 			TopicId:     topicId,
-			BlockNumber: blockHeight,
+			BlockHeight: blockHeight,
 			Address:     workerAddr.String(),
 			Score:       alloraMath.MustNewDecFromString("0.5"),
 		})
@@ -202,7 +202,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 	s.Require().NoError(err)
 	inferenceRewards, err := rewards.GetRewardPerWorker(
 		topicId,
-		rewards.WorkerInferenceRewardType,
+		types.WorkerInferenceRewardType,
 		alloraMath.NewDecFromInt64(100),
 		inferers,
 		inferersRewardFractions,
@@ -232,7 +232,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 	s.Require().NoError(err)
 	forecastRewards, err := rewards.GetRewardPerWorker(
 		topicId,
-		rewards.WorkerForecastRewardType,
+		types.WorkerForecastRewardType,
 		alloraMath.NewDecFromInt64(100),
 		forecasters,
 		forecastersRewardFractions,
@@ -409,7 +409,7 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, e
 		for j, workerNewScore := range scores[i] {
 			scoreToAdd := types.Score{
 				TopicId:     topicId,
-				BlockNumber: blocks[j],
+				BlockHeight: blocks[j],
 				Address:     workerAddr.String(),
 				Score:       workerNewScore,
 			}
@@ -428,7 +428,7 @@ func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, e
 		}
 		lastScores = append(lastScores, types.Score{
 			TopicId:     topicId,
-			BlockNumber: blocks[len(blocks)-1],
+			BlockHeight: blocks[len(blocks)-1],
 			Address:     workerAddr.String(),
 			Score:       scores[i][len(scores[i])-1],
 		})

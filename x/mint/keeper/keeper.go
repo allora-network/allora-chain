@@ -27,10 +27,6 @@ type Keeper struct {
 	emissionsKeeper  types.EmissionsKeeper
 	feeCollectorName string
 
-	// the address capable of executing a MsgUpdateParams message. Typically, this
-	// should be the x/gov module account.
-	authority string
-
 	Schema                                   collections.Schema
 	Params                                   collections.Item[types.Params]
 	PreviousRewardEmissionPerUnitStakedToken collections.Item[math.LegacyDec]
@@ -47,7 +43,6 @@ func NewKeeper(
 	bk types.BankKeeper,
 	ek types.EmissionsKeeper,
 	feeCollectorName string,
-	authority string,
 ) Keeper {
 	// ensure mint module account is set
 	if addr := ak.GetModuleAddress(types.ModuleName); addr == nil {
@@ -63,7 +58,6 @@ func NewKeeper(
 		bankKeeper:                               bk,
 		emissionsKeeper:                          ek,
 		feeCollectorName:                         feeCollectorName,
-		authority:                                authority,
 		Params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", alloraMath.LegacyDecValue),
 		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
@@ -76,11 +70,6 @@ func NewKeeper(
 	}
 	k.Schema = schema
 	return k
-}
-
-// GetAuthority returns the x/mint module's authority.
-func (k Keeper) GetAuthority() string {
-	return k.authority
 }
 
 // Logger returns a module-specific logger.
@@ -212,4 +201,9 @@ func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
 		return 0, err
 	}
 	return emissionsParams.BlocksPerMonth, nil
+}
+
+// wrapper around emissions keeper call to get if whitelist admin
+func (k Keeper) IsWhitelistAdmin(ctx context.Context, admin string) (bool, error) {
+	return k.emissionsKeeper.IsWhitelistAdmin(ctx, admin)
 }
