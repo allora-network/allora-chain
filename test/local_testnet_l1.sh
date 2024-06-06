@@ -103,6 +103,21 @@ docker run -t \
     $DOCKER_IMAGE \
         init /usr/local/bin/allorad
 
+echo "Setting vIntegration upgrade"
+docker run -t \
+    -u $(id -u):$(id -g) \
+    -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=mkdir \
+    $DOCKER_IMAGE \
+        -p /data/cosmovisor/upgrades/vIntegration/bin
+
+docker run -t \
+    -u $(id -u):$(id -g) \
+    -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=cp \
+    $DOCKER_IMAGE \
+        /usr/local/bin/allorad-integration /data/cosmovisor/upgrades/vIntegration/bin/allorad
+
 echo "Generate L1 peers"
 PEERS=""
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
