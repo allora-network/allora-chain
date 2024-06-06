@@ -134,7 +134,7 @@ func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(InferenceSynthesisTestSuite))
 }
 
-func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
+func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int) (
 	*inferencesynthesis.NetworkInferenceBuilder,
 	map[int]func(header string) alloraMath.Dec,
 ) {
@@ -143,89 +143,95 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
 	topicId := uint64(1)
 	blockHeight := int64(1)
 
-	epochGet := GetSimulatedValuesGetterForEpochs()
-	epoch2Get := epochGet[2]
-	epoch3Get := epochGet[3]
+	epochGetters := GetSimulatedValuesGetterForEpochs()
+	epochGet := epochGetters[epochNumber]
 
-	// SET EPOCH 2 VALUES IN THE SYSTEM
-	infererNetworkRegrets :=
-		map[string]inferencesynthesis.Regret{
-			"worker0": epoch2Get("inference_regret_worker_0"),
-			"worker1": epoch2Get("inference_regret_worker_1"),
-			"worker2": epoch2Get("inference_regret_worker_2"),
-			"worker3": epoch2Get("inference_regret_worker_3"),
-			"worker4": epoch2Get("inference_regret_worker_4"),
+	networkLossPrevious := alloraMath.ZeroDec()
+
+	if epochNumber > 0 {
+		epochPrevGet := epochGetters[epochNumber-1]
+		networkLossPrevious = epochPrevGet("network_loss")
+
+		// SET EPOCH 2 VALUES IN THE SYSTEM
+		infererNetworkRegrets :=
+			map[string]inferencesynthesis.Regret{
+				"worker0": epochPrevGet("inference_regret_worker_0"),
+				"worker1": epochPrevGet("inference_regret_worker_1"),
+				"worker2": epochPrevGet("inference_regret_worker_2"),
+				"worker3": epochPrevGet("inference_regret_worker_3"),
+				"worker4": epochPrevGet("inference_regret_worker_4"),
+			}
+
+		// Set inferer network regrets
+		for inferer, regret := range infererNetworkRegrets {
+			s.emissionsKeeper.SetInfererNetworkRegret(
+				s.ctx,
+				topicId,
+				inferer,
+				emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
+			)
 		}
 
-	// Set inferer network regrets
-	for inferer, regret := range infererNetworkRegrets {
-		s.emissionsKeeper.SetInfererNetworkRegret(
-			s.ctx,
-			topicId,
-			inferer,
-			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
-		)
-	}
+		forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
+			"forecaster0": epochPrevGet("inference_regret_worker_5"),
+			"forecaster1": epochPrevGet("inference_regret_worker_6"),
+			"forecaster2": epochPrevGet("inference_regret_worker_7"),
+		}
 
-	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
-		"forecaster0": epoch2Get("inference_regret_worker_5"),
-		"forecaster1": epoch2Get("inference_regret_worker_6"),
-		"forecaster2": epoch2Get("inference_regret_worker_7"),
-	}
+		// Set forecaster network regrets
+		for forecaster, regret := range forecasterNetworkRegrets {
+			s.emissionsKeeper.SetForecasterNetworkRegret(
+				s.ctx,
+				topicId,
+				forecaster,
+				emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
+			)
+		}
 
-	// Set forecaster network regrets
-	for forecaster, regret := range forecasterNetworkRegrets {
-		s.emissionsKeeper.SetForecasterNetworkRegret(
-			s.ctx,
-			topicId,
-			forecaster,
-			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
-		)
-	}
+		// Set one-in network regrets
+		setOneInForecasterNetworkRegret := func(forecasterIndex int, infererIndex int, epochGetter func(string) alloraMath.Dec) {
+			forecasterName := "forecaster" + strconv.Itoa(forecasterIndex)
+			infererName := "worker" + strconv.Itoa(infererIndex)
+			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_onein_" + strconv.Itoa(forecasterIndex)
 
-	// Set one-in network regrets
-	setOneInForecasterNetworkRegret := func(forecasterIndex int, infererIndex int, epochGetter func(string) alloraMath.Dec) {
-		forecasterName := "forecaster" + strconv.Itoa(forecasterIndex)
-		infererName := "worker" + strconv.Itoa(infererIndex)
-		headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_onein_" + strconv.Itoa(forecasterIndex)
+			k.SetOneInForecasterNetworkRegret(
+				s.ctx,
+				topicId,
+				forecasterName,
+				infererName,
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochGetter(headerName),
+				},
+			)
+		}
 
-		k.SetOneInForecasterNetworkRegret(
-			s.ctx,
-			topicId,
-			forecasterName,
-			infererName,
-			emissionstypes.TimestampedValue{
-				BlockHeight: blockHeight,
-				Value:       epochGetter(headerName),
-			},
-		)
-	}
+		// Set one-in self network regrets
+		setOneInForecasterSelfRegret := func(forecaster int, epochGet func(string) alloraMath.Dec) {
+			forecasterName := "forecaster" + strconv.Itoa(forecaster)
+			headerName := "inference_regret_worker_5_onein_" + strconv.Itoa(forecaster)
 
-	// Set one-in self network regrets
-	setOneInForecasterSelfRegret := func(forecaster int, epochGetter func(string) alloraMath.Dec) {
-		forecasterName := "forecaster" + strconv.Itoa(forecaster)
-		headerName := "inference_regret_worker_5_onein_" + strconv.Itoa(forecaster)
+			k.SetOneInForecasterSelfNetworkRegret(
+				s.ctx,
+				topicId,
+				forecasterName,
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochGet(headerName),
+				},
+			)
+		}
 
-		k.SetOneInForecasterSelfNetworkRegret(
-			s.ctx,
-			topicId,
-			forecasterName,
-			emissionstypes.TimestampedValue{
-				BlockHeight: blockHeight,
-				Value:       epochGetter(headerName),
-			},
-		)
-	}
-
-	for forecaster := 0; forecaster < 3; forecaster++ {
-		setOneInForecasterSelfRegret(forecaster, epoch2Get)
-		for inferer := 0; inferer < 5; inferer++ {
-			setOneInForecasterNetworkRegret(forecaster, inferer, epoch2Get)
+		for forecaster := 0; forecaster < 3; forecaster++ {
+			setOneInForecasterSelfRegret(forecaster, epochPrevGet)
+			for inferer := 0; inferer < 5; inferer++ {
+				setOneInForecasterNetworkRegret(forecaster, inferer, epochPrevGet)
+			}
 		}
 	}
 
 	for workerIndex := 0; workerIndex < 5; workerIndex++ {
-		stakeValue := epoch3Get("reputer_stake_" + strconv.Itoa(workerIndex))
+		stakeValue := epochGet("reputer_stake_" + strconv.Itoa(workerIndex))
 
 		stakeValueScaled, err := stakeValue.Mul(alloraMath.MustNewDecFromString("1e18"))
 		require.NoError(s.T(), err)
@@ -249,7 +255,7 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
 	for infererIndex := 0; infererIndex < 5; infererIndex++ {
 		inferences.Inferences = append(inferences.Inferences, &emissionstypes.Inference{
 			Inferer: "worker" + strconv.Itoa(infererIndex),
-			Value:   epoch3Get("inference_" + strconv.Itoa(infererIndex)),
+			Value:   epochGet("inference_" + strconv.Itoa(infererIndex)),
 		})
 	}
 
@@ -262,7 +268,7 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
 		for infererIndex := 0; infererIndex < 5; infererIndex++ {
 			forecastElements = append(forecastElements, &emissionstypes.ForecastElement{
 				Inferer: "worker" + strconv.Itoa(infererIndex),
-				Value:   epoch3Get("forecasted_loss_" + strconv.Itoa(forecasterIndex) + "_for_" + strconv.Itoa(infererIndex)),
+				Value:   epochGet("forecasted_loss_" + strconv.Itoa(forecasterIndex) + "_for_" + strconv.Itoa(infererIndex)),
 			})
 		}
 		forecasts.Forecasts = append(forecasts.Forecasts, &emissionstypes.Forecast{
@@ -278,7 +284,7 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
 			TopicId:             topicId,
 			Inferences:          &inferences,
 			Forecasts:           forecasts,
-			NetworkCombinedLoss: epoch2Get("network_loss"),
+			NetworkCombinedLoss: networkLossPrevious,
 			Epsilon:             alloraMath.MustNewDecFromString("0.0001"),
 			FTolerance:          alloraMath.MustNewDecFromString("0.01"),
 			PNorm:               alloraMath.MustNewDecFromString("3.0"),
@@ -287,36 +293,48 @@ func (s *InferenceSynthesisTestSuite) getEpoch3ValueBundle() (
 	)
 	require.NoError(s.T(), err)
 
-	return networkInferenceBuilder, epochGet
+	return networkInferenceBuilder, epochGetters
+}
+
+func (s *InferenceSynthesisTestSuite) testCorrectCombinedInitialValueForEpoch(epoch int) {
+	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
+	valueBundle := networkInferenceBuilder.SetCombinedValue().Build()
+	s.Require().NotNil(valueBundle.CombinedValue)
+	alloratestutil.InEpsilon2(s.T(), valueBundle.CombinedValue, epochGet[epoch]("network_inference").String())
+}
+
+func (s *InferenceSynthesisTestSuite) TestCorrectCombinedInitialValue() {
+	s.testCorrectCombinedInitialValueForEpoch(0)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectCombinedValue() {
+	s.testCorrectCombinedInitialValueForEpoch(3)
+}
 
-	networkInferenceBuilder, epochGet := s.getEpoch3ValueBundle()
-	valueBundle := networkInferenceBuilder.SetCombinedValue().Build()
-	s.Require().NotNil(valueBundle.CombinedValue)
-	expected := epochGet[3]("network_inference")
-	actual := valueBundle.CombinedValue
-	alloratestutil.InEpsilon2(s.T(), actual, expected.String())
+func (s *InferenceSynthesisTestSuite) testCorrectNaiveValueForEpoch(epoch int) {
+	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
+	valueBundle := networkInferenceBuilder.SetNaiveValue().Build()
+	s.Require().NotNil(valueBundle.NaiveValue)
+	alloratestutil.InEpsilon2(s.T(), valueBundle.NaiveValue, epochGet[epoch]("network_naive_inference").String())
+}
+
+func (s *InferenceSynthesisTestSuite) TestCorrectInitialNaiveValue() {
+	s.testCorrectNaiveValueForEpoch(0)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectNaiveValue() {
-
-	networkInferenceBuilder, epochGet := s.getEpoch3ValueBundle()
-	valueBundle := networkInferenceBuilder.SetNaiveValue().Build()
-	alloratestutil.InEpsilon2(s.T(), valueBundle.NaiveValue, epochGet[3]("network_naive_inference").String())
+	s.testCorrectNaiveValueForEpoch(3)
 }
 
-func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValues() {
-
-	networkInferenceBuilder, epochGet := s.getEpoch3ValueBundle()
+func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epoch int) {
+	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
 
 	expectedValues := map[string]alloraMath.Dec{
-		"worker0": epochGet[3]("network_inference_oneout_0"),
-		"worker1": epochGet[3]("network_inference_oneout_1"),
-		"worker2": epochGet[3]("network_inference_oneout_2"),
-		"worker3": epochGet[3]("network_inference_oneout_3"),
-		"worker4": epochGet[3]("network_inference_oneout_4"),
+		"worker0": epochGet[epoch]("network_inference_oneout_0"),
+		"worker1": epochGet[epoch]("network_inference_oneout_1"),
+		"worker2": epochGet[epoch]("network_inference_oneout_2"),
+		"worker3": epochGet[epoch]("network_inference_oneout_3"),
+		"worker4": epochGet[epoch]("network_inference_oneout_4"),
 	}
 
 	valueBundle := networkInferenceBuilder.SetOneOutInfererValues().Build()
@@ -333,14 +351,23 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValues() {
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValues() {
-	networkInferenceBuilder, epochGet := s.getEpoch3ValueBundle()
+// TODO: Fix this test
+func (s *InferenceSynthesisTestSuite) TestCorrectInitialOneOutInfererValues() {
+	s.testCorrectOneOutInfererValuesForEpoch(0)
+}
+
+func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValues() {
+	s.testCorrectOneOutInfererValuesForEpoch(3)
+}
+
+func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(epoch int) {
+	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
 	valueBundle := networkInferenceBuilder.SetOneOutForecasterValues().Build()
 
 	expectedValues := map[string]alloraMath.Dec{
-		"forecaster0": epochGet[3]("network_inference_oneout_5"),
-		"forecaster1": epochGet[3]("network_inference_oneout_6"),
-		"forecaster2": epochGet[3]("network_inference_oneout_7"),
+		"forecaster0": epochGet[epoch]("network_inference_oneout_5"),
+		"forecaster1": epochGet[epoch]("network_inference_oneout_6"),
+		"forecaster2": epochGet[epoch]("network_inference_oneout_7"),
 	}
 
 	for worker, expectedValue := range expectedValues {
@@ -355,14 +382,22 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValues() {
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValues() {
-	networkInferenceBuilder, epochGet := s.getEpoch3ValueBundle()
+func (s *InferenceSynthesisTestSuite) TestCorrectInitialOneOutForecasterValues() {
+	s.testCorrectOneOutForecasterValuesForEpoch(0)
+}
+
+func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValues() {
+	s.testCorrectOneOutForecasterValuesForEpoch(3)
+}
+
+func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(epoch int) {
+	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
 	valueBundle := networkInferenceBuilder.SetOneInValues().Build()
 
 	expectedValues := map[string]alloraMath.Dec{
-		"forecaster0": epochGet[3]("network_naive_inference_onein_0"),
-		"forecaster1": epochGet[3]("network_naive_inference_onein_1"),
-		"forecaster2": epochGet[3]("network_naive_inference_onein_2"),
+		"forecaster0": epochGet[epoch]("network_naive_inference_onein_0"),
+		"forecaster1": epochGet[epoch]("network_naive_inference_onein_1"),
+		"forecaster2": epochGet[epoch]("network_naive_inference_onein_2"),
 	}
 
 	for worker, expectedValue := range expectedValues {
@@ -375,6 +410,14 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValues() {
 		}
 		s.Require().True(found)
 	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestCorrectInitialOneInForecasterValues() {
+	s.testCorrectOneInForecasterValuesForEpoch(0)
+}
+
+func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValues() {
+	s.testCorrectOneInForecasterValuesForEpoch(3)
 }
 
 func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData() {
