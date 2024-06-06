@@ -11,23 +11,24 @@ import (
 // register alice as a reputer in topic 1, then check success
 func RegisterReputerForTopic(
 	m testCommon.TestConfig,
-	reputer NameAccountAndAddress,
+	reputer testCommon.NameAccountAndAddress,
 	topicId uint64,
 ) error {
 
 	registerReputerRequest := &emissionstypes.MsgRegister{
-		Sender:       reputer.aa.addr,
-		Owner:        reputer.aa.addr,
+		Sender:       reputer.Aa.Addr,
+		Owner:        reputer.Aa.Addr,
 		LibP2PKey:    "reputerkey" + strconv.Itoa(rand.Intn(10000000000)),
 		MultiAddress: "reputermultiaddress",
 		TopicId:      topicId,
 		IsReputer:    true,
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, reputer.aa.acc, registerReputerRequest)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, reputer.Aa.Acc, registerReputerRequest)
 	if err != nil {
 		return err
 	}
 	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	m.T.Log("Create Topic TxHash", txResp.TxHash)
 	if err != nil {
 		return err
 	}
@@ -43,18 +44,18 @@ func RegisterReputerForTopic(
 // register bob as worker in topic 1, then check sucess
 func RegisterWorkerForTopic(
 	m testCommon.TestConfig,
-	worker NameAccountAndAddress,
+	worker testCommon.NameAccountAndAddress,
 	topicId uint64,
 ) error {
 	registerWorkerRequest := &emissionstypes.MsgRegister{
-		Sender:       worker.aa.addr,
-		Owner:        worker.aa.addr,
+		Sender:       worker.Aa.Addr,
+		Owner:        worker.Aa.Addr,
 		LibP2PKey:    "workerkey" + strconv.Itoa(rand.Intn(10000000000)),
 		MultiAddress: "workermultiaddress",
 		TopicId:      topicId,
 		IsReputer:    false,
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, worker.aa.acc, registerWorkerRequest)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, worker.Aa.Acc, registerWorkerRequest)
 	if err != nil {
 		return err
 	}

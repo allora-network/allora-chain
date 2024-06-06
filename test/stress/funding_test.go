@@ -13,7 +13,7 @@ func createTopicFunderAddresses(
 	m testCommon.TestConfig,
 	topicsMax int,
 ) (topicFunders NameToAccountMap) {
-	topicFunders = make(map[string]AccountAndAddress)
+	topicFunders = make(map[string]testCommon.AccountAndAddress)
 
 	for topicFunderIndex := 0; topicFunderIndex < topicsMax; topicFunderIndex++ {
 		topicFunderAccountName := getTopicFunderAccountName(m.Seed, topicFunderIndex)
@@ -27,9 +27,9 @@ func createTopicFunderAddresses(
 			m.T.Log("Error creating funder address: ", topicFunderAccountName, " - ", err)
 			continue
 		}
-		topicFunders[topicFunderAccountName] = AccountAndAddress{
-			acc:  topicFunderAccount,
-			addr: topicFunderAddress,
+		topicFunders[topicFunderAccountName] = testCommon.AccountAndAddress{
+			Acc:  topicFunderAccount,
+			Addr: topicFunderAddress,
 		}
 		//m.T.Log("Created funder address: ", topicFunderAccountName, " - ", topicFunderAddress)
 	}
@@ -40,7 +40,7 @@ func createTopicFunderAddresses(
 func fundAccounts(
 	m testCommon.TestConfig,
 	topicId uint64,
-	sender NameAccountAndAddress,
+	sender testCommon.NameAccountAndAddress,
 	targets NameToAccountMap,
 	amount int64,
 ) error {
@@ -60,7 +60,7 @@ func fundAccounts(
 	for name, accountAndAddress := range targets {
 		names[i] = name
 		outputs[i] = banktypes.Output{
-			Address: accountAndAddress.addr,
+			Address: accountAndAddress.Addr,
 			Coins:   outputCoins,
 		}
 		i++
@@ -70,13 +70,13 @@ func fundAccounts(
 	sendMsg := &banktypes.MsgMultiSend{
 		Inputs: []banktypes.Input{
 			{
-				Address: sender.aa.addr,
+				Address: sender.Aa.Addr,
 				Coins:   inputCoins,
 			},
 		},
 		Outputs: outputs,
 	}
-	_, err := m.Client.BroadcastTx(m.Ctx, sender.aa.acc, sendMsg)
+	_, err := m.Client.BroadcastTx(m.Ctx, sender.Aa.Acc, sendMsg)
 	if err != nil {
 		m.T.Log("Error worker address: ", err)
 		return err
@@ -84,11 +84,11 @@ func fundAccounts(
 	// pass zero for topic id if we're funding the funders themselves
 	if topicId != 0 {
 		m.T.Log(topicLog(uint64(topicId),
-			"Funded ", len(targets), " accounts from ", sender.name,
+			"Funded ", len(targets), " accounts from ", sender.Name,
 			" with ", amount, " coins:", " ", names,
 		))
 	} else {
-		m.T.Log("Funded ", len(targets), " accounts from ", sender.name,
+		m.T.Log("Funded ", len(targets), " accounts from ", sender.Name,
 			" with ", amount, " coins:", " ", names,
 		)
 	}

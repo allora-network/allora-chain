@@ -22,7 +22,7 @@ func createWorkerAddresses(
 	topicId uint64,
 	workersMax int,
 ) (workers NameToAccountMap) {
-	workers = make(map[string]AccountAndAddress)
+	workers = make(map[string]testCommon.AccountAndAddress)
 
 	for workerIndex := 0; workerIndex < workersMax; workerIndex++ {
 		workerAccountName := getWorkerAccountName(m.Seed, workerIndex, topicId)
@@ -36,9 +36,9 @@ func createWorkerAddresses(
 			m.T.Log(topicLog(topicId, "Error creating funder address: ", workerAccountName, " - ", err))
 			continue
 		}
-		workers[workerAccountName] = AccountAndAddress{
-			acc:  workerAccount,
-			addr: workerAddressToFund,
+		workers[workerAccountName] = testCommon.AccountAndAddress{
+			Acc:  workerAccount,
+			Addr: workerAddressToFund,
 		}
 	}
 	return workers
@@ -60,14 +60,14 @@ func registerWorkersForIteration(
 		worker := workers[workerName]
 		err := RegisterWorkerForTopic(
 			m,
-			NameAccountAndAddress{
-				name: workerName,
-				aa:   worker,
+			testCommon.NameAccountAndAddress{
+				Name: workerName,
+				Aa:   worker,
 			},
 			topicId,
 		)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error registering worker address: ", worker.addr, " - ", err))
+			m.T.Log(topicLog(topicId, "Error registering worker address: ", worker.Addr, " - ", err))
 			if makeReport {
 				saveWorkerError(topicId, workerName, err)
 				saveTopicError(topicId, err)
@@ -143,7 +143,7 @@ func insertWorkerBulk(
 	m testCommon.TestConfig,
 	topic *emissionstypes.Topic,
 	leaderWorkerAccountName string,
-	workers map[string]AccountAndAddress,
+	workers map[string]testCommon.AccountAndAddress,
 	blockHeight int64,
 ) error {
 	// Get Bundles
@@ -153,7 +153,7 @@ func insertWorkerBulk(
 			generateSingleWorkerBundle(m, topic.Id, blockHeight, key, workers))
 	}
 	leaderWorker := workers[leaderWorkerAccountName]
-	return insertLeaderWorkerBulk(m, topic.Id, blockHeight, leaderWorkerAccountName, leaderWorker.addr, workerDataBundles)
+	return insertLeaderWorkerBulk(m, topic.Id, blockHeight, leaderWorkerAccountName, leaderWorker.Addr, workerDataBundles)
 }
 
 // create inferences and forecasts for a worker
@@ -162,17 +162,17 @@ func generateSingleWorkerBundle(
 	topicId uint64,
 	blockHeight int64,
 	workerAddressName string,
-	workers map[string]AccountAndAddress,
+	workers map[string]testCommon.AccountAndAddress,
 ) *emissionstypes.WorkerDataBundle {
 	// Iterate workerAddresses to get the worker address, and generate as many forecasts as there are workers
 	forecastElements := make([]*emissionstypes.ForecastElement, 0)
 	for key := range workers {
 		forecastElements = append(forecastElements, &emissionstypes.ForecastElement{
-			Inferer: workers[key].addr,
+			Inferer: workers[key].Addr,
 			Value:   alloraMath.NewDecFromInt64(int64(rand.Intn(51) + 50)),
 		})
 	}
-	infererAddress := workers[workerAddressName].addr
+	infererAddress := workers[workerAddressName].Addr
 	infererValue := alloraMath.NewDecFromInt64(int64(rand.Intn(300) + 3000))
 
 	// Create a MsgInsertBulkReputerPayload message
@@ -260,7 +260,7 @@ func checkWorkersReceivedRewards(
 		balance, err := getAccountBalance(
 			m.Ctx,
 			m.Client.QueryBank(),
-			workers[workerName].addr,
+			workers[workerName].Addr,
 		)
 		if err != nil {
 			m.T.Log(topicLog(topicId, "Error getting worker balance for worker: ", workerName, err))

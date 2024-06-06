@@ -22,7 +22,7 @@ func createReputerAddresses(
 	topicId uint64,
 	reputersMax int,
 ) (reputers NameToAccountMap) {
-	reputers = make(map[string]AccountAndAddress)
+	reputers = make(map[string]testCommon.AccountAndAddress)
 
 	for reputerIndex := 0; reputerIndex < reputersMax; reputerIndex++ {
 		reputerAccountName := getReputerAccountName(m.Seed, reputerIndex, topicId)
@@ -36,9 +36,9 @@ func createReputerAddresses(
 			m.T.Log(topicLog(topicId, "Error creating funder address: ", reputerAccountName, " - ", err))
 			continue
 		}
-		reputers[reputerAccountName] = AccountAndAddress{
-			acc:  reputerAccount,
-			addr: reputerAddressToFund,
+		reputers[reputerAccountName] = testCommon.AccountAndAddress{
+			Acc:  reputerAccount,
+			Addr: reputerAddressToFund,
 		}
 	}
 
@@ -61,14 +61,14 @@ func registerReputersForIteration(
 		reputer := reputers[reputerName]
 		err := RegisterReputerForTopic(
 			m,
-			NameAccountAndAddress{
-				name: reputerName,
-				aa:   reputer,
+			testCommon.NameAccountAndAddress{
+				Name: reputerName,
+				Aa:   reputer,
 			},
 			topicId,
 		)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error registering reputer address: ", reputer.addr, " - ", err))
+			m.T.Log(topicLog(topicId, "Error registering reputer address: ", reputer.Addr, " - ", err))
 			if makeReport {
 				saveReputerError(topicId, reputerName, err)
 				saveTopicError(topicId, err)
@@ -78,14 +78,14 @@ func registerReputersForIteration(
 		err = stakeReputer(
 			m,
 			topicId,
-			NameAccountAndAddress{
-				name: reputerName,
-				aa:   reputer,
+			testCommon.NameAccountAndAddress{
+				Name: reputerName,
+				Aa:   reputer,
 			},
 			stakeToAdd,
 		)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error staking reputer address: ", reputer.addr, " - ", err))
+			m.T.Log(topicLog(topicId, "Error staking reputer address: ", reputer.Addr, " - ", err))
 			if makeReport {
 				saveReputerError(topicId, reputerName, err)
 				saveTopicError(topicId, err)
@@ -167,7 +167,7 @@ func generateWorkerAttributedValueLosses(
 	values := make([]*emissionstypes.WorkerAttributedValue, 0)
 	for key := range workerAddresses {
 		values = append(values, &emissionstypes.WorkerAttributedValue{
-			Worker: workerAddresses[key].addr,
+			Worker: workerAddresses[key].Addr,
 			Value:  alloraMath.NewDecFromInt64(int64(rand.Intn(lowLimit) + sum)),
 		})
 	}
@@ -183,7 +183,7 @@ func generateWithheldWorkerAttributedValueLosses(
 	values := make([]*emissionstypes.WithheldWorkerAttributedValue, 0)
 	for key := range workerAddresses {
 		values = append(values, &emissionstypes.WithheldWorkerAttributedValue{
-			Worker: workerAddresses[key].addr,
+			Worker: workerAddresses[key].Addr,
 			Value:  alloraMath.NewDecFromInt64(int64(rand.Intn(lowLimit) + sum)),
 		})
 	}
@@ -282,14 +282,14 @@ func insertReputerBulk(
 	reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
 	for reputerAddressName := range reputerAddresses {
 		reputer := reputerAddresses[reputerAddressName]
-		reputerValueBundle := generateSingleReputerValueBundle(m, reputerAddressName, reputer.addr, valueBundle)
+		reputerValueBundle := generateSingleReputerValueBundle(m, reputerAddressName, reputer.Addr, valueBundle)
 		reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
 	}
 
 	reputerValueBundleMsg := generateReputerValueBundleMsg(
 		topicId,
 		reputerValueBundles,
-		leaderReputer.addr,
+		leaderReputer.Addr,
 		reputerNonce,
 		workerNonce,
 	)
@@ -326,7 +326,7 @@ func checkReputersReceivedRewards(
 			m.Ctx,
 			m.Client.QueryEmissions(),
 			topicId,
-			reputer.addr,
+			reputer.Addr,
 		)
 		if err != nil {
 			m.T.Log(topicLog(topicId, "Error getting reputer stake for reputer: ", reputerName, err))

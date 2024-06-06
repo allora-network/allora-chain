@@ -1,4 +1,4 @@
-package stress_test
+package simulation
 
 import (
 	cosmosMath "cosmossdk.io/math"
@@ -8,57 +8,56 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Broadcast the tx to create a new topic
-func createTopic(
-	m testCommon.TestConfig,
-	epochLength int64,
-	creator testCommon.NameAccountAndAddress,
-) (topicId uint64) {
+const topicFunds int64 = 1e6
+
+// test that we can create topics and that the resultant topics are what we asked for
+func createTopic(m testCommon.TestConfig) (topicId uint64) {
+	topicIdStart, err := m.Client.QueryEmissions().GetNextTopicId(
+		m.Ctx,
+		&emissionstypes.QueryNextTopicIdRequest{},
+	)
+	require.NoError(m.T, err)
+	require.Greater(m.T, topicIdStart.NextTopicId, uint64(0))
+	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:         creator.Aa.Addr,
+		Creator:         m.AliceAddr,
 		Metadata:        "ETH 24h Prediction",
 		LossLogic:       "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
 		LossMethod:      "loss-calculation-eth.wasm",
 		InferenceLogic:  "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
 		InferenceMethod: "allora-inference-function.wasm",
-		EpochLength:     epochLength,
-		GroundTruthLag:  0,
+		EpochLength:     5,
+		GroundTruthLag:  20,
 		DefaultArg:      "ETH",
 		PNorm:           alloraMath.NewDecFromInt64(3),
-		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:   true,
 	}
-
-	txResp, err := m.Client.BroadcastTx(m.Ctx, creator.Aa.Acc, createTopicRequest)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
-
 	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-
 	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.T, err)
+	topicId = createTopicResponse.TopicId
+	require.Equal(m.T, topicIdStart.NextTopicId, topicId)
 
-	incrementCountTopics()
-
-	m.T.Log(topicLog(createTopicResponse.TopicId, "creator", creator.Name, "created topic"))
-
-	return createTopicResponse.TopicId
+	require.NoError(m.T, err)
+	return topicId
 }
 
 // broadcast a tx to fund a topic
 func fundTopic(
 	m testCommon.TestConfig,
 	topicId uint64,
-	sender testCommon.NameAccountAndAddress,
 	amount int64,
 ) error {
-	m.T.Log(topicLog(topicId, "funded topic with ", amount, "from", sender.Name))
 	txResp, err := m.Client.BroadcastTx(
 		m.Ctx,
-		sender.Aa.Acc,
+		m.AliceAcc,
 		&emissionstypes.MsgFundTopic{
-			Sender:  sender.Aa.Addr,
+			Sender:  m.AliceAddr,
 			TopicId: topicId,
 			Amount:  cosmosMath.NewInt(amount),
 		},
@@ -76,4 +75,12 @@ func fundTopic(
 		return err
 	}
 	return nil
+}
+
+func SetupTopic(m testCommon.TestConfig) uint64 {
+	topicId := createTopic(m)
+	m.T.Log("created Topic", topicId, "from", m.AliceAddr)
+	_ = fundTopic(m, topicId, topicFunds)
+	m.T.Log("funded topic with ", topicFunds, "from", m.AliceAddr)
+	return topicId
 }

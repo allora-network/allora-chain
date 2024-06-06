@@ -14,26 +14,14 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 )
 
 const secondsInAMonth = 2592000
 const defaultEpochLength = 10      // Default epoch length in blocks if none is found yet from chain
 const minWaitingNumberofEpochs = 3 // To control the number of epochs to wait before inserting the first batch
 
-type NameAccountAndAddress struct {
-	name string
-	aa   AccountAndAddress
-}
-
-// holder for account and address
-type AccountAndAddress struct {
-	acc  cosmosaccount.Account
-	addr string
-}
-
 // maps of worker and reputer names to their account and address information
-type NameToAccountMap map[NAME]AccountAndAddress
+type NameToAccountMap map[NAME]testCommon.AccountAndAddress
 
 // simple wrapper around topicLog
 func topicLog(topicId uint64, a ...any) string {
@@ -57,7 +45,7 @@ func getReputerAccountName(seed int, reputerIndex int, topicId uint64) string {
 
 // return the approximate block time in seconds
 func getApproximateBlockTimeSeconds(m testCommon.TestConfig) time.Duration {
-	emissionsParams := GetEmissionsParams(m)
+	emissionsParams, _ := GetEmissionsParams(m)
 	blocksPerMonth := emissionsParams.GetBlocksPerMonth()
 	return time.Duration(secondsInAMonth/blocksPerMonth) * time.Second
 }
@@ -117,7 +105,7 @@ func getReputerStake(
 
 // return from the emissions module what the maximum amount of rewarded workers and reporters should be
 func getMaxTopWorkersReputersToReward(m testCommon.TestConfig) (uint64, uint64, uint64, error) {
-	emissionsParams := GetEmissionsParams(m)
+	emissionsParams, _ := GetEmissionsParams(m)
 	topInferersCount := emissionsParams.GetMaxTopInferersToReward()
 	topForecastersCount := emissionsParams.GetMaxTopForecastersToReward()
 	topReputersCount := emissionsParams.GetMaxTopReputersToReward()
@@ -165,7 +153,7 @@ func getNonZeroTopicEpochLastRan(
 // This function picks a key from a map randomly and returns it.
 // TYLER NOTE TODO: ideally this should be seeded with the seed from the env
 // and made to be concurrency aware
-func pickRandomKeyFromMap(x map[string]AccountAndAddress) (string, error) {
+func pickRandomKeyFromMap(x map[string]testCommon.AccountAndAddress) (string, error) {
 	// Get the number of entries in the map
 	numEntries := len(x)
 	if numEntries == 0 {

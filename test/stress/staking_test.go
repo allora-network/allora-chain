@@ -10,15 +10,15 @@ import (
 func stakeReputer(
 	m testCommon.TestConfig,
 	topicId uint64,
-	reputer NameAccountAndAddress,
+	reputer testCommon.NameAccountAndAddress,
 	stakeToAdd uint64,
 ) error {
 	addStake := &emissionstypes.MsgAddStake{
-		Sender:  reputer.aa.addr,
+		Sender:  reputer.Aa.Addr,
 		TopicId: topicId,
 		Amount:  cosmosMath.NewIntFromUint64(stakeToAdd),
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, reputer.aa.acc, addStake)
+	txResp, err := m.Client.BroadcastTx(m.Ctx, reputer.Aa.Acc, addStake)
 	if err != nil {
 		return err
 	}

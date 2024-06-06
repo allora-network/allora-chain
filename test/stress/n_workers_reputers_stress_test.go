@@ -19,7 +19,7 @@ const retryBundleUploadTimes int = 2
 // and then stake the topic funder as a reputer
 func setupTopic(
 	m testCommon.TestConfig,
-	funder NameAccountAndAddress,
+	funder testCommon.NameAccountAndAddress,
 	epochLength int64,
 ) uint64 {
 	m.T.Log("Creating new Topic")
@@ -83,11 +83,11 @@ func workerReputerCoordinationLoop(
 	err := fundAccounts(
 		m,
 		0,
-		NameAccountAndAddress{
-			name: "faucet",
-			aa: AccountAndAddress{
-				acc:  m.FaucetAcc,
-				addr: m.FaucetAddr,
+		testCommon.NameAccountAndAddress{
+			Name: "faucet",
+			Aa: testCommon.AccountAndAddress{
+				Acc:  m.FaucetAcc,
+				Addr: m.FaucetAddr,
 			},
 		},
 		topicFunders,
@@ -124,9 +124,9 @@ func workerReputerCoordinationLoop(
 			go workerReputerLoop(
 				&wg,
 				m,
-				NameAccountAndAddress{
-					name: topicFunderAccountName,
-					aa:   funder,
+				testCommon.NameAccountAndAddress{
+					Name: topicFunderAccountName,
+					Aa:   funder,
 				},
 				reputersPerIteration,
 				maxReputersPerTopic,
@@ -163,7 +163,7 @@ func workerReputerCoordinationLoop(
 func workerReputerLoop(
 	wg *sync.WaitGroup,
 	m testCommon.TestConfig,
-	funder NameAccountAndAddress,
+	funder testCommon.NameAccountAndAddress,
 	reputersPerIteration,
 	maxReputersPerTopic,
 	workersPerIteration,
