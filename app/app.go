@@ -222,6 +222,9 @@ func NewAlloraApp(
 	}
 
 	/****  Module Options ****/
+	app.ModuleManager.SetOrderPreBlockers(
+		upgradetypes.ModuleName,
+	)
 
 	//begin_blockers: [capability, distribution, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
 	//end_blockers: [staking, ibc, transfer, capability, genutil, interchainaccounts, feeibc, emissions]
