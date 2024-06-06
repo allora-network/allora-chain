@@ -32,6 +32,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 )
 
 // registerIBCModules register IBC keepers and non dependency inject modules.
@@ -157,6 +158,10 @@ func (app *AlloraApp) registerIBCModules() {
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule)
 
+	//blogIBCModule := ibcfee.NewIBCMiddleware(blogmodule.NewIBCModule(app.BlogKeeper), app.IBCFeeKeeper)
+	//ibcRouter.AddRoute(blogmoduletypes.ModuleName, blogIBCModule)
+	//// this line is used by starport scaffolding # ibc/app/module
+
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
@@ -171,6 +176,7 @@ func (app *AlloraApp) registerIBCModules() {
 		ibcfee.NewAppModule(app.IBCFeeKeeper),
 		icamodule.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
 		capability.NewAppModule(app.appCodec, *app.CapabilityKeeper, false),
+		ibctm.AppModule{},
 	); err != nil {
 		panic(err)
 	}
@@ -186,6 +192,7 @@ func RegisterIBC(registry cdctypes.InterfaceRegistry) map[string]appmodule.AppMo
 		ibcfeetypes.ModuleName:      ibcfee.AppModule{},
 		icatypes.ModuleName:         icamodule.AppModule{},
 		capabilitytypes.ModuleName:  capability.AppModule{},
+		ibctm.ModuleName:            ibctm.AppModule{},
 	}
 
 	sortedModuleKeys := alloraMath.GetSortedKeys(modules)
