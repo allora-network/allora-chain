@@ -101,14 +101,14 @@ func calculateLoss(
 }
 
 func calculateEmaLossArray[T emissionstypes.WorkerAttributedValue | emissionstypes.WithheldWorkerAttributedValue](
-	infererValues []*T,
-	previousValues []*T,
+	infererValues []*emissionstypes.WorkerAttributedValue,
+	previousValues []*emissionstypes.WorkerAttributedValue,
 	alpha alloraMath.Dec,
 ) []*T {
 	emaLossValues := make([]*T, 0)
 	for index := 0; index < len(infererValues); index++ {
 		infererInference := infererValues[index]
-		worker := infererValues[index].Worker
+		worker := infererInference.Worker
 		previousValueFound := false
 		previousValue := alloraMath.ZeroDec()
 		for pIndex := 0; pIndex < len(previousValues); pIndex++ {
@@ -144,6 +144,18 @@ func calculateEmaLoss(
 ) emissionstypes.ValueBundle {
 	combinedValue := alloraMath.ZeroDec()
 	naiveValue := alloraMath.ZeroDec()
+
+	convertWorkerAttributedValueType := func(values []*emissionstypes.WithheldWorkerAttributedValue) []*emissionstypes.WorkerAttributedValue {
+		res := make([]*emissionstypes.WorkerAttributedValue, 0)
+		for _, value := range values {
+			res = append(res, &emissionstypes.WorkerAttributedValue{
+				Worker: value.Worker,
+				Value:  value.Value,
+			})
+		}
+		return res
+	}
+
 	if previousLosses.CombinedValue.Gt(alloraMath.ZeroDec()) {
 		combinedValue, _ = qFunc(lossData.CombinedValue, previousLosses.CombinedValue, alpha)
 	} else {
@@ -154,11 +166,18 @@ func calculateEmaLoss(
 	} else {
 		naiveValue = lossData.NaiveValue
 	}
-	infererValues := calculateEmaLossArray[emissionstypes.WorkerAttributedValue](lossData.InfererValues, previousLosses.InfererValues, alpha)
-	forecasterValues := calculateEmaLossArray[emissionstypes.WorkerAttributedValue](lossData.ForecasterValues, previousLosses.ForecasterValues, alpha)
-	oneOutInfererValues := calculateEmaLossArray[emissionstypes.WithheldWorkerAttributedValue](lossData.OneOutInfererValues, previousLosses.OneOutInfererValues, alpha)
-	oneOutForecasterValues := calculateEmaLossArray[emissionstypes.WithheldWorkerAttributedValue](lossData.OneOutForecasterValues, previousLosses.OneOutForecasterValues, alpha)
-	oneInForecasterValues := calculateEmaLossArray[emissionstypes.WorkerAttributedValue](lossData.OneInForecasterValues, previousLosses.OneInForecasterValues, alpha)
+	infererValues := calculateEmaLossArray[emissionstypes.WorkerAttributedValue](
+		lossData.InfererValues, previousLosses.InfererValues, alpha)
+	forecasterValues := calculateEmaLossArray[emissionstypes.WorkerAttributedValue](
+		lossData.ForecasterValues, previousLosses.ForecasterValues, alpha)
+	oneOutInfererValues := calculateEmaLossArray[emissionstypes.WithheldWorkerAttributedValue](
+		convertWorkerAttributedValueType(lossData.OneOutInfererValues),
+		convertWorkerAttributedValueType(previousLosses.OneOutInfererValues), alpha)
+	oneOutForecasterValues := calculateEmaLossArray[emissionstypes.WithheldWorkerAttributedValue](
+		convertWorkerAttributedValueType(lossData.OneOutForecasterValues),
+		convertWorkerAttributedValueType(previousLosses.OneOutForecasterValues), alpha)
+	oneInForecasterValues := calculateEmaLossArray[emissionstypes.WorkerAttributedValue](
+		lossData.OneInForecasterValues, previousLosses.OneInForecasterValues, alpha)
 	return emissionstypes.ValueBundle{
 		TopicId:                lossData.TopicId,
 		CombinedValue:          combinedValue,

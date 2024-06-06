@@ -25,7 +25,7 @@ func insertWorkerBulk(
 	workerDataBundles := make([]*emissionstypes.WorkerDataBundle, 0)
 	for _, worker := range inferers {
 		workerDataBundles = append(workerDataBundles,
-			generateSingleWorkerBundle(m, topic.Id, blockHeightCurrent, worker.Addr, workers))
+			generateSingleWorkerBundle(m, topic.Id, blockHeightCurrent, worker.Addr, leaderWorker.Acc.Name, workers))
 	}
 
 	nonce := emissionstypes.Nonce{BlockHeight: blockHeightCurrent}
@@ -54,6 +54,7 @@ func generateSingleWorkerBundle(
 	topicId uint64,
 	blockHeight int64,
 	workerAddressName string,
+	signerName string,
 	forecasters []testCommon.AccountAndAddress,
 ) *emissionstypes.WorkerDataBundle {
 	// Iterate workerAddresses to get the worker address, and generate as many forecasts as there are workers
@@ -90,7 +91,7 @@ func generateSingleWorkerBundle(
 	src, err := workerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
 	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
 
-	sig, pubKey, err := m.Client.Context().Keyring.Sign(workerAddressName, src, signing.SignMode_SIGN_MODE_DIRECT)
+	sig, pubKey, err := m.Client.Context().Keyring.Sign(signerName, src, signing.SignMode_SIGN_MODE_DIRECT)
 	require.NoError(m.T, err, "Sign should not return an error")
 	workerPublicKeyBytes := pubKey.Bytes()
 	workerDataBundle.InferencesForecastsBundleSignature = sig

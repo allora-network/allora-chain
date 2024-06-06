@@ -134,3 +134,57 @@ func getNetworkLossBundleAtBlock(
 
 	return txResp.LossBundle
 }
+
+func getTopic(
+	m testCommon.TestConfig,
+	topicId uint64,
+) (*emissionstypes.Topic, error) {
+	topicResponse, err := m.Client.QueryEmissions().GetTopic(
+		m.Ctx,
+		&emissionstypes.QueryTopicRequest{TopicId: topicId},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return topicResponse.Topic, nil
+}
+
+func getActors(
+	m testCommon.TestConfig,
+	infererCount int,
+	forecasterCount int,
+	reputerCount int,
+) ([]testCommon.AccountAndAddress, []testCommon.AccountAndAddress, []testCommon.AccountAndAddress) {
+	inferers := make([]testCommon.AccountAndAddress, 0)
+	forecasters := make([]testCommon.AccountAndAddress, 0)
+	reputers := make([]testCommon.AccountAndAddress, 0)
+
+	for index := 0; index < infererCount; index++ {
+		accountName := getActorsAccountName(INFERER_TYPE, m.Seed, index)
+		inferer, err := getActorAccountAndAddress(m, accountName)
+		if err != nil {
+			continue
+		}
+		inferers = append(inferers, inferer)
+	}
+
+	for index := 0; index < forecasterCount; index++ {
+		accountName := getActorsAccountName(FORECASTER_TYPE, m.Seed, index)
+		inferer, err := getActorAccountAndAddress(m, accountName)
+		if err != nil {
+			continue
+		}
+		forecasters = append(forecasters, inferer)
+	}
+
+	for index := 0; index < reputerCount; index++ {
+		accountName := getActorsAccountName(REPUTER_TYPE, m.Seed, index)
+		inferer, err := getActorAccountAndAddress(m, accountName)
+		if err != nil {
+			continue
+		}
+		reputers = append(reputers, inferer)
+	}
+
+	return inferers, forecasters, reputers
+}
