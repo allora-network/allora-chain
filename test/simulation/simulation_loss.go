@@ -195,16 +195,16 @@ func calculateEmaLoss(
 func generateValueBundle(
 	m testCommon.TestConfig,
 	topicId uint64,
-	reputerNonce,
-	workerNonce *emissionstypes.Nonce,
+	currentLossNonce,
+	prevLossNonce *emissionstypes.Nonce,
 ) (emissionstypes.ValueBundle, error) {
 	ALPHA := alloraMath.MustNewDecFromString("0.1")
 	groundTruth := getGroundTruth()
-	valueBundle, err := getNetworkInferencesAtBlock(m, topicId, reputerNonce.BlockHeight, workerNonce.BlockHeight)
+	valueBundle, err := getNetworkInferencesAtBlock(m, topicId, currentLossNonce.BlockHeight, prevLossNonce.BlockHeight)
 	if err != nil {
 		return emissionstypes.ValueBundle{}, err
 	}
-	prevLoss := getNetworkLossBundleAtBlock(m, topicId, workerNonce.BlockHeight)
+	prevLoss := getNetworkLossBundleAtBlock(m, topicId, prevLossNonce.BlockHeight)
 	lossData := calculateLoss(valueBundle, groundTruth)
 	newLoss := calculateEmaLoss(lossData, prevLoss, ALPHA)
 	return newLoss, nil
@@ -246,7 +246,14 @@ func insertReputerBulk(
 	leaderIndex := rand.Intn(len(reputers))
 	leaderReputer := reputers[leaderIndex]
 	var blockHeightCurrent int64 = 0
+	currentLossEpoch := &emissionstypes.Nonce{
+		BlockHeight: insertedBlockHeight,
+	}
+	prevLossEpoch := &emissionstypes.Nonce{
+		BlockHeight: insertedBlockHeight - topic.EpochLength,
+	}
 	for index := 0; index < RetryTime; index++ {
+
 		blockHeightCurrent = insertedBlockHeight + topic.EpochLength
 		blockHeightEval := insertedBlockHeight
 		// Nonces are last two blockHeights
@@ -256,14 +263,13 @@ func insertReputerBulk(
 		workerNonce := &emissionstypes.Nonce{
 			BlockHeight: blockHeightEval,
 		}
-		valueBundle, err := generateValueBundle(m, topic.Id, reputerNonce, workerNonce)
-		if err != nil {
-			return 0, err
-		}
-
 		reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
 		for index, reputer := range reputers {
 			reputerAccountName := getActorsAccountName(REPUTER_TYPE, seed, index)
+			valueBundle, err := generateValueBundle(m, topic.Id, currentLossEpoch, prevLossEpoch)
+			if err != nil {
+				continue
+			}
 			reputerValueBundle := generateSingleReputerValueBundle(m, reputerAccountName, reputer.Addr, valueBundle)
 			reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
 		}

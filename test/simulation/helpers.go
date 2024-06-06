@@ -2,6 +2,7 @@ package simulation
 
 import (
 	"fmt"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
@@ -106,8 +107,8 @@ func getNetworkInferencesAtBlock(
 ) (*emissionstypes.ValueBundle, error) {
 	query := &emissionstypes.QueryNetworkInferencesAtBlockRequest{
 		TopicId:                  topicId,
-		BlockHeightLastInference: blockHeightLastReward,
-		BlockHeightLastReward:    blockHeightLastInference,
+		BlockHeightLastInference: blockHeightLastInference,
+		BlockHeightLastReward:    blockHeightLastReward,
 	}
 	txResp, err := m.Client.QueryEmissions().GetNetworkInferencesAtBlock(m.Ctx, query)
 	if err != nil {
@@ -130,13 +131,13 @@ func getNetworkLossBundleAtBlock(
 	if err != nil {
 		m.T.Log("Error query for getting network inferences at block: ", err)
 		return &emissionstypes.ValueBundle{
-			//CombinedValue: ,
-			//NaiveValue: ,
-			//InfererValues: ,
-			//ForecasterValues: ,
-			//OneOutForecasterValues: ,
-			//OneOutInfererValues: ,
-			//OneInForecasterValues: ,
+			CombinedValue:          alloraMath.ZeroDec(),
+			NaiveValue:             alloraMath.ZeroDec(),
+			InfererValues:          []*emissionstypes.WorkerAttributedValue{},
+			ForecasterValues:       []*emissionstypes.WorkerAttributedValue{},
+			OneOutInfererValues:    []*emissionstypes.WithheldWorkerAttributedValue{},
+			OneOutForecasterValues: []*emissionstypes.WithheldWorkerAttributedValue{},
+			OneInForecasterValues:  []*emissionstypes.WorkerAttributedValue{},
 		}
 	}
 
