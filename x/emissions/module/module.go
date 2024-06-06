@@ -69,11 +69,10 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), queryserver.NewQueryServerImpl(am.keeper))
 
 	// Register in place module state migration migrations
-	m := keeper.NewMigrator(am.keeper)
-	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
-		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
-	}
-	fmt.Println(">>>>>>>>>>>>>>>>>>> RegisterServices new migrator")
+	// m := keeper.NewMigrator(am.keeper)
+	// if err := cfg.RegisterMigration(state.ModuleName, 1, m.Migrate1to2); err != nil {
+	// 	panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", state.ModuleName, err))
+	// }
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the module.
