@@ -1,13 +1,15 @@
 diff --git a/app/upgrades.go b/app/upgrades.go
-index 5a21ced..f402dd6 100644
+index 5a21ced..e3b7346 100644
 --- a/app/upgrades.go
 +++ b/app/upgrades.go
-@@ -1,4 +1,23 @@
+@@ -1,4 +1,33 @@
  package app
  
 +import (
 +	"fmt"
 +
++	storetypes "cosmossdk.io/store/types"
++	upgradetypes "cosmossdk.io/x/upgrade/types"
 +	"github.com/allora-network/allora-chain/app/upgrades/vintegration"
 +)
 +
@@ -20,13 +22,20 @@ index 5a21ced..f402dd6 100644
 +		),
 +	)
 +
-+	// check we will be able to do the upgrade
-+	_, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
-+	if err != nil {
-+		panic(fmt.Errorf("failed to read upgrade info from disk: %w", err))
++	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
++	if err == nil {
++		if upgradeInfo.Name == vintegration.UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
++			fmt.Println(">>>>>>>>>> deleting capabilities")
++			storeUpgrades := storetypes.StoreUpgrades{
++				Deleted: []string{"capability"},
++			}
++
++			// configure store loader that checks if version == upgradeHeight and applies store upgrades
++			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
++		}
 +	}
++
  }
-
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
 index b386038..1a32f33 100644
 --- a/x/emissions/module/module.go

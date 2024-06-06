@@ -156,6 +156,10 @@ func (c *Client) QueryGov() govtypesv1.QueryClient {
 	return c.QueryGovs[c.getNextClientNumber()]
 }
 
+func (c *Client) QueryUpgrade() upgradetypes.QueryClient {
+	return c.QueryUpgrades[c.getNextClientNumber()]
+}
+
 /// Wrappers for cosmosclient functions
 // broadcast etc shouldn't have to worry about concurrency
 // because the RPC endpoint itself should handle that.
@@ -174,6 +178,10 @@ func (c *Client) Context() sdkclient.Context {
 
 func (c *Client) WaitForNextBlock(ctx context.Context) error {
 	return c.Clients[c.getNextClientNumber()].WaitForNextBlock(ctx)
+}
+
+func (c *Client) WaitForBlockHeight(ctx context.Context, height int64) error {
+	return c.Clients[c.getNextClientNumber()].WaitForBlockHeight(ctx, height)
 }
 
 func (c *Client) WaitForTx(ctx context.Context, hash string) (*coretypes.ResultTx, error) {

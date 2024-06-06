@@ -48,13 +48,13 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 }
 
 // propose an upgrade to the vintegration software version
-func proposeUpgrade(m testCommon.TestConfig) uint64 {
+func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight int64) {
 	name := "vintegration"
 	summary := "Upgrade to vintegration software version"
 
 	currHeight, err := m.Client.BlockHeight(m.Ctx)
 	require.NoError(m.T, err)
-	proposalHeight := currHeight + 50 // 4 1/6 minutes
+	proposalHeight = currHeight + 50 // 4 1/6 minutes
 	m.T.Logf("Current Height: %d, proposing upgrade for %d", currHeight, proposalHeight)
 	msgSoftwareUpgrade := &upgradetypes.MsgSoftwareUpgrade{
 		Authority: authtypes.NewModuleAddress("gov").String(),
@@ -85,10 +85,10 @@ func proposeUpgrade(m testCommon.TestConfig) uint64 {
 	err = txResp.Decode(submitProposalMsgResponse)
 	require.NoError(m.T, err)
 	require.NotNil(m.T, submitProposalMsgResponse.ProposalId)
-	return submitProposalMsgResponse.ProposalId
+	return submitProposalMsgResponse.ProposalId, proposalHeight
 }
 
-func waitforProposalPass(m testCommon.TestConfig, proposalId uint64) {
+func waitForProposalPass(m testCommon.TestConfig, proposalId uint64) {
 	proposalRequest := &govtypesv1.QueryProposalRequest{
 		ProposalId: proposalId,
 	}
@@ -109,11 +109,42 @@ func waitforProposalPass(m testCommon.TestConfig, proposalId uint64) {
 	require.Equal(m.T, govtypesv1.StatusPassed, proposal.Proposal.Status)
 }
 
+// query the current version of the emissions module
+func getEmissionsVersion(m testCommon.TestConfig) uint64 {
+	queryModuleVersionsRequest := &upgradetypes.QueryModuleVersionsRequest{
+		ModuleName: "emissions",
+	}
+	moduleVersions, err := m.Client.QueryUpgrade().ModuleVersions(m.Ctx, queryModuleVersionsRequest)
+	require.NoError(m.T, err)
+	require.NotNil(m.T, moduleVersions)
+	require.Len(m.T, moduleVersions.ModuleVersions, 1)
+	require.NotNil(m.T, moduleVersions.ModuleVersions[0])
+	return moduleVersions.ModuleVersions[0].Version
+}
+
+// wait for the block before the upgrade, then sleep to give
+// the cosmovisor time to reboot the node software
+func waitForUpgrade(m testCommon.TestConfig, proposalHeight int64) {
+	var timeToSleep time.Duration = 15
+	m.Client.WaitForBlockHeight(m.Ctx, proposalHeight-1)
+	m.T.Logf("--- Block Height %d Reached, Preparing to Sleep %d while Upgrade Happens ---",
+		proposalHeight-1, timeToSleep)
+	time.Sleep(timeToSleep * time.Second)
+}
+
 func UpgradeChecks(m testCommon.TestConfig) {
+	m.T.Log("--- Getting Emissions Module Version Before Upgrade ---")
+	emissionsVersionBefore := getEmissionsVersion(m)
 	m.T.Log("--- Propose Upgrade to vintegration software version from v0 ---")
-	proposalId := proposeUpgrade(m)
+	proposalId, proposalHeight := proposeUpgrade(m)
 	m.T.Logf("--- Vote on Upgrade Proposal %d ---", proposalId)
 	voteOnProposal(m, proposalId)
 	m.T.Logf("--- Wating for Proposal %d to Pass ---", proposalId)
-	waitforProposalPass(m, proposalId)
+	waitForProposalPass(m, proposalId)
+	m.T.Logf("--- Waiting for Upgrade to vintegration at height %d ---", proposalHeight)
+	waitForUpgrade(m, proposalHeight)
+	m.T.Log("--- Getting Emissions Module Version After Upgrade ---")
+	emissionsVersionAfter := getEmissionsVersion(m)
+	m.T.Log("--- Checking Emissions Module Version Has Been Upgraded ---")
+	require.Greater(m.T, emissionsVersionAfter, emissionsVersionBefore)
 }
