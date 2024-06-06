@@ -1,7 +1,6 @@
 package stress_test
 
 import (
-	"fmt"
 	"os"
 	"runtime"
 	"testing"
@@ -16,7 +15,7 @@ func TestStressTestSuite(t *testing.T) {
 
 	numCPUs := runtime.NumCPU()
 	gomaxprocs := runtime.GOMAXPROCS(0)
-	fmt.Printf("Number of logical CPUs: %d, GOMAXPROCS %d \n", numCPUs, gomaxprocs)
+	t.Logf("Number of logical CPUs: %d, GOMAXPROCS %d \n", numCPUs, gomaxprocs)
 
 	t.Log(">>> Setting up connection to local node <<<")
 

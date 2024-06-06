@@ -1,10 +1,8 @@
 package integration_test
 
 import (
-	"context"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -18,26 +16,26 @@ const defaultEpochLength = 10
 const approximateBlockLengthSeconds = 5
 const minWaitingNumberofEpochs = 3
 
-func getNonZeroTopicEpochLastRan(ctx context.Context, query types.QueryClient, topicID uint64, maxRetries int) (*types.Topic, error) {
+func getNonZeroTopicEpochLastRan(m testCommon.TestConfig, topicID uint64, maxRetries int) (*types.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
 	for retries := 0; retries < maxRetries; retries++ {
-		topicResponse, err := query.GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicID})
+		topicResponse, err := m.Client.QueryEmissions().GetTopic(m.Ctx, &types.QueryTopicRequest{TopicId: topicID})
 		if err == nil {
 			storedTopic := topicResponse.Topic
 			if storedTopic.EpochLastEnded != 0 {
 				sleepingTime := time.Duration(minWaitingNumberofEpochs*storedTopic.EpochLength*approximateBlockLengthSeconds) * time.Second
-				fmt.Println(time.Now(), " Topic found, sleeping...", sleepingTime)
+				m.T.Log(time.Now(), " Topic found, sleeping...", sleepingTime)
 				time.Sleep(sleepingTime)
-				fmt.Println(time.Now(), " Slept.")
+				m.T.Log(time.Now(), " Slept.")
 				return topicResponse.Topic, nil
 			}
 			sleepingTimeBlocks = int(storedTopic.EpochLength)
 		} else {
-			fmt.Println("Error getting topic, retry...", err)
+			m.T.Log("Error getting topic, retry...", err)
 		}
 		// Sleep for a while before retrying
-		fmt.Println("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
+		m.T.Log("Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
 		time.Sleep(time.Duration(sleepingTimeBlocks*approximateBlockLengthSeconds) * time.Second)
 	}
 
@@ -121,11 +119,11 @@ func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, int64
 
 	// Insert and fulfill nonces for the last two epochs
 	blockHeightEval := freshTopic.EpochLastEnded - freshTopic.EpochLength
-	fmt.Println("Inserting worker bulk for blockHeightEval: ", blockHeightEval)
+	m.T.Log("Inserting worker bulk for blockHeightEval: ", blockHeightEval)
 	InsertSingleWorkerBulk(m, freshTopic, blockHeightEval)
 
 	blockHeightCurrent := freshTopic.EpochLastEnded
-	fmt.Println("Inserting worker bulk for blockHeightCurrent: ", blockHeightCurrent)
+	m.T.Log("Inserting worker bulk for blockHeightCurrent: ", blockHeightCurrent)
 	InsertSingleWorkerBulk(m, freshTopic, blockHeightCurrent)
 	return blockHeightCurrent, blockHeightEval
 }
@@ -236,7 +234,7 @@ func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightC
 // Register two actors and check their registrations went through
 func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	// Nonce: calculate from EpochLastRan + EpochLength
-	topic, err := getNonZeroTopicEpochLastRan(m.Ctx, m.Client.QueryEmissions(), 1, 5)
+	topic, err := getNonZeroTopicEpochLastRan(m, 1, 5)
 	if err != nil {
 		m.T.Log("--- Failed getting a topic that was ran ---")
 		require.NoError(m.T, err)

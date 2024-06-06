@@ -25,7 +25,7 @@ index 5a21ced..e3b7346 100644
 +	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
 +	if err == nil {
 +		if upgradeInfo.Name == vintegration.UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-+			fmt.Println(">>>>>>>>>> deleting capabilities")
++			# deleting capabilities
 +			storeUpgrades := storetypes.StoreUpgrades{
 +				Deleted: []string{"capability"},
 +			}

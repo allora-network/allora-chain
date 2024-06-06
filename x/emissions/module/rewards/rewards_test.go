@@ -1,7 +1,6 @@
 package rewards_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -799,7 +798,7 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []types.TaskRewar
 			}
 		}
 		if !found {
-			fmt.Printf("Worker %v not found", taskRewardA.Address)
+			s.T().Logf("Worker %v not found", taskRewardA.Address)
 			return false
 		}
 	}
