@@ -34,3 +34,5 @@ test/stress/*.log
 coverage
 coverage_raw.lcov
 coverage.lcov
+
+build/

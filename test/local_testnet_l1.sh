@@ -69,6 +69,11 @@ docker run \
     --entrypoint=/data/generate_genesis.sh \
     $DOCKER_IMAGE > /dev/null 2>&1
 
+echo "Updating expedited_voting_period in genesis.json"
+genesis_file="${LOCALNET_DATADIR}/genesis/config/genesis.json"
+tmp_file=$(mktemp)
+jq '.app_state.gov.params.expedited_voting_period = "20s" | .app_state.gov.params.voting_period = "20s"' "$genesis_file" > "$tmp_file" && mv "$tmp_file" "$genesis_file"
+
 echo "Whitelist faucet account"
 FAUCET_ADDRESS=$(docker run -t \
     -u $(id -u):$(id -g) \
@@ -88,15 +93,34 @@ docker run -t \
         put -t string -v "$FAUCET_ADDRESS" 'app_state.emissions.core_team_addresses.append()' -f /data/genesis/config/genesis.json
 echo "Faucet addr: $FAUCET_ADDRESS"
 
-echo "Running cosmovisor init"
-docker run -t \
-    -u $(id -u):$(id -g) \
-    -v ${LOCALNET_DATADIR}:/data \
-    --entrypoint=cosmovisor \
-    --env DAEMON_HOME=/data \
-    --env DAEMON_NAME=allorad \
-    $DOCKER_IMAGE \
-        init /usr/local/bin/allorad
+for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
+    valName="${VALIDATOR_PREFIX}${i}"
+    echo "Running cosmovisor init for $valName"
+    docker run -t \
+        -u $(id -u):$(id -g) \
+        -v ${LOCALNET_DATADIR}:/data \
+        --entrypoint=cosmovisor \
+        --env HOME=/data/${valName} \
+        --env DAEMON_HOME=/data/${valName} \
+        --env DAEMON_NAME=allorad \
+        $DOCKER_IMAGE \
+            init /usr/local/bin/allorad
+
+    echo "Setting vintegration upgrade for $valName"
+    docker run -t \
+        -u $(id -u):$(id -g) \
+        -v ${LOCALNET_DATADIR}:/data \
+        --entrypoint=mkdir \
+        $DOCKER_IMAGE \
+            -p /data/${valName}/cosmovisor/upgrades/vintegration/bin
+
+    docker run -t \
+        -u $(id -u):$(id -g) \
+        -v ${LOCALNET_DATADIR}:/data \
+        --entrypoint=cp \
+        $DOCKER_IMAGE \
+            /usr/local/bin/allorad-integration /data/${valName}/cosmovisor/upgrades/vintegration/bin/allorad
+done
 
 echo "Generate L1 peers"
 PEERS=""
@@ -130,7 +154,7 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
 done
 
 echo "Launching the network"
-DAEMON_HOME=/data DAEMON_NAME=allorad docker compose -f $L1_COMPOSE up -d
+docker compose -f $L1_COMPOSE up -d
 
 echo "Waiting validator is up"
 curl -o /dev/null --connect-timeout 5 \

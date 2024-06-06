@@ -4,7 +4,7 @@
     environment:
       - HOME=/data/${moniker}
       - DAEMON_NAME=allorad 
-      - DAEMON_HOME=/data
+      - DAEMON_HOME=/data/${moniker}
     volumes:
       - ${LOCALNET_DATADIR}:/data
     user: "${UID_GID}"

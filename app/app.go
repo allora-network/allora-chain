@@ -11,11 +11,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+	dbm "github.com/cosmos/cosmos-db"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-
-	dbm "github.com/cosmos/cosmos-db"
 
 	"cosmossdk.io/core/appconfig"
 	"cosmossdk.io/depinject"
@@ -222,6 +222,9 @@ func NewAlloraApp(
 	}
 
 	/****  Module Options ****/
+	app.ModuleManager.SetOrderPreBlockers(
+		upgradetypes.ModuleName,
+	)
 
 	//begin_blockers: [capability, distribution, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
 	//end_blockers: [staking, ibc, transfer, capability, genutil, interchainaccounts, feeibc, emissions]
@@ -259,7 +262,12 @@ func NewAlloraApp(
 	topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
 	app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
 
-	app.SetInitChainer(app.InitChainer)
+	app.setupUpgradeHandlers()
+
+	app.SetInitChainer(func(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
+		app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
+		return app.App.InitChainer(ctx, req)
+	})
 
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err

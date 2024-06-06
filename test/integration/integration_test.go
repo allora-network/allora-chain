@@ -41,4 +41,6 @@ func TestExternalTestSuite(t *testing.T) {
 	TopicFundingChecks(testConfig)
 	t.Log(">>> Test Making Inference <<<")
 	WorkerInferenceAndForecastChecks(testConfig)
+	t.Log(">>> Test Upgrading Emissions Module Version")
+	UpgradeChecks(testConfig)
 }

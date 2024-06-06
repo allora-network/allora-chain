@@ -1,7 +1,6 @@
 package rewards_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -799,7 +798,7 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []types.TaskRewar
 			}
 		}
 		if !found {
-			fmt.Printf("Worker %v not found", taskRewardA.Address)
+			s.T().Logf("Worker %v not found", taskRewardA.Address)
 			return false
 		}
 	}
@@ -2828,7 +2827,6 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer0_Reward0 := reputer0_Stake1.Sub(reputer0_Stake0)
 	reputer1_Reward0 := reputer1_Stake1.Sub(reputer1_Stake0)
 	reputer2_Reward0 := reputer2_Stake1.Sub(reputer2_Stake0)
-
 	reputer3_Reward0 := reputer3_Stake1.Sub(reputer3_Stake0)
 	reputer4_Reward0 := reputer4_Stake1.Sub(reputer4_Stake0)
 	reputer5_Reward0 := reputer5_Stake1.Sub(reputer5_Stake0)
