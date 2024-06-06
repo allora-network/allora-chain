@@ -8,14 +8,14 @@ index 5a21ced..f402dd6 100644
 +import (
 +	"fmt"
 +
-+	"github.com/allora-network/allora-chain/app/upgrades/vIntegration"
++	"github.com/allora-network/allora-chain/app/upgrades/vintegration"
 +)
 +
  func (app *AlloraApp) setupUpgradeHandlers() {
-+	// set up the vIntegration upgrade
++	// set up the vintegration upgrade
 +	app.UpgradeKeeper.SetUpgradeHandler(
-+		vIntegration.UpgradeName,
-+		vIntegration.CreateUpgradeHandler(
++		vintegration.UpgradeName,
++		vintegration.CreateUpgradeHandler(
 +			app.ModuleManager, app.Configurator(),
 +		),
 +	)

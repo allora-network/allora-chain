@@ -1,4 +1,4 @@
-package vIntegration
+package vintegration
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	UpgradeName = "vIntegration"
+	UpgradeName = "vintegration"
 )
 
 func CreateUpgradeHandler(
@@ -17,7 +17,7 @@ func CreateUpgradeHandler(
 	configurator module.Configurator,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx context.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
-		fmt.Println(">>>>>>>>>>>>>>>>>>> vIntegration upgrade handler")
+		fmt.Println(">>>>>>>>>>>>>>>>>>> vintegration upgrade handler")
 		return moduleManager.RunMigrations(ctx, configurator, vm)
 	}
 }

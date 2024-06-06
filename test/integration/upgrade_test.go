@@ -47,10 +47,10 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 	}
 }
 
-// propose an upgrade to the vIntegration software version
+// propose an upgrade to the vintegration software version
 func proposeUpgrade(m testCommon.TestConfig) uint64 {
-	name := "vIntegration"
-	summary := "Upgrade to vIntegration software version"
+	name := "vintegration"
+	summary := "Upgrade to vintegration software version"
 
 	currHeight, err := m.Client.BlockHeight(m.Ctx)
 	require.NoError(m.T, err)
@@ -110,7 +110,7 @@ func waitforProposalPass(m testCommon.TestConfig, proposalId uint64) {
 }
 
 func UpgradeChecks(m testCommon.TestConfig) {
-	m.T.Log("--- Propose Upgrade to vIntegration software version from v0 ---")
+	m.T.Log("--- Propose Upgrade to vintegration software version from v0 ---")
 	proposalId := proposeUpgrade(m)
 	m.T.Logf("--- Vote on Upgrade Proposal %d ---", proposalId)
 	voteOnProposal(m, proposalId)
