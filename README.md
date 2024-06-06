@@ -1,6 +1,9 @@
 # Allora Network
 <p align="center">
 <img src='assets/AlloraLogo.jpeg' width='200'>
+<a href="https://goreportcard.com/badge/github.com/allora-network/allora-chain">
+    <img src="https://goreportcard.com/badge/github.com/allora-network/allora-chain">
+</a>
 </p>
 
 ![Docker!](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
@@ -180,3 +183,23 @@ allorad --home="$APP_HOME" \
   ${STAKE_AMOUNT}uallo --from ${VALIDATOR_ACCOUNT_KEY_NAME} \
    --keyring-backend=test --chain-id ${NETWORK}
 ```
+
+## Run Integration Tests
+
+To run integration tests, execute the following commands:
+
+```bash
+bash test/local_testnet_l1.sh
+INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
+```
+
+## Run Stress Tests
+
+To run stress tests, execute the following commands:
+
+```bash
+bash test/local_testnet_l1.sh
+STRESS_TEST=true RPC_MODE="RandomBasedOnDeterministicSeed" RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" SEED=1 MAX_REPUTERS_PER_TOPIC=2 REPUTERS_PER_ITERATION=2 EPOCH_LENGTH=10 FINAL_REPORT=TRUE MAX_WORKERS_PER_TOPIC=2 WORKERS_PER_ITERATION=1 TOPICS_MAX=2 TOPICS_PER_ITERATION=1 MAX_ITERATIONS=2 go test -v -timeout 0 -test.run TestStressTestSuite ./test/stress
+```
+
+options for RPC Modes include "RandomBasedOnDeterministicSeed" "RoundRobin" and "SingleRpc"

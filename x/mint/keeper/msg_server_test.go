@@ -1,79 +1,187 @@
 package keeper_test
 
 import (
+	"fmt"
+
 	sdkmath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
-
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *IntegrationTestSuite) TestUpdateParams() {
-	testCases := []struct {
-		name      string
-		request   *types.MsgUpdateParams
-		expectErr bool
-	}{
-		{
-			name: "set invalid authority (not an address)",
-			request: &types.MsgUpdateParams{
-				Authority: "foo",
-			},
-			expectErr: true,
-		},
-		{
-			name: "set invalid authority (not defined authority)",
-			request: &types.MsgUpdateParams{
-				Authority: "cosmos139f7kncmglres2nf3h4hc4tade85ekfr8sulz5",
-			},
-			expectErr: true,
-		},
-		{
-			name: "set invalid params",
-			request: &types.MsgUpdateParams{
-				Authority: s.mintKeeper.GetAuthority(),
-				Params: types.Params{
-					MintDenom:             sdk.DefaultBondDenom,
-					InflationRateChange:   sdkmath.LegacyNewDecWithPrec(-13, 2),
-					InflationMax:          sdkmath.LegacyNewDecWithPrec(20, 2),
-					InflationMin:          sdkmath.LegacyNewDecWithPrec(7, 2),
-					GoalBonded:            sdkmath.LegacyNewDecWithPrec(67, 2),
-					BlocksPerYear:         uint64(60 * 60 * 8766 / 5),
-					MaxSupply:             sdkmath.NewUintFromString("1000000000000000000000000000"),
-					HalvingInterval:       uint64(25246080),
-					CurrentBlockProvision: sdkmath.NewUintFromString("2831000000000000000000"),
-				},
-			},
-			expectErr: true,
-		},
-		{
-			name: "set full valid params",
-			request: &types.MsgUpdateParams{
-				Authority: s.mintKeeper.GetAuthority(),
-				Params: types.Params{
-					MintDenom:             sdk.DefaultBondDenom,
-					InflationRateChange:   sdkmath.LegacyNewDecWithPrec(8, 2),
-					InflationMax:          sdkmath.LegacyNewDecWithPrec(20, 2),
-					InflationMin:          sdkmath.LegacyNewDecWithPrec(2, 2),
-					GoalBonded:            sdkmath.LegacyNewDecWithPrec(37, 2),
-					BlocksPerYear:         uint64(60 * 60 * 8766 / 5),
-					MaxSupply:             sdkmath.NewUintFromString("1000000000000000000000000000"),
-					HalvingInterval:       uint64(25246080),
-					CurrentBlockProvision: sdkmath.NewUintFromString("2831000000000000000000"),
-				},
-			},
-			expectErr: false,
-		},
+	params := types.DefaultParams()
+	params.MintDenom = "testcoin"
+
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().NoError(err)
+	s.Require().NotNil(resp)
+	s.Require().Equal(&types.MsgUpdateParamsResponse{}, resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidSigner() {
+	// Setup a non-whitelisted sender address
+	nonAdminPrivateKey := secp256k1.GenPrivKey()
+	nonAdminAddr := sdk.AccAddress(nonAdminPrivateKey.PubKey().Address()).String()
+
+	params := types.DefaultParams()
+	request := &types.MsgUpdateParams{
+		Sender: nonAdminAddr,
+		Params: params,
 	}
 
-	for _, tc := range testCases {
-		tc := tc
-		s.Run(tc.name, func() {
-			_, err := s.msgServer.UpdateParams(s.ctx, tc.request)
-			if tc.expectErr {
-				s.Require().Error(err)
-			} else {
-				s.Require().NoError(err)
-			}
-		})
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, nonAdminAddr).Return(false, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().ErrorIs(
+		err,
+		types.ErrUnauthorized,
+	)
+	s.Require().Nil(resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsNonAddressSigner() {
+	defaultParams := types.DefaultParams()
+
+	notAnAddress := "not an address lol"
+	request := &types.MsgUpdateParams{
+		Sender: notAnAddress,
+		Params: defaultParams,
 	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, notAnAddress).Return(false, fmt.Errorf("error key encode:"))
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsMintDenom() {
+	params := types.DefaultParams()
+	params.MintDenom = ""
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsMaxSupply() {
+	params := types.DefaultParams()
+	params.MaxSupply = sdkmath.NewIntFromUint64(0)
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsFEmission() {
+	params := types.DefaultParams()
+	params.FEmission = sdkmath.LegacyNewDec(205)
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsOneMonthSmoothingDegree() {
+	params := types.DefaultParams()
+	params.OneMonthSmoothingDegree = sdkmath.LegacyNewDec(15)
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsEcosystemTreasuryPercentOfTotalSupply() {
+	params := types.DefaultParams()
+	params.EcosystemTreasuryPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsFoundationTreasuryPercentOfTotalSupply() {
+	params := types.DefaultParams()
+	params.FoundationTreasuryPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsParticipantsPercentOfTotalSupply() {
+	params := types.DefaultParams()
+	params.ParticipantsPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsInvestorsPercentOfTotalSupply() {
+	params := types.DefaultParams()
+	params.ParticipantsPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsTeamPercentOfTotalSupply() {
+	params := types.DefaultParams()
+	params.TeamPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
+}
+func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsMaximumMonthlyPercentageYield() {
+	params := types.DefaultParams()
+	params.MaximumMonthlyPercentageYield = sdkmath.LegacyNewDec(101)
+	request := &types.MsgUpdateParams{
+		Sender: s.adminAddr,
+		Params: params,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	resp, err := s.msgServer.UpdateParams(s.ctx, request)
+	s.Require().Error(err)
+	s.Require().Nil(resp)
 }

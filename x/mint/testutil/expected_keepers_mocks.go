@@ -52,19 +52,19 @@ func (mr *MockStakingKeeperMockRecorder) BondedRatio(ctx interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BondedRatio", reflect.TypeOf((*MockStakingKeeper)(nil).BondedRatio), ctx)
 }
 
-// StakingTokenSupply mocks base method.
-func (m *MockStakingKeeper) StakingTokenSupply(ctx context.Context) (math.Int, error) {
+// TotalBondedTokens mocks base method.
+func (m *MockStakingKeeper) TotalBondedTokens(ctx context.Context) (math.Int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StakingTokenSupply", ctx)
+	ret := m.ctrl.Call(m, "TotalBondedTokens", ctx)
 	ret0, _ := ret[0].(math.Int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// StakingTokenSupply indicates an expected call of StakingTokenSupply.
-func (mr *MockStakingKeeperMockRecorder) StakingTokenSupply(ctx interface{}) *gomock.Call {
+// TotalBondedTokens indicates an expected call of StakingTokenSupply.
+func (mr *MockStakingKeeperMockRecorder) TotalBondedTokens(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StakingTokenSupply", reflect.TypeOf((*MockStakingKeeper)(nil).StakingTokenSupply), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TotalBondedTokens", reflect.TypeOf((*MockStakingKeeper)(nil).TotalBondedTokens), ctx)
 }
 
 // MockAccountKeeper is a mock of AccountKeeper interface.
@@ -221,4 +221,12 @@ func (m *MockBankKeeper) GetSupply(ctx context.Context, denom string) types.Coin
 func (mr *MockBankKeeperMockRecorder) GetSupply(ctx, denom interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupply", reflect.TypeOf((*MockBankKeeper)(nil).GetSupply), ctx, denom)
+}
+
+// GetBalance mocks base method.
+func (m *MockBankKeeper) GetBalance(ctx context.Context, addr types.AccAddress, denom string) types.Coin {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBalance", ctx, addr, denom)
+	ret0, _ := ret[0].(types.Coin)
+	return ret0
 }

@@ -4,24 +4,20 @@ import (
 	"context"
 
 	cosmosMath "cosmossdk.io/math"
-	state "github.com/allora-network/allora-chain/x/emissions"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // InitGenesis initializes the module state from a genesis state.
-func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) error {
-
+func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) error {
 	// ensure the module account exists
-	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraStakingAccountName)
+	stakingModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraStakingAccountName)
 	k.authKeeper.SetModuleAccount(ctx, stakingModuleAccount)
-	requestsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRequestsAccountName)
-	k.authKeeper.SetModuleAccount(ctx, requestsModuleAccount)
-	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, state.AlloraRewardsAccountName)
+	alloraRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraRewardsModuleAccount)
-	if err := k.SetLastRewardsUpdate(ctx, 0); err != nil {
-		return err
-	}
-	if err := k.SetTotalStake(ctx, cosmosMath.NewUint(0)); err != nil {
+	alloraPendingRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName)
+	k.authKeeper.SetModuleAccount(ctx, alloraPendingRewardsModuleAccount)
+	if err := k.SetTotalStake(ctx, cosmosMath.ZeroInt()); err != nil {
 		return err
 	}
 	// reserve topic ID 0 for future use
@@ -34,31 +30,30 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *state.GenesisState) erro
 		return err
 	}
 
+	// For mint module inflation rate calculation set the initial
+	// "previous percentage of rewards that went to staked reputers" to 30%
+	if err := k.SetPreviousPercentageRewardToStakedReputers(ctx, alloraMath.MustNewDecFromString("0.3")); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // ExportGenesis exports the module state to a genesis state.
-func (k *Keeper) ExportGenesis(ctx context.Context) (*state.GenesisState, error) {
-	params, err := k.GetParams(ctx)
+func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) {
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &state.GenesisState{
-		Params: params,
+	return &types.GenesisState{
+		Params: moduleParams,
 	}, nil
 }
 
 func (k *Keeper) addCoreTeamToWhitelists(ctx context.Context, coreTeamAddresses []string) error {
 	for _, addr := range coreTeamAddresses {
-		accAddress, err := sdk.AccAddressFromBech32(addr)
-		if err != nil {
-			return err
-		}
-		k.AddWhitelistAdmin(ctx, accAddress)
-		k.AddToTopicCreationWhitelist(ctx, accAddress)
-		k.AddToWeightSettingWhitelist(ctx, accAddress)
+		k.AddWhitelistAdmin(ctx, addr)
 	}
-
 	return nil
 }

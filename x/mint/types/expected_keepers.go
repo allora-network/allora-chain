@@ -3,6 +3,9 @@ package types // noalias
 import (
 	context "context"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
 
@@ -11,8 +14,7 @@ import (
 
 // StakingKeeper defines the expected staking keeper
 type StakingKeeper interface {
-	StakingTokenSupply(ctx context.Context) (math.Int, error)
-	BondedRatio(ctx context.Context) (math.LegacyDec, error)
+	TotalBondedTokens(ctx context.Context) (math.Int, error)
 }
 
 // AccountKeeper defines the contract required for account APIs.
@@ -32,4 +34,12 @@ type BankKeeper interface {
 	SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error
 	MintCoins(ctx context.Context, name string, amt sdk.Coins) error
 	GetSupply(ctx context.Context, denom string) sdk.Coin
+	GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin
+}
+
+type EmissionsKeeper interface {
+	GetTotalStake(ctx context.Context) (math.Int, error)
+	GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error)
+	GetParams(ctx context.Context) (emissionstypes.Params, error)
+	IsWhitelistAdmin(ctx context.Context, admin string) (bool, error)
 }

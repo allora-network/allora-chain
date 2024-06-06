@@ -3,6 +3,7 @@ package mintv1beta1
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-proto"
 	runtime "github.com/cosmos/cosmos-proto/runtime"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
@@ -15,16 +16,20 @@ import (
 )
 
 var (
-	md_GenesisState        protoreflect.MessageDescriptor
-	fd_GenesisState_minter protoreflect.FieldDescriptor
-	fd_GenesisState_params protoreflect.FieldDescriptor
+	md_GenesisState                                                protoreflect.MessageDescriptor
+	fd_GenesisState_params                                         protoreflect.FieldDescriptor
+	fd_GenesisState_previous_reward_emission_per_unit_staked_token protoreflect.FieldDescriptor
+	fd_GenesisState_previous_block_emission                        protoreflect.FieldDescriptor
+	fd_GenesisState_ecosystem_tokens_minted                        protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_mint_v1beta1_genesis_proto_init()
 	md_GenesisState = File_mint_v1beta1_genesis_proto.Messages().ByName("GenesisState")
-	fd_GenesisState_minter = md_GenesisState.Fields().ByName("minter")
 	fd_GenesisState_params = md_GenesisState.Fields().ByName("params")
+	fd_GenesisState_previous_reward_emission_per_unit_staked_token = md_GenesisState.Fields().ByName("previous_reward_emission_per_unit_staked_token")
+	fd_GenesisState_previous_block_emission = md_GenesisState.Fields().ByName("previous_block_emission")
+	fd_GenesisState_ecosystem_tokens_minted = md_GenesisState.Fields().ByName("ecosystem_tokens_minted")
 }
 
 var _ protoreflect.Message = (*fastReflection_GenesisState)(nil)
@@ -92,15 +97,27 @@ func (x *fastReflection_GenesisState) Interface() protoreflect.ProtoMessage {
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.Minter != nil {
-		value := protoreflect.ValueOfMessage(x.Minter.ProtoReflect())
-		if !f(fd_GenesisState_minter, value) {
-			return
-		}
-	}
 	if x.Params != nil {
 		value := protoreflect.ValueOfMessage(x.Params.ProtoReflect())
 		if !f(fd_GenesisState_params, value) {
+			return
+		}
+	}
+	if x.PreviousRewardEmissionPerUnitStakedToken != "" {
+		value := protoreflect.ValueOfString(x.PreviousRewardEmissionPerUnitStakedToken)
+		if !f(fd_GenesisState_previous_reward_emission_per_unit_staked_token, value) {
+			return
+		}
+	}
+	if x.PreviousBlockEmission != "" {
+		value := protoreflect.ValueOfString(x.PreviousBlockEmission)
+		if !f(fd_GenesisState_previous_block_emission, value) {
+			return
+		}
+	}
+	if x.EcosystemTokensMinted != "" {
+		value := protoreflect.ValueOfString(x.EcosystemTokensMinted)
+		if !f(fd_GenesisState_ecosystem_tokens_minted, value) {
 			return
 		}
 	}
@@ -119,10 +136,14 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "mint.v1beta1.GenesisState.minter":
-		return x.Minter != nil
 	case "mint.v1beta1.GenesisState.params":
 		return x.Params != nil
+	case "mint.v1beta1.GenesisState.previous_reward_emission_per_unit_staked_token":
+		return x.PreviousRewardEmissionPerUnitStakedToken != ""
+	case "mint.v1beta1.GenesisState.previous_block_emission":
+		return x.PreviousBlockEmission != ""
+	case "mint.v1beta1.GenesisState.ecosystem_tokens_minted":
+		return x.EcosystemTokensMinted != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.GenesisState"))
@@ -139,10 +160,14 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "mint.v1beta1.GenesisState.minter":
-		x.Minter = nil
 	case "mint.v1beta1.GenesisState.params":
 		x.Params = nil
+	case "mint.v1beta1.GenesisState.previous_reward_emission_per_unit_staked_token":
+		x.PreviousRewardEmissionPerUnitStakedToken = ""
+	case "mint.v1beta1.GenesisState.previous_block_emission":
+		x.PreviousBlockEmission = ""
+	case "mint.v1beta1.GenesisState.ecosystem_tokens_minted":
+		x.EcosystemTokensMinted = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.GenesisState"))
@@ -159,12 +184,18 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "mint.v1beta1.GenesisState.minter":
-		value := x.Minter
-		return protoreflect.ValueOfMessage(value.ProtoReflect())
 	case "mint.v1beta1.GenesisState.params":
 		value := x.Params
 		return protoreflect.ValueOfMessage(value.ProtoReflect())
+	case "mint.v1beta1.GenesisState.previous_reward_emission_per_unit_staked_token":
+		value := x.PreviousRewardEmissionPerUnitStakedToken
+		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.GenesisState.previous_block_emission":
+		value := x.PreviousBlockEmission
+		return protoreflect.ValueOfString(value)
+	case "mint.v1beta1.GenesisState.ecosystem_tokens_minted":
+		value := x.EcosystemTokensMinted
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.GenesisState"))
@@ -185,10 +216,14 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "mint.v1beta1.GenesisState.minter":
-		x.Minter = value.Message().Interface().(*Minter)
 	case "mint.v1beta1.GenesisState.params":
 		x.Params = value.Message().Interface().(*Params)
+	case "mint.v1beta1.GenesisState.previous_reward_emission_per_unit_staked_token":
+		x.PreviousRewardEmissionPerUnitStakedToken = value.Interface().(string)
+	case "mint.v1beta1.GenesisState.previous_block_emission":
+		x.PreviousBlockEmission = value.Interface().(string)
+	case "mint.v1beta1.GenesisState.ecosystem_tokens_minted":
+		x.EcosystemTokensMinted = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.GenesisState"))
@@ -209,16 +244,17 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "mint.v1beta1.GenesisState.minter":
-		if x.Minter == nil {
-			x.Minter = new(Minter)
-		}
-		return protoreflect.ValueOfMessage(x.Minter.ProtoReflect())
 	case "mint.v1beta1.GenesisState.params":
 		if x.Params == nil {
 			x.Params = new(Params)
 		}
 		return protoreflect.ValueOfMessage(x.Params.ProtoReflect())
+	case "mint.v1beta1.GenesisState.previous_reward_emission_per_unit_staked_token":
+		panic(fmt.Errorf("field previous_reward_emission_per_unit_staked_token of message mint.v1beta1.GenesisState is not mutable"))
+	case "mint.v1beta1.GenesisState.previous_block_emission":
+		panic(fmt.Errorf("field previous_block_emission of message mint.v1beta1.GenesisState is not mutable"))
+	case "mint.v1beta1.GenesisState.ecosystem_tokens_minted":
+		panic(fmt.Errorf("field ecosystem_tokens_minted of message mint.v1beta1.GenesisState is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.GenesisState"))
@@ -232,12 +268,15 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "mint.v1beta1.GenesisState.minter":
-		m := new(Minter)
-		return protoreflect.ValueOfMessage(m.ProtoReflect())
 	case "mint.v1beta1.GenesisState.params":
 		m := new(Params)
 		return protoreflect.ValueOfMessage(m.ProtoReflect())
+	case "mint.v1beta1.GenesisState.previous_reward_emission_per_unit_staked_token":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.GenesisState.previous_block_emission":
+		return protoreflect.ValueOfString("")
+	case "mint.v1beta1.GenesisState.ecosystem_tokens_minted":
+		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: mint.v1beta1.GenesisState"))
@@ -307,12 +346,20 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		if x.Minter != nil {
-			l = options.Size(x.Minter)
-			n += 1 + l + runtime.Sov(uint64(l))
-		}
 		if x.Params != nil {
 			l = options.Size(x.Params)
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.PreviousRewardEmissionPerUnitStakedToken)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.PreviousBlockEmission)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.EcosystemTokensMinted)
+		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
 		if x.unknownFields != nil {
@@ -344,22 +391,29 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if x.Params != nil {
-			encoded, err := options.Marshal(x.Params)
-			if err != nil {
-				return protoiface.MarshalOutput{
-					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-					Buf:               input.Buf,
-				}, err
-			}
-			i -= len(encoded)
-			copy(dAtA[i:], encoded)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+		if len(x.EcosystemTokensMinted) > 0 {
+			i -= len(x.EcosystemTokensMinted)
+			copy(dAtA[i:], x.EcosystemTokensMinted)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.EcosystemTokensMinted)))
+			i--
+			dAtA[i] = 0x22
+		}
+		if len(x.PreviousBlockEmission) > 0 {
+			i -= len(x.PreviousBlockEmission)
+			copy(dAtA[i:], x.PreviousBlockEmission)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PreviousBlockEmission)))
+			i--
+			dAtA[i] = 0x1a
+		}
+		if len(x.PreviousRewardEmissionPerUnitStakedToken) > 0 {
+			i -= len(x.PreviousRewardEmissionPerUnitStakedToken)
+			copy(dAtA[i:], x.PreviousRewardEmissionPerUnitStakedToken)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.PreviousRewardEmissionPerUnitStakedToken)))
 			i--
 			dAtA[i] = 0x12
 		}
-		if x.Minter != nil {
-			encoded, err := options.Marshal(x.Minter)
+		if x.Params != nil {
+			encoded, err := options.Marshal(x.Params)
 			if err != nil {
 				return protoiface.MarshalOutput{
 					NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -423,42 +477,6 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 			switch fieldNum {
 			case 1:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Minter", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				if x.Minter == nil {
-					x.Minter = &Minter{}
-				}
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Minter); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				iNdEx = postIndex
-			case 2:
-				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
 				}
 				var msglen int
@@ -492,6 +510,102 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.Params); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
+				iNdEx = postIndex
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PreviousRewardEmissionPerUnitStakedToken", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PreviousRewardEmissionPerUnitStakedToken = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 3:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field PreviousBlockEmission", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.PreviousBlockEmission = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EcosystemTokensMinted", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EcosystemTokensMinted = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -547,10 +661,13 @@ type GenesisState struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// minter is a space for holding current inflation information.
-	Minter *Minter `protobuf:"bytes,1,opt,name=minter,proto3" json:"minter,omitempty"`
 	// params defines all the parameters of the module.
-	Params *Params `protobuf:"bytes,2,opt,name=params,proto3" json:"params,omitempty"`
+	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	// previous target emission rewards per unit staked token
+	PreviousRewardEmissionPerUnitStakedToken string `protobuf:"bytes,2,opt,name=previous_reward_emission_per_unit_staked_token,json=previousRewardEmissionPerUnitStakedToken,proto3" json:"previous_reward_emission_per_unit_staked_token,omitempty"`
+	PreviousBlockEmission                    string `protobuf:"bytes,3,opt,name=previous_block_emission,json=previousBlockEmission,proto3" json:"previous_block_emission,omitempty"`
+	// number of tokens minted into the ecosystem treasury
+	EcosystemTokensMinted string `protobuf:"bytes,4,opt,name=ecosystem_tokens_minted,json=ecosystemTokensMinted,proto3" json:"ecosystem_tokens_minted,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -573,18 +690,32 @@ func (*GenesisState) Descriptor() ([]byte, []int) {
 	return file_mint_v1beta1_genesis_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GenesisState) GetMinter() *Minter {
-	if x != nil {
-		return x.Minter
-	}
-	return nil
-}
-
 func (x *GenesisState) GetParams() *Params {
 	if x != nil {
 		return x.Params
 	}
 	return nil
+}
+
+func (x *GenesisState) GetPreviousRewardEmissionPerUnitStakedToken() string {
+	if x != nil {
+		return x.PreviousRewardEmissionPerUnitStakedToken
+	}
+	return ""
+}
+
+func (x *GenesisState) GetPreviousBlockEmission() string {
+	if x != nil {
+		return x.PreviousBlockEmission
+	}
+	return ""
+}
+
+func (x *GenesisState) GetEcosystemTokensMinted() string {
+	if x != nil {
+		return x.EcosystemTokensMinted
+	}
+	return ""
 }
 
 var File_mint_v1beta1_genesis_proto protoreflect.FileDescriptor
@@ -595,29 +726,50 @@ var file_mint_v1beta1_genesis_proto_rawDesc = []byte{
 	0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x1a, 0x18, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2f, 0x74,
-	0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e,
-	0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x80, 0x01,
-	0x0a, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x37,
-	0x0a, 0x06, 0x6d, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14,
-	0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x4d, 0x69,
-	0x6e, 0x74, 0x65, 0x72, 0x42, 0x09, 0xc8, 0xde, 0x1f, 0x00, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52,
-	0x06, 0x6d, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x12, 0x37, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d,
-	0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76,
-	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42, 0x09, 0xc8,
-	0xde, 0x1f, 0x00, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
-	0x42, 0xbd, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31,
-	0x62, 0x65, 0x74, 0x61, 0x31, 0x42, 0x0c, 0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x50, 0x72,
-	0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
-	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f,
-	0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x31,
-	0x62, 0x65, 0x74, 0x61, 0x31, 0x3b, 0x6d, 0x69, 0x6e, 0x74, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61,
-	0x31, 0xa2, 0x02, 0x03, 0x4d, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56,
-	0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xca, 0x02, 0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31,
-	0x62, 0x65, 0x74, 0x61, 0x31, 0xe2, 0x02, 0x18, 0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62,
-	0x65, 0x74, 0x61, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61,
-	0xea, 0x02, 0x0d, 0x4d, 0x69, 0x6e, 0x74, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69,
+	0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xbc, 0x03, 0x0a, 0x0c, 0x47, 0x65, 0x6e,
+	0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x37, 0x0a, 0x06, 0x70, 0x61, 0x72,
+	0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x6d, 0x69, 0x6e, 0x74,
+	0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x42,
+	0x09, 0xc8, 0xde, 0x1f, 0x00, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61,
+	0x6d, 0x73, 0x12, 0x9e, 0x01, 0x0a, 0x2e, 0x70, 0x72, 0x65, 0x76, 0x69, 0x6f, 0x75, 0x73, 0x5f,
+	0x72, 0x65, 0x77, 0x61, 0x72, 0x64, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x5f,
+	0x70, 0x65, 0x72, 0x5f, 0x75, 0x6e, 0x69, 0x74, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x5f,
+	0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x42, 0x3c, 0xc8, 0xde, 0x1f,
+	0x00, 0xda, 0xde, 0x1f, 0x1b, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69,
+	0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63, 0x79, 0x44, 0x65, 0x63,
+	0xd2, 0xb4, 0x2d, 0x10, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x4c, 0x65, 0x67, 0x61, 0x63,
+	0x79, 0x44, 0x65, 0x63, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x28, 0x70, 0x72, 0x65, 0x76, 0x69,
+	0x6f, 0x75, 0x73, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x50, 0x65, 0x72, 0x55, 0x6e, 0x69, 0x74, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x64, 0x54, 0x6f,
+	0x6b, 0x65, 0x6e, 0x12, 0x68, 0x0a, 0x17, 0x70, 0x72, 0x65, 0x76, 0x69, 0x6f, 0x75, 0x73, 0x5f,
+	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f,
+	0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
+	0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e,
+	0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x15, 0x70, 0x72, 0x65, 0x76, 0x69, 0x6f, 0x75, 0x73,
+	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x68, 0x0a,
+	0x17, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x5f, 0x74, 0x6f, 0x6b, 0x65, 0x6e,
+	0x73, 0x5f, 0x6d, 0x69, 0x6e, 0x74, 0x65, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30,
+	0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64,
+	0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d,
+	0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01,
+	0x52, 0x15, 0x65, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x54, 0x6f, 0x6b, 0x65, 0x6e,
+	0x73, 0x4d, 0x69, 0x6e, 0x74, 0x65, 0x64, 0x42, 0xbd, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e,
+	0x6d, 0x69, 0x6e, 0x74, 0x2e, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x42, 0x0c, 0x47, 0x65,
+	0x6e, 0x65, 0x73, 0x69, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4a, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
+	0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63,
+	0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x61, 0x70, 0x69, 0x2f,
+	0x6d, 0x69, 0x6e, 0x74, 0x2f, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x3b, 0x6d, 0x69, 0x6e,
+	0x74, 0x76, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xa2, 0x02, 0x03, 0x4d, 0x58, 0x58, 0xaa, 0x02,
+	0x0c, 0x4d, 0x69, 0x6e, 0x74, 0x2e, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xca, 0x02, 0x0c,
+	0x4d, 0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0xe2, 0x02, 0x18, 0x4d,
+	0x69, 0x6e, 0x74, 0x5c, 0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d,
+	0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x4d, 0x69, 0x6e, 0x74, 0x3a, 0x3a,
+	0x56, 0x31, 0x62, 0x65, 0x74, 0x61, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -635,17 +787,15 @@ func file_mint_v1beta1_genesis_proto_rawDescGZIP() []byte {
 var file_mint_v1beta1_genesis_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_mint_v1beta1_genesis_proto_goTypes = []interface{}{
 	(*GenesisState)(nil), // 0: mint.v1beta1.GenesisState
-	(*Minter)(nil),       // 1: mint.v1beta1.Minter
-	(*Params)(nil),       // 2: mint.v1beta1.Params
+	(*Params)(nil),       // 1: mint.v1beta1.Params
 }
 var file_mint_v1beta1_genesis_proto_depIdxs = []int32{
-	1, // 0: mint.v1beta1.GenesisState.minter:type_name -> mint.v1beta1.Minter
-	2, // 1: mint.v1beta1.GenesisState.params:type_name -> mint.v1beta1.Params
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // 0: mint.v1beta1.GenesisState.params:type_name -> mint.v1beta1.Params
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_mint_v1beta1_genesis_proto_init() }

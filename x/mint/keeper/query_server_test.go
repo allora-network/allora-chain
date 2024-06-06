@@ -9,7 +9,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
-	"github.com/allora-network/allora-chain/x/mint/module"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
 	minttestutil "github.com/allora-network/allora-chain/x/mint/testutil"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -41,6 +41,7 @@ func (suite *MintTestSuite) SetupTest() {
 	accountKeeper := minttestutil.NewMockAccountKeeper(ctrl)
 	bankKeeper := minttestutil.NewMockBankKeeper(ctrl)
 	stakingKeeper := minttestutil.NewMockStakingKeeper(ctrl)
+	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(ctrl)
 
 	accountKeeper.EXPECT().GetModuleAddress("mint").Return(sdk.AccAddress{})
 
@@ -50,13 +51,12 @@ func (suite *MintTestSuite) SetupTest() {
 		stakingKeeper,
 		accountKeeper,
 		bankKeeper,
+		emissionsKeeper,
 		authtypes.FeeCollectorName,
-		govModuleNameStr,
 	)
 
 	err := suite.mintKeeper.Params.Set(suite.ctx, types.DefaultParams())
 	suite.Require().NoError(err)
-	suite.Require().NoError(suite.mintKeeper.Minter.Set(suite.ctx, types.DefaultInitialMinter()))
 	queryHelper := baseapp.NewQueryServerTestHelper(testCtx.Ctx, encCfg.InterfaceRegistry)
 	types.RegisterQueryServer(queryHelper, keeper.NewQueryServerImpl(suite.mintKeeper))
 
@@ -69,16 +69,6 @@ func (suite *MintTestSuite) TestGRPCParams() {
 	kparams, err := suite.mintKeeper.Params.Get(suite.ctx)
 	suite.Require().NoError(err)
 	suite.Require().Equal(params.Params, kparams)
-
-	inflation, err := suite.queryClient.Inflation(gocontext.Background(), &types.QueryInflationRequest{})
-	suite.Require().NoError(err)
-	minter, err := suite.mintKeeper.Minter.Get(suite.ctx)
-	suite.Require().NoError(err)
-	suite.Require().Equal(inflation.Inflation, minter.Inflation)
-
-	annualProvisions, err := suite.queryClient.AnnualProvisions(gocontext.Background(), &types.QueryAnnualProvisionsRequest{})
-	suite.Require().NoError(err)
-	suite.Require().Equal(annualProvisions.AnnualProvisions, minter.AnnualProvisions)
 }
 
 func TestMintTestSuite(t *testing.T) {

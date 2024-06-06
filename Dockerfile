@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 golang:1.21-bookworm AS builder
+FROM golang:1.22-bookworm AS builder
 
 ARG GH_TOKEN
 

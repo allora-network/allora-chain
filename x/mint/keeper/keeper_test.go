@@ -3,13 +3,15 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
-	"github.com/allora-network/allora-chain/x/mint/module"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
 	minttestutil "github.com/allora-network/allora-chain/x/mint/testutil"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -20,16 +22,17 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
 
-const govModuleNameStr = "cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn"
-
 type IntegrationTestSuite struct {
 	suite.Suite
 
-	mintKeeper    keeper.Keeper
-	ctx           sdk.Context
-	msgServer     types.MsgServer
-	stakingKeeper *minttestutil.MockStakingKeeper
-	bankKeeper    *minttestutil.MockBankKeeper
+	mintKeeper      keeper.Keeper
+	ctx             sdk.Context
+	msgServer       types.MsgServer
+	stakingKeeper   *minttestutil.MockStakingKeeper
+	bankKeeper      *minttestutil.MockBankKeeper
+	emissionsKeeper *minttestutil.MockEmissionsKeeper
+	adminPrivateKey secp256k1.PrivKey
+	adminAddr       string
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -48,6 +51,7 @@ func (s *IntegrationTestSuite) SetupTest() {
 	accountKeeper := minttestutil.NewMockAccountKeeper(ctrl)
 	bankKeeper := minttestutil.NewMockBankKeeper(ctrl)
 	stakingKeeper := minttestutil.NewMockStakingKeeper(ctrl)
+	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(ctrl)
 
 	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.AccAddress{})
 
@@ -57,11 +61,16 @@ func (s *IntegrationTestSuite) SetupTest() {
 		stakingKeeper,
 		accountKeeper,
 		bankKeeper,
+		emissionsKeeper,
 		authtypes.FeeCollectorName,
-		govModuleNameStr,
 	)
 	s.stakingKeeper = stakingKeeper
 	s.bankKeeper = bankKeeper
+	s.emissionsKeeper = emissionsKeeper
+
+	// Setup a sender address
+	s.adminPrivateKey = secp256k1.GenPrivKey()
+	s.adminAddr = sdk.AccAddress(s.adminPrivateKey.PubKey().Address()).String()
 
 	s.Require().Equal(testCtx.Ctx.Logger().With("module", "x/"+types.ModuleName),
 		s.mintKeeper.Logger(testCtx.Ctx))
@@ -69,22 +78,15 @@ func (s *IntegrationTestSuite) SetupTest() {
 	err := s.mintKeeper.Params.Set(s.ctx, types.DefaultParams())
 	s.Require().NoError(err)
 
-	s.Require().NoError(s.mintKeeper.Minter.Set(s.ctx, types.DefaultInitialMinter()))
 	s.msgServer = keeper.NewMsgServerImpl(s.mintKeeper)
 }
 
 func (s *IntegrationTestSuite) TestAliasFunctions() {
 	stakingTokenSupply := math.NewIntFromUint64(100000000000)
-	s.stakingKeeper.EXPECT().StakingTokenSupply(s.ctx).Return(stakingTokenSupply, nil)
-	tokenSupply, err := s.mintKeeper.StakingTokenSupply(s.ctx)
+	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(stakingTokenSupply, nil)
+	tokenSupply, err := s.mintKeeper.CosmosValidatorStakedSupply(s.ctx)
 	s.Require().NoError(err)
 	s.Require().Equal(tokenSupply, stakingTokenSupply)
-
-	bondedRatio := math.LegacyNewDecWithPrec(15, 2)
-	s.stakingKeeper.EXPECT().BondedRatio(s.ctx).Return(bondedRatio, nil)
-	ratio, err := s.mintKeeper.BondedRatio(s.ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(ratio, bondedRatio)
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000000)))
 	s.bankKeeper.EXPECT().MintCoins(s.ctx, types.ModuleName, coins).Return(nil)
@@ -92,6 +94,6 @@ func (s *IntegrationTestSuite) TestAliasFunctions() {
 	s.Require().Nil(s.mintKeeper.MintCoins(s.ctx, coins))
 
 	fees := sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000)))
-	s.bankKeeper.EXPECT().SendCoinsFromModuleToModule(s.ctx, types.ModuleName, authtypes.FeeCollectorName, fees).Return(nil)
-	s.Require().Nil(s.mintKeeper.AddCollectedFees(s.ctx, fees))
+	s.bankKeeper.EXPECT().SendCoinsFromModuleToModule(s.ctx, types.EcosystemModuleName, emissionstypes.AlloraRewardsAccountName, fees).Return(nil)
+	s.Require().Nil(s.mintKeeper.PayAlloraRewardsFromEcosystem(s.ctx, fees))
 }

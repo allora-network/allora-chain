@@ -1,0 +1,186 @@
+package queryserver_test
+
+import (
+	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+func (s *KeeperTestSuite) TestGetTotalStake() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+
+	expectedTotalStake := cosmosMath.NewInt(1000)
+	err := keeper.SetTotalStake(ctx, expectedTotalStake)
+	s.Require().NoError(err, "SetTotalStake should not produce an error")
+
+	req := &types.QueryTotalStakeRequest{}
+	response, err := queryServer.GetTotalStake(ctx, req)
+	s.Require().NoError(err, "GetTotalStake should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	s.Require().Equal(expectedTotalStake, response.Amount, "The retrieved total stake should match the expected value")
+}
+
+func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer, err := sdk.AccAddressFromHexUnsafe(PKS[1].Address().String())
+	s.Require().NoError(err)
+	reputerAddr := reputer.String()
+	initialStake := cosmosMath.NewInt(250)
+
+	err = keeper.AddStake(ctx, topicId, reputerAddr, initialStake)
+	s.Require().NoError(err, "AddStake should not produce an error")
+
+	req := &types.QueryReputerStakeInTopicRequest{
+		Address: reputerAddr,
+		TopicId: topicId,
+	}
+
+	response, err := queryServer.GetReputerStakeInTopic(ctx, req)
+	s.Require().NoError(err, "GetReputerStakeInTopic should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	s.Require().Equal(initialStake, response.Amount, "The retrieved stake should match the initial stake set for the reputer in the topic")
+}
+
+func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer1, err := sdk.AccAddressFromHexUnsafe(PKS[1].Address().String())
+	reputer2, err := sdk.AccAddressFromHexUnsafe(PKS[2].Address().String())
+	s.Require().NoError(err)
+	reputer1Addr := reputer1.String()
+	reputer2Addr := reputer2.String()
+	initialStake1 := cosmosMath.NewInt(250)
+	initialStake2 := cosmosMath.NewInt(251)
+
+	err = keeper.AddStake(ctx, topicId, reputer1Addr, initialStake1)
+	s.Require().NoError(err, "AddStake should not produce an error")
+	err = keeper.AddStake(ctx, topicId, reputer2Addr, initialStake2)
+	s.Require().NoError(err, "AddStake should not produce an error")
+
+	req := &types.QueryMultiReputerStakeInTopicRequest{
+		Addresses: []string{reputer1Addr, reputer2Addr},
+		TopicId:   topicId,
+	}
+
+	response, err := queryServer.GetMultiReputerStakeInTopic(ctx, req)
+	s.Require().NoError(err, "GetReputerStakeInTopic should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	s.Require().Len(response.Amounts, 2, "The retrieved set of stakes should have length equal to the number of reputers queried")
+	s.Require().Equal(initialStake1, response.Amounts[0].Amount, "The retrieved stake should match the initial stake set for the first reputer in the topic")
+	s.Require().Equal(initialStake2, response.Amounts[1].Amount, "The retrieved stake should match the initial stake set for the second reputer in the topic")
+}
+
+func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	delegator, err := sdk.AccAddressFromHexUnsafe(PKS[0].Address().String())
+	s.Require().NoError(err)
+	delegatorAddr := delegator.String()
+	reputer, err := sdk.AccAddressFromHexUnsafe(PKS[1].Address().String())
+	s.Require().NoError(err)
+	reputerAddr := reputer.String()
+	initialStakeAmount := cosmosMath.NewInt(1000)
+
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err, "AddDelegateStake should not produce an error")
+
+	req := &types.QueryDelegateStakeInTopicInReputerRequest{
+		ReputerAddress: reputerAddr,
+		TopicId:        topicId,
+	}
+
+	response, err := queryServer.GetDelegateStakeInTopicInReputer(ctx, req)
+	s.Require().NoError(err, "GetDelegateStakeInTopicInReputer should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	s.Require().Equal(initialStakeAmount, response.Amount, "The retrieved delegate stake should match the initial stake set for the reputer in the topic")
+}
+
+func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+
+	topicId := uint64(123)
+	delegator, err := sdk.AccAddressFromHexUnsafe(PKS[0].Address().String())
+	s.Require().NoError(err)
+	delegatorAddr := delegator.String()
+	reputer, err := sdk.AccAddressFromHexUnsafe(PKS[1].Address().String())
+	s.Require().NoError(err)
+	reputerAddr := reputer.String()
+	stakeAmount := cosmosMath.NewInt(50)
+
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, stakeAmount)
+	s.Require().NoError(err, "AddDelegateStake should not produce an error")
+
+	req := &types.QueryStakeFromDelegatorInTopicInReputerRequest{
+		DelegatorAddress: delegatorAddr,
+		ReputerAddress:   reputerAddr,
+		TopicId:          topicId,
+	}
+
+	response, err := queryServer.GetStakeFromDelegatorInTopicInReputer(ctx, req)
+	s.Require().NoError(err, "GetStakeFromDelegatorInTopicInReputer should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	s.Require().Equal(stakeAmount, response.Amount, "The retrieved stake amount should match the delegated stake")
+}
+
+func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+
+	topicId := uint64(1)
+	delegator, err := sdk.AccAddressFromHexUnsafe(PKS[0].Address().String())
+	s.Require().NoError(err)
+	delegatorAddr := delegator.String()
+	initialStakeAmount := cosmosMath.NewInt(500)
+	additionalStakeAmount := cosmosMath.NewInt(300)
+
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, PKS[1].Address().String(), initialStakeAmount)
+	s.Require().NoError(err)
+
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, PKS[1].Address().String(), additionalStakeAmount)
+	s.Require().NoError(err)
+
+	req := &types.QueryStakeFromDelegatorInTopicRequest{
+		DelegatorAddress: delegatorAddr,
+		TopicId:          topicId,
+	}
+
+	response, err := queryServer.GetStakeFromDelegatorInTopic(ctx, req)
+	s.Require().NoError(err, "GetStakeFromDelegatorInTopic should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	expectedTotalStake := initialStakeAmount.Add(additionalStakeAmount)
+	s.Require().Equal(expectedTotalStake, response.Amount, "The retrieved stake amount should match the total delegated stake")
+}
+
+func (s *KeeperTestSuite) TestGetTopicStake() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+
+	topicId := uint64(1)
+	reputerAddr := PKS[0].Address().String()
+	stakeAmount := cosmosMath.NewInt(500)
+
+	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+
+	req := &types.QueryTopicStakeRequest{
+		TopicId: topicId,
+	}
+
+	response, err := queryServer.GetTopicStake(ctx, req)
+	s.Require().NoError(err, "GetTopicStake should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	s.Require().Equal(stakeAmount, response.Amount, "The retrieved topic stake should match the stake amount added")
+}

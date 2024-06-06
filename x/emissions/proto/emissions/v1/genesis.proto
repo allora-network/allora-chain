@@ -1,0 +1,15 @@
+syntax = "proto3";
+package emissions.v1;
+
+import "gogoproto/gogo.proto";
+import "emissions/v1/params.proto";
+import "amino/amino.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+// GenesisState is the state that must be provided at genesis.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+  repeated string core_team_addresses = 2;
+}

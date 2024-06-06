@@ -1,3 +1,14 @@
 {
-  "clang-format.style": "{BasedOnStyle: Google, ColumnLimit: 120}"
+  "clang-format.style": "{BasedOnStyle: Google, ColumnLimit: 120}",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/.vscode": true,
+    // Golang
+    "**grpc.pb.go": true,
+    "**pb.go": true,
+    "**pulsar.go": true,
+  },
+  "go.testFlags": ["-v"] 
 }
