@@ -259,6 +259,8 @@ func NewAlloraApp(
 	topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
 	app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
 
+	app.setupUpgradeHandlers()
+
 	app.SetInitChainer(app.InitChainer)
 
 	if err := app.Load(loadLatest); err != nil {

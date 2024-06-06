@@ -1,31 +1,17 @@
-diff --git a/app/app.go b/app/app.go
-index 472f3a3..fae6988 100644
---- a/app/app.go
-+++ b/app/app.go
-@@ -261,6 +261,8 @@ func NewAlloraApp(
- 
- 	app.SetInitChainer(app.InitChainer)
- 
-+	app.setupUpgradeHandlers()
-+
- 	if err := app.Load(loadLatest); err != nil {
- 		return nil, err
- 	}
 diff --git a/app/upgrades.go b/app/upgrades.go
-new file mode 100644
-index 0000000..f402dd6
---- /dev/null
+index 5a21ced..f402dd6 100644
+--- a/app/upgrades.go
 +++ b/app/upgrades.go
-@@ -0,0 +1,23 @@
-+package app
-+
+@@ -1,4 +1,23 @@
+ package app
+ 
 +import (
 +	"fmt"
 +
 +	"github.com/allora-network/allora-chain/app/upgrades/vIntegration"
 +)
 +
-+func (app *AlloraApp) setupUpgradeHandlers() {
+ func (app *AlloraApp) setupUpgradeHandlers() {
 +	// set up the vIntegration upgrade
 +	app.UpgradeKeeper.SetUpgradeHandler(
 +		vIntegration.UpgradeName,
@@ -39,119 +25,4 @@ index 0000000..f402dd6
 +	if err != nil {
 +		panic(fmt.Errorf("failed to read upgrade info from disk: %w", err))
 +	}
-+}
-diff --git a/app/upgrades/vIntegration/constants.go b/app/upgrades/vIntegration/constants.go
-new file mode 100644
-index 0000000..1cef1ff
---- /dev/null
-+++ b/app/upgrades/vIntegration/constants.go
-@@ -0,0 +1,5 @@
-+package vIntegration
-+
-+const (
-+	UpgradeName = "vIntegration"
-+)
-diff --git a/app/upgrades/vIntegration/upgrades.go b/app/upgrades/vIntegration/upgrades.go
-new file mode 100644
-index 0000000..24d8d23
---- /dev/null
-+++ b/app/upgrades/vIntegration/upgrades.go
-@@ -0,0 +1,19 @@
-+package vIntegration
-+
-+import (
-+	"context"
-+	"fmt"
-+
-+	upgradetypes "cosmossdk.io/x/upgrade/types"
-+	"github.com/cosmos/cosmos-sdk/types/module"
-+)
-+
-+func CreateUpgradeHandler(
-+	moduleManager *module.Manager,
-+	configurator module.Configurator,
-+) upgradetypes.UpgradeHandler {
-+	return func(ctx context.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
-+		fmt.Println(">>>>>>>>>>>>>>>>>>> vIntegration upgrade handler")
-+		return moduleManager.RunMigrations(ctx, configurator, vm)
-+	}
-+}
-diff --git a/x/emissions/keeper/migrator.go b/x/emissions/keeper/migrator.go
-new file mode 100644
-index 0000000..28f25fc
---- /dev/null
-+++ b/x/emissions/keeper/migrator.go
-@@ -0,0 +1,29 @@
-+package keeper
-+
-+import (
-+	"fmt"
-+
-+	v2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
-+	sdk "github.com/cosmos/cosmos-sdk/types"
-+)
-+
-+// Migrator is a struct for handling in-place state migrations.
-+type Migrator struct {
-+	keeper Keeper
-+}
-+
-+// NewMigrator returns Migrator instance for the state migration.
-+func NewMigrator(k Keeper) Migrator {
-+	return Migrator{
-+		keeper: k,
-+	}
-+}
-+
-+// Migrate1to2 migrates the emissions module state from the consensus version 1 to
-+// version 2. For now this is a no-op since we don't actually have any state to
-+// upgrade, but in the future this function or a 2to3 would be used to handle
-+// state migrations between versions of the emissions module.
-+func (m Migrator) Migrate1to2(ctx sdk.Context) error {
-+	fmt.Println(">>>>>>>>>>>>>>>>>>> Migrating from version 1 to version 2")
-+	return v2.MigrateStore(ctx)
-+}
-diff --git a/x/emissions/migrations/v2/migrations.go b/x/emissions/migrations/v2/migrations.go
-new file mode 100644
-index 0000000..16a3c81
---- /dev/null
-+++ b/x/emissions/migrations/v2/migrations.go
-@@ -0,0 +1,18 @@
-+package v2
-+
-+import (
-+	"fmt"
-+
-+	sdk "github.com/cosmos/cosmos-sdk/types"
-+)
-+
-+// An example MigrateStore function that might be run in the migration
-+// handler.
-+func MigrateStore(ctx sdk.Context) error {
-+	ctx.Logger().Error(fmt.Sprintf(
-+		"###################################################" +
-+			"### MIGRATING STORE FROM VERSION 1 TO VERSION 2 ###" +
-+			"###################################################",
-+	))
-+	return nil
-+}
-diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index b386038..963da6b 100644
---- a/x/emissions/module/module.go
-+++ b/x/emissions/module/module.go
-@@ -69,10 +69,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
- 	types.RegisterQueryServer(cfg.QueryServer(), queryserver.NewQueryServerImpl(am.keeper))
- 
- 	// Register in place module state migration migrations
--	// m := keeper.NewMigrator(am.keeper)
--	// if err := cfg.RegisterMigration(state.ModuleName, 1, m.Migrate1to2); err != nil {
--	// 	panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", state.ModuleName, err))
--	// }
-+	m := keeper.NewMigrator(am.keeper)
-+	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
-+		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
-+	}
-+	fmt.Println(">>>>>>>>>>>>>>>>>>> RegisterServices new migrator")
  }
- 
- // DefaultGenesis returns default genesis state as raw bytes for the module.
