@@ -7,8 +7,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
-type BlockHeight = int64
-
 // DefaultParams returns default module parameters.
 func DefaultParams() Params {
 	return Params{
