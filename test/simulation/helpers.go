@@ -103,19 +103,19 @@ func getNetworkInferencesAtBlock(
 	topicId uint64,
 	blockHeightLastInference,
 	blockHeightLastReward int64,
-) *emissionstypes.ValueBundle {
+) (*emissionstypes.ValueBundle, error) {
 	query := &emissionstypes.QueryNetworkInferencesAtBlockRequest{
 		TopicId:                  topicId,
-		BlockHeightLastInference: blockHeightLastInference,
-		BlockHeightLastReward:    blockHeightLastReward,
+		BlockHeightLastInference: blockHeightLastReward,
+		BlockHeightLastReward:    blockHeightLastInference,
 	}
 	txResp, err := m.Client.QueryEmissions().GetNetworkInferencesAtBlock(m.Ctx, query)
 	if err != nil {
 		m.T.Log("Error query for getting network inferences at block: ", err)
-		return &emissionstypes.ValueBundle{}
+		return &emissionstypes.ValueBundle{}, err
 	}
 
-	return txResp.NetworkInferences
+	return txResp.NetworkInferences, nil
 }
 func getNetworkLossBundleAtBlock(
 	m testCommon.TestConfig,
@@ -129,7 +129,15 @@ func getNetworkLossBundleAtBlock(
 	txResp, err := m.Client.QueryEmissions().GetNetworkLossBundleAtBlock(m.Ctx, query)
 	if err != nil {
 		m.T.Log("Error query for getting network inferences at block: ", err)
-		return &emissionstypes.ValueBundle{}
+		return &emissionstypes.ValueBundle{
+			//CombinedValue: ,
+			//NaiveValue: ,
+			//InfererValues: ,
+			//ForecasterValues: ,
+			//OneOutForecasterValues: ,
+			//OneOutInfererValues: ,
+			//OneInForecasterValues: ,
+		}
 	}
 
 	return txResp.LossBundle

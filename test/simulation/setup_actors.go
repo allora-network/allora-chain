@@ -12,8 +12,8 @@ import (
 	"strconv"
 )
 
-const StakeToAdd uint64 = 9e4
-const InitFund uint64 = 1e4
+const StakeToAdd uint64 = 9e3
+const InitFund uint64 = 1e10
 
 func createActorsAddresses(
 	m testCommon.TestConfig,

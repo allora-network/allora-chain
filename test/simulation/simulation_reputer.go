@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-const EpochLength = 100
+const EpochLength = 5
+const RetryTime = 3
 
 func WorkRepute(
 	seed int,

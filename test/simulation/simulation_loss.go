@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/stretchr/testify/require"
 	"math/rand"
+	"strings"
 )
 
 func getGroundTruth() alloraMath.Dec {
@@ -196,14 +197,17 @@ func generateValueBundle(
 	topicId uint64,
 	reputerNonce,
 	workerNonce *emissionstypes.Nonce,
-) emissionstypes.ValueBundle {
+) (emissionstypes.ValueBundle, error) {
 	ALPHA := alloraMath.MustNewDecFromString("0.1")
 	groundTruth := getGroundTruth()
-	valueBundle := getNetworkInferencesAtBlock(m, topicId, reputerNonce.BlockHeight, workerNonce.BlockHeight)
+	valueBundle, err := getNetworkInferencesAtBlock(m, topicId, reputerNonce.BlockHeight, workerNonce.BlockHeight)
+	if err != nil {
+		return emissionstypes.ValueBundle{}, err
+	}
 	prevLoss := getNetworkLossBundleAtBlock(m, topicId, workerNonce.BlockHeight)
 	lossData := calculateLoss(valueBundle, groundTruth)
 	newLoss := calculateEmaLoss(lossData, prevLoss, ALPHA)
-	return newLoss
+	return newLoss, nil
 }
 
 // Generate a ReputerValueBundle:of
@@ -241,38 +245,53 @@ func insertReputerBulk(
 ) (int64, error) {
 	leaderIndex := rand.Intn(len(reputers))
 	leaderReputer := reputers[leaderIndex]
-	blockHeightCurrent := insertedBlockHeight + topic.EpochLength
-	blockHeightEval := insertedBlockHeight
-	// Nonces are last two blockHeights
-	reputerNonce := &emissionstypes.Nonce{
-		BlockHeight: blockHeightCurrent,
-	}
-	workerNonce := &emissionstypes.Nonce{
-		BlockHeight: blockHeightEval,
-	}
-	valueBundle := generateValueBundle(m, topic.Id, reputerNonce, workerNonce)
+	var blockHeightCurrent int64 = 0
+	for index := 0; index < RetryTime; index++ {
+		blockHeightCurrent = insertedBlockHeight + topic.EpochLength
+		blockHeightEval := insertedBlockHeight
+		// Nonces are last two blockHeights
+		reputerNonce := &emissionstypes.Nonce{
+			BlockHeight: blockHeightCurrent,
+		}
+		workerNonce := &emissionstypes.Nonce{
+			BlockHeight: blockHeightEval,
+		}
+		valueBundle, err := generateValueBundle(m, topic.Id, reputerNonce, workerNonce)
+		if err != nil {
+			return 0, err
+		}
 
-	reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
-	for index, reputer := range reputers {
-		reputerAccountName := getActorsAccountName(REPUTER_TYPE, seed, index)
-		reputerValueBundle := generateSingleReputerValueBundle(m, reputerAccountName, reputer.Addr, valueBundle)
-		reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
-	}
+		reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
+		for index, reputer := range reputers {
+			reputerAccountName := getActorsAccountName(REPUTER_TYPE, seed, index)
+			reputerValueBundle := generateSingleReputerValueBundle(m, reputerAccountName, reputer.Addr, valueBundle)
+			reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
+		}
 
-	reputerValueBundleMsg := &emissionstypes.MsgInsertBulkReputerPayload{
-		Sender:  leaderReputer.Addr,
-		TopicId: topic.Id,
-		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
-			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
-		},
-		ReputerValueBundles: reputerValueBundles,
+		reputerValueBundleMsg := &emissionstypes.MsgInsertBulkReputerPayload{
+			Sender:  leaderReputer.Addr,
+			TopicId: topic.Id,
+			ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
+				ReputerNonce: reputerNonce,
+				WorkerNonce:  workerNonce,
+			},
+			ReputerValueBundles: reputerValueBundles,
+		}
+		txResp, err := m.Client.BroadcastTx(m.Ctx, leaderReputer.Acc, reputerValueBundleMsg)
+		if err != nil {
+			if strings.Contains(err.Error(), "nonce already fulfilled") ||
+				strings.Contains(err.Error(), "nonce still unfulfilled") {
+				topic, err = getTopic(m, topic.Id)
+				if err == nil {
+					insertedBlockHeight = topic.EpochLastEnded
+					continue
+				}
+			}
+			m.T.Log("Error broadcasting reputer value bundle: ", err)
+			return 0, err
+		}
+		_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+		break
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, leaderReputer.Acc, reputerValueBundleMsg)
-	if err != nil {
-		m.T.Log("Error broadcasting reputer value bundle: ", err)
-		return 0, err
-	}
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
 	return blockHeightCurrent, nil
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/stretchr/testify/require"
 	"math/rand"
+	"strings"
 )
 
 // Inserts bulk inference and forecast data for a worker
@@ -20,31 +21,43 @@ func insertWorkerBulk(
 	workers := append(inferers, forecasters...)
 	leaderIndex := rand.Intn(len(workers))
 	leaderWorker := workers[leaderIndex]
-	blockHeightCurrent := topic.EpochLastEnded + topic.EpochLength
-	// Get Bundles
-	workerDataBundles := make([]*emissionstypes.WorkerDataBundle, 0)
-	for _, worker := range inferers {
-		workerDataBundles = append(workerDataBundles,
-			generateSingleWorkerBundle(m, topic.Id, blockHeightCurrent, worker.Addr, leaderWorker.Acc.Name, workers))
-	}
+	var blockHeightCurrent int64 = 0
+	for index := 0; index < RetryTime; index++ {
+		blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
+		// Get Bundles
+		workerDataBundles := make([]*emissionstypes.WorkerDataBundle, 0)
+		for _, inferer := range inferers {
+			forecasterIndex := rand.Intn(len(forecasters))
+			workerDataBundles = append(workerDataBundles,
+				generateSingleWorkerBundle(m, topic.Id, blockHeightCurrent, inferer.Addr, forecasters[forecasterIndex].Addr, inferers, leaderWorker.Acc.Name))
+		}
 
-	nonce := emissionstypes.Nonce{BlockHeight: blockHeightCurrent}
-	// Create a MsgInsertBulkReputerPayload message
-	workerMsg := &emissionstypes.MsgInsertBulkWorkerPayload{
-		Sender:            leaderWorker.Addr,
-		Nonce:             &nonce,
-		TopicId:           topic.Id,
-		WorkerDataBundles: workerDataBundles,
-	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, leaderWorker.Acc, workerMsg)
-	if err != nil {
-		m.T.Log("Error broadcasting worker bulk: ", err)
-		return 0, err
-	}
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
-	if err != nil {
-		m.T.Log("Error waiting for worker bulk: ", err)
-		return 0, err
+		nonce := emissionstypes.Nonce{BlockHeight: blockHeightCurrent}
+		// Create a MsgInsertBulkReputerPayload message
+		workerMsg := &emissionstypes.MsgInsertBulkWorkerPayload{
+			Sender:            leaderWorker.Addr,
+			Nonce:             &nonce,
+			TopicId:           topic.Id,
+			WorkerDataBundles: workerDataBundles,
+		}
+		txResp, err := m.Client.BroadcastTx(m.Ctx, leaderWorker.Acc, workerMsg)
+		if err != nil {
+			if strings.Contains(err.Error(), "nonce already fulfilled") ||
+				strings.Contains(err.Error(), "nonce still unfulfilled") {
+				topic, err = getTopic(m, topic.Id)
+				if err == nil {
+					continue
+				}
+			}
+			m.T.Log("Error broadcasting worker bulk: ", err)
+			return 0, err
+		}
+		_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+		if err != nil {
+			m.T.Log("Error waiting for worker bulk: ", err)
+			return 0, err
+		}
+		break
 	}
 	return blockHeightCurrent, nil
 }
@@ -53,15 +66,16 @@ func generateSingleWorkerBundle(
 	m testCommon.TestConfig,
 	topicId uint64,
 	blockHeight int64,
-	workerAddressName string,
+	workerAddress string,
+	forecasterAddress string,
+	inferers []testCommon.AccountAndAddress,
 	signerName string,
-	forecasters []testCommon.AccountAndAddress,
 ) *emissionstypes.WorkerDataBundle {
 	// Iterate workerAddresses to get the worker address, and generate as many forecasts as there are workers
 	forecastElements := make([]*emissionstypes.ForecastElement, 0)
-	for _, worker := range forecasters {
+	for _, inferer := range inferers {
 		forecastElements = append(forecastElements, &emissionstypes.ForecastElement{
-			Inferer: worker.Addr,
+			Inferer: inferer.Addr,
 			Value:   alloraMath.NewDecFromInt64(int64(rand.Intn(51) + 50)),
 		})
 	}
@@ -69,18 +83,18 @@ func generateSingleWorkerBundle(
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerDataBundle := &emissionstypes.WorkerDataBundle{
-		Worker: workerAddressName,
+		Worker: workerAddress,
 		InferenceForecastsBundle: &emissionstypes.InferenceForecastBundle{
 			Inference: &emissionstypes.Inference{
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
-				Inferer:     workerAddressName,
+				Inferer:     workerAddress,
 				Value:       infererValue,
 			},
 			Forecast: &emissionstypes.Forecast{
 				TopicId:          topicId,
 				BlockHeight:      blockHeight,
-				Forecaster:       forecasters[0].Addr,
+				Forecaster:       forecasterAddress,
 				ForecastElements: forecastElements,
 			},
 		},
