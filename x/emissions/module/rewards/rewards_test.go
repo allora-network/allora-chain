@@ -666,7 +666,6 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		require.NoError(err)
 	}
-
 	for _, reputerAddr := range reputerAddrs {
 		s.MintTokensToAddress(reputerAddr, stake)
 		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
