@@ -6,6 +6,7 @@ import (
 	"sync"
 	"testing"
 
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/allora-network/allora-chain/app/params"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
@@ -15,6 +16,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosclient"
 	"github.com/stretchr/testify/require"
@@ -37,6 +39,8 @@ type Client struct {
 	QueryDistributions []distributiontypes.QueryClient // query clients for distribution
 	QueryEmissionses   []emissionstypes.QueryClient    // query clients for emissions
 	QueryMints         []minttypes.QueryClient         // query clients for mint
+	QueryGovs          []govtypesv1.QueryClient        // query clients for gov
+	QueryUpgrades      []upgradetypes.QueryClient      // query clients for upgrades
 	RpcCounterSeed     int64                           // if round-robin which RPC to use next, if random, seed to use
 	RpcCounterMutex    *sync.Mutex                     // mutex for the counter
 	Rand               *rand.Rand                      // random number generator
@@ -62,6 +66,8 @@ func NewClient(
 	client.QueryDistributions = make([]distributiontypes.QueryClient, len(nodeRpcAddresses))
 	client.QueryEmissionses = make([]emissionstypes.QueryClient, len(nodeRpcAddresses))
 	client.QueryMints = make([]minttypes.QueryClient, len(nodeRpcAddresses))
+	client.QueryGovs = make([]govtypesv1.QueryClient, len(nodeRpcAddresses))
+	client.QueryUpgrades = make([]upgradetypes.QueryClient, len(nodeRpcAddresses))
 	client.RpcCounterMutex = &sync.Mutex{}
 	client.accountRegistryMutex = &sync.Mutex{}
 	client.RpcCounterSeed = 0
@@ -88,6 +94,8 @@ func NewClient(
 		client.QueryDistributions[i] = distributiontypes.NewQueryClient(ccCtx)
 		client.QueryEmissionses[i] = emissionstypes.NewQueryClient(ccCtx)
 		client.QueryMints[i] = minttypes.NewQueryClient(ccCtx)
+		client.QueryGovs[i] = govtypesv1.NewQueryClient(ccCtx)
+		client.QueryUpgrades[i] = upgradetypes.NewQueryClient(ccCtx)
 
 		// this is terrible, no isConnected as part of this code path
 		require.NotEqual(t, ccCtx.ChainID, "")
@@ -144,6 +152,10 @@ func (c *Client) QueryMint() minttypes.QueryClient {
 	return c.QueryMints[c.getNextClientNumber()]
 }
 
+func (c *Client) QueryGov() govtypesv1.QueryClient {
+	return c.QueryGovs[c.getNextClientNumber()]
+}
+
 /// Wrappers for cosmosclient functions
 // broadcast etc shouldn't have to worry about concurrency
 // because the RPC endpoint itself should handle that.
@@ -166,6 +178,10 @@ func (c *Client) WaitForNextBlock(ctx context.Context) error {
 
 func (c *Client) WaitForTx(ctx context.Context, hash string) (*coretypes.ResultTx, error) {
 	return c.Clients[c.getNextClientNumber()].WaitForTx(ctx, hash)
+}
+
+func (c *Client) BlockHeight(ctx context.Context) (int64, error) {
+	return c.Clients[c.getNextClientNumber()].LatestBlockHeight(ctx)
 }
 
 // account code has to be concurrency aware

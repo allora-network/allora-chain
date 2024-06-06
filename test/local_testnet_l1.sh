@@ -69,6 +69,11 @@ docker run \
     --entrypoint=/data/generate_genesis.sh \
     $DOCKER_IMAGE > /dev/null 2>&1
 
+echo "Updating expedited_voting_period in genesis.json"
+genesis_file="${LOCALNET_DATADIR}/genesis/config/genesis.json"
+tmp_file=$(mktemp)
+jq '.app_state.gov.params.expedited_voting_period = "20s" | .app_state.gov.params.voting_period = "20s"' "$genesis_file" > "$tmp_file" && mv "$tmp_file" "$genesis_file"
+
 echo "Whitelist faucet account"
 FAUCET_ADDRESS=$(docker run -t \
     -u $(id -u):$(id -g) \
