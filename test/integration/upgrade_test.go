@@ -98,7 +98,7 @@ func waitForProposalPass(m testCommon.TestConfig, proposalId uint64) {
 	require.NotNil(m.T, proposal.Proposal)
 	endTime := proposal.Proposal.VotingEndTime
 	require.NotNil(m.T, endTime)
-	diff := time.Until(*endTime) + 5*time.Second
+	diff := time.Until(*endTime) + 10*time.Second
 	m.T.Logf("Voting End Time: %s, sleeping %s seconds", endTime, diff)
 	time.Sleep(diff)
 
