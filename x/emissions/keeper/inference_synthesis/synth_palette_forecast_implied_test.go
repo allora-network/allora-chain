@@ -42,6 +42,55 @@ func (s *InferenceSynthesisTestSuite) TestCalcWeightFromRegret() {
 	}
 }
 
+func (s *InferenceSynthesisTestSuite) TestIncreasingPNormIncreasesRegretSpread() {
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	testCases := []struct {
+		regretFrac string
+		maxRegret  string
+	}{
+		{"-24.5", "-24.5"},
+		{"-20.0", "-19.5"},
+		{"-15.0", "-14.0"},
+		{"-10.5", "-10.0"},
+		{"-5.75", "-5.0"},
+		{"-1.0", "-0.5"},
+		{"-0.25", "0.0"},
+		{"0.0", "0.0"},
+		{"0.5", "0.5"},
+		{"1.0", "1.0"},
+		{"-1.32345", "0.1238729"},
+		{"-0.8712641", "-0.8712641"},
+		{"0.01987392", "0.01987392"},
+	}
+
+	weightWithPNorm2_point_5 := make([]alloraMath.Dec, len(testCases))
+	weightWithPNorm4_point_5 := make([]alloraMath.Dec, len(testCases))
+
+	for i, tc := range testCases {
+		regretFrac := alloraMath.MustNewDecFromString(tc.regretFrac)
+		maxRegret := alloraMath.MustNewDecFromString(tc.maxRegret)
+		pNorm2_point_5 := alloraMath.MustNewDecFromString("2.5")
+		pNorm4_point_5 := alloraMath.MustNewDecFromString("4.5")
+
+		weght2_point_5, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm2_point_5, cNorm)
+		s.Require().NoError(err)
+		weightWithPNorm2_point_5[i] = weght2_point_5
+
+		weght4_point_5, err := inferencesynthesis.CalcWeightFromNormalizedRegret(regretFrac, maxRegret, pNorm4_point_5, cNorm)
+		s.Require().NoError(err)
+		weightWithPNorm4_point_5[i] = weght4_point_5
+	}
+
+	stdDev2_point_5, err := alloraMath.StdDev(weightWithPNorm2_point_5)
+	s.Require().NoError(err)
+
+	stdDev4_point_5, err := alloraMath.StdDev(weightWithPNorm4_point_5)
+	s.Require().NoError(err)
+
+	s.Require().True(stdDev2_point_5.Lt(stdDev4_point_5))
+}
+
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorkersOneForecaster() {
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
