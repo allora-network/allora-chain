@@ -7,8 +7,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
 
-type BlockHeight = int64
-
 // DefaultParams returns default module parameters.
 func DefaultParams() Params {
 	return Params{
@@ -16,8 +14,8 @@ func DefaultParams() Params {
 		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),    // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
 		RequiredMinimumStake:            cosmosMath.NewInt(100),                    // minimum stake required to be a worker or reputer
-		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3),               // 3 weeks in seconds, number of seconds to wait before finalizing a stake withdrawal
-		MinEpochLength:                  1,                                         // 1 block, the shortest number of blocks per epoch topics are allowed to set as their cadence
+		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3),               // number of seconds to wait before finalizing a stake withdrawal
+		MinEpochLength:                  12,                                        // shortest number of blocks per epoch topics are allowed to set as their cadence
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
 		GradientDescentMaxIters:         uint64(10),                                // max iterations on gradient descent
@@ -32,13 +30,13 @@ func DefaultParams() Params {
 		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),    // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),   // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:         uint64(10),                                // maximum number of previous scores to store and use for standard deviation calculation
-		MaxTopInferersToReward:          uint64(24),                                // max this many top inferers by score are rewarded for a topic
+		MaxTopInferersToReward:          uint64(48),                                // max this many top inferers by score are rewarded for a topic
 		MaxTopForecastersToReward:       uint64(6),                                 // max this many top forecasters by score are rewarded for a topic
 		MaxTopReputersToReward:          uint64(12),                                // max this many top reputers by score are rewarded for a topic
 		CreateTopicFee:                  cosmosMath.NewInt(10),                     // topic registration fee
 		MaxRetriesToFulfilNoncesWorker:  int64(1),                                  // max throttle of simultaneous unfulfilled worker requests
 		MaxRetriesToFulfilNoncesReputer: int64(3),                                  // max throttle of simultaneous unfulfilled reputer requests
-		RegistrationFee:                 cosmosMath.NewInt(6),                      // how much workers and reputers must pay to register per topic
+		RegistrationFee:                 cosmosMath.NewInt(10),                     // how much workers and reputers must pay to register per topic
 		DefaultPageLimit:                uint64(100),                               // how many topics to return per page during churn of requests
 		MaxPageLimit:                    uint64(1000),                              // max limit for pagination
 		MinEpochLengthRecordLimit:       int64(3),                                  // minimum number of epochs to keep records for a topic
@@ -198,7 +196,7 @@ func validateVersion(v string) error {
 // Should be >= 0
 func validateMinTopicWeight(i alloraMath.Dec) error {
 	if i.IsNegative() {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -213,7 +211,7 @@ func validateMaxTopicsPerBlock(_ uint64) error {
 // Should be >= 0.
 func validateRequiredMinimumStake(i cosmosMath.Int) error {
 	if i.IsNegative() {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -222,7 +220,7 @@ func validateRequiredMinimumStake(i cosmosMath.Int) error {
 // Should be >= 0.
 func validateRemoveStakeDelayWindow(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -230,8 +228,8 @@ func validateRemoveStakeDelayWindow(i int64) error {
 // Minumum number of blocks per epoch a topic can set.
 // Should be >= 0.
 func validateMinEpochLength(i BlockHeight) error {
-	if i < 0 {
-		return ErrValidationMustBeNonNegative
+	if i < 1 {
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -395,7 +393,6 @@ func validateTopicRewardAlpha(i alloraMath.Dec) error {
 // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 // should be 0 < x <= 1 (note the difference on both sides!)
 func validateTaskRewardAlpha(i alloraMath.Dec) error {
-
 	if i.Lte(alloraMath.ZeroDec()) || i.Gt(alloraMath.OneDec()) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -412,8 +409,11 @@ func validateValidatorsVsAlloraPercentReward(i alloraMath.Dec) error {
 }
 
 // maximum number of previous scores to store and use for standard deviation calculation
-// Should be zero or positive. Enforced by uint type
-func validateMaxSamplesToScaleScores(_ uint64) error {
+// Should be greater than zero. Enforced by conditional + uint type
+func validateMaxSamplesToScaleScores(i uint64) error {
+	if i == 0 {
+		return ErrValidationMustBeGreaterthanZero
+	}
 	return nil
 }
 
@@ -439,7 +439,7 @@ func validateMaxTopReputersToReward(_ uint64) error {
 // must be positive or zero
 func validateCreateTopicFee(i cosmosMath.Int) error {
 	if i.IsNegative() {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -448,7 +448,7 @@ func validateCreateTopicFee(i cosmosMath.Int) error {
 // Should be non negative.
 func validateMaxRetriesToFulfilNoncesWorker(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -457,7 +457,7 @@ func validateMaxRetriesToFulfilNoncesWorker(i int64) error {
 // Should be non negative.
 func validateMaxRetriesToFulfilNoncesReputer(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -466,7 +466,7 @@ func validateMaxRetriesToFulfilNoncesReputer(i int64) error {
 // Should be non-negative.
 func validateRegistrationFee(i cosmosMath.Int) error {
 	if i.IsNegative() {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -487,7 +487,7 @@ func validateMaxPageLimit(_ uint64) error {
 // Should be non-negative.
 func validateMinEpochLengthRecordLimit(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -496,7 +496,7 @@ func validateMinEpochLengthRecordLimit(i int64) error {
 // Should be non-negative.
 func validateMaxSerializedMsgLength(i int64) error {
 	if i < 0 {
-		return ErrValidationMustBeNonNegative
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }

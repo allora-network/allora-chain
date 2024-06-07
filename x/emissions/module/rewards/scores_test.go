@@ -296,7 +296,7 @@ func GenerateReputerLatestScores(s *RewardsTestSuite, reputers []sdk.AccAddress,
 	for i, reputerAddr := range reputers {
 		scoreToAdd := types.Score{
 			TopicId:     topicId,
-			BlockNumber: blockHeight,
+			BlockHeight: blockHeight,
 			Address:     reputerAddr.String(),
 			Score:       scores[i],
 		}
@@ -1143,6 +1143,14 @@ func GenerateSimpleLossBundles(
 
 	var reputerValueBundles types.ReputerValueBundles
 	for _, reputer := range reputerValues {
+
+		var countValues int
+		if len(workerValues) < len(reputerValues) {
+			countValues = len(workerValues)
+		} else {
+			countValues = len(reputerValues)
+		}
+
 		valueBundle := &types.ValueBundle{
 			TopicId: topicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -1156,27 +1164,29 @@ func GenerateSimpleLossBundles(
 			Reputer:                reputer.Address.String(),
 			CombinedValue:          alloraMath.MustNewDecFromString(reputer.Value),
 			NaiveValue:             alloraMath.MustNewDecFromString(reputer.Value),
-			InfererValues:          make([]*types.WorkerAttributedValue, len(workerValues)),
-			ForecasterValues:       make([]*types.WorkerAttributedValue, len(workerValues)),
-			OneOutInfererValues:    make([]*types.WithheldWorkerAttributedValue, len(workerValues)),
-			OneOutForecasterValues: make([]*types.WithheldWorkerAttributedValue, len(workerValues)),
-			OneInForecasterValues:  make([]*types.WorkerAttributedValue, len(workerValues)),
+			InfererValues:          make([]*types.WorkerAttributedValue, countValues),
+			ForecasterValues:       make([]*types.WorkerAttributedValue, countValues),
+			OneOutInfererValues:    make([]*types.WithheldWorkerAttributedValue, countValues),
+			OneOutForecasterValues: make([]*types.WithheldWorkerAttributedValue, countValues),
+			OneInForecasterValues:  make([]*types.WorkerAttributedValue, countValues),
 		}
 
 		for j, worker := range workerValues {
-			if worker.Address.Equals(workerZeroAddress) {
-				valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(workerZeroInfererValue)}
-			} else {
-				valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
+			if j < len(reputerValues) {
+				if worker.Address.Equals(workerZeroAddress) {
+					valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(workerZeroInfererValue)}
+				} else {
+					valueBundle.InfererValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(reputerValues[j].Value)}
+				}
+				valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(reputerValues[j].Value)}
+				if worker.Address.Equals(workerZeroAddress) {
+					valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(workerZeroOneOutInfererValue)}
+				} else {
+					valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(reputerValues[j].Value)}
+				}
+				valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(reputerValues[j].Value)}
+				valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(reputerValues[j].Value)}
 			}
-			valueBundle.ForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
-			if worker.Address.Equals(workerZeroAddress) {
-				valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(workerZeroOneOutInfererValue)}
-			} else {
-				valueBundle.OneOutInfererValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
-			}
-			valueBundle.OneOutForecasterValues[j] = &types.WithheldWorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
-			valueBundle.OneInForecasterValues[j] = &types.WorkerAttributedValue{Worker: worker.Address.String(), Value: alloraMath.MustNewDecFromString(worker.Value)}
 		}
 
 		sig, err := GenerateReputerSignature(s, valueBundle, reputer.Address)

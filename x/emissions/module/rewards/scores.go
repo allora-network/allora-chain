@@ -96,7 +96,7 @@ func GenerateReputerScores(
 
 		newScore := types.Score{
 			TopicId:     topicId,
-			BlockNumber: block,
+			BlockHeight: block,
 			Address:     reputer,
 			Score:       scores[i],
 		}
@@ -111,11 +111,18 @@ func GenerateReputerScores(
 		newScores = append(newScores, newScore)
 	}
 
+	types.EmitNewReputerScoresSetEvent(ctx, newScores)
 	return newScores, nil
 }
 
 // GenerateInferenceScores calculates and persists scores for workers based on their inference task performance.
-func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint64, block int64, networkLosses types.ValueBundle) ([]types.Score, error) {
+func GenerateInferenceScores(
+	ctx sdk.Context,
+	keeper keeper.Keeper,
+	topicId uint64,
+	block int64,
+	networkLosses types.ValueBundle,
+) ([]types.Score, error) {
 	var newScores []types.Score
 
 	// If there is only one inferer, set score to 0
@@ -123,7 +130,7 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 	if len(networkLosses.InfererValues) == 1 {
 		newScore := types.Score{
 			TopicId:     topicId,
-			BlockNumber: block,
+			BlockHeight: block,
 			Address:     networkLosses.InfererValues[0].Worker,
 			Score:       alloraMath.ZeroDec(),
 		}
@@ -143,7 +150,7 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 
 		newScore := types.Score{
 			TopicId:     topicId,
-			BlockNumber: block,
+			BlockHeight: block,
 			Address:     oneOutLoss.Worker,
 			Score:       workerNewScore,
 		}
@@ -157,6 +164,8 @@ func GenerateInferenceScores(ctx sdk.Context, keeper keeper.Keeper, topicId uint
 		}
 		newScores = append(newScores, newScore)
 	}
+
+	types.EmitNewInfererScoresSetEvent(ctx, newScores)
 	return newScores, nil
 }
 
@@ -175,7 +184,7 @@ func GenerateForecastScores(
 	if len(networkLosses.ForecasterValues) == 1 {
 		newScore := types.Score{
 			TopicId:     topicId,
-			BlockNumber: block,
+			BlockHeight: block,
 			Address:     networkLosses.InfererValues[0].Worker,
 			Score:       alloraMath.ZeroDec(),
 		}
@@ -219,7 +228,7 @@ func GenerateForecastScores(
 
 		newScore := types.Score{
 			TopicId:     topicId,
-			BlockNumber: block,
+			BlockHeight: block,
 			Address:     oneInNaiveLoss.Worker,
 			Score:       workerFinalScore,
 		}
@@ -234,6 +243,7 @@ func GenerateForecastScores(
 		newScores = append(newScores, newScore)
 	}
 
+	types.EmitNewForecasterScoresSetEvent(ctx, newScores)
 	return newScores, nil
 }
 

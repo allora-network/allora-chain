@@ -93,7 +93,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputSameFractio
 
 		scoreToAdd := types.Score{
 			TopicId:     topicId,
-			BlockNumber: block,
+			BlockHeight: block,
 			Address:     reputerAddr,
 			Score:       alloraMath.MustNewDecFromString("0.5"),
 		}
@@ -126,7 +126,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputSameFractio
 	for _, reputerAddr := range reputerAddrs {
 		scoreToAdd := types.Score{
 			TopicId:     topicId,
-			BlockNumber: block,
+			BlockHeight: block,
 			Address:     reputerAddr,
 			Score:       alloraMath.ZeroDec(),
 		}
@@ -237,7 +237,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	for _, score := range scores.Scores {
 		reward_score = append(reward_score, types.Score{
 			TopicId:     score.TopicId,
-			BlockNumber: score.BlockNumber,
+			BlockHeight: score.BlockHeight,
 			Address:     score.Address,
 			Score:       score.Score,
 		})
@@ -302,7 +302,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	for _, score := range scores.Scores {
 		reward_score = append(reward_score, types.Score{
 			TopicId:     score.TopicId,
-			BlockNumber: score.BlockNumber,
+			BlockHeight: score.BlockHeight,
 			Address:     score.Address,
 			Score:       score.Score,
 		})
@@ -465,7 +465,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 
 		scoreToAdd := types.Score{
 			TopicId:     topicId,
-			BlockNumber: block,
+			BlockHeight: block,
 			Address:     reputerAddr,
 			Score:       scores[i],
 		}
