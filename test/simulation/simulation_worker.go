@@ -57,6 +57,7 @@ func insertWorkerBulk(
 			m.T.Log("Error waiting for worker bulk: ", err)
 			return 0, err
 		}
+		m.T.Log("Inserted Worker Bulk", blockHeightCurrent)
 		break
 	}
 	return blockHeightCurrent, nil

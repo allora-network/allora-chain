@@ -2,7 +2,6 @@ package simulation
 
 import (
 	cosmosMath "cosmossdk.io/math"
-	"encoding/csv"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -11,16 +10,12 @@ import (
 	"slices"
 )
 
-func WriteReport(fileName string, data []string) {
-	file, err := os.Open(fileName)
+func WriteReport(fileName string, data string) {
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		log.Fatal(err)
 	}
-	w := csv.NewWriter(file)
-	defer w.Flush()
-	if err := w.Write(data); err != nil {
-		log.Fatalln("error writing record to file", err)
-	}
+	_, err = file.WriteString(data)
 	defer file.Close()
 }
 func LossesReport(
@@ -57,14 +52,17 @@ func LossesReport(
 		lossesForecasters[forecaster.Addr] = lossData.OneOutForecasterValues[idx].Value
 	}
 
-	lossesStr := make([]string, 0)
+	lossesStr := ""
 	for _, infererLoss := range lossesInferers {
-		lossesStr = append(lossesStr, infererLoss.String())
+		lossesStr += infererLoss.String()
+		lossesStr += ","
 	}
 	for _, foreacsterLoss := range lossesForecasters {
-		lossesStr = append(lossesStr, foreacsterLoss.String())
+		lossesStr += foreacsterLoss.String()
+		lossesStr += ","
 	}
-	lossesStr = append(lossesStr, lossData.CombinedValue.String())
+	lossesStr += lossData.CombinedValue.String()
+	lossesStr += "\n"
 
 	WriteReport("losses.csv", lossesStr)
 }
@@ -94,10 +92,12 @@ func RewardReport(
 		}
 	}
 
-	rewardsStr := make([]string, 0)
+	rewardsStr := ""
 	for _, reward := range rewardActors {
-		rewardsStr = append(rewardsStr, reward.String())
+		rewardsStr += reward.String()
+		rewardsStr += ","
 	}
+	rewardsStr += "\n"
 	WriteReport("rewards.csv", rewardsStr)
 }
 func WorkReport(

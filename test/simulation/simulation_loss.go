@@ -241,6 +241,7 @@ func insertReputerBulk(
 	seed int,
 	topic *emissionstypes.Topic,
 	insertedBlockHeight int64,
+	prevLossHeight int64,
 	reputers []testCommon.AccountAndAddress,
 ) (int64, error) {
 	leaderIndex := rand.Intn(len(reputers))
@@ -250,18 +251,16 @@ func insertReputerBulk(
 		BlockHeight: insertedBlockHeight,
 	}
 	prevLossEpoch := &emissionstypes.Nonce{
-		BlockHeight: insertedBlockHeight - topic.EpochLength,
+		BlockHeight: prevLossHeight,
 	}
+	blockHeightCurrent = insertedBlockHeight
 	for index := 0; index < RetryTime; index++ {
-
-		blockHeightCurrent = insertedBlockHeight + topic.EpochLength
-		blockHeightEval := insertedBlockHeight
 		// Nonces are last two blockHeights
 		reputerNonce := &emissionstypes.Nonce{
 			BlockHeight: blockHeightCurrent,
 		}
 		workerNonce := &emissionstypes.Nonce{
-			BlockHeight: blockHeightEval,
+			BlockHeight: blockHeightCurrent,
 		}
 		reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
 		for index, reputer := range reputers {
@@ -269,6 +268,10 @@ func insertReputerBulk(
 			valueBundle, err := generateValueBundle(m, topic.Id, currentLossEpoch, prevLossEpoch)
 			if err != nil {
 				continue
+			}
+			valueBundle.ReputerRequestNonce = &emissionstypes.ReputerRequestNonce{
+				ReputerNonce: reputerNonce,
+				WorkerNonce:  workerNonce,
 			}
 			reputerValueBundle := generateSingleReputerValueBundle(m, reputerAccountName, reputer.Addr, valueBundle)
 			reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
@@ -285,6 +288,7 @@ func insertReputerBulk(
 		}
 		txResp, err := m.Client.BroadcastTx(m.Ctx, leaderReputer.Acc, reputerValueBundleMsg)
 		if err != nil {
+			m.T.Log("Error broadcasting reputer value bundle: ", err)
 			if strings.Contains(err.Error(), "nonce already fulfilled") ||
 				strings.Contains(err.Error(), "nonce still unfulfilled") {
 				topic, err = getTopic(m, topic.Id)
@@ -293,10 +297,10 @@ func insertReputerBulk(
 					continue
 				}
 			}
-			m.T.Log("Error broadcasting reputer value bundle: ", err)
 			return 0, err
 		}
 		_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+		m.T.Log("Inserted Reputer Bulk", blockHeightCurrent)
 		break
 	}
 	return blockHeightCurrent, nil
