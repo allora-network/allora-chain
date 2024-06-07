@@ -8,7 +8,7 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 
 	"cosmossdk.io/core/header"
-	"cosmossdk.io/log"
+	clog "cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 
 	// cosmosMath "cosmossdk.io/math"
@@ -103,7 +103,7 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 		accountKeeper,
 		map[string]bool{},
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		log.NewNopLogger(),
+		clog.NewNopLogger(),
 	)
 
 	s.ctx = ctx
