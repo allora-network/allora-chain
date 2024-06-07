@@ -129,7 +129,7 @@ func getNetworkLossBundleAtBlock(
 	}
 	txResp, err := m.Client.QueryEmissions().GetNetworkLossBundleAtBlock(m.Ctx, query)
 	if err != nil {
-		m.T.Log("Error query for getting network loss at block: ", err)
+		m.T.Log("Error query for getting network loss at block: ", blockHeight)
 		return &emissionstypes.ValueBundle{
 			CombinedValue:          alloraMath.ZeroDec(),
 			NaiveValue:             alloraMath.ZeroDec(),

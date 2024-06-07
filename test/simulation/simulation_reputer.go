@@ -1,6 +1,7 @@
 package simulation
 
 import (
+	"fmt"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	"time"
 )
@@ -21,6 +22,7 @@ func ReputeSimulation(
 	for index := 0; index < iteration; index++ {
 		topic, _ := getTopic(m, topicId)
 		startIteration := time.Now()
+		m.T.Log(fmt.Sprintf("[%v/%v] Calculating...", index+1, iteration))
 		insertedBlockHeight, err := insertWorkerBulk(m, topic, inferers, forecasters)
 		if err != nil {
 			continue
