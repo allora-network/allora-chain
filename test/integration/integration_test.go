@@ -16,7 +16,7 @@ func TestExternalTestSuite(t *testing.T) {
 	seed := testCommon.LookupEnvInt(t, "SEED", 0)
 	rpcMode := testCommon.LookupRpcMode(t, "RPC_MODE", testCommon.SingleRpc)
 	rpcEndpoints := testCommon.LookupEnvStringArray("RPC_URLS", []string{"http://localhost:26657"})
-	
+
 	testConfig := testCommon.NewTestConfig(
 		t,
 		rpcMode,
