@@ -9,7 +9,7 @@ import (
 )
 
 const topicFunds int64 = 1e6
-const EpochLength = 5
+const EpochLength = 15
 
 // test that we can create topics and that the resultant topics are what we asked for
 func createTopic(m testCommon.TestConfig) (topicId uint64) {

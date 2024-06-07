@@ -19,6 +19,7 @@ func ReputeSimulation(
 	iterationTime := time.Duration(EpochLength) * approximateSecondsPerBlock
 	inferers, forecasters, reputers := getActors(m, infererCount, forecasterCount, reputerCount)
 	var prevLossHeight int64 = 0
+	FormatReport(inferers, forecasters)
 	for index := 0; index < iteration; index++ {
 		topic, _ := getTopic(m, topicId)
 		startIteration := time.Now()
@@ -35,6 +36,6 @@ func ReputeSimulation(
 			continue
 		}
 		prevLossHeight = blockHeight
-		WorkReport(m, topicId, blockHeight, inferers, forecasters, reputers)
+		WorkReport(m, topicId, index+1, blockHeight, inferers, forecasters, reputers)
 	}
 }

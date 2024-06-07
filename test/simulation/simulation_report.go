@@ -2,13 +2,18 @@ package simulation
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	"fmt"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"log"
 	"os"
 	"slices"
+	"strconv"
 )
+
+const LossFileName = "losses.csv"
+const RewardFileName = "reward.csv"
 
 func WriteReport(fileName string, data string) {
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
@@ -21,54 +26,47 @@ func WriteReport(fileName string, data string) {
 func LossesReport(
 	m testCommon.TestConfig,
 	topicId uint64,
+	epochIndex int,
 	blockHeight int64,
 	inferers []testCommon.AccountAndAddress,
 	forecasters []testCommon.AccountAndAddress,
 ) {
-	lossesInferers := make(map[string]alloraMath.Dec)
-	lossesForecasters := make(map[string]alloraMath.Dec)
-
+	lossesStr := strconv.Itoa(epochIndex) + ","
 	lossData := getNetworkLossBundleAtBlock(m, topicId, blockHeight)
 	for _, inferer := range inferers {
-		lossesInferers[inferer.Addr] = alloraMath.ZeroDec()
+		lossInferers := alloraMath.ZeroDec()
 		idx := slices.IndexFunc(lossData.OneOutInfererValues,
 			func(value *emissionstypes.WithheldWorkerAttributedValue) bool {
 				return value.Worker == inferer.Addr
 			})
-		if idx == -1 {
-			continue
+		if idx != -1 {
+			lossInferers = lossData.OneOutInfererValues[idx].Value
 		}
-		lossesInferers[inferer.Addr] = lossData.OneOutInfererValues[idx].Value
+		lossesStr += lossInferers.String()
+		lossesStr += ","
 	}
 	for _, forecaster := range forecasters {
-		lossesInferers[forecaster.Addr] = alloraMath.ZeroDec()
+		lossForecaster := alloraMath.ZeroDec()
 		idx := slices.IndexFunc(lossData.OneOutForecasterValues,
 			func(value *emissionstypes.WithheldWorkerAttributedValue) bool {
 				return value.Worker == forecaster.Addr
 			})
-		if idx == -1 {
-			continue
+		if idx != -1 {
+			lossForecaster = lossData.OneOutForecasterValues[idx].Value
 		}
-		lossesForecasters[forecaster.Addr] = lossData.OneOutForecasterValues[idx].Value
+		lossesStr += lossForecaster.String()
+		lossesStr += ","
 	}
 
-	lossesStr := ""
-	for _, infererLoss := range lossesInferers {
-		lossesStr += infererLoss.String()
-		lossesStr += ","
-	}
-	for _, foreacsterLoss := range lossesForecasters {
-		lossesStr += foreacsterLoss.String()
-		lossesStr += ","
-	}
 	lossesStr += lossData.CombinedValue.String()
 	lossesStr += "\n"
 
-	WriteReport("losses.csv", lossesStr)
+	WriteReport(LossFileName, lossesStr)
 }
 
 func RewardReport(
 	m testCommon.TestConfig,
+	epochIndex int,
 	inferers []testCommon.AccountAndAddress,
 	forecasters []testCommon.AccountAndAddress,
 	reputers []testCommon.AccountAndAddress,
@@ -92,22 +90,44 @@ func RewardReport(
 		}
 	}
 
-	rewardsStr := ""
+	rewardsStr := strconv.Itoa(epochIndex) + ","
 	for _, reward := range rewardActors {
 		rewardsStr += reward.String()
 		rewardsStr += ","
 	}
 	rewardsStr += "\n"
-	WriteReport("rewards.csv", rewardsStr)
+	WriteReport(RewardFileName, rewardsStr)
 }
 func WorkReport(
 	m testCommon.TestConfig,
 	topicId uint64,
+	epochIndex int,
 	blockHeight int64,
 	inferers []testCommon.AccountAndAddress,
 	forecasters []testCommon.AccountAndAddress,
 	reputers []testCommon.AccountAndAddress,
 ) {
-	LossesReport(m, topicId, blockHeight, inferers, forecasters)
-	RewardReport(m, inferers, forecasters, reputers)
+	LossesReport(m, topicId, epochIndex, blockHeight, inferers, forecasters)
+	RewardReport(m, epochIndex, inferers, forecasters, reputers)
+}
+func FormatReport(
+	inferers []testCommon.AccountAndAddress,
+	forecasters []testCommon.AccountAndAddress,
+) {
+	lossHeaderStr := "Epoch,"
+	rewardHeaderStr := "Epoch,"
+	for index, _ := range inferers {
+		infererStr := fmt.Sprintf("Inferer%v,", index+1)
+		lossHeaderStr += infererStr
+		rewardHeaderStr += infererStr
+	}
+	for index, _ := range forecasters {
+		infererStr := fmt.Sprintf("Forecaster%v,", index+1)
+		lossHeaderStr += infererStr
+		rewardHeaderStr += infererStr
+	}
+	lossHeaderStr += fmt.Sprintf("Network Inference\n")
+	rewardHeaderStr += "\n"
+	WriteReport(LossFileName, lossHeaderStr)
+	WriteReport(RewardFileName, rewardHeaderStr)
 }
