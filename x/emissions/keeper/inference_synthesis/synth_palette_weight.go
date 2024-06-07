@@ -111,8 +111,21 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	sumWeights := alloraMath.ZeroDec()
 	err := error(nil)
 
-	// If there is only one not-new inferer, then just consider that inferer
-	if p.InferersNewStatus == InferersAllNewExceptOne {
+	// If all inferers are new, then the weight is 1 for all inferers
+	if p.InferersNewStatus == InferersAllNew {
+		for _, inferer := range p.Inferers {
+			runningUnnormalizedI_i, err = runningUnnormalizedI_i.Add(p.InferenceByWorker[inferer].Value)
+			if err != nil {
+				return InferenceValue{}, errorsmod.Wrapf(err, "Error adding weight by worker value")
+			}
+			sumWeights, err = sumWeights.Add(alloraMath.OneDec())
+			if err != nil {
+				return InferenceValue{}, errorsmod.Wrapf(err, "Error adding weight")
+			}
+		}
+
+		// If there is only one not-new inferer, then just consider that inferer
+	} else if p.InferersNewStatus == InferersAllNewExceptOne {
 		singleInferer := p.SingleNotNewInferer
 
 		runningUnnormalizedI_i, err = runningUnnormalizedI_i.Add(p.InferenceByWorker[singleInferer].Value)
