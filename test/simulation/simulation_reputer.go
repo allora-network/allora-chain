@@ -5,9 +5,6 @@ import (
 	"time"
 )
 
-const EpochLength = 5
-const RetryTime = 3
-
 func ReputeSimulation(
 	m testCommon.TestConfig,
 	seed int,

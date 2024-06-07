@@ -24,10 +24,13 @@ func createActorsAddresses(
 
 	for actorIndex := 0; actorIndex < actorsMax; actorIndex++ {
 		actorAccountName := getActorsAccountName(actorType, m.Seed, actorIndex)
-		actorAccount, _, err := m.Client.AccountRegistryCreate(actorAccountName)
+		actorAccount, err := m.Client.AccountRegistryGetByName(actorAccountName)
 		if err != nil {
-			m.T.Log("Error creating funder address: ", actorAccountName, " - ", err)
-			continue
+			actorAccount, _, err = m.Client.AccountRegistryCreate(actorAccountName)
+			if err != nil {
+				m.T.Log("Error creating funder address: ", actorAccountName, " - ", err)
+				continue
+			}
 		}
 		actorAddress, err := actorAccount.Address(params.HumanCoinUnit)
 		if err != nil {

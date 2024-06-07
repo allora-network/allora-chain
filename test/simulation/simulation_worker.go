@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+const RetryTime = 3
+
 // Inserts bulk inference and forecast data for a worker
 func insertWorkerBulk(
 	m testCommon.TestConfig,
