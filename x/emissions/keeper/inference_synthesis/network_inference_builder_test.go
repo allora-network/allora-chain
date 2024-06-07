@@ -351,7 +351,6 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 	}
 }
 
-// TODO: Fix this test
 func (s *InferenceSynthesisTestSuite) TestCorrectInitialOneOutInfererValues() {
 	s.testCorrectOneOutInfererValuesForEpoch(0)
 }
