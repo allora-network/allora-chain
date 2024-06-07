@@ -1,8 +1,6 @@
 package msgserver_test
 
 import (
-	"fmt"
-
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -71,7 +69,7 @@ func (s *KeeperTestSuite) TestRemoveWhitelistAdmin() {
 	// Verify that adminToRemove is no longer a whitelist admin
 	isWhitelistAdmin, err := s.emissionsKeeper.IsWhitelistAdmin(ctx, adminToRemove)
 	require.NoError(err, "IsWhitelistAdmin check should not return an error")
-	fmt.Println(isWhitelistAdmin)
+	s.T().Log(isWhitelistAdmin)
 	require.False(isWhitelistAdmin, "adminToRemove should not be a whitelist admin anymore")
 }
 

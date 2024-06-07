@@ -3,7 +3,6 @@ package keeper_test
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -2950,7 +2949,7 @@ func (s *KeeperTestSuite) TestGetCurrentTopicWeight() {
 
 	weight, revenue, err := s.emissionsKeeper.GetCurrentTopicWeight(s.ctx, topicId, topicEpochLength, topicRewardAlpha, stakeImportance, feeImportance, additionalRevenue)
 
-	fmt.Println("weight ", weight, emaWeight)
-	fmt.Println("revenue ", cosmosMath.NewInt(500), revenue)
+	s.T().Log("weight ", weight, emaWeight)
+	s.T().Log("revenue ", cosmosMath.NewInt(500), revenue)
 	s.Require().NoError(err)
 }

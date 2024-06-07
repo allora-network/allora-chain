@@ -74,6 +74,10 @@ build:
 	mkdir -p $(BUILDDIR)/
 	GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
 
+build-local-edits:
+	mkdir -p $(BUILDDIR)/
+	go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
+
 lint:
 	go vet ./...
 	staticcheck ./...

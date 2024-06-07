@@ -1,7 +1,6 @@
 package types_test
 
 import (
-	"strconv"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -9,6 +8,15 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+)
+
+const (
+	AttributeKeyActorType   = "actor_type"
+	AttributeKeyTopicId     = "topic_id"
+	AttributeKeyBlockHeight = "block_height"
+	AttributeKeyAddresses   = "addresses"
+	AttributeKeyScores      = "scores"
+	AttributeKeyRewards     = "rewards"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -34,22 +42,30 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, types.EventTypeInfererScoresSet, event.Type)
+	require.Equal(t, "emissions.v1.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 4)
+	require.Len(t, attributes, 5)
 
-	require.Equal(t, types.AttributeKeyTopicId, string(attributes[0].Key))
-	require.Equal(t, strconv.FormatUint(scores[0].TopicId, 10), string(attributes[0].Value))
+	val, exists := event.GetAttribute(AttributeKeyActorType)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "INFERER")
 
-	require.Equal(t, types.AttributeKeyBlockHeight, string(attributes[1].Key))
-	require.Equal(t, "10", string(attributes[1].Value))
+	val, exists = event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
 
-	require.Equal(t, types.AttributeKeyAddresses, string(attributes[2].Key))
-	require.Equal(t, `["address1","address2"]`, string(attributes[2].Value))
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
 
-	require.Equal(t, types.AttributeKeyScores, string(attributes[3].Key))
-	require.Equal(t, `["100","200"]`, string(attributes[3].Value))
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyScores)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
 }
 
 func TestEmitNewInfererScoresSetEventWithNoScores(t *testing.T) {
@@ -85,22 +101,30 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, types.EventTypeForecasterScoresSet, event.Type)
+	require.Equal(t, "emissions.v1.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 4)
+	require.Len(t, attributes, 5)
 
-	require.Equal(t, types.AttributeKeyTopicId, string(attributes[0].Key))
-	require.Equal(t, strconv.FormatUint(scores[0].TopicId, 10), string(attributes[0].Value))
+	val, exists := event.GetAttribute(AttributeKeyActorType)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "FORECASTER")
 
-	require.Equal(t, types.AttributeKeyBlockHeight, string(attributes[1].Key))
-	require.Equal(t, "10", string(attributes[1].Value))
+	val, exists = event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
 
-	require.Equal(t, types.AttributeKeyAddresses, string(attributes[2].Key))
-	require.Equal(t, `["address1","address2"]`, string(attributes[2].Value))
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
 
-	require.Equal(t, types.AttributeKeyScores, string(attributes[3].Key))
-	require.Equal(t, `["100","200"]`, string(attributes[3].Value))
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyScores)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
 }
 
 func TestEmitNewForecasterScoresSetEventWithNoScores(t *testing.T) {
@@ -136,22 +160,30 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, types.EventTypeReputerScoresSet, event.Type)
+	require.Equal(t, "emissions.v1.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 4)
+	require.Len(t, attributes, 5)
 
-	require.Equal(t, types.AttributeKeyTopicId, string(attributes[0].Key))
-	require.Equal(t, strconv.FormatUint(scores[0].TopicId, 10), string(attributes[0].Value))
+	val, exists := event.GetAttribute(AttributeKeyActorType)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "REPUTER")
 
-	require.Equal(t, types.AttributeKeyBlockHeight, string(attributes[1].Key))
-	require.Equal(t, "10", string(attributes[1].Value))
+	val, exists = event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
 
-	require.Equal(t, types.AttributeKeyAddresses, string(attributes[2].Key))
-	require.Equal(t, `["address1","address2"]`, string(attributes[2].Value))
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
 
-	require.Equal(t, types.AttributeKeyScores, string(attributes[3].Key))
-	require.Equal(t, `["100","200"]`, string(attributes[3].Value))
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyScores)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
 }
 
 func TestEmitNewReputerScoresSetEventWithNoScores(t *testing.T) {
@@ -164,10 +196,8 @@ func TestEmitNewReputerScoresSetEventWithNoScores(t *testing.T) {
 	require.Len(t, events, 0)
 }
 
-func TestEmitNewInfererRewardsSettledEvent(t *testing.T) {
-	topicId1 := uint64(1)
+func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	blockHeight := int64(10)
 	rewards := []types.TaskReward{
 		{
 			TopicId: uint64(1),
@@ -181,43 +211,50 @@ func TestEmitNewInfererRewardsSettledEvent(t *testing.T) {
 		},
 	}
 
-	types.EmitNewInfererRewardsSettledEvent(ctx, blockHeight, rewards)
+	types.EmitNewInfererRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, types.EventTypeInfererRewardsSettled, event.Type)
+	require.Equal(t, "emissions.v1.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 4)
+	require.Len(t, attributes, 5)
 
-	require.Equal(t, types.AttributeKeyTopicId, string(attributes[0].Key))
-	require.Equal(t, strconv.FormatUint(topicId1, 10), string(attributes[0].Value))
+	val, exists := event.GetAttribute(AttributeKeyActorType)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "INFERER")
 
-	require.Equal(t, types.AttributeKeyBlockHeight, string(attributes[1].Key))
-	require.Equal(t, "10", string(attributes[1].Value))
+	val, exists = event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
 
-	require.Equal(t, types.AttributeKeyAddresses, string(attributes[2].Key))
-	require.Equal(t, `["address1","address2"]`, string(attributes[2].Value))
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
 
-	require.Equal(t, types.AttributeKeyRewards, string(attributes[3].Key))
-	require.Equal(t, `["100","200"]`, string(attributes[3].Value))
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyRewards)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
 }
 
-func TestEmitNewInfererRewardsSettledEventEmptyScores(t *testing.T) {
+func TestEmitNewInfererRewardsSettledEventWithNoRewards(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	blockHeight := int64(10)
 	rewards := []types.TaskReward{}
 
-	types.EmitNewInfererRewardsSettledEvent(ctx, blockHeight, rewards)
+	types.EmitNewInfererRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 0)
 }
 
-func TestEmitNewForecasterRewardsSettledEvent(t *testing.T) {
-	blockHeight := int64(10)
+func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	rewards := []types.TaskReward{
 		{
 			TopicId: uint64(1),
@@ -231,46 +268,50 @@ func TestEmitNewForecasterRewardsSettledEvent(t *testing.T) {
 		},
 	}
 
-	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	types.EmitNewForecasterRewardsSettledEvent(ctx, blockHeight, rewards)
+	types.EmitNewForecasterRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, types.EventTypeForecasterRewardsSettled, event.Type)
+	require.Equal(t, "emissions.v1.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 4)
+	require.Len(t, attributes, 5)
 
-	require.Equal(t, types.AttributeKeyTopicId, string(attributes[0].Key))
-	require.Equal(t, strconv.FormatUint(rewards[0].TopicId, 10), string(attributes[0].Value))
+	val, exists := event.GetAttribute(AttributeKeyActorType)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "FORECASTER")
 
-	require.Equal(t, types.AttributeKeyBlockHeight, string(attributes[1].Key))
-	require.Equal(t, "10", string(attributes[1].Value))
+	val, exists = event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
 
-	require.Equal(t, types.AttributeKeyAddresses, string(attributes[2].Key))
-	require.Equal(t, `["address1","address2"]`, string(attributes[2].Value))
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
 
-	require.Equal(t, types.AttributeKeyRewards, string(attributes[3].Key))
-	require.Equal(t, `["100","200"]`, string(attributes[3].Value))
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyRewards)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
 }
 
-func TestEmitNewForecasterRewardsSettledEventEmptyScores(t *testing.T) {
+func TestEmitNewForecasterRewardsSettledEventWithNoRewards(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	blockHeight := int64(10)
 	rewards := []types.TaskReward{}
 
-	types.EmitNewForecasterRewardsSettledEvent(ctx, blockHeight, rewards)
+	types.EmitNewForecasterRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 0)
 }
 
-func TestEmitNewReputerAndDelegatorRewardsSettledEvent(t *testing.T) {
-	topicId1 := uint64(1)
+func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	blockHeight := int64(10)
 	rewards := []types.TaskReward{
 		{
 			TopicId: uint64(1),
@@ -284,36 +325,43 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEvent(t *testing.T) {
 		},
 	}
 
-	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, blockHeight, rewards)
+	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, types.EventTypeReputerAndDelegatorRewardsSettled, event.Type)
+	require.Equal(t, "emissions.v1.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 4)
+	require.Len(t, attributes, 5)
 
-	require.Equal(t, types.AttributeKeyTopicId, string(attributes[0].Key))
-	require.Equal(t, strconv.FormatUint(topicId1, 10), string(attributes[0].Value))
+	val, exists := event.GetAttribute(AttributeKeyActorType)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "REPUTER")
 
-	require.Equal(t, types.AttributeKeyBlockHeight, string(attributes[1].Key))
-	require.Equal(t, "10", string(attributes[1].Value))
+	val, exists = event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
 
-	require.Equal(t, types.AttributeKeyAddresses, string(attributes[2].Key))
-	require.Equal(t, `["address1","address2"]`, string(attributes[2].Value))
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
 
-	require.Equal(t, types.AttributeKeyRewards, string(attributes[3].Key))
-	require.Equal(t, `["100","200"]`, string(attributes[3].Value))
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyRewards)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
 }
 
-func TestEmitNewReputerAndDelegatorRewardsSettledEventEmptyScores(t *testing.T) {
+func TestEmitNewReputerAndDelegatorRewardsSettledEventWithNoRewards(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	blockHeight := int64(10)
 	rewards := []types.TaskReward{}
 
-	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, blockHeight, rewards)
+	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 0)
