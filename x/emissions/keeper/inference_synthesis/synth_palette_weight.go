@@ -1,6 +1,8 @@
 package inference_synthesis
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -11,9 +13,14 @@ import (
 // weights using the current regrets
 func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) {
 	var regrets []alloraMath.Dec
-	infererRegrets := p.GetInfererRegretsSlice()
-	forecasterRegrets := p.GetForecasterRegretsSlice()
-	var err error
+	infererRegrets, err := p.GetInfererRegretsSlice()
+	if err != nil {
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer regrets")
+	}
+	forecasterRegrets, err := p.GetForecasterRegretsSlice()
+	if err != nil {
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster regrets")
+	}
 
 	if len(infererRegrets) > 0 {
 		regrets = append(regrets, infererRegrets...)
@@ -180,28 +187,36 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	return ret, nil
 }
 
-func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
+func (p *SynthPalette) GetInfererRegretsSlice() ([]alloraMath.Dec, error) {
 	var regrets []alloraMath.Dec
 	if len(p.InfererRegrets) == 0 {
-		return regrets
+		return regrets, nil
 	}
 	regrets = make([]alloraMath.Dec, len(p.Inferers))
 	for i, worker := range p.Inferers {
-		regrets[i] = p.InfererRegrets[worker].regret
+		if p.InfererRegrets[worker] != nil {
+			regrets[i] = p.InfererRegrets[worker].regret
+		} else {
+			return []alloraMath.Dec{}, errorsmod.Wrapf(fmt.Errorf("nil regret for worker: %v", worker), "Error getting inferer regrets slice")
+		}
 	}
-	return regrets
+	return regrets, nil
 }
 
-func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
+func (p *SynthPalette) GetForecasterRegretsSlice() ([]alloraMath.Dec, error) {
 	var regrets []alloraMath.Dec
 	if len(p.ForecasterRegrets) == 0 {
-		return regrets
+		return regrets, nil
 	}
 	regrets = make([]alloraMath.Dec, len(p.Forecasters))
 	for i, worker := range p.Forecasters {
-		regrets[i] = p.ForecasterRegrets[worker].regret
+		if p.ForecasterRegrets[worker] != nil {
+			regrets[i] = p.ForecasterRegrets[worker].regret
+		} else {
+			return []alloraMath.Dec{}, errorsmod.Wrapf(fmt.Errorf("nil regret for worker: %v", worker), "Error getting forecaster regrets slice")
+		}
 	}
-	return regrets
+	return regrets, nil
 }
 
 func AccumulateWeights(
