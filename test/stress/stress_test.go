@@ -5,6 +5,9 @@ import (
 	"runtime"
 	"testing"
 
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/stretchr/testify/require"
+
 	testCommon "github.com/allora-network/allora-chain/test/common"
 )
 
@@ -51,6 +54,17 @@ func TestStressTestSuite(t *testing.T) {
 	t.Log("Max worker+reputer iterations: ", maxIterations)
 	t.Log("Epoch Length: ", epochLength)
 	t.Log("Use mutex to prepare final report: ", doFinalReport)
+
+	msg := &emissionstypes.MsgUpdateParams{
+		Sender: testConfig.AliceAddr,
+		Params: &emissionstypes.OptionalParams{
+			MinEpochLength: []int64{1},
+		},
+	}
+
+	tx, err := testConfig.Client.BroadcastTx(testConfig.Ctx, testConfig.AliceAcc, msg)
+	require.NoError(t, err)
+	testConfig.Client.WaitForTx(testConfig.Ctx, tx.TxHash)
 
 	t.Log(">>> Test Making Inference <<<")
 	workerReputerCoordinationLoop(

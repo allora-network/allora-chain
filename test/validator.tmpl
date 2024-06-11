@@ -18,6 +18,7 @@
       - --minimum-gas-prices=0uallo
       - --rpc.laddr=tcp://0.0.0.0:26657
       - --p2p.persistent_peers=${PEERS}
+      - --log_level=debug
     ports:
       - ${validatorPort}:26657
     networks:
