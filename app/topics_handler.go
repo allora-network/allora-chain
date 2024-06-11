@@ -160,5 +160,5 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 }
 
 func Logger(ctx sdk.Context) log.Logger {
-	return Logger(ctx).With("module", "topic_handler")
+	return ctx.Logger().With("module", "topic_handler")
 }

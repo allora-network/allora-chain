@@ -528,5 +528,5 @@ func pruneRecordsAfterRewards(
 }
 
 func Logger(ctx sdk.Context) log.Logger {
-	return Logger(ctx).With("module", "rewards")
+	return ctx.Logger().With("module", "rewards")
 }
