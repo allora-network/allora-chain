@@ -2,13 +2,15 @@ package simulation
 
 import (
 	"encoding/hex"
+	"math/rand"
+	"slices"
+	"strings"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/stretchr/testify/require"
-	"math/rand"
-	"strings"
 )
 
 func getGroundTruth() alloraMath.Dec {
@@ -43,6 +45,7 @@ func qFunc(lossData, preData, alpha alloraMath.Dec) (alloraMath.Dec, error) {
 	return newVal, nil
 }
 func calculateLoss(
+	m testCommon.TestConfig,
 	valueBundle *emissionstypes.ValueBundle,
 	groundTruth alloraMath.Dec,
 ) *emissionstypes.ValueBundle {
@@ -102,43 +105,37 @@ func calculateLoss(
 }
 
 func calculateEmaLossArray[T emissionstypes.WorkerAttributedValue | emissionstypes.WithheldWorkerAttributedValue](
-	infererValues []*emissionstypes.WorkerAttributedValue,
+	workerValues []*emissionstypes.WorkerAttributedValue,
 	previousValues []*emissionstypes.WorkerAttributedValue,
 	alpha alloraMath.Dec,
 ) []*T {
 	emaLossValues := make([]*T, 0)
-	for index := 0; index < len(infererValues); index++ {
-		infererInference := infererValues[index]
+	for index := 0; index < len(workerValues); index++ {
+		infererInference := workerValues[index]
 		worker := infererInference.Worker
-		previousValueFound := false
-		previousValue := alloraMath.ZeroDec()
-		for pIndex := 0; pIndex < len(previousValues); pIndex++ {
-			if previousValues[pIndex].Worker == worker {
-				previousValueFound = true
-				previousValue = previousValues[pIndex].Value
-				break
-			}
-		}
-		if previousValueFound {
-			newVal, err := qFunc(infererInference.Value, previousValue, alpha)
-			if err != nil {
-				continue
-			}
-			emaLossValues = append(emaLossValues, &T{
-				Worker: worker,
-				Value:  newVal,
+
+		idx := slices.IndexFunc(previousValues,
+			func(value *emissionstypes.WorkerAttributedValue) bool {
+				return value.Worker == worker
 			})
+		var newValue = alloraMath.ZeroDec()
+		if idx != -1 {
+			newValue, _ = qFunc(infererInference.Value, previousValues[idx].Value, alpha)
 		} else {
-			emaLossValues = append(emaLossValues, &T{
-				Worker: worker,
-				Value:  infererInference.Value,
-			})
+			newValue = infererInference.Value
 		}
+
+		logNewValue, _ := alloraMath.Log10(newValue)
+		emaLossValues = append(emaLossValues, &T{
+			Worker: worker,
+			Value:  logNewValue,
+		})
 	}
 	return emaLossValues
 }
 
 func calculateEmaLoss(
+	m testCommon.TestConfig,
 	lossData *emissionstypes.ValueBundle,
 	previousLosses *emissionstypes.ValueBundle,
 	alpha alloraMath.Dec,
@@ -146,27 +143,19 @@ func calculateEmaLoss(
 	combinedValue := alloraMath.ZeroDec()
 	naiveValue := alloraMath.ZeroDec()
 
-	convertWorkerAttributedValueType := func(values []*emissionstypes.WithheldWorkerAttributedValue) []*emissionstypes.WorkerAttributedValue {
-		res := make([]*emissionstypes.WorkerAttributedValue, 0)
-		for _, value := range values {
-			res = append(res, &emissionstypes.WorkerAttributedValue{
-				Worker: value.Worker,
-				Value:  value.Value,
-			})
-		}
-		return res
-	}
-
 	if previousLosses.CombinedValue.Gt(alloraMath.ZeroDec()) {
-		combinedValue, _ = qFunc(lossData.CombinedValue, previousLosses.CombinedValue, alpha)
+		combinedValueTemp, _ := qFunc(lossData.CombinedValue, previousLosses.CombinedValue, alpha)
+		combinedValue, _ = alloraMath.Log10(combinedValueTemp)
 	} else {
 		combinedValue = lossData.CombinedValue
 	}
 	if previousLosses.NaiveValue.Gt(alloraMath.ZeroDec()) {
-		naiveValue, _ = qFunc(lossData.NaiveValue, previousLosses.NaiveValue, alpha)
+		naiveValueTemp, _ := qFunc(lossData.NaiveValue, previousLosses.NaiveValue, alpha)
+		naiveValue, _ = alloraMath.Log10(naiveValueTemp)
 	} else {
 		naiveValue = lossData.NaiveValue
 	}
+	// fmt.Printf("Previous %s, current %s, new %s\n", previousLosses.CombinedValue.String(), lossData.CombinedValue.String(), combinedValue.String())
 	infererValues := calculateEmaLossArray[emissionstypes.WorkerAttributedValue](
 		lossData.InfererValues, previousLosses.InfererValues, alpha)
 	forecasterValues := calculateEmaLossArray[emissionstypes.WorkerAttributedValue](
@@ -195,19 +184,19 @@ func calculateEmaLoss(
 func generateValueBundle(
 	m testCommon.TestConfig,
 	topicId uint64,
-	currentLossNonce,
+	lastInferenceNonce,
 	prevLossNonce *emissionstypes.Nonce,
-) (emissionstypes.ValueBundle, error) {
+) (emissionstypes.ValueBundle, alloraMath.Dec, error) {
 	ALPHA := alloraMath.MustNewDecFromString("0.1")
 	groundTruth := getGroundTruth()
-	valueBundle, err := getNetworkInferencesAtBlock(m, topicId, currentLossNonce.BlockHeight, prevLossNonce.BlockHeight)
+	valueBundle, err := getNetworkInferencesAtBlock(m, topicId, lastInferenceNonce.BlockHeight, prevLossNonce.BlockHeight)
 	if err != nil {
-		return emissionstypes.ValueBundle{}, err
+		return emissionstypes.ValueBundle{}, alloraMath.ZeroDec(), err
 	}
 	prevLoss := getNetworkLossBundleAtBlock(m, topicId, prevLossNonce.BlockHeight)
-	lossData := calculateLoss(valueBundle, groundTruth)
-	newLoss := calculateEmaLoss(lossData, prevLoss, ALPHA)
-	return newLoss, nil
+	lossData := calculateLoss(m, valueBundle, groundTruth)
+	newLoss := calculateEmaLoss(m, lossData, prevLoss, ALPHA)
+	return newLoss, groundTruth, nil
 }
 
 // Generate a ReputerValueBundle:of
@@ -243,17 +232,19 @@ func insertReputerBulk(
 	insertedBlockHeight int64,
 	prevLossHeight int64,
 	reputers []testCommon.AccountAndAddress,
-) (int64, error) {
+) (int64, []*emissionstypes.ReputerValueBundle, []alloraMath.Dec, error) {
 	leaderIndex := rand.Intn(len(reputers))
 	leaderReputer := reputers[leaderIndex]
+	groundTruths := make([]alloraMath.Dec, 0)
 	var blockHeightCurrent int64 = 0
-	currentLossEpoch := &emissionstypes.Nonce{
+	lastInferenceEpoch := &emissionstypes.Nonce{
 		BlockHeight: insertedBlockHeight,
 	}
 	prevLossEpoch := &emissionstypes.Nonce{
 		BlockHeight: prevLossHeight,
 	}
 	blockHeightCurrent = insertedBlockHeight
+	var reputerValueBundles []*emissionstypes.ReputerValueBundle
 	for index := 0; index < RetryTime; index++ {
 		// Nonces are last two blockHeights
 		reputerNonce := &emissionstypes.Nonce{
@@ -262,10 +253,12 @@ func insertReputerBulk(
 		workerNonce := &emissionstypes.Nonce{
 			BlockHeight: blockHeightCurrent,
 		}
-		reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
+
+		reputerValueBundles = make([]*emissionstypes.ReputerValueBundle, 0)
+
 		for index, reputer := range reputers {
 			reputerAccountName := getActorsAccountName(REPUTER_TYPE, seed, index)
-			valueBundle, err := generateValueBundle(m, topic.Id, currentLossEpoch, prevLossEpoch)
+			valueBundle, groundTruth, err := generateValueBundle(m, topic.Id, lastInferenceEpoch, prevLossEpoch)
 			if err != nil {
 				continue
 			}
@@ -275,8 +268,8 @@ func insertReputerBulk(
 			}
 			reputerValueBundle := generateSingleReputerValueBundle(m, reputerAccountName, reputer.Addr, valueBundle)
 			reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
+			groundTruths = append(groundTruths, groundTruth)
 		}
-
 		reputerValueBundleMsg := &emissionstypes.MsgInsertBulkReputerPayload{
 			Sender:  leaderReputer.Addr,
 			TopicId: topic.Id,
@@ -297,11 +290,11 @@ func insertReputerBulk(
 					continue
 				}
 			}
-			return 0, err
+			return 0, nil, nil, err
 		}
 		_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
 		m.T.Log("Inserted Reputer Bulk", blockHeightCurrent)
 		break
 	}
-	return blockHeightCurrent, nil
+	return blockHeightCurrent, reputerValueBundles, groundTruths, nil
 }

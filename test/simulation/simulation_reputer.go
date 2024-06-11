@@ -2,8 +2,9 @@ package simulation
 
 import (
 	"fmt"
-	testCommon "github.com/allora-network/allora-chain/test/common"
 	"time"
+
+	testCommon "github.com/allora-network/allora-chain/test/common"
 )
 
 func ReputeSimulation(
@@ -19,7 +20,7 @@ func ReputeSimulation(
 	iterationTime := time.Duration(EpochLength) * approximateSecondsPerBlock
 	inferers, forecasters, reputers := getActors(m, infererCount, forecasterCount, reputerCount)
 	var prevLossHeight int64 = 0
-	FormatReport(inferers, forecasters)
+	FormatReport(topicId, inferers, forecasters, reputers)
 	for index := 0; index < iteration; index++ {
 		topic, _ := getTopic(m, topicId)
 		startIteration := time.Now()
@@ -31,11 +32,13 @@ func ReputeSimulation(
 		elapsedIteration := time.Since(startIteration)
 		sleepingTime := iterationTime - elapsedIteration
 		time.Sleep(sleepingTime)
-		blockHeight, err := insertReputerBulk(m, seed, topic, insertedBlockHeight, prevLossHeight, reputers)
+		blockHeight, reputerValueBundles, groundTruths, err := insertReputerBulk(m, seed, topic, insertedBlockHeight, prevLossHeight, reputers)
 		if err != nil {
 			continue
 		}
-		prevLossHeight = blockHeight
-		WorkReport(m, topicId, index+1, blockHeight, inferers, forecasters, reputers)
+		if blockHeight != 0 {
+			prevLossHeight = blockHeight
+		}
+		WorkReport(m, topicId, index+1, blockHeight, inferers, forecasters, reputers, reputerValueBundles, groundTruths)
 	}
 }

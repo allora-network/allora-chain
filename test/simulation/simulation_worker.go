@@ -2,13 +2,14 @@ package simulation
 
 import (
 	"encoding/hex"
+	"math/rand"
+	"strings"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/stretchr/testify/require"
-	"math/rand"
-	"strings"
 )
 
 const RetryTime = 3
@@ -28,8 +29,8 @@ func insertWorkerBulk(
 		blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
 		// Get Bundles
 		workerDataBundles := make([]*emissionstypes.WorkerDataBundle, 0)
-		for _, inferer := range inferers {
-			forecasterIndex := rand.Intn(len(forecasters))
+		for index, inferer := range inferers {
+			forecasterIndex := index % len(forecasters)
 			workerDataBundles = append(workerDataBundles,
 				generateSingleWorkerBundle(m, topic.Id, blockHeightCurrent, inferer.Addr, forecasters[forecasterIndex].Addr, inferers, leaderWorker.Acc.Name))
 		}

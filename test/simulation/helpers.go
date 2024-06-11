@@ -1,16 +1,19 @@
 package simulation
 
 import (
+	"context"
 	"fmt"
+	"strconv"
+	"time"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"strconv"
-	"time"
 )
 
 type ACTOR_NAME = string
@@ -20,6 +23,7 @@ const secondsInAMonth = 2592000
 const INFERER_TYPE = "Inferer"
 const FORECASTER_TYPE = "Forecaster"
 const REPUTER_TYPE = "Reputer"
+const MAX_NUMBER_STAKE_QUERIES_PER_REQUEST = 100
 
 // get the emissions params from outside the chain
 func getEmissionsParams(m testCommon.TestConfig) (emissionstypes.Params, error) {
@@ -196,4 +200,35 @@ func getActors(
 	}
 
 	return inferers, forecasters, reputers
+}
+
+func convertWorkerAttributedValueType(
+	values []*emissionstypes.WithheldWorkerAttributedValue,
+) []*emissionstypes.WorkerAttributedValue {
+	res := make([]*emissionstypes.WorkerAttributedValue, 0)
+	for _, value := range values {
+		res = append(res, &emissionstypes.WorkerAttributedValue{
+			Worker: value.Worker,
+			Value:  value.Value,
+		})
+	}
+	return res
+}
+
+// get from the emissions module what the reputer's stake is
+func getReputerStake(
+	ctx context.Context,
+	queryClient types.QueryClient,
+	topicId uint64,
+	reputerAddress string,
+) (alloraMath.Dec, error) {
+	req := &types.QueryReputerStakeInTopicRequest{
+		Address: reputerAddress,
+		TopicId: topicId,
+	}
+	res, err := queryClient.GetReputerStakeInTopic(ctx, req)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	return alloraMath.MustNewDecFromString(res.Amount.String()), nil
 }
