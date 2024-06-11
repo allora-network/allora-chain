@@ -1,6 +1,8 @@
 package inference_synthesis
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -130,10 +132,14 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 // Requires: forecasts, inferenceByWorker, allInferersAreNew, networkCombinedLoss, epsilon, pNorm, cNorm
 // Updates: forecastImpliedInferenceByWorker
 func (p *SynthPalette) UpdateForecastImpliedInferences() error {
+	p.Logger.Debug(fmt.Sprintf("Calculating forecast-implied inferences for topic %v", p.TopicId))
+
 	I_i, err := p.CalcForecastImpliedInferences()
 	if err != nil {
 		return errorsmod.Wrapf(err, "error calculating forecast-implied inferences")
 	}
+
+	p.Logger.Debug(fmt.Sprintf("Forecast-implied inferences: %v", I_i))
 
 	p.ForecastImpliedInferenceByWorker = I_i
 	return nil
