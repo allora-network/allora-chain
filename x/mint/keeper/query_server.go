@@ -47,9 +47,59 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 		Mul(math.NewInt(12)).
 		ToLegacyDec()
 	totalSupply := q.k.GetTotalCurrTokenSupply(ctx).Amount.ToLegacyDec()
+	// params, err := q.k.GetParams(ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// totalSupply := params.MaxSupply.ToLegacyDec()
 	inflation := EmissionPerYearAtCurrentBlockEmissionRate.Quo(totalSupply).MulInt64(100)
 	ret := types.QueryInflationResponse{
 		Inflation: inflation,
 	}
 	return &ret, nil
+}
+
+// PreviousBlockEmission returns the amount of tokens emitted last block.
+// THIS IS NOT THE AMOUNT OF NEW TOKENS CREATED necessarily
+// new tokens minted is a function of the amount of paid for inferences
+// and the expected emissions
+func (q queryServer) PreviousBlockEmission(
+	ctx context.Context,
+	_ *types.QueryPreviousBlockEmissionRequest,
+) (*types.QueryPreviousBlockEmissionResponse, error) {
+	blockEmission, err := q.k.PreviousBlockEmission.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryPreviousBlockEmissionResponse{PreviousBlockEmission: blockEmission}, nil
+}
+
+// return ecosystem tokens minted to date over the whole history of the chain
+func (q queryServer) EcosystemTokensMinted(
+	ctx context.Context,
+	_ *types.QueryEcosystemTokensMintedRequest,
+) (*types.QueryEcosystemTokensMintedResponse, error) {
+	ecosystemTokensMinted, err := q.k.EcosystemTokensMinted.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryEcosystemTokensMintedResponse{EcosystemTokensMinted: ecosystemTokensMinted}, nil
+}
+
+// return the Previous reward emission per unit staked token
+// used for debugging token emissions rates
+func (q queryServer) PreviousRewardEmissionPerUnitStakedToken(
+	ctx context.Context,
+	_ *types.QueryPreviousRewardEmissionPerUnitStakedTokenRequest,
+) (*types.QueryPreviousRewardEmissionPerUnitStakedTokenResponse, error) {
+	rewardEmissionPerUnitStakedToken, err := q.k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryPreviousRewardEmissionPerUnitStakedTokenResponse{
+		PreviousRewardEmissionPerUnitStakedToken: rewardEmissionPerUnitStakedToken,
+	}, nil
 }

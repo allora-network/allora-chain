@@ -19,6 +19,18 @@ service Query {
   rpc Inflation(QueryInflationRequest) returns (QueryInflationResponse) {
     option (google.api.http).get = "/mint/v1beta1/inflation";
   }
+  // The previous block emission (NOT THE SAME AS INFLATION)
+  rpc PreviousBlockEmission(QueryPreviousBlockEmissionRequest) returns (QueryPreviousBlockEmissionResponse) {
+    option (google.api.http).get = "/mint/v1beta1/previous_block_emission";
+  }
+  // the total amount of newly minted tokens over the whole history of the chain
+  rpc EcosystemTokensMinted(QueryEcosystemTokensMintedRequest) returns (QueryEcosystemTokensMintedResponse) {
+    option (google.api.http).get = "/mint/v1beta1/ecosystem_tokens_minted";
+  }
+  // the previous reward emission per unit staked token - used for debugging
+  rpc PreviousRewardEmissionPerUnitStakedToken(QueryPreviousRewardEmissionPerUnitStakedTokenRequest) returns (QueryPreviousRewardEmissionPerUnitStakedTokenResponse) {
+    option (google.api.http).get = "/mint/v1beta1/previous_reward_emission_per_unit_staked_token";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -44,3 +56,45 @@ message QueryInflationResponse {
     (amino.dont_omitempty) = true
   ];
 }
+
+// query for getting the previous block emission (NOT THE SAME AS INFLATION)
+message QueryPreviousBlockEmissionRequest {}
+
+// response for getting the previous block emission (NOT THE SAME AS INFLATION)
+message QueryPreviousBlockEmissionResponse {
+  bytes previous_block_emission = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// query for getting the total amount of ecosystem tokens minted
+// this is the total amount of new tokens ever created
+message QueryEcosystemTokensMintedRequest {}
+
+// response for getting the total amount of ecosystem tokens minted
+// this is the total amount of new tokens ever created
+message QueryEcosystemTokensMintedResponse {
+  bytes ecosystem_tokens_minted = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// query for getting the previous reward emission per unit staked token
+message QueryPreviousRewardEmissionPerUnitStakedTokenRequest {}
+
+// response for getting the previous reward emission per unit staked token
+message QueryPreviousRewardEmissionPerUnitStakedTokenResponse {
+  bytes previous_reward_emission_per_unit_staked_token = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+

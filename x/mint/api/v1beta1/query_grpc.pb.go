@@ -19,8 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName    = "/mint.v1beta1.Query/Params"
-	Query_Inflation_FullMethodName = "/mint.v1beta1.Query/Inflation"
+	Query_Params_FullMethodName                                   = "/mint.v1beta1.Query/Params"
+	Query_Inflation_FullMethodName                                = "/mint.v1beta1.Query/Inflation"
+	Query_PreviousBlockEmission_FullMethodName                    = "/mint.v1beta1.Query/PreviousBlockEmission"
+	Query_EcosystemTokensMinted_FullMethodName                    = "/mint.v1beta1.Query/EcosystemTokensMinted"
+	Query_PreviousRewardEmissionPerUnitStakedToken_FullMethodName = "/mint.v1beta1.Query/PreviousRewardEmissionPerUnitStakedToken"
 )
 
 // QueryClient is the client API for Query service.
@@ -31,6 +34,12 @@ type QueryClient interface {
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// Inflation returns the current minting inflation value.
 	Inflation(ctx context.Context, in *QueryInflationRequest, opts ...grpc.CallOption) (*QueryInflationResponse, error)
+	// The previous block emission (NOT THE SAME AS INFLATION)
+	PreviousBlockEmission(ctx context.Context, in *QueryPreviousBlockEmissionRequest, opts ...grpc.CallOption) (*QueryPreviousBlockEmissionResponse, error)
+	// the total amount of newly minted tokens over the whole history of the chain
+	EcosystemTokensMinted(ctx context.Context, in *QueryEcosystemTokensMintedRequest, opts ...grpc.CallOption) (*QueryEcosystemTokensMintedResponse, error)
+	// the previous reward emission per unit staked token - used for debugging
+	PreviousRewardEmissionPerUnitStakedToken(ctx context.Context, in *QueryPreviousRewardEmissionPerUnitStakedTokenRequest, opts ...grpc.CallOption) (*QueryPreviousRewardEmissionPerUnitStakedTokenResponse, error)
 }
 
 type queryClient struct {
@@ -59,6 +68,33 @@ func (c *queryClient) Inflation(ctx context.Context, in *QueryInflationRequest, 
 	return out, nil
 }
 
+func (c *queryClient) PreviousBlockEmission(ctx context.Context, in *QueryPreviousBlockEmissionRequest, opts ...grpc.CallOption) (*QueryPreviousBlockEmissionResponse, error) {
+	out := new(QueryPreviousBlockEmissionResponse)
+	err := c.cc.Invoke(ctx, Query_PreviousBlockEmission_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) EcosystemTokensMinted(ctx context.Context, in *QueryEcosystemTokensMintedRequest, opts ...grpc.CallOption) (*QueryEcosystemTokensMintedResponse, error) {
+	out := new(QueryEcosystemTokensMintedResponse)
+	err := c.cc.Invoke(ctx, Query_EcosystemTokensMinted_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) PreviousRewardEmissionPerUnitStakedToken(ctx context.Context, in *QueryPreviousRewardEmissionPerUnitStakedTokenRequest, opts ...grpc.CallOption) (*QueryPreviousRewardEmissionPerUnitStakedTokenResponse, error) {
+	out := new(QueryPreviousRewardEmissionPerUnitStakedTokenResponse)
+	err := c.cc.Invoke(ctx, Query_PreviousRewardEmissionPerUnitStakedToken_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -67,6 +103,12 @@ type QueryServer interface {
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// Inflation returns the current minting inflation value.
 	Inflation(context.Context, *QueryInflationRequest) (*QueryInflationResponse, error)
+	// The previous block emission (NOT THE SAME AS INFLATION)
+	PreviousBlockEmission(context.Context, *QueryPreviousBlockEmissionRequest) (*QueryPreviousBlockEmissionResponse, error)
+	// the total amount of newly minted tokens over the whole history of the chain
+	EcosystemTokensMinted(context.Context, *QueryEcosystemTokensMintedRequest) (*QueryEcosystemTokensMintedResponse, error)
+	// the previous reward emission per unit staked token - used for debugging
+	PreviousRewardEmissionPerUnitStakedToken(context.Context, *QueryPreviousRewardEmissionPerUnitStakedTokenRequest) (*QueryPreviousRewardEmissionPerUnitStakedTokenResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -79,6 +121,15 @@ func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*Q
 }
 func (UnimplementedQueryServer) Inflation(context.Context, *QueryInflationRequest) (*QueryInflationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Inflation not implemented")
+}
+func (UnimplementedQueryServer) PreviousBlockEmission(context.Context, *QueryPreviousBlockEmissionRequest) (*QueryPreviousBlockEmissionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PreviousBlockEmission not implemented")
+}
+func (UnimplementedQueryServer) EcosystemTokensMinted(context.Context, *QueryEcosystemTokensMintedRequest) (*QueryEcosystemTokensMintedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EcosystemTokensMinted not implemented")
+}
+func (UnimplementedQueryServer) PreviousRewardEmissionPerUnitStakedToken(context.Context, *QueryPreviousRewardEmissionPerUnitStakedTokenRequest) (*QueryPreviousRewardEmissionPerUnitStakedTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PreviousRewardEmissionPerUnitStakedToken not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -129,6 +180,60 @@ func _Query_Inflation_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_PreviousBlockEmission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousBlockEmissionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).PreviousBlockEmission(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_PreviousBlockEmission_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).PreviousBlockEmission(ctx, req.(*QueryPreviousBlockEmissionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_EcosystemTokensMinted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryEcosystemTokensMintedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).EcosystemTokensMinted(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_EcosystemTokensMinted_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).EcosystemTokensMinted(ctx, req.(*QueryEcosystemTokensMintedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_PreviousRewardEmissionPerUnitStakedToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousRewardEmissionPerUnitStakedTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).PreviousRewardEmissionPerUnitStakedToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_PreviousRewardEmissionPerUnitStakedToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).PreviousRewardEmissionPerUnitStakedToken(ctx, req.(*QueryPreviousRewardEmissionPerUnitStakedTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -143,6 +248,18 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Inflation",
 			Handler:    _Query_Inflation_Handler,
+		},
+		{
+			MethodName: "PreviousBlockEmission",
+			Handler:    _Query_PreviousBlockEmission_Handler,
+		},
+		{
+			MethodName: "EcosystemTokensMinted",
+			Handler:    _Query_EcosystemTokensMinted_Handler,
+		},
+		{
+			MethodName: "PreviousRewardEmissionPerUnitStakedToken",
+			Handler:    _Query_PreviousRewardEmissionPerUnitStakedToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
