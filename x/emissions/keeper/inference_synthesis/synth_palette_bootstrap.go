@@ -84,6 +84,7 @@ func (p SynthPalette) Clone() SynthPalette {
 	return SynthPalette{
 		Ctx:                              p.Ctx,
 		K:                                p.K,
+		Logger:                           p.Logger,
 		TopicId:                          p.TopicId,
 		Inferers:                         append([]Worker(nil), p.Inferers...),
 		InferenceByWorker:                inferenceByWorker,
