@@ -1,8 +1,10 @@
 package inference_synthesis
 
 import (
+	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func CosmosIntOneE18() cosmosMath.Int {
@@ -29,4 +31,8 @@ func MakeMapFromForecasterToTheirForecast(forecasts []*emissions.Forecast) map[W
 		forecastsByWorker[forecast.Forecaster] = forecast
 	}
 	return forecastsByWorker
+}
+
+func Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", "inference_synthesis")
 }

@@ -45,7 +45,7 @@ func SortTopicsByWeightDescWithRandomTiebreaker(topicIds []TopicId, weights map[
 
 // Returns a map of topicId to weights of the top N topics by weight in descending order
 // It is assumed that topicIds is of a reasonable size, throttled by perhaps MaxTopicsPerBlock global param
-func SkimTopTopicsByWeightDesc(sdkCtx sdk.Context, weights map[TopicId]*alloraMath.Dec, N uint64, block BlockHeight) (map[TopicId]*alloraMath.Dec, []TopicId) {
+func SkimTopTopicsByWeightDesc(ctx sdk.Context, weights map[TopicId]*alloraMath.Dec, N uint64, block BlockHeight) (map[TopicId]*alloraMath.Dec, []TopicId) {
 	topicIds := make([]TopicId, 0, len(weights))
 	for topicId := range weights {
 		topicIds = append(topicIds, topicId)
@@ -71,7 +71,7 @@ func SkimTopTopicsByWeightDesc(sdkCtx sdk.Context, weights map[TopicId]*alloraMa
 		listOfTopN[i] = sortedTopicIds[i]
 	}
 
-	sdkCtx.Logger().Debug(
+	Logger(ctx).Debug(
 		fmt.Sprintf("SkimTopTopicsByWeightDesc took top %d topics out of %d",
 			numberToAdd, len(sortedTopicIds)))
 

@@ -1,6 +1,8 @@
 package inference_synthesis
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -8,6 +10,8 @@ import (
 // Bootstraps xRegrets, allxsAreNew (x="inferer"|"forecasters") for the inferers and forecasters in the palette
 // Just requires these props:: ctx, k, topicId, inferers, forecasts
 func (p *SynthPalette) BootstrapRegretData() error {
+	p.Logger.Debug(fmt.Sprintf("Bootstrapping regret data for topic %v", p.TopicId))
+
 	p.InferersNewStatus = InferersAllNew
 
 	for _, inferer := range p.Inferers {
@@ -26,6 +30,7 @@ func (p *SynthPalette) BootstrapRegretData() error {
 			}
 		}
 
+		p.Logger.Debug(fmt.Sprintf("Inferer %v has regret %v", inferer, regret.Value))
 		p.InfererRegrets[inferer] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
@@ -38,6 +43,7 @@ func (p *SynthPalette) BootstrapRegretData() error {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
 
+		p.Logger.Debug(fmt.Sprintf("Forecaster %v has regret %v", forecaster, regret.Value))
 		p.ForecasterRegrets[forecaster] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
@@ -78,6 +84,7 @@ func (p SynthPalette) Clone() SynthPalette {
 	return SynthPalette{
 		Ctx:                              p.Ctx,
 		K:                                p.K,
+		Logger:                           p.Logger,
 		TopicId:                          p.TopicId,
 		Inferers:                         append([]Worker(nil), p.Inferers...),
 		InferenceByWorker:                inferenceByWorker,

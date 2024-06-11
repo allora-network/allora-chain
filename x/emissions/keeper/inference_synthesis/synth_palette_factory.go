@@ -15,6 +15,7 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 	palette := SynthPalette{
 		Ctx:                              req.Ctx,
 		K:                                req.K,
+		Logger:                           Logger(req.Ctx),
 		TopicId:                          req.TopicId,
 		Inferers:                         sortedInferers,
 		InferenceByWorker:                inferenceByWorker,
@@ -33,11 +34,14 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 	}
 
 	// Populates: infererRegrets, forecasterRegrets, allInferersAreNew
-	palette.BootstrapRegretData()
+	err := palette.BootstrapRegretData()
+	if err != nil {
+		return SynthPalette{}, err
+	}
 
 	paletteCopy := palette.Clone()
 	// Populates: forecastImpliedInferenceByWorker,
-	err := paletteCopy.UpdateForecastImpliedInferences()
+	err = paletteCopy.UpdateForecastImpliedInferences()
 	if err != nil {
 		return SynthPalette{}, err
 	}

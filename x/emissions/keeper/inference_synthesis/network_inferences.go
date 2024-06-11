@@ -23,6 +23,8 @@ func GetNetworkInferencesAtBlock(
 	inferencesNonce BlockHeight,
 	previousLossNonce BlockHeight,
 ) (*emissions.ValueBundle, error) {
+	Logger(ctx).Debug(fmt.Sprintf("Calculating network inferences for topic %v at inference nonce %v with previous loss nonce %v", topicId, inferencesNonce, previousLossNonce))
+
 	networkInferences := &emissions.ValueBundle{
 		TopicId:          topicId,
 		InfererValues:    make([]*emissions.WorkerAttributedValue, 0),
@@ -60,7 +62,7 @@ func GetNetworkInferencesAtBlock(
 
 		reputerReportedLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, previousLossNonce)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error getting reputer losses: %s", err.Error()))
+			Logger(ctx).Warn(fmt.Sprintf("Error getting reputer losses: %s", err.Error()))
 			return networkInferences, nil
 		}
 
@@ -69,7 +71,7 @@ func GetNetworkInferencesAtBlock(
 		for _, bundle := range reputerReportedLosses.ReputerValueBundles {
 			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, bundle.ValueBundle.Reputer)
 			if err != nil {
-				ctx.Logger().Warn(fmt.Sprintf("Error getting stake on reputer: %s", err.Error()))
+				Logger(ctx).Warn(fmt.Sprintf("Error getting stake on reputer: %s", err.Error()))
 				return networkInferences, nil
 			}
 			stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
@@ -81,14 +83,16 @@ func GetNetworkInferencesAtBlock(
 			moduleParams.Epsilon,
 		)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
+			Logger(ctx).Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
 			return networkInferences, nil
 		}
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
+			Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 			return networkInferences, nil
 		}
+
+		Logger(ctx).Debug(fmt.Sprintf("Creating network inferences for topic %v with %v inferences and %v forecasts", topicId, len(inferences.Inferences), len(forecasts.Forecasts)))
 		networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
 			SynthRequest{
 				Ctx:                 ctx,
@@ -104,7 +108,7 @@ func GetNetworkInferencesAtBlock(
 			},
 		)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
+			Logger(ctx).Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
 			return nil, err
 		}
 		networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
