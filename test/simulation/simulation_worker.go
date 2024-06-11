@@ -2,8 +2,11 @@ package simulation
 
 import (
 	"encoding/hex"
+	"math"
 	"math/rand"
+	"strconv"
 	"strings"
+	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
@@ -13,6 +16,19 @@ import (
 )
 
 const RetryTime = 3
+
+func generateForeacstInitValue(inferenceVal alloraMath.Dec) alloraMath.Dec {
+	rand.Seed(time.Now().UnixNano())
+	forecast_context := 1 / (1 + math.Exp(-1*rand.Float64()))
+	forecast_bias := rand.Float64() * forecast_context * 0.3
+	forecast_error := (-0.222 + rand.Float64()*0.398) * forecast_context * 0.3
+	start := math.Min(forecast_bias, forecast_error)
+	end := math.Max(forecast_bias, forecast_error)
+	randVal := start + rand.Float64()*(end-start)
+	mul := alloraMath.MustNewDecFromString(strconv.FormatFloat(randVal, 'f', -1, 64))
+	initVal, _ := inferenceVal.Quo(mul)
+	return initVal
+}
 
 // Inserts bulk inference and forecast data for a worker
 func insertWorkerBulk(
@@ -76,14 +92,14 @@ func generateSingleWorkerBundle(
 	signerName string,
 ) *emissionstypes.WorkerDataBundle {
 	// Iterate workerAddresses to get the worker address, and generate as many forecasts as there are workers
+	infererValue := alloraMath.NewDecFromInt64(int64(rand.Intn(300) + 3000))
 	forecastElements := make([]*emissionstypes.ForecastElement, 0)
 	for _, inferer := range inferers {
 		forecastElements = append(forecastElements, &emissionstypes.ForecastElement{
 			Inferer: inferer.Addr,
-			Value:   alloraMath.NewDecFromInt64(int64(rand.Intn(51) + 50)),
+			Value:   generateForeacstInitValue(infererValue),
 		})
 	}
-	infererValue := alloraMath.NewDecFromInt64(int64(rand.Intn(300) + 3000))
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerDataBundle := &emissionstypes.WorkerDataBundle{
