@@ -585,18 +585,18 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Topic 1 should have less revenue after rewards distribution -> rewards distributed
 	s.Require().True(
-		beforeRewardsTopic1FeeRevenue.Revenue.GT(afterRewardsTopic1FeeRevenue.Revenue),
+		beforeRewardsTopic1FeeRevenue.GT(afterRewardsTopic1FeeRevenue),
 		"Topic 1 should lose influence of their fee revenue: %s > %s",
-		beforeRewardsTopic1FeeRevenue.Revenue.String(),
-		afterRewardsTopic1FeeRevenue.Revenue.String(),
+		beforeRewardsTopic1FeeRevenue.String(),
+		afterRewardsTopic1FeeRevenue.String(),
 	)
 	// Topic 2 should also have less revenue after rewards distribution as topic rewards
 	// are shared among all topics whose epoch lengths modulo the current block height are 0
 	s.Require().True(
-		beforeRewardsTopic2FeeRevenue.Revenue.GT(afterRewardsTopic2FeeRevenue.Revenue),
+		beforeRewardsTopic2FeeRevenue.GT(afterRewardsTopic2FeeRevenue),
 		"Topic 2 should lose influence of their fee revenue: %s > %s",
-		beforeRewardsTopic2FeeRevenue.Revenue.String(),
-		afterRewardsTopic2FeeRevenue.Revenue.String(),
+		beforeRewardsTopic2FeeRevenue.String(),
+		afterRewardsTopic2FeeRevenue.String(),
 	)
 }
 

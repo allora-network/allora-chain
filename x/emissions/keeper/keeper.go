@@ -117,7 +117,7 @@ type Keeper struct {
 	reputers collections.Map[LibP2pKey, types.OffchainNode]
 
 	// fee revenue collected by a topic over the course of the last reward cadence
-	topicFeeRevenue collections.Map[TopicId, types.TopicFeeRevenue]
+	topicFeeRevenue collections.Map[TopicId, cosmosMath.Int]
 
 	// store previous weights for exponential moving average in rewards calc
 	previousTopicWeight collections.Map[TopicId, alloraMath.Dec]
@@ -195,7 +195,7 @@ func NewKeeper(
 		delegateStakePlacement:                   collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegatorInfo](cdc)),
 		stakeUponReputer:                         collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
 		delegateRewardPerShare:                   collections.NewMap(sb, types.DelegateRewardPerShare, "delegate_reward_per_share", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		topicFeeRevenue:                          collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
+		topicFeeRevenue:                          collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, sdk.IntValue),
 		previousTopicWeight:                      collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
 		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
@@ -1251,8 +1251,11 @@ func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (
 // Returns ((0,0), true) if there was no prior topic weight set, else ((x,y), false) where x,y!=0
 func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (alloraMath.Dec, bool, error) {
 	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
-	if errors.Is(err, collections.ErrNotFound) {
-		return alloraMath.ZeroDec(), true, nil
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), true, nil
+		}
+		return alloraMath.ZeroDec(), false, err
 	}
 	return topicWeight, false, err
 }
@@ -1389,13 +1392,13 @@ func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId
 /// TOPIC FEE REVENUE
 
 // Get the amount of fee revenue collected by a topic
-func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types.TopicFeeRevenue, error) {
+func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (cosmosMath.Int, error) {
 	feeRev, err := k.topicFeeRevenue.Get(ctx, topicId)
-	if errors.Is(err, collections.ErrNotFound) {
-		return types.TopicFeeRevenue{
-			Epoch:   0,
-			Revenue: cosmosMath.ZeroInt(),
-		}, nil
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.ZeroInt(), nil
+		}
+		return cosmosMath.ZeroInt(), err
 	}
 	return feeRev, nil
 }
@@ -1406,11 +1409,8 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 	if err != nil {
 		return err
 	}
-	newTopicFeeRevenue := types.TopicFeeRevenue{
-		Epoch:   topicFeeRevenue.Epoch,
-		Revenue: topicFeeRevenue.Revenue.Add(amount),
-	}
-	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
+	topicFeeRevenue = topicFeeRevenue.Add(amount)
+	return k.topicFeeRevenue.Set(ctx, topicId, topicFeeRevenue)
 }
 
 // Drop the fee revenue by the global Ecosystem bucket drip amount
@@ -1419,23 +1419,22 @@ func (k *Keeper) DripTopicFeeRevenue(ctx context.Context, topicId TopicId, block
 	if err != nil {
 		return err
 	}
-	newTopicFeeRevenue := types.TopicFeeRevenue{
-		Epoch:   block,
-		Revenue: cosmosMath.ZeroInt(),
-	}
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
 	epsilon := moduleParams.Epsilon
 	topicFeeRevenueDecayRate := moduleParams.TopicFeeRevenueDecayRate
-	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue.Revenue)
+
+	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue)
+	newTopicFeeRevenue := cosmosMath.ZeroInt()
 	if topicFeeRevenueDec.Gt(epsilon) {
 		val, err := alloraMath.CalcExpDecay(topicFeeRevenueDec, topicFeeRevenueDecayRate)
 		if err != nil {
 			return err
 		}
-		newTopicFeeRevenue.Revenue = val.SdkIntTrim()
+		newTopicFeeRevenue = val.SdkIntTrim()
 	}
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 }

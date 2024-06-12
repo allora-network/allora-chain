@@ -52,7 +52,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 		return nil, err
 	}
 
-	err = ms.ActivateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId, cosmosMath.Int(msg.Amount))
+	err = ms.ActivateTopicIfWeightAtLeastGlobalMin(ctx, msg.TopicId, msg.Amount)
 	return &types.MsgAddStakeResponse{}, err
 }
 

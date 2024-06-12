@@ -29,14 +29,3 @@ message Topic {
 message TopicList {
   repeated Topic topics = 1;
 }
-
-// stores the amount of fees collected by a topic in the last reward epoch
-message TopicFeeRevenue {
-  int64 epoch = 1;  // block height of last topic cadence in which rewards were calculated
-  string revenue = 2 [
-    (cosmos_proto.scalar) = "cosmos.Int",
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
-}
