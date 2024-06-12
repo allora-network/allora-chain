@@ -1403,7 +1403,7 @@ func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (cosmo
 	return feeRev, nil
 }
 
-// Add to the fee revenue collected by a topic incurred at a block
+// Add to the fee revenue collected by a topic
 func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount cosmosMath.Int) error {
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
