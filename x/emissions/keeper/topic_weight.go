@@ -64,7 +64,7 @@ func (k *Keeper) GetCurrentTopicWeight(
 	}
 
 	// Calc target weight using fees, epoch length, stake, and params
-	newFeeRevenue := cosmosMath.NewIntFromBigInt(additionalRevenue.BigInt()).Add(topicFeeRevenue)
+	newFeeRevenue := additionalRevenue.Add(topicFeeRevenue)
 	feeRevenue, err := alloraMath.NewDecFromSdkInt(newFeeRevenue)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic fee revenue to dec")

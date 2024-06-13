@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"cosmossdk.io/collections"
-	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -39,8 +38,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	// Check the sender has enough funds to add the stake
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// Send the funds
-	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, msg.Amount))
 	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, types.AlloraStakingAccountName, coins)
 	if err != nil {
 		return nil, err
@@ -121,8 +119,7 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 	// Check the module has enough funds to send back to the sender
 	// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// Send the funds
-	amountInt := cosmosMath.NewIntFromBigInt(stakeRemoval.Placement.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, stakeRemoval.Placement.Amount))
 	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, msg.Sender, coins)
 	if err != nil {
 		return nil, err
@@ -158,8 +155,7 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	// Check the sender has enough funds to delegate the stake
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check here
 	// Send the funds
-	amountInt := cosmosMath.NewIntFromBigInt(msg.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, msg.Amount))
 	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, types.AlloraStakingAccountName, coins)
 	if err != nil {
 		return nil, err
@@ -253,8 +249,7 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	// Check the module has enough funds to send back to the sender
 	// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// Send the funds
-	amountInt := cosmosMath.NewIntFromBigInt(stakeRemoval.Placement.Amount.BigInt())
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amountInt))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, stakeRemoval.Placement.Amount))
 	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, msg.Sender, coins)
 	if err != nil {
 		return nil, err

@@ -1981,7 +1981,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 
 	// Verify initial revenue
 	feeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
-	s.Require().Equal(initialAmount.BigInt(), feeRev.BigInt(), "Initial revenue should be correctly recorded")
+	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
 }
 
 /// TOPIC CHURN
