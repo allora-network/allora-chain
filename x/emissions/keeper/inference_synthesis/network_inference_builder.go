@@ -17,6 +17,7 @@ type NetworkInferenceBuilder struct {
 	// Network Inferences Properties
 	inferences                 []*emissions.WorkerAttributedValue
 	forecastImpliedInferences  []*emissions.WorkerAttributedValue
+	weights                    RegretInformedWeights
 	combinedInference          InferenceValue
 	naiveInference             InferenceValue
 	oneOutInfererInferences    []*emissions.WithheldWorkerAttributedValue
@@ -58,6 +59,7 @@ func (b *NetworkInferenceBuilder) SetCombinedValue() *NetworkInferenceBuilder {
 
 	b.logger.Debug(fmt.Sprintf("Combined inference calculated for topic %v is %v", b.palette.TopicId, combinedInference))
 	b.combinedInference = combinedInference
+	b.weights = weights
 	return b
 }
 

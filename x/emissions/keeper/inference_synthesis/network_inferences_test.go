@@ -416,7 +416,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	})
 
 	// Calculate
-	valueBundle, err :=
+	valueBundle, _, _, _, err :=
 		inferencesynthesis.GetNetworkInferencesAtBlock(
 			s.ctx,
 			s.emissionsKeeper,

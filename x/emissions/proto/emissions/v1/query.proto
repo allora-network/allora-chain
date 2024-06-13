@@ -16,6 +16,7 @@ import "emissions/v1/worker.proto";
 import "emissions/v1/reputer.proto";
 import "emissions/v1/topic.proto";
 import "emissions/v1/stake.proto";
+import "emissions/v1/inference.proto";
 
 // Msg defines the module Msg service.
 service Query {
@@ -381,8 +382,9 @@ message QueryNetworkInferencesAtBlockResponse {
 
 message QueryLatestNetworkInferencesAtBlockResponse {
   ValueBundle network_inferences = 1;
-  // TODO weights
-  // TODO forecast implied inferences
+  repeated RegretInformedWeight inferer_weights = 2;
+  repeated RegretInformedWeight forecaster_weights = 3;
+  repeated WorkerAttributedValue forecastImpliedInferences = 4;
 }
 
 message QueryIsWorkerRegisteredInTopicIdRequest {

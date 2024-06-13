@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -48,7 +49,7 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *type
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	networkInferences, err := synth.GetNetworkInferencesAtBlock(
+	networkInferences, _, _, _, err := synth.GetNetworkInferencesAtBlock(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
@@ -77,7 +78,7 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *types
 		return nil, status.Errorf(codes.InvalidArgument, "block height cannot be greater than current block height %v", sdkCtx.BlockHeight())
 	}
 
-	networkInferences, err := synth.GetNetworkInferencesAtBlock(
+	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err := synth.GetNetworkInferencesAtBlock(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
@@ -88,5 +89,28 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *types
 		return nil, err
 	}
 
-	return &types.QueryNetworkInferencesAtBlockResponse{NetworkInferences: networkInferences}, nil
+	return &types.QueryLatestNetworkInferencesAtBlockResponse{
+		NetworkInferences:         networkInferences,
+		InfererWeights:            qs.ConvertWeightsToArrays(infererWeights),
+		ForecasterWeights:         qs.ConvertWeightsToArrays(forecasterWeights),
+		ForecastImpliedInferences: qs.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
+	}, nil
+}
+
+func (qs queryServer) ConvertWeightsToArrays(weights map[inference_synthesis.Worker]inference_synthesis.Weight) []*types.RegretInformedWeight {
+	weightsArray := make([]*types.RegretInformedWeight, 0)
+	for worker, weight := range weights {
+		weightsArray = append(weightsArray, &types.RegretInformedWeight{Worker: worker, Weight: weight})
+	}
+	return weightsArray
+}
+
+func (qs queryServer) ConvertForecastImpliedInferencesToArrays(
+	forecastImpliedInferenceByWorker map[string]*types.Inference,
+) []*types.WorkerAttributedValue {
+	forecastImpliedInferences := make([]*types.WorkerAttributedValue, 0)
+	for worker, inference := range forecastImpliedInferenceByWorker {
+		forecastImpliedInferences = append(forecastImpliedInferences, &types.WorkerAttributedValue{Worker: worker, Value: inference.Value})
+	}
+	return forecastImpliedInferences
 }
