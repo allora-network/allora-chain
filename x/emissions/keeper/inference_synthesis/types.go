@@ -1,6 +1,7 @@
 package inference_synthesis
 
 import (
+	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -61,6 +62,7 @@ type SynthPaletteFactory struct{}
 type SynthPalette struct {
 	Ctx     sdk.Context
 	K       keeper.Keeper
+	Logger  log.Logger
 	TopicId TopicId
 	// Should use this as a source of truth regarding for which inferers to have data calculated
 	// i.e. if an inferer is not present here, calculate a network inference without their data

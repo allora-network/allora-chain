@@ -64,14 +64,14 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 		topicPageRequest := &types.SimpleCursorPaginationRequest{Limit: topicPageLimit, Key: topicPageKey}
 		topicsActive, topicPageResponse, err := k.GetIdsOfActiveTopics(ctx, topicPageRequest)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error getting ids of active topics: %s", err.Error()))
+			Logger(ctx).Warn(fmt.Sprintf("Error getting ids of active topics: %s", err.Error()))
 			continue
 		}
 
 		for _, topicId := range topicsActive {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				ctx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
+				Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 				continue
 			}
 
@@ -79,7 +79,7 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 				// All checks passed => Apply function on the topic
 				err = fn(ctx, &topic)
 				if err != nil {
-					ctx.Logger().Warn(fmt.Sprintf("Error applying function on topic: %s", err.Error()))
+					Logger(ctx).Warn(fmt.Sprintf("Error applying function on topic: %s", err.Error()))
 					continue
 				}
 			}
@@ -99,18 +99,18 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 // We iterate through active topics, fetch their weight, skim the top N by weight (these are the churnable topics)
 // then finally apply a function on each of these churnable topics.
 func IdentifyChurnableAmongActiveTopicsAndApplyFn(
-	sdkCtx sdk.Context,
+	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
 	fn func(ctx sdk.Context, topic *types.Topic) error,
 	weights map[TopicId]*alloraMath.Dec,
 ) error {
-	moduleParams, err := k.GetParams(sdkCtx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max topics per block")
 	}
 	weightsOfTopActiveTopics, sortedTopActiveTopics := SkimTopTopicsByWeightDesc(
-		sdkCtx,
+		ctx,
 		weights,
 		moduleParams.MaxTopicsPerBlock,
 		block,
@@ -119,19 +119,19 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 	for _, topicId := range sortedTopActiveTopics {
 		weight := weightsOfTopActiveTopics[topicId]
 		if weight.Equal(alloraMath.ZeroDec()) {
-			sdkCtx.Logger().Debug("Skipping Topic ID: ", topicId, " Weight: ", weight)
+			Logger(ctx).Debug("Skipping Topic ID: ", topicId, " Weight: ", weight)
 			continue
 		}
 		// Get the topic
-		topic, err := k.GetTopic(sdkCtx, topicId)
+		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			sdkCtx.Logger().Debug("Error getting topic: ", err)
+			Logger(ctx).Debug("Error getting topic: ", err)
 			continue
 		}
 		// Execute the function
-		err = fn(sdkCtx, &topic)
+		err = fn(ctx, &topic)
 		if err != nil {
-			sdkCtx.Logger().Debug("Error applying function on topic: ", err)
+			Logger(ctx).Debug("Error applying function on topic: ", err)
 			continue
 		}
 	}
