@@ -1,5 +1,4 @@
 #!/bin/bash
-# set -exu
 set -eu
 
 YELLOW='\033[1;33m'

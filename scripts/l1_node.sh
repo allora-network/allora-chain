@@ -1,5 +1,4 @@
 #!/bin/bash
-# set -exu
 set -eu
 
 NETWORK="${NETWORK:-edgenet}"                 #! Replace with your network name
@@ -13,8 +12,8 @@ KEYRING_BACKEND=test                              #! Use test for simplicity, yo
 GENESIS_FILE="${APP_HOME}/config/genesis.json"
 DENOM="uallo"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"${SCRIPT_DIR}/restore_snapshot.sh"
+# SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# "${SCRIPT_DIR}/restore_snapshot.sh"
 
 echo "To re-initiate the node, remove the file: ${INIT_FLAG}"
 if [ ! -f $INIT_FLAG ]; then
