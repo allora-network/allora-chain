@@ -111,8 +111,13 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 	if err != nil {
 		return nil, err
 	}
-	if stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow >= currentBlock {
+	// if the delay window has not yet passed, its too early
+	if currentBlock < stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow {
 		return nil, types.ErrConfirmRemoveStakeTooEarly
+	}
+	// if the delay window has passed and then so has the active window, it's too late
+	if currentBlock > stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow+moduleParams.RemoveStakeActiveWindow {
+		return nil, types.ErrConfirmRemoveStakeTooLate
 	}
 	// Check the module has enough funds to send back to the sender
 	// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
@@ -243,8 +248,13 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	if err != nil {
 		return nil, err
 	}
-	if stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow >= currentBlock {
+	// if the delay window has not yet passed, its too early
+	if currentBlock < stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow {
 		return nil, types.ErrConfirmRemoveStakeTooEarly
+	}
+	// if the delay window has passed and then so has the active window, it's too late
+	if currentBlock > stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow+moduleParams.RemoveStakeActiveWindow {
+		return nil, types.ErrConfirmRemoveStakeTooLate
 	}
 
 	// Check the module has enough funds to send back to the sender
