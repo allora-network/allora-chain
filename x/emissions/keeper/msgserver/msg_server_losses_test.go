@@ -11,7 +11,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (s *KeeperTestSuite) getBasicReputerPayload(
+func (s *MsgServerTestSuite) getBasicReputerPayload(
 	reputerAddr sdk.AccAddress,
 	workerAddr sdk.AccAddress,
 	block types.BlockHeight,
@@ -113,7 +113,7 @@ func (s *KeeperTestSuite) getBasicReputerPayload(
 	return reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce
 }
 
-func (s *KeeperTestSuite) signValueBundle(reputerValueBundle *types.ValueBundle, privateKey secp256k1.PrivKey) []byte {
+func (s *MsgServerTestSuite) signValueBundle(reputerValueBundle *types.ValueBundle, privateKey secp256k1.PrivKey) []byte {
 	require := s.Require()
 	src := make([]byte, 0)
 	src, err := reputerValueBundle.XXX_Marshal(src, true)
@@ -125,7 +125,7 @@ func (s *KeeperTestSuite) signValueBundle(reputerValueBundle *types.ValueBundle,
 	return valueBundleSignature
 }
 
-func (s *KeeperTestSuite) constructAndInsertReputerPayload(
+func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	reputerAddr sdk.AccAddress,
 	reputerPrivateKey secp256k1.PrivKey,
 	reputerPublicKeyBytes []byte,
@@ -158,7 +158,7 @@ func (s *KeeperTestSuite) constructAndInsertReputerPayload(
 	return err
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayload() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -184,7 +184,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayload() {
 	require.NoError(err)
 }
 
-func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMismatchedTopicIdsIsIgnored() {
+func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMismatchedTopicIdsIsIgnored() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -223,7 +223,7 @@ func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMismatchedTopicIdsIsIgn
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMismatchedWorkerNonceIsIgnored() {
+func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMismatchedWorkerNonceIsIgnored() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -262,7 +262,7 @@ func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMismatchedWorkerNonceIs
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMismatchedReputerNonceIsIgnored() {
+func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMismatchedReputerNonceIsIgnored() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -301,7 +301,7 @@ func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMismatchedReputerNonceI
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestInsertingReputerPayloadWithUnregisteredReputerIsIgnored() {
+func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithUnregisteredReputerIsIgnored() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -347,7 +347,7 @@ func (s *KeeperTestSuite) TestInsertingReputerPayloadWithUnregisteredReputerIsIg
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestInsertingReputerPayloadWithUnderstakeReputerIsIgnored() {
+func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithUnderstakeReputerIsIgnored() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -412,7 +412,7 @@ func (s *KeeperTestSuite) TestInsertingReputerPayloadWithUnderstakeReputerIsIgno
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMissingInferencesIsIgnored() {
+func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMissingInferencesIsIgnored() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -449,7 +449,7 @@ func (s *KeeperTestSuite) TestInsertingReputerPayloadWithMissingInferencesIsIgno
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestInsertingReputerPayloadWithIncorrectBaseWorkerNonceIsIgnored() {
+func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithIncorrectBaseWorkerNonceIsIgnored() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -488,7 +488,7 @@ func (s *KeeperTestSuite) TestInsertingReputerPayloadWithIncorrectBaseWorkerNonc
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -636,7 +636,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
+func (s *MsgServerTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper

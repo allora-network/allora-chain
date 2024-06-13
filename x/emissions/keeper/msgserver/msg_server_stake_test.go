@@ -3,6 +3,7 @@ package msgserver_test
 import (
 	"errors"
 
+	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -12,7 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) commonStakingSetup(
+func (s *MsgServerTestSuite) commonStakingSetup(
 	ctx sdk.Context,
 	reputer string,
 	worker string,
@@ -80,7 +81,7 @@ func (s *KeeperTestSuite) commonStakingSetup(
 	return topicId
 }
 
-func (s *KeeperTestSuite) TestMsgAddStake() {
+func (s *MsgServerTestSuite) TestMsgAddStake() {
 	ctx := s.ctx
 	require := s.Require()
 
@@ -118,7 +119,7 @@ func (s *KeeperTestSuite) TestMsgAddStake() {
 	require.Equal(stakeAmount, topicStake, "Stake amount mismatch")
 }
 
-func (s *KeeperTestSuite) TestStartRemoveStake() {
+func (s *MsgServerTestSuite) TestStartRemoveStake() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -146,12 +147,12 @@ func (s *KeeperTestSuite) TestStartRemoveStake() {
 	retrievedInfo, err := keeper.GetStakeRemovalByTopicAndAddress(ctx, topicId, senderAddr.String())
 	require.NoError(err)
 	require.NotNil(retrievedInfo)
-	s.Require().Equal(msg.TopicId, retrievedInfo.Placement.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(msg.Sender, retrievedInfo.Placement.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(msg.Amount, retrievedInfo.Placement.Amount, "Amounts should match for all placements")
+	s.Require().Equal(msg.TopicId, retrievedInfo.TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(msg.Sender, retrievedInfo.Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(msg.Amount, retrievedInfo.Amount, "Amounts should match for all placements")
 }
 
-func (s *KeeperTestSuite) TestStartRemoveStakeInsufficientStake() {
+func (s *MsgServerTestSuite) TestStartRemoveStakeInsufficientStake() {
 	ctx := s.ctx
 	require := s.Require()
 
@@ -169,7 +170,7 @@ func (s *KeeperTestSuite) TestStartRemoveStakeInsufficientStake() {
 	require.ErrorIs(err, types.ErrInsufficientStakeToRemove)
 }
 
-func (s *KeeperTestSuite) TestConfirmRemoveStake() {
+func (s *MsgServerTestSuite) TestConfirmRemoveStake() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -189,18 +190,15 @@ func (s *KeeperTestSuite) TestConfirmRemoveStake() {
 	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
 
 	// Simulate the stake removal request.
-	placement := &types.StakePlacement{
-		TopicId: topicId,
-		Reputer: senderAddr.String(),
-		Amount:  stakeAmount,
-	}
-	stakeRemoval := types.StakeRemoval{
+	placement := types.StakePlacement{
+		TopicId:             topicId,
+		Reputer:             senderAddr.String(),
+		Amount:              stakeAmount,
 		BlockRemovalStarted: startBlock,
-		Placement:           placement,
 	}
 
 	// Manually setting the removal in state (this part would normally involve interacting with the keeper to set up state).
-	keeper.SetStakeRemoval(ctx, senderAddr.String(), stakeRemoval) // This assumes such a method exists.
+	keeper.SetStakeRemoval(ctx, senderAddr.String(), placement) // This assumes such a method exists.
 
 	msg := &types.MsgConfirmRemoveStake{
 		Sender:  senderAddr.String(),
@@ -219,9 +217,13 @@ func (s *KeeperTestSuite) TestConfirmRemoveStake() {
 	finalStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, senderAddr.String())
 	require.NoError(err)
 	require.True(finalStake.IsZero(), "Stake amount should be zero after removal is confirmed")
+
+	// Check that the stake removal has been removed from the state
+	_, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, topicId, senderAddr.String())
+	require.ErrorIs(err, collections.ErrNotFound)
 }
 
-func (s *KeeperTestSuite) TestCantConfirmRemoveStakeWithoutStartingRemoval() {
+func (s *MsgServerTestSuite) TestCantConfirmRemoveStakeWithoutStartingRemoval() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -256,7 +258,7 @@ func (s *KeeperTestSuite) TestCantConfirmRemoveStakeWithoutStartingRemoval() {
 	require.False(finalStake.IsZero())
 }
 
-func (s *KeeperTestSuite) TestConfirmRemoveStakeTooEarly() {
+func (s *MsgServerTestSuite) TestConfirmRemoveStakeTooEarly() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -276,18 +278,15 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeTooEarly() {
 	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
 
 	// Simulate the stake removal request
-	placement := &types.StakePlacement{
-		TopicId: topicId,
-		Reputer: senderAddr.String(),
-		Amount:  stakeAmount,
-	}
-	stakeRemoval := types.StakeRemoval{
+	placement := types.StakePlacement{
+		TopicId:             topicId,
+		Reputer:             senderAddr.String(),
+		Amount:              stakeAmount,
 		BlockRemovalStarted: startBlock,
-		Placement:           placement,
 	}
 
 	// Manually setting the removal in state (this part would normally involve interacting with the keeper to set up state).
-	keeper.SetStakeRemoval(ctx, senderAddr.String(), stakeRemoval) // This assumes such a method exists.
+	keeper.SetStakeRemoval(ctx, senderAddr.String(), placement) // This assumes such a method exists.
 
 	msg := &types.MsgConfirmRemoveStake{
 		Sender:  senderAddr.String(),
@@ -309,7 +308,7 @@ func (s *KeeperTestSuite) TestConfirmRemoveStakeTooEarly() {
 	require.False(finalStake.IsZero(), "Stake amount should not be zero since removal is not confirmed")
 }
 
-func (s *KeeperTestSuite) TestDelegateStake() {
+func (s *MsgServerTestSuite) TestDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -359,7 +358,7 @@ func (s *KeeperTestSuite) TestDelegateStake() {
 	require.Equal(stakeAmount, amount1.Amount.SdkIntTrim())
 }
 
-func (s *KeeperTestSuite) TestReputerCantSelfDelegateStake() {
+func (s *MsgServerTestSuite) TestReputerCantSelfDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -392,7 +391,7 @@ func (s *KeeperTestSuite) TestReputerCantSelfDelegateStake() {
 	require.Error(err, types.ErrCantSelfDelegate)
 }
 
-func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
+func (s *MsgServerTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -443,7 +442,7 @@ func (s *KeeperTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 	require.Error(err)
 }
 
-func (s *KeeperTestSuite) TestDelegateStakeUnregisteredReputer() {
+func (s *MsgServerTestSuite) TestDelegateStakeUnregisteredReputer() {
 	ctx := s.ctx
 	require := s.Require()
 
@@ -468,7 +467,7 @@ func (s *KeeperTestSuite) TestDelegateStakeUnregisteredReputer() {
 	require.True(errors.Is(err, types.ErrAddressIsNotRegisteredInThisTopic), "Error should indicate that the reputer is not registered in the topic")
 }
 
-func (s *KeeperTestSuite) TestStartRemoveDelegateStake() {
+func (s *MsgServerTestSuite) TestStartRemoveDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -523,7 +522,7 @@ func (s *KeeperTestSuite) TestStartRemoveDelegateStake() {
 	require.NotNil(removalInfo, "Stake removal should be recorded in the state")
 }
 
-func (s *KeeperTestSuite) TestStartRemoveDelegateStakeError() {
+func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeError() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -569,7 +568,7 @@ func (s *KeeperTestSuite) TestStartRemoveDelegateStakeError() {
 	require.Error(err, types.ErrInsufficientStakeToRemove)
 }
 
-func (s *KeeperTestSuite) TestConfirmRemoveDelegateStake() {
+func (s *MsgServerTestSuite) TestConfirmRemoveDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -631,9 +630,13 @@ func (s *KeeperTestSuite) TestConfirmRemoveDelegateStake() {
 	delegateStakePlaced, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr.String(), reputerAddr.String())
 	require.NoError(err)
 	require.True(delegateStakePlaced.Amount.IsZero(), "Delegate stake should be zero after successful removal")
+
+	// Check that the stake removal has been removed from the state
+	_, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topicId, reputerAddr.String(), delegatorAddr.String())
+	require.ErrorIs(err, collections.ErrNotFound)
 }
 
-func (s *KeeperTestSuite) TestRewardDelegateStake() {
+func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -821,7 +824,7 @@ func (s *KeeperTestSuite) TestRewardDelegateStake() {
 	s.Require().Greater(afterBalance2.Amount.Uint64(), beforeBalance2.Amount.Uint64(), "Balance must be increased")
 }
 
-func (s *KeeperTestSuite) insertValueBundlesAndGetRewards(
+func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 	reputerAddr sdk.AccAddress,
 	topicId uint64,
 	block int64,
@@ -877,7 +880,7 @@ func (s *KeeperTestSuite) insertValueBundlesAndGetRewards(
 	return reputerRewards
 }
 
-func (s *KeeperTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
+func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 	ctx := s.ctx
 	require := s.Require()
 	block := int64(1003)
@@ -957,7 +960,7 @@ func (s *KeeperTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 	s.Require().True(delegatorReward1.Equal(cosmosMath.NewInt(0)), "Delegator cant double claim rewards")
 }
 
-func (s *KeeperTestSuite) Test1000xDelegatorStakeVsReputerStake() {
+func (s *MsgServerTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	ctx := s.ctx
 	require := s.Require()
 	block := int64(1003)
@@ -1021,7 +1024,7 @@ func (s *KeeperTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	s.Require().Equal(normalizedDelegatorReward.SdkIntTrim(), reputerReward, "Delegator and reputer rewards must be equal")
 }
 
-func (s *KeeperTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
+func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	ctx := s.ctx
 	require := s.Require()
 	block := int64(1000)

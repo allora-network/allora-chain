@@ -79,13 +79,11 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	stakeToRemove := types.StakeRemoval{
+	stakeToRemove := types.StakePlacement{
 		BlockRemovalStarted: sdkCtx.BlockHeight(),
-		Placement: &types.StakePlacement{
-			TopicId: msg.TopicId,
-			Reputer: msg.Sender,
-			Amount:  msg.Amount,
-		},
+		TopicId:             msg.TopicId,
+		Reputer:             msg.Sender,
+		Amount:              msg.Amount,
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
@@ -119,14 +117,19 @@ func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfir
 	// Check the module has enough funds to send back to the sender
 	// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// Send the funds
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, stakeRemoval.Placement.Amount))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, stakeRemoval.Amount))
 	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, msg.Sender, coins)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update the stake data structures
-	err = ms.k.RemoveStake(ctx, stakeRemoval.Placement.TopicId, msg.Sender, stakeRemoval.Placement.Amount)
+	err = ms.k.RemoveStake(
+		ctx,
+		stakeRemoval.TopicId,
+		msg.Sender,
+		stakeRemoval.Amount,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -207,14 +210,12 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	stakeToRemove := types.DelegateStakeRemoval{
+	stakeToRemove := types.DelegateStakePlacement{
 		BlockRemovalStarted: sdkCtx.BlockHeight(),
-		Placement: &types.DelegateStakePlacement{
-			TopicId:   msg.TopicId,
-			Reputer:   msg.Reputer,
-			Delegator: msg.Sender,
-			Amount:    msg.Amount,
-		},
+		TopicId:             msg.TopicId,
+		Reputer:             msg.Reputer,
+		Delegator:           msg.Sender,
+		Amount:              msg.Amount,
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
@@ -249,14 +250,14 @@ func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.M
 	// Check the module has enough funds to send back to the sender
 	// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// Send the funds
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, stakeRemoval.Placement.Amount))
+	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, stakeRemoval.Amount))
 	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, msg.Sender, coins)
 	if err != nil {
 		return nil, err
 	}
 
 	// Update the stake data structures
-	err = ms.k.RemoveDelegateStake(ctx, stakeRemoval.Placement.TopicId, msg.Sender, msg.Reputer, stakeRemoval.Placement.Amount)
+	err = ms.k.RemoveDelegateStake(ctx, stakeRemoval.TopicId, msg.Sender, msg.Reputer, stakeRemoval.Amount)
 	if err != nil {
 		return nil, err
 	}
