@@ -8,7 +8,7 @@ import (
 
 /// Topics tests
 
-func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
+func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -51,7 +51,7 @@ func (s *KeeperTestSuite) TestMsgCreateNewTopic() {
 	require.False(found, "Added topic found in active topics")
 }
 
-func (s *KeeperTestSuite) TestUpdateTopicLossUpdateLastRan() {
+func (s *MsgServerTestSuite) TestUpdateTopicLossUpdateLastRan() {
 	ctx := s.ctx
 	require := s.Require()
 	topicId := s.CreateOneTopic()
