@@ -41,6 +41,7 @@ const (
 	Query_IsWorkerRegisteredInTopicId_FullMethodName           = "/emissions.v1.Query/IsWorkerRegisteredInTopicId"
 	Query_IsReputerRegisteredInTopicId_FullMethodName          = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
 	Query_GetNetworkInferencesAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
+	Query_GetLatestNetworkInference_FullMethodName             = "/emissions.v1.Query/GetLatestNetworkInference"
 	Query_IsWhitelistAdmin_FullMethodName                      = "/emissions.v1.Query/IsWhitelistAdmin"
 )
 
@@ -71,6 +72,7 @@ type QueryClient interface {
 	IsWorkerRegisteredInTopicId(ctx context.Context, in *QueryIsWorkerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
+	GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesAtBlockResponse, error)
 	IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error)
 }
 
@@ -280,6 +282,15 @@ func (c *queryClient) GetNetworkInferencesAtBlock(ctx context.Context, in *Query
 	return out, nil
 }
 
+func (c *queryClient) GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesAtBlockResponse, error) {
+	out := new(QueryLatestNetworkInferencesAtBlockResponse)
+	err := c.cc.Invoke(ctx, Query_GetLatestNetworkInference_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error) {
 	out := new(QueryIsWhitelistAdminResponse)
 	err := c.cc.Invoke(ctx, Query_IsWhitelistAdmin_FullMethodName, in, out, opts...)
@@ -316,6 +327,7 @@ type QueryServer interface {
 	IsWorkerRegisteredInTopicId(context.Context, *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(context.Context, *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
+	GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesAtBlockRequest) (*QueryLatestNetworkInferencesAtBlockResponse, error)
 	IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
@@ -389,6 +401,9 @@ func (UnimplementedQueryServer) IsReputerRegisteredInTopicId(context.Context, *Q
 }
 func (UnimplementedQueryServer) GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkInferencesAtBlock not implemented")
+}
+func (UnimplementedQueryServer) GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesAtBlockRequest) (*QueryLatestNetworkInferencesAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestNetworkInference not implemented")
 }
 func (UnimplementedQueryServer) IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistAdmin not implemented")
@@ -802,6 +817,24 @@ func _Query_GetNetworkInferencesAtBlock_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetLatestNetworkInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestNetworkInferencesAtBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestNetworkInference(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetLatestNetworkInference_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestNetworkInference(ctx, req.(*QueryLatestNetworkInferencesAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_IsWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryIsWhitelistAdminRequest)
 	if err := dec(in); err != nil {
@@ -914,6 +947,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNetworkInferencesAtBlock",
 			Handler:    _Query_GetNetworkInferencesAtBlock_Handler,
+		},
+		{
+			MethodName: "GetLatestNetworkInference",
+			Handler:    _Query_GetLatestNetworkInference_Handler,
 		},
 		{
 			MethodName: "IsWhitelistAdmin",

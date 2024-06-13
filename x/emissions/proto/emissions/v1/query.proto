@@ -142,10 +142,9 @@ service Query {
   }
 
   rpc GetLatestNetworkInference(QueryLatestNetworkInferencesAtBlockRequest)
-      returns (QueryNetworkInferencesAtBlockResponse) {
+      returns (QueryLatestNetworkInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}/last_inference/"
-                                   "{block_height_last_inference}/last_reward/{block_height_last_reward}";
+    option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
   }
 
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
@@ -378,6 +377,12 @@ message QueryLatestNetworkInferencesAtBlockRequest {
 
 message QueryNetworkInferencesAtBlockResponse {
   ValueBundle network_inferences = 1;
+}
+
+message QueryLatestNetworkInferencesAtBlockResponse {
+  ValueBundle network_inferences = 1;
+  // TODO weights
+  // TODO forecast implied inferences
 }
 
 message QueryIsWorkerRegisteredInTopicIdRequest {

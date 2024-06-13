@@ -62,8 +62,8 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *type
 	return &types.QueryNetworkInferencesAtBlockResponse{NetworkInferences: networkInferences}, nil
 }
 
-// Return full set of inferences in I_i from the chain
-func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *types.QueryNetworkInferencesAtBlockRequest) (*types.QueryNetworkInferencesAtBlockResponse, error) {
+// Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences
+func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *types.QueryNetworkInferencesAtBlockRequest) (*types.QueryLatestNetworkInferencesAtBlockResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
