@@ -12,6 +12,7 @@ KEYRING_BACKEND=test                              #! Use test for simplicity, yo
 GENESIS_FILE="${APP_HOME}/config/genesis.json"
 DENOM="uallo"
 
+# uncomment this block if you want to restore from a snapshot
 # SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # "${SCRIPT_DIR}/restore_snapshot.sh"
 
