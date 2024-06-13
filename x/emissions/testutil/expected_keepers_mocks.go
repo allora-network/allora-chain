@@ -480,10 +480,10 @@ func (mr *MockTopicKeeperMockRecorder) GetTopicStake(ctx, topicId interface{}) *
 }
 
 // GetTopicFeeRevenue mocks base method
-func (m *MockTopicKeeper) GetTopicFeeRevenue(ctx context.Context, topicId uint64) (keeperTypes.TopicFeeRevenue, error) {
+func (m *MockTopicKeeper) GetTopicFeeRevenue(ctx context.Context, topicId uint64) (cosmosMath.Int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTopicFeeRevenue", ctx, topicId)
-	ret0, _ := ret[0].(keeperTypes.TopicFeeRevenue)
+	ret0, _ := ret[0].(cosmosMath.Int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -59,7 +59,7 @@ func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
 	if err != nil {
 		return math.Int{}, err
 	}
-	return cosmosValidatorsStaked.Add(math.NewIntFromBigInt(reputersStaked.BigInt())), nil
+	return cosmosValidatorsStaked.Add(reputersStaked), nil
 }
 
 // The total amount of tokens emitted for a full month

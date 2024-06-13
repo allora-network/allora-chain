@@ -1949,8 +1949,7 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	// Test getting revenue for a topic with no existing revenue
 	feeRev, err := keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Should not error when revenue does not exist")
-	s.Require().Equal(cosmosMath.ZeroInt(), feeRev.Revenue, "Revenue should be zero for non-existing entries")
-	s.Require().Equal(int64(0), feeRev.Epoch, "Epoch should be zero for non-existing entries")
+	s.Require().Equal(cosmosMath.ZeroInt(), feeRev, "Revenue should be zero for non-existing entries")
 
 	// Setup a topic with some revenue
 	initialRevenue := cosmosMath.NewInt(100)
@@ -1960,10 +1959,10 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	// Test getting revenue for a topic with existing revenue
 	feeRev, err = keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Should not error when retrieving existing revenue")
-	s.Require().Equal(feeRev.Revenue.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
+	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }
 
-func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
+func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -1975,26 +1974,14 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	err = keeper.DripTopicFeeRevenue(ctx, topicId, block)
 	s.Require().NoError(err, "Resetting topic fee revenue should not fail")
 
-	// Add initial revenue in the first epoch
+	// Add initial revenue
 	initialAmount := cosmosMath.NewInt(100)
 	err = keeper.AddTopicFeeRevenue(ctx, topicId, initialAmount)
 	s.Require().NoError(err, "Adding initial revenue should not fail")
 
 	// Verify initial revenue
 	feeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
-	s.Require().Equal(initialAmount.BigInt(), feeRev.Revenue.BigInt(), "Initial revenue should be correctly recorded")
-	s.Require().Equal(block, feeRev.Epoch, "Initial epoch should be correctly recorded")
-
-	// Add more revenue in the new epoch
-	additionalAmount := cosmosMath.NewInt(200)
-	err = keeper.AddTopicFeeRevenue(ctx, topicId, additionalAmount)
-	s.Require().NoError(err, "Adding additional revenue in new epoch should not fail")
-	s.Require().Equal(block, feeRev.Epoch, "Initial epoch should be correctly recorded")
-
-	// Verify updated revenue in the new epoch
-	updatedFeeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
-	s.Require().Equal(feeRev.Epoch, updatedFeeRev.Epoch, "Epoch should not be updated")
-	s.Require().Equal("300", updatedFeeRev.Revenue.String(), "Revenue in new epoch should match the additional amount")
+	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
 }
 
 /// TOPIC CHURN
@@ -2940,7 +2927,7 @@ func (s *KeeperTestSuite) TestGetCurrentTopicWeight() {
 
 	s.topicKeeper.EXPECT().GetTopicStake(s.ctx, topicId).Return(cosmosMath.NewInt(1000), nil).AnyTimes()
 	s.topicKeeper.EXPECT().NewDecFromSdkInt(cosmosMath.NewInt(1000)).Return(alloraMath.NewDecFromInt64(1000), nil).AnyTimes()
-	s.topicKeeper.EXPECT().GetTopicFeeRevenue(s.ctx, topicId).Return(types.TopicFeeRevenue{Revenue: cosmosMath.NewInt(500)}, nil).AnyTimes()
+	s.topicKeeper.EXPECT().GetTopicFeeRevenue(s.ctx, topicId).Return(cosmosMath.NewInt(500), nil).AnyTimes()
 	newFeeRevenue := additionalRevenue.Add(cosmosMath.NewInt(500))
 	s.topicKeeper.EXPECT().NewDecFromSdkInt(newFeeRevenue).Return(alloraMath.NewDecFromInt64(600), nil).AnyTimes()
 	s.topicKeeper.EXPECT().GetTargetWeight(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(targetweight, nil).AnyTimes()
