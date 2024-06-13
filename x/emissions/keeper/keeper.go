@@ -1344,8 +1344,14 @@ func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.Simp
 	nextKey := make([]byte, binary.MaxVarintLen64)
 	binary.BigEndian.PutUint64(nextKey, start+limit)
 
-	rng, _ := k.activeTopics.IterateRaw(ctx, startKey, nextKey, collections.OrderAscending)
-	activeTopics, _ := rng.Keys()
+	rng, err := k.activeTopics.IterateRaw(ctx, startKey, nextKey, collections.OrderAscending)
+	if err != nil {
+		return nil, nil, err
+	}
+	activeTopics, err := rng.Keys()
+	if err != nil {
+		return nil, nil, err
+	}
 	defer rng.Close()
 
 	// If there are no topics, we return the nil for next key
