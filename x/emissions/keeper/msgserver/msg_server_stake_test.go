@@ -359,6 +359,52 @@ func (s *MsgServerTestSuite) TestConfirmRemoveStakeTooLate() {
 	require.False(finalStake.IsZero(), "Stake amount should not be zero since removal is not confirmed")
 }
 
+// test you are able to restart the stake withdrawal
+// if your stake expires or whatever other reason you may want
+func (s *MsgServerTestSuite) TestStartRemoveStakeTwice() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewInt(50)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	startBlock := sdkCtx.BlockHeight()
+
+	// Fetch the delay window for removing stake
+	params, err := keeper.GetParams(ctx)
+	require.NoError(err)
+	removalDelay := params.RemoveStakeDelayWindow
+	activeWindow := params.RemoveStakeActiveWindow
+
+	// Simulate that sender has already staked the required amount
+	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
+
+	s.msgServer.StartRemoveStake(ctx, &types.MsgStartRemoveStake{
+		Sender:  senderAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	})
+
+	stakePlacement, err := keeper.GetStakeRemovalByTopicAndAddress(ctx, topicId, senderAddr.String())
+	require.NoError(err)
+	require.Equal(stakePlacement.BlockRemovalStarted, startBlock)
+
+	newBlockHeight := startBlock + removalDelay + activeWindow + 1
+	ctx = ctx.WithBlockHeight(newBlockHeight)
+	s.msgServer.StartRemoveStake(ctx, &types.MsgStartRemoveStake{
+		Sender:  senderAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	})
+
+	stakePlacement, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, topicId, senderAddr.String())
+	require.NoError(err)
+	require.Equal(stakePlacement.BlockRemovalStarted, newBlockHeight)
+
+}
+
 func (s *MsgServerTestSuite) TestDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
@@ -778,6 +824,70 @@ func (s *MsgServerTestSuite) TestConfirmRemoveDelegateStakeTooLate() {
 		TopicId: topicId,
 	})
 	require.Error(err, types.ErrConfirmRemoveStakeTooEarly)
+}
+
+// test you are able to restart the stake withdrawal
+// if your stake expires or whatever other reason you may want
+func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewInt(50)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	startBlock := sdkCtx.BlockHeight()
+
+	params, err := keeper.GetParams(ctx)
+	require.NoError(err)
+	removalDelay := params.RemoveStakeDelayWindow
+	activeWindow := params.RemoveStakeActiveWindow
+
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
+
+	// Simulate adding a reputer and delegating stake to them
+	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), types.OffchainNode{})
+	_, err = s.msgServer.DelegateStake(ctx, &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	})
+	require.NoError(err)
+
+	// Start removing the delegated stake
+	_, err = s.msgServer.StartRemoveDelegateStake(ctx, &types.MsgStartRemoveDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	})
+	require.NoError(err)
+
+	stakePlacement, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topicId, reputerAddr.String(), delegatorAddr.String())
+	require.NoError(err)
+	require.Equal(stakePlacement.BlockRemovalStarted, startBlock)
+
+	// change block height
+	newBlockHeight := startBlock + removalDelay + activeWindow + 1
+	ctx = ctx.WithBlockHeight(newBlockHeight)
+
+	// Start removing the delegated stake again
+	_, err = s.msgServer.StartRemoveDelegateStake(ctx, &types.MsgStartRemoveDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	})
+	require.NoError(err)
+	ctx = ctx.WithBlockHeight(newBlockHeight + 1)
+
+	stakePlacement, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topicId, reputerAddr.String(), delegatorAddr.String())
+	require.NoError(err)
+	require.Equal(stakePlacement.BlockRemovalStarted, newBlockHeight)
 }
 
 func (s *MsgServerTestSuite) TestRewardDelegateStake() {
