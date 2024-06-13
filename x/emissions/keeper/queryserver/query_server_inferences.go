@@ -64,8 +64,8 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *type
 }
 
 // Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences
-func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *types.QueryNetworkInferencesAtBlockRequest) (*types.QueryLatestNetworkInferencesAtBlockResponse, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *types.QueryLatestNetworkInferencesAtBlockRequest) (*types.QueryLatestNetworkInferencesAtBlockResponse, error) {
+	// sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
@@ -74,16 +74,16 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *types
 	if topic.EpochLastEnded == 0 {
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
-	if req.BlockHeightLastInference > sdkCtx.BlockHeight() {
-		return nil, status.Errorf(codes.InvalidArgument, "block height cannot be greater than current block height %v", sdkCtx.BlockHeight())
-	}
+	// if req.BlockHeightLastInference > sdkCtx.BlockHeight() {
+	// return nil, status.Errorf(codes.InvalidArgument, "block height cannot be greater than current block height %v", sdkCtx.BlockHeight())
+	// }
 
 	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err := synth.GetNetworkInferencesAtBlock(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
-		req.BlockHeightLastInference,
-		req.BlockHeightLastReward,
+		// req.BlockHeightLastInference,
+		// req.BlockHeightLastReward,
 	)
 	if err != nil {
 		return nil, err
