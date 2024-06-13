@@ -1,6 +1,7 @@
 package inference_synthesis_test
 
 import (
+	"log"
 	"strconv"
 	"testing"
 	"time"
@@ -17,6 +18,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
@@ -324,6 +326,78 @@ func (s *InferenceSynthesisTestSuite) TestCorrectInitialNaiveValue() {
 
 func (s *InferenceSynthesisTestSuite) TestCorrectNaiveValue() {
 	s.testCorrectNaiveValueForEpoch(3)
+}
+
+func (s *InferenceSynthesisTestSuite) TestCorrectValueForSingleInference() {
+	topicId := uint64(1)
+	inferer := "worker0"
+	regret := alloraMath.MustNewDecFromString("0.2")
+	blockHeight := int64(1)
+
+	inferences := emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{
+				Inferer: inferer,
+				Value:   alloraMath.MustNewDecFromString("0.5"),
+			},
+		},
+	}
+
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{},
+	}
+
+	s.emissionsKeeper.SetInfererNetworkRegret(
+		s.ctx,
+		topicId,
+		inferer,
+		types.TimestampedValue{
+			BlockHeight: blockHeight,
+			Value:       regret,
+		},
+	)
+
+	paletteFactory := inference_synthesis.SynthPaletteFactory{}
+	palette, err := paletteFactory.BuildPaletteFromRequest(
+		inferencesynthesis.SynthRequest{
+			Ctx:                 s.ctx,
+			K:                   s.emissionsKeeper,
+			TopicId:             1,
+			Inferences:          &inferences,
+			Forecasts:           forecasts,
+			NetworkCombinedLoss: alloraMath.MustNewDecFromString("0.1"),
+			Epsilon:             alloraMath.MustNewDecFromString("0.0001"),
+			FTolerance:          alloraMath.MustNewDecFromString("0.01"),
+			PNorm:               alloraMath.MustNewDecFromString("3.0"),
+			CNorm:               alloraMath.MustNewDecFromString("0.75"),
+		},
+	)
+	s.Require().NoError(err)
+
+	result, err := palette.CalcWeightsGivenWorkers()
+	s.Require().NoError(err)
+
+	// resultCasted := inference_synthesis.RegretInformedWeights(result)
+	log.Printf("result %v", result)
+	// log.Printf("resultCasted %v", resultCasted)
+
+	// infererWeights := convertWeightsToArray(resultCasted)
+	// s.Require().Len(infererWeights, 1)
+
+	/*
+		s.Require().Len(result, 1)
+		log.Printf("result: %v", result)
+	*/
+}
+
+func convertWeightsToArray(
+	weights map[inference_synthesis.Worker]inference_synthesis.Weight,
+) []alloraMath.Dec {
+	weightsArray := make([]alloraMath.Dec, 0)
+	for _, weight := range weights {
+		weightsArray = append(weightsArray, weight)
+	}
+	return weightsArray
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epoch int) {

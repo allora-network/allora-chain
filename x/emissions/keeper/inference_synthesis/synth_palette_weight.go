@@ -2,6 +2,7 @@ package inference_synthesis
 
 import (
 	"fmt"
+	"log"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -14,10 +15,12 @@ import (
 func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) {
 	var regrets []alloraMath.Dec
 	infererRegrets, err := p.GetInfererRegretsSlice()
+	log.Printf("infererRegrets: %v", infererRegrets)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer regrets")
 	}
 	forecasterRegrets, err := p.GetForecasterRegretsSlice()
+	log.Printf("forecasterRegrets: %v", forecasterRegrets)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster regrets")
 	}
@@ -25,9 +28,11 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	if len(infererRegrets) > 0 {
 		regrets = append(regrets, infererRegrets...)
 	}
+	log.Printf("regrets 1 %v", regrets)
 	if forecasterRegrets != nil && len(forecasterRegrets) > 0 {
 		regrets = append(regrets, forecasterRegrets...)
 	}
+	log.Printf("regrets 2 %v", regrets)
 	if len(regrets) == 0 {
 		return RegretInformedWeights{}, errorsmod.Wrapf(emissions.ErrEmptyArray, "No regrets to calculate weights")
 	}
@@ -74,6 +79,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 
 	infererWeights := make(map[Worker]Weight)
 	forecasterWeights := make(map[Worker]Weight)
+	log.Printf("p.InferersNewStatus: %v, InferersAllNewExceptOne %v", p.InferersNewStatus, InferersAllNewExceptOne)
 	if p.InferersNewStatus != InferersAllNewExceptOne {
 		// Calculate the weights from the normalized regrets
 		for _, worker := range p.Inferers {
@@ -101,6 +107,9 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 			}
 		}
 	}
+
+	log.Printf("infererWeights: %v", infererWeights)
+	log.Printf("forecasterWeights: %v", forecasterWeights)
 
 	return RegretInformedWeights{
 		inferers:    infererWeights,

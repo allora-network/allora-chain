@@ -2,6 +2,7 @@ package inference_synthesis
 
 import (
 	"fmt"
+	"log"
 
 	errorsmod "cosmossdk.io/errors"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -16,6 +17,7 @@ func (p *SynthPalette) BootstrapRegretData() error {
 
 	for _, inferer := range p.Inferers {
 		regret, noPriorRegret, err := p.K.GetInfererNetworkRegret(p.Ctx, p.TopicId, inferer)
+		log.Printf("regret %v, noPriorRegret %v, err %v", regret, noPriorRegret, err)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting inferer regret")
 		}
