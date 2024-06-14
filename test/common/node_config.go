@@ -40,6 +40,7 @@ type TestConfig struct {
 	Validator2Addr string                // validator2 address, string encoded bech32
 	Cdc            codec.Codec           // common codec for encoding/decoding
 	Seed           int                   // global non-mutable seed used for naming the test run
+	Sim            SimulationPackage     // simulation package data
 }
 
 // create a new config that we can use

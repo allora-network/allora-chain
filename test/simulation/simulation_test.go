@@ -1,9 +1,10 @@
 package simulation
 
 import (
-	testCommon "github.com/allora-network/allora-chain/test/common"
 	"os"
 	"testing"
+
+	testCommon "github.com/allora-network/allora-chain/test/common"
 )
 
 func TestSimulationSuite(t *testing.T) {
@@ -20,7 +21,11 @@ func TestSimulationSuite(t *testing.T) {
 	inferersCount := testCommon.LookupEnvInt(t, "INFERERS_COUNT", 5)
 	forecastersCount := testCommon.LookupEnvInt(t, "FORECASTER_COUNT", 3)
 	reputersCount := testCommon.LookupEnvInt(t, "REPUTERS_COUNT", 5)
-	iterationCount := testCommon.LookupEnvInt(t, "ITERATION_COUNT", 10)
+	iterationCount := testCommon.LookupEnvInt(t, "ITERATION_COUNT", 200)
+	drift := testCommon.LookupEnvFloat(t, "SIMULATION_DRIFT", 0.01)
+	volatility := testCommon.LookupEnvFloat(t, "SIMULATION_VOLATILITY", 0.1)
+
+	// home := "/Users/bruce/.allorad"
 	testConfig := testCommon.NewTestConfig(
 		t,
 		rpcMode,
@@ -31,6 +36,8 @@ func TestSimulationSuite(t *testing.T) {
 
 	t.Log(">>> Setup Topic <<<")
 	topicId := SetupTopic(testConfig)
+	t.Log(">>> Generate Ground Truths <<<")
+	SimulationInit(&testConfig, drift, volatility, iterationCount, inferersCount, forecastersCount, reputersCount)
 	t.Log(">>> Generate Actors <<<")
 	GenerateActors(testConfig, inferersCount, forecastersCount, reputersCount)
 	t.Log(">>> Register and Stake Topic <<<")

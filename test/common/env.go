@@ -56,3 +56,15 @@ func LookupEnvStringArray(key string, defaultValue []string) []string {
 	valueArr := strings.Split(value, `,`)
 	return valueArr
 }
+
+func LookupEnvFloat(t *testing.T, key string, defaultValue float64) float64 {
+	value, found := os.LookupEnv(key)
+	if !found {
+		return defaultValue
+	}
+	intValue, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		t.Fatal("Error converting string to int: ", err)
+	}
+	return intValue
+}

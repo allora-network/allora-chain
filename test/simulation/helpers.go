@@ -3,6 +3,8 @@ package simulation
 import (
 	"context"
 	"fmt"
+	"math"
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -231,4 +233,38 @@ func getReputerStake(
 		return alloraMath.ZeroDec(), err
 	}
 	return alloraMath.MustNewDecFromString(res.Amount.String()), nil
+}
+
+func getFloatRandomsRange(mu, sigma float64, count int) []float64 {
+	rand.Seed(time.Now().UnixNano()) // Seed the random number generator
+	samples := make([]float64, count)
+
+	for i := 0; i < count; i++ {
+		u1 := rand.Float64()
+		u2 := rand.Float64()
+
+		z0 := math.Sqrt(-2.0*math.Log(u1)) * math.Cos(2.0*math.Pi*u2)
+
+		samples[i] = mu + z0*sigma
+	}
+
+	return samples
+
+}
+
+func getIntRandomsRange(start, end int, count int) []int {
+	rand.Seed(time.Now().UnixNano())
+	randomValues := make([]int, 0)
+	for index := 0; index < count; index++ {
+		randomValues = append(randomValues, rand.Intn(end-start)+start)
+	}
+	return randomValues
+}
+
+func getAverage(source []float64) float64 {
+	sum := 0.0
+	for index := 0; index < len(source); index++ {
+		sum += source[index]
+	}
+	return sum / (float64)(len(source))
 }

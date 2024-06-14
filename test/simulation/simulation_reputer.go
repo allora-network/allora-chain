@@ -25,7 +25,7 @@ func ReputeSimulation(
 		topic, _ := getTopic(m, topicId)
 		startIteration := time.Now()
 		m.T.Log(fmt.Sprintf("[%v/%v] Calculating...", index+1, iteration))
-		insertedBlockHeight, err := insertWorkerBulk(m, topic, inferers, forecasters)
+		insertedBlockHeight, err := insertWorkerBulk(m, topic, inferers, forecasters, index)
 		if err != nil {
 			continue
 		}
