@@ -372,7 +372,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 
 	forecaster0 := "allo13hh468ghmmyfjrdwqn567j29wq8sh6pnwff0cn"
 	forecaster1 := "allo1nxqgvyt6ggu3dz7uwe8p22sac6v2v8sayhwqvz"
-	forecaster2 := "allo13hh468ghmmyfjrdwqn567j29wq8sh6pnwff0cn"
+	forecaster2 := "allo1a0sc83cls78g4j5qey5er9zzpjpva4x935aajk"
 
 	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
 	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
@@ -477,7 +477,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	response, err := queryServer.GetLatestNetworkInference(s.ctx, req)
 	require.NotNil(response, "Response should not be nil")
 
-	require.True(len(response.InfererWeights) > 0)
-	require.True(len(response.ForecasterWeights) > 0)
-	require.True(len(response.ForecastImpliedInferences) > 0)
+	require.Equal(len(response.InfererWeights), 5)
+	require.Equal(len(response.ForecasterWeights), 3)
+	require.Equal(len(response.ForecastImpliedInferences), 3)
 }
