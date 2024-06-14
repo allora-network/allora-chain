@@ -167,6 +167,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetLatestNetworkInference",
+					Use:       "latest-network-inference [topic_id]",
+					Short:     "Get the latest Network inferences and weights for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetNetworkLossBundleAtBlock",
 					Use:       "network-loss-bundle-at-block [topic_id] [block]",
 					Short:     "Get the network loss bundle for a topic at given block height",

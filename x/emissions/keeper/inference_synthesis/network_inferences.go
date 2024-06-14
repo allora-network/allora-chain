@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,7 +23,13 @@ func GetNetworkInferencesAtBlock(
 	topicId TopicId,
 	inferencesNonce BlockHeight,
 	previousLossNonce BlockHeight,
-) (*emissions.ValueBundle, error) {
+) (
+	*emissions.ValueBundle,
+	map[string]*emissions.Inference,
+	map[string]alloraMath.Dec,
+	map[string]alloraMath.Dec,
+	error,
+) {
 	Logger(ctx).Debug(fmt.Sprintf("Calculating network inferences for topic %v at inference nonce %v with previous loss nonce %v", topicId, inferencesNonce, previousLossNonce))
 
 	networkInferences := &emissions.ValueBundle{
@@ -31,9 +38,13 @@ func GetNetworkInferencesAtBlock(
 		ForecasterValues: make([]*emissions.WorkerAttributedValue, 0),
 	}
 
+	forecastImpliedInferencesByWorker := make(map[string]*emissions.Inference, 0)
+	var infererWeights map[string]alloraMath.Dec
+	var forecasterWeights map[string]alloraMath.Dec
+
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferencesNonce)
 	if err != nil {
-		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, inferencesNonce)
+		return nil, nil, infererWeights, forecasterWeights, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, inferencesNonce)
 	}
 	// Add inferences in the bundle -> this bundle will be used as a fallback in case of error
 	for _, infererence := range inferences.Inferences {
@@ -50,20 +61,20 @@ func GetNetworkInferencesAtBlock(
 				Forecasts: make([]*emissions.Forecast, 0),
 			}
 		} else {
-			return nil, err
+			return nil, nil, infererWeights, forecasterWeights, err
 		}
 	}
 
 	if len(inferences.Inferences) > 1 {
 		moduleParams, err := k.GetParams(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, infererWeights, forecasterWeights, err
 		}
 
 		reputerReportedLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, previousLossNonce)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting reputer losses: %s", err.Error()))
-			return networkInferences, nil
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
 
 		// Map list of stakesOnTopic to map of stakesByReputer
@@ -72,7 +83,7 @@ func GetNetworkInferencesAtBlock(
 			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, bundle.ValueBundle.Reputer)
 			if err != nil {
 				Logger(ctx).Warn(fmt.Sprintf("Error getting stake on reputer: %s", err.Error()))
-				return networkInferences, nil
+				return networkInferences, nil, infererWeights, forecasterWeights, nil
 			}
 			stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
 		}
@@ -84,12 +95,12 @@ func GetNetworkInferencesAtBlock(
 		)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
-			return networkInferences, nil
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
-			return networkInferences, nil
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
 
 		Logger(ctx).Debug(fmt.Sprintf("Creating network inferences for topic %v with %v inferences and %v forecasts", topicId, len(inferences.Inferences), len(forecasts.Forecasts)))
@@ -109,9 +120,13 @@ func GetNetworkInferencesAtBlock(
 		)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
-			return nil, err
+			return nil, nil, infererWeights, forecasterWeights, err
 		}
 		networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
+
+		forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
+		infererWeights = networkInferenceBuilder.weights.inferers
+		forecasterWeights = networkInferenceBuilder.weights.forecasters
 	} else {
 		// If there is only one valid inference, then the network inference is the same as the single inference
 		// For the forecasts to be meaningful, there should be at least 2 inferences
@@ -134,5 +149,5 @@ func GetNetworkInferencesAtBlock(
 		}
 	}
 
-	return networkInferences, nil
+	return networkInferences, forecastImpliedInferencesByWorker, infererWeights, forecasterWeights, nil
 }
