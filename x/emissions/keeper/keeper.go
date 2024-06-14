@@ -832,7 +832,6 @@ func (k *Keeper) RemoveStake(
 		return err
 	}
 	reputerStakeInTopicWithoutDelegateStake := reputerStakeInTopic.Sub(delegateStakeUponReputerInTopic)
-	// TODO Maybe we should check if reputerStakeInTopicWithoutDelegateStake is zero and remove the key from the map
 	if stake.GT(reputerStakeInTopicWithoutDelegateStake) {
 		return types.ErrIntegerUnderflowTopicReputerStake
 	}
