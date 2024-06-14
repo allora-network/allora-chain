@@ -95,26 +95,8 @@ func (qs queryServer) GetLatestNetworkInference(
 
 	return &types.QueryLatestNetworkInferencesAtBlockResponse{
 		NetworkInferences:         networkInferences,
-		InfererWeights:            qs.ConvertWeightsToArrays(infererWeights),
-		ForecasterWeights:         qs.ConvertWeightsToArrays(forecasterWeights),
-		ForecastImpliedInferences: qs.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
+		InfererWeights:            inference_synthesis.ConvertWeightsToArrays(infererWeights),
+		ForecasterWeights:         inference_synthesis.ConvertWeightsToArrays(forecasterWeights),
+		ForecastImpliedInferences: inference_synthesis.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
 	}, nil
-}
-
-func (qs queryServer) ConvertWeightsToArrays(weights map[inference_synthesis.Worker]inference_synthesis.Weight) []*types.RegretInformedWeight {
-	weightsArray := make([]*types.RegretInformedWeight, 0)
-	for worker, weight := range weights {
-		weightsArray = append(weightsArray, &types.RegretInformedWeight{Worker: worker, Weight: weight})
-	}
-	return weightsArray
-}
-
-func (qs queryServer) ConvertForecastImpliedInferencesToArrays(
-	forecastImpliedInferenceByWorker map[string]*types.Inference,
-) []*types.WorkerAttributedValue {
-	forecastImpliedInferences := make([]*types.WorkerAttributedValue, 0)
-	for worker, inference := range forecastImpliedInferenceByWorker {
-		forecastImpliedInferences = append(forecastImpliedInferences, &types.WorkerAttributedValue{Worker: worker, Value: inference.Value})
-	}
-	return forecastImpliedInferences
 }
