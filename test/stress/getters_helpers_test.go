@@ -163,8 +163,6 @@ func getNonZeroTopicEpochLastRan(
 }
 
 // This function picks a key from a map randomly and returns it.
-// TYLER NOTE TODO: ideally this should be seeded with the seed from the env
-// and made to be concurrency aware
 func pickRandomKeyFromMap(x map[string]AccountAndAddress) (string, error) {
 	// Get the number of entries in the map
 	numEntries := len(x)
