@@ -78,9 +78,6 @@ func (qs queryServer) GetLatestNetworkInference(
 	if topic.EpochLastEnded == 0 {
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
-	if topic.EpochLength == 0 {
-		return nil, status.Errorf(codes.NotFound, "block height last reward not available for topic %v", req.TopicId)
-	}
 
 	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err := synth.GetNetworkInferencesAtBlock(
 		sdk.UnwrapSDKContext(ctx),
