@@ -28,7 +28,6 @@ import (
 )
 
 var (
-	// TODO: Change PKS to accounts here and in all the tests (like the above line)
 	PKS     = simtestutil.CreateTestPubKeys(4)
 	Addr    = sdk.AccAddress(PKS[0].Address())
 	ValAddr = sdk.ValAddress(Addr)

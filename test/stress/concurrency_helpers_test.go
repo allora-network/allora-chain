@@ -80,8 +80,6 @@ func incrementCountWorkers() {
 	mutexCountWorkers.Unlock()
 }
 
-// todo examine if we need to lock the global variables
-// if we're only doing read operations
 func reportShortStatistics(t *testing.T) {
 	mutexTopicErrors.Lock()
 	countTopicErrors := len(topicErrors)

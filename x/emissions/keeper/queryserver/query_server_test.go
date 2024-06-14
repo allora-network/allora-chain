@@ -46,10 +46,9 @@ type ChainKey struct {
 
 var (
 	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
-	// TODO: Change PKS to accounts here and in all the tests (like the above line)
-	PKS     = simtestutil.CreateTestPubKeys(10)
-	Addr    = sdk.AccAddress(PKS[0].Address())
-	ValAddr = GeneratePrivateKeys(10)
+	PKS              = simtestutil.CreateTestPubKeys(10)
+	Addr             = sdk.AccAddress(PKS[0].Address())
+	ValAddr          = GeneratePrivateKeys(10)
 )
 
 type KeeperTestSuite struct {

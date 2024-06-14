@@ -108,11 +108,6 @@ func (im IBCMiddleware) OnRecvPacket(
 		return im.app.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	// TODO, figure out how to test with simulated chains over IBC
-	// Since cosmos-sdk v0.50 has backward compatibility issue of not allowing to make two chains with different account prefix,
-	// it is only able to run two Allora chains and communicate IBC packets.
-	// So it can't send message from account with `axelar` prefix as source chain.
-
 	//if !strings.EqualFold(data.Sender, AxelarGMPAcc) {
 	//	// Not a packet that should be handled by the GMP middleware
 	//	return im.app.OnRecvPacket(ctx, packet, relayer)

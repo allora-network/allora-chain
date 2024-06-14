@@ -156,10 +156,6 @@ func TestMintModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(MintModuleTestSuite))
 }
 
-func (s *MintModuleTestSuite) TestMintingAtMaxSupply() {
-	//todo add a test here
-}
-
 func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown() {
 	params, err := s.mintKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
