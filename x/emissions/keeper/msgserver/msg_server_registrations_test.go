@@ -14,7 +14,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
-func (s *KeeperTestSuite) TestMsgRegisterReputer() {
+func (s *MsgServerTestSuite) TestMsgRegisterReputer() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -59,7 +59,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputer() {
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 }
 
-func (s *KeeperTestSuite) TestMsgRemoveRegistration() {
+func (s *MsgServerTestSuite) TestMsgRemoveRegistration() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -113,7 +113,7 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistration() {
 	require.False(isReputerRegistered, "Reputer should be registered in topic")
 }
 
-func (s *KeeperTestSuite) TestMsgRegisterWorker() {
+func (s *MsgServerTestSuite) TestMsgRegisterWorker() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -162,7 +162,7 @@ func (s *KeeperTestSuite) TestMsgRegisterWorker() {
 	require.True(isWorkerRegistered, "Worker should be registered in topic")
 }
 
-func (s *KeeperTestSuite) TestMsgRemoveRegistrationWorker() {
+func (s *MsgServerTestSuite) TestMsgRemoveRegistrationWorker() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -216,7 +216,7 @@ func (s *KeeperTestSuite) TestMsgRemoveRegistrationWorker() {
 	require.False(isWorkerRegistered, "Worker should be registered in topic")
 }
 
-func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
+func (s *MsgServerTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -238,7 +238,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
 	require.ErrorIs(err, types.ErrLibP2PKeyRequired, "Register should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientBalance() {
+func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	topicId := uint64(0)
@@ -263,7 +263,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	require.ErrorIs(types.ErrTopicRegistrantNotEnoughDenom, err, "Register should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientDenom() {
+func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	topicId := s.CreateOneTopic()
@@ -289,7 +289,7 @@ func (s *KeeperTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 	require.ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
 }
 
-func (s *KeeperTestSuite) TestBlocklistedAddressUnableToRegister() {
+func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 	// Reputer Addresses
 	reputer := s.addrs[2]
 	// Worker Addresses
@@ -363,7 +363,7 @@ func (s *KeeperTestSuite) TestBlocklistedAddressUnableToRegister() {
 	s.Require().ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
 }
 
-func (s *KeeperTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
+func (s *MsgServerTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
