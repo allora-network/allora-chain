@@ -169,7 +169,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetLatestNetworkInference",
 					Use:       "latest-network-inference [topic_id]",
-					Short:     "Get the latest Network Inferences for a topic",
+					Short:     "Get the latest Network inferences and weights for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},
