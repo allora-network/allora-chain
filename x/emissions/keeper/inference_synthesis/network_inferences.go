@@ -125,7 +125,7 @@ func GetNetworkInferencesAtBlock(
 		networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
 
 		forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
-		infererWeights = networkInferenceBuilder.weights.forecasters
+		infererWeights = networkInferenceBuilder.weights.inferers
 		forecasterWeights = networkInferenceBuilder.weights.forecasters
 	} else {
 		// If there is only one valid inference, then the network inference is the same as the single inference

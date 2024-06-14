@@ -354,37 +354,64 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	err = keeper.AddStake(s.ctx, topicId, reputer4, stake4)
 	require.NoError(err)
 
+	// Set Inferences
 	s.ctx = s.ctx.WithBlockHeight(inferenceBlockHeight)
 
-	// Set Inferences
+	getWorkerRegretValue := func(value string) types.TimestampedValue {
+		return types.TimestampedValue{
+			BlockHeight: inferenceBlockHeight,
+			Value:       alloraMath.MustNewDecFromString(value),
+		}
+	}
+
+	worker0 := "allo1s8sar766d54wzlmqhwpwdv0unzjfusjydg3l3j"
+	worker1 := "allo1rp9026g0ppp9nwdtzvxpqqhl43yqplrj7pmnhq"
+	worker2 := "allo1cmdyvyqgzudlf0ep2nht333a057wg9vwfek7tq"
+	worker3 := "allo1cr5usf94ph9w2lpeqfjkv3eyuspv47c0zx3nye"
+	worker4 := "allo19dvpcsqqer4xy7cdh4s3gtm460z6xpe2hzlf5s"
+
+	forecaster0 := "allo13hh468ghmmyfjrdwqn567j29wq8sh6pnwff0cn"
+	forecaster1 := "allo1nxqgvyt6ggu3dz7uwe8p22sac6v2v8sayhwqvz"
+	forecaster2 := "allo13hh468ghmmyfjrdwqn567j29wq8sh6pnwff0cn"
+
+	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
+	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
+	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
+	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
+	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+
+	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
+	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
+	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+
 	inferences := types.Inferences{
 		Inferences: []*types.Inference{
 			{
-				Inferer:     reputer0,
+				Inferer:     worker0,
 				Value:       alloraMath.MustNewDecFromString("-0.035995138925040600"),
 				TopicId:     topicId,
 				BlockHeight: inferenceBlockHeight,
 			},
 			{
-				Inferer:     reputer1,
+				Inferer:     worker1,
 				Value:       alloraMath.MustNewDecFromString("-0.07333303938740420"),
 				TopicId:     topicId,
 				BlockHeight: inferenceBlockHeight,
 			},
 			{
-				Inferer:     reputer2,
+				Inferer:     worker2,
 				Value:       alloraMath.MustNewDecFromString("-0.1495482917094790"),
 				TopicId:     topicId,
 				BlockHeight: inferenceBlockHeight,
 			},
 			{
-				Inferer:     reputer3,
+				Inferer:     worker3,
 				Value:       alloraMath.MustNewDecFromString("-0.12952123274063800"),
 				TopicId:     topicId,
 				BlockHeight: inferenceBlockHeight,
 			},
 			{
-				Inferer:     reputer4,
+				Inferer:     worker4,
 				Value:       alloraMath.MustNewDecFromString("-0.0703055329498285"),
 				TopicId:     topicId,
 				BlockHeight: inferenceBlockHeight,
@@ -394,6 +421,50 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 
 	err = keeper.InsertInferences(s.ctx, topicId, inferenceNonce, inferences)
 	s.Require().NoError(err)
+
+	// Set Forecasts
+	forecasts := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				Forecaster: forecaster0,
+				ForecastElements: []*types.ForecastElement{
+					{Inferer: worker0, Value: alloraMath.MustNewDecFromString("0.1")},
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.2")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.3")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.4")},
+					{Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.5")},
+				},
+				TopicId:     topicId,
+				BlockHeight: inferenceBlockHeight,
+			},
+			{
+				Forecaster: forecaster1,
+				ForecastElements: []*types.ForecastElement{
+					{Inferer: worker0, Value: alloraMath.MustNewDecFromString("0.5")},
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.4")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.3")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.2")},
+					{Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.1")},
+				},
+				TopicId:     topicId,
+				BlockHeight: inferenceBlockHeight,
+			},
+			{
+				Forecaster: forecaster2,
+				ForecastElements: []*types.ForecastElement{
+					{Inferer: worker0, Value: alloraMath.MustNewDecFromString("0.2")},
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.3")},
+					{Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.2")},
+				},
+				TopicId:     topicId,
+				BlockHeight: inferenceBlockHeight,
+			},
+		},
+	}
+
+	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce, forecasts)
 
 	// Update epoch topic epoch last ended
 	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, inferenceBlockHeight)
@@ -405,4 +476,8 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	}
 	response, err := queryServer.GetLatestNetworkInference(s.ctx, req)
 	require.NotNil(response, "Response should not be nil")
+
+	require.True(len(response.InfererWeights) > 0)
+	require.True(len(response.ForecasterWeights) > 0)
+	require.True(len(response.ForecastImpliedInferences) > 0)
 }
