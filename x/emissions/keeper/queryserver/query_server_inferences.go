@@ -71,8 +71,6 @@ func (qs queryServer) GetLatestNetworkInference(
 	*types.QueryLatestNetworkInferencesAtBlockResponse,
 	error,
 ) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -80,44 +78,16 @@ func (qs queryServer) GetLatestNetworkInference(
 	if topic.EpochLastEnded == 0 {
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
-
-	currentBlockHeight := sdkCtx.BlockHeight()
-	reputerNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, topic.Id)
-	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "no reputer nonces found for topic %v", topic.Id)
-	}
-
-	// No filtering - reputation of previous rounds can still be retried if work has been done.
-	emissionsParams, err := qs.k.GetParams(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error getting max num of retries to fulfil nonces: %s", err.Error())
-	}
-
-	maxRetriesToFulfilNoncesReputer := emissionsParams.MaxRetriesToFulfilNoncesReputer
-
-	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag)
-
-	if len(topNReputerNonces) == 0 {
-		return nil, status.Errorf(codes.NotFound, "no reputer nonces found for topic %v", topic.Id)
-	}
-
-	maxReputerNonceBlockHeight := int64(0)
-	workerNonceBlockHeight := int64(0)
-
-	for _, nonce := range topNReputerNonces {
-		nonceCopy := nonce
-		if nonceCopy.ReputerNonce.BlockHeight > maxReputerNonceBlockHeight {
-			maxReputerNonceBlockHeight = nonceCopy.ReputerNonce.BlockHeight
-			workerNonceBlockHeight = nonceCopy.WorkerNonce.BlockHeight
-		}
+	if topic.EpochLength == 0 {
+		return nil, status.Errorf(codes.NotFound, "block height last reward not available for topic %v", req.TopicId)
 	}
 
 	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err := synth.GetNetworkInferencesAtBlock(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
-		maxReputerNonceBlockHeight,
-		workerNonceBlockHeight,
+		topic.EpochLastEnded,
+		topic.EpochLastEnded-topic.EpochLength,
 	)
 	if err != nil {
 		return nil, err
