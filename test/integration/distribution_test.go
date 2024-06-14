@@ -157,15 +157,6 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
 // and rewards accounts is working as expected
 // basically testing the forked mint module that we use
 func DistributionChecks(m testCommon.TestConfig) {
-	// TODO
-	// * Fund a topic
-	// * Make inferences + forecasts
-	// * Wait for "topic ground truth lag" number of blocks to pass
-	// * Repute
-	// * Wait for epoch to end
-	// * Check validator balances increase
-	// Bad form to have a test that depends on another test, but might be most expedient to rely
-	// on the existing tests to do each of the above.
 	m.T.Log("--- Check Validator Balance Goes Up When New Blocks Are Mined  ---")
 	CheckValidatorBalancesIncreaseOnNewBlock(m)
 	m.T.Log("--- Check Allora Rewards Module Account Balance Goes Up When New Blocks Are Mined  ---")

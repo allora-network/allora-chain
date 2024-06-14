@@ -3,8 +3,10 @@ module github.com/allora-network/allora-chain
 go 1.22.2
 
 replace (
-	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
-	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
+	// cosmos simapp still pins these versions
+	// https://github.com/cosmos/cosmos-sdk/issues/10409
+	// https://github.com/cosmos/cosmos-sdk/blob/a32186608aab0bd436049377ddb34f90006fcbf7/simapp/go.mod#L216
+	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
