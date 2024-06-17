@@ -19,22 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName               = "/emissions.v1.Msg/UpdateParams"
-	Msg_InsertBulkWorkerPayload_FullMethodName    = "/emissions.v1.Msg/InsertBulkWorkerPayload"
-	Msg_CreateNewTopic_FullMethodName             = "/emissions.v1.Msg/CreateNewTopic"
-	Msg_Register_FullMethodName                   = "/emissions.v1.Msg/Register"
-	Msg_RemoveRegistration_FullMethodName         = "/emissions.v1.Msg/RemoveRegistration"
-	Msg_InsertBulkReputerPayload_FullMethodName   = "/emissions.v1.Msg/InsertBulkReputerPayload"
-	Msg_AddStake_FullMethodName                   = "/emissions.v1.Msg/AddStake"
-	Msg_StartRemoveStake_FullMethodName           = "/emissions.v1.Msg/StartRemoveStake"
-	Msg_ConfirmRemoveStake_FullMethodName         = "/emissions.v1.Msg/ConfirmRemoveStake"
-	Msg_DelegateStake_FullMethodName              = "/emissions.v1.Msg/DelegateStake"
-	Msg_RewardDelegateStake_FullMethodName        = "/emissions.v1.Msg/RewardDelegateStake"
-	Msg_StartRemoveDelegateStake_FullMethodName   = "/emissions.v1.Msg/StartRemoveDelegateStake"
-	Msg_ConfirmRemoveDelegateStake_FullMethodName = "/emissions.v1.Msg/ConfirmRemoveDelegateStake"
-	Msg_FundTopic_FullMethodName                  = "/emissions.v1.Msg/FundTopic"
-	Msg_AddToWhitelistAdmin_FullMethodName        = "/emissions.v1.Msg/AddToWhitelistAdmin"
-	Msg_RemoveFromWhitelistAdmin_FullMethodName   = "/emissions.v1.Msg/RemoveFromWhitelistAdmin"
+	Msg_UpdateParams_FullMethodName             = "/emissions.v1.Msg/UpdateParams"
+	Msg_InsertBulkWorkerPayload_FullMethodName  = "/emissions.v1.Msg/InsertBulkWorkerPayload"
+	Msg_CreateNewTopic_FullMethodName           = "/emissions.v1.Msg/CreateNewTopic"
+	Msg_Register_FullMethodName                 = "/emissions.v1.Msg/Register"
+	Msg_RemoveRegistration_FullMethodName       = "/emissions.v1.Msg/RemoveRegistration"
+	Msg_InsertBulkReputerPayload_FullMethodName = "/emissions.v1.Msg/InsertBulkReputerPayload"
+	Msg_AddStake_FullMethodName                 = "/emissions.v1.Msg/AddStake"
+	Msg_RemoveStake_FullMethodName              = "/emissions.v1.Msg/RemoveStake"
+	Msg_DelegateStake_FullMethodName            = "/emissions.v1.Msg/DelegateStake"
+	Msg_RewardDelegateStake_FullMethodName      = "/emissions.v1.Msg/RewardDelegateStake"
+	Msg_RemoveDelegateStake_FullMethodName      = "/emissions.v1.Msg/RemoveDelegateStake"
+	Msg_FundTopic_FullMethodName                = "/emissions.v1.Msg/FundTopic"
+	Msg_AddToWhitelistAdmin_FullMethodName      = "/emissions.v1.Msg/AddToWhitelistAdmin"
+	Msg_RemoveFromWhitelistAdmin_FullMethodName = "/emissions.v1.Msg/RemoveFromWhitelistAdmin"
 )
 
 // MsgClient is the client API for Msg service.
@@ -48,12 +46,10 @@ type MsgClient interface {
 	RemoveRegistration(ctx context.Context, in *MsgRemoveRegistration, opts ...grpc.CallOption) (*MsgRemoveRegistrationResponse, error)
 	InsertBulkReputerPayload(ctx context.Context, in *MsgInsertBulkReputerPayload, opts ...grpc.CallOption) (*MsgInsertBulkReputerPayloadResponse, error)
 	AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.CallOption) (*MsgAddStakeResponse, error)
-	StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error)
-	ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error)
+	RemoveStake(ctx context.Context, in *MsgRemoveStake, opts ...grpc.CallOption) (*MsgRemoveStakeResponse, error)
 	DelegateStake(ctx context.Context, in *MsgDelegateStake, opts ...grpc.CallOption) (*MsgDelegateStakeResponse, error)
 	RewardDelegateStake(ctx context.Context, in *MsgRewardDelegateStake, opts ...grpc.CallOption) (*MsgRewardDelegateStakeResponse, error)
-	StartRemoveDelegateStake(ctx context.Context, in *MsgStartRemoveDelegateStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegateStakeResponse, error)
-	ConfirmRemoveDelegateStake(ctx context.Context, in *MsgConfirmDelegateRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveDelegateStakeResponse, error)
+	RemoveDelegateStake(ctx context.Context, in *MsgRemoveDelegateStake, opts ...grpc.CallOption) (*MsgRemoveDelegateStakeResponse, error)
 	FundTopic(ctx context.Context, in *MsgFundTopic, opts ...grpc.CallOption) (*MsgFundTopicResponse, error)
 	AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error)
@@ -130,18 +126,9 @@ func (c *msgClient) AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.
 	return out, nil
 }
 
-func (c *msgClient) StartRemoveStake(ctx context.Context, in *MsgStartRemoveStake, opts ...grpc.CallOption) (*MsgStartRemoveStakeResponse, error) {
-	out := new(MsgStartRemoveStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_StartRemoveStake_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) ConfirmRemoveStake(ctx context.Context, in *MsgConfirmRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveStakeResponse, error) {
-	out := new(MsgConfirmRemoveStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_ConfirmRemoveStake_FullMethodName, in, out, opts...)
+func (c *msgClient) RemoveStake(ctx context.Context, in *MsgRemoveStake, opts ...grpc.CallOption) (*MsgRemoveStakeResponse, error) {
+	out := new(MsgRemoveStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_RemoveStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -166,18 +153,9 @@ func (c *msgClient) RewardDelegateStake(ctx context.Context, in *MsgRewardDelega
 	return out, nil
 }
 
-func (c *msgClient) StartRemoveDelegateStake(ctx context.Context, in *MsgStartRemoveDelegateStake, opts ...grpc.CallOption) (*MsgStartRemoveDelegateStakeResponse, error) {
-	out := new(MsgStartRemoveDelegateStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_StartRemoveDelegateStake_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) ConfirmRemoveDelegateStake(ctx context.Context, in *MsgConfirmDelegateRemoveStake, opts ...grpc.CallOption) (*MsgConfirmRemoveDelegateStakeResponse, error) {
-	out := new(MsgConfirmRemoveDelegateStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_ConfirmRemoveDelegateStake_FullMethodName, in, out, opts...)
+func (c *msgClient) RemoveDelegateStake(ctx context.Context, in *MsgRemoveDelegateStake, opts ...grpc.CallOption) (*MsgRemoveDelegateStakeResponse, error) {
+	out := new(MsgRemoveDelegateStakeResponse)
+	err := c.cc.Invoke(ctx, Msg_RemoveDelegateStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -222,12 +200,10 @@ type MsgServer interface {
 	RemoveRegistration(context.Context, *MsgRemoveRegistration) (*MsgRemoveRegistrationResponse, error)
 	InsertBulkReputerPayload(context.Context, *MsgInsertBulkReputerPayload) (*MsgInsertBulkReputerPayloadResponse, error)
 	AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error)
-	StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error)
-	ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error)
+	RemoveStake(context.Context, *MsgRemoveStake) (*MsgRemoveStakeResponse, error)
 	DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error)
 	RewardDelegateStake(context.Context, *MsgRewardDelegateStake) (*MsgRewardDelegateStakeResponse, error)
-	StartRemoveDelegateStake(context.Context, *MsgStartRemoveDelegateStake) (*MsgStartRemoveDelegateStakeResponse, error)
-	ConfirmRemoveDelegateStake(context.Context, *MsgConfirmDelegateRemoveStake) (*MsgConfirmRemoveDelegateStakeResponse, error)
+	RemoveDelegateStake(context.Context, *MsgRemoveDelegateStake) (*MsgRemoveDelegateStakeResponse, error)
 	FundTopic(context.Context, *MsgFundTopic) (*MsgFundTopicResponse, error)
 	AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error)
@@ -259,11 +235,8 @@ func (UnimplementedMsgServer) InsertBulkReputerPayload(context.Context, *MsgInse
 func (UnimplementedMsgServer) AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddStake not implemented")
 }
-func (UnimplementedMsgServer) StartRemoveStake(context.Context, *MsgStartRemoveStake) (*MsgStartRemoveStakeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveStake not implemented")
-}
-func (UnimplementedMsgServer) ConfirmRemoveStake(context.Context, *MsgConfirmRemoveStake) (*MsgConfirmRemoveStakeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ConfirmRemoveStake not implemented")
+func (UnimplementedMsgServer) RemoveStake(context.Context, *MsgRemoveStake) (*MsgRemoveStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveStake not implemented")
 }
 func (UnimplementedMsgServer) DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelegateStake not implemented")
@@ -271,11 +244,8 @@ func (UnimplementedMsgServer) DelegateStake(context.Context, *MsgDelegateStake) 
 func (UnimplementedMsgServer) RewardDelegateStake(context.Context, *MsgRewardDelegateStake) (*MsgRewardDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RewardDelegateStake not implemented")
 }
-func (UnimplementedMsgServer) StartRemoveDelegateStake(context.Context, *MsgStartRemoveDelegateStake) (*MsgStartRemoveDelegateStakeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StartRemoveDelegateStake not implemented")
-}
-func (UnimplementedMsgServer) ConfirmRemoveDelegateStake(context.Context, *MsgConfirmDelegateRemoveStake) (*MsgConfirmRemoveDelegateStakeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ConfirmRemoveDelegateStake not implemented")
+func (UnimplementedMsgServer) RemoveDelegateStake(context.Context, *MsgRemoveDelegateStake) (*MsgRemoveDelegateStakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveDelegateStake not implemented")
 }
 func (UnimplementedMsgServer) FundTopic(context.Context, *MsgFundTopic) (*MsgFundTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FundTopic not implemented")
@@ -425,38 +395,20 @@ func _Msg_AddStake_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_StartRemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgStartRemoveStake)
+func _Msg_RemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveStake)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).StartRemoveStake(ctx, in)
+		return srv.(MsgServer).RemoveStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_StartRemoveStake_FullMethodName,
+		FullMethod: Msg_RemoveStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).StartRemoveStake(ctx, req.(*MsgStartRemoveStake))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_ConfirmRemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgConfirmRemoveStake)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).ConfirmRemoveStake(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_ConfirmRemoveStake_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).ConfirmRemoveStake(ctx, req.(*MsgConfirmRemoveStake))
+		return srv.(MsgServer).RemoveStake(ctx, req.(*MsgRemoveStake))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -497,38 +449,20 @@ func _Msg_RewardDelegateStake_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_StartRemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgStartRemoveDelegateStake)
+func _Msg_RemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgRemoveDelegateStake)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).StartRemoveDelegateStake(ctx, in)
+		return srv.(MsgServer).RemoveDelegateStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_StartRemoveDelegateStake_FullMethodName,
+		FullMethod: Msg_RemoveDelegateStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).StartRemoveDelegateStake(ctx, req.(*MsgStartRemoveDelegateStake))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_ConfirmRemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgConfirmDelegateRemoveStake)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).ConfirmRemoveDelegateStake(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_ConfirmRemoveDelegateStake_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).ConfirmRemoveDelegateStake(ctx, req.(*MsgConfirmDelegateRemoveStake))
+		return srv.(MsgServer).RemoveDelegateStake(ctx, req.(*MsgRemoveDelegateStake))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -623,12 +557,8 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_AddStake_Handler,
 		},
 		{
-			MethodName: "StartRemoveStake",
-			Handler:    _Msg_StartRemoveStake_Handler,
-		},
-		{
-			MethodName: "ConfirmRemoveStake",
-			Handler:    _Msg_ConfirmRemoveStake_Handler,
+			MethodName: "RemoveStake",
+			Handler:    _Msg_RemoveStake_Handler,
 		},
 		{
 			MethodName: "DelegateStake",
@@ -639,12 +569,8 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_RewardDelegateStake_Handler,
 		},
 		{
-			MethodName: "StartRemoveDelegateStake",
-			Handler:    _Msg_StartRemoveDelegateStake_Handler,
-		},
-		{
-			MethodName: "ConfirmRemoveDelegateStake",
-			Handler:    _Msg_ConfirmRemoveDelegateStake_Handler,
+			MethodName: "RemoveDelegateStake",
+			Handler:    _Msg_RemoveDelegateStake_Handler,
 		},
 		{
 			MethodName: "FundTopic",

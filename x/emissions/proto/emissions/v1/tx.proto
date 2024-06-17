@@ -30,17 +30,13 @@ service Msg {
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
-  rpc StartRemoveStake(MsgStartRemoveStake) returns (MsgStartRemoveStakeResponse);
-
-  rpc ConfirmRemoveStake(MsgConfirmRemoveStake) returns (MsgConfirmRemoveStakeResponse);
+  rpc RemoveStake(MsgRemoveStake) returns (MsgRemoveStakeResponse);
 
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
   rpc RewardDelegateStake(MsgRewardDelegateStake) returns (MsgRewardDelegateStakeResponse);
 
-  rpc StartRemoveDelegateStake(MsgStartRemoveDelegateStake) returns (MsgStartRemoveDelegateStakeResponse);
-
-  rpc ConfirmRemoveDelegateStake(MsgConfirmDelegateRemoveStake) returns (MsgConfirmRemoveDelegateStakeResponse);
+  rpc RemoveDelegateStake(MsgRemoveDelegateStake) returns (MsgRemoveDelegateStakeResponse);
 
   rpc FundTopic(MsgFundTopic) returns (MsgFundTopicResponse);
 
@@ -242,7 +238,7 @@ message MsgAddStake {
 
 message MsgAddStakeResponse {}
 
-message MsgStartRemoveStake {
+message MsgRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
@@ -255,7 +251,7 @@ message MsgStartRemoveStake {
   ];
 }
 
-message MsgStartRemoveStakeResponse {}
+message MsgRemoveStakeResponse {}
 
 message MsgConfirmRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
@@ -280,7 +276,7 @@ message MsgDelegateStake {
 
 message MsgDelegateStakeResponse {}
 
-message MsgStartRemoveDelegateStake {
+message MsgRemoveDelegateStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   string reputer = 2;
@@ -293,7 +289,7 @@ message MsgStartRemoveDelegateStake {
   ];
 }
 
-message MsgStartRemoveDelegateStakeResponse {}
+message MsgRemoveDelegateStakeResponse {}
 
 message MsgConfirmDelegateRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";

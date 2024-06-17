@@ -16,11 +16,12 @@ import (
 )
 
 var (
-	md_StakePlacement                       protoreflect.MessageDescriptor
-	fd_StakePlacement_block_removal_started protoreflect.FieldDescriptor
-	fd_StakePlacement_topic_id              protoreflect.FieldDescriptor
-	fd_StakePlacement_reputer               protoreflect.FieldDescriptor
-	fd_StakePlacement_amount                protoreflect.FieldDescriptor
+	md_StakePlacement                         protoreflect.MessageDescriptor
+	fd_StakePlacement_block_removal_started   protoreflect.FieldDescriptor
+	fd_StakePlacement_topic_id                protoreflect.FieldDescriptor
+	fd_StakePlacement_reputer                 protoreflect.FieldDescriptor
+	fd_StakePlacement_amount                  protoreflect.FieldDescriptor
+	fd_StakePlacement_block_removal_completed protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -30,6 +31,7 @@ func init() {
 	fd_StakePlacement_topic_id = md_StakePlacement.Fields().ByName("topic_id")
 	fd_StakePlacement_reputer = md_StakePlacement.Fields().ByName("reputer")
 	fd_StakePlacement_amount = md_StakePlacement.Fields().ByName("amount")
+	fd_StakePlacement_block_removal_completed = md_StakePlacement.Fields().ByName("block_removal_completed")
 }
 
 var _ protoreflect.Message = (*fastReflection_StakePlacement)(nil)
@@ -121,6 +123,12 @@ func (x *fastReflection_StakePlacement) Range(f func(protoreflect.FieldDescripto
 			return
 		}
 	}
+	if x.BlockRemovalCompleted != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockRemovalCompleted)
+		if !f(fd_StakePlacement_block_removal_completed, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -144,6 +152,8 @@ func (x *fastReflection_StakePlacement) Has(fd protoreflect.FieldDescriptor) boo
 		return x.Reputer != ""
 	case "emissions.v1.StakePlacement.amount":
 		return x.Amount != ""
+	case "emissions.v1.StakePlacement.block_removal_completed":
+		return x.BlockRemovalCompleted != int64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.StakePlacement"))
@@ -168,6 +178,8 @@ func (x *fastReflection_StakePlacement) Clear(fd protoreflect.FieldDescriptor) {
 		x.Reputer = ""
 	case "emissions.v1.StakePlacement.amount":
 		x.Amount = ""
+	case "emissions.v1.StakePlacement.block_removal_completed":
+		x.BlockRemovalCompleted = int64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.StakePlacement"))
@@ -196,6 +208,9 @@ func (x *fastReflection_StakePlacement) Get(descriptor protoreflect.FieldDescrip
 	case "emissions.v1.StakePlacement.amount":
 		value := x.Amount
 		return protoreflect.ValueOfString(value)
+	case "emissions.v1.StakePlacement.block_removal_completed":
+		value := x.BlockRemovalCompleted
+		return protoreflect.ValueOfInt64(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.StakePlacement"))
@@ -224,6 +239,8 @@ func (x *fastReflection_StakePlacement) Set(fd protoreflect.FieldDescriptor, val
 		x.Reputer = value.Interface().(string)
 	case "emissions.v1.StakePlacement.amount":
 		x.Amount = value.Interface().(string)
+	case "emissions.v1.StakePlacement.block_removal_completed":
+		x.BlockRemovalCompleted = value.Int()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.StakePlacement"))
@@ -252,6 +269,8 @@ func (x *fastReflection_StakePlacement) Mutable(fd protoreflect.FieldDescriptor)
 		panic(fmt.Errorf("field reputer of message emissions.v1.StakePlacement is not mutable"))
 	case "emissions.v1.StakePlacement.amount":
 		panic(fmt.Errorf("field amount of message emissions.v1.StakePlacement is not mutable"))
+	case "emissions.v1.StakePlacement.block_removal_completed":
+		panic(fmt.Errorf("field block_removal_completed of message emissions.v1.StakePlacement is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.StakePlacement"))
@@ -273,6 +292,8 @@ func (x *fastReflection_StakePlacement) NewField(fd protoreflect.FieldDescriptor
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.StakePlacement.amount":
 		return protoreflect.ValueOfString("")
+	case "emissions.v1.StakePlacement.block_removal_completed":
+		return protoreflect.ValueOfInt64(int64(0))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.StakePlacement"))
@@ -356,6 +377,9 @@ func (x *fastReflection_StakePlacement) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		if x.BlockRemovalCompleted != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockRemovalCompleted))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -384,6 +408,11 @@ func (x *fastReflection_StakePlacement) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.BlockRemovalCompleted != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockRemovalCompleted))
+			i--
+			dAtA[i] = 0x28
 		}
 		if len(x.Amount) > 0 {
 			i -= len(x.Amount)
@@ -560,6 +589,25 @@ func (x *fastReflection_StakePlacement) ProtoMethods() *protoiface.Methods {
 				}
 				x.Amount = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 5:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockRemovalCompleted", wireType)
+				}
+				x.BlockRemovalCompleted = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlockRemovalCompleted |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -596,12 +644,13 @@ func (x *fastReflection_StakePlacement) ProtoMethods() *protoiface.Methods {
 }
 
 var (
-	md_DelegateStakePlacement                       protoreflect.MessageDescriptor
-	fd_DelegateStakePlacement_block_removal_started protoreflect.FieldDescriptor
-	fd_DelegateStakePlacement_topic_id              protoreflect.FieldDescriptor
-	fd_DelegateStakePlacement_reputer               protoreflect.FieldDescriptor
-	fd_DelegateStakePlacement_delegator             protoreflect.FieldDescriptor
-	fd_DelegateStakePlacement_amount                protoreflect.FieldDescriptor
+	md_DelegateStakePlacement                         protoreflect.MessageDescriptor
+	fd_DelegateStakePlacement_block_removal_started   protoreflect.FieldDescriptor
+	fd_DelegateStakePlacement_topic_id                protoreflect.FieldDescriptor
+	fd_DelegateStakePlacement_reputer                 protoreflect.FieldDescriptor
+	fd_DelegateStakePlacement_delegator               protoreflect.FieldDescriptor
+	fd_DelegateStakePlacement_amount                  protoreflect.FieldDescriptor
+	fd_DelegateStakePlacement_block_removal_completed protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -612,6 +661,7 @@ func init() {
 	fd_DelegateStakePlacement_reputer = md_DelegateStakePlacement.Fields().ByName("reputer")
 	fd_DelegateStakePlacement_delegator = md_DelegateStakePlacement.Fields().ByName("delegator")
 	fd_DelegateStakePlacement_amount = md_DelegateStakePlacement.Fields().ByName("amount")
+	fd_DelegateStakePlacement_block_removal_completed = md_DelegateStakePlacement.Fields().ByName("block_removal_completed")
 }
 
 var _ protoreflect.Message = (*fastReflection_DelegateStakePlacement)(nil)
@@ -709,6 +759,12 @@ func (x *fastReflection_DelegateStakePlacement) Range(f func(protoreflect.FieldD
 			return
 		}
 	}
+	if x.BlockRemovalCompleted != int64(0) {
+		value := protoreflect.ValueOfInt64(x.BlockRemovalCompleted)
+		if !f(fd_DelegateStakePlacement_block_removal_completed, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -734,6 +790,8 @@ func (x *fastReflection_DelegateStakePlacement) Has(fd protoreflect.FieldDescrip
 		return x.Delegator != ""
 	case "emissions.v1.DelegateStakePlacement.amount":
 		return x.Amount != ""
+	case "emissions.v1.DelegateStakePlacement.block_removal_completed":
+		return x.BlockRemovalCompleted != int64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.DelegateStakePlacement"))
@@ -760,6 +818,8 @@ func (x *fastReflection_DelegateStakePlacement) Clear(fd protoreflect.FieldDescr
 		x.Delegator = ""
 	case "emissions.v1.DelegateStakePlacement.amount":
 		x.Amount = ""
+	case "emissions.v1.DelegateStakePlacement.block_removal_completed":
+		x.BlockRemovalCompleted = int64(0)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.DelegateStakePlacement"))
@@ -791,6 +851,9 @@ func (x *fastReflection_DelegateStakePlacement) Get(descriptor protoreflect.Fiel
 	case "emissions.v1.DelegateStakePlacement.amount":
 		value := x.Amount
 		return protoreflect.ValueOfString(value)
+	case "emissions.v1.DelegateStakePlacement.block_removal_completed":
+		value := x.BlockRemovalCompleted
+		return protoreflect.ValueOfInt64(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.DelegateStakePlacement"))
@@ -821,6 +884,8 @@ func (x *fastReflection_DelegateStakePlacement) Set(fd protoreflect.FieldDescrip
 		x.Delegator = value.Interface().(string)
 	case "emissions.v1.DelegateStakePlacement.amount":
 		x.Amount = value.Interface().(string)
+	case "emissions.v1.DelegateStakePlacement.block_removal_completed":
+		x.BlockRemovalCompleted = value.Int()
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.DelegateStakePlacement"))
@@ -851,6 +916,8 @@ func (x *fastReflection_DelegateStakePlacement) Mutable(fd protoreflect.FieldDes
 		panic(fmt.Errorf("field delegator of message emissions.v1.DelegateStakePlacement is not mutable"))
 	case "emissions.v1.DelegateStakePlacement.amount":
 		panic(fmt.Errorf("field amount of message emissions.v1.DelegateStakePlacement is not mutable"))
+	case "emissions.v1.DelegateStakePlacement.block_removal_completed":
+		panic(fmt.Errorf("field block_removal_completed of message emissions.v1.DelegateStakePlacement is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.DelegateStakePlacement"))
@@ -874,6 +941,8 @@ func (x *fastReflection_DelegateStakePlacement) NewField(fd protoreflect.FieldDe
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.DelegateStakePlacement.amount":
 		return protoreflect.ValueOfString("")
+	case "emissions.v1.DelegateStakePlacement.block_removal_completed":
+		return protoreflect.ValueOfInt64(int64(0))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.DelegateStakePlacement"))
@@ -961,6 +1030,9 @@ func (x *fastReflection_DelegateStakePlacement) ProtoMethods() *protoiface.Metho
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		if x.BlockRemovalCompleted != 0 {
+			n += 1 + runtime.Sov(uint64(x.BlockRemovalCompleted))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -989,6 +1061,11 @@ func (x *fastReflection_DelegateStakePlacement) ProtoMethods() *protoiface.Metho
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.BlockRemovalCompleted != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.BlockRemovalCompleted))
+			i--
+			dAtA[i] = 0x30
 		}
 		if len(x.Amount) > 0 {
 			i -= len(x.Amount)
@@ -1204,6 +1281,25 @@ func (x *fastReflection_DelegateStakePlacement) ProtoMethods() *protoiface.Metho
 				}
 				x.Amount = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 6:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field BlockRemovalCompleted", wireType)
+				}
+				x.BlockRemovalCompleted = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.BlockRemovalCompleted |= int64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -1741,10 +1837,11 @@ type StakePlacement struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	BlockRemovalStarted int64  `protobuf:"varint,1,opt,name=block_removal_started,json=blockRemovalStarted,proto3" json:"block_removal_started,omitempty"`
-	TopicId             uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Reputer             string `protobuf:"bytes,3,opt,name=reputer,proto3" json:"reputer,omitempty"`
-	Amount              string `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	BlockRemovalStarted   int64  `protobuf:"varint,1,opt,name=block_removal_started,json=blockRemovalStarted,proto3" json:"block_removal_started,omitempty"`
+	TopicId               uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer               string `protobuf:"bytes,3,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Amount                string `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	BlockRemovalCompleted int64  `protobuf:"varint,5,opt,name=block_removal_completed,json=blockRemovalCompleted,proto3" json:"block_removal_completed,omitempty"`
 }
 
 func (x *StakePlacement) Reset() {
@@ -1795,16 +1892,24 @@ func (x *StakePlacement) GetAmount() string {
 	return ""
 }
 
+func (x *StakePlacement) GetBlockRemovalCompleted() int64 {
+	if x != nil {
+		return x.BlockRemovalCompleted
+	}
+	return 0
+}
+
 type DelegateStakePlacement struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	BlockRemovalStarted int64  `protobuf:"varint,1,opt,name=block_removal_started,json=blockRemovalStarted,proto3" json:"block_removal_started,omitempty"`
-	TopicId             uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
-	Reputer             string `protobuf:"bytes,3,opt,name=reputer,proto3" json:"reputer,omitempty"`
-	Delegator           string `protobuf:"bytes,4,opt,name=delegator,proto3" json:"delegator,omitempty"`
-	Amount              string `protobuf:"bytes,5,opt,name=amount,proto3" json:"amount,omitempty"`
+	BlockRemovalStarted   int64  `protobuf:"varint,1,opt,name=block_removal_started,json=blockRemovalStarted,proto3" json:"block_removal_started,omitempty"`
+	TopicId               uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer               string `protobuf:"bytes,3,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	Delegator             string `protobuf:"bytes,4,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	Amount                string `protobuf:"bytes,5,opt,name=amount,proto3" json:"amount,omitempty"`
+	BlockRemovalCompleted int64  `protobuf:"varint,6,opt,name=block_removal_completed,json=blockRemovalCompleted,proto3" json:"block_removal_completed,omitempty"`
 }
 
 func (x *DelegateStakePlacement) Reset() {
@@ -1862,6 +1967,13 @@ func (x *DelegateStakePlacement) GetAmount() string {
 	return ""
 }
 
+func (x *DelegateStakePlacement) GetBlockRemovalCompleted() int64 {
+	if x != nil {
+		return x.BlockRemovalCompleted
+	}
+	return 0
+}
+
 type DelegatorInfo struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1914,7 +2026,7 @@ var file_emissions_v1_stake_proto_rawDesc = []byte{
 	0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xc3, 0x01, 0x0a,
+	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xfb, 0x01, 0x0a,
 	0x0e, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x12,
 	0x32, 0x0a, 0x15, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c,
 	0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x13,
@@ -1927,21 +2039,28 @@ var file_emissions_v1_stake_proto_rawDesc = []byte{
 	0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d,
 	0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
 	0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75,
-	0x6e, 0x74, 0x22, 0xe9, 0x01, 0x0a, 0x16, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x53,
-	0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x32, 0x0a,
-	0x15, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x5f, 0x73,
-	0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x13, 0x62, 0x6c,
-	0x6f, 0x63, 0x6b, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x53, 0x74, 0x61, 0x72, 0x74, 0x65,
-	0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07,
-	0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72,
-	0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x1c, 0x0a, 0x09, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61,
-	0x74, 0x6f, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x64, 0x65, 0x6c, 0x65, 0x67,
-	0x61, 0x74, 0x6f, 0x72, 0x12, 0x48, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x05,
-	0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f,
-	0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
-	0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e,
-	0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0xba,
+	0x6e, 0x74, 0x12, 0x36, 0x0a, 0x17, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x72, 0x65, 0x6d, 0x6f,
+	0x76, 0x61, 0x6c, 0x5f, 0x63, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x15, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61,
+	0x6c, 0x43, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x22, 0xa1, 0x02, 0x0a, 0x16, 0x44,
+	0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x65, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x50, 0x6c, 0x61, 0x63,
+	0x65, 0x6d, 0x65, 0x6e, 0x74, 0x12, 0x32, 0x0a, 0x15, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x72,
+	0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x03, 0x52, 0x13, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x65, 0x6d, 0x6f, 0x76,
+	0x61, 0x6c, 0x53, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x12, 0x1c,
+	0x0a, 0x09, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x09, 0x64, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x48, 0x0a, 0x06,
+	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde,
+	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e,
+	0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49, 0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74, 0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x06,
+	0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x36, 0x0a, 0x17, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f,
+	0x72, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x5f, 0x63, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65,
+	0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x03, 0x52, 0x15, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x65,
+	0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x43, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x22, 0xba,
 	0x01, 0x0a, 0x0d, 0x44, 0x65, 0x6c, 0x65, 0x67, 0x61, 0x74, 0x6f, 0x72, 0x49, 0x6e, 0x66, 0x6f,
 	0x12, 0x4f, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
 	0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
