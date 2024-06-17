@@ -546,17 +546,21 @@ func GetAllReputersOutput(
 				if err != nil {
 					return nil, nil, err
 				}
-				coeffDiffTimesListenedDiff, err := coeffDiff.Mul(listenedDiff)
-				if err != nil {
-					return nil, nil, err
-				}
-				coefDiffTimesListenedDiffOverStakedFracDiff, err := coeffDiffTimesListenedDiff.Quo(stakedFracDiff)
-				if err != nil {
-					return nil, nil, err
-				}
-				coefficients[l], err = oldCoefficients[l].Add(coefDiffTimesListenedDiffOverStakedFracDiff)
-				if err != nil {
-					return nil, nil, err
+				if stakedFracDiff.IsZero() {
+					i = gradientDescentMaxIters
+				} else {
+					coeffDiffTimesListenedDiff, err := coeffDiff.Mul(listenedDiff)
+					if err != nil {
+						return nil, nil, err
+					}
+					coefDiffTimesListenedDiffOverStakedFracDiff, err := coeffDiffTimesListenedDiff.Quo(stakedFracDiff)
+					if err != nil {
+						return nil, nil, err
+					}
+					coefficients[l], err = oldCoefficients[l].Add(coefDiffTimesListenedDiffOverStakedFracDiff)
+					if err != nil {
+						return nil, nil, err
+					}
 				}
 			}
 		} else {
@@ -571,7 +575,6 @@ func GetAllReputersOutput(
 			return nil, nil, err
 		}
 
-		// copy(finalScores, newScores)
 		i++
 	}
 
