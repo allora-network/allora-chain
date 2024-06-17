@@ -11,12 +11,14 @@ import (
 )
 
 const (
-	AttributeKeyActorType   = "actor_type"
-	AttributeKeyTopicId     = "topic_id"
-	AttributeKeyBlockHeight = "block_height"
-	AttributeKeyAddresses   = "addresses"
-	AttributeKeyScores      = "scores"
-	AttributeKeyRewards     = "rewards"
+	AttributeKeyActorType     = "actor_type"
+	AttributeKeyTopicId       = "topic_id"
+	AttributeKeyBlockHeight   = "block_height"
+	AttributeKeyAddresses     = "addresses"
+	AttributeKeyScores        = "scores"
+	AttributeKeyRewards       = "rewards"
+	AttributeKeyNaiveValue    = "naive_value"
+	AttributeKeyCombinedValue = "combined_value"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -365,4 +367,33 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithNoRewards(t *testing.T
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 0)
+}
+
+func TestEmitNewNetworkLossSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	blockHeight := int64(10)
+	loss := types.ValueBundle{
+		CombinedValue: alloraMath.MustNewDecFromString("10"),
+		NaiveValue:    alloraMath.MustNewDecFromString("20"),
+	}
+
+	types.EmitNewNetworkLossSetEvent(ctx, topicId, blockHeight, loss)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v1.EventNetworkLossSet", event.Type)
+
+	attributes := event.Attributes
+	require.Len(t, attributes, 4)
+
+	val, exists := event.GetAttribute(AttributeKeyCombinedValue)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute(AttributeKeyNaiveValue)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "20")
 }
