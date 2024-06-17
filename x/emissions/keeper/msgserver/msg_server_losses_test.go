@@ -371,25 +371,20 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithUnderstakeReputerIsI
 	require.NoError(err)
 	removalDelay := params.RemoveStakeDelayWindow
 
-	startRemoveStakeMsg := &types.MsgStartRemoveStake{
+	startRemoveStakeMsg := &types.MsgRemoveStake{
 		Sender:  reputerAddr.String(),
 		TopicId: topicId,
 		Amount:  reputerStake,
 	}
 
-	_, err = msgServer.StartRemoveStake(ctx, startRemoveStakeMsg)
+	_, err = msgServer.RemoveStake(ctx, startRemoveStakeMsg)
 	require.NoError(err)
 
-	block = block + removalDelay + 1
+	block = block + removalDelay
 	ctx = ctx.WithBlockHeight(block)
 
-	confirmRemoveStakeMsg := &types.MsgConfirmRemoveStake{
-		Sender:  reputerAddr.String(),
-		TopicId: topicId,
-	}
-
-	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveStakeMsg)
-	require.NoError(err)
+	// run the end block to force the removal of stake to go through
+	s.appModule.EndBlock(ctx)
 
 	// END MODIFICATION
 
