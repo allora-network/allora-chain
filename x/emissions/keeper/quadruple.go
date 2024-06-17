@@ -113,6 +113,9 @@ func (t quadrupleKeyCodec[K1, K2, K3, K4]) EncodeJSON(value Quadruple[K1, K2, K3
 	}
 
 	json4, err := t.keyCodec4.EncodeJSON(*value.k4)
+	if err != nil {
+		return nil, err
+	}
 
 	return json.Marshal(jsonQuadrupleKey{json1, json2, json3, json4})
 }
@@ -216,7 +219,7 @@ func (t quadrupleKeyCodec[K1, K2, K3, K4]) Encode(buffer []byte, key Quadruple[K
 		writtenTotal += written
 	}
 	if key.k3 != nil {
-		written, err := t.keyCodec3.Encode(buffer[writtenTotal:], *key.k3)
+		written, err := t.keyCodec3.EncodeNonTerminal(buffer[writtenTotal:], *key.k3)
 		if err != nil {
 			return 0, err
 		}
@@ -253,6 +256,7 @@ func (t quadrupleKeyCodec[K1, K2, K3, K4]) Decode(buffer []byte) (int, Quadruple
 	if err != nil {
 		return 0, Quadruple[K1, K2, K3, K4]{}, err
 	}
+	readTotal += read
 	return readTotal, Join4(key1, key2, key3, key4), nil
 }
 
