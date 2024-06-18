@@ -94,12 +94,9 @@ func NewRewardsSetEventBase(actorType ActorType, blockHeight BlockHeight, reward
 }
 
 func NewNetworkLossSetEventBase(topicId TopicId, blockHeight BlockHeight, lossValueBundle ValueBundle) proto.Message {
-	naiveValue := lossValueBundle.NaiveValue
-	combinedValue := lossValueBundle.CombinedValue
 	return &EventNetworkLossSet{
-		TopicId:       topicId,
-		BlockHeight:   blockHeight,
-		CombinedValue: combinedValue,
-		NaiveValue:    naiveValue,
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		ValueBundle: &lossValueBundle,
 	}
 }

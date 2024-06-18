@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -11,14 +12,13 @@ import (
 )
 
 const (
-	AttributeKeyActorType     = "actor_type"
-	AttributeKeyTopicId       = "topic_id"
-	AttributeKeyBlockHeight   = "block_height"
-	AttributeKeyAddresses     = "addresses"
-	AttributeKeyScores        = "scores"
-	AttributeKeyRewards       = "rewards"
-	AttributeKeyNaiveValue    = "naive_value"
-	AttributeKeyCombinedValue = "combined_value"
+	AttributeKeyActorType   = "actor_type"
+	AttributeKeyTopicId     = "topic_id"
+	AttributeKeyBlockHeight = "block_height"
+	AttributeKeyAddresses   = "addresses"
+	AttributeKeyScores      = "scores"
+	AttributeKeyRewards     = "rewards"
+	AttributeKeyValueBundle = "value_bundle"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -374,8 +374,13 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	topicId := uint64(1)
 	blockHeight := int64(10)
 	loss := types.ValueBundle{
-		CombinedValue: alloraMath.MustNewDecFromString("10"),
-		NaiveValue:    alloraMath.MustNewDecFromString("20"),
+		CombinedValue:          alloraMath.MustNewDecFromString("10"),
+		NaiveValue:             alloraMath.MustNewDecFromString("20"),
+		InfererValues:          []*types.WorkerAttributedValue{{Worker: "TestInferer", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "TestForecaster", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "TestInferer2", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer3", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "TestForecaster3", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster4", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "TestForecaster5", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster6", Value: alloraMath.MustNewDecFromString("0.0112")}},
 	}
 
 	types.EmitNewNetworkLossSetEvent(ctx, topicId, blockHeight, loss)
@@ -387,13 +392,17 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Equal(t, "emissions.v1.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 4)
+	require.Len(t, attributes, 3)
 
-	val, exists := event.GetAttribute(AttributeKeyCombinedValue)
+	var result types.ValueBundle
+	val, exists := event.GetAttribute(AttributeKeyValueBundle)
 	require.True(t, exists)
-	require.Contains(t, val.GetValue(), "10")
-
-	val, exists = event.GetAttribute(AttributeKeyNaiveValue)
-	require.True(t, exists)
-	require.Contains(t, val.GetValue(), "20")
+	_ = json.Unmarshal([]byte(val.GetValue()), &result)
+	require.Equal(t, loss.CombinedValue, result.CombinedValue)
+	require.Equal(t, loss.NaiveValue, result.NaiveValue)
+	require.Equal(t, loss.InfererValues, result.InfererValues)
+	require.Equal(t, loss.ForecasterValues, result.ForecasterValues)
+	require.Equal(t, loss.OneOutInfererValues, result.OneOutInfererValues)
+	require.Equal(t, loss.OneOutForecasterValues, result.OneOutForecasterValues)
+	require.Equal(t, loss.OneInForecasterValues, result.OneInForecasterValues)
 }
