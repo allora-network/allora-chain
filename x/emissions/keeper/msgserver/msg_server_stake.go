@@ -172,12 +172,17 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	moduleParams, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
 	stakeToRemove := types.DelegateStakePlacement{
-		BlockRemovalStarted: sdkCtx.BlockHeight(),
-		TopicId:             msg.TopicId,
-		Reputer:             msg.Reputer,
-		Delegator:           msg.Sender,
-		Amount:              msg.Amount,
+		BlockRemovalStarted:   sdkCtx.BlockHeight(),
+		TopicId:               msg.TopicId,
+		Reputer:               msg.Reputer,
+		Delegator:             msg.Sender,
+		Amount:                msg.Amount,
+		BlockRemovalCompleted: sdkCtx.BlockHeight() + moduleParams.RemoveStakeDelayWindow,
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
