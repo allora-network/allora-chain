@@ -3,6 +3,7 @@ package msgserver
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -53,9 +54,8 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 }
 
 // RemoveStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
-// once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
-// if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
-// and one must start the stake removal process again and wait the delay again.
+// once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
+// if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) (*types.MsgRemoveStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
@@ -82,6 +82,17 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	// find out if we have a stake removal in progress, if so overwrite it
+	removal, found, err := ms.k.GetFirstStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
+	if err != nil {
+		return nil, errors.Wrap(err, "error while searching previous stake removal")
+	}
+	if found {
+		err = ms.k.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to delete previous stake removal")
+		}
+	}
 	stakeToRemove := types.StakeRemovalInfo{
 		BlockRemovalStarted:   sdkCtx.BlockHeight(),
 		BlockRemovalCompleted: sdkCtx.BlockHeight() + moduleParams.RemoveStakeDelayWindow,
@@ -96,6 +107,9 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 		return nil, err
 	}
 	return &types.MsgRemoveStakeResponse{}, nil
+}
+
+func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelRemoveStake) (*types.MsgCancelRemoveStakeResponse, error) {
 }
 
 // Delegates a stake to a reputer. Sender need not be registered to delegate stake.
@@ -176,6 +190,25 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 	if err != nil {
 		return nil, err
 	}
+	// find out if we have a stake removal in progress, if so overwrite it
+	removal, found, err := ms.k.GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(
+		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
+	)
+	if err != nil {
+		errors.Wrap(err, "error during finding delegate stake removal")
+	}
+	if found {
+		err = ms.k.DeleteDelegateStakeRemoval(
+			ctx,
+			removal.BlockRemovalCompleted,
+			removal.TopicId,
+			removal.Reputer,
+			removal.Delegator,
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to delete previous delegate stake removal")
+		}
+	}
 	stakeToRemove := types.DelegateStakeRemovalInfo{
 		BlockRemovalStarted:   sdkCtx.BlockHeight(),
 		TopicId:               msg.TopicId,
@@ -191,6 +224,9 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 		return nil, err
 	}
 	return &types.MsgRemoveDelegateStakeResponse{}, nil
+}
+
+func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.MsgCancelDelegateRemoveStake) (*types.MsgCancelDelegateRemoveStakeResponse, error) {
 }
 
 func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {

@@ -414,7 +414,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	// from the queue of waiting stake removals
 	// but we don't actually care because that's not the focus of this test, so long as the stake
 	// values change appropriately we're good.
-	s.Require().ErrorIs(err, types.ErrConfirmRemoveStakeNoRemovalStarted)
+	s.Require().ErrorIs(err, types.ErrNoStakeRemovalStarted)
 
 	// Check if stake is zero
 	stake, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, reputerAddrs[0])

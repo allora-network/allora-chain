@@ -32,6 +32,8 @@ service Msg {
 
   rpc RemoveStake(MsgRemoveStake) returns (MsgRemoveStakeResponse);
 
+  rpc CancelRemoveStake(MsgCancelRemoveStake) returns (MsgCancelRemoveStakeResponse);
+
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
   rpc RewardDelegateStake(MsgRewardDelegateStake) returns (MsgRewardDelegateStakeResponse);

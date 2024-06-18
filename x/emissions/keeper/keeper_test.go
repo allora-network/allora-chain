@@ -2950,3 +2950,99 @@ func (s *KeeperTestSuite) TestGetCurrentTopicWeight() {
 	s.T().Log("revenue ", cosmosMath.NewInt(500), revenue)
 	s.Require().NoError(err)
 }
+
+func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicId() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	reputer := "reputer"
+	topicId := uint64(1)
+
+	// Create a stake removal info
+	stakeRemovalInfo := types.StakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               reputer,
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(100),
+		BlockRemovalCompleted: 30,
+	}
+	anotherStakeRemoval := types.StakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               "reputer2",
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(200),
+		BlockRemovalCompleted: 30,
+	}
+
+	// Set the stake removal info in the keeper
+	err := k.SetStakeRemoval(ctx, stakeRemovalInfo)
+	s.Require().NoError(err)
+	err = k.SetStakeRemoval(ctx, anotherStakeRemoval)
+	s.Require().NoError(err)
+
+	// Get the first stake removal for the reputer and topic ID
+	result, found, err := k.GetFirstStakeRemovalForReputerAndTopicId(ctx, reputer, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(stakeRemovalInfo, result)
+}
+
+func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicIdNotFound() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	reputer := "reputer"
+	topicId := uint64(1)
+
+	_, found, err := k.GetFirstStakeRemovalForReputerAndTopicId(ctx, reputer, topicId)
+	s.Require().NoError(err)
+	s.Require().False(found)
+}
+
+func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	delegator := "delegator"
+	reputer := "reputer"
+	topicId := uint64(1)
+
+	// Create a stake removal info
+	stakeRemovalInfo := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               reputer,
+		Delegator:             delegator,
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(100),
+		BlockRemovalCompleted: 30,
+	}
+	anotherStakeRemoval := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               "reputer2",
+		Delegator:             delegator,
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(200),
+		BlockRemovalCompleted: 30,
+	}
+
+	// Set the stake removal info in the keeper
+	err := k.SetDelegateStakeRemoval(ctx, stakeRemovalInfo)
+	s.Require().NoError(err)
+	err = k.SetDelegateStakeRemoval(ctx, anotherStakeRemoval)
+	s.Require().NoError(err)
+
+	// Get the first stake removal for the reputer and topic ID
+	result, found, err := k.GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(stakeRemovalInfo, result)
+}
+
+func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAndTopicIdNotFound() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	delegator := "delegator"
+	reputer := "reputer"
+	topicId := uint64(1)
+
+	_, found, err := k.GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicId)
+	s.Require().NoError(err)
+	s.Require().False(found)
+}
