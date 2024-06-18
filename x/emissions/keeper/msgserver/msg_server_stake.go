@@ -82,7 +82,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	stakeToRemove := types.StakePlacement{
+	stakeToRemove := types.StakeRemovalInfo{
 		BlockRemovalStarted:   sdkCtx.BlockHeight(),
 		BlockRemovalCompleted: sdkCtx.BlockHeight() + moduleParams.RemoveStakeDelayWindow,
 		TopicId:               msg.TopicId,
@@ -176,7 +176,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 	if err != nil {
 		return nil, err
 	}
-	stakeToRemove := types.DelegateStakePlacement{
+	stakeToRemove := types.DelegateStakeRemovalInfo{
 		BlockRemovalStarted:   sdkCtx.BlockHeight(),
 		TopicId:               msg.TopicId,
 		Reputer:               msg.Reputer,

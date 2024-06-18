@@ -1324,14 +1324,14 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	reputer1 := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
 	// Create a sample stake removal information
-	removalInfo0 := types.StakePlacement{
+	removalInfo0 := types.StakeRemovalInfo{
 		BlockRemovalStarted:   12,
 		BlockRemovalCompleted: 13,
 		TopicId:               topic0,
 		Reputer:               reputer0,
 		Amount:                cosmosMath.NewInt(100),
 	}
-	removalInfo1 := types.StakePlacement{
+	removalInfo1 := types.StakeRemovalInfo{
 		BlockRemovalStarted:   13,
 		BlockRemovalCompleted: 14,
 		TopicId:               topic1,
@@ -1407,7 +1407,7 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	delegator1 := "allo16skpmhw8etsu70kknkmxquk5ut7lsewgtqqtlu"
 
 	// Create sample delegate stake removal information
-	removalInfo0 := types.DelegateStakePlacement{
+	removalInfo0 := types.DelegateStakeRemovalInfo{
 		BlockRemovalStarted:   12,
 		BlockRemovalCompleted: 13,
 		TopicId:               topic0,
@@ -1415,7 +1415,7 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 		Delegator:             delegator0,
 		Amount:                cosmosMath.NewInt(300),
 	}
-	removalInfo1 := types.DelegateStakePlacement{
+	removalInfo1 := types.DelegateStakeRemovalInfo{
 		BlockRemovalStarted:   13,
 		BlockRemovalCompleted: 14,
 		TopicId:               topic1,

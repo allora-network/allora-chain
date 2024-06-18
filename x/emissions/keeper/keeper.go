@@ -92,9 +92,9 @@ type Keeper struct {
 	// amount of stake a reputer has placed in a topic + delegate stake placed in them, signalling their authority on the topic
 	stakeByReputerAndTopicId collections.Map[collections.Pair[TopicId, ActorId], cosmosMath.Int]
 	// map of (blockHeight, topic, reputer) -> removal information for that reputer
-	stakeRemoveQueue collections.Map[collections.Triple[BlockHeight, TopicId, ActorId], types.StakePlacement]
+	stakeRemoveQueue collections.Map[collections.Triple[BlockHeight, TopicId, ActorId], types.StakeRemovalInfo]
 	// map of (blockHeight, topic, delegator, reputer staked upon) -> (list of reputers delegated upon and info) to have stake removed at that block
-	delegateStakeRemoveQueue collections.Map[Quadruple[BlockHeight, TopicId, ActorId, ActorId], types.DelegateStakePlacement]
+	delegateStakeRemoveQueue collections.Map[Quadruple[BlockHeight, TopicId, ActorId, ActorId], types.DelegateStakeRemovalInfo]
 	// map of (delegator) -> amount of stake that has been placed by that delegator
 	stakeFromDelegator collections.Map[collections.Pair[TopicId, ActorId], cosmosMath.Int]
 	// map of (delegator, target) -> amount of stake that has been placed by that delegator on that target
@@ -191,8 +191,8 @@ func NewKeeper(
 		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		stakeByReputerAndTopicId:                 collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
-		stakeRemoveQueue:                         collections.NewMap(sb, types.StakeRemoveQueueKey, "stake_remove_queue", collections.TripleKeyCodec(collections.Int64Key, collections.Uint64Key, collections.StringKey), codec.CollValue[types.StakePlacement](cdc)),
-		delegateStakeRemoveQueue:                 collections.NewMap(sb, types.DelegateStakeRemoveQueueKey, "delegate_stake_remove_queue", QuadrupleKeyCodec(collections.Int64Key, collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegateStakePlacement](cdc)),
+		stakeRemoveQueue:                         collections.NewMap(sb, types.StakeRemoveQueueKey, "stake_remove_queue", collections.TripleKeyCodec(collections.Int64Key, collections.Uint64Key, collections.StringKey), codec.CollValue[types.StakeRemovalInfo](cdc)),
+		delegateStakeRemoveQueue:                 collections.NewMap(sb, types.DelegateStakeRemoveQueueKey, "delegate_stake_remove_queue", QuadrupleKeyCodec(collections.Int64Key, collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegateStakeRemovalInfo](cdc)),
 		stakeFromDelegator:                       collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
 		delegateStakePlacement:                   collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegatorInfo](cdc)),
 		stakeUponReputer:                         collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
@@ -1146,7 +1146,7 @@ func (k *Keeper) SetDelegateStakeUponReputer(ctx context.Context, topicId TopicI
 // For a given address, adds their stake removal information to the removal queue for delay waiting
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
-func (k *Keeper) SetStakeRemoval(ctx context.Context, removalInfo types.StakePlacement) error {
+func (k *Keeper) SetStakeRemoval(ctx context.Context, removalInfo types.StakeRemovalInfo) error {
 	key := collections.Join3(removalInfo.BlockRemovalCompleted, removalInfo.TopicId, removalInfo.Reputer)
 	return k.stakeRemoveQueue.Set(ctx, key, removalInfo)
 }
@@ -1169,12 +1169,22 @@ func (k *Keeper) DeleteStakeRemoval(
 	return k.stakeRemoveQueue.Remove(ctx, key)
 }
 
+// get info about a removal
+func (k Keeper) GetStakeRemoval(
+	ctx context.Context,
+	BlockHeight int64,
+	topicId TopicId,
+	reputer ActorId,
+) (types.StakeRemovalInfo, error) {
+	return k.stakeRemoveQueue.Get(ctx, collections.Join3(BlockHeight, topicId, reputer))
+}
+
 // get a list of stake removals for this block
 func (k *Keeper) GetStakeRemovalsForBlock(
 	ctx context.Context,
 	blockHeight BlockHeight,
-) ([]types.StakePlacement, error) {
-	ret := make([]types.StakePlacement, 0)
+) ([]types.StakeRemovalInfo, error) {
+	ret := make([]types.StakeRemovalInfo, 0)
 	rng := collections.NewPrefixedTripleRange[BlockHeight, TopicId, ActorId](blockHeight)
 	iter, err := k.stakeRemoveQueue.Iterate(ctx, rng)
 	if err != nil {
@@ -1193,7 +1203,7 @@ func (k *Keeper) GetStakeRemovalsForBlock(
 // For a given address, adds their stake removal information to the removal queue for delay waiting
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
-func (k *Keeper) SetDelegateStakeRemoval(ctx context.Context, removalInfo types.DelegateStakePlacement) error {
+func (k *Keeper) SetDelegateStakeRemoval(ctx context.Context, removalInfo types.DelegateStakeRemovalInfo) error {
 	key := Join4(removalInfo.BlockRemovalCompleted, removalInfo.TopicId, removalInfo.Delegator, removalInfo.Reputer)
 	return k.delegateStakeRemoveQueue.Set(ctx, key, removalInfo)
 }
@@ -1210,12 +1220,23 @@ func (k *Keeper) DeleteDelegateStakeRemoval(
 	return k.delegateStakeRemoveQueue.Remove(ctx, key)
 }
 
+// get info about a removal
+func (k Keeper) GetDelegateStakeRemoval(
+	ctx context.Context,
+	blockHeight BlockHeight,
+	topicId TopicId,
+	delegator ActorId,
+	reputer ActorId,
+) (types.DelegateStakeRemovalInfo, error) {
+	return k.delegateStakeRemoveQueue.Get(ctx, Join4(blockHeight, topicId, delegator, reputer))
+}
+
 // get a list of stake removals for this block
 func (k *Keeper) GetDelegateStakeRemovalsForBlock(
 	ctx context.Context,
 	blockHeight BlockHeight,
-) ([]types.DelegateStakePlacement, error) {
-	ret := make([]types.DelegateStakePlacement, 0)
+) ([]types.DelegateStakeRemovalInfo, error) {
+	ret := make([]types.DelegateStakeRemovalInfo, 0)
 	rng := NewSinglePrefixedQuadrupleRange[BlockHeight, TopicId, ActorId, ActorId](blockHeight)
 	iter, err := k.delegateStakeRemoveQueue.Iterate(ctx, rng)
 	if err != nil {

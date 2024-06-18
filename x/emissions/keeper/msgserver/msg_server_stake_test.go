@@ -152,7 +152,7 @@ func (s *MsgServerTestSuite) TestStartRemoveStake() {
 	require.NotNil(retrievedInfo)
 	require.Len(retrievedInfo, 1)
 
-	expected := types.StakePlacement{
+	expected := types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               senderAddr.String(),
 		Amount:                stakeAmount,
@@ -208,7 +208,7 @@ func (s *MsgServerTestSuite) TestConfirmRemoveStake() {
 	blockEnd := startBlock + removalDelay
 
 	// Simulate the stake removal request.
-	placement := types.StakePlacement{
+	placement := types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               senderAddr.String(),
 		Amount:                stakeAmount,
@@ -266,7 +266,7 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeTwiceInSameBlock() {
 	require.NoError(err)
 	require.Len(stakePlacements, 1)
 
-	expected := types.StakePlacement{
+	expected := types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               senderAddr.String(),
 		Amount:                stakeAmount,
@@ -286,7 +286,7 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeTwiceInSameBlock() {
 	stakePlacements2, err := keeper.GetStakeRemovalsForBlock(ctx, removeBlock)
 	require.NoError(err)
 	require.Len(stakePlacements2, 1)
-	expected2 := types.StakePlacement{
+	expected2 := types.StakeRemovalInfo{
 		TopicId:               expected.TopicId,
 		Reputer:               expected.Reputer,
 		Amount:                newStake,
@@ -663,7 +663,7 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
 	})
 	require.NoError(err)
 
-	expected := types.DelegateStakePlacement{
+	expected := types.DelegateStakeRemovalInfo{
 		TopicId:               topicId,
 		Delegator:             delegatorAddr.String(),
 		Reputer:               reputerAddr.String(),

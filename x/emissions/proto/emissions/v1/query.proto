@@ -102,6 +102,29 @@ service Query {
     option (google.api.http).get = "/emissions/v1/stake/{topic_id}";
   }
 
+  rpc GetStakeRemovalsForBlock(QueryStakeRemovalsForBlockRequest) returns (QueryStakeRemovalsForBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/stake_removals/{block_height}";
+  }
+
+  rpc GetDelegateStakeRemovalsForBlock(QueryDelegateStakeRemovalsForBlockRequest)
+      returns (QueryDelegateStakeRemovalsForBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake_removals/{block_height}";
+  }
+
+  rpc GetStakeRemovalInfo(QueryStakeRemovalInfoRequest) returns (QueryStakeRemovalInfoResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/stake_removal/{block_height}/{topic_id}/{address}";
+  }
+
+  rpc GetDelegateStakeRemovalInfo(QueryDelegateStakeRemovalInfoRequest)
+      returns (QueryDelegateStakeRemovalInfoResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake_removal/{block_height}/{topic_id}/{delegator_address}/"
+                                   "{reputer_address}";
+  }
+
   rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest) returns (QueryWorkerNodeInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/worker/{libp2p_key}";
@@ -393,4 +416,41 @@ message QueryIsWhitelistAdminRequest {
 
 message QueryIsWhitelistAdminResponse {
   bool is_admin = 1;
+}
+
+message QueryStakeRemovalsForBlockRequest {
+  int64 block_height = 1;
+}
+
+message QueryStakeRemovalsForBlockResponse {
+  repeated StakeRemovalInfo removals = 1;
+}
+
+message QueryDelegateStakeRemovalsForBlockRequest {
+  int64 block_height = 1;
+}
+
+message QueryDelegateStakeRemovalsForBlockResponse {
+  repeated DelegateStakeRemovalInfo removals = 1;
+}
+
+message QueryStakeRemovalInfoRequest {
+  int64 block_height = 1;
+  uint64 topic_id = 2;
+  string address = 3;
+}
+
+message QueryStakeRemovalInfoResponse {
+  StakeRemovalInfo removal = 1;
+}
+
+message QueryDelegateStakeRemovalInfoRequest {
+  int64 block_height = 1;
+  uint64 topic_id = 2;
+  string delegator_address = 3;
+  string reputer_address = 4;
+}
+
+message QueryDelegateStakeRemovalInfoResponse {
+  DelegateStakeRemovalInfo removal = 1;
 }

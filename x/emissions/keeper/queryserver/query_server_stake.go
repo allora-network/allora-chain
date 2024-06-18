@@ -114,3 +114,49 @@ func (qs queryServer) GetTopicStake(ctx context.Context, req *types.QueryTopicSt
 
 	return &types.QueryTopicStakeResponse{Amount: stake}, nil
 }
+
+func (qs queryServer) GetStakeRemovalsForBlock(
+	ctx context.Context,
+	req *types.QueryStakeRemovalsForBlockRequest,
+) (*types.QueryStakeRemovalsForBlockResponse, error) {
+	removals, err := qs.k.GetStakeRemovalsForBlock(ctx, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	removalPointers := make([]*types.StakeRemovalInfo, len(removals))
+	for i, removal := range removals {
+		removalPointers[i] = &removal
+	}
+	return &types.QueryStakeRemovalsForBlockResponse{Removals: removalPointers}, nil
+}
+
+func (qs queryServer) GetDelegateStakeRemovalsForBlock(
+	ctx context.Context,
+	req *types.QueryDelegateStakeRemovalsForBlockRequest,
+) (*types.QueryDelegateStakeRemovalsForBlockResponse, error) {
+	removals, err := qs.k.GetDelegateStakeRemovalsForBlock(ctx, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	removalPointers := make([]*types.DelegateStakeRemovalInfo, len(removals))
+	for i, removal := range removals {
+		removalPointers[i] = &removal
+	}
+	return &types.QueryDelegateStakeRemovalsForBlockResponse{Removals: removalPointers}, nil
+}
+
+func (qs queryServer) GetStakeRemovalInfo(
+	ctx context.Context,
+	req *types.QueryStakeRemovalInfoRequest,
+) (*types.QueryStakeRemovalInfoResponse, error) {
+	ret, err := qs.k.GetStakeRemoval(ctx, req.BlockHeight, req.TopicId, req.Address)
+	return &types.QueryStakeRemovalInfoResponse{Removal: &ret}, err
+}
+
+func (qs queryServer) GetDelegateStakeRemovalInfo(
+	ctx context.Context,
+	req *types.QueryDelegateStakeRemovalInfoRequest,
+) (*types.QueryDelegateStakeRemovalInfoResponse, error) {
+	ret, err := qs.k.GetDelegateStakeRemoval(ctx, req.BlockHeight, req.TopicId, req.DelegatorAddress, req.ReputerAddress)
+	return &types.QueryDelegateStakeRemovalInfoResponse{Removal: &ret}, err
+}

@@ -8,6 +8,17 @@ import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 
 message StakePlacement {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message StakeRemovalInfo {
   int64 block_removal_started = 1;
   uint64 topic_id = 2;
   string reputer = 3;
@@ -20,7 +31,7 @@ message StakePlacement {
   int64 block_removal_completed = 5;
 }
 
-message DelegateStakePlacement {
+message DelegateStakeRemovalInfo {
   int64 block_removal_started = 1;
   uint64 topic_id = 2;
   string reputer = 3;

@@ -34,6 +34,10 @@ const (
 	Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName = "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer"
 	Query_GetStakeFromDelegatorInTopic_FullMethodName          = "/emissions.v1.Query/GetStakeFromDelegatorInTopic"
 	Query_GetTopicStake_FullMethodName                         = "/emissions.v1.Query/GetTopicStake"
+	Query_GetStakeRemovalsForBlock_FullMethodName              = "/emissions.v1.Query/GetStakeRemovalsForBlock"
+	Query_GetDelegateStakeRemovalsForBlock_FullMethodName      = "/emissions.v1.Query/GetDelegateStakeRemovalsForBlock"
+	Query_GetStakeRemovalInfo_FullMethodName                   = "/emissions.v1.Query/GetStakeRemovalInfo"
+	Query_GetDelegateStakeRemovalInfo_FullMethodName           = "/emissions.v1.Query/GetDelegateStakeRemovalInfo"
 	Query_GetWorkerNodeInfo_FullMethodName                     = "/emissions.v1.Query/GetWorkerNodeInfo"
 	Query_GetReputerNodeInfo_FullMethodName                    = "/emissions.v1.Query/GetReputerNodeInfo"
 	Query_GetWorkerAddressByP2PKey_FullMethodName              = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
@@ -64,6 +68,10 @@ type QueryClient interface {
 	GetStakeFromDelegatorInTopicInReputer(ctx context.Context, in *QueryStakeFromDelegatorInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopic(ctx context.Context, in *QueryStakeFromDelegatorInTopicRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicResponse, error)
 	GetTopicStake(ctx context.Context, in *QueryTopicStakeRequest, opts ...grpc.CallOption) (*QueryTopicStakeResponse, error)
+	GetStakeRemovalsForBlock(ctx context.Context, in *QueryStakeRemovalsForBlockRequest, opts ...grpc.CallOption) (*QueryStakeRemovalsForBlockResponse, error)
+	GetDelegateStakeRemovalsForBlock(ctx context.Context, in *QueryDelegateStakeRemovalsForBlockRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalsForBlockResponse, error)
+	GetStakeRemovalInfo(ctx context.Context, in *QueryStakeRemovalInfoRequest, opts ...grpc.CallOption) (*QueryStakeRemovalInfoResponse, error)
+	GetDelegateStakeRemovalInfo(ctx context.Context, in *QueryDelegateStakeRemovalInfoRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalInfoResponse, error)
 	GetWorkerNodeInfo(ctx context.Context, in *QueryWorkerNodeInfoRequest, opts ...grpc.CallOption) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(ctx context.Context, in *QueryReputerNodeInfoRequest, opts ...grpc.CallOption) (*QueryReputerNodeInfoResponse, error)
 	GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error)
@@ -217,6 +225,42 @@ func (c *queryClient) GetTopicStake(ctx context.Context, in *QueryTopicStakeRequ
 	return out, nil
 }
 
+func (c *queryClient) GetStakeRemovalsForBlock(ctx context.Context, in *QueryStakeRemovalsForBlockRequest, opts ...grpc.CallOption) (*QueryStakeRemovalsForBlockResponse, error) {
+	out := new(QueryStakeRemovalsForBlockResponse)
+	err := c.cc.Invoke(ctx, Query_GetStakeRemovalsForBlock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetDelegateStakeRemovalsForBlock(ctx context.Context, in *QueryDelegateStakeRemovalsForBlockRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalsForBlockResponse, error) {
+	out := new(QueryDelegateStakeRemovalsForBlockResponse)
+	err := c.cc.Invoke(ctx, Query_GetDelegateStakeRemovalsForBlock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetStakeRemovalInfo(ctx context.Context, in *QueryStakeRemovalInfoRequest, opts ...grpc.CallOption) (*QueryStakeRemovalInfoResponse, error) {
+	out := new(QueryStakeRemovalInfoResponse)
+	err := c.cc.Invoke(ctx, Query_GetStakeRemovalInfo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetDelegateStakeRemovalInfo(ctx context.Context, in *QueryDelegateStakeRemovalInfoRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalInfoResponse, error) {
+	out := new(QueryDelegateStakeRemovalInfoResponse)
+	err := c.cc.Invoke(ctx, Query_GetDelegateStakeRemovalInfo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) GetWorkerNodeInfo(ctx context.Context, in *QueryWorkerNodeInfoRequest, opts ...grpc.CallOption) (*QueryWorkerNodeInfoResponse, error) {
 	out := new(QueryWorkerNodeInfoResponse)
 	err := c.cc.Invoke(ctx, Query_GetWorkerNodeInfo_FullMethodName, in, out, opts...)
@@ -309,6 +353,10 @@ type QueryServer interface {
 	GetStakeFromDelegatorInTopicInReputer(context.Context, *QueryStakeFromDelegatorInTopicInReputerRequest) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopic(context.Context, *QueryStakeFromDelegatorInTopicRequest) (*QueryStakeFromDelegatorInTopicResponse, error)
 	GetTopicStake(context.Context, *QueryTopicStakeRequest) (*QueryTopicStakeResponse, error)
+	GetStakeRemovalsForBlock(context.Context, *QueryStakeRemovalsForBlockRequest) (*QueryStakeRemovalsForBlockResponse, error)
+	GetDelegateStakeRemovalsForBlock(context.Context, *QueryDelegateStakeRemovalsForBlockRequest) (*QueryDelegateStakeRemovalsForBlockResponse, error)
+	GetStakeRemovalInfo(context.Context, *QueryStakeRemovalInfoRequest) (*QueryStakeRemovalInfoResponse, error)
+	GetDelegateStakeRemovalInfo(context.Context, *QueryDelegateStakeRemovalInfoRequest) (*QueryDelegateStakeRemovalInfoResponse, error)
 	GetWorkerNodeInfo(context.Context, *QueryWorkerNodeInfoRequest) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(context.Context, *QueryReputerNodeInfoRequest) (*QueryReputerNodeInfoResponse, error)
 	GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error)
@@ -368,6 +416,18 @@ func (UnimplementedQueryServer) GetStakeFromDelegatorInTopic(context.Context, *Q
 }
 func (UnimplementedQueryServer) GetTopicStake(context.Context, *QueryTopicStakeRequest) (*QueryTopicStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicStake not implemented")
+}
+func (UnimplementedQueryServer) GetStakeRemovalsForBlock(context.Context, *QueryStakeRemovalsForBlockRequest) (*QueryStakeRemovalsForBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeRemovalsForBlock not implemented")
+}
+func (UnimplementedQueryServer) GetDelegateStakeRemovalsForBlock(context.Context, *QueryDelegateStakeRemovalsForBlockRequest) (*QueryDelegateStakeRemovalsForBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeRemovalsForBlock not implemented")
+}
+func (UnimplementedQueryServer) GetStakeRemovalInfo(context.Context, *QueryStakeRemovalInfoRequest) (*QueryStakeRemovalInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeRemovalInfo not implemented")
+}
+func (UnimplementedQueryServer) GetDelegateStakeRemovalInfo(context.Context, *QueryDelegateStakeRemovalInfoRequest) (*QueryDelegateStakeRemovalInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeRemovalInfo not implemented")
 }
 func (UnimplementedQueryServer) GetWorkerNodeInfo(context.Context, *QueryWorkerNodeInfoRequest) (*QueryWorkerNodeInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerNodeInfo not implemented")
@@ -676,6 +736,78 @@ func _Query_GetTopicStake_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetStakeRemovalsForBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeRemovalsForBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetStakeRemovalsForBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetStakeRemovalsForBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetStakeRemovalsForBlock(ctx, req.(*QueryStakeRemovalsForBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetDelegateStakeRemovalsForBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateStakeRemovalsForBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetDelegateStakeRemovalsForBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetDelegateStakeRemovalsForBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetDelegateStakeRemovalsForBlock(ctx, req.(*QueryDelegateStakeRemovalsForBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetStakeRemovalInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeRemovalInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetStakeRemovalInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetStakeRemovalInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetStakeRemovalInfo(ctx, req.(*QueryStakeRemovalInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetDelegateStakeRemovalInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateStakeRemovalInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetDelegateStakeRemovalInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetDelegateStakeRemovalInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetDelegateStakeRemovalInfo(ctx, req.(*QueryDelegateStakeRemovalInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_GetWorkerNodeInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryWorkerNodeInfoRequest)
 	if err := dec(in); err != nil {
@@ -886,6 +1018,22 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicStake",
 			Handler:    _Query_GetTopicStake_Handler,
+		},
+		{
+			MethodName: "GetStakeRemovalsForBlock",
+			Handler:    _Query_GetStakeRemovalsForBlock_Handler,
+		},
+		{
+			MethodName: "GetDelegateStakeRemovalsForBlock",
+			Handler:    _Query_GetDelegateStakeRemovalsForBlock_Handler,
+		},
+		{
+			MethodName: "GetStakeRemovalInfo",
+			Handler:    _Query_GetStakeRemovalInfo_Handler,
+		},
+		{
+			MethodName: "GetDelegateStakeRemovalInfo",
+			Handler:    _Query_GetDelegateStakeRemovalInfo_Handler,
 		},
 		{
 			MethodName: "GetWorkerNodeInfo",
