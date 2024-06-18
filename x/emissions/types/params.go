@@ -15,7 +15,6 @@ func DefaultParams() Params {
 		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
 		RequiredMinimumStake:            cosmosMath.NewInt(100),                    // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3 / 5),           // ~approx 3 weeks assuming 5 second block time, number of blocks to wait before finalizing a stake withdrawal
-		RemoveStakeActiveWindow:         int64(60 * 60 * 24 * 2 / 5),               // ~approx 2 days assuming 5 second block time, number of blocks where finalizing a stake withdrawal is allowed before the stake withdrawal request expires
 		MinEpochLength:                  12,                                        // shortest number of blocks per epoch topics are allowed to set as their cadence
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
@@ -69,9 +68,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateRemoveStakeDelayWindow(p.RemoveStakeDelayWindow); err != nil {
-		return err
-	}
-	if err := validateRemoveStakeActiveWindow(p.RemoveStakeActiveWindow); err != nil {
 		return err
 	}
 	if err := validateMinEpochLength(p.MinEpochLength); err != nil {
@@ -223,15 +219,6 @@ func validateRequiredMinimumStake(i cosmosMath.Int) error {
 // Number of blocks to enforce stake withdrawal delay.
 // Should be >= 0.
 func validateRemoveStakeDelayWindow(i int64) error {
-	if i < 0 {
-		return ErrValidationMustBeGreaterthanZero
-	}
-	return nil
-}
-
-// Number of blocks to enforce stake withdrawal active period.
-// Should be >= 0.
-func validateRemoveStakeActiveWindow(i int64) error {
 	if i < 0 {
 		return ErrValidationMustBeGreaterthanZero
 	}

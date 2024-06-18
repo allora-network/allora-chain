@@ -1159,6 +1159,13 @@ func (k *Keeper) DeleteStakeRemoval(
 	address ActorId,
 ) error {
 	key := collections.Join3(blockHeight, topicId, address)
+	has, err := k.stakeRemoveQueue.Has(ctx, key)
+	if err != nil {
+		return err
+	}
+	if !has {
+		return types.ErrConfirmRemoveStakeNoRemovalStarted
+	}
 	return k.stakeRemoveQueue.Remove(ctx, key)
 }
 

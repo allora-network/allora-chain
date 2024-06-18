@@ -251,32 +251,50 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeTwiceInSameBlock() {
 	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 	removalDelay := params.RemoveStakeDelayWindow
-	activeWindow := params.RemoveStakeActiveWindow
+	removeBlock := startBlock + removalDelay
 
 	// Simulate that sender has already staked the required amount
 	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
 
-	s.msgServer.RemoveStake(ctx, &types.MsgRemoveStake{
+	_, err = s.msgServer.RemoveStake(ctx, &types.MsgRemoveStake{
 		Sender:  senderAddr.String(),
 		TopicId: topicId,
 		Amount:  stakeAmount,
 	})
+	s.Require().NoError(err)
 
-	stakePlacement, err := keeper.GetStakeRemovalByTopicAndAddress(ctx, topicId, senderAddr.String())
+	stakePlacements, err := keeper.GetStakeRemovalsForBlock(ctx, removeBlock)
 	require.NoError(err)
-	require.Equal(stakePlacement.BlockRemovalStarted, startBlock)
+	require.Len(stakePlacements, 1)
 
-	newBlockHeight := startBlock + removalDelay + activeWindow + 1
-	ctx = ctx.WithBlockHeight(newBlockHeight)
-	s.msgServer.StartRemoveStake(ctx, &types.MsgStartRemoveStake{
+	expected := types.StakePlacement{
+		TopicId:               topicId,
+		Reputer:               senderAddr.String(),
+		Amount:                stakeAmount,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: removeBlock,
+	}
+	require.Equal(expected, stakePlacements[0])
+
+	newStake := stakeAmount.SubRaw(10)
+	_, err = s.msgServer.RemoveStake(ctx, &types.MsgRemoveStake{
 		Sender:  senderAddr.String(),
 		TopicId: topicId,
-		Amount:  stakeAmount,
+		Amount:  newStake,
 	})
+	s.Require().NoError(err)
 
-	stakePlacement, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, topicId, senderAddr.String())
+	stakePlacements2, err := keeper.GetStakeRemovalsForBlock(ctx, removeBlock)
 	require.NoError(err)
-	require.Equal(stakePlacement.BlockRemovalStarted, newBlockHeight)
+	require.Len(stakePlacements2, 1)
+	expected2 := types.StakePlacement{
+		TopicId:               expected.TopicId,
+		Reputer:               expected.Reputer,
+		Amount:                newStake,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: removeBlock,
+	}
+	require.Equal(expected2, stakePlacements2[0])
 }
 
 func (s *MsgServerTestSuite) testRemoveStakeTwiceInDifferentBlocks() {
