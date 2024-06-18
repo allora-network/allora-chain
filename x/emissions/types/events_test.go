@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -17,6 +18,7 @@ const (
 	AttributeKeyAddresses   = "addresses"
 	AttributeKeyScores      = "scores"
 	AttributeKeyRewards     = "rewards"
+	AttributeKeyValueBundle = "value_bundle"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -365,4 +367,42 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithNoRewards(t *testing.T
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 0)
+}
+
+func TestEmitNewNetworkLossSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	blockHeight := int64(10)
+	loss := types.ValueBundle{
+		CombinedValue:          alloraMath.MustNewDecFromString("10"),
+		NaiveValue:             alloraMath.MustNewDecFromString("20"),
+		InfererValues:          []*types.WorkerAttributedValue{{Worker: "TestInferer", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "TestForecaster", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "TestInferer2", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer3", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "TestForecaster3", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster4", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "TestForecaster5", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster6", Value: alloraMath.MustNewDecFromString("0.0112")}},
+	}
+
+	types.EmitNewNetworkLossSetEvent(ctx, topicId, blockHeight, loss)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v1.EventNetworkLossSet", event.Type)
+
+	attributes := event.Attributes
+	require.Len(t, attributes, 3)
+
+	var result types.ValueBundle
+	val, exists := event.GetAttribute(AttributeKeyValueBundle)
+	require.True(t, exists)
+	_ = json.Unmarshal([]byte(val.GetValue()), &result)
+	require.Equal(t, loss.CombinedValue, result.CombinedValue)
+	require.Equal(t, loss.NaiveValue, result.NaiveValue)
+	require.Equal(t, loss.InfererValues, result.InfererValues)
+	require.Equal(t, loss.ForecasterValues, result.ForecasterValues)
+	require.Equal(t, loss.OneOutInfererValues, result.OneOutInfererValues)
+	require.Equal(t, loss.OneOutForecasterValues, result.OneOutForecasterValues)
+	require.Equal(t, loss.OneInForecasterValues, result.OneInForecasterValues)
 }

@@ -29,6 +29,10 @@ func EmitNewReputerScoresSetEvent(ctx sdk.Context, scores []Score) {
 	ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_REPUTER, scores))
 }
 
+func EmitNewNetworkLossSetEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, lossBundle ValueBundle) {
+	ctx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(topicId, blockHeight, lossBundle))
+}
+
 func EmitNewInfererRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
@@ -86,5 +90,13 @@ func NewRewardsSetEventBase(actorType ActorType, blockHeight BlockHeight, reward
 		BlockHeight: blockHeight,
 		Addresses:   addresses,
 		Rewards:     rewardValues,
+	}
+}
+
+func NewNetworkLossSetEventBase(topicId TopicId, blockHeight BlockHeight, lossValueBundle ValueBundle) proto.Message {
+	return &EventNetworkLossSet{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		ValueBundle: &lossValueBundle,
 	}
 }
