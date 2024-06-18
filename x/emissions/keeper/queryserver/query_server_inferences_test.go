@@ -252,5 +252,6 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 		BlockHeightLastReward:    blockHeight,
 	}
 	response, err := queryServer.GetNetworkInferencesAtBlock(s.ctx, req)
+	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 }

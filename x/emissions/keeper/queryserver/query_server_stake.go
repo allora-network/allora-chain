@@ -123,6 +123,14 @@ func (qs queryServer) GetStakeRemovalsForBlock(
 	if err != nil {
 		return nil, err
 	}
+	maxLimit := types.DefaultParams().MaxPageLimit
+	moduleParams, err := qs.k.GetParams(ctx)
+	if err == nil {
+		maxLimit = moduleParams.MaxPageLimit
+	}
+	if uint64(len(removals)) > maxLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
+	}
 	removalPointers := make([]*types.StakeRemovalInfo, len(removals))
 	for i, removal := range removals {
 		removalPointers[i] = &removal
@@ -137,6 +145,14 @@ func (qs queryServer) GetDelegateStakeRemovalsForBlock(
 	removals, err := qs.k.GetDelegateStakeRemovalsForBlock(ctx, req.BlockHeight)
 	if err != nil {
 		return nil, err
+	}
+	maxLimit := types.DefaultParams().MaxPageLimit
+	moduleParams, err := qs.k.GetParams(ctx)
+	if err == nil {
+		maxLimit = moduleParams.MaxPageLimit
+	}
+	if uint64(len(removals)) > maxLimit {
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
 	}
 	removalPointers := make([]*types.DelegateStakeRemovalInfo, len(removals))
 	for i, removal := range removals {
