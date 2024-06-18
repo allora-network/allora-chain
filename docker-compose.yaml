@@ -2,10 +2,10 @@ services:
   validator0:
     container_name: validator0
     # build: .
-    image: "alloranetwork/allora-chain:v0.0.10"
+    image: "alloranetwork/allora-chain:v0.2.7"
     environment:
-      - NETWORK=testnet
-      - MONIKER=validator0
+      - NETWORK=edgenet
+      - MONIKER=validator0  # Change this to your preferred moniker
       - APP_HOME=/data
     volumes:
       - ./data:/data
