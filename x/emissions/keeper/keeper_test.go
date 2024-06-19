@@ -1175,17 +1175,31 @@ func (s *KeeperTestSuite) TestRemoveStake() {
 	topicId := uint64(1)
 	reputerAddr := PKS[0].Address().String()
 	stakeAmount := cosmosMath.NewInt(500)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	err = keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Capture the initial total and topic stakes after adding stake
 	initialTotalStake, err := keeper.GetTotalStake(ctx)
 	s.Require().NoError(err)
 
+	// make a request to remove stake
+	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddr,
+		Amount:                stakeAmount,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+
 	// Remove stake
-	err = keeper.RemoveStake(ctx, ctx.BlockHeight(), topicId, reputerAddr, stakeAmount)
+	err = keeper.RemoveStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator after removal
@@ -1212,13 +1226,28 @@ func (s *KeeperTestSuite) TestRemovePartialStakeFromDelegator() {
 	reputerAddr := PKS[1].Address().String()
 	initialStakeAmount := cosmosMath.NewInt(1000)
 	removeStakeAmount := cosmosMath.NewInt(500)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
+
+	// make a request to remove stake
+	err = keeper.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+		TopicId:               topicId,
+		Delegator:             delegatorAddr,
+		Reputer:               reputerAddr,
+		Amount:                removeStakeAmount,
+	})
 	s.Require().NoError(err)
 
 	// Remove a portion of stake
-	err = keeper.RemoveDelegateStake(ctx, ctx.BlockHeight(), topicId, delegatorAddr, reputerAddr, removeStakeAmount)
+	err = keeper.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, removeStakeAmount)
 	s.Require().NoError(err)
 
 	// Check remaining stake for delegator
@@ -1239,13 +1268,28 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
 	delegatorAddr := PKS[0].Address().String()
 	reputerAddr := PKS[1].Address().String()
 	initialStakeAmount := cosmosMath.NewInt(1000)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
+
+	// make a request to remove stake
+	err = keeper.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+		TopicId:               topicId,
+		Delegator:             delegatorAddr,
+		Reputer:               reputerAddr,
+		Amount:                initialStakeAmount,
+	})
 	s.Require().NoError(err)
 
 	// Remove a portion of stake
-	err = keeper.RemoveDelegateStake(ctx, ctx.BlockHeight(), topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err = keeper.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err)
 
 	// Check remaining stake for delegator
@@ -1253,7 +1297,7 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
-	// Check remaining stake for delegator
+	// Check remaining stake for Reputer
 	stakeUponReputer, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
