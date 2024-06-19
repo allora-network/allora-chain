@@ -40,6 +40,8 @@ service Msg {
 
   rpc RemoveDelegateStake(MsgRemoveDelegateStake) returns (MsgRemoveDelegateStakeResponse);
 
+  rpc CancelRemoveDelegateStake(MsgCancelRemoveDelegateStake) returns (MsgCancelRemoveDelegateStakeResponse);
+
   rpc FundTopic(MsgFundTopic) returns (MsgFundTopicResponse);
 
   rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin) returns (MsgAddToWhitelistAdminResponse);
@@ -254,13 +256,13 @@ message MsgRemoveStake {
 
 message MsgRemoveStakeResponse {}
 
-message MsgConfirmRemoveStake {
+message MsgCancelRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   uint64 topic_id = 2;
 }
 
-message MsgConfirmRemoveStakeResponse {}
+message MsgCancelRemoveStakeResponse {}
 
 message MsgDelegateStake {
   option (cosmos.msg.v1.signer) = "sender";
@@ -292,14 +294,15 @@ message MsgRemoveDelegateStake {
 
 message MsgRemoveDelegateStakeResponse {}
 
-message MsgConfirmDelegateRemoveStake {
+message MsgCancelRemoveDelegateStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   uint64 topic_id = 2;
-  string reputer = 3;
+  string delegator = 3;
+  string reputer = 4;
 }
 
-message MsgConfirmRemoveDelegateStakeResponse {}
+message MsgCancelRemoveDelegateStakeResponse {}
 
 // Inferences are requested by consumers who fund topics by sending ALLO to
 // ecosystem account via TopicFund messages

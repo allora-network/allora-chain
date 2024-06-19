@@ -1222,3 +1222,76 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 
 	testutil.InEpsilon3(s.T(), alloraMath.MustNewDecFromString(totalRewardsSecondRound.String()), totalRewardsThirdRound.String())
 }
+
+func (s *MsgServerTestSuite) TestCancelRemoveStake() {
+	ctx := s.ctx
+	require := s.Require()
+
+	// Set up test data
+	reputer := "reputer"
+	topicID := uint64(123)
+	amount := cosmosMath.NewInt(50)
+
+	// Add a delegate stake removal
+	stakeToRemove := types.StakeRemovalInfo{
+		BlockRemovalStarted:   10,
+		TopicId:               topicID,
+		Reputer:               reputer,
+		Amount:                amount,
+		BlockRemovalCompleted: 20,
+	}
+	err := s.emissionsKeeper.SetStakeRemoval(ctx, stakeToRemove)
+	require.NoError(err)
+
+	// Call CancelRemoveDelegateStake
+	msg := &types.MsgCancelRemoveStake{
+		Sender:  reputer,
+		TopicId: topicID,
+	}
+	_, err = s.msgServer.CancelRemoveStake(ctx, msg)
+	require.NoError(err)
+
+	// Verify that the stake removal is deleted
+	_, found, err := s.emissionsKeeper.
+		GetFirstStakeRemovalForReputerAndTopicId(ctx, reputer, topicID)
+	require.NoError(err)
+	require.False(found, "Stake removal should be deleted")
+
+}
+
+func (s *MsgServerTestSuite) TestCancelRemoveDelegateStake() {
+	ctx := s.ctx
+	require := s.Require()
+	// Set up test data
+	delegator := "delegator"
+	reputer := "reputer"
+	topicID := uint64(123)
+	amount := cosmosMath.NewInt(50)
+
+	// Add a delegate stake removal
+	stakeToRemove := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   10,
+		TopicId:               topicID,
+		Reputer:               reputer,
+		Delegator:             delegator,
+		Amount:                amount,
+		BlockRemovalCompleted: 20,
+	}
+	err := s.emissionsKeeper.SetDelegateStakeRemoval(ctx, stakeToRemove)
+	require.NoError(err)
+
+	// Call CancelRemoveDelegateStake
+	msg := &types.MsgCancelRemoveDelegateStake{
+		Sender:  delegator,
+		Reputer: reputer,
+		TopicId: topicID,
+	}
+	_, err = s.msgServer.CancelRemoveDelegateStake(ctx, msg)
+	require.NoError(err)
+
+	// Verify that the stake removal is deleted
+	_, found, err := s.emissionsKeeper.
+		GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicID)
+	require.NoError(err)
+	require.False(found, "Stake removal should be deleted")
+}

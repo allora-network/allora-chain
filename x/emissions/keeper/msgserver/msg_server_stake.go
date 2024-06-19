@@ -109,7 +109,21 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 	return &types.MsgRemoveStakeResponse{}, nil
 }
 
+// cancel a request to remove your stake, during the delay window
 func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelRemoveStake) (*types.MsgCancelRemoveStakeResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	removal, found, err := ms.k.GetFirstStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
+	if err != nil {
+		return nil, errors.Wrap(err, "error while searching previous stake removal")
+	}
+	if !found {
+		return nil, types.ErrNoStakeRemovalStarted
+	}
+	err = ms.k.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to delete previous stake removal")
+	}
+	return &types.MsgCancelRemoveStakeResponse{}, nil
 }
 
 // Delegates a stake to a reputer. Sender need not be registered to delegate stake.
@@ -226,7 +240,29 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 	return &types.MsgRemoveDelegateStakeResponse{}, nil
 }
 
-func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.MsgCancelDelegateRemoveStake) (*types.MsgCancelDelegateRemoveStakeResponse, error) {
+// cancel an ongoing stake removal request during the delay period
+func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.MsgCancelRemoveDelegateStake) (*types.MsgCancelRemoveDelegateStakeResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	removal, found, err := ms.k.GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(
+		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "error while searching previous delegate stake removal")
+	}
+	if !found {
+		return nil, types.ErrNoStakeRemovalStarted
+	}
+	err = ms.k.DeleteDelegateStakeRemoval(
+		ctx,
+		removal.BlockRemovalCompleted,
+		removal.TopicId,
+		removal.Reputer,
+		removal.Delegator,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to delete previous delegate stake removal")
+	}
+	return &types.MsgCancelRemoveDelegateStakeResponse{}, nil
 }
 
 func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {

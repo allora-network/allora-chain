@@ -260,6 +260,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "CancelRemoveStake",
+					Use:       "cancel-remove-stake [sender] [topic_id]",
+					Short:     "Cancel the removal of stake for a reputer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "DelegateStake",
 					Use:       "delegate-stake [sender] [topic_id] [reputer] [amount]",
 					Short:     "Delegate stake [amount] to a reputer for a topic",
@@ -279,6 +288,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 						{ProtoField: "reputer"},
 						{ProtoField: "amount"},
+					},
+				},
+				{
+					RpcMethod: "CancelRemoveDelegateStake",
+					Use:       "cancel-remove-delegate-stake [sender] [topic_id] [reputer]",
+					Short:     "Cancel the removal of delegated stake for a delegator staking on a reputer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
 					},
 				},
 				{
