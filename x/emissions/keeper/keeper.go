@@ -567,6 +567,27 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 	return &forecasts, nil
 }
 
+// GetLatestTopicInferences retrieves the latest topic inferences and its block height.
+func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId) (*types.Inferences, BlockHeight, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
+
+	iter, err := k.allInferences.Iterate(ctx, rng)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer iter.Close()
+
+	if iter.Valid() {
+		keyValue, err := iter.KeyValue()
+		if err != nil {
+			return nil, 0, err
+		}
+		return &keyValue.Value, keyValue.Key.K2(), nil
+	}
+
+	return nil, 0, errors.New("no inferences found")
+}
+
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
 func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
 	block := nonce.BlockHeight
