@@ -1052,17 +1052,6 @@ func request_Query_GetStakeRemovalInfo_0(ctx context.Context, marshaler runtime.
 		_   = err
 	)
 
-	val, ok = pathParams["block_height"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height")
-	}
-
-	protoReq.BlockHeight, err = runtime.Int64(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height", err)
-	}
-
 	val, ok = pathParams["topic_id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
@@ -1074,15 +1063,15 @@ func request_Query_GetStakeRemovalInfo_0(ctx context.Context, marshaler runtime.
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["address"]
+	val, ok = pathParams["reputer"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "reputer")
 	}
 
-	protoReq.Address, err = runtime.String(val)
+	protoReq.Reputer, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "reputer", err)
 	}
 
 	msg, err := client.GetStakeRemovalInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -1101,17 +1090,6 @@ func local_request_Query_GetStakeRemovalInfo_0(ctx context.Context, marshaler ru
 		_   = err
 	)
 
-	val, ok = pathParams["block_height"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height")
-	}
-
-	protoReq.BlockHeight, err = runtime.Int64(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height", err)
-	}
-
 	val, ok = pathParams["topic_id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
@@ -1123,15 +1101,15 @@ func local_request_Query_GetStakeRemovalInfo_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["address"]
+	val, ok = pathParams["reputer"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "reputer")
 	}
 
-	protoReq.Address, err = runtime.String(val)
+	protoReq.Reputer, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "reputer", err)
 	}
 
 	msg, err := server.GetStakeRemovalInfo(ctx, &protoReq)
@@ -1150,17 +1128,6 @@ func request_Query_GetDelegateStakeRemovalInfo_0(ctx context.Context, marshaler 
 		_   = err
 	)
 
-	val, ok = pathParams["block_height"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height")
-	}
-
-	protoReq.BlockHeight, err = runtime.Int64(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height", err)
-	}
-
 	val, ok = pathParams["topic_id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
@@ -1172,26 +1139,26 @@ func request_Query_GetDelegateStakeRemovalInfo_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["delegator_address"]
+	val, ok = pathParams["delegator"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "delegator_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "delegator")
 	}
 
-	protoReq.DelegatorAddress, err = runtime.String(val)
+	protoReq.Delegator, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "delegator_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "delegator", err)
 	}
 
-	val, ok = pathParams["reputer_address"]
+	val, ok = pathParams["reputer"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "reputer_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "reputer")
 	}
 
-	protoReq.ReputerAddress, err = runtime.String(val)
+	protoReq.Reputer, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "reputer_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "reputer", err)
 	}
 
 	msg, err := client.GetDelegateStakeRemovalInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -1210,17 +1177,6 @@ func local_request_Query_GetDelegateStakeRemovalInfo_0(ctx context.Context, mars
 		_   = err
 	)
 
-	val, ok = pathParams["block_height"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height")
-	}
-
-	protoReq.BlockHeight, err = runtime.Int64(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height", err)
-	}
-
 	val, ok = pathParams["topic_id"]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
@@ -1232,26 +1188,26 @@ func local_request_Query_GetDelegateStakeRemovalInfo_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["delegator_address"]
+	val, ok = pathParams["delegator"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "delegator_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "delegator")
 	}
 
-	protoReq.DelegatorAddress, err = runtime.String(val)
+	protoReq.Delegator, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "delegator_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "delegator", err)
 	}
 
-	val, ok = pathParams["reputer_address"]
+	val, ok = pathParams["reputer"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "reputer_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "reputer")
 	}
 
-	protoReq.ReputerAddress, err = runtime.String(val)
+	protoReq.Reputer, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "reputer_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "reputer", err)
 	}
 
 	msg, err := server.GetDelegateStakeRemovalInfo(ctx, &protoReq)
@@ -3025,9 +2981,9 @@ var (
 
 	pattern_Query_GetDelegateStakeRemovalsForBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v1", "delegate_stake_removals", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetStakeRemovalInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"emissions", "v1", "stake_removal", "block_height", "topic_id", "address"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetStakeRemovalInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "stake_removal", "topic_id", "reputer"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetDelegateStakeRemovalInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5, 1, 0, 4, 1, 5, 6}, []string{"emissions", "v1", "delegate_stake_removal", "block_height", "topic_id", "delegator_address", "reputer_address"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetDelegateStakeRemovalInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4, 1, 0, 4, 1, 5, 5}, []string{"emissions", "v1", "delegate_stake_removal", "topic_id", "delegator", "reputer"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GetWorkerNodeInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v1", "worker", "libp2p_key"}, "", runtime.AssumeColonVerbOpt(false)))
 

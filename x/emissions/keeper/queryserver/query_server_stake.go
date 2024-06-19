@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // TotalStake defines the handler for the Query/TotalStake RPC method.
@@ -165,14 +166,29 @@ func (qs queryServer) GetStakeRemovalInfo(
 	ctx context.Context,
 	req *types.QueryStakeRemovalInfoRequest,
 ) (*types.QueryStakeRemovalInfoResponse, error) {
-	ret, err := qs.k.GetStakeRemoval(ctx, req.BlockHeight, req.TopicId, req.Address)
-	return &types.QueryStakeRemovalInfoResponse{Removal: &ret}, err
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	removal, found, err := qs.k.GetFirstStakeRemovalForReputerAndTopicId(sdkCtx, req.Reputer, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, status.Error(codes.NotFound, "no stake removal found")
+	}
+	return &types.QueryStakeRemovalInfoResponse{Removal: &removal}, nil
 }
 
 func (qs queryServer) GetDelegateStakeRemovalInfo(
 	ctx context.Context,
 	req *types.QueryDelegateStakeRemovalInfoRequest,
 ) (*types.QueryDelegateStakeRemovalInfoResponse, error) {
-	ret, err := qs.k.GetDelegateStakeRemoval(ctx, req.BlockHeight, req.TopicId, req.DelegatorAddress, req.ReputerAddress)
-	return &types.QueryDelegateStakeRemovalInfoResponse{Removal: &ret}, err
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	removal, found, err := qs.k.
+		GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(sdkCtx, req.Delegator, req.Reputer, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, status.Error(codes.NotFound, "no delegate stake removal found")
+	}
+	return &types.QueryDelegateStakeRemovalInfoResponse{Removal: &removal}, nil
 }

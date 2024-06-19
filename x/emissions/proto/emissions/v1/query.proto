@@ -115,14 +115,14 @@ service Query {
 
   rpc GetStakeRemovalInfo(QueryStakeRemovalInfoRequest) returns (QueryStakeRemovalInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/stake_removal/{block_height}/{topic_id}/{address}";
+    option (google.api.http).get = "/emissions/v1/stake_removal/{topic_id}/{reputer}";
   }
 
   rpc GetDelegateStakeRemovalInfo(QueryDelegateStakeRemovalInfoRequest)
       returns (QueryDelegateStakeRemovalInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/delegate_stake_removal/{block_height}/{topic_id}/{delegator_address}/"
-                                   "{reputer_address}";
+    option (google.api.http).get =
+        "/emissions/v1/delegate_stake_removal/{topic_id}/{delegator}/{reputer}";
   }
 
   rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest) returns (QueryWorkerNodeInfoResponse) {
@@ -435,9 +435,8 @@ message QueryDelegateStakeRemovalsForBlockResponse {
 }
 
 message QueryStakeRemovalInfoRequest {
-  int64 block_height = 1;
-  uint64 topic_id = 2;
-  string address = 3;
+  uint64 topic_id = 1;
+  string reputer = 2;
 }
 
 message QueryStakeRemovalInfoResponse {
@@ -445,10 +444,9 @@ message QueryStakeRemovalInfoResponse {
 }
 
 message QueryDelegateStakeRemovalInfoRequest {
-  int64 block_height = 1;
-  uint64 topic_id = 2;
-  string delegator_address = 3;
-  string reputer_address = 4;
+  uint64 topic_id = 1;
+  string delegator = 2;
+  string reputer = 3;
 }
 
 message QueryDelegateStakeRemovalInfoResponse {

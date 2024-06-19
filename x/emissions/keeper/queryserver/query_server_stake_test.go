@@ -203,9 +203,8 @@ func (s *KeeperTestSuite) TestGetStakeRemovalInfo() {
 	err := keeper.SetStakeRemoval(ctx, removal)
 	s.Require().NoError(err, "SetStakeRemoval should not produce an error")
 	req := &types.QueryStakeRemovalInfoRequest{
-		BlockHeight: blockHeight,
-		TopicId:     topicId,
-		Address:     address,
+		TopicId: topicId,
+		Reputer: address,
 	}
 	response, err := queryServer.GetStakeRemovalInfo(ctx, req)
 	s.Require().NoError(err, "GetStakeRemovalInfo should not produce an error")
@@ -233,10 +232,9 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalInfo() {
 	err := keeper.SetDelegateStakeRemoval(ctx, expectedRemoval)
 	s.Require().NoError(err, "SetStakeRemoval should not produce an error")
 	req := &types.QueryDelegateStakeRemovalInfoRequest{
-		BlockHeight:      blockHeight,
-		TopicId:          topicId,
-		DelegatorAddress: delegatorAddress,
-		ReputerAddress:   reputerAddress,
+		TopicId:   topicId,
+		Delegator: delegatorAddress,
+		Reputer:   reputerAddress,
 	}
 	response, err := queryServer.GetDelegateStakeRemovalInfo(ctx, req)
 
