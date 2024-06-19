@@ -624,7 +624,7 @@ func (s *MsgServerTestSuite) TestConfirmRemoveDelegateStake() {
 
 // test you are able to restart the stake withdrawal
 // if your stake expires or whatever other reason you may want
-func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
+func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwiceSameBlock() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -691,6 +691,87 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
 	require.NoError(err)
 	require.Len(stakePlacements, 1)
 	expected.Amount = newStakeAmount
+	require.Equal(expected, stakePlacements[0])
+}
+
+func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewInt(50)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	startBlock := sdkCtx.BlockHeight()
+
+	params, err := keeper.GetParams(ctx)
+	require.NoError(err)
+	removalDelay := params.RemoveStakeDelayWindow
+	endBlock := startBlock + removalDelay
+
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
+
+	// Simulate adding a reputer and delegating stake to them
+	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), types.OffchainNode{})
+	_, err = s.msgServer.DelegateStake(ctx, &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	})
+	require.NoError(err)
+
+	// Start removing the delegated stake
+	_, err = s.msgServer.RemoveDelegateStake(ctx, &types.MsgRemoveDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	})
+	require.NoError(err)
+
+	expected := types.DelegateStakeRemovalInfo{
+		TopicId:               topicId,
+		Delegator:             delegatorAddr.String(),
+		Reputer:               reputerAddr.String(),
+		Amount:                stakeAmount,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+	}
+
+	stakePlacements, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	require.NoError(err)
+	require.Len(stakePlacements, 1)
+	require.Equal(expected, stakePlacements[0])
+
+	// Now wait 5 blocks
+	newStartBlock := ctx.BlockHeight() + 5
+	newEndBlock := endBlock + 5
+	ctx = ctx.WithBlockHeight(newStartBlock)
+	// Start removing the delegated stake again
+	newStakeAmount := stakeAmount.SubRaw(10)
+	_, err = s.msgServer.RemoveDelegateStake(ctx, &types.MsgRemoveDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  newStakeAmount,
+	})
+	require.NoError(err)
+
+	stakePlacements, err = keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	require.NoError(err)
+	require.Len(stakePlacements, 0)
+
+	stakePlacements, err = keeper.GetDelegateStakeRemovalsForBlock(ctx, newEndBlock)
+	require.NoError(err)
+	require.Len(stakePlacements, 1)
+
+	expected.Amount = newStakeAmount
+	expected.BlockRemovalStarted = newStartBlock
+	expected.BlockRemovalCompleted = newEndBlock
 	require.Equal(expected, stakePlacements[0])
 }
 
@@ -1259,6 +1340,22 @@ func (s *MsgServerTestSuite) TestCancelRemoveStake() {
 
 }
 
+func (s *MsgServerTestSuite) TestCancelRemoveStakeNotExist() {
+	ctx := s.ctx
+	require := s.Require()
+	// Set up test data
+	reputer := "reputer"
+	topicID := uint64(123)
+	// Call CancelRemoveDelegateStake
+	msg := &types.MsgCancelRemoveStake{
+		Sender:  reputer,
+		TopicId: topicID,
+	}
+	_, err := s.msgServer.CancelRemoveStake(ctx, msg)
+	require.Error(err)
+	require.True(errors.Is(err, types.ErrNoStakeRemovalStarted), "Expected stake removal not found error")
+}
+
 func (s *MsgServerTestSuite) TestCancelRemoveDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
@@ -1294,4 +1391,22 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStake() {
 		GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicID)
 	require.NoError(err)
 	require.False(found, "Stake removal should be deleted")
+}
+
+func (s *MsgServerTestSuite) TestCancelRemoveDelegateStakeNotExist() {
+	ctx := s.ctx
+	require := s.Require()
+	// Set up test data
+	delegator := "delegator"
+	reputer := "reputer"
+	topicID := uint64(123)
+	// Call CancelRemoveDelegateStake
+	msg := &types.MsgCancelRemoveDelegateStake{
+		Sender:  delegator,
+		Reputer: reputer,
+		TopicId: topicID,
+	}
+	_, err := s.msgServer.CancelRemoveDelegateStake(ctx, msg)
+	require.Error(err)
+	require.True(errors.Is(err, types.ErrNoStakeRemovalStarted), "Expected delegate stake removal not found error")
 }
