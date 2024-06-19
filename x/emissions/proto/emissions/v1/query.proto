@@ -122,8 +122,7 @@ service Query {
   rpc GetDelegateStakeRemovalInfo(QueryDelegateStakeRemovalInfoRequest)
       returns (QueryDelegateStakeRemovalInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-        "/emissions/v1/delegate_stake_removal/{topic_id}/{delegator}/{reputer}";
+    option (google.api.http).get = "/emissions/v1/delegate_stake_removal/{topic_id}/{delegator}/{reputer}";
   }
 
   rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest) returns (QueryWorkerNodeInfoResponse) {
