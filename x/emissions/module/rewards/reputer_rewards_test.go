@@ -409,12 +409,17 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	s.Require().NoError(err)
 
 	// Remove stake for the first reputer
-	err = s.emissionsKeeper.RemoveStake(s.ctx, block, topicId, reputerAddrs[0], cosmosMath.NewInt(1176644))
-	// so the above is going to error because the block is wrong for removing the stake position
-	// from the queue of waiting stake removals
-	// but we don't actually care because that's not the focus of this test, so long as the stake
-	// values change appropriately we're good.
-	s.Require().ErrorIs(err, types.ErrNoStakeRemovalStarted)
+	amount := cosmosMath.NewInt(1176644)
+	err = s.emissionsKeeper.SetStakeRemoval(s.ctx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddrs[0],
+		Amount:                amount,
+		BlockRemovalStarted:   0,
+		BlockRemovalCompleted: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.RemoveStake(s.ctx, block, topicId, reputerAddrs[0], amount)
+	s.Require().NoError(err)
 
 	// Check if stake is zero
 	stake, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, reputerAddrs[0])
