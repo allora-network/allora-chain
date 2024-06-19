@@ -177,6 +177,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	if err != nil {
 		return nil, err
 	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle))
 
@@ -184,6 +185,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 	if err != nil {
 		return nil, err
 	}
+
+	types.EmitNewNetworkLossSetEvent(sdkCtx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 
 	err = synth.GetCalcSetNetworkRegrets(sdkCtx, ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, topic.AlphaRegret)
 	if err != nil {
