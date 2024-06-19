@@ -1025,11 +1025,160 @@ func (s *MsgServerTestSuite) TestRemoveOneDelegateMultipleTargetsDifferentBlocks
 }
 
 func (s *MsgServerTestSuite) TestRemoveMultipleDelegatesSameTargetSameBlock() {
-	s.T().FailNow()
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+	delegators := []sdk.AccAddress{
+		sdk.AccAddress(PKS[0].Address()),
+		sdk.AccAddress(PKS[1].Address()),
+		sdk.AccAddress(PKS[2].Address()),
+	}
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewInt(50)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	params, err := keeper.GetParams(ctx)
+	require.NoError(err)
+	removalDelay := params.RemoveStakeDelayWindow
+	startBlock := sdkCtx.BlockHeight()
+	endBlock := startBlock + removalDelay
+	for _, delegator := range delegators {
+		s.MintTokensToAddress(delegator, cosmosMath.NewInt(1000))
+	}
+	// Simulate adding multiple reputers and delegating stake to them
+	reputer := sdk.AccAddress(PKS[3].Address())
+	keeper.InsertReputer(ctx, topicId, reputer.String(), types.OffchainNode{})
+	for _, delegator := range delegators {
+		_, err = s.msgServer.DelegateStake(ctx, &types.MsgDelegateStake{
+			Sender:  delegator.String(),
+			TopicId: topicId,
+			Reputer: reputer.String(),
+			Amount:  stakeAmount,
+		})
+		require.NoError(err)
+	}
+	// Start removing the delegated stake for each reputer
+	for _, delegator := range delegators {
+		_, err = s.msgServer.RemoveDelegateStake(ctx, &types.MsgRemoveDelegateStake{
+			Sender:  delegator.String(),
+			Reputer: reputer.String(),
+			TopicId: topicId,
+			Amount:  stakeAmount,
+		})
+		require.NoError(err)
+	}
+
+	// verify the removals are put in correctly
+	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	require.NoError(err)
+	require.Len(removals, len(delegators))
+
+	// Call ctx.WithBlockHeight to simulate passing time
+	ctx = ctx.WithBlockHeight(endBlock)
+	for i := 0; i < len(delegators); i++ {
+		// Call EndBlock to trigger stake removal
+		err = s.appModule.EndBlock(ctx)
+		require.NoError(err)
+
+		// Check that the stake removals have been removed from the state
+		removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+		require.NoError(err)
+		require.Len(removals, 0)
+	}
+	// Check that the stake was actually removed for each reputer
+	for _, delegator := range delegators {
+		delegateStakePlaced, err := keeper.GetDelegateStakePlacement(
+			ctx,
+			topicId,
+			delegator.String(),
+			reputer.String(),
+		)
+		require.NoError(err)
+		require.True(
+			delegateStakePlaced.Amount.IsZero(),
+			"Delegate stake should be zero after successful removal",
+			delegateStakePlaced.Amount,
+			reputer.String(),
+		)
+	}
 }
 
 func (s *MsgServerTestSuite) TestRemoveMultipleDelegatesDifferentTargetsSameBlock() {
-	s.T().FailNow()
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+	delegators := []sdk.AccAddress{
+		sdk.AccAddress(PKS[0].Address()),
+		sdk.AccAddress(PKS[1].Address()),
+	}
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewInt(50)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	params, err := keeper.GetParams(ctx)
+	require.NoError(err)
+	removalDelay := params.RemoveStakeDelayWindow
+	startBlock := sdkCtx.BlockHeight()
+	endBlock := startBlock + removalDelay
+	s.MintTokensToAddress(delegators[0], cosmosMath.NewInt(1000))
+	s.MintTokensToAddress(delegators[1], cosmosMath.NewInt(1000))
+	// Simulate adding multiple reputers and delegating stake to them
+	reputers := []sdk.AccAddress{
+		sdk.AccAddress(PKS[2].Address()),
+		sdk.AccAddress(PKS[3].Address()),
+	}
+	for i := 0; i < len(delegators); i++ {
+		keeper.InsertReputer(ctx, topicId, reputers[i].String(), types.OffchainNode{})
+		_, err = s.msgServer.DelegateStake(ctx, &types.MsgDelegateStake{
+			Sender:  delegators[i].String(),
+			TopicId: topicId,
+			Reputer: reputers[i].String(),
+			Amount:  stakeAmount,
+		})
+		require.NoError(err)
+	}
+	// Start removing the delegated stake for each reputer
+	for i := 0; i < len(delegators); i++ {
+		_, err = s.msgServer.RemoveDelegateStake(ctx, &types.MsgRemoveDelegateStake{
+			Sender:  delegators[i].String(),
+			Reputer: reputers[i].String(),
+			TopicId: topicId,
+			Amount:  stakeAmount,
+		})
+		require.NoError(err)
+	}
+
+	// verify the removals are put in correctly
+	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	require.NoError(err)
+	require.Len(removals, len(delegators))
+
+	// Call ctx.WithBlockHeight to simulate passing time
+	ctx = ctx.WithBlockHeight(endBlock)
+	for i := 0; i < len(reputers); i++ {
+		// Call EndBlock to trigger stake removal
+		err = s.appModule.EndBlock(ctx)
+		require.NoError(err)
+
+		// Check that the stake removals have been removed from the state
+		removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+		require.NoError(err)
+		require.Len(removals, 0)
+	}
+	// Check that the stake was actually removed for each reputer
+	for i := 0; i < len(reputers); i++ {
+		delegateStakePlaced, err := keeper.GetDelegateStakePlacement(
+			ctx,
+			topicId,
+			delegators[i].String(),
+			reputers[i].String(),
+		)
+		require.NoError(err)
+		require.True(
+			delegateStakePlaced.Amount.IsZero(),
+			"Delegate stake should be zero after successful removal",
+			delegateStakePlaced.Amount,
+			reputers[i].String(),
+		)
+	}
 }
 
 func (s *MsgServerTestSuite) TestRewardDelegateStake() {
