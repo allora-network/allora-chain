@@ -45,7 +45,6 @@ type ChainKey struct {
 }
 
 var (
-	//nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
 	PKS     = simtestutil.CreateTestPubKeys(10)
 	Addr    = sdk.AccAddress(PKS[0].Address())
 	ValAddr = GeneratePrivateKeys(10)
