@@ -51,7 +51,7 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d addresses at once", maxLimit))
 	}
 
-	stakes := make([]*types.StakePlacement, len(req.Addresses))
+	stakes := make([]*types.StakeInfo, len(req.Addresses))
 	for i, address := range req.Addresses {
 		stake := cosmosMath.ZeroInt()
 		if err := qs.k.ValidateStringIsBech32(address); err == nil {
@@ -60,7 +60,7 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 				stake = cosmosMath.ZeroInt()
 			}
 		}
-		stakes[i] = &types.StakePlacement{TopicId: req.TopicId, Reputer: address, Amount: stake}
+		stakes[i] = &types.StakeInfo{TopicId: req.TopicId, Reputer: address, Amount: stake}
 	}
 
 	return &types.QueryMultiReputerStakeInTopicResponse{Amounts: stakes}, nil

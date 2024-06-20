@@ -1743,7 +1743,7 @@ func (s *MsgServerTestSuite) TestCancelRemoveStakeNotExist() {
 	}
 	_, err := s.msgServer.CancelRemoveStake(ctx, msg)
 	require.Error(err)
-	require.True(errors.Is(err, types.ErrNoStakeRemovalStarted), "Expected stake removal not found error")
+	require.True(errors.Is(err, types.ErrStakeRemovalNotFound), "Expected stake removal not found error")
 }
 
 func (s *MsgServerTestSuite) TestCancelRemoveDelegateStake() {
@@ -1798,5 +1798,5 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStakeNotExist() {
 	}
 	_, err := s.msgServer.CancelRemoveDelegateStake(ctx, msg)
 	require.Error(err)
-	require.True(errors.Is(err, types.ErrNoStakeRemovalStarted), "Expected delegate stake removal not found error")
+	require.True(errors.Is(err, types.ErrStakeRemovalNotFound), "Expected delegate stake removal not found error")
 }

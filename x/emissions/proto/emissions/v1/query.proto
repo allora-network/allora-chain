@@ -222,7 +222,7 @@ message QueryMultiReputerStakeInTopicRequest {
 }
 
 message QueryMultiReputerStakeInTopicResponse {
-  repeated StakePlacement amounts = 1;
+  repeated StakeInfo amounts = 1;
 }
 
 message QueryDelegateStakeInTopicInReputerRequest {

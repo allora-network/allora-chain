@@ -117,7 +117,7 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelR
 		return nil, errors.Wrap(err, "error while searching previous stake removal")
 	}
 	if !found {
-		return nil, types.ErrNoStakeRemovalStarted
+		return nil, types.ErrStakeRemovalNotFound
 	}
 	err = ms.k.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
 	if err != nil {
@@ -249,7 +249,7 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ms
 		return nil, errors.Wrap(err, "error while searching previous delegate stake removal")
 	}
 	if !found {
-		return nil, types.ErrNoStakeRemovalStarted
+		return nil, types.ErrStakeRemovalNotFound
 	}
 	err = ms.k.DeleteDelegateStakeRemoval(
 		ctx,

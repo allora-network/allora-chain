@@ -89,15 +89,25 @@ type Keeper struct {
 	topicStake collections.Map[TopicId, cosmosMath.Int]
 	// amount of stake a reputer has placed in a topic + delegate stake placed in them, signalling their authority on the topic
 	stakeByReputerAndTopicId collections.Map[collections.Pair[TopicId, ActorId], cosmosMath.Int]
+	// map of (reputer) -> removal information for that reputer
+	//// DEPRECATED IN ConsensusVersion = 2 TO BE DELETED IN ConsensusVersion = 3
+	stakeRemoval collections.Map[collections.Pair[TopicId, ActorId], types.StakePlacement]
+	// map of (delegator) -> removal information for that delegator
+	//// DEPRECATED IN ConsensusVersion = 2 TO BE DELETED IN ConsensusVersion = 3
+	delegateStakeRemoval collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.DelegateStakePlacement]
 	// stake removals are double indexed to avoid O(n) lookups when removing stake
 	// map of (blockHeight, topic, reputer) -> removal information for that reputer
+	// introduced in ConsensusVersion = 2
 	stakeRemovalsByBlock collections.Map[collections.Triple[BlockHeight, TopicId, Reputer], types.StakeRemovalInfo]
 	// key set of (reputer, topic, blockHeight) to existence of a removal in the forwards map
+	// introduced in ConsensusVersion = 2
 	stakeRemovalsByActor collections.KeySet[collections.Triple[Reputer, TopicId, BlockHeight]]
 	// delegate stake removals are double indexed to avoid O(n) lookups when removing stake
 	// map of (blockHeight, topic, delegator, reputer staked upon) -> (list of reputers delegated upon and info) to have stake removed at that block
+	// introduced in ConsensusVersion = 2
 	delegateStakeRemovalsByBlock collections.Map[Quadruple[BlockHeight, TopicId, Delegator, Reputer], types.DelegateStakeRemovalInfo]
 	// key set of (delegator, reputer, topicId, blockHeight) to existence of a removal in the forwards map
+	// introduced in ConsensusVersion = 2
 	delegateStakeRemovalsByActor collections.KeySet[Quadruple[Delegator, Reputer, TopicId, BlockHeight]]
 	// map of (delegator) -> amount of stake that has been placed by that delegator
 	stakeFromDelegator collections.Map[collections.Pair[TopicId, ActorId], cosmosMath.Int]
@@ -195,6 +205,8 @@ func NewKeeper(
 		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		stakeByReputerAndTopicId:                 collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
+		stakeRemoval:                             collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.StakePlacement](cdc)),
+		delegateStakeRemoval:                     collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegateStakePlacement](cdc)),
 		stakeRemovalsByBlock:                     collections.NewMap(sb, types.StakeRemovalsByBlockKey, "stake_removals_by_block", collections.TripleKeyCodec(collections.Int64Key, collections.Uint64Key, collections.StringKey), codec.CollValue[types.StakeRemovalInfo](cdc)),
 		stakeRemovalsByActor:                     collections.NewKeySet(sb, types.StakeRemovalsByActorKey, "stake_removals_by_actor", collections.TripleKeyCodec(collections.StringKey, collections.Uint64Key, collections.Int64Key)),
 		delegateStakeRemovalsByBlock:             collections.NewMap(sb, types.DelegateStakeRemovalsByBlockKey, "delegate_stake_removals_by_block", QuadrupleKeyCodec(collections.Int64Key, collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegateStakeRemovalInfo](cdc)),
@@ -1175,7 +1187,7 @@ func (k *Keeper) DeleteStakeRemoval(
 		return err
 	}
 	if !has {
-		return types.ErrNoStakeRemovalStarted
+		return types.ErrStakeRemovalNotFound
 	}
 	err = k.stakeRemovalsByBlock.Remove(ctx, byBlockKey)
 	if err != nil {
@@ -1275,7 +1287,7 @@ func (k *Keeper) DeleteDelegateStakeRemoval(
 		return err
 	}
 	if !has {
-		return types.ErrNoStakeRemovalStarted
+		return types.ErrStakeRemovalNotFound
 	}
 	err = k.delegateStakeRemovalsByBlock.Remove(ctx, byBlockKey)
 	if err != nil {
