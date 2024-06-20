@@ -169,9 +169,8 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 }
 
 // RemoveDelegateStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
-// once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
-// if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
-// and one must start the stake removal process again and wait the delay again.
+// once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
+// if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemoveDelegateStake) (*types.MsgRemoveDelegateStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
