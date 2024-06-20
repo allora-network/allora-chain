@@ -466,6 +466,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	}
 
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce, forecasts)
+	require.NoError(err)
 
 	// Update epoch topic epoch last ended
 	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, inferenceBlockHeight)
@@ -476,6 +477,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 		TopicId: topicId,
 	}
 	response, err := queryServer.GetLatestNetworkInference(s.ctx, req)
+	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 
 	require.Equal(len(response.InfererWeights), 5)
