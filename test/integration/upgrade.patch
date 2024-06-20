@@ -1,5 +1,5 @@
 diff --git a/app/upgrades.go b/app/upgrades.go
-index cc6745f..6e7c756 100644
+index cc6745f..5420233 100644
 --- a/app/upgrades.go
 +++ b/app/upgrades.go
 @@ -1,7 +1,10 @@
@@ -13,10 +13,10 @@ index cc6745f..6e7c756 100644
  )
  
  func (app *AlloraApp) setupUpgradeHandlers() {
-@@ -13,6 +16,14 @@ func (app *AlloraApp) setupUpgradeHandlers() {
+@@ -12,6 +15,13 @@ func (app *AlloraApp) setupUpgradeHandlers() {
+ 			app.ModuleManager, app.Configurator(),
  		),
  	)
- 
 +	// set up the vIntegration upgrade
 +	app.UpgradeKeeper.SetUpgradeHandler(
 +		vintegration.UpgradeName,
@@ -24,14 +24,13 @@ index cc6745f..6e7c756 100644
 +			app.ModuleManager, app.Configurator(),
 +		),
 +	)
-+
+ 
  	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
  	if err != nil {
- 		app.Logger().Error("failed to read upgrade info from disk", "error", err)
-@@ -22,4 +33,13 @@ func (app *AlloraApp) setupUpgradeHandlers() {
+@@ -21,5 +31,13 @@ func (app *AlloraApp) setupUpgradeHandlers() {
+ 	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
  		return
  	}
- 
 +	if upgradeInfo.Name == vintegration.UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 +		storeUpgrades := storetypes.StoreUpgrades{
 +			Deleted: []string{"capability"},
@@ -40,10 +39,10 @@ index cc6745f..6e7c756 100644
 +		// configure store loader that checks if version == upgradeHeight and applies store upgrades
 +		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
 +	}
-+
+ 
  }
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index d5349d5..3fa2f96 100644
+index c0d7587..25a6f6c 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
 @@ -26,7 +26,7 @@ var (
