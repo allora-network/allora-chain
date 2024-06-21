@@ -194,6 +194,10 @@ func GetLatestNetworkInference(
 			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
 		previousLossNonce := infBlockHeight - topic.EpochLength
+		if previousLossNonce < 0 {
+			Logger(ctx).Warn("Network inference is not available for the epoch yet")
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
+		}
 		reputerReportedLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, previousLossNonce)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting reputer losses: %s", err.Error()))
