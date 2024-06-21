@@ -71,20 +71,11 @@ func (qs queryServer) GetLatestNetworkInference(
 	*types.QueryLatestNetworkInferencesAtBlockResponse,
 	error,
 ) {
-	topic, err := qs.k.GetTopic(ctx, req.TopicId)
-	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
-	}
-	if topic.EpochLastEnded == 0 {
-		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
-	}
 
-	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err := synth.GetNetworkInferencesAtBlock(
+	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err := synth.GetLatestNetworkInference(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
-		topic.EpochLastEnded,
-		topic.EpochLastEnded-topic.EpochLength,
 	)
 	if err != nil {
 		return nil, err

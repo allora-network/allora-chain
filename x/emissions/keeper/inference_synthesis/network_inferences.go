@@ -151,3 +151,119 @@ func GetNetworkInferencesAtBlock(
 
 	return networkInferences, forecastImpliedInferencesByWorker, infererWeights, forecasterWeights, nil
 }
+
+func GetLatestNetworkInference(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId TopicId,
+) (
+	*emissions.ValueBundle,
+	map[string]*emissions.Inference,
+	map[string]alloraMath.Dec,
+	map[string]alloraMath.Dec,
+	error,
+) {
+	networkInferences := &emissions.ValueBundle{
+		TopicId:          topicId,
+		InfererValues:    make([]*emissions.WorkerAttributedValue, 0),
+		ForecasterValues: make([]*emissions.WorkerAttributedValue, 0),
+	}
+	forecastImpliedInferencesByWorker := make(map[string]*emissions.Inference, 0)
+	var infererWeights map[string]alloraMath.Dec
+	var forecasterWeights map[string]alloraMath.Dec
+
+	inferences, infBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId)
+	if err != nil || len(inferences.Inferences) == 0 {
+		Logger(ctx).Warn("Error getting inferences: %s", err.Error())
+		return networkInferences, nil, infererWeights, forecasterWeights, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v", topicId)
+	}
+	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, infBlockHeight)
+	if err != nil {
+		Logger(ctx).Warn("Error getting forecasts: %s", err.Error())
+		return networkInferences, nil, infererWeights, forecasterWeights, nil
+	}
+
+	if len(inferences.Inferences) > 1 {
+		moduleParams, err := k.GetParams(ctx)
+		if err != nil {
+			return networkInferences, nil, infererWeights, forecasterWeights, err
+		}
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			Logger(ctx).Warn("Error getting topic: %s", err.Error())
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
+		}
+		previousLossNonce := infBlockHeight - topic.EpochLength
+		reputerReportedLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, previousLossNonce)
+		if err != nil {
+			Logger(ctx).Warn(fmt.Sprintf("Error getting reputer losses: %s", err.Error()))
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
+		}
+
+		// Map list of stakesOnTopic to map of stakesByReputer
+		stakesByReputer := make(map[string]cosmosMath.Int)
+		for _, bundle := range reputerReportedLosses.ReputerValueBundles {
+			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, bundle.ValueBundle.Reputer)
+			if err != nil {
+				Logger(ctx).Warn(fmt.Sprintf("Error getting stake on reputer: %s", err.Error()))
+				return networkInferences, nil, infererWeights, forecasterWeights, nil
+			}
+			stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
+		}
+		networkCombinedLoss, err := CalcCombinedNetworkLoss(
+			stakesByReputer,
+			reputerReportedLosses,
+			moduleParams.Epsilon,
+		)
+		if err != nil {
+			Logger(ctx).Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
+		}
+
+		networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
+			SynthRequest{
+				Ctx:                 ctx,
+				K:                   k,
+				TopicId:             topicId,
+				Inferences:          inferences,
+				Forecasts:           forecasts,
+				NetworkCombinedLoss: networkCombinedLoss,
+				Epsilon:             moduleParams.Epsilon,
+				FTolerance:          moduleParams.FTolerance,
+				PNorm:               topic.PNorm,
+				CNorm:               moduleParams.CNorm,
+			},
+		)
+		if err != nil {
+			Logger(ctx).Warn("Error constructing network inferences builder topic: %s", err.Error())
+			return networkInferences, nil, infererWeights, forecasterWeights, err
+		}
+		networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
+
+		forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
+		infererWeights = networkInferenceBuilder.weights.inferers
+		forecasterWeights = networkInferenceBuilder.weights.forecasters
+	} else {
+		// If there is only one valid inference, then the network inference is the same as the single inference
+		// For the forecasts to be meaningful, there should be at least 2 inferences
+		singleInference := inferences.Inferences[0]
+
+		networkInferences = &emissions.ValueBundle{
+			TopicId:       topicId,
+			CombinedValue: singleInference.Value,
+			InfererValues: []*emissions.WorkerAttributedValue{
+				{
+					Worker: singleInference.Inferer,
+					Value:  singleInference.Value,
+				},
+			},
+			ForecasterValues:       []*emissions.WorkerAttributedValue{},
+			NaiveValue:             singleInference.Value,
+			OneOutInfererValues:    []*emissions.WithheldWorkerAttributedValue{},
+			OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{},
+			OneInForecasterValues:  []*emissions.WorkerAttributedValue{},
+		}
+	}
+
+	return networkInferences, forecastImpliedInferencesByWorker, infererWeights, forecasterWeights, nil
+}
