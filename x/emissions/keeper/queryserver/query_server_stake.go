@@ -124,19 +124,21 @@ func (qs queryServer) GetStakeRemovalsForBlock(
 	if err != nil {
 		return nil, err
 	}
-	maxLimit := types.DefaultParams().MaxPageLimit
 	moduleParams, err := qs.k.GetParams(ctx)
-	if err == nil {
-		maxLimit = moduleParams.MaxPageLimit
+	if err != nil {
+		return nil, err
 	}
+	maxLimit := moduleParams.MaxPageLimit
+	removalPointers := make([]*types.StakeRemovalInfo, 0)
+	outputLen := uint64(len(removals))
 	if uint64(len(removals)) > maxLimit {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
+		err = status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
+		outputLen = maxLimit
 	}
-	removalPointers := make([]*types.StakeRemovalInfo, len(removals))
-	for i, removal := range removals {
-		removalPointers[i] = &removal
+	for i := uint64(0); i < outputLen; i++ {
+		removalPointers = append(removalPointers, &removals[i])
 	}
-	return &types.QueryStakeRemovalsForBlockResponse{Removals: removalPointers}, nil
+	return &types.QueryStakeRemovalsForBlockResponse{Removals: removalPointers}, err
 }
 
 func (qs queryServer) GetDelegateStakeRemovalsForBlock(
@@ -147,19 +149,21 @@ func (qs queryServer) GetDelegateStakeRemovalsForBlock(
 	if err != nil {
 		return nil, err
 	}
-	maxLimit := types.DefaultParams().MaxPageLimit
 	moduleParams, err := qs.k.GetParams(ctx)
-	if err == nil {
-		maxLimit = moduleParams.MaxPageLimit
+	if err != nil {
+		return nil, err
 	}
+	maxLimit := moduleParams.MaxPageLimit
+	removalPointers := make([]*types.DelegateStakeRemovalInfo, 0)
+	outputLen := uint64(len(removals))
 	if uint64(len(removals)) > maxLimit {
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
+		err = status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
+		outputLen = maxLimit
 	}
-	removalPointers := make([]*types.DelegateStakeRemovalInfo, len(removals))
-	for i, removal := range removals {
-		removalPointers[i] = &removal
+	for i := uint64(0); i < outputLen; i++ {
+		removalPointers = append(removalPointers, &removals[i])
 	}
-	return &types.QueryDelegateStakeRemovalsForBlockResponse{Removals: removalPointers}, nil
+	return &types.QueryDelegateStakeRemovalsForBlockResponse{Removals: removalPointers}, err
 }
 
 func (qs queryServer) GetStakeRemovalInfo(
@@ -168,13 +172,13 @@ func (qs queryServer) GetStakeRemovalInfo(
 ) (*types.QueryStakeRemovalInfoResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := qs.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, req.Reputer, req.TopicId)
-	if err != nil {
+	if err != nil && !found {
 		return nil, err
 	}
 	if !found {
 		return nil, status.Error(codes.NotFound, "no stake removal found")
 	}
-	return &types.QueryStakeRemovalInfoResponse{Removal: &removal}, nil
+	return &types.QueryStakeRemovalInfoResponse{Removal: &removal}, err
 }
 
 func (qs queryServer) GetDelegateStakeRemovalInfo(
@@ -190,5 +194,5 @@ func (qs queryServer) GetDelegateStakeRemovalInfo(
 	if !found {
 		return nil, status.Error(codes.NotFound, "no delegate stake removal found")
 	}
-	return &types.QueryDelegateStakeRemovalInfoResponse{Removal: &removal}, nil
+	return &types.QueryDelegateStakeRemovalInfoResponse{Removal: &removal}, err
 }

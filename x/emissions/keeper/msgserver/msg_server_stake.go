@@ -3,7 +3,9 @@ package msgserver
 import (
 	"context"
 
-	"cosmossdk.io/errors"
+	"errors"
+
+	errorsmod "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -85,12 +87,12 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 	// find out if we have a stake removal in progress, if so overwrite it
 	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
 	if err != nil {
-		return nil, errors.Wrap(err, "error while searching previous stake removal")
+		return nil, errorsmod.Wrap(err, "error while searching previous stake removal")
 	}
 	if found {
 		err = ms.k.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to delete previous stake removal")
+			return nil, errorsmod.Wrap(err, "failed to delete previous stake removal")
 		}
 	}
 	stakeToRemove := types.StakeRemovalInfo{
@@ -113,15 +115,18 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelRemoveStake) (*types.MsgCancelRemoveStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
-	if err != nil {
-		return nil, errors.Wrap(err, "error while searching previous stake removal")
+	// if the specific error is that we somehow got into a buggy invariant state
+	// where more than one removal request exists in the queue
+	// still allow people to cancel withdrawing their stake (fail open rather than closed)
+	if err != nil && !errors.Is(err, types.ErrInvariantFailure) {
+		return nil, errorsmod.Wrap(err, "error while searching previous stake removal")
 	}
 	if !found {
 		return nil, types.ErrStakeRemovalNotFound
 	}
 	err = ms.k.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to delete previous stake removal")
+		return nil, errorsmod.Wrap(err, "failed to delete previous stake removal")
 	}
 	return &types.MsgCancelRemoveStakeResponse{}, nil
 }
@@ -208,7 +213,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
 	)
 	if err != nil {
-		errors.Wrap(err, "error during finding delegate stake removal")
+		errorsmod.Wrap(err, "error during finding delegate stake removal")
 	}
 	if found {
 		err = ms.k.DeleteDelegateStakeRemoval(
@@ -219,16 +224,16 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 			removal.Delegator,
 		)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to delete previous delegate stake removal")
+			return nil, errorsmod.Wrap(err, "failed to delete previous delegate stake removal")
 		}
 	}
 	stakeToRemove := types.DelegateStakeRemovalInfo{
 		BlockRemovalStarted:   sdkCtx.BlockHeight(),
+		BlockRemovalCompleted: sdkCtx.BlockHeight() + moduleParams.RemoveStakeDelayWindow,
 		TopicId:               msg.TopicId,
 		Reputer:               msg.Reputer,
 		Delegator:             msg.Sender,
 		Amount:                msg.Amount,
-		BlockRemovalCompleted: sdkCtx.BlockHeight() + moduleParams.RemoveStakeDelayWindow,
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
@@ -245,8 +250,11 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ms
 	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
 	)
-	if err != nil {
-		return nil, errors.Wrap(err, "error while searching previous delegate stake removal")
+	// if the specific error is that we somehow got into a buggy invariant state
+	// where more than one removal request exists in the queue
+	// still allow people to cancel withdrawing their stake (fail open rather than closed)
+	if err != nil && !errors.Is(err, types.ErrInvariantFailure) {
+		return nil, errorsmod.Wrap(err, "error while searching previous delegate stake removal")
 	}
 	if !found {
 		return nil, types.ErrStakeRemovalNotFound
@@ -259,7 +267,7 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ms
 		removal.Delegator,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to delete previous delegate stake removal")
+		return nil, errorsmod.Wrap(err, "failed to delete previous delegate stake removal")
 	}
 	return &types.MsgCancelRemoveDelegateStakeResponse{}, nil
 }

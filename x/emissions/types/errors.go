@@ -65,4 +65,5 @@ var (
 	ErrValidationMustBeGreaterthanZero          = errors.Register(ModuleName, 62, "value must be greater than 0")
 	ErrEmptyArray                               = errors.Register(ModuleName, 63, "empty array")
 	ErrStakeRemovalNotFound                     = errors.Register(ModuleName, 64, "No stake removal found")
+	ErrInvariantFailure                         = errors.Register(ModuleName, 65, "invariant failure")
 )

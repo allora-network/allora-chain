@@ -1246,18 +1246,21 @@ func (k *Keeper) GetStakeRemovalForReputerAndTopicId(
 	keysLen := len(keys)
 	if keysLen == 0 {
 		return types.StakeRemovalInfo{}, false, nil
-	} else {
-		if keysLen > 1 {
-			ctx.Logger().Warn("Invariant failure! More than one stake removal found for reputer and topicId")
-		}
-		key := keys[0]
-		forwardKey := collections.Join3(key.K3(), topicId, reputer)
-		ret, err := k.stakeRemovalsByBlock.Get(ctx, forwardKey)
-		if err != nil {
-			return types.StakeRemovalInfo{}, false, err
-		}
-		return ret, true, nil
 	}
+	if keysLen < 0 {
+		return types.StakeRemovalInfo{}, false, errorsmod.Wrapf(types.ErrInvariantFailure, "Why is golang len function returning negative values?")
+	}
+	key := keys[0]
+	byBlockKey := collections.Join3(key.K3(), topicId, reputer)
+	ret, err := k.stakeRemovalsByBlock.Get(ctx, byBlockKey)
+	if err != nil {
+		return types.StakeRemovalInfo{}, false, err
+	}
+	if keysLen > 1 {
+		ctx.Logger().Warn("Invariant failure! More than one stake removal found for reputer and topicId")
+		return ret, true, errorsmod.Wrapf(types.ErrInvariantFailure, "More than one stake removal found for reputer and topicId")
+	}
+	return ret, true, nil
 }
 
 // For a given address, adds their stake removal information to the removal queue for delay waiting
@@ -1348,18 +1351,21 @@ func (k *Keeper) GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 	keysLen := len(keys)
 	if keysLen == 0 {
 		return types.DelegateStakeRemovalInfo{}, false, nil
-	} else {
-		if keysLen > 1 {
-			ctx.Logger().Warn("Invariant failure! More than one delegate stake removal found for delegator, reputer and topicId")
-		}
-		key := keys[0]
-		forwardKey := Join4(key.K4(), topicId, delegator, reputer)
-		ret, err := k.delegateStakeRemovalsByBlock.Get(ctx, forwardKey)
-		if err != nil {
-			return types.DelegateStakeRemovalInfo{}, false, err
-		}
-		return ret, true, nil
 	}
+	if keysLen < 0 {
+		return types.DelegateStakeRemovalInfo{}, false, errorsmod.Wrapf(types.ErrInvariantFailure, "Why is golang len function returning negative values?")
+	}
+	key := keys[0]
+	byBlockKey := Join4(key.K4(), topicId, delegator, reputer)
+	ret, err := k.delegateStakeRemovalsByBlock.Get(ctx, byBlockKey)
+	if err != nil {
+		return types.DelegateStakeRemovalInfo{}, false, err
+	}
+	if keysLen > 1 {
+		ctx.Logger().Warn("Invariant failure! More than one delegate stake removal found for delegator, reputer and topicId")
+		return ret, true, errorsmod.Wrapf(types.ErrInvariantFailure, "More than one delegate stake removal found for delegator, reputer and topicId")
+	}
+	return ret, true, nil
 }
 
 /// REPUTERS
