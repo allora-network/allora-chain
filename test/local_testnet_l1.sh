@@ -124,7 +124,7 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
             /usr/local/bin/allorad-integration /data/${valName}/cosmovisor/upgrades/vintegration/bin/allorad
 done
 
-echo "Generate L1 peers"
+echo "Generate L1 peers, put them in persisent-peers and in genesis.json"
 PEERS=""
 for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     valName="${VALIDATOR_PREFIX}${i}"
@@ -140,6 +140,10 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     delim=$([ $i -lt $(($VALIDATOR_NUMBER - 1)) ] && printf "," || printf "")
     PEERS="${PEERS}${addr}@${ipAddress}:26656${delim}"
 done
+for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
+    sed -i "s/addr_book_strict = true/addr_book_strict = false/" ${LOCALNET_DATADIR}/${VALIDATOR_PREFIX}${i}/config/config.toml
+    sed -i "s/persistent_peers = \"\"/persistent_peers = \"${PEERS}\"/" ${LOCALNET_DATADIR}/${VALIDATOR_PREFIX}${i}/config/config.toml
+done
 
 echo "PEERS=$PEERS" >> ${ENV_L1}
 echo "Generate docker compose file"
@@ -154,6 +158,10 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     UID_GID=$UID_GID \
     envsubst < validator.tmpl >> $L1_COMPOSE
 done
+
+echo "symlinking genesis.json to genesis/config/genesis.json"
+rm ${LOCALNET_DATADIR}/genesis.json
+ln -s ${LOCALNET_DATADIR}/genesis/config/genesis.json ${LOCALNET_DATADIR}/genesis.json
 
 echo "Launching the network"
 docker compose -f $L1_COMPOSE up -d
