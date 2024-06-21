@@ -3024,7 +3024,7 @@ func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicId() {
 	s.Require().NoError(err)
 
 	// Get the first stake removal for the reputer and topic ID
-	result, found, err := k.GetFirstStakeRemovalForReputerAndTopicId(ctx, reputer, topicId)
+	result, found, err := k.GetStakeRemovalForReputerAndTopicId(ctx, reputer, topicId)
 	s.Require().NoError(err)
 	s.Require().True(found)
 	s.Require().Equal(stakeRemovalInfo, result)
@@ -3036,7 +3036,7 @@ func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicIdNotFound()
 	reputer := "reputer"
 	topicId := uint64(1)
 
-	_, found, err := k.GetFirstStakeRemovalForReputerAndTopicId(ctx, reputer, topicId)
+	_, found, err := k.GetStakeRemovalForReputerAndTopicId(ctx, reputer, topicId)
 	s.Require().NoError(err)
 	s.Require().False(found)
 }
@@ -3073,7 +3073,7 @@ func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAnd
 	s.Require().NoError(err)
 
 	// Get the first stake removal for the reputer and topic ID
-	result, found, err := k.GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicId)
+	result, found, err := k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicId)
 	s.Require().NoError(err)
 	s.Require().True(found)
 	s.Require().Equal(stakeRemovalInfo, result)
@@ -3086,7 +3086,7 @@ func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAnd
 	reputer := "reputer"
 	topicId := uint64(1)
 
-	_, found, err := k.GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicId)
+	_, found, err := k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicId)
 	s.Require().NoError(err)
 	s.Require().False(found)
 }

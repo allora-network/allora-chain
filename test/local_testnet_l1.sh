@@ -73,6 +73,8 @@ echo "Updating expedited_voting_period in genesis.json"
 genesis_file="${LOCALNET_DATADIR}/genesis/config/genesis.json"
 tmp_file=$(mktemp)
 jq '.app_state.gov.params.expedited_voting_period = "20s" | .app_state.gov.params.voting_period = "20s"' "$genesis_file" > "$tmp_file" && mv "$tmp_file" "$genesis_file"
+echo "Updating remove_stake_delay_window in genesis.json"
+jq '.app_state.emissions.params.remove_stake_delay_window = "5"' "$genesis_file" > "$tmp_file" && mv "$tmp_file" "$genesis_file"
 
 echo "Whitelist faucet account"
 FAUCET_ADDRESS=$(docker run -t \

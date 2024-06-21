@@ -83,7 +83,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	// find out if we have a stake removal in progress, if so overwrite it
-	removal, found, err := ms.k.GetFirstStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
+	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
 	if err != nil {
 		return nil, errors.Wrap(err, "error while searching previous stake removal")
 	}
@@ -112,7 +112,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 // cancel a request to remove your stake, during the delay window
 func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelRemoveStake) (*types.MsgCancelRemoveStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	removal, found, err := ms.k.GetFirstStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
+	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
 	if err != nil {
 		return nil, errors.Wrap(err, "error while searching previous stake removal")
 	}
@@ -204,7 +204,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 		return nil, err
 	}
 	// find out if we have a stake removal in progress, if so overwrite it
-	removal, found, err := ms.k.GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(
+	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
 	)
 	if err != nil {
@@ -242,7 +242,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 // cancel an ongoing stake removal request during the delay period
 func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.MsgCancelRemoveDelegateStake) (*types.MsgCancelRemoveDelegateStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	removal, found, err := ms.k.GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(
+	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
 	)
 	if err != nil {

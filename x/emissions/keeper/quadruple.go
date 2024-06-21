@@ -10,6 +10,7 @@ import (
 )
 
 // This is a copy of the cosmos collections triple.go made into a quadruple.go
+// cosmos collections.go: https://github.com/cosmos/cosmos-sdk/blob/main/collections/triple.go
 
 // Quadruple defines a multipart key composed of four keys.
 type Quadruple[K1, K2, K3, K4 any] struct {

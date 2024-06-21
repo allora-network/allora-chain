@@ -828,7 +828,7 @@ func (k *Keeper) AddDelegateStake(ctx context.Context, topicId TopicId, delegato
 	return nil
 }
 
-// Removes stake to the system for a given topic and reputer
+// Removes stake from the system for a given topic and reputer
 func (k *Keeper) RemoveStake(
 	ctx context.Context,
 	blockHeight BlockHeight,
@@ -1229,7 +1229,7 @@ func (k *Keeper) GetStakeRemovalsForBlock(
 }
 
 // get the first found stake removal for a reputer and topicId or err not found if not found
-func (k *Keeper) GetFirstStakeRemovalForReputerAndTopicId(
+func (k *Keeper) GetStakeRemovalForReputerAndTopicId(
 	ctx sdk.Context,
 	reputer string,
 	topicId uint64,
@@ -1330,7 +1330,7 @@ func (k *Keeper) GetDelegateStakeRemovalsForBlock(
 }
 
 // return the first found stake removal object for a delegator, reputer, and topicId
-func (k *Keeper) GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(
+func (k *Keeper) GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 	ctx sdk.Context,
 	delegator string,
 	reputer string,

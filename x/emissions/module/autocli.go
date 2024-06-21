@@ -209,7 +209,22 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetStakeRemovalInfo",
-					Use:       "stake-removal-info [block_height] [address] [topic_id]",
+					Use:       "stake-removal-info [address] [topic_id]",
+					Short:     "Get a pending stake removal for a reputer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "reputer"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetDelegateStakeRemovalInfo",
+					Use:       "delegate-stake-removal-info [delegator] [reputer] [topic_id]",
+					Short:     "Get a pending delegate stake removal for a delegator in a topic upon a reputer",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "delegator"},
+						{ProtoField: "reputer"},
+						{ProtoField: "topic_id"},
+					},
 				},
 			},
 		},

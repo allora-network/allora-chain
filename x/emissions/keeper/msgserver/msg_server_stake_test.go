@@ -1724,7 +1724,7 @@ func (s *MsgServerTestSuite) TestCancelRemoveStake() {
 
 	// Verify that the stake removal is deleted
 	_, found, err := s.emissionsKeeper.
-		GetFirstStakeRemovalForReputerAndTopicId(ctx, reputer, topicID)
+		GetStakeRemovalForReputerAndTopicId(ctx, reputer, topicID)
 	require.NoError(err)
 	require.False(found, "Stake removal should be deleted")
 
@@ -1778,7 +1778,7 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStake() {
 
 	// Verify that the stake removal is deleted
 	_, found, err := s.emissionsKeeper.
-		GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicID)
+		GetDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicID)
 	require.NoError(err)
 	require.False(found, "Stake removal should be deleted")
 }

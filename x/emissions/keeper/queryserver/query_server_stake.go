@@ -167,7 +167,7 @@ func (qs queryServer) GetStakeRemovalInfo(
 	req *types.QueryStakeRemovalInfoRequest,
 ) (*types.QueryStakeRemovalInfoResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	removal, found, err := qs.k.GetFirstStakeRemovalForReputerAndTopicId(sdkCtx, req.Reputer, req.TopicId)
+	removal, found, err := qs.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, req.Reputer, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func (qs queryServer) GetDelegateStakeRemovalInfo(
 ) (*types.QueryDelegateStakeRemovalInfoResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := qs.k.
-		GetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId(sdkCtx, req.Delegator, req.Reputer, req.TopicId)
+		GetDelegateStakeRemovalForDelegatorReputerAndTopicId(sdkCtx, req.Delegator, req.Reputer, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
