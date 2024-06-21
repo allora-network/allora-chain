@@ -133,6 +133,7 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
 	blockHeight, err := m.Client.BlockHeight(m.Ctx)
 	require.NoError(m.T, err)
 	err = m.Client.WaitForNextBlock(m.Ctx)
+	err = m.Client.WaitForNextBlock(m.Ctx)
 	require.NoError(m.T, err)
 	blockHeight2, err := m.Client.BlockHeight(m.Ctx)
 	require.NoError(m.T, err)
