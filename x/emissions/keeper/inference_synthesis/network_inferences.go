@@ -6,7 +6,6 @@ import (
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
@@ -71,32 +70,12 @@ func GetNetworkInferencesAtBlock(
 			return nil, nil, infererWeights, forecasterWeights, err
 		}
 
-		reputerReportedLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, previousLossNonce)
+		networkLosses, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, previousLossNonce)
 		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error getting reputer losses: %s", err.Error()))
+			Logger(ctx).Warn(fmt.Sprintf("Error getting network losses: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
 
-		// Map list of stakesOnTopic to map of stakesByReputer
-		stakesByReputer := make(map[string]cosmosMath.Int)
-		for _, bundle := range reputerReportedLosses.ReputerValueBundles {
-			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, bundle.ValueBundle.Reputer)
-			if err != nil {
-				Logger(ctx).Warn(fmt.Sprintf("Error getting stake on reputer: %s", err.Error()))
-				return networkInferences, nil, infererWeights, forecasterWeights, nil
-			}
-			stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
-		}
-
-		networkCombinedLoss, err := CalcCombinedNetworkLoss(
-			stakesByReputer,
-			reputerReportedLosses,
-			moduleParams.Epsilon,
-		)
-		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
-			return networkInferences, nil, infererWeights, forecasterWeights, nil
-		}
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
@@ -111,7 +90,7 @@ func GetNetworkInferencesAtBlock(
 				TopicId:             topicId,
 				Inferences:          inferences,
 				Forecasts:           forecasts,
-				NetworkCombinedLoss: networkCombinedLoss,
+				NetworkCombinedLoss: networkLosses.CombinedValue,
 				Epsilon:             moduleParams.Epsilon,
 				FTolerance:          moduleParams.FTolerance,
 				PNorm:               topic.PNorm,
@@ -198,29 +177,9 @@ func GetLatestNetworkInference(
 			Logger(ctx).Warn("Network inference is not available for the epoch yet")
 			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
-		reputerReportedLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, previousLossNonce)
+		networkLosses, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, previousLossNonce)
 		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error getting reputer losses: %s", err.Error()))
-			return networkInferences, nil, infererWeights, forecasterWeights, nil
-		}
-
-		// Map list of stakesOnTopic to map of stakesByReputer
-		stakesByReputer := make(map[string]cosmosMath.Int)
-		for _, bundle := range reputerReportedLosses.ReputerValueBundles {
-			stakeAmount, err := k.GetStakeOnReputerInTopic(ctx, topicId, bundle.ValueBundle.Reputer)
-			if err != nil {
-				Logger(ctx).Warn(fmt.Sprintf("Error getting stake on reputer: %s", err.Error()))
-				return networkInferences, nil, infererWeights, forecasterWeights, nil
-			}
-			stakesByReputer[bundle.ValueBundle.Reputer] = stakeAmount
-		}
-		networkCombinedLoss, err := CalcCombinedNetworkLoss(
-			stakesByReputer,
-			reputerReportedLosses,
-			moduleParams.Epsilon,
-		)
-		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error calculating network combined loss: %s", err.Error()))
+			Logger(ctx).Warn(fmt.Sprintf("Error getting network losses: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
 
@@ -231,7 +190,7 @@ func GetLatestNetworkInference(
 				TopicId:             topicId,
 				Inferences:          inferences,
 				Forecasts:           forecasts,
-				NetworkCombinedLoss: networkCombinedLoss,
+				NetworkCombinedLoss: networkLosses.CombinedValue,
 				Epsilon:             moduleParams.Epsilon,
 				FTolerance:          moduleParams.FTolerance,
 				PNorm:               topic.PNorm,
