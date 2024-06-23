@@ -1,7 +1,6 @@
 package inference_synthesis
 
 import (
-
 	errorsmod "cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
