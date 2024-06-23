@@ -71,6 +71,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 
 				// Define variable to store maximum regret for forecast k
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
+				inferersConsidered := make([]string, 0)
 				for _, j := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
 					R_ijk, err := p.NetworkCombinedLoss.Sub(forecastElementsByInferer[j].Value)
@@ -78,10 +79,12 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 						return nil, errorsmod.Wrapf(err, "error calculating network loss per value")
 					}
 					R_ik[j] = &StatefulRegret{regret: R_ijk, noPriorRegret: false}
+					inferersConsidered = append(inferersConsidered, j)
 				}
 
 				if len(sortedInferersInForecast) > 0 {
 					p.InfererRegrets = R_ik
+					p.Inferers = inferersConsidered
 					p.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
 
 					weights, err := p.CalcWeightsGivenWorkers()

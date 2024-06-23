@@ -149,6 +149,63 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 }
 
+func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorkersTwoForecastersWithoutSelfReport() {
+	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
+	epsilon := alloraMath.MustNewDecFromString("1e-4")
+	fTolerance := alloraMath.MustNewDecFromString("0.01")
+	pNorm := alloraMath.MustNewDecFromString("2.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				Forecaster: "worker0",
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("4")},
+				},
+			},
+		},
+	}
+
+	expected := map[string]*emissionstypes.Inference{
+		"worker0": {Value: alloraMath.MustNewDecFromString("2")},
+	}
+	inferenceByWorker := map[string]*emissionstypes.Inference{
+		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("2")},
+	}
+	palette := inferencesynthesis.SynthPalette{
+		Logger:              inferencesynthesis.Logger(s.ctx),
+		InferenceByWorker:   inferenceByWorker,
+		ForecastByWorker:    map[string]*emissionstypes.Forecast{"worker0": forecasts.Forecasts[0]},
+		Forecasters:         []string{"worker0"},
+		Inferers:            []string{"worker0", "worker1"},
+		InferersNewStatus:   inferencesynthesis.InferersNotNew,
+		NetworkCombinedLoss: networkCombinedLoss,
+		Epsilon:             epsilon,
+		FTolerance:          fTolerance,
+		PNorm:               pNorm,
+		CNorm:               cNorm,
+	}
+	result, err := palette.CalcForecastImpliedInferences()
+	s.Require().NoError(err)
+
+	for key, expectedValue := range expected {
+		actualValue, exists := result[key]
+		s.Require().True(exists, "Expected key does not exist in result map")
+		s.Require().True(
+			alloraMath.InDelta(
+				expectedValue.Value,
+				actualValue.Value,
+				alloraMath.MustNewDecFromString("0.00001"),
+			), "Values do not match for key: %s %s %s",
+			key,
+			expectedValue.Value.String(),
+			actualValue.Value.String(),
+		)
+	}
+}
+
 func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	epochGet := GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[2]
