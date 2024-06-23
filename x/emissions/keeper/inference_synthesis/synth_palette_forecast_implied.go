@@ -71,7 +71,6 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 
 				// Define variable to store maximum regret for forecast k
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
-				inferersConsidered := make([]string, 0)
 				for _, j := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
 					R_ijk, err := p.NetworkCombinedLoss.Sub(forecastElementsByInferer[j].Value)
@@ -79,12 +78,10 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 						return nil, errorsmod.Wrapf(err, "error calculating network loss per value")
 					}
 					R_ik[j] = &StatefulRegret{regret: R_ijk, noPriorRegret: false}
-					inferersConsidered = append(inferersConsidered, j)
 				}
 
-				if len(sortedInferersInForecast) > 0 {
+				if len(sortedInferersInForecast) > 1 {
 					p.InfererRegrets = R_ik
-					p.Inferers = inferersConsidered
 					p.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
 
 					weights, err := p.CalcWeightsGivenWorkers()
@@ -92,6 +89,10 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}
 					w_ik = weights.inferers
+				} else if len(sortedInferersInForecast) == 1 {
+					weights := make(map[Worker]Weight, 1)
+					weights[sortedInferersInForecast[0]] = alloraMath.OneDec()
+					w_ik = weights
 				}
 
 				// Calculate the forecast-implied inferences I_ik
@@ -114,6 +115,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 				}
 			}
 
+			// TODO: Check if weightSum is zero and handle this case
 			forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
 			if err != nil {
 				return nil, errorsmod.Wrapf(err, "error calculating forecast value")
