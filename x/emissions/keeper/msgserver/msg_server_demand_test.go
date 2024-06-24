@@ -12,7 +12,7 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 	sender := senderAddr.String()
 	topicId := s.CreateOneTopic()
 	// put some stake in the topic
-	err := s.emissionsKeeper.AddStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
+	err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
 	var initialStake int64 = 1000
@@ -65,10 +65,10 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	topicId := s.CreateOneTopic()
 	topicId2 := s.CreateOneTopic()
 	// put some stake in the topic
-	err := s.emissionsKeeper.AddStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
+	err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
-	err = s.emissionsKeeper.AddStake(s.ctx, topicId2, PKS[1].Address().String(), cosmosMath.NewInt(500000))
+	err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId2, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
 	s.emissionsKeeper.InactivateTopic(s.ctx, topicId2)
 	var initialStake int64 = 1000

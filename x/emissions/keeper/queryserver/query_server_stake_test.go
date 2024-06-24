@@ -32,7 +32,7 @@ func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
 	reputerAddr := reputer.String()
 	initialStake := cosmosMath.NewInt(250)
 
-	err = keeper.AddStake(ctx, topicId, reputerAddr, initialStake)
+	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, initialStake)
 	s.Require().NoError(err, "AddStake should not produce an error")
 
 	req := &types.QueryReputerStakeInTopicRequest{
@@ -60,9 +60,9 @@ func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
 	initialStake1 := cosmosMath.NewInt(250)
 	initialStake2 := cosmosMath.NewInt(251)
 
-	err = keeper.AddStake(ctx, topicId, reputer1Addr, initialStake1)
+	err = keeper.AddReputerStake(ctx, topicId, reputer1Addr, initialStake1)
 	s.Require().NoError(err, "AddStake should not produce an error")
-	err = keeper.AddStake(ctx, topicId, reputer2Addr, initialStake2)
+	err = keeper.AddReputerStake(ctx, topicId, reputer2Addr, initialStake2)
 	s.Require().NoError(err, "AddStake should not produce an error")
 
 	req := &types.QueryMultiReputerStakeInTopicRequest{
@@ -173,7 +173,7 @@ func (s *KeeperTestSuite) TestGetTopicStake() {
 	reputerAddr := PKS[0].Address().String()
 	stakeAmount := cosmosMath.NewInt(500)
 
-	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	req := &types.QueryTopicStakeRequest{

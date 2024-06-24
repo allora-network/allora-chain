@@ -44,7 +44,7 @@ func RemoveStakes(
 		}
 
 		// Update the stake data structures
-		err = k.RemoveStake(
+		err = k.RemoveReputerStake(
 			sdkCtx,
 			currentBlock,
 			stakeRemoval.TopicId,

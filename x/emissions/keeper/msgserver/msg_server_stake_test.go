@@ -131,7 +131,7 @@ func (s *MsgServerTestSuite) TestStartRemoveStake() {
 
 	// Assuming you have methods to directly manipulate the state
 	// Simulate that sender has already staked the required amount
-	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
+	s.emissionsKeeper.AddReputerStake(ctx, topicId, senderAddr.String(), stakeAmount)
 
 	msg := &types.MsgRemoveStake{
 		Sender:  senderAddr.String(),
@@ -204,7 +204,7 @@ func (s *MsgServerTestSuite) TestConfirmRemoveStake() {
 
 	s.MintTokensToAddress(senderAddr, cosmosMath.NewInt(1000))
 	s.MintTokensToModule(types.AlloraStakingAccountName, cosmosMath.NewInt(1000))
-	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
+	s.emissionsKeeper.AddReputerStake(ctx, topicId, senderAddr.String(), stakeAmount)
 	blockEnd := startBlock + removalDelay
 
 	// Simulate the stake removal request.
@@ -253,7 +253,7 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeTwiceInSameBlock() {
 	removeBlock := startBlock + removalDelay
 
 	// Simulate that sender has already staked the required amount
-	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
+	s.emissionsKeeper.AddReputerStake(ctx, topicId, senderAddr.String(), stakeAmount)
 
 	_, err = s.msgServer.RemoveStake(ctx, &types.MsgRemoveStake{
 		Sender:  senderAddr.String(),
@@ -314,7 +314,7 @@ func (s *MsgServerTestSuite) TestRemoveStakeTwiceInDifferentBlocks() {
 	removeBlock := startBlock + removalDelay
 
 	// Simulate that sender has already staked the required amount
-	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr.String(), stakeAmount)
+	s.emissionsKeeper.AddReputerStake(ctx, topicId, senderAddr.String(), stakeAmount)
 
 	_, err = s.msgServer.RemoveStake(ctx, &types.MsgRemoveStake{
 		Sender:  senderAddr.String(),
@@ -376,7 +376,7 @@ func (s *MsgServerTestSuite) TestRemoveMultipleReputersSameBlock() {
 	removalDelay := params.RemoveStakeDelayWindow
 	removeBlock := startBlock + removalDelay
 	// Simulate that sender1 has already staked the required amount
-	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr1.String(), stakeAmount1)
+	s.emissionsKeeper.AddReputerStake(ctx, topicId, senderAddr1.String(), stakeAmount1)
 	_, err = s.msgServer.RemoveStake(ctx, &types.MsgRemoveStake{
 		Sender:  senderAddr1.String(),
 		TopicId: topicId,
@@ -395,7 +395,7 @@ func (s *MsgServerTestSuite) TestRemoveMultipleReputersSameBlock() {
 	}
 	require.Equal(expected1, stakePlacements1[0])
 	// Simulate that sender2 has already staked the required amount
-	s.emissionsKeeper.AddStake(ctx, topicId, senderAddr2.String(), stakeAmount2)
+	s.emissionsKeeper.AddReputerStake(ctx, topicId, senderAddr2.String(), stakeAmount2)
 	_, err = s.msgServer.RemoveStake(ctx, &types.MsgRemoveStake{
 		Sender:  senderAddr2.String(),
 		TopicId: topicId,

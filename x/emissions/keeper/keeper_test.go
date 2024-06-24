@@ -1163,7 +1163,7 @@ func (s *KeeperTestSuite) TestAddStake() {
 	initialTopicStake := cosmosMath.NewInt(0)
 
 	// Add stake
-	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator
@@ -1218,7 +1218,7 @@ func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
 	zeroStakeAmount := cosmosMath.NewInt(0)
 
 	// Try to add zero stake
-	err := keeper.AddStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
+	err := keeper.AddReputerStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
 	s.Require().NoError(err)
 }
 
@@ -1234,7 +1234,7 @@ func (s *KeeperTestSuite) TestRemoveStake() {
 	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err = keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Capture the initial total and topic stakes after adding stake
@@ -1252,7 +1252,7 @@ func (s *KeeperTestSuite) TestRemoveStake() {
 	s.Require().NoError(err)
 
 	// Remove stake
-	err = keeper.RemoveStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
+	err = keeper.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator after removal
@@ -1365,11 +1365,11 @@ func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
 	zeroStakeAmount := cosmosMath.NewInt(0)
 
 	// Setup initial stake
-	err := keeper.AddStake(ctx, topicId, reputerAddr, initialStakeAmount)
+	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err)
 
 	// Try to remove zero stake
-	err = keeper.RemoveStake(ctx, ctx.BlockHeight(), topicId, reputerAddr, zeroStakeAmount)
+	err = keeper.RemoveReputerStake(ctx, ctx.BlockHeight(), topicId, reputerAddr, zeroStakeAmount)
 	s.Require().NoError(err)
 }
 
@@ -1381,7 +1381,7 @@ func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
 	stakeAmount := cosmosMath.NewInt(500)
 
 	// Try to remove stake with non-existing delegator or target
-	err := keeper.RemoveStake(ctx, ctx.BlockHeight(), topicId, nonExistingDelegatorAddr, stakeAmount)
+	err := keeper.RemoveReputerStake(ctx, ctx.BlockHeight(), topicId, nonExistingDelegatorAddr, stakeAmount)
 	s.Require().Error(err)
 }
 

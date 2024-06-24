@@ -46,7 +46,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	}
 
 	// Update the stake data structures, spread the stake across all topics evenly
-	err = ms.k.AddStake(ctx, msg.TopicId, msg.Sender, msg.Amount)
+	err = ms.k.AddReputerStake(ctx, msg.TopicId, msg.Sender, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	}
 
 	// Update the stake data structures
-	err = ms.k.AddStake(ctx, msg.TopicId, msg.Reputer, msg.Amount)
+	err = ms.k.AddReputerStake(ctx, msg.TopicId, msg.Reputer, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
