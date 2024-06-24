@@ -275,7 +275,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		// actualValue, exists := result[key]
 		actualValue, _ := result[key]
 
-		log.Printf("key: %v, expectedValue: %v, actualValue: %v", key, expectedValue.Value, actualValue.Value)
+		log.Printf("key: %v, expectedValue: %v, actual: %v", key, expectedValue, actualValue)
 
 		/*
 			s.Require().True(exists, "Expected key %v does not exist in result map", key)
