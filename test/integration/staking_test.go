@@ -186,7 +186,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 		"Bob should have stake on Alice in topic 1",
 	)
 
-	// Have Alice unstake
+	// Have Bob unstake
 	unstake := &emissionstypes.MsgRemoveDelegateStake{
 		Sender:  m.BobAddr,
 		Reputer: m.AliceAddr,
@@ -214,7 +214,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	m.T.Log("--- Unstake removal is queued, waiting for block ", stakeRemoval.Removal.BlockRemovalCompleted, " ---")
 	m.Client.WaitForBlockHeight(m.Ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
 
-	// Check Alice has zero stake left
+	// Check Bob has zero stake left
 	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		m.Ctx,
 		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
