@@ -45,32 +45,35 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	// Normalize the regrets and find the max normalized regret among them
 	normalizedInfererRegrets := make(map[Worker]Regret)
 	maxRegret := alloraMath.ZeroDec()
-	countInfRegrets := 0
+	maxRegretInitialized := false
 	for address, worker := range p.InfererRegrets {
 		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
 		normalizedInfererRegrets[address] = regretFrac
-		if countInfRegrets == 0 || regretFrac.Gt(maxRegret) {
+		if !maxRegretInitialized {
+			maxRegretInitialized = true
+			maxRegret = regretFrac
+		} else if regretFrac.Gt(maxRegret) {
 			maxRegret = regretFrac
 		}
-		countInfRegrets++
 	}
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
-		countFrcRegrets := 0
 		for address, worker := range p.ForecasterRegrets {
 			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}
 			normalizedForecasterRegrets[address] = regretFrac
-			if countFrcRegrets == 0 || regretFrac.Gt(maxRegret) {
+			if !maxRegretInitialized {
+				maxRegretInitialized = true
+				maxRegret = regretFrac
+			} else if regretFrac.Gt(maxRegret) {
 				maxRegret = regretFrac
 			}
-			countFrcRegrets++
 		}
 	}
 
@@ -197,7 +200,7 @@ func (p *SynthPalette) GetInfererRegretsSlice() ([]alloraMath.Dec, error) {
 	if len(p.InfererRegrets) == 0 {
 		return regrets, nil
 	}
-	regrets = make([]alloraMath.Dec, 0)
+	regrets = make([]alloraMath.Dec, 0, len(p.InfererRegrets))
 	for _, worker := range p.InfererRegrets {
 		regrets = append(regrets, worker.regret)
 	}
@@ -209,7 +212,7 @@ func (p *SynthPalette) GetForecasterRegretsSlice() ([]alloraMath.Dec, error) {
 	if len(p.ForecasterRegrets) == 0 {
 		return regrets, nil
 	}
-	regrets = make([]alloraMath.Dec, 0)
+	regrets = make([]alloraMath.Dec, 0, len(p.ForecasterRegrets))
 	for _, worker := range p.ForecasterRegrets {
 		regrets = append(regrets, worker.regret)
 	}
