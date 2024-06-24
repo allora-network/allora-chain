@@ -1,8 +1,6 @@
 package inference_synthesis_test
 
 import (
-	"log"
-
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
@@ -271,12 +269,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	result, err := palette.CalcForecastImpliedInferences()
 	s.Require().NoError(err)
 
-	log.Printf("result: %v", result)
-
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
-
-		log.Printf("key: %v, expectedValue: %v, actualValue: %v", key, expectedValue, actualValue)
 
 		if expectedValue == nil {
 			s.Require().False(exists, "Expected key %v exist unexpectedly in result map", key)
