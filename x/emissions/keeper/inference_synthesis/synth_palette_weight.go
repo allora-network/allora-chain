@@ -159,6 +159,9 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 		// If all inferers are new, forecasters are not considered
 		if p.InferersNewStatus != InferersAllNew {
 			for _, forecaster := range p.Forecasters {
+				if p.ForecastImpliedInferenceByWorker[forecaster] == nil {
+					continue
+				}
 				runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
 					p.ForecastImpliedInferenceByWorker[forecaster],
 					weights.forecasters[forecaster],

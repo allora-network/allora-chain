@@ -80,6 +80,10 @@ func (b *NetworkInferenceBuilder) SetInfererValues() *NetworkInferenceBuilder {
 func (b *NetworkInferenceBuilder) SetForecasterValues() *NetworkInferenceBuilder {
 	forecastImpliedValues := make([]*emissions.WorkerAttributedValue, 0)
 	for _, forecaster := range b.palette.Forecasters {
+		if b.palette.ForecastImpliedInferenceByWorker[forecaster] == nil {
+			b.logger.Warn(fmt.Sprintf("No forecast-implied inference for forecaster %s", forecaster))
+			continue
+		}
 		forecastImpliedValues = append(forecastImpliedValues, &emissions.WorkerAttributedValue{
 			Worker: b.palette.ForecastImpliedInferenceByWorker[forecaster].Inferer,
 			Value:  b.palette.ForecastImpliedInferenceByWorker[forecaster].Value,

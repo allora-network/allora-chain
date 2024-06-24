@@ -115,16 +115,17 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 				}
 			}
 
-			// TODO: Check if weightSum is zero and handle this case
-			forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
-			if err != nil {
-				return nil, errorsmod.Wrapf(err, "error calculating forecast value")
+			if !weightSum.Equal(alloraMath.ZeroDec()) {
+				forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
+				if err != nil {
+					return nil, errorsmod.Wrapf(err, "error calculating forecast value")
+				}
+				forecastImpliedInference := emissionstypes.Inference{
+					Inferer: forecaster,
+					Value:   forecastValue,
+				}
+				I_i[forecaster] = &forecastImpliedInference
 			}
-			forecastImpliedInference := emissionstypes.Inference{
-				Inferer: forecaster,
-				Value:   forecastValue,
-			}
-			I_i[forecaster] = &forecastImpliedInference
 		}
 	}
 
