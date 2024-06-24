@@ -45,28 +45,32 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	// Normalize the regrets and find the max normalized regret among them
 	normalizedInfererRegrets := make(map[Worker]Regret)
 	maxRegret := alloraMath.ZeroDec()
+	countInfRegrets := 0
 	for address, worker := range p.InfererRegrets {
 		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
 		normalizedInfererRegrets[address] = regretFrac
-		if regretFrac.Gt(maxRegret) {
+		if countInfRegrets == 0 || regretFrac.Gt(maxRegret){
 			maxRegret = regretFrac
 		}
+		countInfRegrets++
 	}
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
+		countFrcRegrets := 0
 		for address, worker := range p.ForecasterRegrets {
 			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}
 			normalizedForecasterRegrets[address] = regretFrac
-			if regretFrac.Gt(maxRegret) {
+			if countFrcRegrets == 0 || regretFrac.Gt(maxRegret) {
 				maxRegret = regretFrac
 			}
+			countFrcRegrets++
 		}
 	}
 
