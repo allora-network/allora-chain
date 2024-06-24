@@ -2,10 +2,8 @@ package inference_synthesis_test
 
 import (
 	"reflect"
-	"strconv"
 	"testing"
 
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/stretchr/testify/assert"
@@ -82,13 +80,12 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	keeper := s.emissionsKeeper
 
 	topicId := uint64(1)
-	blockHeight := int64(3)
-	require.True(blockHeight >= s.ctx.BlockHeight())
-	s.ctx = s.ctx.WithBlockHeight(blockHeight)
+	blockHeight := int64(300)
+	blockHeightPreviousLosses := int64(200)
 
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
 	reputerRequestNonce := &emissionstypes.ReputerRequestNonce{
-		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeight},
+		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
 	}
 
 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
@@ -119,90 +116,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	forecaster1 := "allo1e92saykj94jw3z55g4d3lfz098ppk0suwzc03a"
 	forecaster2 := "allo1pk6mxny5p79t8zhkm23z7u3zmfuz2gn0snxkkt"
 
-	// Set Loss bundles
-	reputerLossBundles := emissionstypes.ReputerValueBundles{
-		ReputerValueBundles: []*emissionstypes.ReputerValueBundle{
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer0,
-					CombinedValue:       epoch2Get("reputer_0_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer1,
-					CombinedValue:       epoch2Get("reputer_1_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer2,
-					CombinedValue:       epoch2Get("reputer_2_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer3,
-					CombinedValue:       epoch2Get("reputer_3_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer4,
-					CombinedValue:       epoch2Get("reputer_4_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-		},
-	}
-
-	err = keeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, blockHeight, reputerLossBundles)
+	// Set Previous Loss
+	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
+		CombinedValue:       epoch2Get("network_loss_reputers"),
+		ReputerRequestNonce: reputerRequestNonce,
+		TopicId:             topicId,
+	})
 	require.NoError(err)
-
-	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
-
-	// Set Stake
-	stake1 := cosmosMath.NewInt(209884).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer0, stake1)
-	require.NoError(err)
-	stake2 := cosmosMath.NewInt(216051).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer1, stake2)
-	require.NoError(err)
-	stake3 := cosmosMath.NewInt(161259).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer2, stake3)
-	require.NoError(err)
-	stake4 := cosmosMath.NewInt(393670).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer3, stake4)
-	require.NoError(err)
-	stake5 := cosmosMath.NewInt(205385).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer4, stake5)
-	require.NoError(err)
-
-	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
-	for workerIndex, reputer := range reputerAddresses {
-		stakeValue := epoch3Get("reputer_stake_" + strconv.Itoa(workerIndex))
-
-		stakeValueScaled, err := stakeValue.Mul(alloraMath.MustNewDecFromString("1e18"))
-		s.Require().NoError(err)
-
-		stakeValueFloored, err := stakeValueScaled.Floor()
-		s.Require().NoError(err)
-
-		stakeInt, ok := cosmosMath.NewIntFromString(stakeValueFloored.String())
-		s.Require().True(ok)
-
-		err = keeper.AddStake(s.ctx, topicId, reputer, stakeInt)
-		s.Require().NoError(err)
-	}
 
 	// Set Inferences
 	inferences := emissionstypes.Inferences{
@@ -422,7 +342,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			s.emissionsKeeper,
 			topicId,
 			blockHeight,
-			blockHeight,
+			blockHeightPreviousLosses,
 		)
 	require.NoError(err)
 	testutil.InEpsilon2(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
@@ -541,90 +461,13 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 	forecaster1 := "allo1e92saykj94jw3z55g4d3lfz098ppk0suwzc03a"
 	forecaster2 := "allo1pk6mxny5p79t8zhkm23z7u3zmfuz2gn0snxkkt"
 
-	// Set Loss bundles
-	reputerLossBundles := emissionstypes.ReputerValueBundles{
-		ReputerValueBundles: []*emissionstypes.ReputerValueBundle{
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer0,
-					CombinedValue:       epoch2Get("reputer_0_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer1,
-					CombinedValue:       epoch2Get("reputer_1_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer2,
-					CombinedValue:       epoch2Get("reputer_2_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer3,
-					CombinedValue:       epoch2Get("reputer_3_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &emissionstypes.ValueBundle{
-					Reputer:             reputer4,
-					CombinedValue:       epoch2Get("reputer_4_loss_network_inference"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-		},
-	}
-
-	err = keeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, blockHeightPreviousLosses, reputerLossBundles)
+	// Set Previous Loss
+	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
+		CombinedValue:       epoch2Get("network_loss_reputers"),
+		ReputerRequestNonce: reputerRequestNonce,
+		TopicId:             topicId,
+	})
 	require.NoError(err)
-
-	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
-
-	// Set Stake
-	stake1 := cosmosMath.NewInt(209884).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer0, stake1)
-	require.NoError(err)
-	stake2 := cosmosMath.NewInt(216051).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer1, stake2)
-	require.NoError(err)
-	stake3 := cosmosMath.NewInt(161259).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer2, stake3)
-	require.NoError(err)
-	stake4 := cosmosMath.NewInt(393670).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer3, stake4)
-	require.NoError(err)
-	stake5 := cosmosMath.NewInt(205385).Mul(cosmosOneE18)
-	err = keeper.AddStake(s.ctx, topicId, reputer4, stake5)
-	require.NoError(err)
-
-	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
-	for workerIndex, reputer := range reputerAddresses {
-		stakeValue := epoch3Get("reputer_stake_" + strconv.Itoa(workerIndex))
-
-		stakeValueScaled, err := stakeValue.Mul(alloraMath.MustNewDecFromString("1e18"))
-		s.Require().NoError(err)
-
-		stakeValueFloored, err := stakeValueScaled.Floor()
-		s.Require().NoError(err)
-
-		stakeInt, ok := cosmosMath.NewIntFromString(stakeValueFloored.String())
-		s.Require().True(ok)
-
-		err = keeper.AddStake(s.ctx, topicId, reputer, stakeInt)
-		s.Require().NoError(err)
-	}
 
 	// Set Inferences
 	inferences := emissionstypes.Inferences{

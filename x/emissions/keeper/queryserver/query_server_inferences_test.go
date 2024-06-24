@@ -252,18 +252,13 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 		BlockHeightLastReward:    blockHeight,
 	}
 	response, err := queryServer.GetNetworkInferencesAtBlock(s.ctx, req)
+	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 }
 
 func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
-
-	reputer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
-	reputer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
-	reputer2 := "allo1k9ss0xfer54nyack5678frl36e5g3rj2yzxtfj"
-	reputer3 := "allo18ljxewge4vqrkk09tm5heldqg25yj8d9ekgkw5"
-	reputer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
 
 	require := s.Require()
 	topicId := s.CreateOneTopic()
@@ -284,74 +279,11 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	s.ctx = s.ctx.WithBlockHeight(lossBlockHeight)
 
 	// Set Loss bundles
-	reputerLossBundles := types.ReputerValueBundles{
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:             reputer0,
-					CombinedValue:       alloraMath.MustNewDecFromString(".0000117005278862668"),
-					ReputerRequestNonce: reputerLossRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:             reputer1,
-					CombinedValue:       alloraMath.MustNewDecFromString(".00000962701954026944"),
-					ReputerRequestNonce: reputerLossRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:             reputer2,
-					CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
-					ReputerRequestNonce: reputerLossRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:             reputer3,
-					CombinedValue:       alloraMath.MustNewDecFromString(".0000123986052417188"),
-					ReputerRequestNonce: reputerLossRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:             reputer4,
-					CombinedValue:       alloraMath.MustNewDecFromString(".0000115363240547692"),
-					ReputerRequestNonce: reputerLossRequestNonce,
-					TopicId:             topicId,
-				},
-			},
-		},
-	}
-
-	err = keeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, lossBlockHeight, reputerLossBundles)
-	require.NoError(err)
-
-	// Set Stake
-	stake0, ok := cosmosMath.NewIntFromString("210535101370326000000000")
-	s.Require().True(ok)
-	stake1, ok := cosmosMath.NewIntFromString("216697093951021000000000")
-	s.Require().True(ok)
-	stake2, ok := cosmosMath.NewIntFromString("161740241803855000000000")
-	s.Require().True(ok)
-	stake3, ok := cosmosMath.NewIntFromString("394848305052250000000000")
-	s.Require().True(ok)
-	stake4, ok := cosmosMath.NewIntFromString("206169717590569000000000")
-	s.Require().True(ok)
-	err = keeper.AddStake(s.ctx, topicId, reputer0, stake0)
-	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer1, stake1)
-	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer2, stake2)
-	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer3, stake3)
-	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer4, stake4)
+	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, lossBlockHeight, types.ValueBundle{
+		CombinedValue:       alloraMath.MustNewDecFromString("0.00001342819294865661936622664543402969"),
+		ReputerRequestNonce: reputerLossRequestNonce,
+		TopicId:             topicId,
+	})
 	require.NoError(err)
 
 	// Set Inferences
