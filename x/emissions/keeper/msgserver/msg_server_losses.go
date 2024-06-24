@@ -110,7 +110,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			}
 
 			// Check that the reputer enough stake in the topic
-			stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputer)
+			stake, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, reputer)
 			if err != nil {
 				continue
 			}
@@ -148,7 +148,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	stakesByReputer := make(map[string]cosmosMath.Int)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
 	for _, reputer := range topReputers {
-		stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputer)
+		stake, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, reputer)
 		if err != nil {
 			continue
 		}

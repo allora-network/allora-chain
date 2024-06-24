@@ -29,7 +29,7 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err
 	}
-	stake, err := qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, req.Address)
+	stake, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.Address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -55,7 +55,7 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 	for i, address := range req.Addresses {
 		stake := cosmosMath.ZeroInt()
 		if err := qs.k.ValidateStringIsBech32(address); err == nil {
-			stake, err = qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, address)
+			stake, err = qs.k.GetStakeReputerAuthority(ctx, req.TopicId, address)
 			if err != nil {
 				stake = cosmosMath.ZeroInt()
 			}
@@ -71,7 +71,7 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 // and the total stake data structure. Which means if invariants are ever violated
 // in the data structures for staking, this function will return an incorrect value.
 func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req *types.QueryStakeFromReputerInTopicInSelfRequest) (*types.QueryStakeFromReputerInTopicInSelfResponse, error) {
-	stakeOnReputerInTopic, err := qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, req.ReputerAddress)
+	stakeOnReputerInTopic, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.ReputerAddress)
 	if err != nil {
 		return nil, err
 	}

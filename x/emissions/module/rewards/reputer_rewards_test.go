@@ -422,7 +422,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	s.Require().NoError(err)
 
 	// Check if stake is zero
-	stake, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, reputerAddrs[0])
+	stake, err := s.emissionsKeeper.GetStakeReputerAuthority(s.ctx, topicId, reputerAddrs[0])
 	s.Require().NoError(err)
 	s.Require().True(
 		stake.IsZero(),

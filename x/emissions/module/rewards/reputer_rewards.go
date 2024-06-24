@@ -25,7 +25,7 @@ func GetReputersRewardFractions(
 	for i, scorePtr := range scoresAtBlock {
 		scores[i] = scorePtr.Score
 		reputers[i] = scorePtr.Address
-		stake, err := k.GetStakeOnReputerInTopic(ctx, topicId, scorePtr.Address)
+		stake, err := k.GetStakeReputerAuthority(ctx, topicId, scorePtr.Address)
 		if err != nil {
 			return []string{}, []alloraMath.Dec{}, errors.Wrapf(err, "failed to get reputer stake on topic %d", topicId)
 		}
@@ -152,7 +152,7 @@ func GetRewardForReputerFromTotalReward(
 	for _, reputerReward := range reputerDelegatorRewards {
 		reputer := reputerReward.Address
 		reward := reputerReward.Reward
-		totalStakeAmount, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputer)
+		totalStakeAmount, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputer)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get reputer stake")
 		}

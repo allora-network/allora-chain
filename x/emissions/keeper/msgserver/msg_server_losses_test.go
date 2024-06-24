@@ -364,7 +364,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithUnderstakeReputerIsI
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
-	reputerStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr.String())
+	reputerStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr.String())
 	require.NoError(err)
 
 	params, err := keeper.GetParams(ctx)

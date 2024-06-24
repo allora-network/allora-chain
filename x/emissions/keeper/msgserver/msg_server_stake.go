@@ -64,7 +64,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 	}
 
 	// Check the sender has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, msg.Sender)
+	stakePlaced, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 	}
 
 	// Check the reputer has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, msg.Reputer)
+	stakePlaced, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
 	}
