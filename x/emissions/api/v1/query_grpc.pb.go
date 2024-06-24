@@ -30,6 +30,7 @@ const (
 	Query_GetTotalStake_FullMethodName                         = "/emissions.v1.Query/GetTotalStake"
 	Query_GetReputerStakeInTopic_FullMethodName                = "/emissions.v1.Query/GetReputerStakeInTopic"
 	Query_GetMultiReputerStakeInTopic_FullMethodName           = "/emissions.v1.Query/GetMultiReputerStakeInTopic"
+	Query_GetStakeFromReputerInTopicInSelf_FullMethodName      = "/emissions.v1.Query/GetStakeFromReputerInTopicInSelf"
 	Query_GetDelegateStakeInTopicInReputer_FullMethodName      = "/emissions.v1.Query/GetDelegateStakeInTopicInReputer"
 	Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName = "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer"
 	Query_GetStakeFromDelegatorInTopic_FullMethodName          = "/emissions.v1.Query/GetStakeFromDelegatorInTopic"
@@ -65,6 +66,7 @@ type QueryClient interface {
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
 	GetReputerStakeInTopic(ctx context.Context, in *QueryReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryReputerStakeInTopicResponse, error)
 	GetMultiReputerStakeInTopic(ctx context.Context, in *QueryMultiReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryMultiReputerStakeInTopicResponse, error)
+	GetStakeFromReputerInTopicInSelf(ctx context.Context, in *QueryStakeFromReputerInTopicInSelfRequest, opts ...grpc.CallOption) (*QueryStakeFromReputerInTopicInSelfResponse, error)
 	GetDelegateStakeInTopicInReputer(ctx context.Context, in *QueryDelegateStakeInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopicInReputer(ctx context.Context, in *QueryStakeFromDelegatorInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopic(ctx context.Context, in *QueryStakeFromDelegatorInTopicRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicResponse, error)
@@ -185,6 +187,15 @@ func (c *queryClient) GetReputerStakeInTopic(ctx context.Context, in *QueryReput
 func (c *queryClient) GetMultiReputerStakeInTopic(ctx context.Context, in *QueryMultiReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryMultiReputerStakeInTopicResponse, error) {
 	out := new(QueryMultiReputerStakeInTopicResponse)
 	err := c.cc.Invoke(ctx, Query_GetMultiReputerStakeInTopic_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetStakeFromReputerInTopicInSelf(ctx context.Context, in *QueryStakeFromReputerInTopicInSelfRequest, opts ...grpc.CallOption) (*QueryStakeFromReputerInTopicInSelfResponse, error) {
+	out := new(QueryStakeFromReputerInTopicInSelfResponse)
+	err := c.cc.Invoke(ctx, Query_GetStakeFromReputerInTopicInSelf_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -360,6 +371,7 @@ type QueryServer interface {
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
 	GetReputerStakeInTopic(context.Context, *QueryReputerStakeInTopicRequest) (*QueryReputerStakeInTopicResponse, error)
 	GetMultiReputerStakeInTopic(context.Context, *QueryMultiReputerStakeInTopicRequest) (*QueryMultiReputerStakeInTopicResponse, error)
+	GetStakeFromReputerInTopicInSelf(context.Context, *QueryStakeFromReputerInTopicInSelfRequest) (*QueryStakeFromReputerInTopicInSelfResponse, error)
 	GetDelegateStakeInTopicInReputer(context.Context, *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopicInReputer(context.Context, *QueryStakeFromDelegatorInTopicInReputerRequest) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopic(context.Context, *QueryStakeFromDelegatorInTopicRequest) (*QueryStakeFromDelegatorInTopicResponse, error)
@@ -416,6 +428,9 @@ func (UnimplementedQueryServer) GetReputerStakeInTopic(context.Context, *QueryRe
 }
 func (UnimplementedQueryServer) GetMultiReputerStakeInTopic(context.Context, *QueryMultiReputerStakeInTopicRequest) (*QueryMultiReputerStakeInTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMultiReputerStakeInTopic not implemented")
+}
+func (UnimplementedQueryServer) GetStakeFromReputerInTopicInSelf(context.Context, *QueryStakeFromReputerInTopicInSelfRequest) (*QueryStakeFromReputerInTopicInSelfResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeFromReputerInTopicInSelf not implemented")
 }
 func (UnimplementedQueryServer) GetDelegateStakeInTopicInReputer(context.Context, *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeInTopicInReputer not implemented")
@@ -675,6 +690,24 @@ func _Query_GetMultiReputerStakeInTopic_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).GetMultiReputerStakeInTopic(ctx, req.(*QueryMultiReputerStakeInTopicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetStakeFromReputerInTopicInSelf_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeFromReputerInTopicInSelfRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetStakeFromReputerInTopicInSelf(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetStakeFromReputerInTopicInSelf_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetStakeFromReputerInTopicInSelf(ctx, req.(*QueryStakeFromReputerInTopicInSelfRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1035,6 +1068,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMultiReputerStakeInTopic",
 			Handler:    _Query_GetMultiReputerStakeInTopic_Handler,
+		},
+		{
+			MethodName: "GetStakeFromReputerInTopicInSelf",
+			Handler:    _Query_GetStakeFromReputerInTopicInSelf_Handler,
 		},
 		{
 			MethodName: "GetDelegateStakeInTopicInReputer",

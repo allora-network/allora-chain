@@ -56,6 +56,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetStakeFromReputerInTopicInSelf",
+					Use:       "stake-reputer-in-topic-self [reputer_address] [topic_id]",
+					Short:     "Get the stake of a reputer in a topic that they put on themselves",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "reputer_address"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetStakeFromDelegatorInTopicInReputer",
 					Use:       "stake-delegator-in-topic-reputer [delegator_address] [reputer_address] [topic_id]",
 					Short:     "Get amount of stake from delegator in a topic for a reputer",

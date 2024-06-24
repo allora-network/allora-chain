@@ -107,17 +107,17 @@ func StakingChecks(m testCommon.TestConfig) {
 
 // Unstake Alice as a reputer in topic 1, then check success
 func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
-	aliceStake, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
+	aliceStakeBefore, err := m.Client.QueryEmissions().GetStakeFromReputerInTopicInSelf(
 		m.Ctx,
-		&emissionstypes.QueryReputerStakeInTopicRequest{
-			TopicId: 1,
-			Address: m.AliceAddr,
+		&emissionstypes.QueryStakeFromReputerInTopicInSelfRequest{
+			TopicId:        1,
+			ReputerAddress: m.AliceAddr,
 		},
 	)
 	require.NoError(m.T, err)
 	require.True(
 		m.T,
-		aliceStake.Amount.GT(cosmosMath.ZeroInt()),
+		aliceStakeBefore.Amount.GT(cosmosMath.ZeroInt()),
 		"Alice should have stake in topic 1",
 	)
 
@@ -125,7 +125,7 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	unstake := &emissionstypes.MsgRemoveStake{
 		Sender:  m.AliceAddr,
 		TopicId: 1,
-		Amount:  aliceStake.Amount,
+		Amount:  aliceStakeBefore.Amount,
 	}
 
 	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, unstake)
@@ -146,13 +146,16 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.NotZero(m.T, stakeRemoval.Removal.BlockRemovalCompleted)
 	m.T.Log("--- Unstake removal is queued, waiting for block ", stakeRemoval.Removal.BlockRemovalCompleted, " ---")
 	m.Client.WaitForBlockHeight(m.Ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
+	blockHeight, err := m.Client.BlockHeight(m.Ctx)
+	require.NoError(m.T, err)
+	require.Greater(m.T, blockHeight, stakeRemoval.Removal.BlockRemovalCompleted)
 
 	// Check Alice has zero stake left
-	aliceStakedAfter, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
+	aliceStakedAfter, err := m.Client.QueryEmissions().GetStakeFromReputerInTopicInSelf(
 		m.Ctx,
-		&emissionstypes.QueryReputerStakeInTopicRequest{
-			TopicId: 1,
-			Address: m.AliceAddr,
+		&emissionstypes.QueryStakeFromReputerInTopicInSelfRequest{
+			TopicId:        1,
+			ReputerAddress: m.AliceAddr,
 		},
 	)
 	require.NoError(m.T, err)
@@ -160,6 +163,9 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 		m.T,
 		aliceStakedAfter.Amount.Equal(cosmosMath.ZeroInt()),
 		"Alice should have zero stake in topic 1 after unstake",
+		stakeRemoval.Removal,
+		aliceStakeBefore.Amount.String(),
+		aliceStakedAfter.Amount.String(),
 	)
 }
 
@@ -221,7 +227,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	require.True(
 		m.T,
 		bobStakedAfter.Amount.Equal(cosmosMath.ZeroInt()),
-		"Alice should have zero stake in topic 1 after unstake",
+		"Bob should have zero stake in topic 1 after unstake",
 	)
 }
 

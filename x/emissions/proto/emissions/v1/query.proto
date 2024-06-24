@@ -79,6 +79,12 @@ service Query {
     option (google.api.http).get = "/emissions/v1/reputers_stakes/{topic_id}";
   }
 
+  rpc GetStakeFromReputerInTopicInSelf(QueryStakeFromReputerInTopicInSelfRequest)
+      returns (QueryStakeFromReputerInTopicInSelfResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_stake_self/{reputer_address}/{topic_id}";
+  }
+
   rpc GetDelegateStakeInTopicInReputer(QueryDelegateStakeInTopicInReputerRequest)
       returns (QueryDelegateStakeInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
@@ -223,6 +229,21 @@ message QueryMultiReputerStakeInTopicRequest {
 
 message QueryMultiReputerStakeInTopicResponse {
   repeated StakeInfo amounts = 1;
+}
+
+message QueryStakeFromReputerInTopicInSelfRequest {
+  string reputer_address = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryStakeFromReputerInTopicInSelfResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message QueryDelegateStakeInTopicInReputerRequest {

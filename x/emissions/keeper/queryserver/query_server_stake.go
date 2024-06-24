@@ -66,6 +66,26 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 	return &types.QueryMultiReputerStakeInTopicResponse{Amounts: stakes}, nil
 }
 
+// Retrieves the stake that a reputer has in themselves in a given topic
+// this is computed from the differences in the delegated stake data structure
+// and the total stake data structure. Which means if invariants are ever violated
+// in the data structures for staking, this function will return an incorrect value.
+func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req *types.QueryStakeFromReputerInTopicInSelfRequest) (*types.QueryStakeFromReputerInTopicInSelfResponse, error) {
+	stakeOnReputerInTopic, err := qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, req.ReputerAddress)
+	if err != nil {
+		return nil, err
+	}
+	delegateStakeOnReputerInTopic, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, req.ReputerAddress)
+	if err != nil {
+		return nil, err
+	}
+	stakeFromReputerInTopicInSelf := stakeOnReputerInTopic.Sub(delegateStakeOnReputerInTopic)
+	if stakeFromReputerInTopicInSelf.IsNegative() {
+		return nil, errors.Wrap(types.ErrInvariantFailure, "stake from reputer in topic in self is negative")
+	}
+	return &types.QueryStakeFromReputerInTopicInSelfResponse{Amount: stakeFromReputerInTopicInSelf}, nil
+}
+
 // Retrieves total delegate stake on a given reputer address in a given topic
 func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.QueryDelegateStakeInTopicInReputerRequest) (*types.QueryDelegateStakeInTopicInReputerResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
