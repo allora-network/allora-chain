@@ -1,56 +1,48 @@
 diff --git a/app/upgrades.go b/app/upgrades.go
-index cc6745f..5420233 100644
+index 5a21ced..61bb8af 100644
 --- a/app/upgrades.go
 +++ b/app/upgrades.go
-@@ -1,7 +1,10 @@
+@@ -1,4 +1,30 @@
  package app
  
- import (
++import (
 +	storetypes "cosmossdk.io/store/types"
 +	upgradetypes "cosmossdk.io/x/upgrade/types"
- 	v0_2_8 "github.com/allora-network/allora-chain/app/upgrades/v0.2.8"
-+	vintegration "github.com/allora-network/allora-chain/app/upgrades/vintegration"
- )
- 
++	"github.com/allora-network/allora-chain/app/upgrades/vintegration"
++)
++
  func (app *AlloraApp) setupUpgradeHandlers() {
-@@ -12,6 +15,13 @@ func (app *AlloraApp) setupUpgradeHandlers() {
- 			app.ModuleManager, app.Configurator(),
- 		),
- 	)
-+	// set up the vIntegration upgrade
++	// set up the vintegration upgrade
 +	app.UpgradeKeeper.SetUpgradeHandler(
 +		vintegration.UpgradeName,
 +		vintegration.CreateUpgradeHandler(
 +			app.ModuleManager, app.Configurator(),
 +		),
 +	)
- 
- 	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
- 	if err != nil {
-@@ -21,5 +31,13 @@ func (app *AlloraApp) setupUpgradeHandlers() {
- 	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
- 		return
- 	}
-+	if upgradeInfo.Name == vintegration.UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
-+		storeUpgrades := storetypes.StoreUpgrades{
-+			Deleted: []string{"capability"},
-+		}
 +
-+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
-+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
++	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
++	if err == nil {
++		if upgradeInfo.Name == vintegration.UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
++			storeUpgrades := storetypes.StoreUpgrades{
++				Deleted: []string{"capability"},
++			}
++
++			// configure store loader that checks if version == upgradeHeight and applies store upgrades
++			app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, &storeUpgrades))
++		}
 +	}
- 
++
  }
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index c0d7587..25a6f6c 100644
+index df82443..d5349d5 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
 @@ -26,7 +26,7 @@ var (
  )
  
  // ConsensusVersion defines the current module consensus version.
--const ConsensusVersion = 2
-+const ConsensusVersion = 3
+-const ConsensusVersion = 1
++const ConsensusVersion = 2
  
  type AppModule struct {
  	cdc    codec.Codec
