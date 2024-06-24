@@ -1,6 +1,8 @@
 package module
 
 import (
+	"fmt"
+
 	chainParams "github.com/allora-network/allora-chain/app/params"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -15,7 +17,11 @@ func RemoveStakes(
 ) {
 	removals, err := k.GetStakeRemovalsForBlock(sdkCtx, currentBlock)
 	if err != nil {
-		sdkCtx.Logger().Error("Unable to get stake removals for block, skipping removing stakes:", currentBlock, err)
+		sdkCtx.Logger().Error(fmt.Sprintf(
+			"Unable to get stake removals for block %d, skipping removing stakes: %v",
+			currentBlock,
+			err,
+		))
 		return
 	}
 	for _, stakeRemoval := range removals {
@@ -29,7 +35,11 @@ func RemoveStakes(
 		coins := sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, stakeRemoval.Amount))
 		err = k.SendCoinsFromModuleToAccount(sdkCtx, emissionstypes.AlloraStakingAccountName, stakeRemoval.Reputer, coins)
 		if err != nil {
-			sdkCtx.Logger().Error("Error removing stake:", stakeRemoval, err)
+			sdkCtx.Logger().Error(fmt.Sprintf(
+				"Error removing stake: %v | %v",
+				stakeRemoval,
+				err,
+			))
 			continue
 		}
 
@@ -42,7 +52,11 @@ func RemoveStakes(
 			stakeRemoval.Amount,
 		)
 		if err != nil {
-			sdkCtx.Logger().Error("Error removing stake:", stakeRemoval, err)
+			sdkCtx.Logger().Error(fmt.Sprintf(
+				"Error removing stake: %v | %v",
+				stakeRemoval,
+				err,
+			))
 			continue
 		}
 	}
@@ -56,7 +70,12 @@ func RemoveDelegateStakes(
 ) {
 	removals, err := k.GetDelegateStakeRemovalsForBlock(sdkCtx, currentBlock)
 	if err != nil {
-		sdkCtx.Logger().Error("Unable to get stake removals for block, skipping removing stakes:", currentBlock, err)
+		sdkCtx.Logger().Error(
+			fmt.Sprintf(
+				"Unable to get stake removals for block %d, skipping removing stakes: %v",
+				currentBlock,
+				err,
+			))
 		return
 	}
 	for _, stakeRemoval := range removals {
@@ -70,7 +89,11 @@ func RemoveDelegateStakes(
 		coins := sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, stakeRemoval.Amount))
 		err = k.SendCoinsFromModuleToAccount(sdkCtx, emissionstypes.AlloraStakingAccountName, stakeRemoval.Delegator, coins)
 		if err != nil {
-			sdkCtx.Logger().Error("Error removing stake:", stakeRemoval, err)
+			sdkCtx.Logger().Error(fmt.Sprintf(
+				"Error removing stake: %v | %v",
+				stakeRemoval,
+				err,
+			))
 			continue
 		}
 
@@ -84,7 +107,11 @@ func RemoveDelegateStakes(
 			stakeRemoval.Amount,
 		)
 		if err != nil {
-			sdkCtx.Logger().Error("Error removing stake:", stakeRemoval, err)
+			sdkCtx.Logger().Error(fmt.Sprintf(
+				"Error removing stake: %v | %v",
+				stakeRemoval,
+				err,
+			))
 			continue
 		}
 	}
