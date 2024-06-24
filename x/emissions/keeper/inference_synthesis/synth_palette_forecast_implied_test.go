@@ -218,30 +218,25 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 			{
 				Forecaster: "worker0",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("1")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("2")},
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("1")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("2")},
+					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("3")},
 				},
 			},
 			{
 				Forecaster: "worker1",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("3")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("4")},
-				},
-			},
-			{
-				Forecaster: "worker2",
-				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("5")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("6")},
+					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("4")},
+					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("5")},
+					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("6")},
 				},
 			},
 		},
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("2.02001081807449971324527130097506")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("1.03885082632950700184022440541566")},
+		"worker0": {Value: alloraMath.MustNewDecFromString("1.100802083941680903676362221744745")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("1.095525455367107989579729063299188")},
 		"worker2": nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -255,7 +250,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		ForecastByWorker: map[string]*emissionstypes.Forecast{
 			"worker0": forecasts.Forecasts[0],
 			"worker1": forecasts.Forecasts[1],
-			"worker2": forecasts.Forecasts[2],
+			// "worker2": forecasts.Forecasts[2],
 		},
 		Forecasters:         []string{"worker0", "worker1", "worker2"},
 		Inferers:            []string{"worker0", "worker1", "worker2"},
