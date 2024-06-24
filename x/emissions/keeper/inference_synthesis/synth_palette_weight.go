@@ -52,7 +52,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
 		normalizedInfererRegrets[address] = regretFrac
-		if countInfRegrets == 0 || regretFrac.Gt(maxRegret){
+		if countInfRegrets == 0 || regretFrac.Gt(maxRegret) {
 			maxRegret = regretFrac
 		}
 		countInfRegrets++
@@ -197,7 +197,7 @@ func (p *SynthPalette) GetInfererRegretsSlice() ([]alloraMath.Dec, error) {
 	if len(p.InfererRegrets) == 0 {
 		return regrets, nil
 	}
-	regrets = make([]alloraMath.Dec, 0)
+	regrets = make([]alloraMath.Dec, len(p.InfererRegrets))
 	for _, worker := range p.InfererRegrets {
 		regrets = append(regrets, worker.regret)
 	}
@@ -209,7 +209,7 @@ func (p *SynthPalette) GetForecasterRegretsSlice() ([]alloraMath.Dec, error) {
 	if len(p.ForecasterRegrets) == 0 {
 		return regrets, nil
 	}
-	regrets = make([]alloraMath.Dec, 0)
+	regrets = make([]alloraMath.Dec, len(p.ForecasterRegrets))
 	for _, worker := range p.ForecasterRegrets {
 		regrets = append(regrets, worker.regret)
 	}
