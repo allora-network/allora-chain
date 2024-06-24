@@ -181,16 +181,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 		return nil, types.ErrReceivedZeroAmount
 	}
 
-	// Check the reputer has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Reputer)
-	if err != nil {
-		return nil, err
-	}
-	if stakePlaced.LT(msg.Amount) {
-		return nil, types.ErrInsufficientStakeToRemove
-	}
-
-	// Check the reputer has enough stake already placed on the topic to remove the stake
+	// Check the delegator has enough stake already placed on the topic to remove the stake
 	delegateStakePlaced, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
 	if err != nil {
 		return nil, err
@@ -201,6 +192,15 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 	}
 	if delegateStakePlaced.Amount.Lt(amountDec) {
 		return nil, types.ErrInsufficientDelegateStakeToRemove
+	}
+
+	// Check the reputer has enough stake already placed on the topic to remove the stake
+	totalStakeOnReputer, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	if totalStakeOnReputer.LT(msg.Amount) {
+		return nil, types.ErrInsufficientStakeToRemove
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
