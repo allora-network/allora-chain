@@ -242,9 +242,9 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("2")},
-		"worker2": {Value: alloraMath.MustNewDecFromString("3")},
+		"worker0": {Value: alloraMath.MustNewDecFromString("2.02001081807449971324527130097506")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("1.03885082632950700184022440541566")},
+		"worker2": nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
@@ -271,13 +271,17 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	result, err := palette.CalcForecastImpliedInferences()
 	s.Require().NoError(err)
 
+	log.Printf("result: %v", result)
+
 	for key, expectedValue := range expected {
-		// actualValue, exists := result[key]
-		actualValue, _ := result[key]
+		actualValue, exists := result[key]
 
-		log.Printf("key: %v, expectedValue: %v, actual: %v", key, expectedValue, actualValue)
+		log.Printf("key: %v, expectedValue: %v, actualValue: %v", key, expectedValue, actualValue)
 
-		/*
+		if expectedValue == nil {
+			s.Require().False(exists, "Expected key %v exist unexpectedly in result map", key)
+			s.Require().Nil(actualValue, "Expected key %v to be nil", key)
+		} else {
 			s.Require().True(exists, "Expected key %v does not exist in result map", key)
 			s.Require().True(
 				alloraMath.InDelta(
@@ -289,7 +293,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 				expectedValue.Value.String(),
 				actualValue.Value.String(),
 			)
-		*/
+		}
 	}
 }
 
