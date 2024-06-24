@@ -210,43 +210,6 @@ func CalcNetworkLosses(
 	return output, nil
 }
 
-// Same as CalcNetworkLosses() but just returns the combined loss
-func CalcCombinedNetworkLoss(
-	stakesByReputer map[Worker]Stake,
-	reputerReportedLosses *emissions.ReputerValueBundles,
-	epsilon alloraMath.Dec,
-) (Loss, error) {
-	// Make map from inferer to their running weighted-average loss
-	runningWeightedCombinedLoss := RunningWeightedLoss{alloraMath.ZeroDec(), alloraMath.ZeroDec()}
-
-	for _, report := range reputerReportedLosses.ReputerValueBundles {
-		if report.ValueBundle != nil {
-			stakeAmount, err := alloraMath.NewDecFromSdkInt(stakesByReputer[report.ValueBundle.Reputer])
-			if err != nil {
-				return Loss{}, errorsmod.Wrapf(err, "Error converting stake to Dec")
-			}
-
-			// Update combined loss with reputer reported loss and stake
-			nextCombinedLoss, err := RunningWeightedAvgUpdate(
-				&runningWeightedCombinedLoss,
-				stakeAmount,
-				report.ValueBundle.CombinedValue,
-			)
-			if err != nil {
-				return Loss{}, errorsmod.Wrapf(err, "Error updating running weighted average for combined loss: ")
-			}
-			runningWeightedCombinedLoss = nextCombinedLoss
-		}
-	}
-
-	combinedValue, err := normalizeWeightedLoss(&runningWeightedCombinedLoss, epsilon)
-	if err != nil {
-		return Loss{}, errorsmod.Wrapf(err, "Error normalizing combined loss")
-	}
-
-	return combinedValue, nil
-}
-
 func normalizeWeightedLoss(
 	runningWeightedLossData *RunningWeightedLoss,
 	epsilon alloraMath.Dec,
