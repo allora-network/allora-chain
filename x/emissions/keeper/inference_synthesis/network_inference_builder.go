@@ -80,6 +80,10 @@ func (b *NetworkInferenceBuilder) SetInfererValues() *NetworkInferenceBuilder {
 func (b *NetworkInferenceBuilder) SetForecasterValues() *NetworkInferenceBuilder {
 	forecastImpliedValues := make([]*emissions.WorkerAttributedValue, 0)
 	for _, forecaster := range b.palette.Forecasters {
+		if b.palette.ForecastImpliedInferenceByWorker[forecaster] == nil {
+			b.logger.Warn(fmt.Sprintf("No forecast-implied inference for forecaster %s", forecaster))
+			continue
+		}
 		forecastImpliedValues = append(forecastImpliedValues, &emissions.WorkerAttributedValue{
 			Worker: b.palette.ForecastImpliedInferenceByWorker[forecaster].Inferer,
 			Value:  b.palette.ForecastImpliedInferenceByWorker[forecaster].Value,
@@ -95,6 +99,7 @@ func (b *NetworkInferenceBuilder) SetNaiveValue() *NetworkInferenceBuilder {
 	palette := b.palette.Clone()
 
 	palette.Forecasters = nil
+	palette.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
 	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
 		b.logger.Warn(fmt.Sprintf("Error calculating weights for naive inference: %s", err.Error()))
@@ -120,17 +125,25 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
+	remainingInferersByWorker := make(map[Worker]*emissions.Inference)
 	for _, inferer := range palette.Inferers {
 		if inferer != withheldInferer {
 			remainingInferers = append(remainingInferers, inferer)
+			remainingInferersByWorker[inferer] = palette.InferenceByWorker[inferer]
 		}
 	}
+
 	palette.Inferers = remainingInferers // Override the inferers in the palette
+	palette.InferenceByWorker = remainingInferersByWorker
 	paletteCopy.Inferers = remainingInferers
+	paletteCopy.InferenceByWorker = remainingInferersByWorker
 
 	// Recalculate the forecast-implied inferences without the worker's inference
 	// This is necessary because the forecast-implied inferences are calculated based on the inferences of the inferers
-	palette.UpdateForecastImpliedInferences()
+	err := palette.UpdateForecastImpliedInferences()
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error recalculating forecast-implied inferences")
+	}
 
 	paletteCopy.ForecastImpliedInferenceByWorker = palette.ForecastImpliedInferenceByWorker
 

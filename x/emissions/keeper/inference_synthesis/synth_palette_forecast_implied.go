@@ -80,7 +80,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 					R_ik[j] = &StatefulRegret{regret: R_ijk, noPriorRegret: false}
 				}
 
-				if len(sortedInferersInForecast) > 0 {
+				if len(sortedInferersInForecast) > 1 {
 					p.InfererRegrets = R_ik
 					p.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
 
@@ -89,6 +89,10 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}
 					w_ik = weights.inferers
+				} else if len(sortedInferersInForecast) == 1 {
+					weights := make(map[Worker]Weight, 1)
+					weights[sortedInferersInForecast[0]] = alloraMath.OneDec()
+					w_ik = weights
 				}
 
 				// Calculate the forecast-implied inferences I_ik
@@ -111,15 +115,17 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 				}
 			}
 
-			forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
-			if err != nil {
-				return nil, errorsmod.Wrapf(err, "error calculating forecast value")
+			if !weightSum.Equal(alloraMath.ZeroDec()) {
+				forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
+				if err != nil {
+					return nil, errorsmod.Wrapf(err, "error calculating forecast value")
+				}
+				forecastImpliedInference := emissionstypes.Inference{
+					Inferer: forecaster,
+					Value:   forecastValue,
+				}
+				I_i[forecaster] = &forecastImpliedInference
 			}
-			forecastImpliedInference := emissionstypes.Inference{
-				Inferer: forecaster,
-				Value:   forecastValue,
-			}
-			I_i[forecaster] = &forecastImpliedInference
 		}
 	}
 
