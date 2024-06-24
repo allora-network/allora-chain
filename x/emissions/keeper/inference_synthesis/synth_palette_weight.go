@@ -197,7 +197,7 @@ func (p *SynthPalette) GetInfererRegretsSlice() ([]alloraMath.Dec, error) {
 	if len(p.InfererRegrets) == 0 {
 		return regrets, nil
 	}
-	regrets = make([]alloraMath.Dec, len(p.InfererRegrets))
+	regrets = make([]alloraMath.Dec, 0)
 	for _, worker := range p.InfererRegrets {
 		regrets = append(regrets, worker.regret)
 	}
@@ -209,7 +209,7 @@ func (p *SynthPalette) GetForecasterRegretsSlice() ([]alloraMath.Dec, error) {
 	if len(p.ForecasterRegrets) == 0 {
 		return regrets, nil
 	}
-	regrets = make([]alloraMath.Dec, len(p.ForecasterRegrets))
+	regrets = make([]alloraMath.Dec, 0)
 	for _, worker := range p.ForecasterRegrets {
 		regrets = append(regrets, worker.regret)
 	}
