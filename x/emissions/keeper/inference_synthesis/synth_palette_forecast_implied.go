@@ -22,7 +22,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
 	I_i := make(map[Worker]*emissionstypes.Inference, len(p.Forecasters))
 	for _, forecaster := range p.Forecasters {
-		if len(p.ForecastByWorker[forecaster].ForecastElements) > 0 {
+		if p.ForecastByWorker[forecaster] != nil && len(p.ForecastByWorker[forecaster].ForecastElements) > 0 {
 			// Filter away all forecast elements that do not have an associated inference (match by worker)
 			// Will effectively set weight in formulas for forcast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
 			// Map inferer -> forecast element => only one (latest in array) forecast element per inferer
