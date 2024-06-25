@@ -1151,7 +1151,7 @@ func (s *KeeperTestSuite) TestGetSetTotalStake() {
 	s.Require().Equal(newTotalStake, totalStake)
 }
 
-func (s *KeeperTestSuite) TestAddStake() {
+func (s *KeeperTestSuite) TestAddReputerStake() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -1210,7 +1210,7 @@ func (s *KeeperTestSuite) TestAddDelegateStake() {
 	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), delegatorStake, "Total delegator stake should be the sum of initial and additional stake amounts")
 }
 
-func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
+func (s *KeeperTestSuite) TestAddReputerStakeZeroAmount() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -1219,7 +1219,7 @@ func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
 
 	// Try to add zero stake
 	err := keeper.AddReputerStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
-	s.Require().NoError(err)
+	s.Require().ErrorIs(err, types.ErrInvalidValue)
 }
 
 func (s *KeeperTestSuite) TestRemoveStake() {
