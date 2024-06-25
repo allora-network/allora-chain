@@ -242,6 +242,9 @@ func ForecastingUtility(
 ) (alloraMath.Dec, error) {
 	zero := alloraMath.ZeroDec()
 	one := alloraMath.OneDec()
+	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
+	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
+	zeroPointFive := alloraMath.MustNewDecFromString("0.5")
 
 	// Calculate the sum of predictorsScores
 	var sumInfererScores alloraMath.Dec
@@ -251,6 +254,9 @@ func ForecastingUtility(
 		if err != nil {
 			return alloraMath.Dec{}, err
 		}
+	}
+	if sumInfererScores.IsZero() {
+		return zeroPointFive, nil
 	}
 
 	scoreRatio, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(zero, sumInfererScores))
@@ -263,9 +269,6 @@ func ForecastingUtility(
 		return alloraMath.Dec{}, err
 	}
 
-	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
-	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
-	zeroPointFive := alloraMath.MustNewDecFromString("0.5")
 
 	// If score < 0, return 0.1
 	if scoreRatio.Lt(zero) {
