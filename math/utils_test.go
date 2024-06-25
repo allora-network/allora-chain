@@ -179,3 +179,53 @@ func TestGradient(t *testing.T) {
 		})
 	}
 }
+
+func TestMedian(t *testing.T) {
+	tests := []struct {
+		name     string
+		data     []alloraMath.Dec
+		expected alloraMath.Dec
+	}{
+		{
+			name: "odd number of elements",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1"),
+				alloraMath.MustNewDecFromString("3"),
+				alloraMath.MustNewDecFromString("5"),
+				alloraMath.MustNewDecFromString("7"),
+				alloraMath.MustNewDecFromString("9"),
+			},
+			expected: alloraMath.MustNewDecFromString("5"),
+		},
+		{
+			name: "even number of elements",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1"),
+				alloraMath.MustNewDecFromString("3"),
+				alloraMath.MustNewDecFromString("5"),
+				alloraMath.MustNewDecFromString("7"),
+			},
+			expected: alloraMath.MustNewDecFromString("4"),
+		},
+		{
+			name: "single element",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("7"),
+			},
+			expected: alloraMath.MustNewDecFromString("7"),
+		},
+		{
+			name:     "empty slice",
+			data:     []alloraMath.Dec{},
+			expected: alloraMath.ZeroDec(), // Assuming ZeroDec() returns zero value for Dec
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := alloraMath.Median(tt.data)
+			require.NoError(t, err)
+			require.True(t, tt.expected.Equal(result))
+		})
+	}
+}
