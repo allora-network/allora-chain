@@ -36,10 +36,22 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
 	}
+	medianRegrets, err := alloraMath.Median(regrets)
+	if err != nil {
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating median of regrets")
+	}
+	medianTimesFTolerance, err := medianRegrets.Mul(p.FTolerance)
+	if err != nil {
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating median times f_tolerance")
+	}
 	// Add f_tolerance to standard deviation
-	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Abs().Add(p.FTolerance)
+	stdDevRegretsPlusMedianTimesFTolerance, err := stdDevRegrets.Abs().Add(medianTimesFTolerance)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding f_tolerance to standard deviation of regrets")
+	}
+	stdDevRegretsPlusMedianTimesFTolerancePlusEpsilon, err := stdDevRegretsPlusMedianTimesFTolerance.Add(p.Epsilon)
+	if err != nil {
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of regrets")
 	}
 
 	// Normalize the regrets and find the max normalized regret among them
@@ -47,7 +59,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	maxRegret := alloraMath.ZeroDec()
 	maxRegretInitialized := false
 	for address, worker := range p.InfererRegrets {
-		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
+		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusMedianTimesFTolerancePlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
@@ -63,7 +75,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
 		for address, worker := range p.ForecasterRegrets {
-			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
+			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusMedianTimesFTolerancePlusEpsilon)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}
