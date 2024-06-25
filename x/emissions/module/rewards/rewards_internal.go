@@ -59,7 +59,7 @@ func GetMappingFunctionValues(
 	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
 	stdDevPlusMedianTimesEpsilon := alloraMath.OneDec()
-	if len(latestWorkerScores) > 0 {
+	if len(latestTimeStepsScores) > 0 {
 		stdDev, err := alloraMath.StdDev(latestTimeStepsScores)
 		if err != nil {
 			return nil, errors.Wrapf(err, "err getting stdDev")
