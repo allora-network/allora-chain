@@ -22,7 +22,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
 	I_i := make(map[Worker]*emissionstypes.Inference, len(p.Forecasters))
 	for _, forecaster := range p.Forecasters {
-		if len(p.ForecastByWorker[forecaster].ForecastElements) > 0 {
+		if p.ForecastByWorker[forecaster] != nil && len(p.ForecastByWorker[forecaster].ForecastElements) > 0 {
 			// Filter away all forecast elements that do not have an associated inference (match by worker)
 			// Will effectively set weight in formulas for forcast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
 			// Map inferer -> forecast element => only one (latest in array) forecast element per inferer
@@ -80,7 +80,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 					R_ik[j] = &StatefulRegret{regret: R_ijk, noPriorRegret: false}
 				}
 
-				if len(sortedInferersInForecast) > 0 {
+				if len(sortedInferersInForecast) > 1 {
 					p.InfererRegrets = R_ik
 					p.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
 
@@ -89,6 +89,10 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}
 					w_ik = weights.inferers
+				} else if len(sortedInferersInForecast) == 1 {
+					weights := make(map[Worker]Weight, 1)
+					weights[sortedInferersInForecast[0]] = alloraMath.OneDec()
+					w_ik = weights
 				}
 
 				// Calculate the forecast-implied inferences I_ik
@@ -111,15 +115,17 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 				}
 			}
 
-			forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
-			if err != nil {
-				return nil, errorsmod.Wrapf(err, "error calculating forecast value")
+			if !weightSum.Equal(alloraMath.ZeroDec()) {
+				forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
+				if err != nil {
+					return nil, errorsmod.Wrapf(err, "error calculating forecast value")
+				}
+				forecastImpliedInference := emissionstypes.Inference{
+					Inferer: forecaster,
+					Value:   forecastValue,
+				}
+				I_i[forecaster] = &forecastImpliedInference
 			}
-			forecastImpliedInference := emissionstypes.Inference{
-				Inferer: forecaster,
-				Value:   forecastValue,
-			}
-			I_i[forecaster] = &forecastImpliedInference
 		}
 	}
 

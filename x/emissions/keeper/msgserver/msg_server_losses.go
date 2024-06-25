@@ -181,6 +181,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle))
 
+	networkLossBundle.ReputerRequestNonce = msg.ReputerRequestNonce
+
 	err = ms.k.InsertNetworkLossBundleAtBlock(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 	if err != nil {
 		return nil, err
