@@ -163,6 +163,8 @@ message MsgCreateNewTopic {
   string alpha_regret = 11
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   bool allow_negative = 12;
+  string tolerance = 15
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message MsgCreateNewTopicResponse {
