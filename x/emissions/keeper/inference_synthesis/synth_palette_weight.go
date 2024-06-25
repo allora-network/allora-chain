@@ -1,8 +1,6 @@
 package inference_synthesis
 
 import (
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -25,7 +23,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	if len(infererRegrets) > 0 {
 		regrets = append(regrets, infererRegrets...)
 	}
-	if forecasterRegrets != nil && len(forecasterRegrets) > 0 {
+	if len(forecasterRegrets) > 0 {
 		regrets = append(regrets, forecasterRegrets...)
 	}
 	if len(regrets) == 0 {
@@ -47,26 +45,33 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	// Normalize the regrets and find the max normalized regret among them
 	normalizedInfererRegrets := make(map[Worker]Regret)
 	maxRegret := alloraMath.ZeroDec()
-	for i, worker := range p.Inferers {
-		regretFrac, err := p.InfererRegrets[worker].regret.Quo(stdDevRegretsPlusFTolerance)
+	maxRegretInitialized := false
+	for address, worker := range p.InfererRegrets {
+		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
-		normalizedInfererRegrets[worker] = regretFrac
-		if i == 0 || regretFrac.Gt(maxRegret) {
+		normalizedInfererRegrets[address] = regretFrac
+		if !maxRegretInitialized {
+			maxRegretInitialized = true
+			maxRegret = regretFrac
+		} else if regretFrac.Gt(maxRegret) {
 			maxRegret = regretFrac
 		}
 	}
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
-		for _, worker := range p.Forecasters {
-			regretFrac, err := p.ForecasterRegrets[worker].regret.Quo(stdDevRegretsPlusFTolerance)
+		for address, worker := range p.ForecasterRegrets {
+			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}
-			normalizedForecasterRegrets[worker] = regretFrac
-			if regretFrac.Gt(maxRegret) {
+			normalizedForecasterRegrets[address] = regretFrac
+			if !maxRegretInitialized {
+				maxRegretInitialized = true
+				maxRegret = regretFrac
+			} else if regretFrac.Gt(maxRegret) {
 				maxRegret = regretFrac
 			}
 		}
@@ -76,28 +81,28 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	forecasterWeights := make(map[Worker]Weight)
 	if p.InferersNewStatus != InferersAllNewExceptOne {
 		// Calculate the weights from the normalized regrets
-		for _, worker := range p.Inferers {
+		for address, worker := range p.InfererRegrets {
 			// If there is more than one not-new inferer, calculate the weight for the ones that are not new
 			var infererWeight = alloraMath.ZeroDec()
-			if !p.InfererRegrets[worker].noPriorRegret {
-				infererWeight, err = CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
+			if !worker.noPriorRegret {
+				infererWeight, err = CalcWeightFromNormalizedRegret(normalizedInfererRegrets[address], maxRegret, p.PNorm, p.CNorm)
 				if err != nil {
 					return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
 				}
 			}
-			infererWeights[worker] = infererWeight
+			infererWeights[address] = infererWeight
 		}
 
 		if len(p.ForecasterRegrets) > 0 {
-			for _, worker := range p.Forecasters {
+			for address, worker := range p.ForecasterRegrets {
 				var forecasterWeight = alloraMath.ZeroDec()
-				if !p.ForecasterRegrets[worker].noPriorRegret {
-					forecasterWeight, err = CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, p.PNorm, p.CNorm)
+				if !worker.noPriorRegret {
+					forecasterWeight, err = CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[address], maxRegret, p.PNorm, p.CNorm)
 					if err != nil {
 						return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
 					}
 				}
-				forecasterWeights[worker] = forecasterWeight
+				forecasterWeights[address] = forecasterWeight
 			}
 		}
 	}
@@ -161,6 +166,9 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 		// If all inferers are new, forecasters are not considered
 		if p.InferersNewStatus != InferersAllNew {
 			for _, forecaster := range p.Forecasters {
+				if p.ForecastImpliedInferenceByWorker[forecaster] == nil {
+					continue
+				}
 				runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
 					p.ForecastImpliedInferenceByWorker[forecaster],
 					weights.forecasters[forecaster],
@@ -192,13 +200,9 @@ func (p *SynthPalette) GetInfererRegretsSlice() ([]alloraMath.Dec, error) {
 	if len(p.InfererRegrets) == 0 {
 		return regrets, nil
 	}
-	regrets = make([]alloraMath.Dec, len(p.Inferers))
-	for i, worker := range p.Inferers {
-		if p.InfererRegrets[worker] != nil {
-			regrets[i] = p.InfererRegrets[worker].regret
-		} else {
-			return []alloraMath.Dec{}, errorsmod.Wrapf(fmt.Errorf("nil regret for worker: %v", worker), "Error getting inferer regrets slice")
-		}
+	regrets = make([]alloraMath.Dec, 0, len(p.InfererRegrets))
+	for _, worker := range p.InfererRegrets {
+		regrets = append(regrets, worker.regret)
 	}
 	return regrets, nil
 }
@@ -208,13 +212,9 @@ func (p *SynthPalette) GetForecasterRegretsSlice() ([]alloraMath.Dec, error) {
 	if len(p.ForecasterRegrets) == 0 {
 		return regrets, nil
 	}
-	regrets = make([]alloraMath.Dec, len(p.Forecasters))
-	for i, worker := range p.Forecasters {
-		if p.ForecasterRegrets[worker] != nil {
-			regrets[i] = p.ForecasterRegrets[worker].regret
-		} else {
-			return []alloraMath.Dec{}, errorsmod.Wrapf(fmt.Errorf("nil regret for worker: %v", worker), "Error getting forecaster regrets slice")
-		}
+	regrets = make([]alloraMath.Dec, 0, len(p.ForecasterRegrets))
+	for _, worker := range p.ForecasterRegrets {
+		regrets = append(regrets, worker.regret)
 	}
 	return regrets, nil
 }
