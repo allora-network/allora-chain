@@ -141,7 +141,7 @@ func StdDev(data []Dec) (Dec, error) {
 func Median(data []Dec) (Dec, error) {
 	n := len(data)
 	if n == 0 {
-		return ZeroDec(), nil // or handle error as appropriate
+		return ZeroDec(), nil
 	}
 
 	// Sort the data
