@@ -40,6 +40,9 @@ func (msg *MsgCreateNewTopic) Validate() error {
 	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
 	}
+	if msg.Tolerance.Lte(alloraMath.ZeroDec()) || msg.Tolerance.Gt(alloraMath.MustNewDecFromString("0.01")) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "tolerance must be greater than 0 and less than 0.01")
+	}
 
 	return nil
 }

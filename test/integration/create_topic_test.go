@@ -29,6 +29,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		PNorm:           alloraMath.NewDecFromInt64(3),
 		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:   true,
+		Tolerance:       alloraMath.MustNewDecFromString("0.01"),
 	}
 	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
