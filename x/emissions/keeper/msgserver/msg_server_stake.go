@@ -2,9 +2,10 @@ package msgserver
 
 import (
 	"context"
+
 	"errors"
 
-	"cosmossdk.io/collections"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -45,7 +46,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	}
 
 	// Update the stake data structures, spread the stake across all topics evenly
-	err = ms.k.AddStake(ctx, msg.TopicId, msg.Sender, msg.Amount)
+	err = ms.k.AddReputerStake(ctx, msg.TopicId, msg.Sender, msg.Amount)
 	if err != nil {
 		return nil, err
 	}
@@ -54,17 +55,16 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 	return &types.MsgAddStakeResponse{}, err
 }
 
-// StartRemoveStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
-// once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
-// if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
-// and one must start the stake removal process again and wait the delay again.
-func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRemoveStake) (*types.MsgStartRemoveStakeResponse, error) {
+// RemoveStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
+// once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
+// if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
+func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) (*types.MsgRemoveStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
 
 	// Check the sender has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, msg.Sender)
+	stakePlaced, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -78,62 +78,57 @@ func (ms msgServer) StartRemoveStake(ctx context.Context, msg *types.MsgStartRem
 		return nil, types.ErrInsufficientStakeToRemove
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	stakeToRemove := types.StakePlacement{
-		BlockRemovalStarted: sdkCtx.BlockHeight(),
-		TopicId:             msg.TopicId,
-		Reputer:             msg.Sender,
-		Amount:              msg.Amount,
-	}
-
-	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
-	err = ms.k.SetStakeRemoval(ctx, msg.Sender, stakeToRemove)
-	if err != nil {
-		return nil, err
-	}
-	return &types.MsgStartRemoveStakeResponse{}, nil
-}
-
-// Function for reputers or workers to call to remove stake from an existing stake position.
-func (ms msgServer) ConfirmRemoveStake(ctx context.Context, msg *types.MsgConfirmRemoveStake) (*types.MsgConfirmRemoveStakeResponse, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	// Pull the stake removal from the delayed queue
-	stakeRemoval, err := ms.k.GetStakeRemovalByTopicAndAddress(ctx, msg.TopicId, msg.Sender)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return nil, types.ErrConfirmRemoveStakeNoRemovalStarted
-		}
-		return nil, err
-	}
-	// check the timestamp is valid
-	currentBlock := sdkCtx.BlockHeight()
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow >= currentBlock {
-		return nil, types.ErrConfirmRemoveStakeTooEarly
-	}
-	// Check the module has enough funds to send back to the sender
-	// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
-	// Send the funds
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, stakeRemoval.Amount))
-	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, msg.Sender, coins)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	// find out if we have a stake removal in progress, if so overwrite it
+	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error while searching previous stake removal")
+	}
+	if found {
+		err = ms.k.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to delete previous stake removal")
+		}
+	}
+	stakeToRemove := types.StakeRemovalInfo{
+		BlockRemovalStarted:   sdkCtx.BlockHeight(),
+		BlockRemovalCompleted: sdkCtx.BlockHeight() + moduleParams.RemoveStakeDelayWindow,
+		TopicId:               msg.TopicId,
+		Reputer:               msg.Sender,
+		Amount:                msg.Amount,
 	}
 
-	// Update the stake data structures
-	err = ms.k.RemoveStake(
-		ctx,
-		stakeRemoval.TopicId,
-		msg.Sender,
-		stakeRemoval.Amount,
-	)
+	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
+	err = ms.k.SetStakeRemoval(ctx, stakeToRemove)
 	if err != nil {
 		return nil, err
 	}
-	return &types.MsgConfirmRemoveStakeResponse{}, nil
+	return &types.MsgRemoveStakeResponse{}, nil
+}
+
+// cancel a request to remove your stake, during the delay window
+func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelRemoveStake) (*types.MsgCancelRemoveStakeResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
+	// if the specific error is that we somehow got into a buggy invariant state
+	// where more than one removal request exists in the queue
+	// still allow people to cancel withdrawing their stake (fail open rather than closed)
+	if err != nil && !errors.Is(err, types.ErrInvariantFailure) {
+		return nil, errorsmod.Wrap(err, "error while searching previous stake removal")
+	}
+	if !found {
+		return nil, types.ErrStakeRemovalNotFound
+	}
+	err = ms.k.DeleteStakeRemoval(ctx, removal.BlockRemovalCompleted, removal.TopicId, removal.Reputer)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "failed to delete previous stake removal")
+	}
+	return &types.MsgCancelRemoveStakeResponse{}, nil
 }
 
 // Delegates a stake to a reputer. Sender need not be registered to delegate stake.
@@ -165,11 +160,6 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	}
 
 	// Update the stake data structures
-	err = ms.k.AddStake(ctx, msg.TopicId, msg.Reputer, msg.Amount)
-	if err != nil {
-		return nil, err
-	}
-
 	err = ms.k.AddDelegateStake(ctx, msg.TopicId, msg.Sender, msg.Reputer, msg.Amount)
 	if err != nil {
 		return nil, err
@@ -178,25 +168,15 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 	return &types.MsgDelegateStakeResponse{}, nil
 }
 
-// StartRemoveDelegateStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
-// once the withdrawal delay has passed then ConfirmRemoveStake can be called to remove the stake.
-// if a stake removal is not confirmed within a certain time period, the stake removal becomes invalid
-// and one must start the stake removal process again and wait the delay again.
-func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.MsgStartRemoveDelegateStake) (*types.MsgStartRemoveDelegateStakeResponse, error) {
+// RemoveDelegateStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
+// once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
+// if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
+func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemoveDelegateStake) (*types.MsgRemoveDelegateStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
 
-	// Check the reputer has enough stake already placed on the topic to remove the stake
-	stakePlaced, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, msg.Reputer)
-	if err != nil {
-		return nil, err
-	}
-	if stakePlaced.LT(msg.Amount) {
-		return nil, types.ErrInsufficientStakeToRemove
-	}
-
-	// Check the reputer has enough stake already placed on the topic to remove the stake
+	// Check the delegator has enough stake already placed on the topic to remove the stake
 	delegateStakePlaced, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)
 	if err != nil {
 		return nil, err
@@ -209,13 +189,46 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 		return nil, types.ErrInsufficientDelegateStakeToRemove
 	}
 
+	// Check the reputer has enough stake already placed on the topic to remove the stake
+	totalStakeOnReputer, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	if totalStakeOnReputer.LT(msg.Amount) {
+		return nil, types.ErrInsufficientStakeToRemove
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	stakeToRemove := types.DelegateStakePlacement{
-		BlockRemovalStarted: sdkCtx.BlockHeight(),
-		TopicId:             msg.TopicId,
-		Reputer:             msg.Reputer,
-		Delegator:           msg.Sender,
-		Amount:              msg.Amount,
+	moduleParams, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// find out if we have a stake removal in progress, if so overwrite it
+	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
+		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
+	)
+	if err != nil {
+		errorsmod.Wrap(err, "error during finding delegate stake removal")
+	}
+	if found {
+		err = ms.k.DeleteDelegateStakeRemoval(
+			ctx,
+			removal.BlockRemovalCompleted,
+			removal.TopicId,
+			removal.Reputer,
+			removal.Delegator,
+		)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to delete previous delegate stake removal")
+		}
+	}
+	stakeToRemove := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   sdkCtx.BlockHeight(),
+		BlockRemovalCompleted: sdkCtx.BlockHeight() + moduleParams.RemoveStakeDelayWindow,
+		TopicId:               msg.TopicId,
+		Reputer:               msg.Reputer,
+		Delegator:             msg.Sender,
+		Amount:                msg.Amount,
 	}
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
@@ -223,46 +236,35 @@ func (ms msgServer) StartRemoveDelegateStake(ctx context.Context, msg *types.Msg
 	if err != nil {
 		return nil, err
 	}
-	return &types.MsgStartRemoveDelegateStakeResponse{}, nil
+	return &types.MsgRemoveDelegateStakeResponse{}, nil
 }
 
-// Function for delegators to call to remove stake from an existing delegate stake position.
-func (ms msgServer) ConfirmRemoveDelegateStake(ctx context.Context, msg *types.MsgConfirmDelegateRemoveStake) (*types.MsgConfirmRemoveDelegateStakeResponse, error) {
+// cancel an ongoing stake removal request during the delay period
+func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.MsgCancelRemoveDelegateStake) (*types.MsgCancelRemoveDelegateStakeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	// Pull the stake removal from the delayed queue
-	stakeRemoval, err := ms.k.GetDelegateStakeRemovalByTopicAndAddress(ctx, msg.TopicId, msg.Reputer, msg.Sender)
+	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
+		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
+	)
+	// if the specific error is that we somehow got into a buggy invariant state
+	// where more than one removal request exists in the queue
+	// still allow people to cancel withdrawing their stake (fail open rather than closed)
+	if err != nil && !errors.Is(err, types.ErrInvariantFailure) {
+		return nil, errorsmod.Wrap(err, "error while searching previous delegate stake removal")
+	}
+	if !found {
+		return nil, types.ErrStakeRemovalNotFound
+	}
+	err = ms.k.DeleteDelegateStakeRemoval(
+		ctx,
+		removal.BlockRemovalCompleted,
+		removal.TopicId,
+		removal.Reputer,
+		removal.Delegator,
+	)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return nil, types.ErrConfirmRemoveStakeNoRemovalStarted
-		}
-		return nil, err
+		return nil, errorsmod.Wrap(err, "failed to delete previous delegate stake removal")
 	}
-	// check the block it should start is valid
-	currentBlock := sdkCtx.BlockHeight()
-	moduleParams, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if stakeRemoval.BlockRemovalStarted+moduleParams.RemoveStakeDelayWindow >= currentBlock {
-		return nil, types.ErrConfirmRemoveStakeTooEarly
-	}
-
-	// Check the module has enough funds to send back to the sender
-	// Bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
-	// Send the funds
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, stakeRemoval.Amount))
-	err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, msg.Sender, coins)
-	if err != nil {
-		return nil, err
-	}
-
-	// Update the stake data structures
-	err = ms.k.RemoveDelegateStake(ctx, stakeRemoval.TopicId, msg.Sender, msg.Reputer, stakeRemoval.Amount)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.MsgConfirmRemoveDelegateStakeResponse{}, nil
+	return &types.MsgCancelRemoveDelegateStakeResponse{}, nil
 }
 
 func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {

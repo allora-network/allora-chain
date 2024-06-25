@@ -40,6 +40,14 @@ func GetEmissionPerMonth(
 	// N_{staked,i} = networkStaked
 	// N_{circ,i} = circulatingSupply
 	// N_{total,i} = totalSupply
+	ctx.Logger().Info("Emission Per Unit Staked Token Calculation",
+		"FEmission", params.FEmission.String(),
+		"ecosystemMintSupplyRemaining", ecosystemMintSupplyRemaining.String(),
+		"networkStaked", networkStaked.String(),
+		"circulatingSupply", circulatingSupply.String(),
+		"totalSupply", totalSupply.String(),
+		"lockedSupply", lockedSupply.String(),
+	)
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmission,
@@ -146,6 +154,12 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 			Quo(math.NewIntFromUint64(blocksPerMonth))
 		e_i = emissionPerUnitStakedToken
 		updateEmission = true
+		k.Logger(ctx).Info("Emissions Update",
+			"emissionPerUnitStakedToken", e_i.String(),
+			"emissionPerMonth", emissionPerMonth.String(),
+			"blockEmission", blockEmission.String(),
+		)
+
 	}
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
 	if blockEmission.GT(ecosystemBalance) {

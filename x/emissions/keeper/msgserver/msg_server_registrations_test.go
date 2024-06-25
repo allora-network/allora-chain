@@ -282,7 +282,7 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 		Owner:        reputerAddr.String(),
 	}
 
-	s.emissionsKeeper.AddStake(ctx, topicId, reputerAddr.String(), registrationInitialStake.QuoRaw(2))
+	s.emissionsKeeper.AddReputerStake(ctx, topicId, reputerAddr.String(), registrationInitialStake.QuoRaw(2))
 
 	// Try to register without any funds to pay fees
 	_, err := msgServer.Register(ctx, reputerRegMsg)

@@ -32,7 +32,7 @@ func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
 	reputerAddr := reputer.String()
 	initialStake := cosmosMath.NewInt(250)
 
-	err = keeper.AddStake(ctx, topicId, reputerAddr, initialStake)
+	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, initialStake)
 	s.Require().NoError(err, "AddStake should not produce an error")
 
 	req := &types.QueryReputerStakeInTopicRequest{
@@ -52,6 +52,7 @@ func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 	reputer1, err := sdk.AccAddressFromHexUnsafe(PKS[1].Address().String())
+	s.Require().NoError(err)
 	reputer2, err := sdk.AccAddressFromHexUnsafe(PKS[2].Address().String())
 	s.Require().NoError(err)
 	reputer1Addr := reputer1.String()
@@ -59,9 +60,9 @@ func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
 	initialStake1 := cosmosMath.NewInt(250)
 	initialStake2 := cosmosMath.NewInt(251)
 
-	err = keeper.AddStake(ctx, topicId, reputer1Addr, initialStake1)
+	err = keeper.AddReputerStake(ctx, topicId, reputer1Addr, initialStake1)
 	s.Require().NoError(err, "AddStake should not produce an error")
-	err = keeper.AddStake(ctx, topicId, reputer2Addr, initialStake2)
+	err = keeper.AddReputerStake(ctx, topicId, reputer2Addr, initialStake2)
 	s.Require().NoError(err, "AddStake should not produce an error")
 
 	req := &types.QueryMultiReputerStakeInTopicRequest{
@@ -172,7 +173,7 @@ func (s *KeeperTestSuite) TestGetTopicStake() {
 	reputerAddr := PKS[0].Address().String()
 	stakeAmount := cosmosMath.NewInt(500)
 
-	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	req := &types.QueryTopicStakeRequest{
@@ -183,4 +184,140 @@ func (s *KeeperTestSuite) TestGetTopicStake() {
 	s.Require().NoError(err, "GetTopicStake should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().Equal(stakeAmount, response.Amount, "The retrieved topic stake should match the stake amount added")
+}
+
+func (s *KeeperTestSuite) TestGetStakeRemovalInfo() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+	blockHeight := int64(1234)
+	topicId := uint64(1)
+	address := "cosmos1abcdefg"
+	removal := types.StakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		BlockRemovalCompleted: blockHeight,
+		TopicId:               topicId,
+		Reputer:               address,
+		Amount:                cosmosMath.NewInt(100),
+	}
+	err := keeper.SetStakeRemoval(ctx, removal)
+	s.Require().NoError(err, "SetStakeRemoval should not produce an error")
+	req := &types.QueryStakeRemovalInfoRequest{
+		TopicId: topicId,
+		Reputer: address,
+	}
+	response, err := queryServer.GetStakeRemovalInfo(ctx, req)
+	s.Require().NoError(err, "GetStakeRemovalInfo should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	s.Require().Equal(removal, *response.Removal, "The retrieved stake removal info should match the expected value")
+}
+func (s *KeeperTestSuite) TestGetDelegateStakeRemovalInfo() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+	require := s.Require()
+	blockHeight := int64(1234)
+	topicId := uint64(1)
+	delegatorAddress := "cosmos1abcdefg"
+	reputerAddress := "cosmos1hijklmn"
+	expectedRemoval := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		BlockRemovalCompleted: blockHeight,
+		TopicId:               topicId,
+		Delegator:             delegatorAddress,
+		Reputer:               reputerAddress,
+		Amount:                cosmosMath.NewInt(100),
+	}
+
+	err := keeper.SetDelegateStakeRemoval(ctx, expectedRemoval)
+	s.Require().NoError(err, "SetStakeRemoval should not produce an error")
+	req := &types.QueryDelegateStakeRemovalInfoRequest{
+		TopicId:   topicId,
+		Delegator: delegatorAddress,
+		Reputer:   reputerAddress,
+	}
+	response, err := queryServer.GetDelegateStakeRemovalInfo(ctx, req)
+
+	require.NoError(err, "GetDelegateStakeRemovalInfo should not produce an error")
+	require.NotNil(response, "The response should not be nil")
+	require.Equal(&expectedRemoval, response.Removal, "The retrieved stake removal info should match the expected value")
+}
+func (s *KeeperTestSuite) TestGetStakeRemovalsForBlock() {
+	ctx := s.ctx
+	qs := s.queryServer
+	keeper := s.emissionsKeeper
+	require := s.Require()
+	blockHeight := int64(1234)
+	expecteds := []types.StakeRemovalInfo{
+		{
+			BlockRemovalStarted:   0,
+			BlockRemovalCompleted: blockHeight,
+			TopicId:               1,
+			Reputer:               "cosmos1abcdefg",
+			Amount:                cosmosMath.NewInt(100),
+		},
+		{
+			BlockRemovalStarted:   0,
+			BlockRemovalCompleted: blockHeight,
+			TopicId:               2,
+			Reputer:               "cosmos1hijklmn",
+			Amount:                cosmosMath.NewInt(200),
+		},
+	}
+	for _, e := range expecteds {
+		err := keeper.SetStakeRemoval(ctx, e)
+		require.NoError(err, "SetStakeRemoval should not produce an error")
+	}
+
+	req := &types.QueryStakeRemovalsForBlockRequest{
+		BlockHeight: blockHeight,
+	}
+
+	response, err := qs.GetStakeRemovalsForBlock(ctx, req)
+	require.NoError(err, "GetStakeRemovalsForBlock should not return an error")
+	require.NotNil(response, "The response should not be nil")
+	require.Len(response.Removals, len(expecteds), "The number of stake removals should match the number of expected stake removals")
+	require.Equal(expecteds[0], *response.Removals[0], "The retrieved stake removals should match the expected stake removals")
+	require.Equal(expecteds[1], *response.Removals[1], "The retrieved stake removals should match the expected stake removals")
+}
+
+func (s *KeeperTestSuite) TestGetDelegateStakeRemovalsForBlock() {
+	ctx := s.ctx
+	qs := s.queryServer
+	keeper := s.emissionsKeeper
+	require := s.Require()
+	blockHeight := int64(1234)
+	expecteds := []types.DelegateStakeRemovalInfo{
+		{
+			BlockRemovalStarted:   0,
+			BlockRemovalCompleted: blockHeight,
+			TopicId:               1,
+			Reputer:               "cosmos1abcdefg",
+			Delegator:             "cosmos1234567",
+			Amount:                cosmosMath.NewInt(100),
+		},
+		{
+			BlockRemovalStarted:   0,
+			BlockRemovalCompleted: blockHeight,
+			TopicId:               2,
+			Reputer:               "cosmos1hijklmn",
+			Delegator:             "cosmos7654321",
+			Amount:                cosmosMath.NewInt(200),
+		},
+	}
+	for _, e := range expecteds {
+		err := keeper.SetDelegateStakeRemoval(ctx, e)
+		require.NoError(err, "SetStakeRemoval should not produce an error")
+	}
+
+	req := &types.QueryDelegateStakeRemovalsForBlockRequest{
+		BlockHeight: blockHeight,
+	}
+
+	response, err := qs.GetDelegateStakeRemovalsForBlock(ctx, req)
+	require.NoError(err, "GetStakeRemovalsForBlock should not return an error")
+	require.NotNil(response, "The response should not be nil")
+	require.Len(response.Removals, len(expecteds), "The number of stake removals should match the number of expected stake removals")
+	require.Equal(expecteds[0], *response.Removals[0], "The retrieved stake removals should match the expected stake removals")
+	require.Equal(expecteds[1], *response.Removals[1], "The retrieved stake removals should match the expected stake removals")
 }

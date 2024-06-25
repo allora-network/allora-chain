@@ -164,7 +164,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
 	s.Require().True(ok)
-	err = s.emissionsKeeper.AddStake(
+	err = s.emissionsKeeper.AddReputerStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
@@ -204,7 +204,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	stake, ok = cosmosMath.NewIntFromString("400000000000000000000000000")
 	s.Require().True(ok)
 	// ok now add some stake
-	err = s.emissionsKeeper.AddStake(
+	err = s.emissionsKeeper.AddReputerStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
@@ -278,7 +278,7 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("40000000000000000000")
 	s.Require().True(ok)
-	err := s.emissionsKeeper.AddStake(
+	err := s.emissionsKeeper.AddReputerStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
@@ -352,7 +352,7 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("40000000000000000000")
 	s.Require().True(ok)
-	err = s.emissionsKeeper.AddStake(
+	err = s.emissionsKeeper.AddReputerStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
@@ -436,7 +436,7 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	// stake enough tokens so that the networkStaked is non zero
 	changeInAmountStakedBefore, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
 	s.Require().True(ok)
-	err := s.emissionsKeeper.AddStake(
+	err := s.emissionsKeeper.AddReputerStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
@@ -487,7 +487,7 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	// then move to the blockheight where we calculate inflation again
 	changeInAmounStakedAfter, ok := cosmosMath.NewIntFromString("400000000000000000000000000")
 	s.Require().True(ok)
-	err = s.emissionsKeeper.AddStake(
+	err = s.emissionsKeeper.AddReputerStake(
 		s.ctx,
 		0,
 		sdk.AccAddress(s.PKS[1].Address()).String(),

@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // TotalStake defines the handler for the Query/TotalStake RPC method.
@@ -28,7 +29,7 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err
 	}
-	stake, err := qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, req.Address)
+	stake, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.Address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -50,19 +51,39 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d addresses at once", maxLimit))
 	}
 
-	stakes := make([]*types.StakePlacement, len(req.Addresses))
+	stakes := make([]*types.StakeInfo, len(req.Addresses))
 	for i, address := range req.Addresses {
 		stake := cosmosMath.ZeroInt()
 		if err := qs.k.ValidateStringIsBech32(address); err == nil {
-			stake, err = qs.k.GetStakeOnReputerInTopic(ctx, req.TopicId, address)
+			stake, err = qs.k.GetStakeReputerAuthority(ctx, req.TopicId, address)
 			if err != nil {
 				stake = cosmosMath.ZeroInt()
 			}
 		}
-		stakes[i] = &types.StakePlacement{TopicId: req.TopicId, Reputer: address, Amount: stake}
+		stakes[i] = &types.StakeInfo{TopicId: req.TopicId, Reputer: address, Amount: stake}
 	}
 
 	return &types.QueryMultiReputerStakeInTopicResponse{Amounts: stakes}, nil
+}
+
+// Retrieves the stake that a reputer has in themselves in a given topic
+// this is computed from the differences in the delegated stake data structure
+// and the total stake data structure. Which means if invariants are ever violated
+// in the data structures for staking, this function will return an incorrect value.
+func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req *types.QueryStakeFromReputerInTopicInSelfRequest) (*types.QueryStakeFromReputerInTopicInSelfResponse, error) {
+	stakeOnReputerInTopic, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.ReputerAddress)
+	if err != nil {
+		return nil, err
+	}
+	delegateStakeOnReputerInTopic, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, req.ReputerAddress)
+	if err != nil {
+		return nil, err
+	}
+	stakeFromReputerInTopicInSelf := stakeOnReputerInTopic.Sub(delegateStakeOnReputerInTopic)
+	if stakeFromReputerInTopicInSelf.IsNegative() {
+		return nil, errors.Wrap(types.ErrInvariantFailure, "stake from reputer in topic in self is negative")
+	}
+	return &types.QueryStakeFromReputerInTopicInSelfResponse{Amount: stakeFromReputerInTopicInSelf}, nil
 }
 
 // Retrieves total delegate stake on a given reputer address in a given topic
@@ -113,4 +134,85 @@ func (qs queryServer) GetTopicStake(ctx context.Context, req *types.QueryTopicSt
 	}
 
 	return &types.QueryTopicStakeResponse{Amount: stake}, nil
+}
+
+func (qs queryServer) GetStakeRemovalsForBlock(
+	ctx context.Context,
+	req *types.QueryStakeRemovalsForBlockRequest,
+) (*types.QueryStakeRemovalsForBlockResponse, error) {
+	removals, err := qs.k.GetStakeRemovalsForBlock(ctx, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	moduleParams, err := qs.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	maxLimit := moduleParams.MaxPageLimit
+	removalPointers := make([]*types.StakeRemovalInfo, 0)
+	outputLen := uint64(len(removals))
+	if uint64(len(removals)) > maxLimit {
+		err = status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
+		outputLen = maxLimit
+	}
+	for i := uint64(0); i < outputLen; i++ {
+		removalPointers = append(removalPointers, &removals[i])
+	}
+	return &types.QueryStakeRemovalsForBlockResponse{Removals: removalPointers}, err
+}
+
+func (qs queryServer) GetDelegateStakeRemovalsForBlock(
+	ctx context.Context,
+	req *types.QueryDelegateStakeRemovalsForBlockRequest,
+) (*types.QueryDelegateStakeRemovalsForBlockResponse, error) {
+	removals, err := qs.k.GetDelegateStakeRemovalsForBlock(ctx, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	moduleParams, err := qs.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	maxLimit := moduleParams.MaxPageLimit
+	removalPointers := make([]*types.DelegateStakeRemovalInfo, 0)
+	outputLen := uint64(len(removals))
+	if uint64(len(removals)) > maxLimit {
+		err = status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
+		outputLen = maxLimit
+	}
+	for i := uint64(0); i < outputLen; i++ {
+		removalPointers = append(removalPointers, &removals[i])
+	}
+	return &types.QueryDelegateStakeRemovalsForBlockResponse{Removals: removalPointers}, err
+}
+
+func (qs queryServer) GetStakeRemovalInfo(
+	ctx context.Context,
+	req *types.QueryStakeRemovalInfoRequest,
+) (*types.QueryStakeRemovalInfoResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	removal, found, err := qs.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, req.Reputer, req.TopicId)
+	if err != nil && !found {
+		return nil, err
+	}
+	if !found {
+		return nil, status.Error(codes.NotFound, "no stake removal found")
+	}
+	return &types.QueryStakeRemovalInfoResponse{Removal: &removal}, err
+}
+
+func (qs queryServer) GetDelegateStakeRemovalInfo(
+	ctx context.Context,
+	req *types.QueryDelegateStakeRemovalInfoRequest,
+) (*types.QueryDelegateStakeRemovalInfoResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	removal, found, err := qs.k.
+		GetDelegateStakeRemovalForDelegatorReputerAndTopicId(sdkCtx, req.Delegator, req.Reputer, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, status.Error(codes.NotFound, "no delegate stake removal found")
+	}
+	return &types.QueryDelegateStakeRemovalInfoResponse{Removal: &removal}, err
 }

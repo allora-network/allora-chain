@@ -88,7 +88,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputSameFractio
 	}
 	scores := make([]types.Score, 0)
 	for i, reputerAddr := range reputerAddrs {
-		err := s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddr, stakes[i])
+		err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, reputerAddr, stakes[i])
 		s.Require().NoError(err)
 
 		scoreToAdd := types.Score{
@@ -371,7 +371,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	s.Require().NoError(err)
 
 	// Increase stake for the first reputer
-	err = s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewInt(1000000))
+	err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewInt(1000000))
 	s.Require().NoError(err)
 
 	// Get new reputer rewards
@@ -409,11 +409,20 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	s.Require().NoError(err)
 
 	// Remove stake for the first reputer
-	err = s.emissionsKeeper.RemoveStake(s.ctx, topicId, reputerAddrs[0], cosmosMath.NewInt(1176644))
+	amount := cosmosMath.NewInt(1176644)
+	err = s.emissionsKeeper.SetStakeRemoval(s.ctx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddrs[0],
+		Amount:                amount,
+		BlockRemovalStarted:   0,
+		BlockRemovalCompleted: block,
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.RemoveReputerStake(s.ctx, block, topicId, reputerAddrs[0], amount)
 	s.Require().NoError(err)
 
 	// Check if stake is zero
-	stake, err := s.emissionsKeeper.GetStakeOnReputerInTopic(s.ctx, topicId, reputerAddrs[0])
+	stake, err := s.emissionsKeeper.GetStakeReputerAuthority(s.ctx, topicId, reputerAddrs[0])
 	s.Require().NoError(err)
 	s.Require().True(
 		stake.IsZero(),
@@ -458,7 +467,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 
 	var reputerValueBundles types.ReputerValueBundles
 	for i, reputerAddr := range reputerAddrs {
-		err := s.emissionsKeeper.AddStake(s.ctx, topicId, reputerAddr, stakes[i])
+		err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, reputerAddr, stakes[i])
 		if err != nil {
 			return types.ReputerValueBundles{}, err
 		}

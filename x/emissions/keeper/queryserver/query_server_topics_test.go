@@ -38,6 +38,7 @@ func (s *KeeperTestSuite) TestGetTopic() {
 	keeper := s.emissionsKeeper
 
 	topicId, err := keeper.GetNextTopicId(ctx)
+	s.Require().NoError(err)
 	metadata := "metadata"
 	req := &types.QueryTopicRequest{TopicId: topicId}
 
