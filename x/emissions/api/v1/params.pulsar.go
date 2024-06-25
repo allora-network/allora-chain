@@ -2735,7 +2735,7 @@ type Params struct {
 	// solicatation or weight-adjustment
 	MaxTopicsPerBlock      uint64 `protobuf:"varint,4,opt,name=max_topics_per_block,json=maxTopicsPerBlock,proto3" json:"max_topics_per_block,omitempty"`                // max number of topics to run cadence for per block
 	RequiredMinimumStake   string `protobuf:"bytes,5,opt,name=required_minimum_stake,json=requiredMinimumStake,proto3" json:"required_minimum_stake,omitempty"`          // minimum amount of tokens to send to stake as a reputer or worker
-	RemoveStakeDelayWindow int64  `protobuf:"varint,6,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"` // how long to wait before allowed to remove stake
+	RemoveStakeDelayWindow int64  `protobuf:"varint,6,opt,name=remove_stake_delay_window,json=removeStakeDelayWindow,proto3" json:"remove_stake_delay_window,omitempty"` // how long to wait (blocks) before allowed to remove stake
 	MinEpochLength         int64  `protobuf:"varint,7,opt,name=min_epoch_length,json=minEpochLength,proto3" json:"min_epoch_length,omitempty"`                           // fastest allowable topic epoch and cadence of a
 	// repeating inference request
 	BetaEntropy          string `protobuf:"bytes,8,opt,name=beta_entropy,json=betaEntropy,proto3" json:"beta_entropy,omitempty"`                               // controls resilience of reward payouts against copycat workers

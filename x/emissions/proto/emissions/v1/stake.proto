@@ -7,6 +7,9 @@ import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 
+// Bad naming convention, only used in StakeRemovals
+// DEPRECATED in ConsensusVersion = 2
+// TO BE DELETED in ConsensusVersion = 3
 message StakePlacement {
   int64 block_removal_started = 1;
   uint64 topic_id = 2;
@@ -19,6 +22,9 @@ message StakePlacement {
   ];
 }
 
+// Bad naming convention, only used in StakeRemovals
+// DEPRECATED in ConsensusVersion = 2
+// TO BE DELETED in ConsensusVersion = 3
 message DelegateStakePlacement {
   int64 block_removal_started = 1;
   uint64 topic_id = 2;
@@ -30,6 +36,47 @@ message DelegateStakePlacement {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+// Introduced in ConsensusVersion = 2
+message StakeInfo {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  string amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// Introduced in ConsensusVersion = 2
+message StakeRemovalInfo {
+  int64 block_removal_started = 1;
+  uint64 topic_id = 2;
+  string reputer = 3;
+  string amount = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  int64 block_removal_completed = 5;
+}
+
+// Introduced in ConsensusVersion = 2
+message DelegateStakeRemovalInfo {
+  int64 block_removal_started = 1;
+  uint64 topic_id = 2;
+  string reputer = 3;
+  string delegator = 4;
+  string amount = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  int64 block_removal_completed = 6;
 }
 
 message DelegatorInfo {

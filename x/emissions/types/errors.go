@@ -64,4 +64,7 @@ var (
 	ErrValidationMustBeBetweenZeroAndOne        = errors.Register(ModuleName, 61, "value must be between 0 and 1")
 	ErrValidationMustBeGreaterthanZero          = errors.Register(ModuleName, 62, "value must be greater than 0")
 	ErrEmptyArray                               = errors.Register(ModuleName, 63, "empty array")
+	ErrStakeRemovalNotFound                     = errors.Register(ModuleName, 64, "No stake removal found")
+	ErrInvariantFailure                         = errors.Register(ModuleName, 65, "invariant failure")
+	ErrIntegerUnderflowReputerStakeAuthority    = errors.Register(ModuleName, 66, "integer underflow for reputer stake authority")
 )

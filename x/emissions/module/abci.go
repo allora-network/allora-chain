@@ -18,6 +18,10 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
 			blockHeight))
 
+	// Remove Stakers that have been wanting to unstake this block. They no longer get paid rewards
+	RemoveStakes(sdkCtx, blockHeight, am.keeper)
+	RemoveDelegateStakes(sdkCtx, blockHeight, am.keeper)
+
 	// Get unnormalized weights of active topics and the sum weight and revenue they have generated
 	weights, sumWeight, totalRevenue, err := rewards.GetAndUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight)
 	if err != nil {

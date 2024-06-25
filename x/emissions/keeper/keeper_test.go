@@ -2,12 +2,10 @@ package keeper_test
 
 import (
 	"encoding/binary"
-	"errors"
 	"strconv"
 	"testing"
 	"time"
 
-	"cosmossdk.io/collections"
 	"cosmossdk.io/core/header"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
@@ -944,6 +942,59 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	s.Require().Equal(&expectedInferences, actualInferences)
 }
 
+func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	topicId := uint64(1)
+
+	// Initially, there should be no inferences, so we expect an empty result
+	emptyInferences, emptyBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId)
+	s.Require().NoError(err, "Retrieving latest inferences when none exist should not result in an error")
+	s.Require().Equal(&types.Inferences{Inferences: []*types.Inference{}}, emptyInferences, "Expected no inferences initially")
+	s.Require().Equal(types.BlockHeight(0), emptyBlockHeight, "Expected block height to be zero initially")
+
+	// Insert first set of inferences
+	blockHeight1 := types.BlockHeight(12345)
+	newInference1 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight1,
+		Inferer:     "worker1",
+		Value:       alloraMath.MustNewDecFromString("10"),
+		ExtraData:   []byte("data1"),
+		Proof:       "proof1",
+	}
+	inferences1 := types.Inferences{
+		Inferences: []*types.Inference{&newInference1},
+	}
+	nonce1 := types.Nonce{BlockHeight: blockHeight1}
+	err = keeper.InsertInferences(ctx, topicId, nonce1, inferences1)
+	s.Require().NoError(err, "Inserting first set of inferences should not fail")
+
+	// Insert second set of inferences
+	blockHeight2 := types.BlockHeight(12346)
+	newInference2 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight2,
+		Inferer:     "worker2",
+		Value:       alloraMath.MustNewDecFromString("20"),
+		ExtraData:   []byte("data2"),
+		Proof:       "proof2",
+	}
+	inferences2 := types.Inferences{
+		Inferences: []*types.Inference{&newInference2},
+	}
+	nonce2 := types.Nonce{BlockHeight: blockHeight2}
+	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	s.Require().NoError(err, "Inserting second set of inferences should not fail")
+
+	// Retrieve the latest inferences
+	latestInferences, latestBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId)
+	s.Require().NoError(err, "Retrieving latest inferences should not fail")
+	s.Require().Equal(&inferences2, latestInferences, "Latest inferences should match the second inserted set")
+	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
+}
+
 func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -1100,7 +1151,7 @@ func (s *KeeperTestSuite) TestGetSetTotalStake() {
 	s.Require().Equal(newTotalStake, totalStake)
 }
 
-func (s *KeeperTestSuite) TestAddStake() {
+func (s *KeeperTestSuite) TestAddReputerStake() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -1112,11 +1163,11 @@ func (s *KeeperTestSuite) TestAddStake() {
 	initialTopicStake := cosmosMath.NewInt(0)
 
 	// Add stake
-	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator
-	delegatorStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
+	delegatorStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(stakeAmount, delegatorStake, "Delegator stake should be equal to stake amount after addition")
 
@@ -1159,7 +1210,7 @@ func (s *KeeperTestSuite) TestAddDelegateStake() {
 	s.Require().Equal(initialStakeAmount.Add(additionalStakeAmount), delegatorStake, "Total delegator stake should be the sum of initial and additional stake amounts")
 }
 
-func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
+func (s *KeeperTestSuite) TestAddReputerStakeZeroAmount() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -1167,8 +1218,8 @@ func (s *KeeperTestSuite) TestAddStakeZeroAmount() {
 	zeroStakeAmount := cosmosMath.NewInt(0)
 
 	// Try to add zero stake
-	err := keeper.AddStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
-	s.Require().NoError(err)
+	err := keeper.AddReputerStake(ctx, topicId, delegatorAddr, zeroStakeAmount)
+	s.Require().ErrorIs(err, types.ErrInvalidValue)
 }
 
 func (s *KeeperTestSuite) TestRemoveStake() {
@@ -1177,21 +1228,35 @@ func (s *KeeperTestSuite) TestRemoveStake() {
 	topicId := uint64(1)
 	reputerAddr := PKS[0].Address().String()
 	stakeAmount := cosmosMath.NewInt(500)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err := keeper.AddStake(ctx, topicId, reputerAddr, stakeAmount)
+	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Capture the initial total and topic stakes after adding stake
 	initialTotalStake, err := keeper.GetTotalStake(ctx)
 	s.Require().NoError(err)
 
+	// make a request to remove stake
+	err = keeper.SetStakeRemoval(ctx, types.StakeRemovalInfo{
+		TopicId:               topicId,
+		Reputer:               reputerAddr,
+		Amount:                stakeAmount,
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+	})
+	s.Require().NoError(err)
+
 	// Remove stake
-	err = keeper.RemoveStake(ctx, topicId, reputerAddr, stakeAmount)
+	err = keeper.RemoveReputerStake(ctx, endBlock, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
 	// Check updated stake for delegator after removal
-	delegatorStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr)
+	delegatorStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), delegatorStake, "Delegator stake should be zero after removal")
 
@@ -1214,13 +1279,28 @@ func (s *KeeperTestSuite) TestRemovePartialStakeFromDelegator() {
 	reputerAddr := PKS[1].Address().String()
 	initialStakeAmount := cosmosMath.NewInt(1000)
 	removeStakeAmount := cosmosMath.NewInt(500)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
+
+	// make a request to remove stake
+	err = keeper.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+		TopicId:               topicId,
+		Delegator:             delegatorAddr,
+		Reputer:               reputerAddr,
+		Amount:                removeStakeAmount,
+	})
 	s.Require().NoError(err)
 
 	// Remove a portion of stake
-	err = keeper.RemoveDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, removeStakeAmount)
+	err = keeper.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, removeStakeAmount)
 	s.Require().NoError(err)
 
 	// Check remaining stake for delegator
@@ -1241,13 +1321,28 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
 	delegatorAddr := PKS[0].Address().String()
 	reputerAddr := PKS[1].Address().String()
 	initialStakeAmount := cosmosMath.NewInt(1000)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
 
 	// Setup initial stake
-	err := keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
+
+	// make a request to remove stake
+	err = keeper.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+		TopicId:               topicId,
+		Delegator:             delegatorAddr,
+		Reputer:               reputerAddr,
+		Amount:                initialStakeAmount,
+	})
 	s.Require().NoError(err)
 
 	// Remove a portion of stake
-	err = keeper.RemoveDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	err = keeper.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err)
 
 	// Check remaining stake for delegator
@@ -1255,7 +1350,7 @@ func (s *KeeperTestSuite) TestRemoveEntireStakeFromDelegator() {
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
-	// Check remaining stake for delegator
+	// Check remaining stake for Reputer
 	stakeUponReputer, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(cosmosMath.ZeroInt(), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
@@ -1270,11 +1365,11 @@ func (s *KeeperTestSuite) TestRemoveStakeZeroAmount() {
 	zeroStakeAmount := cosmosMath.NewInt(0)
 
 	// Setup initial stake
-	err := keeper.AddStake(ctx, topicId, reputerAddr, initialStakeAmount)
+	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err)
 
 	// Try to remove zero stake
-	err = keeper.RemoveStake(ctx, topicId, reputerAddr, zeroStakeAmount)
+	err = keeper.RemoveReputerStake(ctx, ctx.BlockHeight(), topicId, reputerAddr, zeroStakeAmount)
 	s.Require().NoError(err)
 }
 
@@ -1286,7 +1381,7 @@ func (s *KeeperTestSuite) TestRemoveStakeNonExistingDelegatorOrTarget() {
 	stakeAmount := cosmosMath.NewInt(500)
 
 	// Try to remove stake with non-existing delegator or target
-	err := keeper.RemoveStake(ctx, topicId, nonExistingDelegatorAddr, stakeAmount)
+	err := keeper.RemoveReputerStake(ctx, ctx.BlockHeight(), topicId, nonExistingDelegatorAddr, stakeAmount)
 	s.Require().Error(err)
 }
 
@@ -1326,71 +1421,74 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	reputer1 := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
 	// Create a sample stake removal information
-	removalInfo0 := types.StakePlacement{
-		BlockRemovalStarted: time.Now().Unix(),
-		TopicId:             topic0,
-		Reputer:             reputer0,
-		Amount:              cosmosMath.NewInt(100),
+	removalInfo0 := types.StakeRemovalInfo{
+		BlockRemovalStarted:   12,
+		BlockRemovalCompleted: 13,
+		TopicId:               topic0,
+		Reputer:               reputer0,
+		Amount:                cosmosMath.NewInt(100),
 	}
-	removalInfo1 := types.StakePlacement{
-		BlockRemovalStarted: time.Now().Unix(),
-		TopicId:             topic1,
-		Reputer:             reputer1,
-		Amount:              cosmosMath.NewInt(200),
+	removalInfo1 := types.StakeRemovalInfo{
+		BlockRemovalStarted:   13,
+		BlockRemovalCompleted: 14,
+		TopicId:               topic1,
+		Reputer:               reputer1,
+		Amount:                cosmosMath.NewInt(200),
 	}
 
 	// Set stake removal information
-	err := keeper.SetStakeRemoval(ctx, reputer0, removalInfo0)
+	err := keeper.SetStakeRemoval(ctx, removalInfo0)
 	s.Require().NoError(err)
-	err = keeper.SetStakeRemoval(ctx, reputer1, removalInfo1)
+	err = keeper.SetStakeRemoval(ctx, removalInfo1)
 	s.Require().NoError(err)
 
 	// Topic 101
 
 	// Retrieve the stake removal information
-	retrievedInfo, err := keeper.GetStakeRemovalByTopicAndAddress(ctx, topic0, reputer0)
+	retrievedInfo, err := keeper.GetStakeRemovalsForBlock(ctx, removalInfo0.BlockRemovalCompleted)
 	s.Require().NoError(err)
-	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
-
-	// Detailed check on each placement
-	s.Require().Equal(removalInfo0.TopicId, retrievedInfo.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo0.Reputer, retrievedInfo.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo0.Amount, retrievedInfo.Amount, "Amounts should match for all placements")
+	s.Require().Len(retrievedInfo, 1, "There should be only one delegate stake removal information for the block")
+	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
+	s.Require().Equal(removalInfo0.BlockRemovalCompleted, retrievedInfo[0].BlockRemovalCompleted, "Block removal completed should match")
+	s.Require().Equal(removalInfo0.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo0.Reputer, retrievedInfo[0].Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo0.Amount, retrievedInfo[0].Amount, "Amounts should match for all placements")
 
 	// Topic 102
 
 	// Retrieve the stake removal information
-	retrievedInfo, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, topic1, reputer1)
+	retrievedInfo, err = keeper.GetStakeRemovalsForBlock(ctx, removalInfo1.BlockRemovalCompleted)
 	s.Require().NoError(err)
-	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
-
-	// Detailed check on each placement
-	s.Require().Equal(removalInfo1.TopicId, retrievedInfo.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo1.Reputer, retrievedInfo.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo1.Amount, retrievedInfo.Amount, "Amounts should match for all placements")
+	s.Require().Len(retrievedInfo, 1, "There should be only one delegate stake removal information for the block")
+	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
+	s.Require().Equal(removalInfo1.BlockRemovalCompleted, retrievedInfo[0].BlockRemovalCompleted, "Block removal started should match")
+	s.Require().Equal(removalInfo1.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo1.Reputer, retrievedInfo[0].Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo1.Amount, retrievedInfo[0].Amount, "Amounts should match for all placements")
 
 	// delete 101
-	err = keeper.DeleteStakeRemoval(ctx, removalInfo0.TopicId, removalInfo0.Reputer)
+	err = keeper.DeleteStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer)
 	s.Require().NoError(err)
-	_, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, removalInfo0.TopicId, removalInfo0.Reputer)
-	s.Require().Error(err)
+	removals, err := keeper.GetStakeRemovalsForBlock(ctx, removalInfo0.BlockRemovalCompleted)
+	s.Require().NoError(err)
+	s.Require().Len(removals, 0)
 
 	// delete 102
-	err = keeper.DeleteStakeRemoval(ctx, removalInfo1.TopicId, removalInfo1.Reputer)
+	err = keeper.DeleteStakeRemoval(ctx, removalInfo1.BlockRemovalCompleted, removalInfo1.TopicId, removalInfo1.Reputer)
 	s.Require().NoError(err)
-	_, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, removalInfo1.TopicId, removalInfo1.Reputer)
-	s.Require().Error(err)
+	removals, err = keeper.GetStakeRemovalsForBlock(ctx, removalInfo1.BlockRemovalCompleted)
+	s.Require().NoError(err)
+	s.Require().Len(removals, 0)
 }
 
-func (s *KeeperTestSuite) TestGetStakeRemovalByAddressNotFound() {
+func (s *KeeperTestSuite) TestGetStakeRemovalsForBlockNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	address := "sampleAddress2"
 
 	// Attempt to retrieve stake removal info for an address with no set info
-	_, err := keeper.GetStakeRemovalByTopicAndAddress(ctx, 202, address)
-	s.Require().Error(err)
-	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing stake removal information")
+	removals, err := keeper.GetStakeRemovalsForBlock(ctx, 202)
+	s.Require().NoError(err)
+	s.Require().Len(removals, 0)
 }
 
 func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
@@ -1406,19 +1504,21 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	delegator1 := "allo16skpmhw8etsu70kknkmxquk5ut7lsewgtqqtlu"
 
 	// Create sample delegate stake removal information
-	removalInfo0 := types.DelegateStakePlacement{
-		BlockRemovalStarted: time.Now().Unix(),
-		TopicId:             topic0,
-		Reputer:             reputer0,
-		Delegator:           delegator0,
-		Amount:              cosmosMath.NewInt(300),
+	removalInfo0 := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   12,
+		BlockRemovalCompleted: 13,
+		TopicId:               topic0,
+		Reputer:               reputer0,
+		Delegator:             delegator0,
+		Amount:                cosmosMath.NewInt(300),
 	}
-	removalInfo1 := types.DelegateStakePlacement{
-		BlockRemovalStarted: time.Now().Unix(),
-		TopicId:             topic1,
-		Reputer:             reputer1,
-		Delegator:           delegator1,
-		Amount:              cosmosMath.NewInt(400),
+	removalInfo1 := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   13,
+		BlockRemovalCompleted: 14,
+		TopicId:               topic1,
+		Reputer:               reputer1,
+		Delegator:             delegator1,
+		Amount:                cosmosMath.NewInt(400),
 	}
 
 	// Set delegate stake removal information
@@ -1430,52 +1530,50 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	// Topic 201
 
 	// Retrieve the delegate stake removal information
-	retrievedInfo, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topic0, reputer0, delegator0)
+	retrievedInfo, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, removalInfo0.BlockRemovalCompleted)
 	s.Require().NoError(err)
-	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
-
-	// Detailed check on each delegate placement
-	s.Require().Equal(removalInfo0.TopicId, retrievedInfo.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo0.Reputer, retrievedInfo.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo0.Delegator, retrievedInfo.Delegator, "Delegator addresses should match for all placements")
-	s.Require().Equal(removalInfo0.Amount, retrievedInfo.Amount, "Amounts should match for all placements")
+	s.Require().Len(retrievedInfo, 1, "There should be only one delegate stake removal information for the block")
+	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
+	s.Require().Equal(removalInfo0.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo0.Reputer, retrievedInfo[0].Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo0.Delegator, retrievedInfo[0].Delegator, "Delegator addresses should match for all placements")
+	s.Require().Equal(removalInfo0.Amount, retrievedInfo[0].Amount, "Amounts should match for all placements")
 
 	// Topic 202
 
 	// Retrieve the delegate stake removal information
-	retrievedInfo, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, topic1, reputer1, delegator1)
+	retrievedInfo, err = keeper.GetDelegateStakeRemovalsForBlock(ctx, removalInfo1.BlockRemovalCompleted)
 	s.Require().NoError(err)
-	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
-
-	// Detailed check on each delegate placement
-	s.Require().Equal(removalInfo1.TopicId, retrievedInfo.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo1.Reputer, retrievedInfo.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo1.Delegator, retrievedInfo.Delegator, "Delegator addresses should match for all placements")
-	s.Require().Equal(removalInfo1.Amount, retrievedInfo.Amount, "Amounts should match for all placements")
+	s.Require().Len(retrievedInfo, 1)
+	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
+	s.Require().Equal(removalInfo1.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo1.Reputer, retrievedInfo[0].Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo1.Delegator, retrievedInfo[0].Delegator, "Delegator addresses should match for all placements")
+	s.Require().Equal(removalInfo1.Amount, retrievedInfo[0].Amount, "Amounts should match for all placements")
 
 	// delete 101
-	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo0.TopicId, removalInfo0.Reputer, removalInfo0.Delegator)
+	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer, removalInfo0.Delegator)
 	s.Require().NoError(err)
-	_, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, removalInfo0.TopicId, removalInfo0.Reputer, removalInfo0.Delegator)
-	s.Require().Error(err)
+	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, removalInfo0.BlockRemovalCompleted)
+	s.Require().NoError(err)
+	s.Require().Len(removals, 0)
 
 	// delete 102
-	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo1.TopicId, removalInfo1.Reputer, removalInfo1.Delegator)
+	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo1.BlockRemovalCompleted, removalInfo1.TopicId, removalInfo1.Reputer, removalInfo1.Delegator)
 	s.Require().NoError(err)
-	_, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, removalInfo1.TopicId, removalInfo1.Reputer, removalInfo0.Delegator)
-	s.Require().Error(err)
+	removals, err = keeper.GetDelegateStakeRemovalsForBlock(ctx, removalInfo1.BlockRemovalCompleted)
+	s.Require().NoError(err)
+	s.Require().Len(removals, 0)
 }
 
 func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	reputer := "sampleAddress2"
-	delegator := "sampleAddress3"
 
 	// Attempt to retrieve delegate stake removal info for an address with no set info
-	_, err := keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, 201, reputer, delegator)
-	s.Require().Error(err)
-	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing delegate stake removal information")
+	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, 201)
+	s.Require().NoError(err)
+	s.Require().Len(removals, 0)
 }
 
 func (s *KeeperTestSuite) TestSetParams() {
@@ -2948,4 +3046,100 @@ func (s *KeeperTestSuite) TestGetCurrentTopicWeight() {
 	s.T().Log("weight ", weight, emaWeight)
 	s.T().Log("revenue ", cosmosMath.NewInt(500), revenue)
 	s.Require().NoError(err)
+}
+
+func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicId() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	reputer := "reputer"
+	topicId := uint64(1)
+
+	// Create a stake removal info
+	stakeRemovalInfo := types.StakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               reputer,
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(100),
+		BlockRemovalCompleted: 30,
+	}
+	anotherStakeRemoval := types.StakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               "reputer2",
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(200),
+		BlockRemovalCompleted: 30,
+	}
+
+	// Set the stake removal info in the keeper
+	err := k.SetStakeRemoval(ctx, stakeRemovalInfo)
+	s.Require().NoError(err)
+	err = k.SetStakeRemoval(ctx, anotherStakeRemoval)
+	s.Require().NoError(err)
+
+	// Get the first stake removal for the reputer and topic ID
+	result, found, err := k.GetStakeRemovalForReputerAndTopicId(ctx, reputer, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(stakeRemovalInfo, result)
+}
+
+func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicIdNotFound() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	reputer := "reputer"
+	topicId := uint64(1)
+
+	_, found, err := k.GetStakeRemovalForReputerAndTopicId(ctx, reputer, topicId)
+	s.Require().NoError(err)
+	s.Require().False(found)
+}
+
+func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAndTopicId() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	delegator := "delegator"
+	reputer := "reputer"
+	topicId := uint64(1)
+
+	// Create a stake removal info
+	stakeRemovalInfo := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               reputer,
+		Delegator:             delegator,
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(100),
+		BlockRemovalCompleted: 30,
+	}
+	anotherStakeRemoval := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               "reputer2",
+		Delegator:             delegator,
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(200),
+		BlockRemovalCompleted: 30,
+	}
+
+	// Set the stake removal info in the keeper
+	err := k.SetDelegateStakeRemoval(ctx, stakeRemovalInfo)
+	s.Require().NoError(err)
+	err = k.SetDelegateStakeRemoval(ctx, anotherStakeRemoval)
+	s.Require().NoError(err)
+
+	// Get the first stake removal for the reputer and topic ID
+	result, found, err := k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(stakeRemovalInfo, result)
+}
+
+func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAndTopicIdNotFound() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	delegator := "delegator"
+	reputer := "reputer"
+	topicId := uint64(1)
+
+	_, found, err := k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(ctx, delegator, reputer, topicId)
+	s.Require().NoError(err)
+	s.Require().False(found)
 }

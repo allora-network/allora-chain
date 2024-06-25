@@ -110,7 +110,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			}
 
 			// Check that the reputer enough stake in the topic
-			stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputer)
+			stake, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, reputer)
 			if err != nil {
 				continue
 			}
@@ -148,7 +148,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	stakesByReputer := make(map[string]cosmosMath.Int)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
 	for _, reputer := range topReputers {
-		stake, err := ms.k.GetStakeOnReputerInTopic(ctx, msg.TopicId, reputer)
+		stake, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, reputer)
 		if err != nil {
 			continue
 		}
@@ -180,6 +180,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle))
+
+	networkLossBundle.ReputerRequestNonce = msg.ReputerRequestNonce
 
 	err = ms.k.InsertNetworkLossBundleAtBlock(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 	if err != nil {
