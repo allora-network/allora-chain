@@ -269,7 +269,6 @@ func ForecastingUtility(
 		return alloraMath.Dec{}, err
 	}
 
-
 	// If score < 0, return 0.1
 	if scoreRatio.Lt(zero) {
 		return zeroPointOne, nil
