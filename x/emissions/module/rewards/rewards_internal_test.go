@@ -756,7 +756,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require.True(len(gotScores3) == len(wantScores))
 
 	// Verify score output matches that of GetAllConsensusScores()
-	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, params.FTolerance, params.Epsilon)
+	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, fTolerance, params.Epsilon)
 	require.NoError(err)
 	if !alloraMath.SlicesInDelta(gotScores3, wantScores3, alloraMath.MustNewDecFromString("0.01")) {
 		log.Println("GetAllConsensusScores() got", gotScores3, "want", wantScores3)

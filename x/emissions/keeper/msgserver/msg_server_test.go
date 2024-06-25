@@ -197,6 +197,7 @@ func (s *MsgServerTestSuite) CreateOneTopic() uint64 {
 		DefaultArg:      "ETH",
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		PNorm:           alloraMath.NewDecFromInt64(3),
+		Tolerance:       alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	s.MintTokensToAddress(creator, types.DefaultParams().CreateTopicFee)
@@ -227,6 +228,7 @@ func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 		DefaultArg:      "ETH",
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		PNorm:           alloraMath.NewDecFromInt64(3),
+		Tolerance:       alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	creatorInitialBalance := types.DefaultParams().CreateTopicFee.Mul(cosmosMath.NewInt(3))
