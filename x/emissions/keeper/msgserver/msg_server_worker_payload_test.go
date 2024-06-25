@@ -14,7 +14,7 @@ func getNewAddress() string {
 	return sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()).String()
 }
 
-func (s *KeeperTestSuite) setUpMsgInsertBulkWorkerPayload(
+func (s *MsgServerTestSuite) setUpMsgInsertBulkWorkerPayload(
 	workerPrivateKey secp256k1.PrivKey,
 
 ) (types.MsgInsertBulkWorkerPayload, uint64) {
@@ -87,7 +87,7 @@ func (s *KeeperTestSuite) setUpMsgInsertBulkWorkerPayload(
 	return workerMsg, topicId
 }
 
-func (s *KeeperTestSuite) signMsgInsertBulkWorkerPayload(workerMsg types.MsgInsertBulkWorkerPayload, workerPrivateKey secp256k1.PrivKey) types.MsgInsertBulkWorkerPayload {
+func (s *MsgServerTestSuite) signMsgInsertBulkWorkerPayload(workerMsg types.MsgInsertBulkWorkerPayload, workerPrivateKey secp256k1.PrivKey) types.MsgInsertBulkWorkerPayload {
 	require := s.Require()
 
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
@@ -104,7 +104,7 @@ func (s *KeeperTestSuite) signMsgInsertBulkWorkerPayload(workerMsg types.MsgInse
 	return workerMsg
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayload() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -127,7 +127,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayload() {
 	require.Equal(forecastsCount1, 1)
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithoutWorkerDataBundle() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithoutWorkerDataBundle() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -144,7 +144,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithoutWorkerDataBu
 	require.Error(err)
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedTopicId() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -162,7 +162,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedTopic
 	require.Error(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredInferer() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredInferer() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -190,7 +190,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredInf
 	require.Error(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) getCountForecastsAtBlock(topicId uint64, blockHeight int64) int {
+func (s *MsgServerTestSuite) getCountForecastsAtBlock(topicId uint64, blockHeight int64) int {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	forecastsAtBlock, err := keeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
@@ -201,7 +201,7 @@ func (s *KeeperTestSuite) getCountForecastsAtBlock(topicId uint64, blockHeight i
 
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedForecastTopicId() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedForecastTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -229,7 +229,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedForec
 	require.Equal(forecastsCount1, 0)
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredForecaster() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredForecaster() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -263,7 +263,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredFor
 	require.Equal(forecastsCount1, 0)
 }
 
-func (s *KeeperTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
+func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -348,7 +348,7 @@ func (s *KeeperTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 	require.Error(err, types.ErrQueryTooLarge)
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -430,7 +430,7 @@ func (s *KeeperTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *KeeperTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper

@@ -48,13 +48,12 @@ type ChainKey struct {
 
 var (
 	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
-	// TODO: Change PKS to accounts here and in all the tests (like the above line)
-	PKS     = simtestutil.CreateTestPubKeys(10)
-	Addr    = sdk.AccAddress(PKS[0].Address())
-	ValAddr = GeneratePrivateKeys(10)
+	PKS              = simtestutil.CreateTestPubKeys(10)
+	Addr             = sdk.AccAddress(PKS[0].Address())
+	ValAddr          = GeneratePrivateKeys(10)
 )
 
-type KeeperTestSuite struct {
+type MsgServerTestSuite struct {
 	suite.Suite
 
 	ctx             sdk.Context
@@ -71,11 +70,11 @@ type KeeperTestSuite struct {
 	addrsStr        []string
 }
 
-func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(KeeperTestSuite))
+func TestMsgServerTestSuite(t *testing.T) {
+	suite.Run(t, new(MsgServerTestSuite))
 }
 
-func (s *KeeperTestSuite) SetupTest() {
+func (s *MsgServerTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	s.storeService = storeService
@@ -165,19 +164,19 @@ func GeneratePrivateKeys(numKeys int) []ChainKey {
 	return testAddrs
 }
 
-func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
+func (s *MsgServerTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 
 	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
 	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
 }
 
-func (s *KeeperTestSuite) MintTokensToModule(moduleName string, amount cosmosMath.Int) {
+func (s *MsgServerTestSuite) MintTokensToModule(moduleName string, amount cosmosMath.Int) {
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 	s.bankKeeper.MintCoins(s.ctx, moduleName, creatorInitialBalanceCoins)
 }
 
-func (s *KeeperTestSuite) CreateOneTopic() uint64 {
+func (s *MsgServerTestSuite) CreateOneTopic() uint64 {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -208,7 +207,7 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 	return result.TopicId
 }
 
-func (s *KeeperTestSuite) TestCreateSeveralTopics() {
+func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	// Mock setup for metadata and validation steps

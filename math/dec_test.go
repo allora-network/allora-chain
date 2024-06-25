@@ -199,7 +199,7 @@ func TestDec(t *testing.T) {
 	require.True(t, one.Equal(floorOnePointFiveOne))
 }
 
-// TODO: Think a bit more about the probability distribution of Dec
+// generate a dec value on the fly
 var genDec *rapid.Generator[Dec] = rapid.Custom(func(t *rapid.T) Dec {
 	f := rapid.Float64().Draw(t, "f")
 	dec, err := NewDecFromString(fmt.Sprintf("%g", f))

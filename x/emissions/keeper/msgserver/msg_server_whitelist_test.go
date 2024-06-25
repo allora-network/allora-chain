@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestAddWhitelistAdmin() {
+func (s *MsgServerTestSuite) TestAddWhitelistAdmin() {
 	ctx := s.ctx
 	require := s.Require()
 	msgServer := s.msgServer
@@ -33,7 +33,7 @@ func (s *KeeperTestSuite) TestAddWhitelistAdmin() {
 	require.True(isWhitelistAdmin, "newAdminAddr should be a whitelist admin")
 }
 
-func (s *KeeperTestSuite) TestAddWhitelistAdminInvalidUnauthorized() {
+func (s *MsgServerTestSuite) TestAddWhitelistAdminInvalidUnauthorized() {
 	ctx := s.ctx
 	require := s.Require()
 
@@ -50,7 +50,7 @@ func (s *KeeperTestSuite) TestAddWhitelistAdminInvalidUnauthorized() {
 	require.ErrorIs(err, types.ErrNotWhitelistAdmin, "Should fail due to unauthorized access")
 }
 
-func (s *KeeperTestSuite) TestRemoveWhitelistAdmin() {
+func (s *MsgServerTestSuite) TestRemoveWhitelistAdmin() {
 	ctx := s.ctx
 	require := s.Require()
 	msgServer := s.msgServer
@@ -73,7 +73,7 @@ func (s *KeeperTestSuite) TestRemoveWhitelistAdmin() {
 	require.False(isWhitelistAdmin, "adminToRemove should not be a whitelist admin anymore")
 }
 
-func (s *KeeperTestSuite) TestRemoveWhitelistAdminInvalidUnauthorized() {
+func (s *MsgServerTestSuite) TestRemoveWhitelistAdminInvalidUnauthorized() {
 	ctx := s.ctx
 	require := s.Require()
 

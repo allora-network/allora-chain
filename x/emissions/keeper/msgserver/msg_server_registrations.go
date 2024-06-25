@@ -24,7 +24,10 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	hasEnoughBal, fee, _ := ms.CheckBalanceForRegistration(ctx, msg.Sender)
+	hasEnoughBal, fee, err := ms.CheckBalanceForRegistration(ctx, msg.Sender)
+	if err != nil {
+		return nil, err
+	}
 	if !hasEnoughBal {
 		return nil, types.ErrTopicRegistrantNotEnoughDenom
 	}

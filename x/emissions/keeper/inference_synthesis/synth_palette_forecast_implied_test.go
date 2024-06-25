@@ -118,6 +118,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"worker1": {Value: alloraMath.MustNewDecFromString("2")},
 	}
 	palette := inferencesynthesis.SynthPalette{
+		Logger:              inferencesynthesis.Logger(s.ctx),
 		InferenceByWorker:   inferenceByWorker,
 		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
 		Forecasters:         []string{"forecaster0"},
@@ -246,6 +247,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 		"worker4": {Value: epoch3Get("inference_4")},
 	}
 	palette := inferencesynthesis.SynthPalette{
+		Logger:              inferencesynthesis.Logger(s.ctx),
 		InferenceByWorker:   inferenceByWorker,
 		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
 		Forecasters:         []string{"forecaster0"},

@@ -8,7 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestUpdateParams() {
+func (s *MsgServerTestSuite) TestUpdateParams() {
 	ctx, msgServer := s.ctx, s.msgServer
 	keeper := s.emissionsKeeper
 	require := s.Require()
@@ -44,7 +44,7 @@ func (s *KeeperTestSuite) TestUpdateParams() {
 	require.Equal(existingParams.Version, updatedParams.Version)
 }
 
-func (s *KeeperTestSuite) TestUpdateAllParams() {
+func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	ctx, msgServer := s.ctx, s.msgServer
 	keeper := s.emissionsKeeper
 	require := s.Require()
@@ -147,7 +147,7 @@ func (s *KeeperTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.CNorm[0], updatedParams.CNorm)
 }
 
-func (s *KeeperTestSuite) TestUpdateParamsNonWhitelistedUser() {
+func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 

@@ -16,7 +16,10 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 
-	hasEnoughBal, fee, _ := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, msg.Creator)
+	hasEnoughBal, fee, err := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, msg.Creator)
+	if err != nil {
+		return nil, err
+	}
 	if !hasEnoughBal {
 		return nil, errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover topic creation fee")
 	}

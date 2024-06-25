@@ -1,17 +1,20 @@
 #!/bin/bash
-set -exu
+set -eu
 
-NETWORK="${NETWORK:-testnet}"
+NETWORK="${NETWORK:-edgenet}"                 #! Replace with your network name
 GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
 SEEDS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/seeds.txt"
-BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-https://heads.${NETWORK}.allora.network}"               #! Replace with your blockless API URL
 
-APP_HOME="${APP_HOME:-/data}"
+export APP_HOME="${APP_HOME:-./data}"
 INIT_FLAG="${APP_HOME}/.initialized"
 MONIKER="${MONIKER:-$(hostname)}"
 KEYRING_BACKEND=test                              #! Use test for simplicity, you should decide which backend to use !!!
 GENESIS_FILE="${APP_HOME}/config/genesis.json"
 DENOM="uallo"
+
+# uncomment this block if you want to restore from a snapshot
+# SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# "${SCRIPT_DIR}/restore_snapshot.sh"
 
 echo "To re-initiate the node, remove the file: ${INIT_FLAG}"
 if [ ! -f $INIT_FLAG ]; then
@@ -52,5 +55,7 @@ allorad \
     --moniker=${MONIKER} \
     --minimum-gas-prices=0${DENOM} \
     --rpc.laddr=tcp://0.0.0.0:26657 \
-    --p2p.seeds=$SEEDS
+    --p2p.seeds=$SEEDS \
+    --log_level "*:error,state:info,server:info,rewards:debug,inference_synthesis:debug,topic_handler:debug" 
+
 

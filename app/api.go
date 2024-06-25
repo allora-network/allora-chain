@@ -60,7 +60,7 @@ func generateLossesRequest(
 
 	inferencesPayloadJSON, err := json.Marshal(inferences)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error marshalling JSON: %s", err.Error()))
+		Logger(ctx).Warn(fmt.Sprintf("Error marshalling JSON: %s", err.Error()))
 		return
 	}
 
@@ -102,14 +102,14 @@ func generateLossesRequest(
 
 	payload, err := json.Marshal(calcWeightsReq)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error marshalling outer JSON: %s", err.Error()))
+		Logger(ctx).Warn(fmt.Sprintf("Error marshalling outer JSON: %s", err.Error()))
 		return
 	}
 	payloadStr := string(payload)
-	ctx.Logger().Debug(fmt.Sprintf("Making API call - losses, with payload: %s", payloadStr))
+	Logger(ctx).Debug(fmt.Sprintf("Making API call - losses, with payload: %s", payloadStr))
 	err = makeApiCall(payloadStr)
 	if err != nil {
-		ctx.Logger().Warn("Error making API call - losses: " + err.Error())
+		Logger(ctx).Warn("Error making API call - losses: " + err.Error())
 	}
 }
 
@@ -152,14 +152,14 @@ func generateInferencesRequest(
 	}
 	payload, err := json.Marshal(payloadJson)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error marshalling outer JSON: %s", err.Error()))
+		Logger(ctx).Warn(fmt.Sprintf("Error marshalling outer JSON: %s", err.Error()))
 	}
 	payloadStr := string(payload)
 
-	ctx.Logger().Debug(fmt.Sprintf("Making API call - inferences, with payload: %s", payloadStr))
+	Logger(ctx).Debug(fmt.Sprintf("Making API call - inferences, with payload: %s", payloadStr))
 	err = makeApiCall(payloadStr)
 	if err != nil {
-		ctx.Logger().Warn(fmt.Sprintf("Error making API call: %s", err.Error()))
+		Logger(ctx).Warn(fmt.Sprintf("Error making API call: %s", err.Error()))
 	}
 }
 

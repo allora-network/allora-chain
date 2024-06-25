@@ -28,7 +28,6 @@ import (
 )
 
 var (
-	// TODO: Change PKS to accounts here and in all the tests (like the above line)
 	PKS     = simtestutil.CreateTestPubKeys(4)
 	Addr    = sdk.AccAddress(PKS[0].Address())
 	ValAddr = sdk.ValAddress(Addr)
@@ -945,6 +944,59 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	s.Require().Equal(&expectedInferences, actualInferences)
 }
 
+func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	topicId := uint64(1)
+
+	// Initially, there should be no inferences, so we expect an empty result
+	emptyInferences, emptyBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId)
+	s.Require().NoError(err, "Retrieving latest inferences when none exist should not result in an error")
+	s.Require().Equal(&types.Inferences{Inferences: []*types.Inference{}}, emptyInferences, "Expected no inferences initially")
+	s.Require().Equal(types.BlockHeight(0), emptyBlockHeight, "Expected block height to be zero initially")
+
+	// Insert first set of inferences
+	blockHeight1 := types.BlockHeight(12345)
+	newInference1 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight1,
+		Inferer:     "worker1",
+		Value:       alloraMath.MustNewDecFromString("10"),
+		ExtraData:   []byte("data1"),
+		Proof:       "proof1",
+	}
+	inferences1 := types.Inferences{
+		Inferences: []*types.Inference{&newInference1},
+	}
+	nonce1 := types.Nonce{BlockHeight: blockHeight1}
+	err = keeper.InsertInferences(ctx, topicId, nonce1, inferences1)
+	s.Require().NoError(err, "Inserting first set of inferences should not fail")
+
+	// Insert second set of inferences
+	blockHeight2 := types.BlockHeight(12346)
+	newInference2 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight2,
+		Inferer:     "worker2",
+		Value:       alloraMath.MustNewDecFromString("20"),
+		ExtraData:   []byte("data2"),
+		Proof:       "proof2",
+	}
+	inferences2 := types.Inferences{
+		Inferences: []*types.Inference{&newInference2},
+	}
+	nonce2 := types.Nonce{BlockHeight: blockHeight2}
+	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	s.Require().NoError(err, "Inserting second set of inferences should not fail")
+
+	// Retrieve the latest inferences
+	latestInferences, latestBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId)
+	s.Require().NoError(err, "Retrieving latest inferences should not fail")
+	s.Require().Equal(&inferences2, latestInferences, "Latest inferences should match the second inserted set")
+	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
+}
+
 func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -1316,7 +1368,7 @@ func (s *KeeperTestSuite) TestGetAllStakeForDelegator() {
 	s.Require().Equal(stakeAmount.Mul(cosmosMath.NewInt(3)), amount, "The total amount is incorrect")
 }
 
-func (s *KeeperTestSuite) TestSetAndGetStakeRemovalByAddressWithDetailedPlacement() {
+func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlacement() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
@@ -1326,28 +1378,18 @@ func (s *KeeperTestSuite) TestSetAndGetStakeRemovalByAddressWithDetailedPlacemen
 	topic1 := uint64(102)
 	reputer1 := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
-	// Create sample stake placement information with multiple topics and reputers
-	placements := []*types.StakePlacement{
-		{
-			TopicId: topic0,
-			Reputer: reputer0,
-			Amount:  cosmosMath.NewInt(100),
-		},
-		{
-			TopicId: topic1,
-			Reputer: reputer1,
-			Amount:  cosmosMath.NewInt(200),
-		},
-	}
-
 	// Create a sample stake removal information
-	removalInfo0 := types.StakeRemoval{
+	removalInfo0 := types.StakePlacement{
 		BlockRemovalStarted: time.Now().Unix(),
-		Placement:           placements[0],
+		TopicId:             topic0,
+		Reputer:             reputer0,
+		Amount:              cosmosMath.NewInt(100),
 	}
-	removalInfo1 := types.StakeRemoval{
+	removalInfo1 := types.StakePlacement{
 		BlockRemovalStarted: time.Now().Unix(),
-		Placement:           placements[1],
+		TopicId:             topic1,
+		Reputer:             reputer1,
+		Amount:              cosmosMath.NewInt(200),
 	}
 
 	// Set stake removal information
@@ -1364,9 +1406,9 @@ func (s *KeeperTestSuite) TestSetAndGetStakeRemovalByAddressWithDetailedPlacemen
 	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
 
 	// Detailed check on each placement
-	s.Require().Equal(removalInfo0.Placement.TopicId, retrievedInfo.Placement.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo0.Placement.Reputer, retrievedInfo.Placement.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo0.Placement.Amount, retrievedInfo.Placement.Amount, "Amounts should match for all placements")
+	s.Require().Equal(removalInfo0.TopicId, retrievedInfo.TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo0.Reputer, retrievedInfo.Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo0.Amount, retrievedInfo.Amount, "Amounts should match for all placements")
 
 	// Topic 102
 
@@ -1376,9 +1418,21 @@ func (s *KeeperTestSuite) TestSetAndGetStakeRemovalByAddressWithDetailedPlacemen
 	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
 
 	// Detailed check on each placement
-	s.Require().Equal(removalInfo1.Placement.TopicId, retrievedInfo.Placement.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo1.Placement.Reputer, retrievedInfo.Placement.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo1.Placement.Amount, retrievedInfo.Placement.Amount, "Amounts should match for all placements")
+	s.Require().Equal(removalInfo1.TopicId, retrievedInfo.TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo1.Reputer, retrievedInfo.Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo1.Amount, retrievedInfo.Amount, "Amounts should match for all placements")
+
+	// delete 101
+	err = keeper.DeleteStakeRemoval(ctx, removalInfo0.TopicId, removalInfo0.Reputer)
+	s.Require().NoError(err)
+	_, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, removalInfo0.TopicId, removalInfo0.Reputer)
+	s.Require().Error(err)
+
+	// delete 102
+	err = keeper.DeleteStakeRemoval(ctx, removalInfo1.TopicId, removalInfo1.Reputer)
+	s.Require().NoError(err)
+	_, err = keeper.GetStakeRemovalByTopicAndAddress(ctx, removalInfo1.TopicId, removalInfo1.Reputer)
+	s.Require().Error(err)
 }
 
 func (s *KeeperTestSuite) TestGetStakeRemovalByAddressNotFound() {
@@ -1392,7 +1446,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalByAddressNotFound() {
 	s.Require().True(errors.Is(err, collections.ErrNotFound), "Should return not found error for missing stake removal information")
 }
 
-func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
+func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
@@ -1405,23 +1459,19 @@ func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 	delegator1 := "allo16skpmhw8etsu70kknkmxquk5ut7lsewgtqqtlu"
 
 	// Create sample delegate stake removal information
-	removalInfo0 := types.DelegateStakeRemoval{
+	removalInfo0 := types.DelegateStakePlacement{
 		BlockRemovalStarted: time.Now().Unix(),
-		Placement: &types.DelegateStakePlacement{
-			TopicId:   topic0,
-			Reputer:   reputer0,
-			Delegator: delegator0,
-			Amount:    cosmosMath.NewInt(300),
-		},
+		TopicId:             topic0,
+		Reputer:             reputer0,
+		Delegator:           delegator0,
+		Amount:              cosmosMath.NewInt(300),
 	}
-	removalInfo1 := types.DelegateStakeRemoval{
+	removalInfo1 := types.DelegateStakePlacement{
 		BlockRemovalStarted: time.Now().Unix(),
-		Placement: &types.DelegateStakePlacement{
-			TopicId:   topic1,
-			Reputer:   reputer1,
-			Delegator: delegator1,
-			Amount:    cosmosMath.NewInt(400),
-		},
+		TopicId:             topic1,
+		Reputer:             reputer1,
+		Delegator:           delegator1,
+		Amount:              cosmosMath.NewInt(400),
 	}
 
 	// Set delegate stake removal information
@@ -1438,10 +1488,10 @@ func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
 
 	// Detailed check on each delegate placement
-	s.Require().Equal(removalInfo0.Placement.TopicId, retrievedInfo.Placement.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo0.Placement.Reputer, retrievedInfo.Placement.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo0.Placement.Delegator, retrievedInfo.Placement.Delegator, "Delegator addresses should match for all placements")
-	s.Require().Equal(removalInfo0.Placement.Amount, retrievedInfo.Placement.Amount, "Amounts should match for all placements")
+	s.Require().Equal(removalInfo0.TopicId, retrievedInfo.TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo0.Reputer, retrievedInfo.Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo0.Delegator, retrievedInfo.Delegator, "Delegator addresses should match for all placements")
+	s.Require().Equal(removalInfo0.Amount, retrievedInfo.Amount, "Amounts should match for all placements")
 
 	// Topic 202
 
@@ -1451,10 +1501,22 @@ func (s *KeeperTestSuite) TestSetAndGetDelegateStakeRemovalByAddress() {
 	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted, "Block removal started should match")
 
 	// Detailed check on each delegate placement
-	s.Require().Equal(removalInfo1.Placement.TopicId, retrievedInfo.Placement.TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo1.Placement.Reputer, retrievedInfo.Placement.Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo1.Placement.Delegator, retrievedInfo.Placement.Delegator, "Delegator addresses should match for all placements")
-	s.Require().Equal(removalInfo1.Placement.Amount, retrievedInfo.Placement.Amount, "Amounts should match for all placements")
+	s.Require().Equal(removalInfo1.TopicId, retrievedInfo.TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo1.Reputer, retrievedInfo.Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo1.Delegator, retrievedInfo.Delegator, "Delegator addresses should match for all placements")
+	s.Require().Equal(removalInfo1.Amount, retrievedInfo.Amount, "Amounts should match for all placements")
+
+	// delete 101
+	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo0.TopicId, removalInfo0.Reputer, removalInfo0.Delegator)
+	s.Require().NoError(err)
+	_, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, removalInfo0.TopicId, removalInfo0.Reputer, removalInfo0.Delegator)
+	s.Require().Error(err)
+
+	// delete 102
+	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo1.TopicId, removalInfo1.Reputer, removalInfo1.Delegator)
+	s.Require().NoError(err)
+	_, err = keeper.GetDelegateStakeRemovalByTopicAndAddress(ctx, removalInfo1.TopicId, removalInfo1.Reputer, removalInfo0.Delegator)
+	s.Require().Error(err)
 }
 
 func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
@@ -1949,8 +2011,7 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	// Test getting revenue for a topic with no existing revenue
 	feeRev, err := keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Should not error when revenue does not exist")
-	s.Require().Equal(cosmosMath.ZeroInt(), feeRev.Revenue, "Revenue should be zero for non-existing entries")
-	s.Require().Equal(int64(0), feeRev.Epoch, "Epoch should be zero for non-existing entries")
+	s.Require().Equal(cosmosMath.ZeroInt(), feeRev, "Revenue should be zero for non-existing entries")
 
 	// Setup a topic with some revenue
 	initialRevenue := cosmosMath.NewInt(100)
@@ -1960,10 +2021,10 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	// Test getting revenue for a topic with existing revenue
 	feeRev, err = keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().NoError(err, "Should not error when retrieving existing revenue")
-	s.Require().Equal(feeRev.Revenue.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
+	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }
 
-func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
+func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -1975,26 +2036,14 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenueAndIncrementEpoch() {
 	err = keeper.DripTopicFeeRevenue(ctx, topicId, block)
 	s.Require().NoError(err, "Resetting topic fee revenue should not fail")
 
-	// Add initial revenue in the first epoch
+	// Add initial revenue
 	initialAmount := cosmosMath.NewInt(100)
 	err = keeper.AddTopicFeeRevenue(ctx, topicId, initialAmount)
 	s.Require().NoError(err, "Adding initial revenue should not fail")
 
 	// Verify initial revenue
 	feeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
-	s.Require().Equal(initialAmount.BigInt(), feeRev.Revenue.BigInt(), "Initial revenue should be correctly recorded")
-	s.Require().Equal(block, feeRev.Epoch, "Initial epoch should be correctly recorded")
-
-	// Add more revenue in the new epoch
-	additionalAmount := cosmosMath.NewInt(200)
-	err = keeper.AddTopicFeeRevenue(ctx, topicId, additionalAmount)
-	s.Require().NoError(err, "Adding additional revenue in new epoch should not fail")
-	s.Require().Equal(block, feeRev.Epoch, "Initial epoch should be correctly recorded")
-
-	// Verify updated revenue in the new epoch
-	updatedFeeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
-	s.Require().Equal(feeRev.Epoch, updatedFeeRev.Epoch, "Epoch should not be updated")
-	s.Require().Equal("300", updatedFeeRev.Revenue.String(), "Revenue in new epoch should match the additional amount")
+	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
 }
 
 /// TOPIC CHURN
@@ -2940,7 +2989,7 @@ func (s *KeeperTestSuite) TestGetCurrentTopicWeight() {
 
 	s.topicKeeper.EXPECT().GetTopicStake(s.ctx, topicId).Return(cosmosMath.NewInt(1000), nil).AnyTimes()
 	s.topicKeeper.EXPECT().NewDecFromSdkInt(cosmosMath.NewInt(1000)).Return(alloraMath.NewDecFromInt64(1000), nil).AnyTimes()
-	s.topicKeeper.EXPECT().GetTopicFeeRevenue(s.ctx, topicId).Return(types.TopicFeeRevenue{Revenue: cosmosMath.NewInt(500)}, nil).AnyTimes()
+	s.topicKeeper.EXPECT().GetTopicFeeRevenue(s.ctx, topicId).Return(cosmosMath.NewInt(500), nil).AnyTimes()
 	newFeeRevenue := additionalRevenue.Add(cosmosMath.NewInt(500))
 	s.topicKeeper.EXPECT().NewDecFromSdkInt(newFeeRevenue).Return(alloraMath.NewDecFromInt64(600), nil).AnyTimes()
 	s.topicKeeper.EXPECT().GetTargetWeight(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(targetweight, nil).AnyTimes()

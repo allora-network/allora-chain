@@ -90,9 +90,9 @@ type Keeper struct {
 	// amount of stake a reputer has placed in a topic + delegate stake placed in them, signalling their authority on the topic
 	stakeByReputerAndTopicId collections.Map[collections.Pair[TopicId, ActorId], cosmosMath.Int]
 	// map of (reputer) -> removal information for that reputer
-	stakeRemoval collections.Map[collections.Pair[TopicId, ActorId], types.StakeRemoval]
+	stakeRemoval collections.Map[collections.Pair[TopicId, ActorId], types.StakePlacement]
 	// map of (delegator) -> removal information for that delegator
-	delegateStakeRemoval collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.DelegateStakeRemoval]
+	delegateStakeRemoval collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.DelegateStakePlacement]
 	// map of (delegator) -> amount of stake that has been placed by that delegator
 	stakeFromDelegator collections.Map[collections.Pair[TopicId, ActorId], cosmosMath.Int]
 	// map of (delegator, target) -> amount of stake that has been placed by that delegator on that target
@@ -117,7 +117,7 @@ type Keeper struct {
 	reputers collections.Map[LibP2pKey, types.OffchainNode]
 
 	// fee revenue collected by a topic over the course of the last reward cadence
-	topicFeeRevenue collections.Map[TopicId, types.TopicFeeRevenue]
+	topicFeeRevenue collections.Map[TopicId, cosmosMath.Int]
 
 	// store previous weights for exponential moving average in rewards calc
 	previousTopicWeight collections.Map[TopicId, alloraMath.Dec]
@@ -189,13 +189,13 @@ func NewKeeper(
 		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		stakeByReputerAndTopicId:                 collections.NewMap(sb, types.StakeByReputerAndTopicIdKey, "stake_by_reputer_and_TopicId", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
-		stakeRemoval:                             collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.StakeRemoval](cdc)),
-		delegateStakeRemoval:                     collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegateStakeRemoval](cdc)),
+		stakeRemoval:                             collections.NewMap(sb, types.StakeRemovalKey, "stake_removal_queue", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.StakePlacement](cdc)),
+		delegateStakeRemoval:                     collections.NewMap(sb, types.DelegateStakeRemovalKey, "delegate_stake_removal_queue", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegateStakePlacement](cdc)),
 		stakeFromDelegator:                       collections.NewMap(sb, types.DelegatorStakeKey, "stake_from_delegator", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
 		delegateStakePlacement:                   collections.NewMap(sb, types.DelegateStakePlacementKey, "delegate_stake_placement", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.DelegatorInfo](cdc)),
 		stakeUponReputer:                         collections.NewMap(sb, types.TargetStakeKey, "stake_upon_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), sdk.IntValue),
 		delegateRewardPerShare:                   collections.NewMap(sb, types.DelegateRewardPerShare, "delegate_reward_per_share", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		topicFeeRevenue:                          collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, codec.CollValue[types.TopicFeeRevenue](cdc)),
+		topicFeeRevenue:                          collections.NewMap(sb, types.TopicFeeRevenueKey, "topic_fee_revenue", collections.Uint64Key, sdk.IntValue),
 		previousTopicWeight:                      collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
 		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
@@ -558,6 +558,29 @@ func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, bloc
 	return &inferences, nil
 }
 
+// GetLatestTopicInferences retrieves the latest topic inferences and its block height.
+func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId) (*types.Inferences, BlockHeight, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
+
+	iter, err := k.allInferences.Iterate(ctx, rng)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer iter.Close()
+
+	if iter.Valid() {
+		keyValue, err := iter.KeyValue()
+		if err != nil {
+			return nil, 0, err
+		}
+		return &keyValue.Value, keyValue.Key.K2(), nil
+	}
+
+	return &types.Inferences{
+		Inferences: make([]*types.Inference, 0),
+	}, 0, nil
+}
+
 func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, error) {
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)
@@ -817,7 +840,6 @@ func (k *Keeper) RemoveStake(
 	if stake.IsZero() {
 		return nil
 	}
-
 	// Check reputerStakeInTopic >= stake
 	topicReputerKey := collections.Join(topicId, reputer)
 	reputerStakeInTopic, err := k.stakeByReputerAndTopicId.Get(ctx, topicReputerKey)
@@ -833,7 +855,6 @@ func (k *Keeper) RemoveStake(
 		return err
 	}
 	reputerStakeInTopicWithoutDelegateStake := reputerStakeInTopic.Sub(delegateStakeUponReputerInTopic)
-	// TODO Maybe we should check if reputerStakeInTopicWithoutDelegateStake is zero and remove the key from the map
 	if stake.GT(reputerStakeInTopicWithoutDelegateStake) {
 		return types.ErrIntegerUnderflowTopicReputerStake
 	}
@@ -890,6 +911,12 @@ func (k *Keeper) RemoveStake(
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
 
+	// remove stake withdrawal information
+	err = k.DeleteStakeRemoval(ctx, topicId, reputer)
+	if err != nil {
+		return errorsmod.Wrapf(err, "Deleting stake removal from queue failed")
+	}
+
 	return nil
 }
 
@@ -899,7 +926,8 @@ func (k *Keeper) RemoveDelegateStake(
 	topicId TopicId,
 	delegator ActorId,
 	reputer ActorId,
-	unStake cosmosMath.Int) error {
+	unStake cosmosMath.Int,
+) error {
 	if unStake.IsZero() {
 		return nil
 	}
@@ -994,6 +1022,11 @@ func (k *Keeper) RemoveDelegateStake(
 	// Set new delegate stake upon reputer
 	if err := k.SetDelegateStakeUponReputer(ctx, topicId, reputer, stakeUponReputerNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting delegate stake upon reputer failed")
+	}
+
+	// delete stake removal from information
+	if err := k.DeleteDelegateStakeRemoval(ctx, topicId, reputer, delegator); err != nil {
+		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
 
 	return nil
@@ -1130,7 +1163,7 @@ func (k *Keeper) SetDelegateStakeUponReputer(ctx context.Context, topicId TopicI
 }
 
 // For a given topic id and reputer address, get their stake removal information
-func (k *Keeper) GetStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, address ActorId) (types.StakeRemoval, error) {
+func (k *Keeper) GetStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, address ActorId) (types.StakePlacement, error) {
 	key := collections.Join(topicId, address)
 	return k.stakeRemoval.Get(ctx, key)
 }
@@ -1138,13 +1171,19 @@ func (k *Keeper) GetStakeRemovalByTopicAndAddress(ctx context.Context, topicId T
 // For a given address, adds their stake removal information to the removal queue for delay waiting
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
-func (k *Keeper) SetStakeRemoval(ctx context.Context, address ActorId, removalInfo types.StakeRemoval) error {
-	key := collections.Join(removalInfo.Placement.TopicId, address)
+func (k *Keeper) SetStakeRemoval(ctx context.Context, address ActorId, removalInfo types.StakePlacement) error {
+	key := collections.Join(removalInfo.TopicId, address)
 	return k.stakeRemoval.Set(ctx, key, removalInfo)
 }
 
+// remove a stake removal from the queue
+func (k *Keeper) DeleteStakeRemoval(ctx context.Context, topicId TopicId, address ActorId) error {
+	key := collections.Join(topicId, address)
+	return k.stakeRemoval.Remove(ctx, key)
+}
+
 // For a given topic id and reputer address, get their stake removal information
-func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, reputer ActorId, delegator ActorId) (types.DelegateStakeRemoval, error) {
+func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, topicId TopicId, reputer ActorId, delegator ActorId) (types.DelegateStakePlacement, error) {
 	key := collections.Join3(topicId, reputer, delegator)
 	return k.delegateStakeRemoval.Get(ctx, key)
 }
@@ -1152,9 +1191,15 @@ func (k *Keeper) GetDelegateStakeRemovalByTopicAndAddress(ctx context.Context, t
 // For a given address, adds their stake removal information to the removal queue for delay waiting
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
-func (k *Keeper) SetDelegateStakeRemoval(ctx context.Context, removalInfo types.DelegateStakeRemoval) error {
-	key := collections.Join3(removalInfo.Placement.TopicId, removalInfo.Placement.Reputer, removalInfo.Placement.Delegator)
+func (k *Keeper) SetDelegateStakeRemoval(ctx context.Context, removalInfo types.DelegateStakePlacement) error {
+	key := collections.Join3(removalInfo.TopicId, removalInfo.Reputer, removalInfo.Delegator)
 	return k.delegateStakeRemoval.Set(ctx, key, removalInfo)
+}
+
+// remove a stake removal from the queue
+func (k *Keeper) DeleteDelegateStakeRemoval(ctx context.Context, topicId TopicId, reputer ActorId, delegator ActorId) error {
+	key := collections.Join3(topicId, reputer, delegator)
+	return k.delegateStakeRemoval.Remove(ctx, key)
 }
 
 /// REPUTERS
@@ -1251,8 +1296,11 @@ func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (
 // Returns ((0,0), true) if there was no prior topic weight set, else ((x,y), false) where x,y!=0
 func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (alloraMath.Dec, bool, error) {
 	topicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
-	if errors.Is(err, collections.ErrNotFound) {
-		return alloraMath.ZeroDec(), true, nil
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), true, nil
+		}
+		return alloraMath.ZeroDec(), false, err
 	}
 	return topicWeight, false, err
 }
@@ -1341,8 +1389,14 @@ func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.Simp
 	nextKey := make([]byte, binary.MaxVarintLen64)
 	binary.BigEndian.PutUint64(nextKey, start+limit)
 
-	rng, _ := k.activeTopics.IterateRaw(ctx, startKey, nextKey, collections.OrderAscending)
-	activeTopics, _ := rng.Keys()
+	rng, err := k.activeTopics.IterateRaw(ctx, startKey, nextKey, collections.OrderAscending)
+	if err != nil {
+		return nil, nil, err
+	}
+	activeTopics, err := rng.Keys()
+	if err != nil {
+		return nil, nil, err
+	}
 	defer rng.Close()
 
 	// If there are no topics, we return the nil for next key
@@ -1389,28 +1443,25 @@ func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId
 /// TOPIC FEE REVENUE
 
 // Get the amount of fee revenue collected by a topic
-func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (types.TopicFeeRevenue, error) {
+func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (cosmosMath.Int, error) {
 	feeRev, err := k.topicFeeRevenue.Get(ctx, topicId)
-	if errors.Is(err, collections.ErrNotFound) {
-		return types.TopicFeeRevenue{
-			Epoch:   0,
-			Revenue: cosmosMath.ZeroInt(),
-		}, nil
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.ZeroInt(), nil
+		}
+		return cosmosMath.ZeroInt(), err
 	}
 	return feeRev, nil
 }
 
-// Add to the fee revenue collected by a topic incurred at a block
+// Add to the fee revenue collected by a topic
 func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount cosmosMath.Int) error {
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	newTopicFeeRevenue := types.TopicFeeRevenue{
-		Epoch:   topicFeeRevenue.Epoch,
-		Revenue: topicFeeRevenue.Revenue.Add(amount),
-	}
-	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
+	topicFeeRevenue = topicFeeRevenue.Add(amount)
+	return k.topicFeeRevenue.Set(ctx, topicId, topicFeeRevenue)
 }
 
 // Drop the fee revenue by the global Ecosystem bucket drip amount
@@ -1419,23 +1470,26 @@ func (k *Keeper) DripTopicFeeRevenue(ctx context.Context, topicId TopicId, block
 	if err != nil {
 		return err
 	}
-	newTopicFeeRevenue := types.TopicFeeRevenue{
-		Epoch:   block,
-		Revenue: cosmosMath.ZeroInt(),
-	}
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
 	epsilon := moduleParams.Epsilon
 	topicFeeRevenueDecayRate := moduleParams.TopicFeeRevenueDecayRate
-	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue.Revenue)
+
+	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue)
+	if err != nil {
+		return err
+	}
+
+	newTopicFeeRevenue := cosmosMath.ZeroInt()
 	if topicFeeRevenueDec.Gt(epsilon) {
 		val, err := alloraMath.CalcExpDecay(topicFeeRevenueDec, topicFeeRevenueDecayRate)
 		if err != nil {
 			return err
 		}
-		newTopicFeeRevenue.Revenue = val.SdkIntTrim()
+		newTopicFeeRevenue = val.SdkIntTrim()
 	}
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 }

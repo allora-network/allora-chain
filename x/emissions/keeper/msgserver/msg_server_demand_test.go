@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestFundTopicSimple() {
+func (s *MsgServerTestSuite) TestFundTopicSimple() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 	topicId := s.CreateOneTopic()
@@ -59,7 +59,7 @@ func (s *KeeperTestSuite) TestFundTopicSimple() {
 	s.Require().True(topicWeightAfter.Gt(topicWeightBefore), "Topic weight should be greater after funding the topic")
 }
 
-func (s *KeeperTestSuite) TestHighWeightForHighFundedTopic() {
+func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 	topicId := s.CreateOneTopic()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/errors"
+	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -21,12 +22,12 @@ func EmitRewards(
 	totalRevenue cosmosMath.Int,
 ) error {
 	totalReward, err := k.GetTotalRewardToDistribute(ctx)
-	ctx.Logger().Debug(fmt.Sprintf("Reward to distribute this epoch: %s", totalReward.String()))
+	Logger(ctx).Debug(fmt.Sprintf("Reward to distribute this epoch: %s", totalReward.String()))
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total reward to distribute")
 	}
 	if totalReward.IsZero() {
-		ctx.Logger().Warn("The total scheduled rewards to distribute this epoch are zero!")
+		Logger(ctx).Warn("The total scheduled rewards to distribute this epoch are zero!")
 		return nil
 	}
 
@@ -43,7 +44,7 @@ func EmitRewards(
 	sortedChurnableTopics := alloraMath.GetSortedElementsByDecWeightDesc(rewardableTopics, weights)
 
 	if len(sortedChurnableTopics) == 0 {
-		ctx.Logger().Warn("No churnable topics found")
+		Logger(ctx).Warn("No churnable topics found")
 		return nil
 	}
 
@@ -73,7 +74,7 @@ func EmitRewards(
 	for _, topicId := range sortedChurnableTopics {
 		topicReward := topicRewards[topicId]
 		if topicReward == nil {
-			ctx.Logger().Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
+			Logger(ctx).Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
 			continue
 		}
 		// Get topic reward nonce/block height
@@ -87,7 +88,7 @@ func EmitRewards(
 		totalRewardsDistribution, rewardInTopicToReputers, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
 			topicRewardString := "nil"
-			ctx.Logger().Warn(
+			Logger(ctx).Warn(
 				fmt.Sprintf(
 					"Failed to Generate Rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
 					topicId,
@@ -111,7 +112,7 @@ func EmitRewards(
 		payoutErrors := payoutRewards(ctx, k, totalRewardsDistribution)
 		if len(payoutErrors) > 0 {
 			for _, err := range payoutErrors {
-				ctx.Logger().Warn(
+				Logger(ctx).Warn(
 					fmt.Sprintf(
 						"Failed to pay out rewards to participant in Topic:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
 						topicId,
@@ -126,7 +127,7 @@ func EmitRewards(
 		// Prune records after rewards have been paid out
 		err = pruneRecordsAfterRewards(ctx, k, moduleParams.MinEpochLengthRecordLimit, topicId, topicRewardNonce)
 		if err != nil {
-			ctx.Logger().Warn(
+			Logger(ctx).Warn(
 				fmt.Sprintf(
 					"Failed to prune records after rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
 					topicId,
@@ -139,7 +140,7 @@ func EmitRewards(
 
 		err = k.RemoveRewardableTopic(ctx, topicId)
 		if err != nil {
-			ctx.Logger().Warn(
+			Logger(ctx).Warn(
 				fmt.Sprintf(
 					"Failed to remove rewardable topic:\nTopic Id %d\nError:\n%s\n\n",
 					topicId,
@@ -149,7 +150,7 @@ func EmitRewards(
 			continue
 		}
 	}
-	ctx.Logger().Debug(
+	Logger(ctx).Debug(
 		fmt.Sprintf("Paid out %s to staked reputers over %d topics",
 			totalRewardToStakedReputers.String(),
 			len(topicRewards)))
@@ -524,4 +525,8 @@ func pruneRecordsAfterRewards(
 	}
 
 	return nil
+}
+
+func Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", "rewards")
 }
