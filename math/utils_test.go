@@ -208,6 +208,17 @@ func TestMedian(t *testing.T) {
 			expected: alloraMath.MustNewDecFromString("4"),
 		},
 		{
+			name: "complex large values",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("123456789.123456789"),
+				alloraMath.MustNewDecFromString("987654321.987654321"),
+				alloraMath.MustNewDecFromString("555555555.555555555"),
+				alloraMath.MustNewDecFromString("333333333.333333333"),
+				alloraMath.MustNewDecFromString("111111111.111111111"),
+			},
+			expected: alloraMath.MustNewDecFromString("333333333.333333333"),
+		},
+		{
 			name: "single element",
 			data: []alloraMath.Dec{
 				alloraMath.MustNewDecFromString("7"),
