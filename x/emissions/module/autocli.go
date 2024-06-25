@@ -270,7 +270,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "Register",
-					Use:       "register [creator] [lib_p2p_key] [multi_address] [topic_ids] [initial_stake] [owner] [is_reputer]",
+					Use:       "register [sender] [lib_p2p_key] [multi_address] [topic_ids] [initial_stake] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
@@ -283,7 +283,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RemoveRegistration",
-					Use:       "remove-registration [creator] [owner] [is_reputer]",
+					Use:       "remove-registration [sender] [owner] [is_reputer]",
 					Short:     "Remove a reputer or worker from a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
