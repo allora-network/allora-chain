@@ -130,8 +130,15 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
 	)
 	require.NoError(m.T, err)
 
+	blockHeight, err := m.Client.BlockHeight(m.Ctx)
+	require.NoError(m.T, err)
 	err = m.Client.WaitForNextBlock(m.Ctx)
 	require.NoError(m.T, err)
+	err = m.Client.WaitForNextBlock(m.Ctx)
+	require.NoError(m.T, err)
+	blockHeight2, err := m.Client.BlockHeight(m.Ctx)
+	require.NoError(m.T, err)
+	require.Greater(m.T, blockHeight2, blockHeight)
 
 	alloraRewardsBalanceAfter, err := m.Client.QueryBank().Balance(
 		m.Ctx,
@@ -147,8 +154,10 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
 	require.True(
 		m.T,
 		arba.GT(arbb),
-		"Allora Rewards module account balance did not increase after a block %s %s",
+		"Allora Rewards module account balance did not increase after a block %d: %s | %d: %s",
+		blockHeight,
 		arba.String(),
+		blockHeight2,
 		arbb.String(),
 	)
 }

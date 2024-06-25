@@ -187,15 +187,15 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 	s.Require().True(ok)
 	stake4, ok := cosmosMath.NewIntFromString("206169717590569000000000")
 	s.Require().True(ok)
-	err = keeper.AddStake(s.ctx, topicId, reputer0, stake0)
+	err = keeper.AddReputerStake(s.ctx, topicId, reputer0, stake0)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer1, stake1)
+	err = keeper.AddReputerStake(s.ctx, topicId, reputer1, stake1)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer2, stake2)
+	err = keeper.AddReputerStake(s.ctx, topicId, reputer2, stake2)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer3, stake3)
+	err = keeper.AddReputerStake(s.ctx, topicId, reputer3, stake3)
 	require.NoError(err)
-	err = keeper.AddStake(s.ctx, topicId, reputer4, stake4)
+	err = keeper.AddReputerStake(s.ctx, topicId, reputer4, stake4)
 	require.NoError(err)
 
 	// Set Inferences
@@ -397,6 +397,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	}
 
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce, forecasts)
+	require.NoError(err)
 
 	// Update epoch topic epoch last ended
 	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, inferenceBlockHeight)
@@ -407,6 +408,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 		TopicId: topicId,
 	}
 	response, err := queryServer.GetLatestNetworkInference(s.ctx, req)
+	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 
 	require.Equal(len(response.InfererWeights), 5)

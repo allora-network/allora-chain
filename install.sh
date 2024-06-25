@@ -4,7 +4,7 @@
 APP_NAME="allorad"
 
 # Check for a version argument, otherwise set a default version
-VERSION=${1:-"v0.0.9"}
+VERSION=${1:-"v0.2.8"}
 
 # Define the base URL using the specified or default version
 BASE_URL="https://github.com/allora-network/allora-chain/releases/download/$VERSION"

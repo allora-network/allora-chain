@@ -138,7 +138,11 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
 // BeginBlock returns the begin blocker for the mint module.
 func (am AppModule) BeginBlock(ctx context.Context) error {
-	return BeginBlocker(ctx, am.keeper)
+	err := BeginBlocker(ctx, am.keeper)
+	if err != nil {
+		am.keeper.Logger(ctx).Error("BeginBlocker error! ", err)
+	}
+	return err
 }
 
 //

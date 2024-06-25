@@ -243,7 +243,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		s.Require().True(ok)
 
 		workerString := "worker" + strconv.Itoa(workerIndex)
-		err = k.AddStake(s.ctx, topicId, workerString, stakeInt)
+		err = k.AddReputerStake(s.ctx, topicId, workerString, stakeInt)
 		require.NoError(s.T(), err)
 	}
 

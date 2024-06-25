@@ -79,6 +79,12 @@ service Query {
     option (google.api.http).get = "/emissions/v1/reputers_stakes/{topic_id}";
   }
 
+  rpc GetStakeFromReputerInTopicInSelf(QueryStakeFromReputerInTopicInSelfRequest)
+      returns (QueryStakeFromReputerInTopicInSelfResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_stake_self/{reputer_address}/{topic_id}";
+  }
+
   rpc GetDelegateStakeInTopicInReputer(QueryDelegateStakeInTopicInReputerRequest)
       returns (QueryDelegateStakeInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
@@ -101,6 +107,28 @@ service Query {
   rpc GetTopicStake(QueryTopicStakeRequest) returns (QueryTopicStakeResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/stake/{topic_id}";
+  }
+
+  rpc GetStakeRemovalsForBlock(QueryStakeRemovalsForBlockRequest) returns (QueryStakeRemovalsForBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/stake_removals/{block_height}";
+  }
+
+  rpc GetDelegateStakeRemovalsForBlock(QueryDelegateStakeRemovalsForBlockRequest)
+      returns (QueryDelegateStakeRemovalsForBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake_removals/{block_height}";
+  }
+
+  rpc GetStakeRemovalInfo(QueryStakeRemovalInfoRequest) returns (QueryStakeRemovalInfoResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/stake_removal/{topic_id}/{reputer}";
+  }
+
+  rpc GetDelegateStakeRemovalInfo(QueryDelegateStakeRemovalInfoRequest)
+      returns (QueryDelegateStakeRemovalInfoResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake_removal/{topic_id}/{delegator}/{reputer}";
   }
 
   rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest) returns (QueryWorkerNodeInfoResponse) {
@@ -200,7 +228,22 @@ message QueryMultiReputerStakeInTopicRequest {
 }
 
 message QueryMultiReputerStakeInTopicResponse {
-  repeated StakePlacement amounts = 1;
+  repeated StakeInfo amounts = 1;
+}
+
+message QueryStakeFromReputerInTopicInSelfRequest {
+  string reputer_address = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryStakeFromReputerInTopicInSelfResponse {
+  option (gogoproto.equal) = true;
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message QueryDelegateStakeInTopicInReputerRequest {
@@ -411,4 +454,39 @@ message QueryIsWhitelistAdminRequest {
 
 message QueryIsWhitelistAdminResponse {
   bool is_admin = 1;
+}
+
+message QueryStakeRemovalsForBlockRequest {
+  int64 block_height = 1;
+}
+
+message QueryStakeRemovalsForBlockResponse {
+  repeated StakeRemovalInfo removals = 1;
+}
+
+message QueryDelegateStakeRemovalsForBlockRequest {
+  int64 block_height = 1;
+}
+
+message QueryDelegateStakeRemovalsForBlockResponse {
+  repeated DelegateStakeRemovalInfo removals = 1;
+}
+
+message QueryStakeRemovalInfoRequest {
+  uint64 topic_id = 1;
+  string reputer = 2;
+}
+
+message QueryStakeRemovalInfoResponse {
+  StakeRemovalInfo removal = 1;
+}
+
+message QueryDelegateStakeRemovalInfoRequest {
+  uint64 topic_id = 1;
+  string delegator = 2;
+  string reputer = 3;
+}
+
+message QueryDelegateStakeRemovalInfoResponse {
+  DelegateStakeRemovalInfo removal = 1;
 }
