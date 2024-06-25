@@ -228,7 +228,7 @@ func TestMedian(t *testing.T) {
 		{
 			name:     "empty slice",
 			data:     []alloraMath.Dec{},
-			expected: alloraMath.ZeroDec(), // Assuming ZeroDec() returns zero value for Dec
+			expected: alloraMath.ZeroDec(),
 		},
 	}
 
