@@ -995,7 +995,7 @@ func (k *Keeper) RemoveDelegateStake(
 			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
 		)
 		if err != nil {
-			return err
+			return errorsmod.Wrapf(err, "Sending pending reward to delegator failed")
 		}
 	}
 
