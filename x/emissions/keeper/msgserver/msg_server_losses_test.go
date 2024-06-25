@@ -364,32 +364,27 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithUnderstakeReputerIsI
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
-	reputerStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reputerAddr.String())
+	reputerStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr.String())
 	require.NoError(err)
 
 	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 	removalDelay := params.RemoveStakeDelayWindow
 
-	startRemoveStakeMsg := &types.MsgStartRemoveStake{
+	startRemoveStakeMsg := &types.MsgRemoveStake{
 		Sender:  reputerAddr.String(),
 		TopicId: topicId,
 		Amount:  reputerStake,
 	}
 
-	_, err = msgServer.StartRemoveStake(ctx, startRemoveStakeMsg)
+	_, err = msgServer.RemoveStake(ctx, startRemoveStakeMsg)
 	require.NoError(err)
 
-	block = block + removalDelay + 1
+	block = block + removalDelay
 	ctx = ctx.WithBlockHeight(block)
 
-	confirmRemoveStakeMsg := &types.MsgConfirmRemoveStake{
-		Sender:  reputerAddr.String(),
-		TopicId: topicId,
-	}
-
-	_, err = msgServer.ConfirmRemoveStake(ctx, confirmRemoveStakeMsg)
-	require.NoError(err)
+	// run the end block to force the removal of stake to go through
+	s.appModule.EndBlock(ctx)
 
 	// END MODIFICATION
 

@@ -37,7 +37,7 @@ func GenerateReputerScores(
 		reputers = append(reputers, reportedLoss.ValueBundle.Reputer)
 
 		// Get reputer topic stake
-		reputerStake, err := keeper.GetStakeOnReputerInTopic(ctx, topicId, reportedLoss.ValueBundle.Reputer)
+		reputerStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reportedLoss.ValueBundle.Reputer)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting GetStakeOnReputerInTopic")
 		}

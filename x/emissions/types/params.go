@@ -14,7 +14,7 @@ func DefaultParams() Params {
 		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),    // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:               uint64(128),                               // max number of topics to run cadence for per block
 		RequiredMinimumStake:            cosmosMath.NewInt(100),                    // minimum stake required to be a worker or reputer
-		RemoveStakeDelayWindow:          int64(60 * 60 * 24 * 7 * 3),               // number of seconds to wait before finalizing a stake withdrawal
+		RemoveStakeDelayWindow:          int64((60 * 60 * 24 * 7 * 3) / 5),         // ~approx 3 weeks assuming 5 second block time, number of blocks to wait before finalizing a stake withdrawal
 		MinEpochLength:                  12,                                        // shortest number of blocks per epoch topics are allowed to set as their cadence
 		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),   // controls resilience of reward payouts against copycat workers
 		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),   // speed of gradient descent
@@ -216,7 +216,7 @@ func validateRequiredMinimumStake(i cosmosMath.Int) error {
 	return nil
 }
 
-// Number of seconds to enforce stake withdrawal delay.
+// Number of blocks to enforce stake withdrawal delay.
 // Should be >= 0.
 func validateRemoveStakeDelayWindow(i int64) error {
 	if i < 0 {

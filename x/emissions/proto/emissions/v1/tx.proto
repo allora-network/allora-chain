@@ -30,17 +30,17 @@ service Msg {
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
-  rpc StartRemoveStake(MsgStartRemoveStake) returns (MsgStartRemoveStakeResponse);
+  rpc RemoveStake(MsgRemoveStake) returns (MsgRemoveStakeResponse);
 
-  rpc ConfirmRemoveStake(MsgConfirmRemoveStake) returns (MsgConfirmRemoveStakeResponse);
+  rpc CancelRemoveStake(MsgCancelRemoveStake) returns (MsgCancelRemoveStakeResponse);
 
   rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
 
   rpc RewardDelegateStake(MsgRewardDelegateStake) returns (MsgRewardDelegateStakeResponse);
 
-  rpc StartRemoveDelegateStake(MsgStartRemoveDelegateStake) returns (MsgStartRemoveDelegateStakeResponse);
+  rpc RemoveDelegateStake(MsgRemoveDelegateStake) returns (MsgRemoveDelegateStakeResponse);
 
-  rpc ConfirmRemoveDelegateStake(MsgConfirmDelegateRemoveStake) returns (MsgConfirmRemoveDelegateStakeResponse);
+  rpc CancelRemoveDelegateStake(MsgCancelRemoveDelegateStake) returns (MsgCancelRemoveDelegateStakeResponse);
 
   rpc FundTopic(MsgFundTopic) returns (MsgFundTopicResponse);
 
@@ -241,7 +241,7 @@ message MsgAddStake {
 
 message MsgAddStakeResponse {}
 
-message MsgStartRemoveStake {
+message MsgRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
@@ -254,15 +254,15 @@ message MsgStartRemoveStake {
   ];
 }
 
-message MsgStartRemoveStakeResponse {}
+message MsgRemoveStakeResponse {}
 
-message MsgConfirmRemoveStake {
+message MsgCancelRemoveStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   uint64 topic_id = 2;
 }
 
-message MsgConfirmRemoveStakeResponse {}
+message MsgCancelRemoveStakeResponse {}
 
 message MsgDelegateStake {
   option (cosmos.msg.v1.signer) = "sender";
@@ -279,7 +279,7 @@ message MsgDelegateStake {
 
 message MsgDelegateStakeResponse {}
 
-message MsgStartRemoveDelegateStake {
+message MsgRemoveDelegateStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   string reputer = 2;
@@ -292,16 +292,17 @@ message MsgStartRemoveDelegateStake {
   ];
 }
 
-message MsgStartRemoveDelegateStakeResponse {}
+message MsgRemoveDelegateStakeResponse {}
 
-message MsgConfirmDelegateRemoveStake {
+message MsgCancelRemoveDelegateStake {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   uint64 topic_id = 2;
-  string reputer = 3;
+  string delegator = 3;
+  string reputer = 4;
 }
 
-message MsgConfirmRemoveDelegateStakeResponse {}
+message MsgCancelRemoveDelegateStakeResponse {}
 
 // Inferences are requested by consumers who fund topics by sending ALLO to
 // ecosystem account via TopicFund messages

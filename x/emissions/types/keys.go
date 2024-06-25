@@ -64,4 +64,8 @@ var (
 	TopicRewardNonceKey                         = collections.NewPrefix(49)
 	DelegateRewardPerShare                      = collections.NewPrefix(50)
 	PreviousPercentageRewardToStakedReputersKey = collections.NewPrefix(51)
+	StakeRemovalsByBlockKey                     = collections.NewPrefix(52)
+	DelegateStakeRemovalsByBlockKey             = collections.NewPrefix(53)
+	StakeRemovalsByActorKey                     = collections.NewPrefix(54)
+	DelegateStakeRemovalsByActorKey             = collections.NewPrefix(55)
 )
