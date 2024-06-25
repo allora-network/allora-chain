@@ -240,8 +240,6 @@ func ForecastingUtility(
 	forecastingTaskUtilityScore alloraMath.Dec,
 	infererScores []types.Score,
 ) (alloraMath.Dec, error) {
-	zero := alloraMath.ZeroDec()
-	one := alloraMath.OneDec()
 	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
 	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
 	zeroPointFive := alloraMath.MustNewDecFromString("0.5")
@@ -259,37 +257,37 @@ func ForecastingUtility(
 		return zeroPointFive, nil
 	}
 
-	scoreRatio, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(zero, sumInfererScores))
+	scoreNumerator, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(zero, sumInfererScores))
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	sumInfererScoresAbs := sumInfererScores.Abs()
-	scoreRatio, err = scoreRatio.Quo(sumInfererScoresAbs)
+	scoreRatio, err := scoreNumerator.Quo(sumInfererScores.Abs())
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
 
 	// If score < 0, return 0.1
-	if scoreRatio.Lt(zero) {
+	if scoreRatio.Lt(alloraMath.ZeroDec()) {
 		return zeroPointOne, nil
 	}
 
-	// If score > 1, return 0.5
-	if scoreRatio.Gt(one) {
+	// If 1 <= score, return 0.5
+	if scoreRatio.Gte(alloraMath.OneDec()) {
 		return zeroPointFive, nil
 	}
 
-	// For 0 <= score <= 1, return 0.4 * score + 0.1
-	scoreTimesZeroPointFour, err := zeroPointFour.Mul(scoreRatio)
-	if err != nil {
-		return alloraMath.Dec{}, err
-	}
-	ret, err := scoreTimesZeroPointFour.Add(zeroPointOne)
+	// For 0 <= score < 1, return 0.4 * score + 0.1
+	scoreRatioTimesZeroPointFour, err := scoreRatio.Mul(zeroPointFour)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
 
-	return ret, nil
+	chiReturnValue, err := scoreRatioTimesZeroPointFour.Add(zeroPointOne)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+
+	return chiReturnValue, nil
 }
 
 // renormalize with a factor γ to ensure that the
