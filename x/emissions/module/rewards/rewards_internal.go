@@ -58,25 +58,21 @@ func GetMappingFunctionValues(
 	cReward alloraMath.Dec, // c
 	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
-	stdDevPlusMedianTimesEpsilon := alloraMath.OneDec()
-	if len(latestTimeStepsScores) > 1 {
-		var err error
-		stdDev, err := alloraMath.StdDev(latestTimeStepsScores)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting stdDev")
-		}
-		median, err := alloraMath.Median(latestTimeStepsScores)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting median")
-		}
-		medianTimesEpsilon, err := median.Mul(epsilon)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting medianTimesEpsilon")
-		}
-		stdDevPlusMedianTimesEpsilon, err = stdDev.Add(medianTimesEpsilon)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting stdDevPlusMedianTimesEpsilon")
-		}
+	stdDev, err := alloraMath.StdDev(latestTimeStepsScores)
+	if err != nil {
+		return nil, errors.Wrapf(err, "err getting stdDev")
+	}
+	median, err := alloraMath.Median(latestTimeStepsScores)
+	if err != nil {
+		return nil, errors.Wrapf(err, "err getting median")
+	}
+	medianTimesEpsilon, err := median.Mul(epsilon)
+	if err != nil {
+		return nil, errors.Wrapf(err, "err getting medianTimesEpsilon")
+	}
+	stdDevPlusMedianTimesEpsilon, err := stdDev.Add(medianTimesEpsilon)
+	if err != nil {
+		return nil, errors.Wrapf(err, "err getting stdDevPlusMedianTimesEpsilon")
 	}
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
 	for i, score := range latestWorkerScores {
