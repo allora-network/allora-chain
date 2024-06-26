@@ -141,10 +141,6 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     delim=$([ $i -lt $(($VALIDATOR_NUMBER - 1)) ] && printf "," || printf "")
     PEERS="${PEERS}${addr}@${ipAddress}:26656${delim}"
 done
-# for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
-#     sed -i "s/addr_book_strict = true/addr_book_strict = false/" ${LOCALNET_DATADIR}/${VALIDATOR_PREFIX}${i}/config/config.toml
-#     sed -i "s/persistent_peers = \"\"/persistent_peers = \"${PEERS}\"/" ${LOCALNET_DATADIR}/${VALIDATOR_PREFIX}${i}/config/config.toml
-# done
 
 echo "PEERS=$PEERS" >> ${ENV_L1}
 echo "Generate docker compose file"
