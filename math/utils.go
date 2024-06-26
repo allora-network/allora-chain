@@ -137,6 +137,33 @@ func StdDev(data []Dec) (Dec, error) {
 	return sqrtSdOverLen, nil
 }
 
+// Median calculates the median of a slice of `Dec`
+func Median(data []Dec) (Dec, error) {
+	n := len(data)
+	if n == 0 {
+		return ZeroDec(), nil
+	}
+
+	// Sort the data
+	sort.Slice(data, func(i, j int) bool {
+		return data[i].Lt(data[j])
+	})
+
+	if n%2 == 1 {
+		// Odd number of elements, return the middle one
+		return data[n/2], nil
+	}
+
+	// Even number of elements, return the average of the two middle ones
+	mid1 := data[n/2-1]
+	mid2 := data[n/2]
+	sum, err := mid1.Add(mid2)
+	if err != nil {
+		return ZeroDec(), err
+	}
+	return sum.Quo(NewDecFromInt64(2))
+}
+
 // Implements the new gradient function phi prime
 // φ'_p(x) = p / (exp(p * (c - x)) + 1)
 func Gradient(p, c, x Dec) (Dec, error) {

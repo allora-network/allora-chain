@@ -7,7 +7,7 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -116,14 +116,14 @@ func (s *MathTestSuite) TestNumberRatioZeroFractions() {
 	zeroFractions := []alloraMath.Dec{alloraMath.ZeroDec()}
 
 	_, err := rewards.NumberRatio(zeroFractions)
-	s.Require().ErrorIs(err, emissions.ErrNumberRatioDivideByZero)
+	s.Require().ErrorIs(err, emissionstypes.ErrNumberRatioDivideByZero)
 }
 
 func (s *MathTestSuite) TestNumberRatioEmptyList() {
 	emptyFractions := []alloraMath.Dec{}
 
 	_, err := rewards.NumberRatio(emptyFractions)
-	s.Require().ErrorIs(err, emissions.ErrNumberRatioInvalidSliceLength)
+	s.Require().ErrorIs(err, emissionstypes.ErrNumberRatioInvalidSliceLength)
 }
 
 func (s *MathTestSuite) TestInferenceRewardsSimple() {
@@ -132,6 +132,10 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 	// U_i = ((1 - 0.5) * 2 * 2 * 2 ) / (2 + 2 + 4)
 	// U_i = 0.5 * 8 / 8
 	// U_i = 0.5
+	infererScores := []emissionstypes.Score{
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+	}
 	totalReward := alloraMath.MustNewDecFromString("2.0")
 	infRewards, err := rewards.GetRewardForInferenceTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
@@ -140,6 +144,7 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
+		infererScores,
 	)
 	s.Require().NoError(err)
 	expected := alloraMath.MustNewDecFromString("0.5")
@@ -158,6 +163,10 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 
 func (s *MathTestSuite) TestInferenceRewardsZero() {
 	totalReward := alloraMath.ZeroDec()
+	infererScores := []emissionstypes.Score{
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+	}
 	result, err := rewards.GetRewardForInferenceTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
@@ -165,6 +174,7 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
+		infererScores,
 	)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.ZeroDec(), result, alloraMath.MustNewDecFromString("0.0001")))
@@ -177,6 +187,10 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 	// V_i = (0.5 * 2 * 2 * 2 ) / (2 + 2 + 4)
 	// V_i = 0.5 * 8 / 8
 	// V_i = 0.5
+	infererScores := []emissionstypes.Score{
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+	}
 	totalReward := alloraMath.MustNewDecFromString("2.0")
 	result, err := rewards.GetRewardForForecastingTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
@@ -185,6 +199,7 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
+		infererScores,
 	)
 	expected := alloraMath.MustNewDecFromString("0.5")
 	s.Require().NoError(err)
@@ -207,6 +222,10 @@ func (s *MathTestSuite) TestU_iOverV_i() {
 	// χ = 0.5 for values of T_i >= 1
 	// U_i / V_i = ((1 - 0.5) * 2 ) / (0.5  * 2)
 	// U_i / V_i = 1
+	infererScores := []emissionstypes.Score{
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+	}
 	totalReward := alloraMath.MustNewDecFromString("2.0")
 	U_i, err := rewards.GetRewardForInferenceTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
@@ -215,6 +234,7 @@ func (s *MathTestSuite) TestU_iOverV_i() {
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
+		infererScores,
 	)
 	s.Require().NoError(err)
 
@@ -225,6 +245,7 @@ func (s *MathTestSuite) TestU_iOverV_i() {
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
+		infererScores,
 	)
 	s.Require().NoError(err)
 
@@ -245,6 +266,10 @@ func (s *MathTestSuite) TestU_iOverV_i() {
 
 func (s *MathTestSuite) TestForecastRewardsZero() {
 	totalReward := alloraMath.ZeroDec()
+	infererScores := []emissionstypes.Score{
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+	}
 	result, err := rewards.GetRewardForForecastingTaskInTopic(
 		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
@@ -252,6 +277,7 @@ func (s *MathTestSuite) TestForecastRewardsZero() {
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
+		infererScores,
 	)
 
 	s.Require().NoError(err)
@@ -303,13 +329,17 @@ func (s *MathTestSuite) TestSigmoidSimple() {
 func (s *MathTestSuite) TestForecastingUtilitySimple() {
 	// Test case where score < 0
 	negativeScore := alloraMath.MustNewDecFromString("-0.1")
-	ret, err := rewards.ForecastingUtility(negativeScore)
+	infererScores := []emissionstypes.Score{
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{Score: alloraMath.MustNewDecFromString("0.5")},
+	}
+	ret, err := rewards.ForecastingUtility(negativeScore, infererScores)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.1"), ret, alloraMath.MustNewDecFromString("0.0001")))
 
 	// Test case where score > 1
 	highScore := alloraMath.MustNewDecFromString("1.1")
-	ret, err = rewards.ForecastingUtility(highScore)
+	ret, err = rewards.ForecastingUtility(highScore, infererScores)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.5"), ret, alloraMath.MustNewDecFromString("0.0001")))
 
@@ -318,7 +348,7 @@ func (s *MathTestSuite) TestForecastingUtilitySimple() {
 	// 0.4 * 0.125 + 0.1 = 0.15
 	expectedResult := alloraMath.MustNewDecFromString("0.15")
 
-	ret, err = rewards.ForecastingUtility(forecastingPerformanceScore)
+	ret, err = rewards.ForecastingUtility(forecastingPerformanceScore, infererScores)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(expectedResult, ret, alloraMath.MustNewDecFromString("0.0001")))
 }
@@ -756,7 +786,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require.True(len(gotScores3) == len(wantScores))
 
 	// Verify score output matches that of GetAllConsensusScores()
-	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, params.FTolerance, params.Epsilon)
+	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, fTolerance, params.Epsilon)
 	require.NoError(err)
 	if !alloraMath.SlicesInDelta(gotScores3, wantScores3, alloraMath.MustNewDecFromString("0.01")) {
 		log.Println("GetAllConsensusScores() got", gotScores3, "want", wantScores3)

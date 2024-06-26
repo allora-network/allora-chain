@@ -134,9 +134,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.CRewardForecast) == 1 {
 		existingParams.CRewardForecast = newParams.CRewardForecast[0]
 	}
-	if len(newParams.FTolerance) == 1 {
-		existingParams.FTolerance = newParams.FTolerance[0]
-	}
 	if len(newParams.CNorm) == 1 {
 		existingParams.CNorm = newParams.CNorm[0]
 	}

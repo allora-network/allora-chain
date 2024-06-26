@@ -340,6 +340,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
+		infererScores,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
@@ -353,6 +354,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
+		infererScores,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")
