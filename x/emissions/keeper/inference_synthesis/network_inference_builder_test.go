@@ -286,7 +286,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			Forecasts:           forecasts,
 			NetworkCombinedLoss: networkLossPrevious,
 			Epsilon:             alloraMath.MustNewDecFromString("0.0001"),
-			FTolerance:          alloraMath.MustNewDecFromString("0.01"),
+			Tolerance:           alloraMath.MustNewDecFromString("0.01"),
 			PNorm:               alloraMath.MustNewDecFromString("3.0"),
 			CNorm:               alloraMath.MustNewDecFromString("0.75"),
 		},
@@ -494,7 +494,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("1")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
-	fTolerance := alloraMath.MustNewDecFromString("0.01")
+	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -508,7 +508,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 			Forecasts:           forecasts,
 			NetworkCombinedLoss: networkCombinedLoss,
 			Epsilon:             epsilon,
-			FTolerance:          fTolerance,
+			Tolerance:           tolerance,
 			PNorm:               pNorm,
 			CNorm:               cNorm,
 		},
@@ -565,7 +565,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.2")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
-	// fTolerance := alloraMath.MustNewDecFromString("0.01")
+	// tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -670,7 +670,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 
 	networkCombinedLoss := alloraMath.MustNewDecFromString("10000")
 	epsilon := alloraMath.MustNewDecFromString("0.001")
-	fTolerance := alloraMath.MustNewDecFromString("0.01")
+	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -721,7 +721,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 			Forecasts:           forecasts,
 			NetworkCombinedLoss: networkCombinedLoss,
 			Epsilon:             epsilon,
-			FTolerance:          fTolerance,
+			Tolerance:           tolerance,
 			PNorm:               pNorm,
 			CNorm:               cNorm,
 		},
