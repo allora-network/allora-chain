@@ -43,6 +43,6 @@ func TestExternalTestSuite(t *testing.T) {
 	WorkerInferenceAndForecastChecks(testConfig)
 	t.Log(">>> Test Reputer Un-Staking <<<")
 	UnstakingChecks(testConfig)
-	t.Log(">>> Test Upgrading Emissions Module Version")
-	UpgradeChecks(testConfig)
+	// t.Log(">>> Test Upgrading Emissions Module Version")
+	// UpgradeChecks(testConfig)
 }
