@@ -16,7 +16,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 
-	hasEnoughBal, fee, err := ms.CheckAddressHasBalanceForTopicCreationFee(ctx, msg.Creator)
+	hasEnoughBal, fee, err := checkAddressHasBalanceForTopicCreationFee(ctx, ms, msg.Creator)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
 }
 
-func (ms msgServer) CheckAddressHasBalanceForTopicCreationFee(ctx context.Context, address string) (bool, sdk.Coin, error) {
+func checkAddressHasBalanceForTopicCreationFee(ctx context.Context, ms msgServer, address string) (bool, sdk.Coin, error) {
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err

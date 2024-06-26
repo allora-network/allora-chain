@@ -19,7 +19,7 @@ func NewMsgServerImpl(keeper keeper.Keeper) types.MsgServer {
 	return &msgServer{k: keeper}
 }
 
-func (ms msgServer) CheckInputLength(ctx context.Context, msg proto.Message) error {
+func checkInputLength(ctx context.Context, ms msgServer, msg proto.Message) error {
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return err
