@@ -83,6 +83,6 @@ func checkAddressHasBalanceForTopicCreationFee(ctx context.Context, ms msgServer
 	if err != nil {
 		return false, sdk.Coin{}, err
 	}
-	balance := ms.k.BankKeeper().GetBalance(ctx, accAddress, fee.Denom)
+	balance := ms.k.GetBankBalance(ctx, accAddress, fee.Denom)
 	return balance.IsGTE(fee), fee, nil
 }
