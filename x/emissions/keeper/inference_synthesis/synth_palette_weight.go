@@ -30,7 +30,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		return RegretInformedWeights{}, errorsmod.Wrapf(emissions.ErrEmptyArray, "No regrets to calculate weights")
 	}
 
-	// Calc std dev of regrets + f_tolerance
+	// Calc std dev of regrets + tolerance
 	// σ(R_ijk) + ε
 	stdDevRegrets, err := alloraMath.StdDev(regrets)
 	if err != nil {
@@ -40,14 +40,14 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating median of regrets")
 	}
-	medianTimesFTolerance, err := medianRegrets.Mul(p.FTolerance)
+	medianTimesFTolerance, err := medianRegrets.Mul(p.Tolerance)
 	if err != nil {
-		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating median times f_tolerance")
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating median times tolerance")
 	}
-	// Add f_tolerance to standard deviation
+	// Add tolerance to standard deviation
 	stdDevRegretsPlusMedianTimesFTolerance, err := stdDevRegrets.Abs().Add(medianTimesFTolerance)
 	if err != nil {
-		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding f_tolerance to standard deviation of regrets")
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding tolerance to standard deviation of regrets")
 	}
 	stdDevRegretsPlusMedianTimesFTolerancePlusEpsilon, err := stdDevRegretsPlusMedianTimesFTolerance.Add(p.Epsilon)
 	if err != nil {
