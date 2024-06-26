@@ -797,15 +797,11 @@ func (k *Keeper) AddDelegateStake(
 		if err != nil {
 			return err
 		}
-		delegatorAccAddr, err := sdk.AccAddressFromBech32(delegator)
-		if err != nil {
-			return err
-		}
 		if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
-			err = k.BankKeeper().SendCoinsFromModuleToAccount(
+			err = k.SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraPendingRewardForDelegatorAccountName,
-				delegatorAccAddr,
+				delegator,
 				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
 			)
 			if err != nil {
@@ -984,14 +980,10 @@ func (k *Keeper) RemoveDelegateStake(
 		return err
 	}
 	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
-		delegatorAccAddr, err := sdk.AccAddressFromBech32(delegator)
-		if err != nil {
-			return err
-		}
-		err = k.BankKeeper().SendCoinsFromModuleToAccount(
+		err = k.SendCoinsFromModuleToAccount(
 			ctx,
 			types.AlloraPendingRewardForDelegatorAccountName,
-			delegatorAccAddr,
+			delegator,
 			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
 		)
 		if err != nil {
@@ -2144,15 +2136,6 @@ func (k *Keeper) RemoveWhitelistAdmin(ctx context.Context, admin ActorId) error 
 
 /// BANK KEEPER WRAPPERS
 
-// SendCoinsFromModuleToModule
-func (k *Keeper) AccountKeeper() AccountKeeper {
-	return k.authKeeper
-}
-
-func (k *Keeper) BankKeeper() BankKeeper {
-	return k.bankKeeper
-}
-
 // wrapper around bank keeper SendCoinsFromModuleToAccount
 func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipient ActorId, amt sdk.Coins) error {
 	recipientAddr, err := sdk.AccAddressFromBech32(recipient)
@@ -2176,12 +2159,17 @@ func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, 
 	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, senderModule, recipientModule, amt)
 }
 
+// wrapper around bank keeper GetBalance
+func (k *Keeper) GetBankBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
+	return k.bankKeeper.GetBalance(ctx, addr, denom)
+}
+
 // GetTotalRewardToDistribute
 func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec, error) {
 	// Get Allora Rewards Account
-	alloraRewardsAccountAddr := k.AccountKeeper().GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
+	alloraRewardsAccountAddr := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
 	// Get Total Allocation
-	totalReward := k.BankKeeper().GetBalance(
+	totalReward := k.GetBankBalance(
 		ctx,
 		alloraRewardsAccountAddr,
 		params.DefaultBondDenom).Amount

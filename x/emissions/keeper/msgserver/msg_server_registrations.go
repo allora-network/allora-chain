@@ -126,6 +126,6 @@ func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address str
 	if err != nil {
 		return false, fee, err
 	}
-	balance := ms.k.BankKeeper().GetBalance(ctx, accAddress, fee.Denom)
+	balance := ms.k.GetBankBalance(ctx, accAddress, fee.Denom)
 	return balance.IsGTE(fee), fee, nil
 }
