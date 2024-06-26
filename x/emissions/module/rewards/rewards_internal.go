@@ -58,24 +58,35 @@ func GetMappingFunctionValues(
 	cReward alloraMath.Dec, // c
 	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
-	stdDev := alloraMath.OneDec()
-	if len(latestTimeStepsScores) > 1 {
-		var err error
-		stdDev, err = alloraMath.StdDev(latestTimeStepsScores)
+	stdDevPlusMedianTimesEpsilon := alloraMath.OneDec()
+	if len(latestTimeStepsScores) > 0 {
+		stdDev, err := alloraMath.StdDev(latestTimeStepsScores)
 		if err != nil {
 			return nil, errors.Wrapf(err, "err getting stdDev")
+		}
+		median, err := alloraMath.Median(latestTimeStepsScores)
+		if err != nil {
+			return nil, errors.Wrapf(err, "err getting median")
+		}
+		medianTimesEpsilon, err := median.Mul(epsilon)
+		if err != nil {
+			return nil, errors.Wrapf(err, "err getting medianTimesEpsilon")
+		}
+		stdDevPlusMedianTimesEpsilon, err = stdDev.Add(medianTimesEpsilon)
+		if err != nil {
+			return nil, errors.Wrapf(err, "err getting stdDevPlusMedianTimesEpsilon")
 		}
 	}
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
 	for i, score := range latestWorkerScores {
-		if stdDev.IsZero() || stdDev.Lt(epsilon) {
+		if stdDevPlusMedianTimesEpsilon.IsZero() || stdDevPlusMedianTimesEpsilon.Lt(epsilon) {
 			// if standard deviation is zero
 			// then all scores are the same and losses are the same
 			// therefore everyone should be paid the same, so we
 			// return the plain value 1 for everybody
 			ret[i] = alloraMath.OneDec()
 		} else {
-			frac, err := score.Quo(stdDev)
+			frac, err := score.Quo(stdDevPlusMedianTimesEpsilon)
 			if err != nil {
 				return nil, err
 			}
@@ -546,17 +557,21 @@ func GetAllReputersOutput(
 				if err != nil {
 					return nil, nil, err
 				}
-				coeffDiffTimesListenedDiff, err := coeffDiff.Mul(listenedDiff)
-				if err != nil {
-					return nil, nil, err
-				}
-				coefDiffTimesListenedDiffOverStakedFracDiff, err := coeffDiffTimesListenedDiff.Quo(stakedFracDiff)
-				if err != nil {
-					return nil, nil, err
-				}
-				coefficients[l], err = oldCoefficients[l].Add(coefDiffTimesListenedDiffOverStakedFracDiff)
-				if err != nil {
-					return nil, nil, err
+				if stakedFracDiff.IsZero() {
+					i = gradientDescentMaxIters
+				} else {
+					coeffDiffTimesListenedDiff, err := coeffDiff.Mul(listenedDiff)
+					if err != nil {
+						return nil, nil, err
+					}
+					coefDiffTimesListenedDiffOverStakedFracDiff, err := coeffDiffTimesListenedDiff.Quo(stakedFracDiff)
+					if err != nil {
+						return nil, nil, err
+					}
+					coefficients[l], err = oldCoefficients[l].Add(coefDiffTimesListenedDiffOverStakedFracDiff)
+					if err != nil {
+						return nil, nil, err
+					}
 				}
 			}
 		} else {
@@ -571,7 +586,6 @@ func GetAllReputersOutput(
 			return nil, nil, err
 		}
 
-		// copy(finalScores, newScores)
 		i++
 	}
 

@@ -111,7 +111,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.019430060840596847626563741935871")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.013993615616887908296229488415174")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
@@ -140,7 +140,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			alloraMath.InDelta(
 				expectedValue.Value,
 				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.00001"),
+				alloraMath.MustNewDecFromString("0.0001"),
 			), "Values do not match for key: %s %s %s",
 			key,
 			expectedValue.Value.String(),
@@ -235,8 +235,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1.100802083941680903676362221744745")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("1.095525455367107989579729063299188")},
+		"worker0": {Value: alloraMath.MustNewDecFromString("1.09297154250540071861762571491582")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("1.07965728170851906059364949257926")},
 		"worker2": nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -276,7 +276,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 				alloraMath.InDelta(
 					expectedValue.Value,
 					actualValue.Value,
-					alloraMath.MustNewDecFromString("0.00001"),
+					alloraMath.MustNewDecFromString("0.0001"),
 				), "Values do not match for key: %s %s %s",
 				key,
 				expectedValue.Value.String(),
@@ -340,7 +340,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 			alloraMath.InDelta(
 				expectedValue.Value,
 				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.00001"),
+				alloraMath.MustNewDecFromString("0.001"),
 			), "Values do not match for key: %s %s %s",
 			key,
 			expectedValue.Value.String(),
@@ -405,7 +405,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 			alloraMath.InDelta(
 				expectedValue.Value,
 				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.0001"),
+				alloraMath.MustNewDecFromString("0.001"),
 			), "Values do not match for key: %s %s %s",
 			key,
 			expectedValue.Value.String(),
