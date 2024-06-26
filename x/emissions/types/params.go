@@ -47,7 +47,6 @@ func DefaultParams() Params {
 		PRewardReputer:                  alloraMath.NewDecFromInt64(3),             // fiducial value for rewards calculation
 		CRewardInference:                alloraMath.MustNewDecFromString("0.75"),   // fiducial value for rewards calculation
 		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),   // fiducial value for rewards calculation
-		FTolerance:                      alloraMath.MustNewDecFromString("0.01"),   // fiducial value for rewards calculation
 		CNorm:                           alloraMath.MustNewDecFromString("0.75"),   // fiducial value for inference synthesis
 		TopicFeeRevenueDecayRate:        alloraMath.MustNewDecFromString("0.025"),  // rate at which topic fee revenue decays over time
 	}
@@ -164,9 +163,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateCRewardForecast(p.CRewardForecast); err != nil {
-		return err
-	}
-	if err := validateFTolerance(p.FTolerance); err != nil {
 		return err
 	}
 	if err := validateCNorm(p.CNorm); err != nil {
@@ -327,15 +323,6 @@ func validateCRewardInference(i alloraMath.Dec) error {
 // fiducial value for rewards calculation
 // should be x > 0
 func validateCRewardForecast(i alloraMath.Dec) error {
-	if i.Lte(alloraMath.ZeroDec()) {
-		return ErrValidationMustBeGreaterthanZero
-	}
-	return nil
-}
-
-// fiducial value for rewards calculation
-// should be x > 0
-func validateFTolerance(i alloraMath.Dec) error {
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}

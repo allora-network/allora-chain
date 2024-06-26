@@ -179,3 +179,64 @@ func TestGradient(t *testing.T) {
 		})
 	}
 }
+
+func TestMedian(t *testing.T) {
+	tests := []struct {
+		name     string
+		data     []alloraMath.Dec
+		expected alloraMath.Dec
+	}{
+		{
+			name: "odd number of elements",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1"),
+				alloraMath.MustNewDecFromString("3"),
+				alloraMath.MustNewDecFromString("5"),
+				alloraMath.MustNewDecFromString("7"),
+				alloraMath.MustNewDecFromString("9"),
+			},
+			expected: alloraMath.MustNewDecFromString("5"),
+		},
+		{
+			name: "even number of elements",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("1"),
+				alloraMath.MustNewDecFromString("3"),
+				alloraMath.MustNewDecFromString("5"),
+				alloraMath.MustNewDecFromString("7"),
+			},
+			expected: alloraMath.MustNewDecFromString("4"),
+		},
+		{
+			name: "complex large values",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("123456789.123456789"),
+				alloraMath.MustNewDecFromString("987654321.987654321"),
+				alloraMath.MustNewDecFromString("555555555.555555555"),
+				alloraMath.MustNewDecFromString("333333333.333333333"),
+				alloraMath.MustNewDecFromString("111111111.111111111"),
+			},
+			expected: alloraMath.MustNewDecFromString("333333333.333333333"),
+		},
+		{
+			name: "single element",
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("7"),
+			},
+			expected: alloraMath.MustNewDecFromString("7"),
+		},
+		{
+			name:     "empty slice",
+			data:     []alloraMath.Dec{},
+			expected: alloraMath.ZeroDec(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := alloraMath.Median(tt.data)
+			require.NoError(t, err)
+			require.True(t, tt.expected.Equal(result))
+		})
+	}
+}

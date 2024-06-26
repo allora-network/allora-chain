@@ -1614,7 +1614,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		PRewardReputer:                  alloraMath.NewDecFromInt64(0),
 		CRewardInference:                alloraMath.NewDecFromInt64(0),
 		CRewardForecast:                 alloraMath.NewDecFromInt64(0),
-		FTolerance:                      alloraMath.NewDecFromInt64(0),
 		CNorm:                           alloraMath.NewDecFromInt64(0),
 	}
 
