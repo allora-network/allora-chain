@@ -56,6 +56,4 @@ allorad \
     --minimum-gas-prices=0${DENOM} \
     --rpc.laddr=tcp://0.0.0.0:26657 \
     --p2p.seeds=$SEEDS \
-    --log_level "*:error,state:info,server:info,rewards:debug,inference_synthesis:debug,topic_handler:debug" 
-
-
+    --log_level "*:error,state:info,server:info,rewards:debug,inference_synthesis:debug,topic_handler:debug"
