@@ -10,6 +10,7 @@ VALIDATOR_PREFIX=validator
 NETWORK_PREFIX="192.168.250"
 VALIDATORS_IP_START=10
 VALIDATORS_RPC_PORT_START=26657
+VALIDATORS_API_PORT_START=1317
 HEADS_IP_START=20
 CHAIN_ID="${CHAIN_ID:-devnet}"
 LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
@@ -140,10 +141,10 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     delim=$([ $i -lt $(($VALIDATOR_NUMBER - 1)) ] && printf "," || printf "")
     PEERS="${PEERS}${addr}@${ipAddress}:26656${delim}"
 done
-for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
-    sed -i "s/addr_book_strict = true/addr_book_strict = false/" ${LOCALNET_DATADIR}/${VALIDATOR_PREFIX}${i}/config/config.toml
-    sed -i "s/persistent_peers = \"\"/persistent_peers = \"${PEERS}\"/" ${LOCALNET_DATADIR}/${VALIDATOR_PREFIX}${i}/config/config.toml
-done
+# for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
+#     sed -i "s/addr_book_strict = true/addr_book_strict = false/" ${LOCALNET_DATADIR}/${VALIDATOR_PREFIX}${i}/config/config.toml
+#     sed -i "s/persistent_peers = \"\"/persistent_peers = \"${PEERS}\"/" ${LOCALNET_DATADIR}/${VALIDATOR_PREFIX}${i}/config/config.toml
+# done
 
 echo "PEERS=$PEERS" >> ${ENV_L1}
 echo "Generate docker compose file"
@@ -152,6 +153,7 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     ipAddress="${NETWORK_PREFIX}.$((VALIDATORS_IP_START+i))" \
     moniker="${VALIDATOR_PREFIX}${i}" \
     validatorPort=$((VALIDATORS_RPC_PORT_START+i)) \
+    validatorApiPort=$((VALIDATORS_API_PORT_START+i)) \
     PEERS=$PEERS \
     NETWORK_PREFIX=$NETWORK_PREFIX \
     LOCALNET_DATADIR=$LOCALNET_DATADIR \

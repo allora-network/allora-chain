@@ -40,7 +40,7 @@ COPY --from=builder /go/bin/* /usr/local/bin/
 RUN groupadd -g 1001 ${USERNAME} \
     && useradd -m -d ${APP_PATH} -u 1001 -g 1001 ${USERNAME}
 
-EXPOSE 26656 26657
+EXPOSE 1317 26656 26657
 VOLUME ${APP_PATH}
 WORKDIR ${APP_PATH}
 
