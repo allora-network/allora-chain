@@ -107,9 +107,9 @@ message Params {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   string c_reward_forecast = 37
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string c_norm = 39
+  string c_norm = 38
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string topic_fee_revenue_decay_rate = 40 [
+  string topic_fee_revenue_decay_rate = 39 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // decay rate for topic fee revenue
