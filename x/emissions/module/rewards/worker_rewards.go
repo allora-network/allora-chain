@@ -257,7 +257,7 @@ func ForecastingUtility(
 		return zeroPointFive, nil
 	}
 
-	scoreNumerator, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(zero, sumInfererScores))
+	scoreNumerator, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(alloraMath.ZeroDec(), sumInfererScores))
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
