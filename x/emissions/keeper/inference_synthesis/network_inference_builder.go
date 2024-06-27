@@ -295,7 +295,6 @@ func (b *NetworkInferenceBuilder) SetOneInValues() *NetworkInferenceBuilder {
 		oneInValue, err := b.calcOneInValue(oneInForecaster)
 		if err != nil {
 			b.logger.Warn(fmt.Sprintf("Error calculating one-in inferences: %s", err.Error()))
-			oneInInferences = make([]*emissions.WorkerAttributedValue, 0)
 			return b
 		}
 		oneInInferences = append(oneInInferences, &emissions.WorkerAttributedValue{
