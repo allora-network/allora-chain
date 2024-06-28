@@ -249,13 +249,26 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	forecastImpliedInferencesWithForecaster[oneInForecaster] = palette.ForecastImpliedInferenceByWorker[oneInForecaster]
 	palette.ForecastImpliedInferenceByWorker = forecastImpliedInferencesWithForecaster
 	palette.Forecasters = []Worker{oneInForecaster}
-
+	
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
+	palette.InferersNewStatus = InferersAllNew
 	for _, inferer := range palette.Inferers {
 		regret, noPriorRegret, err := palette.K.GetOneInForecasterNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 		}
+
+		if !noPriorRegret {
+			if palette.InferersNewStatus == InferersAllNew {
+				palette.InferersNewStatus = InferersAllNewExceptOne
+				// TODO: Check if it's the case
+				palette.SingleNotNewInferer = inferer
+			} else {
+				palette.InferersNewStatus = InferersNotNew
+				palette.SingleNotNewInferer = ""
+			}
+		}
+
 		palette.InfererRegrets[inferer] = &StatefulRegret{
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
@@ -265,6 +278,18 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 	}
+
+	if !noPriorRegret {
+		if palette.InferersNewStatus == InferersAllNew {
+			palette.InferersNewStatus = InferersAllNewExceptOne
+			// TODO: Check if it's the case
+			palette.SingleNotNewInferer = oneInForecaster
+		} else {
+			palette.InferersNewStatus = InferersNotNew
+			palette.SingleNotNewInferer = ""
+		}
+	}
+
 	palette.ForecasterRegrets[oneInForecaster] = &StatefulRegret{
 		regret:        regret.Value,
 		noPriorRegret: noPriorRegret,
