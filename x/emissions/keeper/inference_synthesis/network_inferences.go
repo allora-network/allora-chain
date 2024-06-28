@@ -153,13 +153,28 @@ func GetLatestNetworkInference(
 
 	inferences, infBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId)
 	if err != nil || len(inferences.Inferences) == 0 {
-		Logger(ctx).Warn("Error getting inferences: %s", err.Error())
+		if err != nil {
+			Logger(ctx).Warn(fmt.Sprintf("Error getting inferences: %s", err.Error()))
+		}
 		return networkInferences, nil, infererWeights, forecasterWeights, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v", topicId)
 	}
+	for _, infererence := range inferences.Inferences {
+		networkInferences.InfererValues = append(networkInferences.InfererValues, &emissions.WorkerAttributedValue{
+			Worker: infererence.Inferer,
+			Value:  infererence.Value,
+		})
+	}
+
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, infBlockHeight)
 	if err != nil {
-		Logger(ctx).Warn("Error getting forecasts: %s", err.Error())
-		return networkInferences, nil, infererWeights, forecasterWeights, nil
+		Logger(ctx).Warn(fmt.Sprintf("Error getting forecasts: %s", err.Error()))
+		if errors.Is(err, collections.ErrNotFound) {
+			forecasts = &emissions.Forecasts{
+				Forecasts: make([]*emissions.Forecast, 0),
+			}
+		} else {
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
+		}
 	}
 
 	if len(inferences.Inferences) > 1 {
@@ -169,7 +184,7 @@ func GetLatestNetworkInference(
 		}
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			Logger(ctx).Warn("Error getting topic: %s", err.Error())
+			Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
 		previousLossNonce := infBlockHeight - topic.EpochLength
@@ -182,7 +197,6 @@ func GetLatestNetworkInference(
 			Logger(ctx).Warn(fmt.Sprintf("Error getting network losses: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
-
 		networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
 			SynthRequest{
 				Ctx:                 ctx,
@@ -198,11 +212,10 @@ func GetLatestNetworkInference(
 			},
 		)
 		if err != nil {
-			Logger(ctx).Warn("Error constructing network inferences builder topic: %s", err.Error())
+			Logger(ctx).Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, err
 		}
 		networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
-
 		forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
 		infererWeights = networkInferenceBuilder.weights.inferers
 		forecasterWeights = networkInferenceBuilder.weights.forecasters

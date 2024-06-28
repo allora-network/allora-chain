@@ -11,14 +11,8 @@ import (
 // weights using the current regrets
 func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) {
 	var regrets []alloraMath.Dec
-	infererRegrets, err := p.GetInfererRegretsSlice()
-	if err != nil {
-		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer regrets")
-	}
-	forecasterRegrets, err := p.GetForecasterRegretsSlice()
-	if err != nil {
-		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster regrets")
-	}
+	infererRegrets := p.GetInfererRegretsSlice()
+	forecasterRegrets := p.GetForecasterRegretsSlice()
 
 	if len(infererRegrets) > 0 {
 		regrets = append(regrets, infererRegrets...)
@@ -207,28 +201,28 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	return ret, nil
 }
 
-func (p *SynthPalette) GetInfererRegretsSlice() ([]alloraMath.Dec, error) {
+func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
 	var regrets []alloraMath.Dec
 	if len(p.InfererRegrets) == 0 {
-		return regrets, nil
+		return regrets
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.InfererRegrets))
 	for _, worker := range p.InfererRegrets {
 		regrets = append(regrets, worker.regret)
 	}
-	return regrets, nil
+	return regrets
 }
 
-func (p *SynthPalette) GetForecasterRegretsSlice() ([]alloraMath.Dec, error) {
+func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
 	var regrets []alloraMath.Dec
 	if len(p.ForecasterRegrets) == 0 {
-		return regrets, nil
+		return regrets
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.ForecasterRegrets))
 	for _, worker := range p.ForecasterRegrets {
 		regrets = append(regrets, worker.regret)
 	}
-	return regrets, nil
+	return regrets
 }
 
 func AccumulateWeights(
