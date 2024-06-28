@@ -158,10 +158,23 @@ func GetLatestNetworkInference(
 		}
 		return networkInferences, nil, infererWeights, forecasterWeights, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v", topicId)
 	}
+	for _, infererence := range inferences.Inferences {
+		networkInferences.InfererValues = append(networkInferences.InfererValues, &emissions.WorkerAttributedValue{
+			Worker: infererence.Inferer,
+			Value:  infererence.Value,
+		})
+	}
+
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, infBlockHeight)
 	if err != nil {
 		Logger(ctx).Warn(fmt.Sprintf("Error getting forecasts: %s", err.Error()))
-		return networkInferences, nil, infererWeights, forecasterWeights, nil
+		if errors.Is(err, collections.ErrNotFound) {
+			forecasts = &emissions.Forecasts{
+				Forecasts: make([]*emissions.Forecast, 0),
+			}
+		} else {
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
+		}
 	}
 
 	if len(inferences.Inferences) > 1 {
