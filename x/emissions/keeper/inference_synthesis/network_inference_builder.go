@@ -249,7 +249,7 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	forecastImpliedInferencesWithForecaster[oneInForecaster] = palette.ForecastImpliedInferenceByWorker[oneInForecaster]
 	palette.ForecastImpliedInferenceByWorker = forecastImpliedInferencesWithForecaster
 	palette.Forecasters = []Worker{oneInForecaster}
-	
+
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
 	palette.InferersNewStatus = InferersAllNew
 	for _, inferer := range palette.Inferers {
