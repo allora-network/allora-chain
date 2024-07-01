@@ -11,7 +11,7 @@ import (
 // weights using the current regrets
 func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) {
 	var regrets []alloraMath.Dec
-	infererRegrets := p.GetInfererRegretsSlice()
+	infererRegrets := p.GetInfererRegretsSliceAndSetFlags()
 	forecasterRegrets := p.GetForecasterRegretsSlice()
 
 	if len(infererRegrets) > 0 {
@@ -34,16 +34,16 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating median of regrets")
 	}
-	medianTimesFTolerance, err := medianRegrets.Mul(p.Tolerance)
+	medianTimesTolerance, err := medianRegrets.Mul(p.Tolerance)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating median times tolerance")
 	}
 	// Add tolerance to standard deviation
-	stdDevRegretsPlusMedianTimesFTolerance, err := stdDevRegrets.Abs().Add(medianTimesFTolerance)
+	stdDevRegretsPlusMedianTimesTolerance, err := stdDevRegrets.Abs().Add(medianTimesTolerance)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding tolerance to standard deviation of regrets")
 	}
-	stdDevRegretsPlusMedianTimesFTolerancePlusEpsilon, err := stdDevRegretsPlusMedianTimesFTolerance.Add(p.Epsilon)
+	stdDevRegretsPlusMedianTimesTolerancePlusEpsilon, err := stdDevRegretsPlusMedianTimesTolerance.Add(p.Epsilon)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of regrets")
 	}
@@ -53,7 +53,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	maxRegret := alloraMath.ZeroDec()
 	maxRegretInitialized := false
 	for address, worker := range p.InfererRegrets {
-		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusMedianTimesFTolerancePlusEpsilon)
+		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusMedianTimesTolerancePlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
@@ -69,7 +69,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
 		for address, worker := range p.ForecasterRegrets {
-			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusMedianTimesFTolerancePlusEpsilon)
+			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusMedianTimesTolerancePlusEpsilon)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}
@@ -201,14 +201,24 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	return ret, nil
 }
 
-func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
+func (p *SynthPalette) GetInfererRegretsSliceAndSetFlags() []alloraMath.Dec {
 	var regrets []alloraMath.Dec
 	if len(p.InfererRegrets) == 0 {
 		return regrets
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.InfererRegrets))
-	for _, worker := range p.InfererRegrets {
-		regrets = append(regrets, worker.regret)
+	p.InferersNewStatus = InferersAllNew
+	for address, regretInfo := range p.InfererRegrets {
+		if !regretInfo.noPriorRegret {
+			if p.InferersNewStatus == InferersAllNew {
+				p.InferersNewStatus = InferersAllNewExceptOne
+				p.SingleNotNewInferer = address
+			} else {
+				p.InferersNewStatus = InferersNotNew
+				p.SingleNotNewInferer = ""
+			}
+		}
+		regrets = append(regrets, regretInfo.regret)
 	}
 	return regrets
 }

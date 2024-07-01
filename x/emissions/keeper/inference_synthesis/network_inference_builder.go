@@ -121,22 +121,23 @@ func (b *NetworkInferenceBuilder) SetNaiveValue() *NetworkInferenceBuilder {
 func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Worker) (alloraMath.Dec, error) {
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld inferer %s", b.palette.TopicId, withheldInferer))
 	palette := b.palette.Clone()
-	paletteCopy := palette.Clone()
 
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
 	remainingInferersByWorker := make(map[Worker]*emissions.Inference)
+	remainingInfererRegrets := make(map[Worker]*StatefulRegret)
 	for _, inferer := range palette.Inferers {
 		if inferer != withheldInferer {
 			remainingInferers = append(remainingInferers, inferer)
 			remainingInferersByWorker[inferer] = palette.InferenceByWorker[inferer]
+			remainingInfererRegrets[inferer] = palette.InfererRegrets[inferer]
 		}
 	}
-
 	palette.Inferers = remainingInferers // Override the inferers in the palette
 	palette.InferenceByWorker = remainingInferersByWorker
-	paletteCopy.Inferers = remainingInferers
-	paletteCopy.InferenceByWorker = remainingInferersByWorker
+	palette.InfererRegrets = remainingInfererRegrets
+
+	paletteCopy := palette.Clone()
 
 	// Recalculate the forecast-implied inferences without the worker's inference
 	// This is necessary because the forecast-implied inferences are calculated based on the inferences of the inferers
@@ -176,6 +177,7 @@ func (b *NetworkInferenceBuilder) SetOneOutInfererValues() *NetworkInferenceBuil
 			b.oneOutInfererInferences = make([]*emissions.WithheldWorkerAttributedValue, 0)
 			return b
 		}
+
 		oneOutInferences = append(oneOutInferences, &emissions.WithheldWorkerAttributedValue{
 			Worker: worker,
 			Value:  oneOutInference,
@@ -200,7 +202,6 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 		}
 	}
 	palette.Forecasters = remainingForecasters // Override the forecasters in the palette
-
 	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
@@ -255,16 +256,7 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 	}
 
-	if !noPriorRegret {
-		if palette.InferersNewStatus == InferersAllNew {
-			palette.InferersNewStatus = InferersAllNewExceptOne
-			palette.SingleNotNewInferer = oneInForecaster
-		} else {
-			palette.InferersNewStatus = InferersNotNew
-			palette.SingleNotNewInferer = ""
-		}
-		// If the forecaster is new, the calculation below is skipped and the one-in network inference is NaN
-	} else {
+	if noPriorRegret {
 		return alloraMath.NewNaN(), nil
 	}
 
@@ -274,21 +266,10 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	}
 
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
-	palette.InferersNewStatus = InferersAllNew
 	for _, inferer := range palette.Inferers {
 		regret, noPriorRegret, err := palette.K.GetOneInForecasterNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
-		}
-
-		if !noPriorRegret {
-			if palette.InferersNewStatus == InferersAllNew {
-				palette.InferersNewStatus = InferersAllNewExceptOne
-				palette.SingleNotNewInferer = inferer
-			} else {
-				palette.InferersNewStatus = InferersNotNew
-				palette.SingleNotNewInferer = ""
-			}
 		}
 
 		palette.InfererRegrets[inferer] = &StatefulRegret{
@@ -301,7 +282,6 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating weights for one-in inferences")
 	}
-
 	// Calculate the network inference with just this forecaster's forecast-implied inference
 	oneInInference, err := palette.CalcWeightedInference(weights)
 	if err != nil {
