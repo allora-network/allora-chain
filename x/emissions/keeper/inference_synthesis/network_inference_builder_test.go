@@ -435,11 +435,6 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(e
 	}
 }
 
-// TODO: Check if we can consider this test as valid
-// func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValuesEpoch0() {
-// 	s.testCorrectOneInForecasterValuesForEpoch(0)
-// }
-
 func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValuesEpoch2() {
 	s.testCorrectOneInForecasterValuesForEpoch(2)
 }

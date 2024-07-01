@@ -125,17 +125,14 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
 	remainingInferersByWorker := make(map[Worker]*emissions.Inference)
-	remainingInfererRegrets := make(map[Worker]*StatefulRegret)
 	for _, inferer := range palette.Inferers {
 		if inferer != withheldInferer {
 			remainingInferers = append(remainingInferers, inferer)
 			remainingInferersByWorker[inferer] = palette.InferenceByWorker[inferer]
-			remainingInfererRegrets[inferer] = palette.InfererRegrets[inferer]
 		}
 	}
 	palette.Inferers = remainingInferers // Override the inferers in the palette
 	palette.InferenceByWorker = remainingInferersByWorker
-	palette.InfererRegrets = remainingInfererRegrets
 
 	paletteCopy := palette.Clone()
 
@@ -147,7 +144,6 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 	}
 
 	paletteCopy.ForecastImpliedInferenceByWorker = palette.ForecastImpliedInferenceByWorker
-
 	weights, err := paletteCopy.CalcWeightsGivenWorkers()
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
@@ -196,12 +192,17 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 	palette := b.palette.Clone()
 	// Remove the withheldForecaster from the palette's forecasters
 	remainingForecasters := make([]Worker, 0)
+	remainingForecastersRegrets := make(map[Worker]*StatefulRegret)
+
 	for _, forecaster := range palette.Forecasters {
 		if forecaster != withheldForecaster {
 			remainingForecasters = append(remainingForecasters, forecaster)
+			remainingForecastersRegrets[forecaster] = palette.ForecasterRegrets[forecaster]
 		}
 	}
 	palette.Forecasters = remainingForecasters // Override the forecasters in the palette
+	palette.ForecasterRegrets = remainingForecastersRegrets
+
 	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
