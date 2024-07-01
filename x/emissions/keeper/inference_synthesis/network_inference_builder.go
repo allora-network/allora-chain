@@ -250,6 +250,29 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	palette.ForecastImpliedInferenceByWorker = forecastImpliedInferencesWithForecaster
 	palette.Forecasters = []Worker{oneInForecaster}
 
+	regret, noPriorRegret, err := palette.K.GetOneInForecasterSelfNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster)
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
+	}
+
+	if !noPriorRegret {
+		if palette.InferersNewStatus == InferersAllNew {
+			palette.InferersNewStatus = InferersAllNewExceptOne
+			palette.SingleNotNewInferer = oneInForecaster
+		} else {
+			palette.InferersNewStatus = InferersNotNew
+			palette.SingleNotNewInferer = ""
+		}
+		// If the forecaster is new, the calculation below is skipped and the one-in network inference is NaN
+	} else {
+		return alloraMath.NewNaN(), nil
+	}
+
+	palette.ForecasterRegrets[oneInForecaster] = &StatefulRegret{
+		regret:        regret.Value,
+		noPriorRegret: noPriorRegret,
+	}
+
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
 	palette.InferersNewStatus = InferersAllNew
 	for _, inferer := range palette.Inferers {
@@ -261,7 +284,6 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 		if !noPriorRegret {
 			if palette.InferersNewStatus == InferersAllNew {
 				palette.InferersNewStatus = InferersAllNewExceptOne
-				// TODO: Check if it's the case
 				palette.SingleNotNewInferer = inferer
 			} else {
 				palette.InferersNewStatus = InferersNotNew
@@ -273,26 +295,6 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
-	}
-	regret, noPriorRegret, err := palette.K.GetOneInForecasterSelfNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster)
-	if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
-	}
-
-	if !noPriorRegret {
-		if palette.InferersNewStatus == InferersAllNew {
-			palette.InferersNewStatus = InferersAllNewExceptOne
-			// TODO: Check if it's the case
-			palette.SingleNotNewInferer = oneInForecaster
-		} else {
-			palette.InferersNewStatus = InferersNotNew
-			palette.SingleNotNewInferer = ""
-		}
-	}
-
-	palette.ForecasterRegrets[oneInForecaster] = &StatefulRegret{
-		regret:        regret.Value,
-		noPriorRegret: noPriorRegret,
 	}
 
 	weights, err := palette.CalcWeightsGivenWorkers()
