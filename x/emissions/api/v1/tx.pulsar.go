@@ -1718,6 +1718,52 @@ func (x *_OptionalParams_37_list) IsValid() bool {
 	return x.list != nil
 }
 
+var _ protoreflect.List = (*_OptionalParams_38_list)(nil)
+
+type _OptionalParams_38_list struct {
+	list *[]string
+}
+
+func (x *_OptionalParams_38_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_OptionalParams_38_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_OptionalParams_38_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_OptionalParams_38_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_OptionalParams_38_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field CNorm as it is not of Message kind"))
+}
+
+func (x *_OptionalParams_38_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_OptionalParams_38_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_OptionalParams_38_list) IsValid() bool {
+	return x.list != nil
+}
+
 var _ protoreflect.List = (*_OptionalParams_39_list)(nil)
 
 type _OptionalParams_39_list struct {
@@ -1748,7 +1794,7 @@ func (x *_OptionalParams_39_list) Append(value protoreflect.Value) {
 }
 
 func (x *_OptionalParams_39_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field CNorm as it is not of Message kind"))
+	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field TopicFeeRevenueDecayRate as it is not of Message kind"))
 }
 
 func (x *_OptionalParams_39_list) Truncate(n int) {
@@ -1761,52 +1807,6 @@ func (x *_OptionalParams_39_list) NewElement() protoreflect.Value {
 }
 
 func (x *_OptionalParams_39_list) IsValid() bool {
-	return x.list != nil
-}
-
-var _ protoreflect.List = (*_OptionalParams_40_list)(nil)
-
-type _OptionalParams_40_list struct {
-	list *[]string
-}
-
-func (x *_OptionalParams_40_list) Len() int {
-	if x.list == nil {
-		return 0
-	}
-	return len(*x.list)
-}
-
-func (x *_OptionalParams_40_list) Get(i int) protoreflect.Value {
-	return protoreflect.ValueOfString((*x.list)[i])
-}
-
-func (x *_OptionalParams_40_list) Set(i int, value protoreflect.Value) {
-	valueUnwrapped := value.String()
-	concreteValue := valueUnwrapped
-	(*x.list)[i] = concreteValue
-}
-
-func (x *_OptionalParams_40_list) Append(value protoreflect.Value) {
-	valueUnwrapped := value.String()
-	concreteValue := valueUnwrapped
-	*x.list = append(*x.list, concreteValue)
-}
-
-func (x *_OptionalParams_40_list) AppendMutable() protoreflect.Value {
-	panic(fmt.Errorf("AppendMutable can not be called on message OptionalParams at list field TopicFeeRevenueDecayRate as it is not of Message kind"))
-}
-
-func (x *_OptionalParams_40_list) Truncate(n int) {
-	*x.list = (*x.list)[:n]
-}
-
-func (x *_OptionalParams_40_list) NewElement() protoreflect.Value {
-	v := ""
-	return protoreflect.ValueOfString(v)
-}
-
-func (x *_OptionalParams_40_list) IsValid() bool {
 	return x.list != nil
 }
 
@@ -2185,13 +2185,13 @@ func (x *fastReflection_OptionalParams) Range(f func(protoreflect.FieldDescripto
 		}
 	}
 	if len(x.CNorm) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_39_list{list: &x.CNorm})
+		value := protoreflect.ValueOfList(&_OptionalParams_38_list{list: &x.CNorm})
 		if !f(fd_OptionalParams_c_norm, value) {
 			return
 		}
 	}
 	if len(x.TopicFeeRevenueDecayRate) != 0 {
-		value := protoreflect.ValueOfList(&_OptionalParams_40_list{list: &x.TopicFeeRevenueDecayRate})
+		value := protoreflect.ValueOfList(&_OptionalParams_39_list{list: &x.TopicFeeRevenueDecayRate})
 		if !f(fd_OptionalParams_topic_fee_revenue_decay_rate, value) {
 			return
 		}
@@ -2623,15 +2623,15 @@ func (x *fastReflection_OptionalParams) Get(descriptor protoreflect.FieldDescrip
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.c_norm":
 		if len(x.CNorm) == 0 {
-			return protoreflect.ValueOfList(&_OptionalParams_39_list{})
+			return protoreflect.ValueOfList(&_OptionalParams_38_list{})
 		}
-		listValue := &_OptionalParams_39_list{list: &x.CNorm}
+		listValue := &_OptionalParams_38_list{list: &x.CNorm}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v1.OptionalParams.topic_fee_revenue_decay_rate":
 		if len(x.TopicFeeRevenueDecayRate) == 0 {
-			return protoreflect.ValueOfList(&_OptionalParams_40_list{})
+			return protoreflect.ValueOfList(&_OptionalParams_39_list{})
 		}
-		listValue := &_OptionalParams_40_list{list: &x.TopicFeeRevenueDecayRate}
+		listValue := &_OptionalParams_39_list{list: &x.TopicFeeRevenueDecayRate}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
@@ -2803,11 +2803,11 @@ func (x *fastReflection_OptionalParams) Set(fd protoreflect.FieldDescriptor, val
 		x.CRewardForecast = *clv.list
 	case "emissions.v1.OptionalParams.c_norm":
 		lv := value.List()
-		clv := lv.(*_OptionalParams_39_list)
+		clv := lv.(*_OptionalParams_38_list)
 		x.CNorm = *clv.list
 	case "emissions.v1.OptionalParams.topic_fee_revenue_decay_rate":
 		lv := value.List()
-		clv := lv.(*_OptionalParams_40_list)
+		clv := lv.(*_OptionalParams_39_list)
 		x.TopicFeeRevenueDecayRate = *clv.list
 	default:
 		if fd.IsExtension() {
@@ -3055,13 +3055,13 @@ func (x *fastReflection_OptionalParams) Mutable(fd protoreflect.FieldDescriptor)
 		if x.CNorm == nil {
 			x.CNorm = []string{}
 		}
-		value := &_OptionalParams_39_list{list: &x.CNorm}
+		value := &_OptionalParams_38_list{list: &x.CNorm}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v1.OptionalParams.topic_fee_revenue_decay_rate":
 		if x.TopicFeeRevenueDecayRate == nil {
 			x.TopicFeeRevenueDecayRate = []string{}
 		}
-		value := &_OptionalParams_40_list{list: &x.TopicFeeRevenueDecayRate}
+		value := &_OptionalParams_39_list{list: &x.TopicFeeRevenueDecayRate}
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
@@ -3189,10 +3189,10 @@ func (x *fastReflection_OptionalParams) NewField(fd protoreflect.FieldDescriptor
 		return protoreflect.ValueOfList(&_OptionalParams_37_list{list: &list})
 	case "emissions.v1.OptionalParams.c_norm":
 		list := []string{}
-		return protoreflect.ValueOfList(&_OptionalParams_39_list{list: &list})
+		return protoreflect.ValueOfList(&_OptionalParams_38_list{list: &list})
 	case "emissions.v1.OptionalParams.topic_fee_revenue_decay_rate":
 		list := []string{}
-		return protoreflect.ValueOfList(&_OptionalParams_40_list{list: &list})
+		return protoreflect.ValueOfList(&_OptionalParams_39_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.OptionalParams"))
@@ -3550,7 +3550,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				i--
 				dAtA[i] = 0x2
 				i--
-				dAtA[i] = 0xc2
+				dAtA[i] = 0xba
 			}
 		}
 		if len(x.CNorm) > 0 {
@@ -3561,7 +3561,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				i--
 				dAtA[i] = 0x2
 				i--
-				dAtA[i] = 0xba
+				dAtA[i] = 0xb2
 			}
 		}
 		if len(x.CRewardForecast) > 0 {
@@ -6115,7 +6115,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				}
 				x.CRewardForecast = append(x.CRewardForecast, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
-			case 39:
+			case 38:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field CNorm", wireType)
 				}
@@ -6147,7 +6147,7 @@ func (x *fastReflection_OptionalParams) ProtoMethods() *protoiface.Methods {
 				}
 				x.CNorm = append(x.CNorm, string(dAtA[iNdEx:postIndex]))
 				iNdEx = postIndex
-			case 40:
+			case 39:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicFeeRevenueDecayRate", wireType)
 				}
@@ -7668,7 +7668,7 @@ func (x *fastReflection_MsgCreateNewTopic) ProtoMethods() *protoiface.Methods {
 			copy(dAtA[i:], x.Tolerance)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Tolerance)))
 			i--
-			dAtA[i] = 0x7a
+			dAtA[i] = 0x6a
 		}
 		if x.AllowNegative {
 			i--
@@ -8148,7 +8148,7 @@ func (x *fastReflection_MsgCreateNewTopic) ProtoMethods() *protoiface.Methods {
 					}
 				}
 				x.AllowNegative = bool(v != 0)
-			case 15:
+			case 13:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Tolerance", wireType)
 				}
@@ -21858,8 +21858,8 @@ type OptionalParams struct {
 	PRewardReputer                  []string `protobuf:"bytes,35,rep,name=p_reward_reputer,json=pRewardReputer,proto3" json:"p_reward_reputer,omitempty"`
 	CRewardInference                []string `protobuf:"bytes,36,rep,name=c_reward_inference,json=cRewardInference,proto3" json:"c_reward_inference,omitempty"`
 	CRewardForecast                 []string `protobuf:"bytes,37,rep,name=c_reward_forecast,json=cRewardForecast,proto3" json:"c_reward_forecast,omitempty"`
-	CNorm                           []string `protobuf:"bytes,39,rep,name=c_norm,json=cNorm,proto3" json:"c_norm,omitempty"`
-	TopicFeeRevenueDecayRate        []string `protobuf:"bytes,40,rep,name=topic_fee_revenue_decay_rate,json=topicFeeRevenueDecayRate,proto3" json:"topic_fee_revenue_decay_rate,omitempty"`
+	CNorm                           []string `protobuf:"bytes,38,rep,name=c_norm,json=cNorm,proto3" json:"c_norm,omitempty"`
+	TopicFeeRevenueDecayRate        []string `protobuf:"bytes,39,rep,name=topic_fee_revenue_decay_rate,json=topicFeeRevenueDecayRate,proto3" json:"topic_fee_revenue_decay_rate,omitempty"`
 }
 
 func (x *OptionalParams) Reset() {
@@ -22242,7 +22242,7 @@ type MsgCreateNewTopic struct {
 	PNorm           string `protobuf:"bytes,10,opt,name=p_norm,json=pNorm,proto3" json:"p_norm,omitempty"`
 	AlphaRegret     string `protobuf:"bytes,11,opt,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`
 	AllowNegative   bool   `protobuf:"varint,12,opt,name=allow_negative,json=allowNegative,proto3" json:"allow_negative,omitempty"`
-	Tolerance       string `protobuf:"bytes,15,opt,name=tolerance,proto3" json:"tolerance,omitempty"`
+	Tolerance       string `protobuf:"bytes,13,opt,name=tolerance,proto3" json:"tolerance,omitempty"`
 }
 
 func (x *MsgCreateNewTopic) Reset() {
@@ -23753,13 +23753,13 @@ var file_emissions_v1_tx_proto_rawDesc = []byte{
 	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74,
 	0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0f, 0x63, 0x52, 0x65, 0x77, 0x61, 0x72, 0x64, 0x46, 0x6f,
 	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x12, 0x4e, 0x0a, 0x06, 0x63, 0x5f, 0x6e, 0x6f, 0x72, 0x6d,
-	0x18, 0x27, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f,
+	0x18, 0x26, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f,
 	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
 	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
 	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52,
 	0x05, 0x63, 0x4e, 0x6f, 0x72, 0x6d, 0x12, 0x77, 0x0a, 0x1c, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f,
 	0x66, 0x65, 0x65, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x5f, 0x64, 0x65, 0x63, 0x61,
-	0x79, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x28, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde,
+	0x79, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x18, 0x27, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde,
 	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
 	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
 	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74,
@@ -23808,7 +23808,7 @@ var file_emissions_v1_tx_proto_rawDesc = []byte{
 	0x65, 0x74, 0x12, 0x25, 0x0a, 0x0e, 0x61, 0x6c, 0x6c, 0x6f, 0x77, 0x5f, 0x6e, 0x65, 0x67, 0x61,
 	0x74, 0x69, 0x76, 0x65, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x08, 0x52, 0x0d, 0x61, 0x6c, 0x6c, 0x6f,
 	0x77, 0x4e, 0x65, 0x67, 0x61, 0x74, 0x69, 0x76, 0x65, 0x12, 0x55, 0x0a, 0x09, 0x74, 0x6f, 0x6c,
-	0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x0f, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde,
+	0x65, 0x72, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde,
 	0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
 	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f,
 	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74,

@@ -253,15 +253,20 @@ func ForecastingUtility(
 			return alloraMath.Dec{}, err
 		}
 	}
+	scoreDenominator := sumInfererScores.Abs()
 	if sumInfererScores.IsZero() {
-		return zeroPointFive, nil
+		if forecastingTaskUtilityScore.IsZero() {
+			return zeroPointFive, nil
+		} else {
+			scoreDenominator = forecastingTaskUtilityScore.Abs()
+		}
 	}
 
 	scoreNumerator, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(alloraMath.ZeroDec(), sumInfererScores))
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	scoreRatio, err := scoreNumerator.Quo(sumInfererScores.Abs())
+	scoreRatio, err := scoreNumerator.Quo(scoreDenominator)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}

@@ -56,7 +56,8 @@ func registerWorkersForIteration(
 	makeReport bool,
 ) int {
 	for j := 0; j < workersPerIteration && countWorkers < maxWorkersPerTopic; j++ {
-		workerName := getWorkerAccountName(m.Seed, iteration*j, topicId)
+		workerIndex := iteration*workersPerIteration + j
+		workerName := getWorkerAccountName(m.Seed, workerIndex, topicId)
 		worker := workers[workerName]
 		err := RegisterWorkerForTopic(
 			m,
