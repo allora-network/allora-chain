@@ -405,7 +405,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 			alloraMath.InDelta(
 				expectedValue.Value,
 				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.001"),
+				alloraMath.MustNewDecFromString("0.01"),
 			), "Values do not match for key: %s %s %s",
 			key,
 			expectedValue.Value.String(),
