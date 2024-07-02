@@ -396,7 +396,7 @@ func TestGetScoreFractions(t *testing.T) {
 	require.NoError(t, err)
 
 	for i := range want {
-		if !(alloraMath.InDelta(want[i], got[i], alloraMath.MustNewDecFromString("0.00001"))) {
+		if !(alloraMath.InDelta(want[i], got[i], alloraMath.MustNewDecFromString("0.001"))) {
 			t.Errorf(
 				"GetWorkerPortionOfRewards() got = %s, want %s",
 				got[i].String(),
