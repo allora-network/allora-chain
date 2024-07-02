@@ -13,7 +13,6 @@ func (p *SynthPalette) BootstrapRegretData() error {
 	p.Logger.Debug(fmt.Sprintf("Bootstrapping regret data for topic %v", p.TopicId))
 
 	p.InferersNewStatus = InferersAllNew
-
 	for _, inferer := range p.Inferers {
 		regret, noPriorRegret, err := p.K.GetInfererNetworkRegret(p.Ctx, p.TopicId, inferer)
 		if err != nil {
