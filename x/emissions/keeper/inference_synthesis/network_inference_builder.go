@@ -122,6 +122,12 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld inferer %s", b.palette.TopicId, withheldInferer))
 	palette := b.palette.Clone()
 
+	// Check if withheld inferer is new
+	withheldInfererRegret, ok := palette.InfererRegrets[withheldInferer]
+	if !ok || withheldInfererRegret.noPriorRegret {
+		return alloraMath.NewNaN(), nil
+	}
+
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
 	for _, inferer := range palette.Inferers {
