@@ -48,7 +48,7 @@ func GetScoreFractions(
 }
 
 // Mapping function used by score fraction calculation
-// M(T) = φ_p[ T / σ(T) ]
+// M(T) = φ_p (abs[ T / σ(T) + ɛ])
 // phi is the phi function
 // sigma is NOT the sigma function but rather represents standard deviation
 func GetMappingFunctionValues(
@@ -56,41 +56,36 @@ func GetMappingFunctionValues(
 	latestTimeStepsScores []alloraMath.Dec, // σ(T) - scores for stdDev (from multiple workers/time steps)
 	pReward alloraMath.Dec, // p
 	cReward alloraMath.Dec, // c
-	epsilon alloraMath.Dec,
+	epsilon alloraMath.Dec, // ɛ
 ) ([]alloraMath.Dec, error) {
-	stdDevPlusMedianTimesEpsilon := alloraMath.OneDec()
-	if len(latestTimeStepsScores) > 0 {
-		stdDev, err := alloraMath.StdDev(latestTimeStepsScores)
+	stdDev := alloraMath.ZeroDec()
+
+	var err error
+	if len(latestTimeStepsScores) > 1 {
+		stdDev, err = alloraMath.StdDev(latestTimeStepsScores)
 		if err != nil {
 			return nil, errors.Wrapf(err, "err getting stdDev")
 		}
-		median, err := alloraMath.Median(latestTimeStepsScores)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting median")
-		}
-		medianTimesEpsilon, err := median.Mul(epsilon)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting medianTimesEpsilon")
-		}
-		stdDevPlusMedianTimesEpsilon, err = stdDev.Add(medianTimesEpsilon)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting stdDevPlusMedianTimesEpsilon")
-		}
 	}
+
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
 	for i, score := range latestWorkerScores {
-		if stdDevPlusMedianTimesEpsilon.IsZero() || stdDevPlusMedianTimesEpsilon.Lt(epsilon) {
-			// if standard deviation is zero
-			// then all scores are the same and losses are the same
+		if stdDev.Lt(epsilon) {
+			// if standard deviation is smaller than epsilon, or zero,
+			// then all scores are the very close to the same and losses are the same
 			// therefore everyone should be paid the same, so we
 			// return the plain value 1 for everybody
 			ret[i] = alloraMath.OneDec()
 		} else {
-			frac, err := score.Quo(stdDevPlusMedianTimesEpsilon)
+			stdDevPlusEpsilon, err := stdDev.Add(epsilon)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrapf(err, "err adding epsilon to stdDev")
 			}
-			ret[i], err = alloraMath.Phi(pReward, cReward, frac)
+			scoreDividedByStdDevPlusEpsilon, err := score.Quo(stdDevPlusEpsilon)
+			if err != nil {
+				return nil, errors.Wrapf(err, "err dividing score by stdDevPlusEpsilon")
+			}
+			ret[i], err = alloraMath.Phi(pReward, cReward, scoreDividedByStdDevPlusEpsilon.Abs())
 			if err != nil {
 				return nil, errors.Wrapf(err, "err calculating phi")
 			}
