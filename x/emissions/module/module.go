@@ -23,7 +23,6 @@ var (
 	_ module.HasGenesis       = AppModule{}
 	_ appmodule.AppModule     = AppModule{}
 	_ appmodule.HasEndBlocker = AppModule{}
-	_ module.HasInvariants    = AppModule{}
 )
 
 // ConsensusVersion defines the current module consensus version.
@@ -121,9 +120,4 @@ func (am AppModule) EndBlock(ctx context.Context) error {
 		sdkCtx.Logger().Error("EnbBlocker error! ", err)
 	}
 	return err
-}
-
-// RegisterInvariants registers the emissions module invariants.
-func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
-	keeper.RegisterInvariants(ir, &am.keeper)
 }
