@@ -20,6 +20,9 @@ jobs:
       with:
         node-version: '12'
 
+    - name: Apply Invariants Patch
+      run: git apply ./test/invariant/invariants.patch
+
     - name: Build Source
       run: go build -v ./...
 
