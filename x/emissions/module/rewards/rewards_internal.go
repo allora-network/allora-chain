@@ -66,6 +66,7 @@ func GetMappingFunctionValues(
 		if err != nil {
 			return nil, errors.Wrapf(err, "err getting stdDev")
 		}
+		stdDev = stdDev.Abs()
 	}
 
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
