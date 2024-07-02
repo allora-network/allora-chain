@@ -112,7 +112,7 @@ func EmitRewards(
 		payoutErrors := payoutRewards(ctx, k, totalRewardsDistribution)
 		if len(payoutErrors) > 0 {
 			for _, err := range payoutErrors {
-				Logger(ctx).Error(
+				Logger(ctx).Warn(
 					fmt.Sprintf(
 						"Failed to pay out rewards to participant in Topic:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
 						topicId,

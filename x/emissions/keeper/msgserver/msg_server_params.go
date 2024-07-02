@@ -2,13 +2,11 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
-	fmt.Printf("TTTEEESSSTTT: UpdateParams\nSender: %s\n", msg.Sender)
 	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
 		return nil, err
 	}

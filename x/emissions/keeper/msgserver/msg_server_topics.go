@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 
 	"cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/app/params"
@@ -13,7 +12,6 @@ import (
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
-	fmt.Printf("TTTEEESSSTTT: CreateNewTopic\nCreator: %s\nMetadata: %s\nLossLogic: %s\nLossMethod: %s\nInferenceLogic: %s\nInferenceMethod: %s\nEpochLength: %d\nGroundTruthLag: %d\nDefaultArg: %s\nPNorm: %s\nAlphaRegret: %s\nAllowNegative: %t\n", msg.Creator, msg.Metadata, msg.LossLogic, msg.LossMethod, msg.InferenceLogic, msg.InferenceMethod, msg.EpochLength, msg.GroundTruthLag, msg.DefaultArg, msg.PNorm, msg.AlphaRegret, msg.AllowNegative)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}

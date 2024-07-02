@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -2143,7 +2142,6 @@ func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule 
 	if err != nil {
 		return err
 	}
-	fmt.Printf(">>>>>>>>>>>>>>> SendCoinsFromModuleToAccount >>>>>>>>>>>>>>>>> %s %s %s\n", senderModule, recipientAddr, amt.String())
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt)
 }
 
@@ -2153,13 +2151,11 @@ func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, sender ActorI
 	if err != nil {
 		return err
 	}
-	fmt.Printf(">>>>>>>>>>>>>>> SendCoinsFromAccountToModule >>>>>>>>>>>>>>>>> %s %s %s\n", sender, recipientModule, amt.String())
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt)
 }
 
 // wrapper around bank keeper SendCoinsFromModuleToModule
 func (k *Keeper) SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error {
-	fmt.Printf(">>>>>>>>>>>>>>> SendCoinsFromModuleToModule >>>>>>>>>>>>>>>>> %s %s %s\n", senderModule, recipientModule, amt.String())
 	return k.bankKeeper.SendCoinsFromModuleToModule(ctx, senderModule, recipientModule, amt)
 }
 

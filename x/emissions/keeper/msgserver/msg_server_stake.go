@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 
 	"errors"
 
@@ -15,7 +14,6 @@ import (
 
 // Function for reputers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*types.MsgAddStakeResponse, error) {
-	fmt.Printf("TTTEEESSSTTT AddStake\nTopicId: %d\nSender: %s\nAmount: %s\n", msg.TopicId, msg.Sender, msg.Amount.String())
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -61,7 +59,6 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) (*types.MsgRemoveStakeResponse, error) {
-	fmt.Printf("TTTEEESSSTTT RemoveStake\nTopicId: %d\nSender: %s\nAmount: %s\n", msg.TopicId, msg.Sender, msg.Amount.String())
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -116,7 +113,6 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 
 // cancel a request to remove your stake, during the delay window
 func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelRemoveStake) (*types.MsgCancelRemoveStakeResponse, error) {
-	fmt.Printf("TTTEEESSSTTT CancelRemoveStake\nTopicId: %d\nSender: %s\n", msg.TopicId, msg.Sender)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
 	// if the specific error is that we somehow got into a buggy invariant state
@@ -137,7 +133,6 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelR
 
 // Delegates a stake to a reputer. Sender need not be registered to delegate stake.
 func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateStake) (*types.MsgDelegateStakeResponse, error) {
-	fmt.Printf("TTTEEESSSTTT DelegateStake\nTopicId: %d\nSender: %s\nReputer: %s\nAmount: %s\n", msg.TopicId, msg.Sender, msg.Reputer, msg.Amount.String())
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -177,7 +172,6 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemoveDelegateStake) (*types.MsgRemoveDelegateStakeResponse, error) {
-	fmt.Printf("TTTEEESSSTTT RemoveDelegateStake\nTopicId: %d\nSender: %s\nReputer: %s\nAmount: %s\n", msg.TopicId, msg.Sender, msg.Reputer, msg.Amount.String())
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -247,7 +241,6 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 
 // cancel an ongoing stake removal request during the delay period
 func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.MsgCancelRemoveDelegateStake) (*types.MsgCancelRemoveDelegateStakeResponse, error) {
-	fmt.Printf("TTTEEESSSTTT CancelRemoveDelegateStake\nTopicId: %d\nSender: %s\nReputer: %s\n", msg.TopicId, msg.Sender, msg.Reputer)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
@@ -275,7 +268,6 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ms
 }
 
 func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {
-	fmt.Printf("TTTEEESSSTTT RewardDelegateStake\nTopicId: %d\nSender: %s\nReputer: %s\n", msg.TopicId, msg.Sender, msg.Reputer)
 	// Check the target reputer exists and is registered
 	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {

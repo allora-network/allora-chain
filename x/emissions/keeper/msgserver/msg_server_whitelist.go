@@ -2,13 +2,11 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddToWhitelistAdmin) (*types.MsgAddToWhitelistAdminResponse, error) {
-	fmt.Printf("TTTEEESSSTTT: AddToWhitelistAdmin\nSender: %s\nAddress: %s\n", msg.Sender, msg.Address)
 	// Check that sender is also a whitelist admin
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {
@@ -30,7 +28,6 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddTo
 }
 
 func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.MsgRemoveFromWhitelistAdmin) (*types.MsgRemoveFromWhitelistAdminResponse, error) {
-	fmt.Printf("TTTEEESSSTTT: RemoveFromWhitelistAdmin\nSender: %s\nAddress: %s\n", msg.Sender, msg.Address)
 	// Check that sender is also a whitelist admin
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {

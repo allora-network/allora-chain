@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
@@ -12,7 +11,6 @@ type TopicId = uint64
 type Allo = cosmosMath.Int
 
 func activateTopicIfWeightAtLeastGlobalMin(ctx context.Context, ms msgServer, topicId TopicId, amount Allo) error {
-	fmt.Printf("TTTEEESSSTTT: ActivateTopicIfWeightAtLeastGlobalMin\nTopicId: %d\nAmount: %s\n", topicId, amount.String())
 	isActivated, err := ms.k.IsTopicActive(ctx, topicId)
 	if err != nil {
 		return errors.Wrapf(err, "error getting topic activation status")

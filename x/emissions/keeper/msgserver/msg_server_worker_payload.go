@@ -23,12 +23,6 @@ func verifyAndInsertInferencesFromTopInferers(
 	workerDataBundles []*types.WorkerDataBundle,
 	maxTopWorkersToReward uint64,
 ) (map[string]bool, error) {
-	fmt.Printf("TTTTEEEESSSSTTTT: VerifyAndInsertInferencesFromTopInferers\nTopicId: %d\nNonce: %v\nWorkerDataBundles:\n%v\nMaxTopWorkersToReward: %d\n",
-		topicId,
-		nonce,
-		workerDataBundles,
-		maxTopWorkersToReward,
-	)
 	inferencesByInferer := make(map[string]*types.Inference)
 	latestInfererScores := make(map[string]types.Score)
 	errors := make(map[string]string)
@@ -129,7 +123,6 @@ func verifyAndInsertForecastsFromTopForecasters(
 	acceptedInferersOfBatch map[string]bool,
 	maxTopWorkersToReward uint64,
 ) error {
-	fmt.Printf("TTTTEEEESSSSTTTT: VerifyAndInsertForecastsFromTopForecasters\nTopicId: %d\nNonce: %v\nWorkerDataBundles:\n%v\nMaxTopWorkersToReward: %d\n", topicId, nonce, workerDataBundle, maxTopWorkersToReward)
 	forecastsByForecaster := make(map[string]*types.Forecast)
 	latestForecasterScores := make(map[string]types.Score)
 	for _, workerDataBundle := range workerDataBundle {
@@ -224,7 +217,6 @@ func verifyAndInsertForecastsFromTopForecasters(
 // A tx function that accepts a list of forecasts and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
 func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgInsertBulkWorkerPayload) (*types.MsgInsertBulkWorkerPayloadResponse, error) {
-	fmt.Printf("TTTTEEEESSSSTTTT: InsertBulkWorkerPayload\nSender: %s\nNonce: %v\nTopicId %d\nWorkerDataBundles %v\n", msg.Sender, msg.Nonce, msg.TopicId, msg.WorkerDataBundles)
 	err := checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err

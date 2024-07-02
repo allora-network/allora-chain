@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 
 	appParams "github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -12,7 +11,6 @@ import (
 )
 
 func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*types.MsgFundTopicResponse, error) {
-	fmt.Printf("TTTEEESSSTTT: FundTopic\nTopicId: %d\nSender: %s\nAmount: %d\n", msg.TopicId, msg.Sender, msg.Amount)
 	// Check the topic is valid
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
@@ -38,7 +36,6 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// Send funds
 	coins := sdk.NewCoins(sdk.NewCoin(appParams.DefaultBondDenom, msg.Amount))
-	fmt.Printf(">>>>>>>>>>>>>>>>>> SendCoinsFromAccountToModule <<<<<<<<<<<<<<< %s %s %s\n", msg.Sender, minttypes.EcosystemModuleName, msg.Amount.String())
 	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, minttypes.EcosystemModuleName, coins)
 	if err != nil {
 		return nil, err
