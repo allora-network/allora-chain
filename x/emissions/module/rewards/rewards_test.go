@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	slog "log"
 	"testing"
 	"time"
 
@@ -1061,6 +1062,9 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	if !found {
 		require.Fail("Worker not found")
 	}
+
+	slog.Printf("workerReward_0_0_1_Reward: %v", workerReward_0_0_1_Reward)
+	slog.Printf("workerReward_0_1_1_Reward: %v", workerReward_0_1_1_Reward)
 
 	require.True(workerReward_0_0_1_Reward.Lt(workerReward_0_1_1_Reward))
 }

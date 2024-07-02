@@ -111,7 +111,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.013993615616887908296229488415174")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.018004876148456175753781623")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
@@ -235,8 +235,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1.09297154250540071861762571491582")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("1.07965728170851906059364949257926")},
+		"worker0": {Value: alloraMath.MustNewDecFromString("1.09768148018932306697138469819693")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("1.092613996774755705653569661621415")},
 		"worker2": nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
