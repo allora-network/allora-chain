@@ -603,11 +603,12 @@ func TestGetAllConsensusScores(t *testing.T) {
 	stakes := []alloraMath.Dec{alloraMath.MustNewDecFromString("1176644.37627"), alloraMath.MustNewDecFromString("384623.3607"), alloraMath.MustNewDecFromString("394676.13226"), alloraMath.MustNewDecFromString("207999.66194"), alloraMath.MustNewDecFromString("368582.76542")}
 	allListeningCoefficients := []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0")}
 	var numReputers int64 = 5
+	reputerEpsilon := alloraMath.MustNewDecFromString("1e-2")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 	want := []alloraMath.Dec{alloraMath.MustNewDecFromString("5.114259531"), alloraMath.MustNewDecFromString("5.339287075"), alloraMath.MustNewDecFromString("6.538380081"), alloraMath.MustNewDecFromString("2.5952235325"), alloraMath.MustNewDecFromString("3.5870524743")}
 	wantErr := false
 
-	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers, epsilon)
+	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers, reputerEpsilon, epsilon)
 	if (err != nil) != wantErr {
 		t.Errorf("GetAllConsensusScores() error = %v, wantErr %v", err, wantErr)
 		return
@@ -660,6 +661,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		0,
+		params.EpsilonReputer,
 		params.Epsilon,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
@@ -673,6 +675,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		2,
+		params.EpsilonReputer,
 		params.Epsilon,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
@@ -686,6 +689,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		5,
+		params.EpsilonReputer,
 		params.Epsilon,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
@@ -699,6 +703,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		20,
+		params.EpsilonReputer,
 		params.Epsilon,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
@@ -779,7 +784,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require.True(len(gotScores3) == len(wantScores))
 
 	// Verify score output matches that of GetAllConsensusScores()
-	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, params.Epsilon)
+	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, params.EpsilonReputer, params.Epsilon)
 	require.NoError(err)
 	if !alloraMath.SlicesInDelta(gotScores3, wantScores3, alloraMath.MustNewDecFromString("0.01")) {
 		log.Println("GetAllConsensusScores() got", gotScores3, "want", wantScores3)
