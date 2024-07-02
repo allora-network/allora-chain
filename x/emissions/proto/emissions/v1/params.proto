@@ -113,4 +113,8 @@ message Params {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];  // decay rate for topic fee revenue
+  string epsilon_reputer = 40 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];                                             // a small tolerance quantity used to cap reputer scores at infinitesimally close proximities
 }

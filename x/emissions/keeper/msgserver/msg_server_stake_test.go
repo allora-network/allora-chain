@@ -35,7 +35,6 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 		DefaultArg:      "ETH",
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		PNorm:           alloraMath.NewDecFromInt64(3),
-		Tolerance:       alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	reputerInitialBalance := types.DefaultParams().CreateTopicFee.Add(cosmosMath.Int(reputerInitialBalanceUint))

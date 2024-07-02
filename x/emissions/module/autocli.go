@@ -251,7 +251,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [ground_truth_lag] [default_arg] [p_norm] [alpha_regret] [allow_negative] [tolerance]",
+					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [ground_truth_lag] [default_arg] [p_norm] [alpha_regret] [allow_negative]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -266,7 +266,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "p_norm"},
 						{ProtoField: "alpha_regret"},
 						{ProtoField: "allow_negative"},
-						{ProtoField: "tolerance"},
 					},
 				},
 				{

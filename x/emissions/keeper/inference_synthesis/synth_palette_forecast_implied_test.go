@@ -94,7 +94,6 @@ func (s *InferenceSynthesisTestSuite) TestIncreasingPNormIncreasesRegretSpread()
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorkersOneForecaster() {
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -126,7 +125,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -152,7 +150,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorkersTwoForecastersWithoutSelfReport() {
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -183,7 +180,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -209,7 +205,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWorkersThreeForecastersWithoutSelfReport() {
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -257,7 +252,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -306,7 +300,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	}
 	networkCombinedLoss := epoch2Get("network_loss")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
@@ -327,7 +320,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -370,7 +362,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 
 	networkCombinedLoss := epoch3Get("network_loss")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
@@ -392,7 +383,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}

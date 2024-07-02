@@ -24,16 +24,16 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		return RegretInformedWeights{}, errorsmod.Wrapf(emissions.ErrEmptyArray, "No regrets to calculate weights")
 	}
 
-	// Calc std dev of regrets + tolerance
+	// Calc std dev of regrets + epsilon
 	// σ(R_ijk) + ε
 	stdDevRegrets, err := alloraMath.StdDev(regrets)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
 	}
-	// Add tolerance to standard deviation
-	stdDevRegretsPlusFTolerance, err := stdDevRegrets.Abs().Add(p.Tolerance)
+	// Add epsilon to standard deviation
+	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.Epsilon)
 	if err != nil {
-		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding tolerance to standard deviation of regrets")
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation")
 	}
 
 	// Normalize the regrets and find the max normalized regret among them
@@ -41,7 +41,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	maxRegret := alloraMath.ZeroDec()
 	maxRegretInitialized := false
 	for address, worker := range p.InfererRegrets {
-		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
+		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
@@ -57,7 +57,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
 		for address, worker := range p.ForecasterRegrets {
-			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusFTolerance)
+			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusEpsilon)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}
