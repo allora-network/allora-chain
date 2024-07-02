@@ -66,6 +66,7 @@ func GetMappingFunctionValues(
 		if err != nil {
 			return nil, errors.Wrapf(err, "err getting stdDev")
 		}
+		stdDev = stdDev.Abs()
 	}
 
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
@@ -85,7 +86,7 @@ func GetMappingFunctionValues(
 			if err != nil {
 				return nil, errors.Wrapf(err, "err dividing score by stdDevPlusEpsilon")
 			}
-			ret[i], err = alloraMath.Phi(pReward, cReward, scoreDividedByStdDevPlusEpsilon.Abs())
+			ret[i], err = alloraMath.Phi(pReward, cReward, scoreDividedByStdDevPlusEpsilon)
 			if err != nil {
 				return nil, errors.Wrapf(err, "err calculating phi")
 			}
