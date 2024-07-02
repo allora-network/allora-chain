@@ -131,7 +131,7 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelR
 	return &types.MsgCancelRemoveStakeResponse{}, nil
 }
 
-// Delegates a stake to a reputer. Sender need not be registered to delegate stake.
+// Delegates a stake to a reputer. Sender does not have to be registered to delegate stake.
 func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateStake) (*types.MsgDelegateStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
