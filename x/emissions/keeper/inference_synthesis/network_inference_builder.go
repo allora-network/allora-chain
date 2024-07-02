@@ -124,21 +124,21 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
-	remainingInferersByWorker := make(map[Worker]*emissions.Inference)
 	for _, inferer := range palette.Inferers {
 		if inferer != withheldInferer {
 			remainingInferers = append(remainingInferers, inferer)
-			remainingInferersByWorker[inferer] = palette.InferenceByWorker[inferer]
 		}
 	}
-	palette.Inferers = remainingInferers // Override the inferers in the palette
-	palette.InferenceByWorker = remainingInferersByWorker
 
+	err := palette.UpdateInferersInfo(remainingInferers)
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error updating inferers")
+	}
 	paletteCopy := palette.Clone()
 
 	// Recalculate the forecast-implied inferences without the worker's inference
 	// This is necessary because the forecast-implied inferences are calculated based on the inferences of the inferers
-	err := palette.UpdateForecastImpliedInferences()
+	err = palette.UpdateForecastImpliedInferences()
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error recalculating forecast-implied inferences")
 	}
@@ -192,16 +192,16 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 	palette := b.palette.Clone()
 	// Remove the withheldForecaster from the palette's forecasters
 	remainingForecasters := make([]Worker, 0)
-	remainingForecastersRegrets := make(map[Worker]*StatefulRegret)
-
 	for _, forecaster := range palette.Forecasters {
 		if forecaster != withheldForecaster {
 			remainingForecasters = append(remainingForecasters, forecaster)
-			remainingForecastersRegrets[forecaster] = palette.ForecasterRegrets[forecaster]
 		}
 	}
-	palette.Forecasters = remainingForecasters // Override the forecasters in the palette
-	palette.ForecasterRegrets = remainingForecastersRegrets
+
+	err := palette.UpdateForecastersInfo(remainingForecasters)
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error updating forecasters")
+	}
 
 	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
@@ -250,7 +250,6 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	forecastImpliedInferencesWithForecaster := make(map[Worker]*emissions.Inference)
 	forecastImpliedInferencesWithForecaster[oneInForecaster] = palette.ForecastImpliedInferenceByWorker[oneInForecaster]
 	palette.ForecastImpliedInferenceByWorker = forecastImpliedInferencesWithForecaster
-	palette.Forecasters = []Worker{oneInForecaster}
 
 	regret, noPriorRegret, err := palette.K.GetOneInForecasterSelfNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster)
 	if err != nil {
@@ -266,6 +265,12 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 		noPriorRegret: noPriorRegret,
 	}
 
+	remainingForecaster := []Worker{oneInForecaster}
+	err = palette.UpdateForecastersInfo(remainingForecaster)
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error updating forecasters")
+	}
+
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
 	for _, inferer := range palette.Inferers {
 		regret, noPriorRegret, err := palette.K.GetOneInForecasterNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster, inferer)
@@ -277,6 +282,11 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 			regret:        regret.Value,
 			noPriorRegret: noPriorRegret,
 		}
+	}
+
+	err = palette.UpdateInferersInfo(palette.Inferers)
+	if err != nil {
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error updating inferers")
 	}
 
 	weights, err := palette.CalcWeightsGivenWorkers()
