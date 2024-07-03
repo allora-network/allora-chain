@@ -28,7 +28,6 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 		SingleNotNewInferer:              "",
 		NetworkCombinedLoss:              req.NetworkCombinedLoss,
 		Epsilon:                          req.Epsilon,
-		Tolerance:                        req.Tolerance,
 		PNorm:                            req.PNorm,
 		CNorm:                            req.CNorm,
 	}
