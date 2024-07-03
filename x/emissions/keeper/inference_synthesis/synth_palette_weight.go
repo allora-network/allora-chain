@@ -4,7 +4,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 // Given the current set of inferers and forecasters in the palette, calculate their
@@ -21,7 +21,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		regrets = append(regrets, forecasterRegrets...)
 	}
 	if len(regrets) == 0 {
-		return RegretInformedWeights{}, errorsmod.Wrapf(emissions.ErrEmptyArray, "No regrets to calculate weights")
+		return RegretInformedWeights{}, errorsmod.Wrapf(emissionstypes.ErrEmptyArray, "No regrets to calculate weights")
 	}
 
 	// Calc std dev of regrets + epsilon
@@ -195,8 +195,8 @@ func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
 		return regrets
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.InfererRegrets))
-	for _, worker := range p.InfererRegrets {
-		regrets = append(regrets, worker.regret)
+	for _, regretInfo := range p.InfererRegrets {
+		regrets = append(regrets, regretInfo.regret)
 	}
 	return regrets
 }
@@ -213,8 +213,68 @@ func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
 	return regrets
 }
 
+func (p *SynthPalette) UpdateInferersInfo(newInferers []Worker) error {
+	p.Inferers = newInferers
+	inferenceByWorker := make(map[Worker]*emissionstypes.Inference)
+	infererRegrets := make(map[Worker]*StatefulRegret)
+
+	p.InferersNewStatus = InferersAllNew
+	for _, inferer := range p.Inferers {
+		regretInfo, ok := p.InfererRegrets[inferer]
+		if !ok {
+			continue
+		}
+		if !regretInfo.noPriorRegret {
+			if p.InferersNewStatus == InferersAllNew {
+				p.InferersNewStatus = InferersAllNewExceptOne
+				p.SingleNotNewInferer = inferer
+			} else {
+				p.InferersNewStatus = InferersNotNew
+				p.SingleNotNewInferer = ""
+			}
+		}
+		infererRegrets[inferer] = regretInfo
+
+		inference, ok := p.InferenceByWorker[inferer]
+		if !ok {
+			continue
+		}
+		inferenceByWorker[inferer] = inference
+	}
+	p.InferenceByWorker = inferenceByWorker
+	p.InfererRegrets = infererRegrets
+
+	return nil
+}
+
+// UpdateForecasters updates the forecasters and their related fields in the SynthPalette.
+func (p *SynthPalette) UpdateForecastersInfo(newForecasters []Worker) error {
+	p.Forecasters = newForecasters
+	forecastByWorker := make(map[Worker]*emissionstypes.Forecast)
+	forecasterRegrets := make(map[Worker]*StatefulRegret)
+
+	for _, forecaster := range p.Forecasters {
+		regretInfo, ok := p.ForecasterRegrets[forecaster]
+		if !ok {
+			continue
+		}
+		forecasterRegrets[forecaster] = regretInfo
+
+		forecast, ok := p.ForecastByWorker[forecaster]
+		if !ok {
+			continue
+		}
+		forecastByWorker[forecaster] = forecast
+	}
+
+	p.ForecastByWorker = forecastByWorker
+	p.ForecasterRegrets = forecasterRegrets
+
+	return nil
+}
+
 func AccumulateWeights(
-	inference *emissions.Inference,
+	inference *emissionstypes.Inference,
 	weight alloraMath.Dec,
 	noPriorRegret bool,
 	allPeersAreNew bool,
