@@ -58,7 +58,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		PNorm:           msg.PNorm,
 		AlphaRegret:     msg.AlphaRegret,
 		AllowNegative:   msg.AllowNegative,
-		Tolerance:       msg.Tolerance,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {

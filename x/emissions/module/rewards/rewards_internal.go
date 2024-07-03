@@ -306,7 +306,7 @@ func GetConsensusScore(
 	reputerLosses,
 	consensusLosses,
 	mostDistantValues []alloraMath.Dec,
-	tolerance alloraMath.Dec,
+	epsilonReputer alloraMath.Dec,
 	epsilon alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	if len(reputerLosses) != len(consensusLosses) {
@@ -364,11 +364,11 @@ func GetConsensusScore(
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
-	distanceOverConsensusNormPlusFTolerance, err := distanceOverConsensusNorm.Add(tolerance)
+	distanceOverConsensusNormPlusEpsilonReputer, err := distanceOverConsensusNorm.Add(epsilonReputer)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
-	score, err := alloraMath.OneDec().Quo(distanceOverConsensusNormPlusFTolerance)
+	score, err := alloraMath.OneDec().Quo(distanceOverConsensusNormPlusEpsilonReputer)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
@@ -385,7 +385,7 @@ func GetAllConsensusScores(
 	stakes []alloraMath.Dec,
 	allListeningCoefficients []alloraMath.Dec,
 	numReputers int64,
-	tolerance alloraMath.Dec,
+	epsilonReputer alloraMath.Dec,
 	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
 	// Get adjusted stakes
@@ -414,7 +414,7 @@ func GetAllConsensusScores(
 	scores := make([]alloraMath.Dec, numReputers)
 	for i := int64(0); i < numReputers; i++ {
 		losses := allLosses[i]
-		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues, tolerance, epsilon)
+		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues, epsilonReputer, epsilon)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error in GetConsensusScore")
 		}
@@ -436,7 +436,7 @@ func GetAllReputersOutput(
 	numReputers int64,
 	learningRate alloraMath.Dec,
 	gradientDescentMaxIters uint64,
-	tolerance alloraMath.Dec,
+	epsilonReputer alloraMath.Dec,
 	epsilon alloraMath.Dec,
 	minStakeFraction alloraMath.Dec,
 	maxGradientThreshold alloraMath.Dec,
@@ -462,7 +462,7 @@ func GetAllReputersOutput(
 			coeffs := make([]alloraMath.Dec, len(coefficients))
 			copy(coeffs, coefficients)
 
-			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, tolerance, epsilon)
+			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, epsilonReputer, epsilon)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
@@ -473,7 +473,7 @@ func GetAllReputersOutput(
 				return nil, nil, err
 			}
 
-			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, tolerance, epsilon)
+			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, epsilonReputer, epsilon)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}

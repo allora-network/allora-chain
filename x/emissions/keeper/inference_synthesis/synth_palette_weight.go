@@ -33,7 +33,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	// Add epsilon to standard deviation
 	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.Epsilon)
 	if err != nil {
-		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation of regrets")
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation")
 	}
 
 	// Normalize the regrets and find the max normalized regret among them

@@ -44,7 +44,6 @@ type SynthRequest struct {
 	Forecasts           *emissions.Forecasts
 	NetworkCombinedLoss Loss
 	Epsilon             alloraMath.Dec
-	Tolerance           alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }
@@ -83,7 +82,6 @@ type SynthPalette struct {
 	SingleNotNewInferer Worker
 	NetworkCombinedLoss Loss
 	Epsilon             alloraMath.Dec
-	Tolerance           alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }

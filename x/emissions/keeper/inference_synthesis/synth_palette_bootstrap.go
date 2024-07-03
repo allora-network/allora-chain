@@ -96,7 +96,6 @@ func (p SynthPalette) Clone() SynthPalette {
 		SingleNotNewInferer:              p.SingleNotNewInferer,
 		NetworkCombinedLoss:              p.NetworkCombinedLoss,
 		Epsilon:                          p.Epsilon,
-		Tolerance:                        p.Tolerance,
 		PNorm:                            p.PNorm,
 		CNorm:                            p.CNorm,
 	}
