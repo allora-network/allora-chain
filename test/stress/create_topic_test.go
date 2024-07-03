@@ -5,7 +5,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/tree/master/require"
 )
 
 // Broadcast the tx to create a new topic
