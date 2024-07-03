@@ -41,6 +41,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	aliceNotRegisteredAsWorker, err := m.Client.QueryEmissions().IsWorkerRegisteredInTopicId(
 		m.Ctx,
 		&emissionstypes.QueryIsWorkerRegisteredInTopicIdRequest{
+			TopicId: 1,
 			Address: m.AliceAddr,
 		},
 	)
@@ -82,6 +83,7 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	bobNotRegisteredAsWorker, err := m.Client.QueryEmissions().IsReputerRegisteredInTopicId(
 		m.Ctx,
 		&emissionstypes.QueryIsReputerRegisteredInTopicIdRequest{
+			TopicId: 1,
 			Address: m.BobAddr,
 		},
 	)
