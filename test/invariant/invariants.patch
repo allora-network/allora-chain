@@ -1,0 +1,43 @@
+diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
+index 1ca10a02..7a755bac 100644
+--- a/x/emissions/module/abci.go
++++ b/x/emissions/module/abci.go
+@@ -6,6 +6,7 @@ import (
+ 	"sync"
+ 
+ 	"cosmossdk.io/errors"
++	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+ 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+ 	"github.com/allora-network/allora-chain/x/emissions/types"
+ 	sdk "github.com/cosmos/cosmos-sdk/types"
+@@ -13,6 +14,10 @@ import (
+ 
+ func EndBlocker(ctx context.Context, am AppModule) error {
+ 	sdkCtx := sdk.UnwrapSDKContext(ctx)
++	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
++	if invariantFailed {
++		panic(fmt.Sprintf("Invariants broken: %s", invariantMessage))
++	}
+ 	blockHeight := sdkCtx.BlockHeight()
+ 	sdkCtx.Logger().Debug(
+ 		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
+diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
+index 2cda57ab..3f619551 100644
+--- a/x/emissions/module/module.go
++++ b/x/emissions/module/module.go
+@@ -18,6 +18,15 @@ import (
+ 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
+ )
+ 
++var (
++	_ module.HasInvariants = AppModule{}
++)
++
++// RegisterInvariants registers the emissions module invariants.
++func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
++	keeper.RegisterInvariants(ir, &am.keeper)
++}
++
+ var (
+ 	_ module.AppModuleBasic   = AppModule{}
+ 	_ module.HasGenesis       = AppModule{}

@@ -51,6 +51,9 @@ jobs:
       with:
         go-version: 1.22.x
 
+    - name: Apply Invariants Patch
+      run: git apply ./test/invariant/invariants.patch
+
     - name: Run allora l1 chain
       run: bash ./test/local_testnet_l1.sh
 
