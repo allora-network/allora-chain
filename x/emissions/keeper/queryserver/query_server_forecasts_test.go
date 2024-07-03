@@ -5,6 +5,7 @@ import (
 )
 
 func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryserver := s.queryServer
