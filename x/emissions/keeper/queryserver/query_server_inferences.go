@@ -39,7 +39,10 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *types.Query
 }
 
 // Return full set of inferences in I_i from the chain
-func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *types.QueryNetworkInferencesAtBlockRequest) (*types.QueryNetworkInferencesAtBlockResponse, error) {
+func (qs queryServer) GetNetworkInferencesAtBlock(
+	ctx context.Context,
+	req *types.QueryNetworkInferencesAtBlockRequest,
+) (*types.QueryNetworkInferencesAtBlockResponse, error) {
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -65,13 +68,13 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *type
 // Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences
 func (qs queryServer) GetLatestNetworkInference(
 	ctx context.Context,
-	req *types.QueryLatestNetworkInferencesAtBlockRequest,
+	req *types.QueryLatestNetworkInferencesRequest,
 ) (
-	*types.QueryLatestNetworkInferencesAtBlockResponse,
+	*types.QueryLatestNetworkInferencesResponse,
 	error,
 ) {
 
-	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err := synth.GetLatestNetworkInference(
+	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err := synth.GetLatestNetworkInference(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
@@ -80,10 +83,76 @@ func (qs queryServer) GetLatestNetworkInference(
 		return nil, err
 	}
 
-	return &types.QueryLatestNetworkInferencesAtBlockResponse{
+	return &types.QueryLatestNetworkInferencesResponse{
 		NetworkInferences:         networkInferences,
 		InfererWeights:            synth.ConvertWeightsToArrays(infererWeights),
 		ForecasterWeights:         synth.ConvertWeightsToArrays(forecasterWeights),
 		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
+		InferenceBlockHeight:      inferenceBlockHeight,
+		LossBlockHeight:           lossBlockHeight,
+	}, nil
+}
+
+func (qs queryServer) GetLatestNetworkInferenceWithLosses(
+	ctx context.Context,
+	req *types.QueryLatestNetworkInferencesRequest,
+) (
+	*types.QueryLatestNetworkInferencesResponse,
+	error,
+) {
+	topic, err := qs.k.GetTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	inferences, inferenceBlockHeight, err := qs.k.GetLatestTopicInferences(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	previousLossBlockHeight := inferenceBlockHeight - topic.EpochLength
+
+	for true {
+		if previousLossBlockHeight < 0 {
+			return nil, status.Errorf(codes.NotFound, "losses not yet available for topic %v", req.TopicId)
+		}
+
+		if len(inferences.Inferences) > 0 {
+			_, err := qs.k.GetNetworkLossBundleAtBlock(ctx, req.TopicId, previousLossBlockHeight)
+
+			if err == nil {
+				break
+			}
+		}
+
+		inferenceBlockHeight -= topic.EpochLength
+		previousLossBlockHeight -= topic.EpochLength
+
+		inferences, err = qs.k.GetInferencesAtBlock(ctx, req.TopicId, inferenceBlockHeight)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err :=
+		synth.GetNetworkInferencesAtBlock(
+			sdk.UnwrapSDKContext(ctx),
+			qs.k,
+			req.TopicId,
+			inferenceBlockHeight,
+			previousLossBlockHeight,
+		)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryLatestNetworkInferencesResponse{
+		NetworkInferences:         networkInferences,
+		InfererWeights:            synth.ConvertWeightsToArrays(infererWeights),
+		ForecasterWeights:         synth.ConvertWeightsToArrays(forecasterWeights),
+		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
+		InferenceBlockHeight:      inferenceBlockHeight,
+		LossBlockHeight:           previousLossBlockHeight,
 	}, nil
 }

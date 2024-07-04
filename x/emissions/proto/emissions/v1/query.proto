@@ -170,8 +170,14 @@ service Query {
                                    "{block_height_last_inference}/last_reward/{block_height_last_reward}";
   }
 
-  rpc GetLatestNetworkInference(QueryLatestNetworkInferencesAtBlockRequest)
-      returns (QueryLatestNetworkInferencesAtBlockResponse) {
+  rpc GetLatestNetworkInference(QueryLatestNetworkInferencesRequest)
+      returns (QueryLatestNetworkInferencesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
+  }
+
+  rpc GetLatestNetworkInferenceWithLosses(QueryLatestNetworkInferencesRequest)
+      returns (QueryLatestNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
   }
@@ -415,7 +421,7 @@ message QueryNetworkInferencesAtBlockRequest {
   int64 block_height_last_reward = 3;
 }
 
-message QueryLatestNetworkInferencesAtBlockRequest {
+message QueryLatestNetworkInferencesRequest {
   uint64 topic_id = 1;
 }
 
@@ -423,11 +429,13 @@ message QueryNetworkInferencesAtBlockResponse {
   ValueBundle network_inferences = 1;
 }
 
-message QueryLatestNetworkInferencesAtBlockResponse {
+message QueryLatestNetworkInferencesResponse {
   ValueBundle network_inferences = 1;
   repeated RegretInformedWeight inferer_weights = 2;
   repeated RegretInformedWeight forecaster_weights = 3;
   repeated WorkerAttributedValue forecastImpliedInferences = 4;
+  int64 inferenceBlockHeight = 5;
+	int64 lossBlockHeight = 6;
 }
 
 message QueryIsWorkerRegisteredInTopicIdRequest {
