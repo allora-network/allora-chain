@@ -170,8 +170,7 @@ service Query {
                                    "{block_height_last_inference}/last_reward/{block_height_last_reward}";
   }
 
-  rpc GetLatestNetworkInference(QueryLatestNetworkInferencesRequest)
-      returns (QueryLatestNetworkInferencesResponse) {
+  rpc GetLatestNetworkInference(QueryLatestNetworkInferencesRequest) returns (QueryLatestNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
   }
@@ -435,7 +434,7 @@ message QueryLatestNetworkInferencesResponse {
   repeated RegretInformedWeight forecaster_weights = 3;
   repeated WorkerAttributedValue forecastImpliedInferences = 4;
   int64 inferenceBlockHeight = 5;
-	int64 lossBlockHeight = 6;
+  int64 lossBlockHeight = 6;
 }
 
 message QueryIsWorkerRegisteredInTopicIdRequest {
