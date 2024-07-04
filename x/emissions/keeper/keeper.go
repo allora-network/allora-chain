@@ -1695,11 +1695,16 @@ func (k *Keeper) DripTopicFeeRevenue(ctx context.Context, topicId TopicId, block
 		return err
 	}
 
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	epsilon := moduleParams.Epsilon
+	epsilon := topic.Epsilon
 	topicFeeRevenueDecayRate := moduleParams.TopicFeeRevenueDecayRate
 
 	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue)

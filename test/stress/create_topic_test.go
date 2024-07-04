@@ -27,6 +27,7 @@ func createTopic(
 		PNorm:           alloraMath.NewDecFromInt64(3),
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		AllowNegative:   true,
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	txResp, err := m.Client.BroadcastTx(m.Ctx, creator.aa.acc, createTopicRequest)

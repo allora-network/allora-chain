@@ -173,7 +173,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
-	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, params.Epsilon)
+	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, topic.Epsilon)
 	if err != nil {
 		return nil, err
 	}

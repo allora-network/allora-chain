@@ -27,6 +27,7 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 		DefaultArg:      "ETH",
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
