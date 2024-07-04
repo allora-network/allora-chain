@@ -2,7 +2,6 @@ package queryserver
 
 import (
 	"context"
-	"log"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -167,7 +166,6 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 		)
 
 	if err != nil {
-		log.Printf("HERE 8")
 		return nil, err
 	}
 
