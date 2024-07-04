@@ -3,6 +3,7 @@ package inference_synthesis
 import (
 	"errors"
 	"fmt"
+	"sort"
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
@@ -12,6 +13,91 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
+
+func cumulativeSum(arr []float64) []float64 {
+	result := make([]float64, len(arr))
+	sum := 0.0
+	for i, val := range arr {
+		sum += val
+		result[i] = sum
+	}
+	return result
+}
+
+func linearInterpolation(x, xp, fp []float64) ([]float64, error) {
+	if len(xp) != len(fp) {
+		return nil, errors.New("xp and fp must have the same length")
+	}
+
+	result := make([]float64, len(x))
+	for i, xi := range x {
+		if xi <= xp[0] {
+			result[i] = fp[0]
+		} else if xi >= xp[len(xp)-1] {
+			result[i] = fp[len(fp)-1]
+		} else {
+			// Find the interval xp[i] <= xi < xp[i + 1]
+			j := 0
+			for xi >= xp[j+1] {
+				j++
+			}
+			// Linear interpolation formula
+			t := (xi - xp[j]) / (xp[j+1] - xp[j])
+			result[i] = fp[j]*(1-t) + fp[j+1]*t
+		}
+	}
+	return result, nil
+}
+
+func weightedPercentile(data, weights, percentiles []float64) ([]float64, error) {
+	if len(weights) != len(data) {
+		return nil, errors.New("the length of data and weights must be the same")
+	}
+	for _, p := range percentiles {
+		if p > 100 || p < 0 {
+			return nil, errors.New("percentile must have a value between 0 and 100")
+		}
+	}
+
+	// Sort data and weights
+	type pair struct {
+		value  float64
+		weight float64
+	}
+	pairs := make([]pair, len(data))
+	for i := range data {
+		pairs[i] = pair{data[i], weights[i]}
+	}
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].value < pairs[j].value
+	})
+
+	sortedData := make([]float64, len(data))
+	sortedWeights := make([]float64, len(data))
+	for i := range pairs {
+		sortedData[i] = pairs[i].value
+		sortedWeights[i] = pairs[i].weight
+	}
+
+	// Compute the cumulative sum of weights and normalize by the last value
+	csw := cumulativeSum(sortedWeights)
+	normalizedWeights := make([]float64, len(csw))
+	for i, value := range csw {
+		normalizedWeights[i] = (value - 0.5*sortedWeights[i]) / csw[len(csw)-1]
+	}
+
+	// Interpolate to compute the percentiles
+	quantiles := make([]float64, len(percentiles))
+	for i, p := range percentiles {
+		quantiles[i] = p / 100
+	}
+	result, err := linearInterpolation(quantiles, normalizedWeights, sortedData)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
 
 // Calculates all network inferences in the set I_i given historical state (e.g. regrets)
 // and data from workers (e.g. inferences, forecast-implied inferences)
