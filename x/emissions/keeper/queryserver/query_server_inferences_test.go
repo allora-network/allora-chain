@@ -1,8 +1,6 @@
 package queryserver_test
 
 import (
-	"log"
-
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -412,8 +410,6 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	response, err := queryServer.GetLatestNetworkInference(s.ctx, req)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
-
-	log.Printf("response: %v", response)
 
 	require.Equal(len(response.InfererWeights), 5)
 	require.Equal(len(response.ForecasterWeights), 3)
