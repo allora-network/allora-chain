@@ -433,8 +433,8 @@ message QueryLatestNetworkInferencesResponse {
   repeated RegretInformedWeight inferer_weights = 2;
   repeated RegretInformedWeight forecaster_weights = 3;
   repeated WorkerAttributedValue forecastImpliedInferences = 4;
-  int64 inferenceBlockHeight = 5;
-  int64 lossBlockHeight = 6;
+  int64 inference_block_height = 5;
+  int64 loss_block_height = 6;
 }
 
 message QueryIsWorkerRegisteredInTopicIdRequest {
