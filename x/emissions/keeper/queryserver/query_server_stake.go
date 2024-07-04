@@ -11,6 +11,7 @@ import (
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // TotalStake defines the handler for the Query/TotalStake RPC method.
@@ -27,8 +28,16 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalSt
 // Also includes stake that is queued for removal.
 func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.QueryReputerStakeInTopicRequest) (*types.QueryReputerStakeInTopicResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
 		return nil, err
 	}
+
 	stake, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.Address)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -41,6 +50,13 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 // including their stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
 func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *types.QueryMultiReputerStakeInTopicRequest) (*types.QueryMultiReputerStakeInTopicResponse, error) {
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
 	maxLimit := types.DefaultParams().MaxPageLimit
 	moduleParams, err := qs.k.GetParams(ctx)
 	if err == nil {
@@ -71,6 +87,17 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 // and the total stake data structure. Which means if invariants are ever violated
 // in the data structures for staking, this function will return an incorrect value.
 func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req *types.QueryStakeFromReputerInTopicInSelfRequest) (*types.QueryStakeFromReputerInTopicInSelfResponse, error) {
+	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
 	stakeOnReputerInTopic, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.ReputerAddress)
 	if err != nil {
 		return nil, err
@@ -89,8 +116,16 @@ func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req 
 // Retrieves total delegate stake on a given reputer address in a given topic
 func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.QueryDelegateStakeInTopicInReputerRequest) (*types.QueryDelegateStakeInTopicInReputerResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
 		return nil, err
 	}
+
 	stake, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, req.ReputerAddress)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -101,11 +136,19 @@ func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req 
 
 func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicInReputerRequest) (*types.QueryStakeFromDelegatorInTopicInReputerResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
-		return nil, errors.Wrapf(err, "reputer address")
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid reputer address: %s", err)
 	}
 	if err := qs.k.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
-		return nil, errors.Wrapf(err, "delegator address")
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid delegator address: %s", err)
 	}
+
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
 	stake, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, req.DelegatorAddress, req.ReputerAddress)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -116,8 +159,16 @@ func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context,
 
 func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicRequest) (*types.QueryStakeFromDelegatorInTopicResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
 		return nil, err
 	}
+
 	stake, err := qs.k.GetStakeFromDelegatorInTopic(ctx, req.TopicId, req.DelegatorAddress)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -128,6 +179,13 @@ func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *typ
 
 // Retrieves total stake in a given topic
 func (qs queryServer) GetTopicStake(ctx context.Context, req *types.QueryTopicStakeRequest) (*types.QueryTopicStakeResponse, error) {
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
 	stake, err := qs.k.GetTopicStake(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -191,6 +249,18 @@ func (qs queryServer) GetStakeRemovalInfo(
 	req *types.QueryStakeRemovalInfoRequest,
 ) (*types.QueryStakeRemovalInfoResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	if err := qs.k.ValidateStringIsBech32(req.Reputer); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
+	}
+
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
 	removal, found, err := qs.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, req.Reputer, req.TopicId)
 	if err != nil && !found {
 		return nil, err
@@ -206,6 +276,21 @@ func (qs queryServer) GetDelegateStakeRemovalInfo(
 	req *types.QueryDelegateStakeRemovalInfoRequest,
 ) (*types.QueryDelegateStakeRemovalInfoResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	if err := qs.k.ValidateStringIsBech32(req.Reputer); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid reputer address: %s", err)
+	}
+	if err := qs.k.ValidateStringIsBech32(req.Delegator); err != nil {
+		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid delegator address: %s", err)
+	}
+
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
 	removal, found, err := qs.k.
 		GetDelegateStakeRemovalForDelegatorReputerAndTopicId(sdkCtx, req.Delegator, req.Reputer, req.TopicId)
 	if err != nil {
