@@ -417,7 +417,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	require.Equal(len(response.ForecastImpliedInferences), 3)
 }
 
-func (s *KeeperTestSuite) TestGetLatestNetworkInferenceWithLosses() {
+func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -587,6 +587,8 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferenceWithLosses() {
 	require.Equal(len(response.InfererWeights), 5)
 	require.Equal(len(response.ForecasterWeights), 3)
 	require.Equal(len(response.ForecastImpliedInferences), 3)
+	require.Equal(len(response.ConfidenceIntervalRawPercentiles), 5)
+	require.Equal(len(response.ConfidenceIntervalValues), 5)
 
 	require.Equal(response.InferenceBlockHeight, inferenceBlockHeight)
 	require.Equal(response.LossBlockHeight, lossBlockHeight)
