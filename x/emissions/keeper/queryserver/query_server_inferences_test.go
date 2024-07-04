@@ -579,7 +579,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferenceWithLosses() {
 	req := &types.QueryLatestNetworkInferencesRequest{
 		TopicId: topicId,
 	}
-	response, err := queryServer.GetLatestNetworkInferenceWithLosses(s.ctx, req)
+	response, err := queryServer.GetLatestAvailableNetworkInference(s.ctx, req)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 

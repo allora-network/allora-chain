@@ -175,7 +175,7 @@ service Query {
     option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
   }
 
-  rpc GetLatestNetworkInferenceWithLosses(QueryLatestNetworkInferencesRequest)
+  rpc GetLatestAvailableNetworkInference(QueryLatestNetworkInferencesRequest)
       returns (QueryLatestNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";

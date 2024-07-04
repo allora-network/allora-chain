@@ -47,7 +47,7 @@ const (
 	Query_IsReputerRegisteredInTopicId_FullMethodName          = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
 	Query_GetNetworkInferencesAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
 	Query_GetLatestNetworkInference_FullMethodName             = "/emissions.v1.Query/GetLatestNetworkInference"
-	Query_GetLatestNetworkInferenceWithLosses_FullMethodName   = "/emissions.v1.Query/GetLatestNetworkInferenceWithLosses"
+	Query_GetLatestAvailableNetworkInference_FullMethodName    = "/emissions.v1.Query/GetLatestAvailableNetworkInference"
 	Query_IsWhitelistAdmin_FullMethodName                      = "/emissions.v1.Query/IsWhitelistAdmin"
 )
 
@@ -84,7 +84,7 @@ type QueryClient interface {
 	IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
 	GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
-	GetLatestNetworkInferenceWithLosses(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
+	GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
 	IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error)
 }
 
@@ -348,9 +348,9 @@ func (c *queryClient) GetLatestNetworkInference(ctx context.Context, in *QueryLa
 	return out, nil
 }
 
-func (c *queryClient) GetLatestNetworkInferenceWithLosses(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error) {
+func (c *queryClient) GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error) {
 	out := new(QueryLatestNetworkInferencesResponse)
-	err := c.cc.Invoke(ctx, Query_GetLatestNetworkInferenceWithLosses_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Query_GetLatestAvailableNetworkInference_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -399,7 +399,7 @@ type QueryServer interface {
 	IsReputerRegisteredInTopicId(context.Context, *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
 	GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
-	GetLatestNetworkInferenceWithLosses(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
+	GetLatestAvailableNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
 	IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
@@ -492,8 +492,8 @@ func (UnimplementedQueryServer) GetNetworkInferencesAtBlock(context.Context, *Qu
 func (UnimplementedQueryServer) GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLatestNetworkInference not implemented")
 }
-func (UnimplementedQueryServer) GetLatestNetworkInferenceWithLosses(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLatestNetworkInferenceWithLosses not implemented")
+func (UnimplementedQueryServer) GetLatestAvailableNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestAvailableNetworkInference not implemented")
 }
 func (UnimplementedQueryServer) IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistAdmin not implemented")
@@ -1015,20 +1015,20 @@ func _Query_GetLatestNetworkInference_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetLatestNetworkInferenceWithLosses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_GetLatestAvailableNetworkInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryLatestNetworkInferencesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetLatestNetworkInferenceWithLosses(ctx, in)
+		return srv.(QueryServer).GetLatestAvailableNetworkInference(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetLatestNetworkInferenceWithLosses_FullMethodName,
+		FullMethod: Query_GetLatestAvailableNetworkInference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetLatestNetworkInferenceWithLosses(ctx, req.(*QueryLatestNetworkInferencesRequest))
+		return srv.(QueryServer).GetLatestAvailableNetworkInference(ctx, req.(*QueryLatestNetworkInferencesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1171,8 +1171,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetLatestNetworkInference_Handler,
 		},
 		{
-			MethodName: "GetLatestNetworkInferenceWithLosses",
-			Handler:    _Query_GetLatestNetworkInferenceWithLosses_Handler,
+			MethodName: "GetLatestAvailableNetworkInference",
+			Handler:    _Query_GetLatestAvailableNetworkInference_Handler,
 		},
 		{
 			MethodName: "IsWhitelistAdmin",

@@ -110,7 +110,7 @@ func (qs queryServer) GetLatestNetworkInference(
 	}, nil
 }
 
-func (qs queryServer) GetLatestNetworkInferenceWithLosses(
+func (qs queryServer) GetLatestAvailableNetworkInference(
 	ctx context.Context,
 	req *types.QueryLatestNetworkInferencesRequest,
 ) (
