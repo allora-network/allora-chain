@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+	"log"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -117,26 +118,36 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	*types.QueryLatestNetworkInferencesResponse,
 	error,
 ) {
+
+	// Find the latest inference block height
+	_, inferenceBlockHeight, err := qs.k.GetLatestTopicInferences(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
 
-	inferences, inferenceBlockHeight, err := qs.k.GetLatestTopicInferences(ctx, req.TopicId)
+	params, err := qs.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	// calculate the previous loss block height
 	previousLossBlockHeight := inferenceBlockHeight - topic.EpochLength
 
-	for true {
+	for i := 0; i < int(params.DefaultPageLimit); i++ {
 		if previousLossBlockHeight < 0 {
 			return nil, status.Errorf(codes.NotFound, "losses not yet available for topic %v", req.TopicId)
 		}
 
-		if len(inferences.Inferences) > 0 {
-			_, err := qs.k.GetNetworkLossBundleAtBlock(ctx, req.TopicId, previousLossBlockHeight)
-
+		// check for inferences
+		inferences, err := qs.k.GetInferencesAtBlock(ctx, req.TopicId, inferenceBlockHeight)
+		if err == nil && inferences != nil && len(inferences.Inferences) > 0 {
+			// check for losses. If they exist, then break so we can query
+			_, err = qs.k.GetNetworkLossBundleAtBlock(ctx, req.TopicId, previousLossBlockHeight)
 			if err == nil {
 				break
 			}
@@ -144,11 +155,6 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 
 		inferenceBlockHeight -= topic.EpochLength
 		previousLossBlockHeight -= topic.EpochLength
-
-		inferences, err = qs.k.GetInferencesAtBlock(ctx, req.TopicId, inferenceBlockHeight)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err :=
@@ -161,6 +167,7 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 		)
 
 	if err != nil {
+		log.Printf("HERE 8")
 		return nil, err
 	}
 
