@@ -2,12 +2,15 @@ package queryserver
 
 import (
 	"context"
+	"strconv"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -100,13 +103,31 @@ func (qs queryServer) GetLatestNetworkInference(
 		return nil, err
 	}
 
+	ciRawPercentiles, ciValues, err :=
+		qs.GetConfidenceIntervalsForInferenceData(
+			networkInferences,
+			forecastImpliedInferenceByWorker,
+			infererWeights,
+			forecasterWeights,
+		)
+
+	if ciRawPercentiles == nil {
+		ciRawPercentiles = []alloraMath.Dec{}
+	}
+
+	if ciValues == nil {
+		ciValues = []alloraMath.Dec{}
+	}
+
 	return &types.QueryLatestNetworkInferencesResponse{
-		NetworkInferences:         networkInferences,
-		InfererWeights:            synth.ConvertWeightsToArrays(infererWeights),
-		ForecasterWeights:         synth.ConvertWeightsToArrays(forecasterWeights),
-		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
-		InferenceBlockHeight:      inferenceBlockHeight,
-		LossBlockHeight:           lossBlockHeight,
+		NetworkInferences:                networkInferences,
+		InfererWeights:                   synth.ConvertWeightsToArrays(infererWeights),
+		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasterWeights),
+		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
+		InferenceBlockHeight:             inferenceBlockHeight,
+		LossBlockHeight:                  lossBlockHeight,
+		ConfidenceIntervalRawPercentiles: ciRawPercentiles,
+		ConfidenceIntervalValues:         ciValues,
 	}, nil
 }
 
@@ -164,17 +185,131 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 			inferenceBlockHeight,
 			previousLossBlockHeight,
 		)
-
 	if err != nil {
 		return nil, err
 	}
 
+	ciRawPercentiles, ciValues, err :=
+		qs.GetConfidenceIntervalsForInferenceData(
+			networkInferences,
+			forecastImpliedInferenceByWorker,
+			infererWeights,
+			forecasterWeights,
+		)
+
+	if ciRawPercentiles == nil {
+		ciRawPercentiles = []alloraMath.Dec{}
+	}
+
+	if ciValues == nil {
+		ciValues = []alloraMath.Dec{}
+	}
+
 	return &types.QueryLatestNetworkInferencesResponse{
-		NetworkInferences:         networkInferences,
-		InfererWeights:            synth.ConvertWeightsToArrays(infererWeights),
-		ForecasterWeights:         synth.ConvertWeightsToArrays(forecasterWeights),
-		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
-		InferenceBlockHeight:      inferenceBlockHeight,
-		LossBlockHeight:           previousLossBlockHeight,
+		NetworkInferences:                networkInferences,
+		InfererWeights:                   synth.ConvertWeightsToArrays(infererWeights),
+		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasterWeights),
+		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
+		InferenceBlockHeight:             inferenceBlockHeight,
+		LossBlockHeight:                  previousLossBlockHeight,
+		ConfidenceIntervalRawPercentiles: ciRawPercentiles,
+		ConfidenceIntervalValues:         ciValues,
 	}, nil
+}
+
+func (qs queryServer) GetConfidenceIntervalsForInferenceData(
+	networkInferences *emissions.ValueBundle,
+	forecastImpliedInferenceByWorker map[string]*emissions.Inference,
+	infererWeights map[string]alloraMath.Dec,
+	forecasterWeights map[string]alloraMath.Dec,
+) ([]alloraMath.Dec, []alloraMath.Dec, error) {
+
+	inferersToInference := make(map[string]float64)
+	for _, infererValue := range networkInferences.InfererValues {
+		floatValue, err := stringToFloat64(infererValue.Value.String())
+		if err != nil {
+			return nil, nil, err
+		}
+		inferersToInference[infererValue.Worker] = floatValue
+	}
+
+	forecastersToInference := make(map[string]float64)
+	for _, forecasterValue := range networkInferences.ForecasterValues {
+		floatValue, err := stringToFloat64(forecasterValue.Value.String())
+		if err != nil {
+			return nil, nil, err
+		}
+		forecastersToInference[forecasterValue.Worker] = floatValue
+	}
+
+	inferersToWeights := make(map[string]float64)
+	for worker, weight := range infererWeights {
+		floatValue, err := stringToFloat64(weight.String())
+		if err != nil {
+			return nil, nil, err
+		}
+		inferersToWeights[worker] = floatValue
+	}
+
+	forecastersToWeights := make(map[string]float64)
+	for worker, weight := range forecasterWeights {
+		floatValue, err := stringToFloat64(weight.String())
+		if err != nil {
+			return nil, nil, err
+		}
+		forecastersToWeights[worker] = floatValue
+	}
+
+	var inferences []float64
+	var weights []float64
+
+	for inferer, inference := range inferersToInference {
+		weight, exists := inferersToWeights[inferer]
+		if exists {
+			inferences = append(inferences, inference)
+			weights = append(weights, weight)
+		}
+	}
+
+	for forecaster, inference := range forecastersToInference {
+		weight, exists := forecastersToWeights[forecaster]
+		if exists {
+			inferences = append(inferences, inference)
+			weights = append(weights, weight)
+		}
+	}
+
+	ciRawPercentiles := []float64{2.28, 15.87, 50, 84.13, 97.72}
+
+	var ciValues []float64
+	var err error
+	if len(inferences) == 0 {
+		ciValues = []float64{}
+		ciRawPercentiles = []float64{}
+	} else {
+		ciValues, err = synth.WeightedPercentile(inferences, weights, ciRawPercentiles)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	ciValuesAlloraMath := make([]alloraMath.Dec, len(ciValues))
+	for i, value := range ciValues {
+		ciValuesAlloraMath[i] = alloraMath.MustNewDecFromString(float64ToString(value))
+	}
+
+	ciRawPercentilesAlloraMath := make([]alloraMath.Dec, len(ciRawPercentiles))
+	for i, value := range ciRawPercentiles {
+		ciRawPercentilesAlloraMath[i] = alloraMath.MustNewDecFromString(float64ToString(value))
+	}
+
+	return ciRawPercentilesAlloraMath, ciValuesAlloraMath, nil
+}
+
+func stringToFloat64(s string) (float64, error) {
+	return strconv.ParseFloat(s, 64)
+}
+
+func float64ToString(f float64) string {
+	return strconv.FormatFloat(f, 'f', -1, 64)
 }
