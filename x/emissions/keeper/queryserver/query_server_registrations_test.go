@@ -163,10 +163,11 @@ func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
 }
 
 func (s *KeeperTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
 
-	notRegisteredWorkerAddr := "allo1wuas449fqmam8juxu935ptekhuul9hpjt8ceal"
+	notRegisteredWorkerAddr := "allo12gjf2mrtva0p33gqtvsxp37zgglmdgpwaq22m2"
 
 	// Test: Worker is not registered under the topic
 	notRegisteredRequest := &types.QueryIsWorkerRegisteredInTopicIdRequest{

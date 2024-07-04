@@ -8,6 +8,7 @@ import (
 )
 
 func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
