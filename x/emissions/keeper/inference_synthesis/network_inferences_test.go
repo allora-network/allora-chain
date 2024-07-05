@@ -757,18 +757,3 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 		}
 	}
 }
-
-func (s *InferenceSynthesisTestSuite) TestWeightedInferencesCalculation() {
-
-	data := []float64{10, 20, 30, 40, 50}
-	weights := []float64{0.1, 0.2, 0.3, 0.4, 0.5}
-	percentiles := []float64{10, 25, 50, 75, 90}
-	expected := []float64{16.666666666666664, 27, 38.57142857142857, 47.22222222222222, 50}
-
-	result, err := inferencesynthesis.WeightedPercentile(data, weights, percentiles)
-	s.Require().NoError(err)
-	s.Require().Len(result, len(expected))
-	for i, r := range result {
-		s.Require().InDelta(expected[i], r, 0.000001)
-	}
-}

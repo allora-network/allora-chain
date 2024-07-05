@@ -2,7 +2,6 @@ package queryserver
 
 import (
 	"context"
-	"strconv"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -227,44 +226,28 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 	forecasterWeights map[string]alloraMath.Dec,
 ) ([]alloraMath.Dec, []alloraMath.Dec, error) {
 
-	inferersToInference := make(map[string]float64)
+	inferersToInference := make(map[string]alloraMath.Dec)
 	for _, infererValue := range networkInferences.InfererValues {
-		floatValue, err := stringToFloat64(infererValue.Value.String())
-		if err != nil {
-			return nil, nil, err
-		}
-		inferersToInference[infererValue.Worker] = floatValue
+		inferersToInference[infererValue.Worker] = infererValue.Value
 	}
 
-	forecastersToInference := make(map[string]float64)
+	forecastersToInference := make(map[string]alloraMath.Dec)
 	for _, forecasterValue := range networkInferences.ForecasterValues {
-		floatValue, err := stringToFloat64(forecasterValue.Value.String())
-		if err != nil {
-			return nil, nil, err
-		}
-		forecastersToInference[forecasterValue.Worker] = floatValue
+		forecastersToInference[forecasterValue.Worker] = forecasterValue.Value
 	}
 
-	inferersToWeights := make(map[string]float64)
+	inferersToWeights := make(map[string]alloraMath.Dec)
 	for worker, weight := range infererWeights {
-		floatValue, err := stringToFloat64(weight.String())
-		if err != nil {
-			return nil, nil, err
-		}
-		inferersToWeights[worker] = floatValue
+		inferersToWeights[worker] = weight
 	}
 
-	forecastersToWeights := make(map[string]float64)
+	forecastersToWeights := make(map[string]alloraMath.Dec)
 	for worker, weight := range forecasterWeights {
-		floatValue, err := stringToFloat64(weight.String())
-		if err != nil {
-			return nil, nil, err
-		}
-		forecastersToWeights[worker] = floatValue
+		forecastersToWeights[worker] = weight
 	}
 
-	var inferences []float64
-	var weights []float64
+	var inferences []alloraMath.Dec
+	var weights []alloraMath.Dec
 
 	for inferer, inference := range inferersToInference {
 		weight, exists := inferersToWeights[inferer]
@@ -282,15 +265,21 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 		}
 	}
 
-	ciRawPercentiles := []float64{2.28, 15.87, 50, 84.13, 97.72}
+	ciRawPercentiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("2.28"),
+		alloraMath.MustNewDecFromString("15.87"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.MustNewDecFromString("84.13"),
+		alloraMath.MustNewDecFromString("97.72"),
+	}
 
-	var ciValues []float64
+	var ciValues []alloraMath.Dec
 	var err error
 	if len(inferences) == 0 {
-		ciValues = []float64{}
-		ciRawPercentiles = []float64{}
+		ciValues = []alloraMath.Dec{}
+		ciRawPercentiles = []alloraMath.Dec{}
 	} else {
-		ciValues, err = synth.WeightedPercentile(inferences, weights, ciRawPercentiles)
+		ciValues, err = alloraMath.WeightedPercentile(inferences, weights, ciRawPercentiles)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -298,21 +287,13 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 
 	ciValuesAlloraMath := make([]alloraMath.Dec, len(ciValues))
 	for i, value := range ciValues {
-		ciValuesAlloraMath[i] = alloraMath.MustNewDecFromString(float64ToString(value))
+		ciValuesAlloraMath[i] = value
 	}
 
 	ciRawPercentilesAlloraMath := make([]alloraMath.Dec, len(ciRawPercentiles))
 	for i, value := range ciRawPercentiles {
-		ciRawPercentilesAlloraMath[i] = alloraMath.MustNewDecFromString(float64ToString(value))
+		ciRawPercentilesAlloraMath[i] = value
 	}
 
 	return ciRawPercentilesAlloraMath, ciValuesAlloraMath, nil
-}
-
-func stringToFloat64(s string) (float64, error) {
-	return strconv.ParseFloat(s, 64)
-}
-
-func float64ToString(f float64) string {
-	return strconv.FormatFloat(f, 'f', -1, 64)
 }
