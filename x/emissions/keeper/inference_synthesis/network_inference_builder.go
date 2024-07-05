@@ -122,6 +122,11 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld inferer %s", b.palette.TopicId, withheldInferer))
 	palette := b.palette.Clone()
 
+	// Check if there are enough inferers to calculate one-out inference
+	if len(palette.InfererRegrets) <= 1 {
+		return alloraMath.NewNaN(), nil
+	}
+
 	// Check if withheld inferer is new
 	withheldInfererRegret, ok := palette.InfererRegrets[withheldInferer]
 	if !ok || withheldInfererRegret.noPriorRegret {
@@ -196,6 +201,12 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld forecaster %s", b.palette.TopicId, withheldForecaster))
 
 	palette := b.palette.Clone()
+
+	// Check if there are enough inferers to calculate one-out inference
+	if len(palette.InfererRegrets) <= 1 {
+		return alloraMath.NewNaN(), nil
+	}
+
 	// Remove the withheldForecaster from the palette's forecasters
 	remainingForecasters := make([]Worker, 0)
 	for _, forecaster := range palette.Forecasters {
