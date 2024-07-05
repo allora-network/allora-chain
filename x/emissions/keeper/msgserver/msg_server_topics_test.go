@@ -1,6 +1,8 @@
 package msgserver_test
 
 import (
+	"strings"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -78,6 +80,7 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 
 	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.Error(err)
+	require.True(strings.Contains(err.Error(), "epsilon must be greater than"))
 	s.Require().Nil(result)
 }
 
