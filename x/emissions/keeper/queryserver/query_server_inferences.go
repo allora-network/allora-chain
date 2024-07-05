@@ -144,6 +144,9 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	if err != nil {
 		return nil, err
 	}
+	if inferenceBlockHeight == 0 {
+		return nil, status.Errorf(codes.NotFound, "inferences not yet available for topic %v", req.TopicId)
+	}
 
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
@@ -159,7 +162,7 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	previousLossBlockHeight := inferenceBlockHeight - topic.EpochLength
 
 	for i := 0; i < int(params.DefaultPageLimit); i++ {
-		if previousLossBlockHeight < 0 {
+		if previousLossBlockHeight <= 0 {
 			return nil, status.Errorf(codes.NotFound, "losses not yet available for topic %v", req.TopicId)
 		}
 
