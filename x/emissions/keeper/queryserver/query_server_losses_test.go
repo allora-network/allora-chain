@@ -3,6 +3,7 @@ package queryserver_test
 import "github.com/allora-network/allora-chain/x/emissions/types"
 
 func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer

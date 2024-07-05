@@ -23,6 +23,7 @@ func (s *KeeperTestSuite) TestGetTotalStake() {
 }
 
 func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -47,6 +48,7 @@ func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
 }
 
 func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -79,6 +81,7 @@ func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
 }
 
 func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -106,11 +109,12 @@ func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
 }
 
 func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
-	topicId := uint64(123)
+	topicId := uint64(1)
 	delegator, err := sdk.AccAddressFromHexUnsafe(PKS[0].Address().String())
 	s.Require().NoError(err)
 	delegatorAddr := delegator.String()
@@ -135,6 +139,7 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 }
 
 func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -165,6 +170,7 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
 }
 
 func (s *KeeperTestSuite) TestGetTopicStake() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -187,12 +193,13 @@ func (s *KeeperTestSuite) TestGetTopicStake() {
 }
 
 func (s *KeeperTestSuite) TestGetStakeRemovalInfo() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 	blockHeight := int64(1234)
 	topicId := uint64(1)
-	address := "cosmos1abcdefg"
+	address := sdk.AccAddress(PKS[0].Address()).String()
 	removal := types.StakeRemovalInfo{
 		BlockRemovalStarted:   0,
 		BlockRemovalCompleted: blockHeight,
@@ -211,15 +218,17 @@ func (s *KeeperTestSuite) TestGetStakeRemovalInfo() {
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().Equal(removal, *response.Removal, "The retrieved stake removal info should match the expected value")
 }
+
 func (s *KeeperTestSuite) TestGetDelegateStakeRemovalInfo() {
+	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 	require := s.Require()
 	blockHeight := int64(1234)
 	topicId := uint64(1)
-	delegatorAddress := "cosmos1abcdefg"
-	reputerAddress := "cosmos1hijklmn"
+	delegatorAddress := sdk.AccAddress(PKS[0].Address()).String()
+	reputerAddress := sdk.AccAddress(PKS[1].Address()).String()
 	expectedRemoval := types.DelegateStakeRemovalInfo{
 		BlockRemovalStarted:   0,
 		BlockRemovalCompleted: blockHeight,
@@ -242,6 +251,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalInfo() {
 	require.NotNil(response, "The response should not be nil")
 	require.Equal(&expectedRemoval, response.Removal, "The retrieved stake removal info should match the expected value")
 }
+
 func (s *KeeperTestSuite) TestGetStakeRemovalsForBlock() {
 	ctx := s.ctx
 	qs := s.queryServer
@@ -253,14 +263,14 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsForBlock() {
 			BlockRemovalStarted:   0,
 			BlockRemovalCompleted: blockHeight,
 			TopicId:               1,
-			Reputer:               "cosmos1abcdefg",
+			Reputer:               sdk.AccAddress(PKS[0].Address()).String(),
 			Amount:                cosmosMath.NewInt(100),
 		},
 		{
 			BlockRemovalStarted:   0,
 			BlockRemovalCompleted: blockHeight,
 			TopicId:               2,
-			Reputer:               "cosmos1hijklmn",
+			Reputer:               sdk.AccAddress(PKS[1].Address()).String(),
 			Amount:                cosmosMath.NewInt(200),
 		},
 	}
@@ -292,16 +302,16 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 			BlockRemovalStarted:   0,
 			BlockRemovalCompleted: blockHeight,
 			TopicId:               1,
-			Reputer:               "cosmos1abcdefg",
-			Delegator:             "cosmos1234567",
+			Reputer:               sdk.AccAddress(PKS[0].Address()).String(),
+			Delegator:             sdk.AccAddress(PKS[1].Address()).String(),
 			Amount:                cosmosMath.NewInt(100),
 		},
 		{
 			BlockRemovalStarted:   0,
 			BlockRemovalCompleted: blockHeight,
 			TopicId:               2,
-			Reputer:               "cosmos1hijklmn",
-			Delegator:             "cosmos7654321",
+			Reputer:               sdk.AccAddress(PKS[2].Address()).String(),
+			Delegator:             sdk.AccAddress(PKS[3].Address()).String(),
 			Amount:                cosmosMath.NewInt(200),
 		},
 	}
