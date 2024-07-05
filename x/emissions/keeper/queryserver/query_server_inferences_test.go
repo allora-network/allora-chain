@@ -429,8 +429,8 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferenceWithLosses() {
 	epochLength := topic.EpochLength
 	epochLastEnded := topic.EpochLastEnded
 
-	lossBlockHeight := int64(epochLastEnded)
-	inferenceBlockHeight := int64(epochLastEnded + epochLength)
+	lossBlockHeight := int64(epochLastEnded + epochLength)
+	inferenceBlockHeight := int64(lossBlockHeight + epochLength)
 	inferenceBlockHeight2 := int64(inferenceBlockHeight + epochLength)
 
 	lossNonce := types.Nonce{BlockHeight: lossBlockHeight}
