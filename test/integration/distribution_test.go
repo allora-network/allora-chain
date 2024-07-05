@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"os"
 	"strings"
@@ -63,9 +64,10 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m testCommon.TestConfig) {
 
 	balancesBefore := make(map[string]*distributiontypes.QueryValidatorOutstandingRewardsResponse)
 
+	ctx := context.Background()
 	for _, addr := range validatorAddrs {
 		response, err := m.Client.QueryDistribution().ValidatorOutstandingRewards(
-			m.Ctx,
+			ctx,
 			&distributiontypes.QueryValidatorOutstandingRewardsRequest{
 				ValidatorAddress: addr,
 			},
@@ -74,14 +76,14 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m testCommon.TestConfig) {
 		balancesBefore[addr] = response
 	}
 
-	err = m.Client.WaitForNextBlock(m.Ctx)
+	err = m.Client.WaitForNextBlock(ctx)
 	require.NoError(m.T, err)
 
 	balanceIncreased := false
 
 	for _, addr := range validatorAddrs {
 		balanceAfter, err := m.Client.QueryDistribution().ValidatorOutstandingRewards(
-			m.Ctx,
+			ctx,
 			&distributiontypes.QueryValidatorOutstandingRewardsRequest{
 				ValidatorAddress: addr,
 			},
@@ -107,8 +109,9 @@ func CheckValidatorBalancesIncreaseOnNewBlock(m testCommon.TestConfig) {
 // the mint module pays the ecosystem module account
 // as new blocks are produced.
 func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
+	ctx := context.Background()
 	alloraRewardsModuleAccResponse, err := m.Client.QueryAuth().ModuleAccountByName(
-		m.Ctx,
+		ctx,
 		&authtypes.QueryModuleAccountByNameRequest{
 			Name: emissionstypes.AlloraRewardsAccountName,
 		},
@@ -122,7 +125,7 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 
 	alloraRewardsBalanceBefore, err := m.Client.QueryBank().Balance(
-		m.Ctx,
+		ctx,
 		&banktypes.QueryBalanceRequest{
 			Address: alloraRewardsModuleAcc.Address,
 			Denom:   params.BaseCoinUnit,
@@ -130,18 +133,18 @@ func CheckAlloraRewardsBalanceGoesUpOnNewBlock(m testCommon.TestConfig) {
 	)
 	require.NoError(m.T, err)
 
-	blockHeight, err := m.Client.BlockHeight(m.Ctx)
+	blockHeight, err := m.Client.BlockHeight(ctx)
 	require.NoError(m.T, err)
-	err = m.Client.WaitForNextBlock(m.Ctx)
+	err = m.Client.WaitForNextBlock(ctx)
 	require.NoError(m.T, err)
-	err = m.Client.WaitForNextBlock(m.Ctx)
+	err = m.Client.WaitForNextBlock(ctx)
 	require.NoError(m.T, err)
-	blockHeight2, err := m.Client.BlockHeight(m.Ctx)
+	blockHeight2, err := m.Client.BlockHeight(ctx)
 	require.NoError(m.T, err)
 	require.Greater(m.T, blockHeight2, blockHeight)
 
 	alloraRewardsBalanceAfter, err := m.Client.QueryBank().Balance(
-		m.Ctx,
+		ctx,
 		&banktypes.QueryBalanceRequest{
 			Address: alloraRewardsModuleAcc.Address,
 			Denom:   params.BaseCoinUnit,

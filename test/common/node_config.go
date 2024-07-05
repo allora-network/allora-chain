@@ -1,7 +1,6 @@
 package testcommon
 
 import (
-	"context"
 	"testing"
 
 	upgrade "cosmossdk.io/x/upgrade"
@@ -21,7 +20,6 @@ import (
 // handle to various node data
 type TestConfig struct {
 	T              *testing.T
-	Ctx            context.Context
 	Client         Client                // a testcommon.Client which holds several cosmosclient.Client instances
 	AlloraHomeDir  string                // home directory for the allora keystore
 	FaucetAcc      cosmosaccount.Account // account info for the faucet
@@ -53,7 +51,6 @@ func NewTestConfig(
 	nodeConfig := TestConfig{}
 	var err error
 	nodeConfig.T = t
-	nodeConfig.Ctx = context.Background()
 	nodeConfig.AlloraHomeDir = alloraHomeDir
 	nodeConfig.Seed = seed
 	if rpcConnectionType == SingleRpc {
