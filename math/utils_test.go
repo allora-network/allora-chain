@@ -243,6 +243,40 @@ func TestMedian(t *testing.T) {
 
 func TestWeightedInferences(t *testing.T) {
 	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("2"),
+		alloraMath.MustNewDecFromString("3"),
+		alloraMath.MustNewDecFromString("4"),
+		alloraMath.MustNewDecFromString("5"),
+	}
+	weights := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+	}
+	percentiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.MustNewDecFromString("100"),
+	}
+	expected := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("3"),
+		alloraMath.MustNewDecFromString("5"),
+	}
+
+	result, err := alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.NoError(t, err)
+	require.Len(t, result, len(expected))
+	for i, r := range result {
+		require.True(t, alloraMath.InDelta(expected[i], r, alloraMath.MustNewDecFromString("0.000001")))
+	}
+}
+
+func TestWeightedInferences2(t *testing.T) {
+	data := []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("10"),
 		alloraMath.MustNewDecFromString("20"),
 		alloraMath.MustNewDecFromString("30"),
