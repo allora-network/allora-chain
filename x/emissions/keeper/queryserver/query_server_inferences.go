@@ -276,8 +276,8 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 	var ciValues []alloraMath.Dec
 	var err error
 	if len(inferences) == 0 {
-		ciValues = []alloraMath.Dec{}
 		ciRawPercentiles = []alloraMath.Dec{}
+		ciValues = []alloraMath.Dec{}
 	} else {
 		ciValues, err = alloraMath.WeightedPercentile(inferences, weights, ciRawPercentiles)
 		if err != nil {
@@ -285,15 +285,5 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 		}
 	}
 
-	ciValuesAlloraMath := make([]alloraMath.Dec, len(ciValues))
-	for i, value := range ciValues {
-		ciValuesAlloraMath[i] = value
-	}
-
-	ciRawPercentilesAlloraMath := make([]alloraMath.Dec, len(ciRawPercentiles))
-	for i, value := range ciRawPercentiles {
-		ciRawPercentilesAlloraMath[i] = value
-	}
-
-	return ciRawPercentilesAlloraMath, ciValuesAlloraMath, nil
+	return ciRawPercentiles, ciValues, nil
 }
