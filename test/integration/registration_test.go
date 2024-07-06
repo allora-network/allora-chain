@@ -1,6 +1,8 @@
 package integration_test
 
 import (
+	"context"
+
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/stretchr/testify/require"
@@ -8,6 +10,7 @@ import (
 
 // register alice as a reputer in topic 1, then check success
 func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
+	ctx := context.Background()
 	registerAliceRequest := &emissionstypes.MsgRegister{
 		Sender:       m.AliceAddr,
 		Owner:        m.AliceAddr,
@@ -16,9 +19,9 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 		TopicId:      1,
 		IsReputer:    true,
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, registerAliceRequest)
+	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, registerAliceRequest)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 	registerAliceResponse := &emissionstypes.MsgRegisterResponse{}
 	err = txResp.Decode(registerAliceResponse)
@@ -28,7 +31,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 
 	// Check Alice registered as reputer
 	aliceRegistered, err := m.Client.QueryEmissions().IsReputerRegisteredInTopicId(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryIsReputerRegisteredInTopicIdRequest{
 			TopicId: 1,
 			Address: m.AliceAddr,
@@ -39,7 +42,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 
 	// Check Alice not registered as worker
 	aliceNotRegisteredAsWorker, err := m.Client.QueryEmissions().IsWorkerRegisteredInTopicId(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryIsWorkerRegisteredInTopicIdRequest{
 			TopicId: 1,
 			Address: m.AliceAddr,
@@ -51,6 +54,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 
 // register bob as worker in topic 1, then check sucess
 func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
+	ctx := context.Background()
 	registerBobRequest := &emissionstypes.MsgRegister{
 		Sender:       m.BobAddr,
 		Owner:        m.BobAddr,
@@ -59,9 +63,9 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 		TopicId:      1,
 		IsReputer:    false,
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.BobAcc, registerBobRequest)
+	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, registerBobRequest)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 	registerBobResponse := &emissionstypes.MsgRegisterResponse{}
 	err = txResp.Decode(registerBobResponse)
@@ -70,7 +74,7 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	require.Equal(m.T, "Node successfully registered", registerBobResponse.Message)
 	// Check Bob registered as worker
 	bobRegistered, err := m.Client.QueryEmissions().IsWorkerRegisteredInTopicId(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryIsWorkerRegisteredInTopicIdRequest{
 			TopicId: 1,
 			Address: m.BobAddr,
@@ -81,7 +85,7 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 
 	// Check Bob not registered as reputer
 	bobNotRegisteredAsWorker, err := m.Client.QueryEmissions().IsReputerRegisteredInTopicId(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryIsReputerRegisteredInTopicIdRequest{
 			TopicId: 1,
 			Address: m.BobAddr,
