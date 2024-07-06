@@ -140,6 +140,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.EpsilonReputer) == 1 {
 		existingParams.EpsilonReputer = newParams.EpsilonReputer[0]
 	}
+	if len(newParams.MinEffectiveTopicRevenue) == 1 {
+		existingParams.MinEffectiveTopicRevenue = newParams.MinEffectiveTopicRevenue[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err

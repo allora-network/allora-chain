@@ -49,6 +49,7 @@ func DefaultParams() Params {
 		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),  // fiducial value for rewards calculation
 		CNorm:                           alloraMath.MustNewDecFromString("0.75"),  // fiducial value for inference synthesis
 		TopicFeeRevenueDecayRate:        alloraMath.MustNewDecFromString("0.025"), // rate at which topic fee revenue decays over time
+		MinEffectiveTopicRevenue:        alloraMath.MustNewDecFromString("0.01"),  // we no stop dripping from the topic's effective revenue when the topic's effective revenue is below this
 	}
 }
 
@@ -85,6 +86,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateMinStakeFraction(p.MinStakeFraction); err != nil {
+		return err
+	}
+	if err := validateEpsilonReputer(p.EpsilonReputer); err != nil {
 		return err
 	}
 	if err := validateMaxUnfulfilledWorkerRequests(p.MaxUnfulfilledWorkerRequests); err != nil {
@@ -166,6 +170,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateTopicFeeRevenueDecayRate(p.TopicFeeRevenueDecayRate); err != nil {
+		return err
+	}
+	if err := validateMinEffectiveTopicRevenue(p.MinEffectiveTopicRevenue); err != nil {
 		return err
 	}
 
@@ -272,9 +279,9 @@ func validateMinStakeFraction(i alloraMath.Dec) error {
 	return nil
 }
 
-// 0 threshold to prevent div by 0 and 0-approximation errors.
+// Small tolerance quantity used to cap reputer scores at infinitesimally close proximities.
 // Should be close to zero, but not zero. i > 0
-func validateEpsilon(i alloraMath.Dec) error {
+func validateEpsilonReputer(i alloraMath.Dec) error {
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -494,11 +501,20 @@ func validateBlocksPerMonth(i uint64) error {
 	return nil
 }
 
-// percent reward to go to cosmos network validators.
+// Percent by which effecive topic fee used in weight calculation drips
 // Should be a value between 0 and 1.
 func validateTopicFeeRevenueDecayRate(i alloraMath.Dec) error {
 	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
+}
+
+// We no stop dripping from the topic's effective revenue when the topic's effective revenue is below this
+// Should be > 0
+func validateMinEffectiveTopicRevenue(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }

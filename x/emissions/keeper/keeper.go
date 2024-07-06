@@ -1705,16 +1705,11 @@ func (k *Keeper) DripTopicFeeRevenue(ctx context.Context, topicId TopicId, block
 		return err
 	}
 
-	topic, err := k.GetTopic(ctx, topicId)
-	if err != nil {
-		return err
-	}
-
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	epsilon := topic.Epsilon
+	minEffectiveTopicRevenue := moduleParams.MinEffectiveTopicRevenue
 	topicFeeRevenueDecayRate := moduleParams.TopicFeeRevenueDecayRate
 
 	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue)
@@ -1723,7 +1718,7 @@ func (k *Keeper) DripTopicFeeRevenue(ctx context.Context, topicId TopicId, block
 	}
 
 	newTopicFeeRevenue := cosmosMath.ZeroInt()
-	if topicFeeRevenueDec.Gt(epsilon) {
+	if topicFeeRevenueDec.Gte(minEffectiveTopicRevenue) {
 		val, err := alloraMath.CalcExpDecay(topicFeeRevenueDec, topicFeeRevenueDecayRate)
 		if err != nil {
 			return err
