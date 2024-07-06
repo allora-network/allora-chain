@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"context"
 	"fmt"
 
 	cosmosMath "cosmossdk.io/math"
@@ -11,9 +12,10 @@ import (
 
 // register alice as a reputer in topic 1, then check success
 func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
+	ctx := context.Background()
 	// Record Alice stake before adding more
 	aliceStakedBefore, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryReputerStakeInTopicRequest{
 			TopicId: 1,
 			Address: m.AliceAddr,
@@ -29,14 +31,14 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 		TopicId: 1,
 		Amount:  cosmosMath.NewInt(stakeToAdd),
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, addStake)
+	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, addStake)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
 	// Check Alice has stake on the topic
 	aliceStakedAfter, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryReputerStakeInTopicRequest{
 			TopicId: 1,
 			Address: m.AliceAddr,
@@ -48,9 +50,10 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 
 // integration tests the ability of bob to stake on alice as a reputer
 func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
+	ctx := context.Background()
 	// Record Bob stake before adding more
 	bobStakedBefore, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
@@ -68,14 +71,14 @@ func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 		TopicId: 1,
 		Amount:  cosmosMath.NewInt(stakeToAdd),
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.BobAcc, addDelegateStake)
+	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, addDelegateStake)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
 	// Check Alice has stake on the topic
 	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
@@ -88,10 +91,11 @@ func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 
 // Register two actors and check their registrations went through
 func StakingChecks(m testCommon.TestConfig) {
+	ctx := context.Background()
 	m.T.Log("--- Staking Alice as Reputer ---")
 	StakeAliceAsReputerTopic1(m)
 
-	res, _ := m.Client.QueryEmissions().GetTopic(m.Ctx, &emissionstypes.QueryTopicRequest{
+	res, _ := m.Client.QueryEmissions().GetTopic(ctx, &emissionstypes.QueryTopicRequest{
 		TopicId: uint64(1),
 	})
 	// Topic is not expected to be funded yet => expect 0 weight => topic not active!
@@ -107,8 +111,9 @@ func StakingChecks(m testCommon.TestConfig) {
 
 // Unstake Alice as a reputer in topic 1, then check success
 func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
+	ctx := context.Background()
 	aliceStakeBefore, err := m.Client.QueryEmissions().GetStakeFromReputerInTopicInSelf(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryStakeFromReputerInTopicInSelfRequest{
 			TopicId:        1,
 			ReputerAddress: m.AliceAddr,
@@ -128,14 +133,14 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 		Amount:  aliceStakeBefore.Amount,
 	}
 
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, unstake)
+	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, unstake)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
 	// check the unstake removal is queued
 	stakeRemoval, err := m.Client.QueryEmissions().GetStakeRemovalInfo(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryStakeRemovalInfoRequest{
 			TopicId: 1,
 			Reputer: m.AliceAddr,
@@ -145,14 +150,14 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.NotNil(m.T, stakeRemoval)
 	require.NotZero(m.T, stakeRemoval.Removal.BlockRemovalCompleted)
 	m.T.Log("--- Unstake removal is queued, waiting for block ", stakeRemoval.Removal.BlockRemovalCompleted, " ---")
-	m.Client.WaitForBlockHeight(m.Ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
-	blockHeight, err := m.Client.BlockHeight(m.Ctx)
+	m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
+	blockHeight, err := m.Client.BlockHeight(ctx)
 	require.NoError(m.T, err)
 	require.Greater(m.T, blockHeight, stakeRemoval.Removal.BlockRemovalCompleted)
 
 	// Check Alice has zero stake left
 	aliceStakedAfter, err := m.Client.QueryEmissions().GetStakeFromReputerInTopicInSelf(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryStakeFromReputerInTopicInSelfRequest{
 			TopicId:        1,
 			ReputerAddress: m.AliceAddr,
@@ -171,8 +176,9 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 
 // Unstake Bob as a delegator delegated to Alice in topic 1, then check success
 func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
+	ctx := context.Background()
 	bobStake, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
@@ -194,14 +200,14 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 		Amount:  bobStake.Amount,
 	}
 
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.BobAcc, unstake)
+	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, unstake)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
 	// check the unstake removal is queued
 	stakeRemoval, err := m.Client.QueryEmissions().GetDelegateStakeRemovalInfo(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryDelegateStakeRemovalInfoRequest{
 			TopicId:   1,
 			Delegator: m.BobAddr,
@@ -212,11 +218,11 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	require.NotNil(m.T, stakeRemoval)
 	require.NotZero(m.T, stakeRemoval.Removal.BlockRemovalCompleted)
 	m.T.Log("--- Unstake removal is queued, waiting for block ", stakeRemoval.Removal.BlockRemovalCompleted, " ---")
-	m.Client.WaitForBlockHeight(m.Ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
+	m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
 
 	// Check Bob has zero stake left
 	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,

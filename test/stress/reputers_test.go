@@ -1,6 +1,7 @@
 package stress_test
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"math/rand"
@@ -126,8 +127,9 @@ func generateInsertReputerBulk(
 		if err != nil {
 			if strings.Contains(err.Error(), "nonce already fulfilled") ||
 				strings.Contains(err.Error(), "nonce still unfulfilled") {
+				ctx := context.Background()
 				// realign blockHeights before retrying
-				topic, err = getLastTopic(m.Ctx, m.Client.QueryEmissions(), topic.Id)
+				topic, err = getLastTopic(ctx, m.Client.QueryEmissions(), topic.Id)
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
 					blockHeightEval = blockHeightCurrent - topic.EpochLength
@@ -298,12 +300,13 @@ func insertReputerBulk(
 		m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderReputerAccountName, " - ", err))
 		return err
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, LeaderAcc, reputerValueBundleMsg)
+	ctx := context.Background()
+	txResp, err := m.Client.BroadcastTx(ctx, LeaderAcc, reputerValueBundleMsg)
 	if err != nil {
 		m.T.Log(topicLog(topicId, "Error broadcasting reputer value bundle: ", err))
 		return err
 	}
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 	return nil
 }
@@ -322,8 +325,9 @@ func checkReputersReceivedRewards(
 	for reputerIndex := 0; reputerIndex < countReputers; reputerIndex++ {
 		reputerName := getReputerAccountName(m.Seed, reputerIndex, topicId)
 		reputer := reputers[reputerName]
+		ctx := context.Background()
 		reputerStake, err := getReputerStake(
-			m.Ctx,
+			ctx,
 			m.Client.QueryEmissions(),
 			topicId,
 			reputer.addr,

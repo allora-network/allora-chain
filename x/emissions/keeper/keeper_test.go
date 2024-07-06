@@ -1920,7 +1920,7 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	activeTopics, _, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 
-	s.Require().Equal(len(activeTopics), 2, "Should retrieve exactly two active topics")
+	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
 
 	for _, topicId := range activeTopics {
 		isActive, err := keeper.IsTopicActive(ctx, topicId)
@@ -1935,6 +1935,75 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 			s.Fail("Unexpected topic ID retrieved")
 		}
 	}
+}
+
+func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	topics := []types.Topic{
+		{Id: 1},
+		{Id: 2},
+		{Id: 3},
+		{Id: 4},
+		{Id: 5},
+	}
+	isActive := []bool{true, false, true, false, true}
+
+	for i, topic := range topics {
+		_ = keeper.SetTopic(ctx, topic.Id, topic)
+		if isActive[i] {
+			_ = keeper.ActivateTopic(ctx, topic.Id)
+		}
+	}
+
+	// Fetch only active topics -- should only return topics 1 and 3
+	pagination := &types.SimpleCursorPaginationRequest{
+		Key:   nil,
+		Limit: 2,
+	}
+	activeTopics, pageRes, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+
+	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
+
+	for _, topicId := range activeTopics {
+		isActive, err := keeper.IsTopicActive(ctx, topicId)
+		s.Require().NoError(err, "Checking topic activity should not fail")
+		s.Require().True(isActive, "Only active topics should be returned")
+		switch topicId {
+		case 1:
+			s.Require().Equal(topics[0].Id, topicId, "The details of topic 1 should match")
+		case 3:
+			s.Require().Equal(topics[2].Id, topicId, "The details of topic 3 should match")
+		default:
+			s.Fail("Unexpected topic ID retrieved")
+		}
+	}
+
+	// Fetch next page -- should only return topic 5
+	pagination = &types.SimpleCursorPaginationRequest{
+		Key:   pageRes.NextKey,
+		Limit: 2,
+	}
+	activeTopics, pageRes, err = keeper.GetIdsOfActiveTopics(ctx, pagination)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Equal(1, len(activeTopics), "Should retrieve exactly one active topics")
+	for _, topicId := range activeTopics {
+		isActive, err := keeper.IsTopicActive(ctx, topicId)
+		s.Require().NoError(err, "Checking topic activity should not fail")
+		s.Require().True(isActive, "Only active topics should be returned")
+		s.Require().Equal(topics[4].Id, topicId, "The details of topic 5 should match")
+	}
+
+	// Fetch next page -- should only return topic 5
+	pagination = &types.SimpleCursorPaginationRequest{
+		Key:   pageRes.NextKey,
+		Limit: 2,
+	}
+	activeTopics, pageRes, err = keeper.GetIdsOfActiveTopics(ctx, pagination)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Equal(0, len(activeTopics), "Should retrieve exactly one active topics")
 }
 
 func (s *KeeperTestSuite) TestIncrementTopicId() {

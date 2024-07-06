@@ -1607,28 +1607,38 @@ func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.Simp
 	if err != nil {
 		return nil, nil, err
 	}
+	rng := new(collections.Range[uint64]).StartExclusive(start)
 
-	startKey := make([]byte, binary.MaxVarintLen64)
-	binary.BigEndian.PutUint64(startKey, start)
+	iter, err := k.activeTopics.Iterate(ctx, rng)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer iter.Close()
+
+	activeTopicIds := make([]TopicId, 0)
 	nextKey := make([]byte, binary.MaxVarintLen64)
-	binary.BigEndian.PutUint64(nextKey, start+limit)
+	nextTopicId := uint64(0)
+	for ; iter.Valid(); iter.Next() {
+		topicId, err := iter.Key()
+		if err != nil {
+			return nil, nil, err
+		}
 
-	rng, err := k.activeTopics.IterateRaw(ctx, startKey, nextKey, collections.OrderAscending)
-	if err != nil {
-		return nil, nil, err
+		if uint64(len(activeTopicIds)) >= limit {
+			break
+		}
+
+		activeTopicIds = append(activeTopicIds, topicId)
+		nextTopicId = topicId
 	}
-	activeTopics, err := rng.Keys()
-	if err != nil {
-		return nil, nil, err
-	}
-	defer rng.Close()
+	binary.BigEndian.PutUint64(nextKey, nextTopicId)
 
 	// If there are no topics, we return the nil for next key
-	if activeTopics == nil {
+	if len(activeTopicIds) == 0 {
 		nextKey = make([]byte, 0)
 	}
 
-	return activeTopics, &types.SimpleCursorPaginationResponse{
+	return activeTopicIds, &types.SimpleCursorPaginationResponse{
 		NextKey: nextKey,
 	}, nil
 }
