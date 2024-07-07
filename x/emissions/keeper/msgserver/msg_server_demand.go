@@ -4,34 +4,22 @@ import (
 	"context"
 
 	appParams "github.com/allora-network/allora-chain/app/params"
-	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*types.MsgFundTopicResponse, error) {
 	// Check the topic is valid
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
-	if err != nil {
-		return nil, err
-	}
 	if !topicExists {
-		return nil, types.ErrInvalidTopicId
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", msg.TopicId)
+	} else if err != nil {
+		return nil, err
 	}
 
-	// Check that the request isn't spam by checking that the amount of funds it bids is greater than a global minimum demand per request
-	params, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return nil, err
-	}
-	amountDec, err := alloraMath.NewDecFromSdkInt(msg.Amount)
-	if err != nil {
-		return nil, err
-	}
-	if amountDec.Lte(params.Epsilon) {
-		return nil, types.ErrFundAmountTooLow
-	}
 	// Check sender has funds to pay for the inference request
 	// bank module does this for us in module SendCoins / subUnlockedCoins so we don't need to check
 	// Send funds

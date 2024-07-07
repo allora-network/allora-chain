@@ -32,15 +32,15 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 
 	// Keep old params to revert back to
 	oldParams := GetEmissionsParams(m)
-	oldEpsilon := oldParams.Epsilon
+	oldEpsilonReputer := oldParams.EpsilonReputer
 
 	// Should succeed for Alice because she's a whitelist admin
-	newEpsilon := alloraMath.NewDecFinite(1, 99)
-	input := []alloraMath.Dec{newEpsilon}
+	newEpsilonReputer := alloraMath.NewDecFinite(1, 99)
+	input := []alloraMath.Dec{newEpsilonReputer}
 	updateParamRequest := &emissionstypes.MsgUpdateParams{
 		Sender: m.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
-			Epsilon: input,
+			EpsilonReputer: input,
 			// These are set for subsequent tests
 			MaxTopReputersToReward: []uint64{24},
 			MinEpochLength:         []int64{1},
@@ -56,7 +56,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 	updateParamRequest = &emissionstypes.MsgUpdateParams{
 		Sender: m.BobAddr,
 		Params: &emissionstypes.OptionalParams{
-			Epsilon: input,
+			EpsilonReputer: input,
 		},
 	}
 	_, err = m.Client.BroadcastTx(ctx, m.BobAcc, updateParamRequest)
@@ -66,14 +66,14 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 
 	// Check that the epsilon was updated by Alice successfully
 	updatedParams := GetEmissionsParams(m)
-	require.Equal(m.T, updatedParams.Epsilon.String(), newEpsilon.String())
+	require.Equal(m.T, updatedParams.EpsilonReputer.String(), newEpsilonReputer.String())
 
-	// Set the epsilon back to the original value
-	input = []alloraMath.Dec{oldEpsilon}
+	// Set the epsilon reputer back to the original value
+	input = []alloraMath.Dec{oldEpsilonReputer}
 	updateParamRequest = &emissionstypes.MsgUpdateParams{
 		Sender: m.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
-			Epsilon: input,
+			EpsilonReputer: input,
 		},
 	}
 	txResp, err = m.Client.BroadcastTx(ctx, m.AliceAcc, updateParamRequest)
