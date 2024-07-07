@@ -225,42 +225,21 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 	infererWeights map[string]alloraMath.Dec,
 	forecasterWeights map[string]alloraMath.Dec,
 ) ([]alloraMath.Dec, []alloraMath.Dec, error) {
+	var inferences []alloraMath.Dec // from inferers + forecast-implied inferences
+	var weights []alloraMath.Dec    // weights of all workers
 
-	inferersToInference := make(map[string]alloraMath.Dec)
-	for _, infererValue := range networkInferences.InfererValues {
-		inferersToInference[infererValue.Worker] = infererValue.Value
-	}
-
-	forecastersToInference := make(map[string]alloraMath.Dec)
-	for _, forecasterValue := range networkInferences.ForecasterValues {
-		forecastersToInference[forecasterValue.Worker] = forecasterValue.Value
-	}
-
-	inferersToWeights := make(map[string]alloraMath.Dec)
-	for worker, weight := range infererWeights {
-		inferersToWeights[worker] = weight
-	}
-
-	forecastersToWeights := make(map[string]alloraMath.Dec)
-	for worker, weight := range forecasterWeights {
-		forecastersToWeights[worker] = weight
-	}
-
-	var inferences []alloraMath.Dec
-	var weights []alloraMath.Dec
-
-	for inferer, inference := range inferersToInference {
-		weight, exists := inferersToWeights[inferer]
+	for _, inference := range networkInferences.InfererValues {
+		weight, exists := infererWeights[inference.Worker]
 		if exists {
-			inferences = append(inferences, inference)
+			inferences = append(inferences, inference.Value)
 			weights = append(weights, weight)
 		}
 	}
 
-	for forecaster, inference := range forecastersToInference {
-		weight, exists := forecastersToWeights[forecaster]
+	for _, forecast := range networkInferences.ForecasterValues {
+		weight, exists := forecasterWeights[forecast.Worker]
 		if exists {
-			inferences = append(inferences, inference)
+			inferences = append(inferences, forecastImpliedInferenceByWorker[forecast.Worker].Value)
 			weights = append(weights, weight)
 		}
 	}
