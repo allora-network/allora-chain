@@ -1,29 +1,10 @@
 package rewards_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 )
-
-func (s *RewardsTestSuite) UtilSetParams() {
-	s.emissionsKeeper.SetParams(s.ctx, types.Params{
-		Version:                "0.0.3",
-		MinTopicWeight:         alloraMath.NewDecFromInt64(100),
-		MaxTopicsPerBlock:      uint64(1000),
-		RequiredMinimumStake:   cosmosMath.OneInt(),
-		RemoveStakeDelayWindow: int64(172800),
-		MinEpochLength:         int64(60),
-		MaxTopReputersToReward: uint64(10),
-		BetaEntropy:            alloraMath.MustNewDecFromString("0.0"),
-		LearningRate:           alloraMath.MustNewDecFromString("0.0"),
-		MaxGradientThreshold:   alloraMath.MustNewDecFromString("0.0"),
-		MinStakeFraction:       alloraMath.MustNewDecFromString("0.0"),
-		Epsilon:                alloraMath.MustNewDecFromString("0.1"),
-	})
-}
 
 func (s *RewardsTestSuite) TestSortTopicsByWeightDescWithRandomTiebreakerSimple() {
 	var unsortedTopicIds []uint64 = []uint64{1, 2, 3, 4, 5}

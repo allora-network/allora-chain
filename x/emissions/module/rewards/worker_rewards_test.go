@@ -8,8 +8,27 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
+func createNewTopic(s *RewardsTestSuite) uint64 {
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:         s.addrs[5].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	return res.TopicId
+}
+
 func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameFractionsForEqualZeroScores() {
-	topicId := uint64(1)
+	topicId := createNewTopic(s)
 	blockHeight := int64(1003)
 
 	workerAddrs := []sdk.AccAddress{
@@ -96,7 +115,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsSimpleShouldOutputSameF
 }
 
 func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFractionsForEqualScores() {
-	topicId := uint64(1)
+	topicId := createNewTopic(s)
 	blockHeight := int64(1003)
 
 	workerAddrs := []sdk.AccAddress{
@@ -182,7 +201,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 }
 
 func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
-	topicId := uint64(1)
+	topicId := createNewTopic(s)
 	blockHeight := int64(1003)
 
 	// Generate old scores
@@ -212,7 +231,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {
 }
 
 func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
-	topicId := uint64(1)
+	topicId := createNewTopic(s)
 	blockHeight := int64(1003)
 
 	// Generate old scores

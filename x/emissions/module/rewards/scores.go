@@ -64,6 +64,11 @@ func GenerateReputerScores(
 		return []types.Score{}, errors.Wrapf(err, "Error getting GetParams")
 	}
 
+	topic, err := keeper.GetTopic(ctx, topicId)
+	if err != nil {
+		return []types.Score{}, errors.Wrapf(err, "Error getting topic %v", topicId)
+	}
+
 	// Get reputer output
 	scores, newCoefficients, err := GetAllReputersOutput(
 		losses,
@@ -73,7 +78,7 @@ func GenerateReputerScores(
 		params.LearningRate,
 		params.GradientDescentMaxIters,
 		params.EpsilonReputer,
-		params.Epsilon,
+		topic.Epsilon,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
 	)

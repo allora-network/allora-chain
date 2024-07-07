@@ -743,17 +743,17 @@ func (s *KeeperTestSuite) TestGetParamsMinEpochLength() {
 func (s *KeeperTestSuite) TestGetParamsEpsilon() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	expectedValue := alloraMath.MustNewDecFromString("0.1")
+	expectedValue := alloraMath.MustNewDecFromString("0.1234")
 
 	// Set the parameter
-	params := types.Params{Epsilon: expectedValue}
+	params := types.Params{EpsilonReputer: expectedValue}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
 	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
-	actualValue := moduleParams.Epsilon
+	actualValue := moduleParams.EpsilonReputer
 	s.Require().True(expectedValue.Equal(actualValue))
 }
 
@@ -1590,7 +1590,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 		BetaEntropy:                     alloraMath.NewDecFromInt64(0),
 		LearningRate:                    alloraMath.NewDecFromInt64(0),
 		MinStakeFraction:                alloraMath.NewDecFromInt64(0),
-		Epsilon:                         alloraMath.NewDecFromInt64(0),
+		EpsilonReputer:                  alloraMath.NewDecFromInt64(0),
 		MaxUnfulfilledWorkerRequests:    0,
 		MaxUnfulfilledReputerRequests:   0,
 		TopicRewardStakeImportance:      alloraMath.NewDecFromInt64(0),
