@@ -1,6 +1,8 @@
 package stress_test
 
 import (
+	"context"
+
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
@@ -14,6 +16,7 @@ func createTopic(
 	epochLength int64,
 	creator NameAccountAndAddress,
 ) (topicId uint64) {
+	ctx := context.Background()
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
 		Creator:         creator.aa.addr,
 		Metadata:        "ETH 24h Prediction",
@@ -29,10 +32,10 @@ func createTopic(
 		AllowNegative:   true,
 	}
 
-	txResp, err := m.Client.BroadcastTx(m.Ctx, creator.aa.acc, createTopicRequest)
+	txResp, err := m.Client.BroadcastTx(ctx, creator.aa.acc, createTopicRequest)
 	require.NoError(m.T, err)
 
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
 	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
@@ -53,9 +56,10 @@ func fundTopic(
 	sender NameAccountAndAddress,
 	amount int64,
 ) error {
+	ctx := context.Background()
 	m.T.Log(topicLog(topicId, "funded topic with ", amount, "from", sender.name))
 	txResp, err := m.Client.BroadcastTx(
-		m.Ctx,
+		ctx,
 		sender.aa.acc,
 		&emissionstypes.MsgFundTopic{
 			Sender:  sender.aa.addr,
@@ -66,7 +70,7 @@ func fundTopic(
 	if err != nil {
 		return err
 	}
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	if err != nil {
 		return err
 	}

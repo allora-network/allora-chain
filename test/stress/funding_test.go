@@ -1,6 +1,8 @@
 package stress_test
 
 import (
+	"context"
+
 	cosmossdk_io_math "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	testCommon "github.com/allora-network/allora-chain/test/common"
@@ -76,7 +78,8 @@ func fundAccounts(
 		},
 		Outputs: outputs,
 	}
-	_, err := m.Client.BroadcastTx(m.Ctx, sender.aa.acc, sendMsg)
+	ctx := context.Background()
+	_, err := m.Client.BroadcastTx(ctx, sender.aa.acc, sendMsg)
 	if err != nil {
 		m.T.Log("Error worker address: ", err)
 		return err

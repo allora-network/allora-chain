@@ -1,6 +1,7 @@
 package stress_test
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"math/rand"
@@ -109,7 +110,8 @@ func generateInsertWorkerBundle(
 			if strings.Contains(err.Error(), "nonce already fulfilled") ||
 				strings.Contains(err.Error(), "nonce still unfulfilled") {
 				// realign blockHeights before retrying
-				topic, err = getLastTopic(m.Ctx, m.Client.QueryEmissions(), topic.Id)
+				ctx := context.Background()
+				topic, err = getLastTopic(ctx, m.Client.QueryEmissions(), topic.Id)
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
 					m.T.Log(topicLog(topic.Id, "Reset ", leaderWorkerAccountName, "blockHeight to (", blockHeightCurrent, ")"))
@@ -232,12 +234,13 @@ func insertLeaderWorkerBulk(
 		m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderWorkerAccountName, " - ", err))
 		return err
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, LeaderAcc, workerMsg)
+	ctx := context.Background()
+	txResp, err := m.Client.BroadcastTx(ctx, LeaderAcc, workerMsg)
 	if err != nil {
 		m.T.Log(topicLog(topicId, "Error broadcasting worker bulk: ", err))
 		return err
 	}
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	if err != nil {
 		m.T.Log(topicLog(topicId, "Error waiting for worker bulk: ", err))
 		return err
@@ -257,9 +260,10 @@ func checkWorkersReceivedRewards(
 	rewardedWorkersCount = 0
 	err = nil
 	for workerIndex := 0; workerIndex < countWorkers; workerIndex++ {
+		ctx := context.Background()
 		workerName := getWorkerAccountName(m.Seed, workerIndex, topicId)
 		balance, err := getAccountBalance(
-			m.Ctx,
+			ctx,
 			m.Client.QueryBank(),
 			workers[workerName].addr,
 		)

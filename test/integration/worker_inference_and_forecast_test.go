@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	"time"
@@ -17,10 +18,11 @@ const approximateBlockLengthSeconds = 5
 const minWaitingNumberofEpochs = 3
 
 func getNonZeroTopicEpochLastRan(m testCommon.TestConfig, topicID uint64, maxRetries int) (*types.Topic, error) {
+	ctx := context.Background()
 	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
 	for retries := 0; retries < maxRetries; retries++ {
-		topicResponse, err := m.Client.QueryEmissions().GetTopic(m.Ctx, &types.QueryTopicRequest{TopicId: topicID})
+		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicID})
 		if err == nil {
 			storedTopic := topicResponse.Topic
 			if storedTopic.EpochLastEnded != 0 {
@@ -43,6 +45,7 @@ func getNonZeroTopicEpochLastRan(m testCommon.TestConfig, topicID uint64, maxRet
 }
 
 func InsertSingleWorkerBulk(m testCommon.TestConfig, topic *types.Topic, blockHeight int64) {
+	ctx := context.Background()
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	nonce := types.Nonce{BlockHeight: blockHeight}
@@ -90,15 +93,15 @@ func InsertSingleWorkerBulk(m testCommon.TestConfig, topic *types.Topic, blockHe
 	workerMsg.WorkerDataBundles[0].InferencesForecastsBundleSignature = sig
 	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.BobAcc, workerMsg)
+	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, workerMsg)
 	require.NoError(m.T, err)
 
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
 	// Latest inference
 	latestInference, err := m.Client.QueryEmissions().GetWorkerLatestInferenceByTopicId(
-		m.Ctx,
+		ctx,
 		&types.QueryWorkerLatestInferenceRequest{
 			TopicId:       1,
 			WorkerAddress: InfererAddress1,
@@ -113,7 +116,8 @@ func InsertSingleWorkerBulk(m testCommon.TestConfig, topic *types.Topic, blockHe
 
 // Worker Bob inserts bulk inference and forecast
 func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, int64) {
-	topicResponse, err := m.Client.QueryEmissions().GetTopic(m.Ctx, &types.QueryTopicRequest{TopicId: topic.Id})
+	ctx := context.Background()
+	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topic.Id})
 	require.NoError(m.T, err)
 	freshTopic := topicResponse.Topic
 
@@ -130,6 +134,7 @@ func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, int64
 
 // register alice as a reputer in topic 1, then check success
 func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightCurrent, BlockHeightEval int64) {
+	ctx := context.Background()
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	// Define inferer address as Bob's address, reputer as Alice's
@@ -214,12 +219,12 @@ func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightC
 		},
 	}
 
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, lossesMsg)
+	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, lossesMsg)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
-	result, err := m.Client.QueryEmissions().GetNetworkLossBundleAtBlock(m.Ctx,
+	result, err := m.Client.QueryEmissions().GetNetworkLossBundleAtBlock(ctx,
 		&types.QueryNetworkLossBundleAtBlockRequest{
 			TopicId:     topicId,
 			BlockHeight: BlockHeightCurrent,

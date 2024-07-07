@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -15,13 +16,15 @@ import (
 
 // get the amount of coins required to deposit for a proposal
 func getDepositRequired(m testCommon.TestConfig) sdktypes.Coin {
-	queryGovParamsResponse, err := m.Client.QueryGov().Params(m.Ctx, &govtypesv1.QueryParamsRequest{})
+	ctx := context.Background()
+	queryGovParamsResponse, err := m.Client.QueryGov().Params(ctx, &govtypesv1.QueryParamsRequest{})
 	require.NoError(m.T, err)
 	return queryGovParamsResponse.Params.ExpeditedMinDeposit[0]
 }
 
 // have all three validators vote on a proposal
 func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
+	ctx := context.Background()
 	validators := []struct {
 		acc  cosmosaccount.Account
 		addr string
@@ -36,9 +39,9 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 			Voter:      validator.addr,
 			Option:     govtypesv1.OptionYes,
 		}
-		txResp, err := m.Client.BroadcastTx(m.Ctx, validator.acc, msgVote)
+		txResp, err := m.Client.BroadcastTx(ctx, validator.acc, msgVote)
 		require.NoError(m.T, err)
-		_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+		_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 		require.NoError(m.T, err)
 		msgVoteResponse := &govtypesv1.MsgVoteResponse{}
 		err = txResp.Decode(msgVoteResponse)
@@ -49,10 +52,11 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 
 // propose an upgrade to the vintegration software version
 func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight int64) {
+	ctx := context.Background()
 	name := "vintegration"
 	summary := "Upgrade to vintegration software version"
 
-	currHeight, err := m.Client.BlockHeight(m.Ctx)
+	currHeight, err := m.Client.BlockHeight(ctx)
 	require.NoError(m.T, err)
 	proposalHeight = currHeight + 50 // 4 1/6 minutes
 	m.T.Logf("Current Height: %d, proposing upgrade for %d", currHeight, proposalHeight)
@@ -77,9 +81,9 @@ func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight 
 		),
 	}
 	msgSubmitProposal.SetMsgs([]sdktypes.Msg{msgSoftwareUpgrade})
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, msgSubmitProposal)
+	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, msgSubmitProposal)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 	submitProposalMsgResponse := &govtypesv1.MsgSubmitProposalResponse{}
 	err = txResp.Decode(submitProposalMsgResponse)
@@ -89,10 +93,11 @@ func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight 
 }
 
 func waitForProposalPass(m testCommon.TestConfig, proposalId uint64) {
+	ctx := context.Background()
 	proposalRequest := &govtypesv1.QueryProposalRequest{
 		ProposalId: proposalId,
 	}
-	proposal, err := m.Client.QueryGov().Proposal(m.Ctx, proposalRequest)
+	proposal, err := m.Client.QueryGov().Proposal(ctx, proposalRequest)
 	require.NoError(m.T, err)
 	require.NotNil(m.T, proposal)
 	require.NotNil(m.T, proposal.Proposal)
@@ -102,7 +107,7 @@ func waitForProposalPass(m testCommon.TestConfig, proposalId uint64) {
 	m.T.Logf("Voting End Time: %s, sleeping %s seconds", endTime, diff)
 	time.Sleep(diff)
 
-	proposal, err = m.Client.QueryGov().Proposal(m.Ctx, proposalRequest)
+	proposal, err = m.Client.QueryGov().Proposal(ctx, proposalRequest)
 	require.NoError(m.T, err)
 	require.NotNil(m.T, proposal)
 	require.NotNil(m.T, proposal.Proposal)
@@ -111,10 +116,11 @@ func waitForProposalPass(m testCommon.TestConfig, proposalId uint64) {
 
 // query the current version of the emissions module
 func getEmissionsVersion(m testCommon.TestConfig) uint64 {
+	ctx := context.Background()
 	queryModuleVersionsRequest := &upgradetypes.QueryModuleVersionsRequest{
 		ModuleName: "emissions",
 	}
-	moduleVersions, err := m.Client.QueryUpgrade().ModuleVersions(m.Ctx, queryModuleVersionsRequest)
+	moduleVersions, err := m.Client.QueryUpgrade().ModuleVersions(ctx, queryModuleVersionsRequest)
 	require.NoError(m.T, err)
 	require.NotNil(m.T, moduleVersions)
 	require.Len(m.T, moduleVersions.ModuleVersions, 1)
@@ -125,8 +131,9 @@ func getEmissionsVersion(m testCommon.TestConfig) uint64 {
 // wait for the block before the upgrade, then sleep to give
 // the cosmovisor time to reboot the node software
 func waitForUpgrade(m testCommon.TestConfig, proposalHeight int64) {
+	ctx := context.Background()
 	var timeToSleep time.Duration = 15
-	m.Client.WaitForBlockHeight(m.Ctx, proposalHeight-1)
+	m.Client.WaitForBlockHeight(ctx, proposalHeight-1)
 	m.T.Logf("--- Block Height %d Reached, Preparing to Sleep %d while Upgrade Happens ---",
 		proposalHeight-1, timeToSleep)
 	time.Sleep(timeToSleep * time.Second)
