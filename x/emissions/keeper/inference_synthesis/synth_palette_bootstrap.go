@@ -58,7 +58,7 @@ func (p SynthPalette) Clone() SynthPalette {
 	for _, worker := range p.Inferers {
 		data, ok := p.InferenceByWorker[worker]
 		if !ok {
-			Logger(p.Ctx).Debug(fmt.Sprintf("Cannot find forecaster in InferenceByWorker in palette.Clone %v", worker))
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in InferenceByWorker in palette.Clone %v", worker))
 			continue
 		}
 		inferenceCopy := *data
@@ -68,7 +68,7 @@ func (p SynthPalette) Clone() SynthPalette {
 	for _, worker := range p.Forecasters {
 		data, ok := p.ForecastByWorker[worker]
 		if !ok {
-			Logger(p.Ctx).Debug(fmt.Sprintf("Cannot find forecaster in ForecastByWorker in palette.Clone %v", worker))
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastByWorker in palette.Clone %v", worker))
 			continue
 		}
 		forecastCopy := *data
@@ -78,7 +78,7 @@ func (p SynthPalette) Clone() SynthPalette {
 	for _, worker := range p.Forecasters {
 		data, ok := p.ForecastImpliedInferenceByWorker[worker]
 		if !ok {
-			Logger(p.Ctx).Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in palette.Clone %v", worker))
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in palette.Clone %v", worker))
 			continue
 		}
 		inferenceCopy := *data
@@ -88,7 +88,7 @@ func (p SynthPalette) Clone() SynthPalette {
 	for _, worker := range p.Inferers {
 		data, ok := p.InfererRegrets[worker]
 		if !ok {
-			Logger(p.Ctx).Debug(fmt.Sprintf("Cannot find forecaster in InfererRegrets in palette.Clone %v", worker))
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in InfererRegrets in palette.Clone %v", worker))
 			continue
 		}
 		regretCopy := *data
@@ -98,7 +98,7 @@ func (p SynthPalette) Clone() SynthPalette {
 	for _, worker := range p.Forecasters {
 		data, ok := p.ForecasterRegrets[worker]
 		if !ok {
-			Logger(p.Ctx).Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in palette.Clone %v", worker))
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in palette.Clone %v", worker))
 			continue
 		}
 		regretCopy := *data
