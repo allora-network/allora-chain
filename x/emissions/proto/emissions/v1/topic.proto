@@ -6,6 +6,7 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
+import "emissions/v1/nonce.proto";
 
 message Topic {
   uint64 id = 1;
@@ -30,4 +31,12 @@ message Topic {
 
 message TopicList {
   repeated Topic topics = 1;
+}
+
+message TimestampedActorNonce {
+  option (gogoproto.equal) = true;
+
+  int64 block_height = 1;  // height at which value calculated or received
+  string actor = 2;
+  Nonce nonce = 3;
 }
