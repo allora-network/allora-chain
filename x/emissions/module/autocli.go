@@ -245,7 +245,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetTopicLastReputerCommitInfo",
-					Use:       "topic-last--reputer-commit [topic_id]",
+					Use:       "topic-last-reputer-commit [topic_id]",
 					Short:     "Get topic last commit by reputer",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
