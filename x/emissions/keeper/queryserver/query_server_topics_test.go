@@ -99,7 +99,7 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 	nonce := types.Nonce{
 		BlockHeight: 95,
 	}
-	actor := "TestActor"
+	actor := "TestReputer"
 
 	topic := types.Topic{Id: 1}
 	_ = keeper.SetTopicLastCommit(
@@ -121,4 +121,31 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 	s.Require().Equal(int64(blockHeight), response.LastCommit.BlockHeight, "Retrieved blockheight should match")
 	s.Require().Equal(&nonce, response.LastCommit.Nonce, "The metadata of the retrieved nonce should match")
 	s.Require().Equal(actor, response.LastCommit.Actor, "The metadata of the retrieved nonce should match")
+
+	topic2 := types.Topic{Id: 2}
+	blockHeight = 101
+	nonce = types.Nonce{
+		BlockHeight: 98,
+	}
+	actor = "TestWorker"
+
+	_ = keeper.SetTopicLastCommit(
+		ctx,
+		topic2.Id,
+		int64(blockHeight),
+		&nonce,
+		actor,
+		types.ActorType_INFERER,
+	)
+
+	req2 := &types.QueryTopicLastCommitRequest{
+		TopicId: topic2.Id,
+	}
+
+	response2, err := queryServer.GetTopicLastWorkerCommitInfo(ctx, req2)
+	s.Require().NoError(err, "GetActiveTopics should not produce an error")
+	s.Require().NotNil(response2, "The response should not be nil")
+	s.Require().Equal(int64(blockHeight), response2.LastCommit.BlockHeight, "Retrieved blockheight should match")
+	s.Require().Equal(&nonce, response2.LastCommit.Nonce, "The metadata of the retrieved nonce should match")
+	s.Require().Equal(actor, response2.LastCommit.Actor, "The metadata of the retrieved nonce should match")
 }
