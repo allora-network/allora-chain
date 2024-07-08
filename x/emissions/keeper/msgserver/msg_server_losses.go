@@ -213,7 +213,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	blockHeight := sdkCtx.BlockHeight()
-	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.ReputerRequestNonce.ReputerNonce, msg.Sender)
+	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.ReputerRequestNonce.ReputerNonce, msg.Sender, types.ActorType_REPUTER)
 	if err != nil {
 		return nil, err
 	}

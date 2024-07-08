@@ -297,7 +297,7 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 	}
 
 	blockHeight := sdkCtx.BlockHeight()
-	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.Nonce, msg.Sender)
+	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.Nonce, msg.Sender, types.ActorType_INFERER)
 	if err != nil {
 		return nil, err
 	}

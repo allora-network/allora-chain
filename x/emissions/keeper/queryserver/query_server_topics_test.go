@@ -108,13 +108,14 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 		int64(blockHeight),
 		&nonce,
 		actor,
+		types.ActorType_REPUTER,
 	)
 
 	req := &types.QueryTopicLastCommitRequest{
 		TopicId: topic.Id,
 	}
 
-	response, err := queryServer.GetTopicLastCommitInfo(ctx, req)
+	response, err := queryServer.GetTopicLastReputerCommitInfo(ctx, req)
 	s.Require().NoError(err, "GetActiveTopics should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().Equal(int64(blockHeight), response.LastCommit.BlockHeight, "Retrieved blockheight should match")

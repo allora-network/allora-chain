@@ -804,7 +804,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadUpdateTopicCommit() 
 	)
 	require.NoError(err, "InsertReputerPayload should not return an error")
 
-	lastCommit, err := keeper.GetTopicLastCommit(ctx, topicId)
+	lastCommit, err := keeper.GetTopicLastCommit(ctx, topicId, types.ActorType_REPUTER)
 	require.NoError(err, "GetTopicLastCommit should not return an error")
 
 	require.Equal(blockHeight, lastCommit.BlockHeight, "BlockHeight should be same")

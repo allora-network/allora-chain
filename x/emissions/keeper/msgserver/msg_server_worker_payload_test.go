@@ -534,7 +534,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadUpdateTopicCommit() {
 	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
 	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
 
-	lastCommit, err := s.emissionsKeeper.GetTopicLastCommit(ctx, topicId)
+	lastCommit, err := s.emissionsKeeper.GetTopicLastCommit(ctx, topicId, types.ActorType_INFERER)
 	require.NoError(err, "GetTopicLastCommit should not return an error")
 
 	require.Equal(blockHeight, lastCommit.BlockHeight, "BlockHeight should be same")

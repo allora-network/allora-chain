@@ -180,7 +180,12 @@ service Query {
     option (google.api.http).get = "/emissions/v1/whitelist_admin/{address}";
   }
 
-  rpc GetTopicLastCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
+  rpc GetTopicLastWorkerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_last_commit/{topic_id}";
+  }
+
+  rpc GetTopicLastReputerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/topic_last_commit/{topic_id}";
   }
