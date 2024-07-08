@@ -179,6 +179,16 @@ service Query {
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
     option (google.api.http).get = "/emissions/v1/whitelist_admin/{address}";
   }
+
+  rpc GetTopicLastWorkerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_last_commit/{topic_id}";
+  }
+
+  rpc GetTopicLastReputerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_last_commit/{topic_id}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -489,4 +499,12 @@ message QueryDelegateStakeRemovalInfoRequest {
 
 message QueryDelegateStakeRemovalInfoResponse {
   DelegateStakeRemovalInfo removal = 1;
+}
+
+message QueryTopicLastCommitRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicLastCommitResponse {
+  TimestampedActorNonce last_commit = 1;
 }
