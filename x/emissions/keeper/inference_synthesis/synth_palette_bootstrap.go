@@ -55,29 +55,49 @@ func (p *SynthPalette) BootstrapRegretData() error {
 // Clone creates a deep copy of the SynthPalette.
 func (p SynthPalette) Clone() SynthPalette {
 	inferenceByWorker := make(map[Worker]*emissionstypes.Inference, len(p.InferenceByWorker))
-	for k, v := range p.InferenceByWorker {
-		inferenceCopy := *v
-		inferenceByWorker[k] = &inferenceCopy
+	for _, worker := range p.Inferers {
+		data, ok := p.InferenceByWorker[worker]
+		if !ok {
+			continue
+		}
+		inferenceCopy := *data
+		inferenceByWorker[worker] = &inferenceCopy
 	}
 	forecastByWorker := make(map[Worker]*emissionstypes.Forecast, len(p.ForecastByWorker))
-	for k, v := range p.ForecastByWorker {
-		forecastCopy := *v
-		forecastByWorker[k] = &forecastCopy
+	for _, worker := range p.Forecasters {
+		data, ok := p.ForecastByWorker[worker]
+		if !ok {
+			continue
+		}
+		forecastCopy := *data
+		forecastByWorker[worker] = &forecastCopy
 	}
 	forecastImpliedInferenceByWorker := make(map[Worker]*emissionstypes.Inference, len(p.ForecastImpliedInferenceByWorker))
-	for k, v := range p.ForecastImpliedInferenceByWorker {
-		inferenceCopy := *v
-		forecastImpliedInferenceByWorker[k] = &inferenceCopy
+	for _, worker := range p.Forecasters {
+		data, ok := p.ForecastImpliedInferenceByWorker[worker]
+		if !ok {
+			continue
+		}
+		inferenceCopy := *data
+		forecastImpliedInferenceByWorker[worker] = &inferenceCopy
 	}
 	infererRegrets := make(map[Worker]*StatefulRegret, len(p.InfererRegrets))
-	for k, v := range p.InfererRegrets {
-		regretCopy := *v
-		infererRegrets[k] = &regretCopy
+	for _, worker := range p.Inferers {
+		data, ok := p.InfererRegrets[worker]
+		if !ok {
+			continue
+		}
+		regretCopy := *data
+		infererRegrets[worker] = &regretCopy
 	}
 	forecasterRegrets := make(map[Worker]*StatefulRegret, len(p.ForecasterRegrets))
-	for k, v := range p.ForecasterRegrets {
-		regretCopy := *v
-		forecasterRegrets[k] = &regretCopy
+	for _, worker := range p.Forecasters {
+		data, ok := p.ForecasterRegrets[worker]
+		if !ok {
+			continue
+		}
+		regretCopy := *data
+		forecasterRegrets[worker] = &regretCopy
 	}
 
 	return SynthPalette{

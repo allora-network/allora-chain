@@ -40,12 +40,16 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	normalizedInfererRegrets := make(map[Worker]Regret)
 	maxRegret := alloraMath.ZeroDec()
 	maxRegretInitialized := false
-	for address, worker := range p.InfererRegrets {
-		regretFrac, err := worker.regret.Quo(stdDevRegretsPlusEpsilon)
+	for _, worker := range p.Inferers {
+		regretInfo, ok := p.InfererRegrets[worker]
+		if !ok {
+			continue
+		}
+		regretFrac, err := regretInfo.regret.Quo(stdDevRegretsPlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
-		normalizedInfererRegrets[address] = regretFrac
+		normalizedInfererRegrets[worker] = regretFrac
 		if !maxRegretInitialized {
 			maxRegretInitialized = true
 			maxRegret = regretFrac
@@ -56,12 +60,16 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
-		for address, worker := range p.ForecasterRegrets {
-			regretFrac, err := worker.regret.Quo(stdDevRegretsPlusEpsilon)
+		for _, worker := range p.Forecasters {
+			regretInfo, ok := p.ForecasterRegrets[worker]
+			if !ok {
+				continue
+			}
+			regretFrac, err := regretInfo.regret.Quo(stdDevRegretsPlusEpsilon)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}
-			normalizedForecasterRegrets[address] = regretFrac
+			normalizedForecasterRegrets[worker] = regretFrac
 			if !maxRegretInitialized {
 				maxRegretInitialized = true
 				maxRegret = regretFrac
@@ -75,28 +83,36 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	forecasterWeights := make(map[Worker]Weight)
 	if p.InferersNewStatus != InferersAllNewExceptOne {
 		// Calculate the weights from the normalized regrets
-		for address, worker := range p.InfererRegrets {
+		for _, worker := range p.Inferers {
+			regretInfo, ok := p.InfererRegrets[worker]
+			if !ok {
+				continue
+			}
 			// If there is more than one not-new inferer, calculate the weight for the ones that are not new
 			var infererWeight = alloraMath.ZeroDec()
-			if !worker.noPriorRegret {
-				infererWeight, err = CalcWeightFromNormalizedRegret(normalizedInfererRegrets[address], maxRegret, p.PNorm, p.CNorm)
+			if !regretInfo.noPriorRegret {
+				infererWeight, err = CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
 				if err != nil {
 					return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
 				}
 			}
-			infererWeights[address] = infererWeight
+			infererWeights[worker] = infererWeight
 		}
 
 		if len(p.ForecasterRegrets) > 0 {
-			for address, worker := range p.ForecasterRegrets {
+			for _, worker := range p.Forecasters {
+				regretInfo, ok := p.ForecasterRegrets[worker]
+				if !ok {
+					continue
+				}
 				var forecasterWeight = alloraMath.ZeroDec()
-				if !worker.noPriorRegret {
-					forecasterWeight, err = CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[address], maxRegret, p.PNorm, p.CNorm)
+				if !regretInfo.noPriorRegret {
+					forecasterWeight, err = CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, p.PNorm, p.CNorm)
 					if err != nil {
 						return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
 					}
 				}
-				forecasterWeights[address] = forecasterWeight
+				forecasterWeights[worker] = forecasterWeight
 			}
 		}
 	}
@@ -144,6 +160,15 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 		}
 	} else {
 		for _, inferer := range p.Inferers {
+			if _, ok := p.InferenceByWorker[inferer]; !ok {
+				continue
+			}
+			if _, ok := weights.inferers[inferer]; !ok {
+				continue
+			}
+			if _, ok := p.InfererRegrets[inferer]; !ok {
+				continue
+			}
 			runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
 				p.InferenceByWorker[inferer],
 				weights.inferers[inferer],
@@ -160,7 +185,13 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 		// If all inferers are new, forecasters are not considered
 		if p.InferersNewStatus != InferersAllNew {
 			for _, forecaster := range p.Forecasters {
-				if p.ForecastImpliedInferenceByWorker[forecaster] == nil {
+				if _, ok := p.ForecastImpliedInferenceByWorker[forecaster]; !ok {
+					continue
+				}
+				if _, ok := weights.forecasters[forecaster]; !ok {
+					continue
+				}
+				if _, ok := p.ForecasterRegrets[forecaster]; !ok {
 					continue
 				}
 				runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
@@ -195,7 +226,11 @@ func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
 		return regrets
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.InfererRegrets))
-	for _, regretInfo := range p.InfererRegrets {
+	for _, inferer := range p.Inferers {
+		regretInfo, ok := p.InfererRegrets[inferer]
+		if !ok {
+			continue
+		}
 		regrets = append(regrets, regretInfo.regret)
 	}
 	return regrets
@@ -207,8 +242,12 @@ func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
 		return regrets
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.ForecasterRegrets))
-	for _, worker := range p.ForecasterRegrets {
-		regrets = append(regrets, worker.regret)
+	for _, worker := range p.Forecasters {
+		regretInfo, ok := p.ForecasterRegrets[worker]
+		if !ok {
+			continue
+		}
+		regrets = append(regrets, regretInfo.regret)
 	}
 	return regrets
 }
