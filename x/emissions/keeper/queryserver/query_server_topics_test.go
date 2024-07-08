@@ -90,3 +90,34 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 		s.Require().True(isActive, "Only active topics should be returned")
 	}
 }
+
+func (s *KeeperTestSuite) TestGetLatestCommit() {
+	ctx := s.ctx
+	queryServer := s.queryServer
+	keeper := s.emissionsKeeper
+	blockHeight := 100
+	nonce := types.Nonce{
+		BlockHeight: 95,
+	}
+	actor := "TestActor"
+
+	topic := types.Topic{Id: 1}
+	_ = keeper.SetTopicLastCommit(
+		ctx,
+		topic.Id,
+		int64(blockHeight),
+		&nonce,
+		actor,
+	)
+
+	req := &types.QueryTopicLastCommitRequest{
+		TopicId: topic.Id,
+	}
+
+	response, err := queryServer.GetTopicLastCommitInfo(ctx, req)
+	s.Require().NoError(err, "GetActiveTopics should not produce an error")
+	s.Require().NotNil(response, "The response should not be nil")
+	s.Require().Equal(int64(blockHeight), response.LastCommit.BlockHeight, "Retrieved blockheight should match")
+	s.Require().Equal(&nonce, response.LastCommit.Nonce, "The metadata of the retrieved nonce should match")
+	s.Require().Equal(actor, response.LastCommit.Actor, "The metadata of the retrieved nonce should match")
+}

@@ -296,6 +296,11 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, err
 	}
 
+	blockHeight := sdkCtx.BlockHeight()
+	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.Nonce, msg.Sender)
+	if err != nil {
+		return nil, err
+	}
 	// Return an empty response as the operation was successful
 	return &types.MsgInsertBulkWorkerPayloadResponse{}, nil
 }

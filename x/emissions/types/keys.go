@@ -68,4 +68,5 @@ var (
 	DelegateStakeRemovalsByBlockKey             = collections.NewPrefix(53)
 	StakeRemovalsByActorKey                     = collections.NewPrefix(54)
 	DelegateStakeRemovalsByActorKey             = collections.NewPrefix(55)
+	LatestTopicCommitKey                        = collections.NewPrefix(56)
 )

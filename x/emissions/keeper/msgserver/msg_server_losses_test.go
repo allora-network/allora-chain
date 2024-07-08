@@ -774,3 +774,40 @@ func (s *MsgServerTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 	_, err = msgServer.InsertBulkReputerPayload(ctx, lossesMsg)
 	require.Error(err, types.ErrQueryTooLarge)
 }
+
+func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadUpdateTopicCommit() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+	block := types.BlockHeight(1)
+
+	reputerPrivateKey := secp256k1.GenPrivKey()
+	reputerPublicKeyBytes := reputerPrivateKey.PubKey().Bytes()
+	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
+	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: int64(block)}, expectedForecasts)
+	require.NoError(err)
+	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
+	require.NoError(err)
+
+	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
+	err = s.constructAndInsertReputerPayload(
+		reputerAddr,
+		reputerPrivateKey,
+		reputerPublicKeyBytes,
+		&reputerValueBundle,
+		topicId,
+		&reputerNonce,
+		&workerNonce,
+	)
+	require.NoError(err, "InsertReputerPayload should not return an error")
+
+	lastCommit, err := keeper.GetTopicLastCommit(ctx, topicId)
+	require.NoError(err, "GetTopicLastCommit should not return an error")
+
+	require.Equal(blockHeight, lastCommit.BlockHeight, "BlockHeight should be same")
+	require.Equal(reputerValueBundle.Reputer, lastCommit.Actor, "Actor should be same")
+	require.Equal(reputerValueBundle.ReputerRequestNonce.ReputerNonce, lastCommit.Nonce, "Nonce should be same")
+}

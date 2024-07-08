@@ -48,6 +48,7 @@ const (
 	Query_GetNetworkInferencesAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
 	Query_GetLatestNetworkInference_FullMethodName             = "/emissions.v1.Query/GetLatestNetworkInference"
 	Query_IsWhitelistAdmin_FullMethodName                      = "/emissions.v1.Query/IsWhitelistAdmin"
+	Query_GetTopicLastCommitInfo_FullMethodName                = "/emissions.v1.Query/GetTopicLastCommitInfo"
 )
 
 // QueryClient is the client API for Query service.
@@ -84,6 +85,7 @@ type QueryClient interface {
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
 	GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesAtBlockResponse, error)
 	IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error)
+	GetTopicLastCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
 }
 
 type queryClient struct {
@@ -355,6 +357,15 @@ func (c *queryClient) IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelist
 	return out, nil
 }
 
+func (c *queryClient) GetTopicLastCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error) {
+	out := new(QueryTopicLastCommitResponse)
+	err := c.cc.Invoke(ctx, Query_GetTopicLastCommitInfo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -389,6 +400,7 @@ type QueryServer interface {
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
 	GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesAtBlockRequest) (*QueryLatestNetworkInferencesAtBlockResponse, error)
 	IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error)
+	GetTopicLastCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -482,6 +494,9 @@ func (UnimplementedQueryServer) GetLatestNetworkInference(context.Context, *Quer
 }
 func (UnimplementedQueryServer) IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistAdmin not implemented")
+}
+func (UnimplementedQueryServer) GetTopicLastCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicLastCommitInfo not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1018,6 +1033,24 @@ func _Query_IsWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetTopicLastCommitInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicLastCommitRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicLastCommitInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTopicLastCommitInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicLastCommitInfo(ctx, req.(*QueryTopicLastCommitRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1140,6 +1173,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IsWhitelistAdmin",
 			Handler:    _Query_IsWhitelistAdmin_Handler,
+		},
+		{
+			MethodName: "GetTopicLastCommitInfo",
+			Handler:    _Query_GetTopicLastCommitInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
