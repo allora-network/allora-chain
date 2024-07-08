@@ -168,6 +168,12 @@ type Keeper struct {
 	/// WHITELISTS
 
 	whitelistAdmins collections.KeySet[ActorId]
+
+	/// RECORD COMMITS
+
+	//
+	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
+	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
 }
 
 func NewKeeper(
@@ -234,6 +240,8 @@ func NewKeeper(
 		unfulfilledWorkerNonces:                  collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
 		unfulfilledReputerNonces:                 collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
 		topicRewardNonce:                         collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
+		topicLastWorkerCommit:                    collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		topicLastReputerCommit:                   collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -2320,4 +2328,26 @@ func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
 		return err
 	}
 	return nil
+}
+
+func (k *Keeper) SetTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actor ActorId, actorType types.ActorType) error {
+	if actorType == types.ActorType_REPUTER {
+		return k.topicLastReputerCommit.Set(ctx, topic, types.TimestampedActorNonce{
+			BlockHeight: blockHeight,
+			Actor:       actor,
+			Nonce:       nonce,
+		})
+	}
+	return k.topicLastWorkerCommit.Set(ctx, topic, types.TimestampedActorNonce{
+		BlockHeight: blockHeight,
+		Actor:       actor,
+		Nonce:       nonce,
+	})
+}
+
+func (k *Keeper) GetTopicLastCommit(ctx context.Context, topic TopicId, actorType types.ActorType) (types.TimestampedActorNonce, error) {
+	if actorType == types.ActorType_REPUTER {
+		return k.topicLastReputerCommit.Get(ctx, topic)
+	}
+	return k.topicLastWorkerCommit.Get(ctx, topic)
 }

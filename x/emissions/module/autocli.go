@@ -235,6 +235,22 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "GetTopicLastWorkerCommitInfo",
+					Use:       "topic-last-worker-commit [topic_id]",
+					Short:     "Get topic last commit by worker",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetTopicLastReputerCommitInfo",
+					Use:       "topic-last-reputer-commit [topic_id]",
+					Short:     "Get topic last commit by reputer",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
