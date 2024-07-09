@@ -301,6 +301,12 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 	if err != nil {
 		return nil, err
 	}
+
+	err = ms.k.SetTopicLastWorkerPayload(ctx, topic.Id, blockHeight, msg.Nonce, msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
 	// Return an empty response as the operation was successful
 	return &types.MsgInsertBulkWorkerPayloadResponse{}, nil
 }

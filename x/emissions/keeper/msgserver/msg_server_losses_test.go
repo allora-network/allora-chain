@@ -810,4 +810,11 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadUpdateTopicCommit() 
 	require.Equal(blockHeight, lastCommit.BlockHeight, "BlockHeight should be same")
 	require.Equal(reputerValueBundle.Reputer, lastCommit.Actor, "Actor should be same")
 	require.Equal(reputerValueBundle.ReputerRequestNonce.ReputerNonce, lastCommit.Nonce, "Nonce should be same")
+
+	lastReputerPayload, err := keeper.GetTopicLastReputerPayload(ctx, topicId)
+	require.NoError(err)
+
+	require.Equal(blockHeight, lastReputerPayload.BlockHeight, "BlockHeight should be same")
+	require.Equal(reputerValueBundle.Reputer, lastReputerPayload.Actor, "Actor should be same")
+	require.Equal(reputerValueBundle.ReputerRequestNonce.ReputerNonce, lastReputerPayload.Nonce, "Nonce should be same")
 }

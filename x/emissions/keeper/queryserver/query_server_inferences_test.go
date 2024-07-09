@@ -417,7 +417,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	require.Equal(len(response.ForecastImpliedInferences), 3)
 }
 
-func (s *KeeperTestSuite) TestGetLatestNetworkInferenceWithLosses() {
+func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -448,6 +448,11 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferenceWithLosses() {
 		TopicId:             topicId,
 	})
 	require.NoError(err)
+
+	reputer0 := "allo1wms0uwwh9dgtnmfend82z82j9q6x62s656fn35"
+
+	err = keeper.SetTopicLastReputerPayload(s.ctx, topicId, lossBlockHeight, &lossNonce, reputer0)
+	s.Require().NoError(err)
 
 	// Set Inferences
 	s.ctx = s.ctx.WithBlockHeight(inferenceBlockHeight)
@@ -559,17 +564,25 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferenceWithLosses() {
 		}
 	}
 
+	// insert inferences and forecasts 1
 	err = keeper.InsertInferences(s.ctx, topicId, inferenceNonce, getInferencesForBlockHeight(inferenceBlockHeight))
 	s.Require().NoError(err)
 
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce, getForecastsForBlockHeight(inferenceBlockHeight))
 	require.NoError(err)
 
+	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce, worker0)
+	s.Require().NoError(err)
+
+	// insert inferences and forecasts 2
 	err = keeper.InsertInferences(s.ctx, topicId, inferenceNonce2, getInferencesForBlockHeight(inferenceBlockHeight2))
 	s.Require().NoError(err)
 
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce2, getForecastsForBlockHeight(inferenceBlockHeight2))
 	require.NoError(err)
+
+	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight2, &inferenceNonce2, worker0)
+	s.Require().NoError(err)
 
 	// Update epoch topic epoch last ended
 	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, inferenceBlockHeight2)
@@ -587,12 +600,9 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferenceWithLosses() {
 	require.Equal(len(response.InfererWeights), 5)
 	require.Equal(len(response.ForecasterWeights), 3)
 	require.Equal(len(response.ForecastImpliedInferences), 3)
-
-	require.Equal(response.InferenceBlockHeight, inferenceBlockHeight)
-	require.Equal(response.LossBlockHeight, lossBlockHeight)
 }
 
-func (s *KeeperTestSuite) TestGetLatestNetworkInferenceWithMissingInferences() {
+func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingInferences() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 

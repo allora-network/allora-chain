@@ -122,45 +122,14 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	error,
 ) {
 
-	// Find the latest inference block height
-	_, inferenceBlockHeight, err := qs.k.GetLatestTopicInferences(ctx, req.TopicId)
-	if err != nil {
-		return nil, err
-	}
-	if inferenceBlockHeight == 0 {
-		return nil, status.Errorf(codes.NotFound, "inferences not yet available for topic %v", req.TopicId)
-	}
-
-	topic, err := qs.k.GetTopic(ctx, req.TopicId)
+	lastWorkerCommit, err := qs.k.GetTopicLastWorkerPayload(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
 
-	params, err := qs.k.GetParams(ctx)
+	lastReputerCommit, err := qs.k.GetTopicLastReputerPayload(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
-	}
-
-	// calculate the previous loss block height
-	previousLossBlockHeight := inferenceBlockHeight - topic.EpochLength
-
-	for i := 0; i < int(params.DefaultPageLimit); i++ {
-		if previousLossBlockHeight <= 0 {
-			return nil, status.Errorf(codes.NotFound, "losses not yet available for topic %v", req.TopicId)
-		}
-
-		// check for inferences
-		inferences, err := qs.k.GetInferencesAtBlock(ctx, req.TopicId, inferenceBlockHeight)
-		if err == nil && inferences != nil && len(inferences.Inferences) > 0 {
-			// check for losses. If they exist, then break so we can query
-			_, err = qs.k.GetNetworkLossBundleAtBlock(ctx, req.TopicId, previousLossBlockHeight)
-			if err == nil {
-				break
-			}
-		}
-
-		inferenceBlockHeight -= topic.EpochLength
-		previousLossBlockHeight -= topic.EpochLength
 	}
 
 	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err :=
@@ -168,8 +137,8 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 			sdk.UnwrapSDKContext(ctx),
 			qs.k,
 			req.TopicId,
-			inferenceBlockHeight,
-			previousLossBlockHeight,
+			lastWorkerCommit.Nonce.BlockHeight,
+			lastReputerCommit.Nonce.BlockHeight,
 		)
 
 	if err != nil {
@@ -184,7 +153,7 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 		InfererWeights:            synth.ConvertWeightsToArrays(inferers, infererWeights),
 		ForecasterWeights:         synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
 		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
-		InferenceBlockHeight:      inferenceBlockHeight,
-		LossBlockHeight:           previousLossBlockHeight,
+		InferenceBlockHeight:      lastWorkerCommit.Nonce.BlockHeight,
+		LossBlockHeight:           lastReputerCommit.Nonce.BlockHeight,
 	}, nil
 }
