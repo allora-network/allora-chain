@@ -603,7 +603,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	require.Equal(len(response.ConfidenceIntervalRawPercentiles), 5)
 	require.Equal(len(response.ConfidenceIntervalValues), 5)
 
-	require.Equal(response.InferenceBlockHeight, inferenceBlockHeight)
+	require.Equal(response.InferenceBlockHeight, inferenceBlockHeight2)
 	require.Equal(response.LossBlockHeight, lossBlockHeight)
 }
 
