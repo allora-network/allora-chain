@@ -56,9 +56,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MinStakeFraction) == 1 {
 		existingParams.MinStakeFraction = newParams.MinStakeFraction[0]
 	}
-	if len(newParams.Epsilon) == 1 {
-		existingParams.Epsilon = newParams.Epsilon[0]
-	}
 	if len(newParams.MaxUnfulfilledWorkerRequests) == 1 {
 		existingParams.MaxUnfulfilledWorkerRequests = newParams.MaxUnfulfilledWorkerRequests[0]
 	}
@@ -139,6 +136,12 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.TopicFeeRevenueDecayRate) == 1 {
 		existingParams.TopicFeeRevenueDecayRate = newParams.TopicFeeRevenueDecayRate[0]
+	}
+	if len(newParams.EpsilonReputer) == 1 {
+		existingParams.EpsilonReputer = newParams.EpsilonReputer[0]
+	}
+	if len(newParams.MinEffectiveTopicRevenue) == 1 {
+		existingParams.MinEffectiveTopicRevenue = newParams.MinEffectiveTopicRevenue[0]
 	}
 	err = existingParams.Validate()
 	if err != nil {

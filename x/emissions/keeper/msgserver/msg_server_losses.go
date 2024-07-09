@@ -173,7 +173,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
-	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, params.Epsilon)
+	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, topic.Epsilon)
 	if err != nil {
 		return nil, err
 	}
@@ -208,6 +208,12 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	err = ms.k.AddRewardableTopic(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	blockHeight := sdkCtx.BlockHeight()
+	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.ReputerRequestNonce.ReputerNonce, msg.Sender, types.ActorType_REPUTER)
 	if err != nil {
 		return nil, err
 	}

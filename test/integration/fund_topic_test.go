@@ -1,6 +1,8 @@
 package integration_test
 
 import (
+	"context"
+
 	cosmosMath "cosmossdk.io/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -8,8 +10,9 @@ import (
 )
 
 func FundTopic1(m testCommon.TestConfig) {
+	ctx := context.Background()
 	txResp, err := m.Client.BroadcastTx(
-		m.Ctx,
+		ctx,
 		m.BobAcc,
 		&emissionstypes.MsgFundTopic{
 			Sender:  m.BobAddr,
@@ -18,7 +21,7 @@ func FundTopic1(m testCommon.TestConfig) {
 		},
 	)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 	resp := &emissionstypes.MsgFundTopicResponse{}
 	err = txResp.Decode(resp)
@@ -26,6 +29,7 @@ func FundTopic1(m testCommon.TestConfig) {
 }
 
 func CheckTopic1Activated(m testCommon.TestConfig) {
+	ctx := context.Background()
 	// Fetch only active topics
 	pagi := &emissionstypes.QueryActiveTopicsRequest{
 		Pagination: &emissionstypes.SimpleCursorPaginationRequest{
@@ -33,7 +37,7 @@ func CheckTopic1Activated(m testCommon.TestConfig) {
 		},
 	}
 	activeTopics, err := m.Client.QueryEmissions().GetActiveTopics(
-		m.Ctx,
+		ctx,
 		pagi)
 	require.NoError(m.T, err, "Fetching active topics should not produce an error")
 
