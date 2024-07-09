@@ -1,6 +1,8 @@
 package stress_test
 
 import (
+	"context"
+
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
@@ -9,9 +11,10 @@ import (
 
 // get the emissions params from outside the chain
 func GetEmissionsParams(m testCommon.TestConfig) emissionstypes.Params {
+	ctx := context.Background()
 	paramsReq := &emissionstypes.QueryParamsRequest{}
 	p, err := m.Client.QueryEmissions().Params(
-		m.Ctx,
+		ctx,
 		paramsReq,
 	)
 	require.NoError(m.T, err)
@@ -21,9 +24,10 @@ func GetEmissionsParams(m testCommon.TestConfig) emissionstypes.Params {
 
 // get the mint params from outside the chain
 func GetMintParams(m testCommon.TestConfig) minttypes.Params {
+	ctx := context.Background()
 	paramsReq := &minttypes.QueryParamsRequest{}
 	p, err := m.Client.QueryMint().Params(
-		m.Ctx,
+		ctx,
 		paramsReq,
 	)
 	require.NoError(m.T, err)

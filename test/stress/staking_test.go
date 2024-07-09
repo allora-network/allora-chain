@@ -1,6 +1,8 @@
 package stress_test
 
 import (
+	"context"
+
 	cosmosMath "cosmossdk.io/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -18,11 +20,12 @@ func stakeReputer(
 		TopicId: topicId,
 		Amount:  cosmosMath.NewIntFromUint64(stakeToAdd),
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, reputer.aa.acc, addStake)
+	ctx := context.Background()
+	txResp, err := m.Client.BroadcastTx(ctx, reputer.aa.acc, addStake)
 	if err != nil {
 		return err
 	}
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	if err != nil {
 		return err
 	}

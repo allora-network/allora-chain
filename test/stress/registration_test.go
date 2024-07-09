@@ -1,6 +1,7 @@
 package stress_test
 
 import (
+	"context"
 	"math/rand"
 	"strconv"
 
@@ -14,6 +15,7 @@ func RegisterReputerForTopic(
 	reputer NameAccountAndAddress,
 	topicId uint64,
 ) error {
+	ctx := context.Background()
 
 	registerReputerRequest := &emissionstypes.MsgRegister{
 		Sender:       reputer.aa.addr,
@@ -23,11 +25,11 @@ func RegisterReputerForTopic(
 		TopicId:      topicId,
 		IsReputer:    true,
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, reputer.aa.acc, registerReputerRequest)
+	txResp, err := m.Client.BroadcastTx(ctx, reputer.aa.acc, registerReputerRequest)
 	if err != nil {
 		return err
 	}
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	if err != nil {
 		return err
 	}
@@ -46,6 +48,7 @@ func RegisterWorkerForTopic(
 	worker NameAccountAndAddress,
 	topicId uint64,
 ) error {
+	ctx := context.Background()
 	registerWorkerRequest := &emissionstypes.MsgRegister{
 		Sender:       worker.aa.addr,
 		Owner:        worker.aa.addr,
@@ -54,11 +57,11 @@ func RegisterWorkerForTopic(
 		TopicId:      topicId,
 		IsReputer:    false,
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, worker.aa.acc, registerWorkerRequest)
+	txResp, err := m.Client.BroadcastTx(ctx, worker.aa.acc, registerWorkerRequest)
 	if err != nil {
 		return err
 	}
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	if err != nil {
 		return err
 	}

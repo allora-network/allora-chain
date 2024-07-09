@@ -118,11 +118,14 @@ func (qs queryServer) GetLatestNetworkInference(
 		ciValues = []alloraMath.Dec{}
 	}
 
+	inferers := alloraMath.GetSortedKeys(infererWeights)
+	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
+
 	return &types.QueryLatestNetworkInferencesResponse{
 		NetworkInferences:                networkInferences,
-		InfererWeights:                   synth.ConvertWeightsToArrays(infererWeights),
-		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasterWeights),
-		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
+		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
+		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
+		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
 		InferenceBlockHeight:             inferenceBlockHeight,
 		LossBlockHeight:                  lossBlockHeight,
 		ConfidenceIntervalRawPercentiles: ciRawPercentiles,
@@ -207,11 +210,14 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 		ciValues = []alloraMath.Dec{}
 	}
 
+	inferers := alloraMath.GetSortedKeys(infererWeights)
+	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
+
 	return &types.QueryLatestNetworkInferencesResponse{
 		NetworkInferences:                networkInferences,
-		InfererWeights:                   synth.ConvertWeightsToArrays(infererWeights),
-		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasterWeights),
-		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
+		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
+		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
+		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
 		InferenceBlockHeight:             inferenceBlockHeight,
 		LossBlockHeight:                  previousLossBlockHeight,
 		ConfidenceIntervalRawPercentiles: ciRawPercentiles,

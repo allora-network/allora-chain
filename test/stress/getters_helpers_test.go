@@ -135,9 +135,10 @@ func getNonZeroTopicEpochLastRan(
 ) (*types.Topic, error) {
 	sleepingTimeBlocks := defaultEpochLength
 	// Retry loop for a maximum of 5 times
+	ctx := context.Background()
 	for retries := 0; retries < maxRetries; retries++ {
 		topicResponse, err := m.Client.QueryEmissions().GetTopic(
-			m.Ctx,
+			ctx,
 			&types.QueryTopicRequest{TopicId: topicId},
 		)
 		if err == nil {
