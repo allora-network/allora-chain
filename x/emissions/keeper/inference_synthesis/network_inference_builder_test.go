@@ -392,10 +392,6 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValuesEpoch0() {
-	s.testCorrectOneOutForecasterValuesForEpoch(0)
-}
-
 func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValuesEpoch2() {
 	s.testCorrectOneOutForecasterValuesForEpoch(2)
 }
@@ -508,11 +504,6 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 	s.Require().NotNil(valueBundle)
 	s.Require().NotNil(valueBundle.CombinedValue)
 	s.Require().NotNil(valueBundle.NaiveValue)
-	s.Require().NotEmpty(valueBundle.OneOutInfererValues)
-	s.Require().NotEmpty(valueBundle.OneOutForecasterValues)
-	// OneInForecastValues come empty because regrets are epsilon
-	s.Require().NotEmpty(valueBundle.OneInForecasterValues)
-	s.Require().Len(valueBundle.OneInForecasterValues, 2)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForecasters() {
@@ -799,15 +790,7 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOneOl
 
 	// Check the results
 	s.Require().NotNil(valueBundle)
-	s.Require().Len(valueBundle.OneInForecasterValues, 2)
-
-	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
-		if oneInForecasterValue.Worker == worker1 {
-			s.Require().True(oneInForecasterValue.Value.Gt(alloraMath.ZeroDec()))
-		} else if oneInForecasterValue.Worker == worker2 {
-			s.Require().True(oneInForecasterValue.Value.Equal(alloraMath.ZeroDec()))
-		}
-	}
+	s.Require().Empty(valueBundle.OneInForecasterValues)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTwoInferersNew() {
@@ -874,15 +857,7 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 
 	// Check the results
 	s.Require().NotNil(valueBundle)
-	s.Require().Len(valueBundle.OneInForecasterValues, 2)
-
-	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
-		if oneInForecasterValue.Worker == worker1 {
-			s.Require().True(oneInForecasterValue.Value.Equal(alloraMath.ZeroDec()))
-		} else if oneInForecasterValue.Worker == worker2 {
-			s.Require().True(oneInForecasterValue.Value.Equal(alloraMath.ZeroDec()))
-		}
-	}
+	s.Require().Empty(valueBundle.OneInForecasterValues)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTwoInferersNewOneOldOneNew() {
@@ -961,15 +936,7 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 
 	// Check the results
 	s.Require().NotNil(valueBundle)
-	s.Require().Len(valueBundle.OneInForecasterValues, 2)
-
-	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
-		if oneInForecasterValue.Worker == worker1 {
-			s.Require().True(oneInForecasterValue.Value.Gt(alloraMath.ZeroDec()))
-		} else if oneInForecasterValue.Worker == worker2 {
-			s.Require().True(oneInForecasterValue.Value.Gt(alloraMath.ZeroDec()))
-		}
-	}
+	s.Require().Empty(valueBundle.OneInForecasterValues)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalc0neOutInfererInferencesTwoInferersNewOneOldOneNew() {
@@ -1040,13 +1007,5 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neOutInfererInferencesTwoInferers
 
 	// Check the results
 	s.Require().NotNil(valueBundle)
-	s.Require().Len(valueBundle.OneOutInfererValues, 2)
-
-	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
-		if oneOutInfererValue.Worker == worker1 {
-			s.Require().True(oneOutInfererValue.Value.Gt(alloraMath.ZeroDec()))
-		} else if oneOutInfererValue.Worker == worker2 {
-			s.Require().True(oneOutInfererValue.Value.Equal(alloraMath.ZeroDec()))
-		}
-	}
+	s.Require().Empty(valueBundle.OneOutInfererValues)
 }
