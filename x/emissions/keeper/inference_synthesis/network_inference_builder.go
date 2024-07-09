@@ -122,11 +122,6 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld inferer %s", b.palette.TopicId, withheldInferer))
 	palette := b.palette.Clone()
 
-	// Check if there are enough inferers to calculate one-out inference
-	if len(palette.InfererRegrets) <= 1 {
-		return alloraMath.NewNaN(), nil
-	}
-
 	// Check if withheld inferer is new
 	withheldInfererRegret, ok := palette.InfererRegrets[withheldInferer]
 	if !ok || withheldInfererRegret.noPriorRegret {
@@ -177,6 +172,12 @@ func (b *NetworkInferenceBuilder) SetOneOutInfererValues() *NetworkInferenceBuil
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inferer inferences for topic %v with %v inferers", b.palette.TopicId, len(b.palette.Inferers)))
 	// Calculate the one-out inferences per inferer
 	oneOutInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
+	// Check if there are enough not new inferers to calculate one-out inference
+	if b.palette.InferersNewStatus == InferersAllNewExceptOne ||
+		b.palette.InferersNewStatus == InferersAllNew {
+		b.oneOutInfererInferences = oneOutInferences
+		return b
+	}
 	for _, worker := range b.palette.Inferers {
 		oneOutInference, err := b.calcOneOutInfererInference(worker)
 		if err != nil {
@@ -202,11 +203,6 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 
 	palette := b.palette.Clone()
 
-	// Check if there are enough inferers to calculate one-out inference
-	if len(palette.InfererRegrets) <= 1 {
-		return alloraMath.NewNaN(), nil
-	}
-
 	// Remove the withheldForecaster from the palette's forecasters
 	remainingForecasters := make([]Worker, 0)
 	for _, forecaster := range palette.Forecasters {
@@ -225,13 +221,13 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
 	}
 
-	oneOutNetworkInferenceWithoutInferer, err := palette.CalcWeightedInference(weights)
+	oneOutNetworkInferenceWithoutForecaster, err := palette.CalcWeightedInference(weights)
 	if err != nil {
-		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for inferer")
+		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
 	}
 
-	b.logger.Debug(fmt.Sprintf("One-out inference calculated for topic %v withheld forecaster %s is %v", b.palette.TopicId, withheldForecaster, oneOutNetworkInferenceWithoutInferer))
-	return oneOutNetworkInferenceWithoutInferer, nil
+	b.logger.Debug(fmt.Sprintf("One-out inference calculated for topic %v withheld forecaster %s is %v", b.palette.TopicId, withheldForecaster, oneOutNetworkInferenceWithoutForecaster))
+	return oneOutNetworkInferenceWithoutForecaster, nil
 }
 
 // Set all one-out-forecaster inferences that are possible given the provided input
@@ -241,6 +237,14 @@ func (b *NetworkInferenceBuilder) SetOneOutForecasterValues() *NetworkInferenceB
 	b.logger.Debug(fmt.Sprintf("Calculating one-out forecaster inferences for topic %v with %v forecasters", b.palette.TopicId, len(b.palette.Forecasters)))
 	// Calculate the one-out forecast-implied inferences per forecaster
 	oneOutImpliedInferences := make([]*emissions.WithheldWorkerAttributedValue, 0)
+	// Check if there are enough not new inferers to calculate one-out inferences
+	if b.palette.InferersNewStatus == InferersAllNewExceptOne ||
+		b.palette.InferersNewStatus == InferersAllNew ||
+		b.palette.ForecastersNewStatus == ForecastersAllNewExceptOne ||
+		b.palette.ForecastersNewStatus == ForecastersAllNew {
+		b.oneOutForecasterInferences = oneOutImpliedInferences
+		return b
+	}
 	for _, worker := range b.palette.Forecasters {
 		oneOutInference, err := b.calcOneOutForecasterInference(worker)
 		if err != nil {
@@ -326,6 +330,14 @@ func (b *NetworkInferenceBuilder) SetOneInValues() *NetworkInferenceBuilder {
 	// Loop over all forecast-implied inferences and set it as the only forecast-implied inference
 	// one at a time, then calculate the network inference given that one held out
 	oneInInferences := make([]*emissions.WorkerAttributedValue, 0)
+	// Check if there are enough not new inferers to calculate one-in inferences
+	if b.palette.InferersNewStatus == InferersAllNewExceptOne ||
+		b.palette.InferersNewStatus == InferersAllNew ||
+		b.palette.ForecastersNewStatus == ForecastersAllNewExceptOne ||
+		b.palette.ForecastersNewStatus == ForecastersAllNew {
+		b.oneInInferences = oneInInferences
+		return b
+	}
 	for _, oneInForecaster := range b.palette.Forecasters {
 		oneInValue, err := b.calcOneInValue(oneInForecaster)
 		if err != nil {

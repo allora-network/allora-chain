@@ -56,6 +56,14 @@ const (
 	InferersNotNew
 )
 
+type ForecastersNewStatus int
+
+const (
+	ForecastersAllNew ForecastersNewStatus = iota
+	ForecastersAllNewExceptOne
+	ForecastersNotNew
+)
+
 type SynthPaletteFactory struct{}
 
 type SynthPalette struct {
@@ -77,11 +85,12 @@ type SynthPalette struct {
 	ForecastByWorker                 map[Worker]*emissions.Forecast
 	ForecastImpliedInferenceByWorker map[Worker]*emissions.Inference
 	// Must respect the order of sister `forecasters` property
-	ForecasterRegrets   map[Worker]*StatefulRegret
-	InferersNewStatus   InferersNewStatus
-	SingleNotNewInferer Worker
-	NetworkCombinedLoss Loss
-	Epsilon             alloraMath.Dec
-	PNorm               alloraMath.Dec
-	CNorm               alloraMath.Dec
+	ForecasterRegrets    map[Worker]*StatefulRegret
+	InferersNewStatus    InferersNewStatus
+	ForecastersNewStatus ForecastersNewStatus
+	SingleNotNewInferer  Worker
+	NetworkCombinedLoss  Loss
+	Epsilon              alloraMath.Dec
+	PNorm                alloraMath.Dec
+	CNorm                alloraMath.Dec
 }

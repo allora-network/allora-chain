@@ -158,7 +158,7 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 		}
 
 		// If all inferers are new, forecasters are not considered
-		if p.InferersNewStatus != InferersAllNew {
+		if p.InferersNewStatus != InferersAllNew && p.InferersNewStatus != InferersAllNewExceptOne {
 			for _, forecaster := range p.Forecasters {
 				if p.ForecastImpliedInferenceByWorker[forecaster] == nil {
 					continue
@@ -224,6 +224,7 @@ func (p *SynthPalette) UpdateInferersInfo(newInferers []Worker) error {
 		if !ok {
 			continue
 		}
+
 		if !regretInfo.noPriorRegret {
 			if p.InferersNewStatus == InferersAllNew {
 				p.InferersNewStatus = InferersAllNewExceptOne
@@ -233,12 +234,12 @@ func (p *SynthPalette) UpdateInferersInfo(newInferers []Worker) error {
 				p.SingleNotNewInferer = ""
 			}
 		}
-		infererRegrets[inferer] = regretInfo
 
 		inference, ok := p.InferenceByWorker[inferer]
 		if !ok {
 			continue
 		}
+		infererRegrets[inferer] = regretInfo
 		inferenceByWorker[inferer] = inference
 	}
 	p.InferenceByWorker = inferenceByWorker
@@ -258,12 +259,20 @@ func (p *SynthPalette) UpdateForecastersInfo(newForecasters []Worker) error {
 		if !ok {
 			continue
 		}
-		forecasterRegrets[forecaster] = regretInfo
+
+		if !regretInfo.noPriorRegret {
+			if p.ForecastersNewStatus == ForecastersAllNew {
+				p.ForecastersNewStatus = ForecastersAllNewExceptOne
+			} else {
+				p.ForecastersNewStatus = ForecastersNotNew
+			}
+		}
 
 		forecast, ok := p.ForecastByWorker[forecaster]
 		if !ok {
 			continue
 		}
+		forecasterRegrets[forecaster] = regretInfo
 		forecastByWorker[forecaster] = forecast
 	}
 

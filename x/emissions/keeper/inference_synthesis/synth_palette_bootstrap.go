@@ -42,6 +42,14 @@ func (p *SynthPalette) BootstrapRegretData() error {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
 
+		if !noPriorRegret {
+			if p.ForecastersNewStatus == ForecastersAllNew {
+				p.ForecastersNewStatus = ForecastersAllNewExceptOne
+			} else {
+				p.ForecastersNewStatus = ForecastersNotNew
+			}
+		}
+
 		p.Logger.Debug(fmt.Sprintf("Forecaster %v has regret %v", forecaster, regret.Value))
 		p.ForecasterRegrets[forecaster] = &StatefulRegret{
 			regret:        regret.Value,
@@ -93,6 +101,7 @@ func (p SynthPalette) Clone() SynthPalette {
 		ForecastImpliedInferenceByWorker: forecastImpliedInferenceByWorker,
 		ForecasterRegrets:                forecasterRegrets,
 		InferersNewStatus:                p.InferersNewStatus,
+		ForecastersNewStatus:             p.ForecastersNewStatus,
 		SingleNotNewInferer:              p.SingleNotNewInferer,
 		NetworkCombinedLoss:              p.NetworkCombinedLoss,
 		Epsilon:                          p.Epsilon,
