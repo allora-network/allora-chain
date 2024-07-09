@@ -540,4 +540,11 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadUpdateTopicCommit() {
 	require.Equal(blockHeight, lastCommit.BlockHeight, "BlockHeight should be same")
 	require.Equal(workerMsg.Sender, lastCommit.Actor, "Actor should be same")
 	require.Equal(workerMsg.Nonce, lastCommit.Nonce, "Nonce should be same")
+
+	lastWorkerPayload, err := s.emissionsKeeper.GetTopicLastWorkerPayload(ctx, topicId)
+	require.NoError(err)
+
+	require.Equal(blockHeight, lastWorkerPayload.BlockHeight, "BlockHeight should be same")
+	require.Equal(workerMsg.Sender, lastWorkerPayload.Actor, "Actor should be same")
+	require.Equal(workerMsg.Nonce, lastWorkerPayload.Nonce, "Nonce should be same")
 }
