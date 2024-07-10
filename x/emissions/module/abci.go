@@ -86,7 +86,8 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				} else {
 					MaxUnfulfilledReputerRequests = moduleParams.MaxUnfulfilledReputerRequests
 				}
-				reputerPruningBlock := blockHeight - (int64(MaxUnfulfilledReputerRequests)*topic.EpochLength + topic.GroundTruthLag)
+				// Adding one to cover for one extra epochLength
+				reputerPruningBlock := blockHeight - (int64(MaxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag)
 				if reputerPruningBlock > 0 {
 					sdkCtx.Logger().Warn(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, blockHeight))
 					am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
