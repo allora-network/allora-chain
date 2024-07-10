@@ -245,7 +245,9 @@ func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
 			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in InfererRegrets in GetInfererRegretsSlice %v", inferer))
 			continue
 		}
-		regrets = append(regrets, regretInfo.regret)
+		if !regretInfo.noPriorRegret {
+			regrets = append(regrets, regretInfo.regret)
+		}
 	}
 	return regrets
 }
@@ -262,7 +264,9 @@ func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
 			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in GetForecasterRegretsSlice %v", forecaster))
 			continue
 		}
-		regrets = append(regrets, regretInfo.regret)
+		if !regretInfo.noPriorRegret {
+			regrets = append(regrets, regretInfo.regret)
+		}
 	}
 	return regrets
 }
