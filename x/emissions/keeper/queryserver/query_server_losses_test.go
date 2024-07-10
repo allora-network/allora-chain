@@ -33,7 +33,7 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 	s.Require().Equal(expectedBundle, response.LossBundle, "Retrieved loss bundle should match the expected bundle")
 }
 
-func (s *KeeperTestSuite) TestNewlyAddedReputerNonceIsUnfulfilled() {
+func (s *KeeperTestSuite) TestGetIsReputerNonceUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -56,4 +56,36 @@ func (s *KeeperTestSuite) TestNewlyAddedReputerNonceIsUnfulfilled() {
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().True(response.IsReputerNonceUnfulfilled)
+}
+
+func (s *KeeperTestSuite) TestGetUnfulfilledReputerNonces() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Initially, ensure no unfulfilled nonces exist
+	req := &types.QueryUnfulfilledReputerNoncesRequest{
+		TopicId: topicId,
+	}
+	response, err := s.queryServer.GetUnfulfilledReputerNonces(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response, "Response should not be nil")
+	s.Require().Len(response.Nonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
+
+	// Set multiple reputer nonces
+	nonceValues := []int64{42, 43, 44}
+	for _, val := range nonceValues {
+		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val}, &types.Nonce{BlockHeight: val})
+		s.Require().NoError(err, "Failed to add reputer nonce")
+	}
+
+	// Retrieve and verify the nonces
+	response, err = s.queryServer.GetUnfulfilledReputerNonces(s.ctx, req)
+	s.Require().NoError(err, "Error retrieving nonces after adding")
+	s.Require().Len(response.Nonces.Nonces, len(nonceValues), "Should match the number of added nonces")
+
+	// Check that all the expected nonces are present and correct
+	for i, nonce := range response.Nonces.Nonces {
+		s.Require().Equal(nonceValues[len(nonceValues)-i-1], nonce.ReputerNonce.BlockHeight, "Nonce value should match the expected value")
+	}
 }

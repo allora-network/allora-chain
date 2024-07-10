@@ -37,3 +37,18 @@ func (qs queryServer) GetIsReputerNonceUnfulfilled(
 
 	return &types.QueryIsReputerNonceUnfulfilledResponse{IsReputerNonceUnfulfilled: isReputerNonceUnfulfilled}, err
 }
+
+func (qs queryServer) GetUnfulfilledReputerNonces(
+	ctx context.Context,
+	req *types.QueryUnfulfilledReputerNoncesRequest,
+) (
+	*types.QueryUnfulfilledReputerNoncesResponse,
+	error,
+) {
+	unfulfilledNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryUnfulfilledReputerNoncesResponse{Nonces: &unfulfilledNonces}, nil
+}

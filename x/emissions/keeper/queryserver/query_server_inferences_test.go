@@ -417,7 +417,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	require.Equal(len(response.ForecastImpliedInferences), 3)
 }
 
-func (s *KeeperTestSuite) TestNewlyAddedWorkerNonceIsUnfulfilled() {
+func (s *KeeperTestSuite) TestGetIsWorkerNonceUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -440,4 +440,36 @@ func (s *KeeperTestSuite) TestNewlyAddedWorkerNonceIsUnfulfilled() {
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().True(response.IsWorkerNonceUnfulfilled)
+}
+
+func (s *KeeperTestSuite) TestGetUnfulfilledWorkerNonces() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Initially, ensure no unfulfilled nonces exist
+	req := &types.QueryUnfulfilledWorkerNoncesRequest{
+		TopicId: topicId,
+	}
+	response, err := s.queryServer.GetUnfulfilledWorkerNonces(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response, "Response should not be nil")
+	s.Require().Len(response.Nonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
+
+	// Set multiple worker nonces
+	nonceValues := []int64{42, 43, 44}
+	for _, val := range nonceValues {
+		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
+		s.Require().NoError(err, "Failed to add worker nonce")
+	}
+
+	// Retrieve and verify the nonces
+	response, err = s.queryServer.GetUnfulfilledWorkerNonces(s.ctx, req)
+	s.Require().NoError(err, "Error retrieving nonces after adding")
+	s.Require().Len(response.Nonces.Nonces, len(nonceValues), "Should match the number of added nonces")
+
+	// Check that all the expected nonces are present and correct
+	for i, nonce := range response.Nonces.Nonces {
+		s.Require().Equal(nonceValues[len(nonceValues)-i-1], nonce.BlockHeight, "Nonce value should match the expected value")
+	}
 }

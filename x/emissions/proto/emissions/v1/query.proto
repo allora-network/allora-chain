@@ -14,6 +14,7 @@ import "emissions/v1/params.proto";
 import "emissions/v1/node.proto";
 import "emissions/v1/worker.proto";
 import "emissions/v1/reputer.proto";
+import "emissions/v1/nonce.proto";
 import "emissions/v1/topic.proto";
 import "emissions/v1/stake.proto";
 import "emissions/v1/inference.proto";
@@ -186,6 +187,17 @@ service Query {
       returns (QueryIsReputerNonceUnfulfilledResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/is_reputer_nonce_unfulfilled/{topic_id}/{block_height}";
+  }
+
+  rpc GetUnfulfilledWorkerNonces(QueryUnfulfilledWorkerNoncesRequest) returns (QueryUnfulfilledWorkerNoncesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/unfulfilled_worker_nonces/{topic_id}";
+  }
+
+  rpc GetUnfulfilledReputerNonces(QueryUnfulfilledReputerNoncesRequest)
+      returns (QueryUnfulfilledReputerNoncesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/unfulfilled_reputer_nonces/{topic_id}";
   }
 
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
@@ -448,6 +460,22 @@ message QueryIsWorkerNonceUnfulfilledRequest {
 
 message QueryIsWorkerNonceUnfulfilledResponse {
   bool is_worker_nonce_unfulfilled = 1;
+}
+
+message QueryUnfulfilledReputerNoncesRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryUnfulfilledReputerNoncesResponse {
+  ReputerRequestNonces nonces = 1;
+}
+
+message QueryUnfulfilledWorkerNoncesRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryUnfulfilledWorkerNoncesResponse {
+  Nonces nonces = 1;
 }
 
 message QueryIsReputerNonceUnfulfilledRequest {

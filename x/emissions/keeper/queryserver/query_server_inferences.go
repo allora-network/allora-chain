@@ -121,3 +121,18 @@ func (qs queryServer) GetIsWorkerNonceUnfulfilled(
 
 	return &types.QueryIsWorkerNonceUnfulfilledResponse{IsWorkerNonceUnfulfilled: isWorkerNonceUnfulfilled}, err
 }
+
+func (qs queryServer) GetUnfulfilledWorkerNonces(
+	ctx context.Context,
+	req *types.QueryUnfulfilledWorkerNoncesRequest,
+) (
+	*types.QueryUnfulfilledWorkerNoncesResponse,
+	error,
+) {
+	unfulfilledNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryUnfulfilledWorkerNoncesResponse{Nonces: &unfulfilledNonces}, nil
+}
