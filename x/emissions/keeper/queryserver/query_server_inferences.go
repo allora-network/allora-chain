@@ -109,6 +109,28 @@ func (qs queryServer) GetLatestNetworkInference(
 	}, nil
 }
 
+func (qs queryServer) GetLatestTopicInferences(
+	ctx context.Context,
+	req *types.QueryLatestTopicInferencesRequest,
+) (
+	*types.QueryLatestTopicInferencesResponse,
+	error,
+) {
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
+	inferences, blockHeight, err := qs.k.GetLatestTopicInferences(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryLatestTopicInferencesResponse{Inferences: inferences, BlockHeight: blockHeight}, nil
+}
+
 func (qs queryServer) GetIsWorkerNonceUnfulfilled(
 	ctx context.Context,
 	req *types.QueryIsWorkerNonceUnfulfilledRequest,

@@ -599,3 +599,66 @@ func (s *KeeperTestSuite) TestGetOneInForecasterSelfNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 	s.Require().False(response.NotFound)
 }
+
+func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	topicId := s.CreateOneTopic()
+
+	// Initially, there should be no inferences, so we expect an empty result
+	req := &types.QueryLatestTopicInferencesRequest{
+		TopicId: topicId,
+	}
+	response, err := s.queryServer.GetLatestTopicInferences(ctx, req)
+	s.Require().NoError(err)
+	emptyInferences := response.Inferences
+	emptyBlockHeight := response.BlockHeight
+
+	s.Require().NoError(err, "Retrieving latest inferences when none exist should not result in an error")
+	s.Require().Equal(&types.Inferences{Inferences: []*types.Inference{}}, emptyInferences, "Expected no inferences initially")
+	s.Require().Equal(types.BlockHeight(0), emptyBlockHeight, "Expected block height to be zero initially")
+
+	// Insert first set of inferences
+	blockHeight1 := types.BlockHeight(12345)
+	newInference1 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight1,
+		Inferer:     "worker1",
+		Value:       alloraMath.MustNewDecFromString("10"),
+		ExtraData:   []byte("data1"),
+		Proof:       "proof1",
+	}
+	inferences1 := types.Inferences{
+		Inferences: []*types.Inference{&newInference1},
+	}
+	nonce1 := types.Nonce{BlockHeight: blockHeight1}
+	err = keeper.InsertInferences(ctx, topicId, nonce1, inferences1)
+	s.Require().NoError(err, "Inserting first set of inferences should not fail")
+
+	// Insert second set of inferences
+	blockHeight2 := types.BlockHeight(12346)
+	newInference2 := types.Inference{
+		TopicId:     uint64(topicId),
+		BlockHeight: blockHeight2,
+		Inferer:     "worker2",
+		Value:       alloraMath.MustNewDecFromString("20"),
+		ExtraData:   []byte("data2"),
+		Proof:       "proof2",
+	}
+	inferences2 := types.Inferences{
+		Inferences: []*types.Inference{&newInference2},
+	}
+	nonce2 := types.Nonce{BlockHeight: blockHeight2}
+	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	s.Require().NoError(err, "Inserting second set of inferences should not fail")
+
+	// Retrieve the latest inferences
+	response, err = s.queryServer.GetLatestTopicInferences(ctx, req)
+	s.Require().NoError(err)
+	latestInferences := response.Inferences
+	latestBlockHeight := response.BlockHeight
+	s.Require().NoError(err, "Retrieving latest inferences should not fail")
+	s.Require().Equal(&inferences2, latestInferences, "Latest inferences should match the second inserted set")
+	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
+}

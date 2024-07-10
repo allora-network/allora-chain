@@ -53,6 +53,11 @@ service Query {
     option (google.api.http).get = "/emissions/v1/inferences/{topic_id}/{block_height}";
   }
 
+  rpc GetLatestTopicInferences(QueryLatestTopicInferencesRequest) returns (QueryLatestTopicInferencesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/latest_inferences/{topic_id}";
+  }
+
   rpc GetForecastsAtBlock(QueryForecastsAtBlockRequest) returns (QueryForecastsAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/forecasts/{topic_id}/{block_height}";
@@ -408,6 +413,15 @@ message QueryInferencesAtBlockRequest {
 // signatures required by gogoproto.
 message QueryInferencesAtBlockResponse {
   Inferences inferences = 1;
+}
+
+message QueryLatestTopicInferencesRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryLatestTopicInferencesResponse {
+  Inferences inferences = 1;
+  int64 block_height = 2;
 }
 
 // Returns the forecasts on a topic posted at a block height

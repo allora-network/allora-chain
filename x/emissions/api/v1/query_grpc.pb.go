@@ -25,6 +25,7 @@ const (
 	Query_GetActiveTopics_FullMethodName                       = "/emissions.v1.Query/GetActiveTopics"
 	Query_GetWorkerLatestInferenceByTopicId_FullMethodName     = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
 	Query_GetInferencesAtBlock_FullMethodName                  = "/emissions.v1.Query/GetInferencesAtBlock"
+	Query_GetLatestTopicInferences_FullMethodName              = "/emissions.v1.Query/GetLatestTopicInferences"
 	Query_GetForecastsAtBlock_FullMethodName                   = "/emissions.v1.Query/GetForecastsAtBlock"
 	Query_GetNetworkLossBundleAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkLossBundleAtBlock"
 	Query_GetTotalStake_FullMethodName                         = "/emissions.v1.Query/GetTotalStake"
@@ -71,6 +72,7 @@ type QueryClient interface {
 	GetActiveTopics(ctx context.Context, in *QueryActiveTopicsRequest, opts ...grpc.CallOption) (*QueryActiveTopicsResponse, error)
 	GetWorkerLatestInferenceByTopicId(ctx context.Context, in *QueryWorkerLatestInferenceRequest, opts ...grpc.CallOption) (*QueryWorkerLatestInferenceResponse, error)
 	GetInferencesAtBlock(ctx context.Context, in *QueryInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryInferencesAtBlockResponse, error)
+	GetLatestTopicInferences(ctx context.Context, in *QueryLatestTopicInferencesRequest, opts ...grpc.CallOption) (*QueryLatestTopicInferencesResponse, error)
 	GetForecastsAtBlock(ctx context.Context, in *QueryForecastsAtBlockRequest, opts ...grpc.CallOption) (*QueryForecastsAtBlockResponse, error)
 	GetNetworkLossBundleAtBlock(ctx context.Context, in *QueryNetworkLossBundleAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
@@ -162,6 +164,15 @@ func (c *queryClient) GetWorkerLatestInferenceByTopicId(ctx context.Context, in 
 func (c *queryClient) GetInferencesAtBlock(ctx context.Context, in *QueryInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryInferencesAtBlockResponse, error) {
 	out := new(QueryInferencesAtBlockResponse)
 	err := c.cc.Invoke(ctx, Query_GetInferencesAtBlock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetLatestTopicInferences(ctx context.Context, in *QueryLatestTopicInferencesRequest, opts ...grpc.CallOption) (*QueryLatestTopicInferencesResponse, error) {
+	out := new(QueryLatestTopicInferencesResponse)
+	err := c.cc.Invoke(ctx, Query_GetLatestTopicInferences_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -476,6 +487,7 @@ type QueryServer interface {
 	GetActiveTopics(context.Context, *QueryActiveTopicsRequest) (*QueryActiveTopicsResponse, error)
 	GetWorkerLatestInferenceByTopicId(context.Context, *QueryWorkerLatestInferenceRequest) (*QueryWorkerLatestInferenceResponse, error)
 	GetInferencesAtBlock(context.Context, *QueryInferencesAtBlockRequest) (*QueryInferencesAtBlockResponse, error)
+	GetLatestTopicInferences(context.Context, *QueryLatestTopicInferencesRequest) (*QueryLatestTopicInferencesResponse, error)
 	GetForecastsAtBlock(context.Context, *QueryForecastsAtBlockRequest) (*QueryForecastsAtBlockResponse, error)
 	GetNetworkLossBundleAtBlock(context.Context, *QueryNetworkLossBundleAtBlockRequest) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
@@ -533,6 +545,9 @@ func (UnimplementedQueryServer) GetWorkerLatestInferenceByTopicId(context.Contex
 }
 func (UnimplementedQueryServer) GetInferencesAtBlock(context.Context, *QueryInferencesAtBlockRequest) (*QueryInferencesAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInferencesAtBlock not implemented")
+}
+func (UnimplementedQueryServer) GetLatestTopicInferences(context.Context, *QueryLatestTopicInferencesRequest) (*QueryLatestTopicInferencesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestTopicInferences not implemented")
 }
 func (UnimplementedQueryServer) GetForecastsAtBlock(context.Context, *QueryForecastsAtBlockRequest) (*QueryForecastsAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetForecastsAtBlock not implemented")
@@ -750,6 +765,24 @@ func _Query_GetInferencesAtBlock_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).GetInferencesAtBlock(ctx, req.(*QueryInferencesAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetLatestTopicInferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestTopicInferencesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestTopicInferences(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetLatestTopicInferences_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestTopicInferences(ctx, req.(*QueryLatestTopicInferencesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1378,6 +1411,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInferencesAtBlock",
 			Handler:    _Query_GetInferencesAtBlock_Handler,
+		},
+		{
+			MethodName: "GetLatestTopicInferences",
+			Handler:    _Query_GetLatestTopicInferences_Handler,
 		},
 		{
 			MethodName: "GetForecastsAtBlock",
