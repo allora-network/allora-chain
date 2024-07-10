@@ -60,6 +60,7 @@ const (
 	Query_GetTopicLastWorkerCommitInfo_FullMethodName          = "/emissions.v1.Query/GetTopicLastWorkerCommitInfo"
 	Query_GetTopicLastReputerCommitInfo_FullMethodName         = "/emissions.v1.Query/GetTopicLastReputerCommitInfo"
 	Query_GetTopicRewardNonce_FullMethodName                   = "/emissions.v1.Query/GetTopicRewardNonce"
+	Query_GetReputerLossBundlesAtBlock_FullMethodName          = "/emissions.v1.Query/GetReputerLossBundlesAtBlock"
 )
 
 // QueryClient is the client API for Query service.
@@ -108,6 +109,7 @@ type QueryClient interface {
 	GetTopicLastWorkerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
 	GetTopicRewardNonce(ctx context.Context, in *QueryTopicRewardNonceRequest, opts ...grpc.CallOption) (*QueryTopicRewardNonceResponse, error)
+	GetReputerLossBundlesAtBlock(ctx context.Context, in *QueryReputerLossBundlesAtBlockRequest, opts ...grpc.CallOption) (*QueryReputerLossBundlesAtBlockResponse, error)
 }
 
 type queryClient struct {
@@ -487,6 +489,15 @@ func (c *queryClient) GetTopicRewardNonce(ctx context.Context, in *QueryTopicRew
 	return out, nil
 }
 
+func (c *queryClient) GetReputerLossBundlesAtBlock(ctx context.Context, in *QueryReputerLossBundlesAtBlockRequest, opts ...grpc.CallOption) (*QueryReputerLossBundlesAtBlockResponse, error) {
+	out := new(QueryReputerLossBundlesAtBlockResponse)
+	err := c.cc.Invoke(ctx, Query_GetReputerLossBundlesAtBlock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -533,6 +544,7 @@ type QueryServer interface {
 	GetTopicLastWorkerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
 	GetTopicRewardNonce(context.Context, *QueryTopicRewardNonceRequest) (*QueryTopicRewardNonceResponse, error)
+	GetReputerLossBundlesAtBlock(context.Context, *QueryReputerLossBundlesAtBlockRequest) (*QueryReputerLossBundlesAtBlockResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -662,6 +674,9 @@ func (UnimplementedQueryServer) GetTopicLastReputerCommitInfo(context.Context, *
 }
 func (UnimplementedQueryServer) GetTopicRewardNonce(context.Context, *QueryTopicRewardNonceRequest) (*QueryTopicRewardNonceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicRewardNonce not implemented")
+}
+func (UnimplementedQueryServer) GetReputerLossBundlesAtBlock(context.Context, *QueryReputerLossBundlesAtBlockRequest) (*QueryReputerLossBundlesAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReputerLossBundlesAtBlock not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1414,6 +1429,24 @@ func _Query_GetTopicRewardNonce_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetReputerLossBundlesAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryReputerLossBundlesAtBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetReputerLossBundlesAtBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetReputerLossBundlesAtBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetReputerLossBundlesAtBlock(ctx, req.(*QueryReputerLossBundlesAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1584,6 +1617,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicRewardNonce",
 			Handler:    _Query_GetTopicRewardNonce_Handler,
+		},
+		{
+			MethodName: "GetReputerLossBundlesAtBlock",
+			Handler:    _Query_GetReputerLossBundlesAtBlock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

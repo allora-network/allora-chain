@@ -1,6 +1,8 @@
 package queryserver_test
 
-import "github.com/allora-network/allora-chain/x/emissions/types"
+import (
+	"github.com/allora-network/allora-chain/x/emissions/types"
+)
 
 func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 	s.CreateOneTopic()
@@ -88,4 +90,32 @@ func (s *KeeperTestSuite) TestGetUnfulfilledReputerNonces() {
 	for i, nonce := range response.Nonces.Nonces {
 		s.Require().Equal(nonceValues[len(nonceValues)-i-1], nonce.ReputerNonce.BlockHeight, "Nonce value should match the expected value")
 	}
+}
+
+func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
+	ctx := s.ctx
+	require := s.Require()
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	reputerLossBundles := types.ReputerValueBundles{}
+
+	req := &types.QueryReputerLossBundlesAtBlockRequest{
+		TopicId:     topicId,
+		BlockHeight: int64(block),
+	}
+	response, err := s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
+	require.Error(err)
+	require.Nil(response)
+
+	// Test inserting data
+	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
+	require.NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
+
+	response, err = s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
+	require.NotNil(response)
+	require.NoError(err)
+
+	result := response.LossBundles
+	require.NotNil(result)
+	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
 }

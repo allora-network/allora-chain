@@ -245,6 +245,12 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/topic_reward_nonce/{topic_id}";
   }
+
+  rpc GetReputerLossBundlesAtBlock(QueryReputerLossBundlesAtBlockRequest)
+      returns (QueryReputerLossBundlesAtBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_loss_bundles/{topic_id}/{block_height}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -655,4 +661,13 @@ message QueryTopicRewardNonceRequest {
 
 message QueryTopicRewardNonceResponse {
   int64 nonce = 1;
+}
+
+message QueryReputerLossBundlesAtBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryReputerLossBundlesAtBlockResponse {
+  ReputerValueBundles loss_bundles = 1;
 }

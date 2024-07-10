@@ -52,3 +52,18 @@ func (qs queryServer) GetUnfulfilledReputerNonces(
 
 	return &types.QueryUnfulfilledReputerNoncesResponse{Nonces: &unfulfilledNonces}, nil
 }
+
+func (qs queryServer) GetReputerLossBundlesAtBlock(
+	ctx context.Context,
+	req *types.QueryReputerLossBundlesAtBlockRequest,
+) (
+	*types.QueryReputerLossBundlesAtBlockResponse,
+	error,
+) {
+	reputerLossBundles, err := qs.k.GetReputerLossBundlesAtBlock(ctx, req.TopicId, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryReputerLossBundlesAtBlockResponse{LossBundles: reputerLossBundles}, nil
+}
