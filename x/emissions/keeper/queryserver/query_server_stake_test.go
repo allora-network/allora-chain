@@ -418,3 +418,52 @@ func (s *KeeperTestSuite) TestGetDelegateStakePlacement() {
 
 	require.Equal(value0, value1)
 }
+
+func (s *KeeperTestSuite) TestGetDelegateStakeUponReputer() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	delegatorAddr := PKS[0].Address().String()
+	reputerAddr := PKS[1].Address().String()
+	initialStakeAmount := cosmosMath.NewInt(1000)
+	removeStakeAmount := cosmosMath.NewInt(500)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	startBlock := ctx.BlockHeight()
+	endBlock := startBlock + moduleParams.RemoveStakeDelayWindow
+
+	// Setup initial stake
+	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
+	s.Require().NoError(err)
+
+	// make a request to remove stake
+	err = keeper.SetDelegateStakeRemoval(ctx, types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   startBlock,
+		BlockRemovalCompleted: endBlock,
+		TopicId:               topicId,
+		Delegator:             delegatorAddr,
+		Reputer:               reputerAddr,
+		Amount:                removeStakeAmount,
+	})
+	s.Require().NoError(err)
+
+	// Remove a portion of stake
+	err = keeper.RemoveDelegateStake(ctx, endBlock, topicId, delegatorAddr, reputerAddr, removeStakeAmount)
+	s.Require().NoError(err)
+
+	// Check remaining stake for delegator
+	remainingStake, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), remainingStake, "Remaining delegator stake should be initial minus removed amount")
+
+	// Check remaining stake for delegator
+	stakeUponReputer, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
+	req := &types.QueryDelegateStakeUponReputerRequest{
+		TopicId: topicId,
+		Target:  reputerAddr,
+	}
+	queryResponse, err := s.queryServer.GetDelegateStakeUponReputer(ctx, req)
+	stakeUponReputer = queryResponse.Stake
+	s.Require().NoError(err)
+	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
+}

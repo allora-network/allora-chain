@@ -63,6 +63,7 @@ const (
 	Query_GetReputerLossBundlesAtBlock_FullMethodName          = "/emissions.v1.Query/GetReputerLossBundlesAtBlock"
 	Query_GetStakeReputerAuthority_FullMethodName              = "/emissions.v1.Query/GetStakeReputerAuthority"
 	Query_GetDelegateStakePlacement_FullMethodName             = "/emissions.v1.Query/GetDelegateStakePlacement"
+	Query_GetDelegateStakeUponReputer_FullMethodName           = "/emissions.v1.Query/GetDelegateStakeUponReputer"
 )
 
 // QueryClient is the client API for Query service.
@@ -114,6 +115,7 @@ type QueryClient interface {
 	GetReputerLossBundlesAtBlock(ctx context.Context, in *QueryReputerLossBundlesAtBlockRequest, opts ...grpc.CallOption) (*QueryReputerLossBundlesAtBlockResponse, error)
 	GetStakeReputerAuthority(ctx context.Context, in *QueryStakeReputerAuthorityRequest, opts ...grpc.CallOption) (*QueryStakeReputerAuthorityResponse, error)
 	GetDelegateStakePlacement(ctx context.Context, in *QueryDelegateStakePlacementRequest, opts ...grpc.CallOption) (*QueryDelegateStakePlacementResponse, error)
+	GetDelegateStakeUponReputer(ctx context.Context, in *QueryDelegateStakeUponReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeUponReputerResponse, error)
 }
 
 type queryClient struct {
@@ -520,6 +522,15 @@ func (c *queryClient) GetDelegateStakePlacement(ctx context.Context, in *QueryDe
 	return out, nil
 }
 
+func (c *queryClient) GetDelegateStakeUponReputer(ctx context.Context, in *QueryDelegateStakeUponReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeUponReputerResponse, error) {
+	out := new(QueryDelegateStakeUponReputerResponse)
+	err := c.cc.Invoke(ctx, Query_GetDelegateStakeUponReputer_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -569,6 +580,7 @@ type QueryServer interface {
 	GetReputerLossBundlesAtBlock(context.Context, *QueryReputerLossBundlesAtBlockRequest) (*QueryReputerLossBundlesAtBlockResponse, error)
 	GetStakeReputerAuthority(context.Context, *QueryStakeReputerAuthorityRequest) (*QueryStakeReputerAuthorityResponse, error)
 	GetDelegateStakePlacement(context.Context, *QueryDelegateStakePlacementRequest) (*QueryDelegateStakePlacementResponse, error)
+	GetDelegateStakeUponReputer(context.Context, *QueryDelegateStakeUponReputerRequest) (*QueryDelegateStakeUponReputerResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -707,6 +719,9 @@ func (UnimplementedQueryServer) GetStakeReputerAuthority(context.Context, *Query
 }
 func (UnimplementedQueryServer) GetDelegateStakePlacement(context.Context, *QueryDelegateStakePlacementRequest) (*QueryDelegateStakePlacementResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakePlacement not implemented")
+}
+func (UnimplementedQueryServer) GetDelegateStakeUponReputer(context.Context, *QueryDelegateStakeUponReputerRequest) (*QueryDelegateStakeUponReputerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeUponReputer not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1513,6 +1528,24 @@ func _Query_GetDelegateStakePlacement_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetDelegateStakeUponReputer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateStakeUponReputerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetDelegateStakeUponReputer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetDelegateStakeUponReputer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetDelegateStakeUponReputer(ctx, req.(*QueryDelegateStakeUponReputerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1695,6 +1728,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDelegateStakePlacement",
 			Handler:    _Query_GetDelegateStakePlacement_Handler,
+		},
+		{
+			MethodName: "GetDelegateStakeUponReputer",
+			Handler:    _Query_GetDelegateStakeUponReputer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

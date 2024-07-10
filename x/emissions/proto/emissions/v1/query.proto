@@ -261,6 +261,12 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/delegate_stake_placement/{topic_id}/{delegator}/{target}";
   }
+
+  rpc GetDelegateStakeUponReputer(QueryDelegateStakeUponReputerRequest)
+      returns (QueryDelegateStakeUponReputerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake_upon_reputer/{topic_id}/{target}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -704,4 +710,18 @@ message QueryDelegateStakePlacementRequest {
 
 message QueryDelegateStakePlacementResponse {
   DelegatorInfo delegator_info = 1;
+}
+
+message QueryDelegateStakeUponReputerRequest {
+  uint64 topic_id = 1;
+  string target = 2;
+}
+
+message QueryDelegateStakeUponReputerResponse {
+  string stake = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
