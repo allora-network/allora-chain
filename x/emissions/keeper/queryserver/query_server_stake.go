@@ -316,3 +316,18 @@ func (qs queryServer) GetStakeReputerAuthority(
 
 	return &types.QueryStakeReputerAuthorityResponse{Authority: stakeReputerAuthority}, nil
 }
+
+func (qs queryServer) GetDelegateStakePlacement(
+	ctx context.Context,
+	req *types.QueryDelegateStakePlacementRequest,
+) (
+	*types.QueryDelegateStakePlacementResponse,
+	error,
+) {
+	delegateStakePlacement, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, req.Delegator, req.Target)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDelegateStakePlacementResponse{DelegatorInfo: &delegateStakePlacement}, nil
+}

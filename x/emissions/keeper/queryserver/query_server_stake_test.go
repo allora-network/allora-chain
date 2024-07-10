@@ -1,7 +1,10 @@
 package queryserver_test
 
 import (
+	"strconv"
+
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -352,4 +355,66 @@ func (s *KeeperTestSuite) TestGetStakeReputerAuthority() {
 
 	s.Require().NoError(err)
 	s.Require().Equal(stakeAmount, stakeAuthority, "Delegator stake should be equal to stake amount after addition")
+}
+
+func (s *KeeperTestSuite) TestGetDelegateStakePlacement() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewInt(50)
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
+
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
+
+	msg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		TopicId: topicId,
+		Reputer: reputerAddr.String(),
+		Amount:  stakeAmount,
+	}
+
+	reputerStake, err := s.emissionsKeeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr.String())
+	require.NoError(err)
+	require.Equal(cosmosMath.ZeroInt(), reputerStake, "Stake amount mismatch")
+
+	req := &types.QueryDelegateStakePlacementRequest{
+		TopicId:   topicId,
+		Delegator: delegatorAddr.String(),
+		Target:    reputerAddr.String(),
+	}
+	queryResponse, err := s.queryServer.GetDelegateStakePlacement(ctx, req)
+	require.NoError(err)
+	require.Equal(alloraMath.NewDecFromInt64(0), queryResponse.DelegatorInfo.Amount)
+
+	// Perform the stake delegation
+	response, err := s.msgServer.DelegateStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(response, "Response should not be nil after successful delegation")
+
+	reputerStake, err = s.emissionsKeeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr.String())
+	require.NoError(err)
+	require.Equal(stakeAmount, reputerStake, "Stake amount mismatch")
+
+	queryResponse, err = s.queryServer.GetDelegateStakePlacement(ctx, req)
+	require.NoError(err)
+
+	value0, err := strconv.ParseFloat(stakeAmount.ToLegacyDec().String(), 64)
+	require.NoError(err)
+
+	value1, err := strconv.ParseFloat(queryResponse.DelegatorInfo.Amount.String(), 64)
+	require.NoError(err)
+
+	require.Equal(value0, value1)
 }
