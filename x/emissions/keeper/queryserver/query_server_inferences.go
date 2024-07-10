@@ -108,3 +108,16 @@ func (qs queryServer) GetLatestNetworkInference(
 		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
 	}, nil
 }
+
+func (qs queryServer) GetIsWorkerNonceUnfulfilled(
+	ctx context.Context,
+	req *types.QueryIsWorkerNonceUnfulfilledRequest,
+) (
+	*types.QueryIsWorkerNonceUnfulfilledResponse,
+	error,
+) {
+	isWorkerNonceUnfulfilled, err :=
+		qs.k.IsWorkerNonceUnfulfilled(ctx, req.TopicId, &types.Nonce{BlockHeight: req.BlockHeight})
+
+	return &types.QueryIsWorkerNonceUnfulfilledResponse{IsWorkerNonceUnfulfilled: isWorkerNonceUnfulfilled}, err
+}

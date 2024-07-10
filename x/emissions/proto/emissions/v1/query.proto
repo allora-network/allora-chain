@@ -176,6 +176,12 @@ service Query {
     option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
   }
 
+  rpc GetIsWorkerNonceUnfulfilled(QueryIsWorkerNonceUnfulfilledRequest)
+      returns (QueryIsWorkerNonceUnfulfilledResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/is_worker_nonce_unfulfilled/{topic_id}/{block_height}";
+  }
+
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
     option (google.api.http).get = "/emissions/v1/whitelist_admin/{address}";
   }
@@ -427,6 +433,15 @@ message QueryNetworkInferencesAtBlockRequest {
 
 message QueryLatestNetworkInferencesAtBlockRequest {
   uint64 topic_id = 1;
+}
+
+message QueryIsWorkerNonceUnfulfilledRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryIsWorkerNonceUnfulfilledResponse {
+  bool is_worker_nonce_unfulfilled = 1;
 }
 
 message QueryNetworkInferencesAtBlockResponse {

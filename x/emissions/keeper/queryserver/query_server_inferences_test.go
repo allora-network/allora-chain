@@ -416,3 +416,28 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	require.Equal(len(response.ForecasterWeights), 3)
 	require.Equal(len(response.ForecastImpliedInferences), 3)
 }
+
+func (s *KeeperTestSuite) TestNewlyAddedWorkerNonceIsUnfulfilled() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	newNonce := &types.Nonce{BlockHeight: 42}
+
+	req := &types.QueryIsWorkerNonceUnfulfilledRequest{
+		TopicId:     topicId,
+		BlockHeight: newNonce.BlockHeight,
+	}
+	response, err := s.queryServer.GetIsWorkerNonceUnfulfilled(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response, "Response should not be nil")
+	s.Require().False(response.IsWorkerNonceUnfulfilled)
+
+	// Set worker nonce
+	err = keeper.AddWorkerNonce(ctx, topicId, newNonce)
+	s.Require().NoError(err)
+
+	response, err = s.queryServer.GetIsWorkerNonceUnfulfilled(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response, "Response should not be nil")
+	s.Require().True(response.IsWorkerNonceUnfulfilled)
+}
