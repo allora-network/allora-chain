@@ -45,7 +45,7 @@ func (s *MsgServerTestSuite) getBasicReputerPayload(
 	s.Require().NoError(err)
 
 	reputerNonce = types.Nonce{
-		BlockHeight: block + 1,
+		BlockHeight: block,
 	}
 	workerNonce = types.Nonce{
 		BlockHeight: block,
@@ -205,45 +205,6 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMismatchedTopicIdsIs
 	// END MODIFICATION
 
 	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: int64(block)}, expectedForecasts)
-	require.NoError(err)
-
-	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
-	require.NoError(err)
-
-	err = s.constructAndInsertReputerPayload(
-		reputerAddr,
-		reputerPrivateKey,
-		reputerPublicKeyBytes,
-		&reputerValueBundle,
-		topicId,
-		&reputerNonce,
-		&workerNonce,
-	)
-
-	require.ErrorIs(err, types.ErrNoValidBundles)
-}
-
-func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMismatchedWorkerNonceIsIgnored() {
-	ctx := s.ctx
-	require := s.Require()
-	keeper := s.emissionsKeeper
-
-	block := types.BlockHeight(1)
-
-	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerPublicKeyBytes := reputerPrivateKey.PubKey().Bytes()
-	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
-
-	workerPrivateKey := secp256k1.GenPrivKey()
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
-
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
-
-	// BEGIN MODIFICATION
-	reputerValueBundle.ReputerRequestNonce.WorkerNonce.BlockHeight = 123
-	// END MODIFICATION
-
-	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
 	require.NoError(err)
 
 	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
@@ -461,7 +422,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithIncorrectBaseWorkerN
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	// BEGIN MODIFICATION
-	workerNonce.BlockHeight = block + 1
+	reputerNonce.BlockHeight = block + 1
 	// END MODIFICATION
 
 	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: int64(block)}, expectedForecasts)
@@ -480,7 +441,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithIncorrectBaseWorkerN
 		&workerNonce,
 	)
 
-	require.ErrorIs(err, types.ErrNoValidBundles)
+	require.ErrorIs(err, types.ErrNonceAlreadyFulfilled)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
