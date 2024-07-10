@@ -101,7 +101,6 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 	lastCommit, err := th.emissionsKeeper.GetTopicLastCommit(ctx, topic.Id, emissionstypes.ActorType_REPUTER)
 	if err != nil {
 		Logger(ctx).Warn("Error getting reputer last commit: "+err.Error(), ", first reputer commit?")
-		lastCommit = nil
 	}
 	// iterate over all the reputer nonces to find if this is unfulfilled
 	for _, nonce := range topNReputerNonces {
