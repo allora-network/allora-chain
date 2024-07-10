@@ -11,6 +11,7 @@ import (
 // weights using the current regrets
 func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) {
 	var regrets []alloraMath.Dec
+	// Just regrets with a prior value associated will be considered
 	infererRegrets := p.GetInfererRegretsSlice()
 	forecasterRegrets := p.GetForecasterRegretsSlice()
 
@@ -196,7 +197,9 @@ func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.InfererRegrets))
 	for _, regretInfo := range p.InfererRegrets {
-		regrets = append(regrets, regretInfo.regret)
+		if !regretInfo.noPriorRegret {
+			regrets = append(regrets, regretInfo.regret)
+		}
 	}
 	return regrets
 }
@@ -207,8 +210,10 @@ func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
 		return regrets
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.ForecasterRegrets))
-	for _, worker := range p.ForecasterRegrets {
-		regrets = append(regrets, worker.regret)
+	for _, regretInfo := range p.ForecasterRegrets {
+		if !regretInfo.noPriorRegret {
+			regrets = append(regrets, regretInfo.regret)
+		}
 	}
 	return regrets
 }
