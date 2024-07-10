@@ -40,7 +40,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	/// All filters should be done in order of increasing computational complexity
 
 	// Check if the worker nonce is unfulfilled
-	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.WorkerNonce)
+	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +48,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	if workerNonceUnfulfilled {
 		return nil, errorsmod.Wrapf(
 			types.ErrNonceStillUnfulfilled,
-			"Reputer's worker nonce not yet fulfilled: %v  for reputer block: %v",
-			msg.ReputerRequestNonce.WorkerNonce.BlockHeight,
+			"Reputer's worker nonce not yet fulfilled for reputer block: %v",
 			msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
 		)
 	}
@@ -90,9 +89,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 			continue
 		}
 		// Check that the reputer's value bundle is for a nonce matching the leader's given nonce
-		if bundle.ValueBundle.ReputerRequestNonce.WorkerNonce.BlockHeight != msg.ReputerRequestNonce.WorkerNonce.BlockHeight {
-			continue
-		}
 		if bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != msg.ReputerRequestNonce.ReputerNonce.BlockHeight {
 			continue
 		}
@@ -232,7 +228,7 @@ func filterUnacceptedWorkersFromReputerValueBundle(
 	reputerValueBundle *types.ReputerValueBundle,
 ) (*types.ReputerValueBundle, error) {
 	// Get the accepted inferers of the associated worker response payload
-	inferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.WorkerNonce.BlockHeight)
+	inferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "no inferences found at block height")
@@ -246,7 +242,7 @@ func filterUnacceptedWorkersFromReputerValueBundle(
 	}
 
 	// Get the accepted forecasters of the associated worker response payload
-	forecasts, err := ms.k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.WorkerNonce.BlockHeight)
+	forecasts, err := ms.k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
 		// If no forecasts, we'll just assume there are 0 forecasters
 		if errors.Is(err, collections.ErrNotFound) {

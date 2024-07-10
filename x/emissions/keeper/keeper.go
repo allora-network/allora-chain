@@ -404,10 +404,6 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			return nil
 		}
-		// Do nothing if the associated worker nonce is already in the list
-		if n.WorkerNonce.BlockHeight == associatedWorkerNonce.BlockHeight {
-			return nil
-		}
 	}
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: nonce,

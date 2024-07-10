@@ -112,7 +112,7 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 			lastReputerCommitBlockHeight = lastCommit.Nonce.BlockHeight
 		}
 
-		Logger(ctx).Warn(fmt.Sprintf("Reputer block height found unfulfilled, requesting reputers for block: %v, worker: %v", nonceCopy.ReputerNonce.BlockHeight, nonceCopy.WorkerNonce.BlockHeight))
+		Logger(ctx).Warn(fmt.Sprintf("Reputer block height found unfulfilled, requesting reputers for block: %v", nonceCopy.ReputerNonce.BlockHeight))
 		reputerValueBundle, _, _, _, err := synth.GetNetworkInferencesAtBlock(
 			ctx,
 			th.emissionsKeeper,
