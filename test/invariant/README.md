@@ -5,7 +5,11 @@ The invariant test in this repo is a quasi-fuzzer that will send random transact
 Example invocation:
 
 ```bash
-INVARIANT_TEST=TRUE SEED=1 RPC_MODE="SingleRpc" RPC_URLS="http://localhost:26657" MAX_ITERATIONS=100 FAIL_ON_ERR=true MANUAL_SIMULATION=false NUM_ACTORS=10 EPOCH_LENGTH=14 /usr/bin/go test -timeout 15m -run ^TestInvariantTestSuite$ -v ./test/invariant
+INVARIANT_TEST=TRUE SEED=1 RPC_MODE="SingleRpc" \
+    RPC_URLS="http://localhost:26657" \
+    MAX_ITERATIONS=100 FAIL_ON_ERR=true MANUAL_SIMULATION=false \
+    NUM_ACTORS=10 EPOCH_LENGTH=14 \
+    /usr/bin/go test -timeout 15m -run ^TestInvariantTestSuite$ -v ./test/invariant
 ```
 
 # Shell Environment Parameters
@@ -42,7 +46,7 @@ Note that when the fail on error mode is set to false, the counter for the outpu
 
 The output of the simulator contains a count of every attempted state transition will look something like this:
 
-```json
+```
     invariant_test.go:188: State Transitions Summary: {
         createTopic: 7, 
         fundTopic: 10, 
@@ -60,3 +64,5 @@ The output of the simulator contains a count of every attempted state transition
         doInferenceAndReputation: 3
         }
 ```
+
+In this example workers have _successfully_ registered 7 times, and unregistered 6 times. That means that at the time of this log, only one worker is currently registered
