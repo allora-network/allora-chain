@@ -240,6 +240,11 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/topic_last_commit/{topic_id}";
   }
+
+  rpc GetTopicRewardNonce(QueryTopicRewardNonceRequest) returns (QueryTopicRewardNonceResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_reward_nonce/{topic_id}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -642,4 +647,12 @@ message QueryTopicLastCommitRequest {
 
 message QueryTopicLastCommitResponse {
   TimestampedActorNonce last_commit = 1;
+}
+
+message QueryTopicRewardNonceRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicRewardNonceResponse {
+  int64 nonce = 1;
 }

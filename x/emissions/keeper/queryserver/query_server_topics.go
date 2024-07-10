@@ -89,3 +89,18 @@ func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *ty
 
 	return &types.QueryTopicLastCommitResponse{LastCommit: &lastCommit}, nil
 }
+
+func (qs queryServer) GetTopicRewardNonce(
+	ctx context.Context,
+	req *types.QueryTopicRewardNonceRequest,
+) (
+	*types.QueryTopicRewardNonceResponse,
+	error,
+) {
+	nonce, err := qs.k.GetTopicRewardNonce(ctx, req.TopicId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryTopicRewardNonceResponse{Nonce: nonce}, nil
+}

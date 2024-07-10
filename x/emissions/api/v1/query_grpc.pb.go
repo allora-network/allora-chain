@@ -59,6 +59,7 @@ const (
 	Query_IsWhitelistAdmin_FullMethodName                      = "/emissions.v1.Query/IsWhitelistAdmin"
 	Query_GetTopicLastWorkerCommitInfo_FullMethodName          = "/emissions.v1.Query/GetTopicLastWorkerCommitInfo"
 	Query_GetTopicLastReputerCommitInfo_FullMethodName         = "/emissions.v1.Query/GetTopicLastReputerCommitInfo"
+	Query_GetTopicRewardNonce_FullMethodName                   = "/emissions.v1.Query/GetTopicRewardNonce"
 )
 
 // QueryClient is the client API for Query service.
@@ -106,6 +107,7 @@ type QueryClient interface {
 	IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error)
 	GetTopicLastWorkerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
+	GetTopicRewardNonce(ctx context.Context, in *QueryTopicRewardNonceRequest, opts ...grpc.CallOption) (*QueryTopicRewardNonceResponse, error)
 }
 
 type queryClient struct {
@@ -476,6 +478,15 @@ func (c *queryClient) GetTopicLastReputerCommitInfo(ctx context.Context, in *Que
 	return out, nil
 }
 
+func (c *queryClient) GetTopicRewardNonce(ctx context.Context, in *QueryTopicRewardNonceRequest, opts ...grpc.CallOption) (*QueryTopicRewardNonceResponse, error) {
+	out := new(QueryTopicRewardNonceResponse)
+	err := c.cc.Invoke(ctx, Query_GetTopicRewardNonce_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -521,6 +532,7 @@ type QueryServer interface {
 	IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error)
 	GetTopicLastWorkerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
+	GetTopicRewardNonce(context.Context, *QueryTopicRewardNonceRequest) (*QueryTopicRewardNonceResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -647,6 +659,9 @@ func (UnimplementedQueryServer) GetTopicLastWorkerCommitInfo(context.Context, *Q
 }
 func (UnimplementedQueryServer) GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicLastReputerCommitInfo not implemented")
+}
+func (UnimplementedQueryServer) GetTopicRewardNonce(context.Context, *QueryTopicRewardNonceRequest) (*QueryTopicRewardNonceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicRewardNonce not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1381,6 +1396,24 @@ func _Query_GetTopicLastReputerCommitInfo_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetTopicRewardNonce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicRewardNonceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicRewardNonce(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTopicRewardNonce_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicRewardNonce(ctx, req.(*QueryTopicRewardNonceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1547,6 +1580,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicLastReputerCommitInfo",
 			Handler:    _Query_GetTopicLastReputerCommitInfo_Handler,
+		},
+		{
+			MethodName: "GetTopicRewardNonce",
+			Handler:    _Query_GetTopicRewardNonce_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
