@@ -53,6 +53,7 @@ const (
 	Query_GetUnfulfilledReputerNonces_FullMethodName           = "/emissions.v1.Query/GetUnfulfilledReputerNonces"
 	Query_GetInfererNetworkRegret_FullMethodName               = "/emissions.v1.Query/GetInfererNetworkRegret"
 	Query_GetForecasterNetworkRegret_FullMethodName            = "/emissions.v1.Query/GetForecasterNetworkRegret"
+	Query_GetOneInForecasterNetworkRegret_FullMethodName       = "/emissions.v1.Query/GetOneInForecasterNetworkRegret"
 	Query_IsWhitelistAdmin_FullMethodName                      = "/emissions.v1.Query/IsWhitelistAdmin"
 	Query_GetTopicLastWorkerCommitInfo_FullMethodName          = "/emissions.v1.Query/GetTopicLastWorkerCommitInfo"
 	Query_GetTopicLastReputerCommitInfo_FullMethodName         = "/emissions.v1.Query/GetTopicLastReputerCommitInfo"
@@ -97,6 +98,7 @@ type QueryClient interface {
 	GetUnfulfilledReputerNonces(ctx context.Context, in *QueryUnfulfilledReputerNoncesRequest, opts ...grpc.CallOption) (*QueryUnfulfilledReputerNoncesResponse, error)
 	GetInfererNetworkRegret(ctx context.Context, in *QueryInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryInfererNetworkRegretResponse, error)
 	GetForecasterNetworkRegret(ctx context.Context, in *QueryForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryForecasterNetworkRegretResponse, error)
+	GetOneInForecasterNetworkRegret(ctx context.Context, in *QueryOneInForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterNetworkRegretResponse, error)
 	IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error)
 	GetTopicLastWorkerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
@@ -416,6 +418,15 @@ func (c *queryClient) GetForecasterNetworkRegret(ctx context.Context, in *QueryF
 	return out, nil
 }
 
+func (c *queryClient) GetOneInForecasterNetworkRegret(ctx context.Context, in *QueryOneInForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterNetworkRegretResponse, error) {
+	out := new(QueryOneInForecasterNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, Query_GetOneInForecasterNetworkRegret_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error) {
 	out := new(QueryIsWhitelistAdminResponse)
 	err := c.cc.Invoke(ctx, Query_IsWhitelistAdmin_FullMethodName, in, out, opts...)
@@ -482,6 +493,7 @@ type QueryServer interface {
 	GetUnfulfilledReputerNonces(context.Context, *QueryUnfulfilledReputerNoncesRequest) (*QueryUnfulfilledReputerNoncesResponse, error)
 	GetInfererNetworkRegret(context.Context, *QueryInfererNetworkRegretRequest) (*QueryInfererNetworkRegretResponse, error)
 	GetForecasterNetworkRegret(context.Context, *QueryForecasterNetworkRegretRequest) (*QueryForecasterNetworkRegretResponse, error)
+	GetOneInForecasterNetworkRegret(context.Context, *QueryOneInForecasterNetworkRegretRequest) (*QueryOneInForecasterNetworkRegretResponse, error)
 	IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error)
 	GetTopicLastWorkerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
@@ -593,6 +605,9 @@ func (UnimplementedQueryServer) GetInfererNetworkRegret(context.Context, *QueryI
 }
 func (UnimplementedQueryServer) GetForecasterNetworkRegret(context.Context, *QueryForecasterNetworkRegretRequest) (*QueryForecasterNetworkRegretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetForecasterNetworkRegret not implemented")
+}
+func (UnimplementedQueryServer) GetOneInForecasterNetworkRegret(context.Context, *QueryOneInForecasterNetworkRegretRequest) (*QueryOneInForecasterNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOneInForecasterNetworkRegret not implemented")
 }
 func (UnimplementedQueryServer) IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistAdmin not implemented")
@@ -1228,6 +1243,24 @@ func _Query_GetForecasterNetworkRegret_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetOneInForecasterNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOneInForecasterNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetOneInForecasterNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetOneInForecasterNetworkRegret_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetOneInForecasterNetworkRegret(ctx, req.(*QueryOneInForecasterNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_IsWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryIsWhitelistAdminRequest)
 	if err := dec(in); err != nil {
@@ -1424,6 +1457,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetForecasterNetworkRegret",
 			Handler:    _Query_GetForecasterNetworkRegret_Handler,
+		},
+		{
+			MethodName: "GetOneInForecasterNetworkRegret",
+			Handler:    _Query_GetOneInForecasterNetworkRegret_Handler,
 		},
 		{
 			MethodName: "IsWhitelistAdmin",

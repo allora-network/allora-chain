@@ -535,3 +535,36 @@ func (s *KeeperTestSuite) TestGetForecasterNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 	s.Require().False(response.NotFound)
 }
+
+func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	forecaster := "forecaster-address"
+	inferer := "inferer-address"
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
+	emptyRegret := types.TimestampedValue{
+		BlockHeight: 0,
+		Value:       alloraMath.NewDecFromInt64(0),
+	}
+
+	req := &types.QueryOneInForecasterNetworkRegretRequest{
+		TopicId:    topicId,
+		Forecaster: forecaster,
+		Inferer:    inferer,
+	}
+	response, err := s.queryServer.GetOneInForecasterNetworkRegret(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().True(response.NotFound)
+	s.Require().Equal(response.Regret, &emptyRegret)
+
+	// Set One In Forecaster Network Regret
+	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer, regret)
+	s.Require().NoError(err)
+
+	// Get One In Forecaster Network Regret
+	response, err = s.queryServer.GetOneInForecasterNetworkRegret(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().Equal(response.Regret, &regret)
+	s.Require().False(response.NotFound)
+}

@@ -166,3 +166,18 @@ func (qs queryServer) GetForecasterNetworkRegret(
 
 	return &types.QueryForecasterNetworkRegretResponse{Regret: &forecasterNetworkRegret, NotFound: notFound}, nil
 }
+
+func (qs queryServer) GetOneInForecasterNetworkRegret(
+	ctx context.Context,
+	req *types.QueryOneInForecasterNetworkRegretRequest,
+) (
+	*types.QueryOneInForecasterNetworkRegretResponse,
+	error,
+) {
+	oneInForecasterNetworkRegret, notFound, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Inferer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryOneInForecasterNetworkRegretResponse{Regret: &oneInForecasterNetworkRegret, NotFound: notFound}, nil
+}

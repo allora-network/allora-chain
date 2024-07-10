@@ -210,6 +210,12 @@ service Query {
     option (google.api.http).get = "/emissions/v1/forecaster_network_regret/{topic_id}/{worker}";
   }
 
+  rpc GetOneInForecasterNetworkRegret(QueryOneInForecasterNetworkRegretRequest)
+      returns (QueryOneInForecasterNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/one_in_forecaster_network_regret/{topic_id}/{forecaster}/{inferer}";
+  }
+
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
     option (google.api.http).get = "/emissions/v1/whitelist_admin/{address}";
   }
@@ -504,6 +510,17 @@ message QueryForecasterNetworkRegretRequest {
 }
 
 message QueryForecasterNetworkRegretResponse {
+  TimestampedValue regret = 1;
+  bool not_found = 2;
+}
+
+message QueryOneInForecasterNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string forecaster = 2;
+  string inferer = 3;
+}
+
+message QueryOneInForecasterNetworkRegretResponse {
   TimestampedValue regret = 1;
   bool not_found = 2;
 }
