@@ -361,3 +361,22 @@ func (qs queryServer) GetDelegateRewardPerShare(
 
 	return &types.QueryDelegateRewardPerShareResponse{RewardPerShare: delegateRewardPerShare}, nil
 }
+
+func (qs queryServer) GetStakeRemovalForReputerAndTopicId(
+	ctx context.Context,
+	req *types.QueryStakeRemovalForReputerAndTopicIdRequest,
+) (
+	*types.QueryStakeRemovalForReputerAndTopicIdResponse,
+	error,
+) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	stakeRemovalInfo, found, err := qs.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, req.Reputer, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return &types.QueryStakeRemovalForReputerAndTopicIdResponse{}, nil
+	}
+
+	return &types.QueryStakeRemovalForReputerAndTopicIdResponse{StakeRemovalInfo: &stakeRemovalInfo}, nil
+}

@@ -272,6 +272,12 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/delegate_reward_per_share/{topic_id}/{reputer}";
   }
+
+  rpc GetStakeRemovalForReputerAndTopicId(QueryStakeRemovalForReputerAndTopicIdRequest)
+      returns (QueryStakeRemovalForReputerAndTopicIdResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/stake_removal/{reputer}/{topic_id}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -739,4 +745,13 @@ message QueryDelegateRewardPerShareRequest {
 message QueryDelegateRewardPerShareResponse {
   string reward_per_share = 1
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
+
+message QueryStakeRemovalForReputerAndTopicIdRequest {
+  string reputer = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryStakeRemovalForReputerAndTopicIdResponse {
+  StakeRemovalInfo stake_removal_info = 1;
 }

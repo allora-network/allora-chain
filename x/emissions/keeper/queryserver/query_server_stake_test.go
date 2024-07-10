@@ -467,3 +467,40 @@ func (s *KeeperTestSuite) TestGetDelegateStakeUponReputer() {
 	s.Require().NoError(err)
 	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
 }
+
+func (s *KeeperTestSuite) TestGetStakeRemovalForReputerAndTopicId() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	reputer := "reputer"
+	topicId := uint64(1)
+
+	// Create a stake removal info
+	stakeRemovalInfo := types.StakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               reputer,
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(100),
+		BlockRemovalCompleted: 30,
+	}
+	anotherStakeRemoval := types.StakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		Reputer:               "reputer2",
+		TopicId:               topicId,
+		Amount:                cosmosMath.NewInt(200),
+		BlockRemovalCompleted: 30,
+	}
+
+	// Set the stake removal info in the keeper
+	err := k.SetStakeRemoval(ctx, stakeRemovalInfo)
+	s.Require().NoError(err)
+	err = k.SetStakeRemoval(ctx, anotherStakeRemoval)
+	s.Require().NoError(err)
+
+	req := &types.QueryStakeRemovalForReputerAndTopicIdRequest{
+		Reputer: reputer,
+		TopicId: topicId,
+	}
+	response, err := s.queryServer.GetStakeRemovalForReputerAndTopicId(ctx, req)
+	s.Require().NoError(err)
+	s.Require().Equal(&stakeRemovalInfo, response.StakeRemovalInfo)
+}
