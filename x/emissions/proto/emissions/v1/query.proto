@@ -97,10 +97,11 @@ service Query {
     option (google.api.http).get = "/emissions/v1/reputer_delegate_stake/{reputer_address}/{topic_id}";
   }
 
-  rpc GetDelegateStakePlacement(QueryDelegateStakePlacementRequest) returns (QueryDelegateStakePlacementResponse) {
+  rpc GetStakeFromDelegatorInTopicInReputer(QueryStakeFromDelegatorInTopicInReputerRequest)
+      returns (QueryStakeFromDelegatorInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-        "/emissions/v1/delegate_stake_placement/{delegator_address}/{reputer_address}/{topic_id}";
+    option (google.api.http).get = "/emissions/v1/delegate_stake/{delegator_address}/{reputer_address}/"
+                                   "{topic_id}";
   }
 
   rpc GetStakeFromDelegatorInTopic(QueryStakeFromDelegatorInTopicRequest)
@@ -337,13 +338,13 @@ message QueryDelegateStakeInTopicInReputerResponse {
   ];
 }
 
-message QueryDelegateStakePlacementRequest {
+message QueryStakeFromDelegatorInTopicInReputerRequest {
   string delegator_address = 1;
   string reputer_address = 2;
   uint64 topic_id = 3;
 }
 
-message QueryDelegateStakePlacementResponse {
+message QueryStakeFromDelegatorInTopicInReputerResponse {
   option (gogoproto.equal) = true;
   string amount = 1 [
     (cosmos_proto.scalar) = "cosmos.Int",

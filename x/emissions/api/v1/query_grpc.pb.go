@@ -19,49 +19,49 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName                              = "/emissions.v1.Query/Params"
-	Query_GetNextTopicId_FullMethodName                      = "/emissions.v1.Query/GetNextTopicId"
-	Query_GetTopic_FullMethodName                            = "/emissions.v1.Query/GetTopic"
-	Query_GetActiveTopics_FullMethodName                     = "/emissions.v1.Query/GetActiveTopics"
-	Query_GetWorkerLatestInferenceByTopicId_FullMethodName   = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
-	Query_GetInferencesAtBlock_FullMethodName                = "/emissions.v1.Query/GetInferencesAtBlock"
-	Query_GetLatestTopicInferences_FullMethodName            = "/emissions.v1.Query/GetLatestTopicInferences"
-	Query_GetForecastsAtBlock_FullMethodName                 = "/emissions.v1.Query/GetForecastsAtBlock"
-	Query_GetNetworkLossBundleAtBlock_FullMethodName         = "/emissions.v1.Query/GetNetworkLossBundleAtBlock"
-	Query_GetTotalStake_FullMethodName                       = "/emissions.v1.Query/GetTotalStake"
-	Query_GetReputerStakeInTopic_FullMethodName              = "/emissions.v1.Query/GetReputerStakeInTopic"
-	Query_GetMultiReputerStakeInTopic_FullMethodName         = "/emissions.v1.Query/GetMultiReputerStakeInTopic"
-	Query_GetStakeFromReputerInTopicInSelf_FullMethodName    = "/emissions.v1.Query/GetStakeFromReputerInTopicInSelf"
-	Query_GetDelegateStakeInTopicInReputer_FullMethodName    = "/emissions.v1.Query/GetDelegateStakeInTopicInReputer"
-	Query_GetDelegateStakePlacement_FullMethodName           = "/emissions.v1.Query/GetDelegateStakePlacement"
-	Query_GetStakeFromDelegatorInTopic_FullMethodName        = "/emissions.v1.Query/GetStakeFromDelegatorInTopic"
-	Query_GetTopicStake_FullMethodName                       = "/emissions.v1.Query/GetTopicStake"
-	Query_GetStakeRemovalsForBlock_FullMethodName            = "/emissions.v1.Query/GetStakeRemovalsForBlock"
-	Query_GetDelegateStakeRemovalsForBlock_FullMethodName    = "/emissions.v1.Query/GetDelegateStakeRemovalsForBlock"
-	Query_GetStakeRemovalInfo_FullMethodName                 = "/emissions.v1.Query/GetStakeRemovalInfo"
-	Query_GetDelegateStakeRemovalInfo_FullMethodName         = "/emissions.v1.Query/GetDelegateStakeRemovalInfo"
-	Query_GetWorkerNodeInfo_FullMethodName                   = "/emissions.v1.Query/GetWorkerNodeInfo"
-	Query_GetReputerNodeInfo_FullMethodName                  = "/emissions.v1.Query/GetReputerNodeInfo"
-	Query_GetWorkerAddressByP2PKey_FullMethodName            = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
-	Query_GetReputerAddressByP2PKey_FullMethodName           = "/emissions.v1.Query/GetReputerAddressByP2PKey"
-	Query_IsWorkerRegisteredInTopicId_FullMethodName         = "/emissions.v1.Query/IsWorkerRegisteredInTopicId"
-	Query_IsReputerRegisteredInTopicId_FullMethodName        = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
-	Query_GetNetworkInferencesAtBlock_FullMethodName         = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
-	Query_GetLatestNetworkInference_FullMethodName           = "/emissions.v1.Query/GetLatestNetworkInference"
-	Query_GetIsWorkerNonceUnfulfilled_FullMethodName         = "/emissions.v1.Query/GetIsWorkerNonceUnfulfilled"
-	Query_GetIsReputerNonceUnfulfilled_FullMethodName        = "/emissions.v1.Query/GetIsReputerNonceUnfulfilled"
-	Query_GetUnfulfilledWorkerNonces_FullMethodName          = "/emissions.v1.Query/GetUnfulfilledWorkerNonces"
-	Query_GetUnfulfilledReputerNonces_FullMethodName         = "/emissions.v1.Query/GetUnfulfilledReputerNonces"
-	Query_GetInfererNetworkRegret_FullMethodName             = "/emissions.v1.Query/GetInfererNetworkRegret"
-	Query_GetForecasterNetworkRegret_FullMethodName          = "/emissions.v1.Query/GetForecasterNetworkRegret"
-	Query_GetOneInForecasterNetworkRegret_FullMethodName     = "/emissions.v1.Query/GetOneInForecasterNetworkRegret"
-	Query_GetOneInForecasterSelfNetworkRegret_FullMethodName = "/emissions.v1.Query/GetOneInForecasterSelfNetworkRegret"
-	Query_IsWhitelistAdmin_FullMethodName                    = "/emissions.v1.Query/IsWhitelistAdmin"
-	Query_GetTopicLastWorkerCommitInfo_FullMethodName        = "/emissions.v1.Query/GetTopicLastWorkerCommitInfo"
-	Query_GetTopicLastReputerCommitInfo_FullMethodName       = "/emissions.v1.Query/GetTopicLastReputerCommitInfo"
-	Query_GetTopicRewardNonce_FullMethodName                 = "/emissions.v1.Query/GetTopicRewardNonce"
-	Query_GetReputerLossBundlesAtBlock_FullMethodName        = "/emissions.v1.Query/GetReputerLossBundlesAtBlock"
-	Query_GetStakeReputerAuthority_FullMethodName            = "/emissions.v1.Query/GetStakeReputerAuthority"
+	Query_Params_FullMethodName                                = "/emissions.v1.Query/Params"
+	Query_GetNextTopicId_FullMethodName                        = "/emissions.v1.Query/GetNextTopicId"
+	Query_GetTopic_FullMethodName                              = "/emissions.v1.Query/GetTopic"
+	Query_GetActiveTopics_FullMethodName                       = "/emissions.v1.Query/GetActiveTopics"
+	Query_GetWorkerLatestInferenceByTopicId_FullMethodName     = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
+	Query_GetInferencesAtBlock_FullMethodName                  = "/emissions.v1.Query/GetInferencesAtBlock"
+	Query_GetLatestTopicInferences_FullMethodName              = "/emissions.v1.Query/GetLatestTopicInferences"
+	Query_GetForecastsAtBlock_FullMethodName                   = "/emissions.v1.Query/GetForecastsAtBlock"
+	Query_GetNetworkLossBundleAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkLossBundleAtBlock"
+	Query_GetTotalStake_FullMethodName                         = "/emissions.v1.Query/GetTotalStake"
+	Query_GetReputerStakeInTopic_FullMethodName                = "/emissions.v1.Query/GetReputerStakeInTopic"
+	Query_GetMultiReputerStakeInTopic_FullMethodName           = "/emissions.v1.Query/GetMultiReputerStakeInTopic"
+	Query_GetStakeFromReputerInTopicInSelf_FullMethodName      = "/emissions.v1.Query/GetStakeFromReputerInTopicInSelf"
+	Query_GetDelegateStakeInTopicInReputer_FullMethodName      = "/emissions.v1.Query/GetDelegateStakeInTopicInReputer"
+	Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName = "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer"
+	Query_GetStakeFromDelegatorInTopic_FullMethodName          = "/emissions.v1.Query/GetStakeFromDelegatorInTopic"
+	Query_GetTopicStake_FullMethodName                         = "/emissions.v1.Query/GetTopicStake"
+	Query_GetStakeRemovalsForBlock_FullMethodName              = "/emissions.v1.Query/GetStakeRemovalsForBlock"
+	Query_GetDelegateStakeRemovalsForBlock_FullMethodName      = "/emissions.v1.Query/GetDelegateStakeRemovalsForBlock"
+	Query_GetStakeRemovalInfo_FullMethodName                   = "/emissions.v1.Query/GetStakeRemovalInfo"
+	Query_GetDelegateStakeRemovalInfo_FullMethodName           = "/emissions.v1.Query/GetDelegateStakeRemovalInfo"
+	Query_GetWorkerNodeInfo_FullMethodName                     = "/emissions.v1.Query/GetWorkerNodeInfo"
+	Query_GetReputerNodeInfo_FullMethodName                    = "/emissions.v1.Query/GetReputerNodeInfo"
+	Query_GetWorkerAddressByP2PKey_FullMethodName              = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
+	Query_GetReputerAddressByP2PKey_FullMethodName             = "/emissions.v1.Query/GetReputerAddressByP2PKey"
+	Query_IsWorkerRegisteredInTopicId_FullMethodName           = "/emissions.v1.Query/IsWorkerRegisteredInTopicId"
+	Query_IsReputerRegisteredInTopicId_FullMethodName          = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
+	Query_GetNetworkInferencesAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
+	Query_GetLatestNetworkInference_FullMethodName             = "/emissions.v1.Query/GetLatestNetworkInference"
+	Query_GetIsWorkerNonceUnfulfilled_FullMethodName           = "/emissions.v1.Query/GetIsWorkerNonceUnfulfilled"
+	Query_GetIsReputerNonceUnfulfilled_FullMethodName          = "/emissions.v1.Query/GetIsReputerNonceUnfulfilled"
+	Query_GetUnfulfilledWorkerNonces_FullMethodName            = "/emissions.v1.Query/GetUnfulfilledWorkerNonces"
+	Query_GetUnfulfilledReputerNonces_FullMethodName           = "/emissions.v1.Query/GetUnfulfilledReputerNonces"
+	Query_GetInfererNetworkRegret_FullMethodName               = "/emissions.v1.Query/GetInfererNetworkRegret"
+	Query_GetForecasterNetworkRegret_FullMethodName            = "/emissions.v1.Query/GetForecasterNetworkRegret"
+	Query_GetOneInForecasterNetworkRegret_FullMethodName       = "/emissions.v1.Query/GetOneInForecasterNetworkRegret"
+	Query_GetOneInForecasterSelfNetworkRegret_FullMethodName   = "/emissions.v1.Query/GetOneInForecasterSelfNetworkRegret"
+	Query_IsWhitelistAdmin_FullMethodName                      = "/emissions.v1.Query/IsWhitelistAdmin"
+	Query_GetTopicLastWorkerCommitInfo_FullMethodName          = "/emissions.v1.Query/GetTopicLastWorkerCommitInfo"
+	Query_GetTopicLastReputerCommitInfo_FullMethodName         = "/emissions.v1.Query/GetTopicLastReputerCommitInfo"
+	Query_GetTopicRewardNonce_FullMethodName                   = "/emissions.v1.Query/GetTopicRewardNonce"
+	Query_GetReputerLossBundlesAtBlock_FullMethodName          = "/emissions.v1.Query/GetReputerLossBundlesAtBlock"
+	Query_GetStakeReputerAuthority_FullMethodName              = "/emissions.v1.Query/GetStakeReputerAuthority"
 )
 
 // QueryClient is the client API for Query service.
@@ -83,7 +83,7 @@ type QueryClient interface {
 	GetMultiReputerStakeInTopic(ctx context.Context, in *QueryMultiReputerStakeInTopicRequest, opts ...grpc.CallOption) (*QueryMultiReputerStakeInTopicResponse, error)
 	GetStakeFromReputerInTopicInSelf(ctx context.Context, in *QueryStakeFromReputerInTopicInSelfRequest, opts ...grpc.CallOption) (*QueryStakeFromReputerInTopicInSelfResponse, error)
 	GetDelegateStakeInTopicInReputer(ctx context.Context, in *QueryDelegateStakeInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeInTopicInReputerResponse, error)
-	GetDelegateStakePlacement(ctx context.Context, in *QueryDelegateStakePlacementRequest, opts ...grpc.CallOption) (*QueryDelegateStakePlacementResponse, error)
+	GetStakeFromDelegatorInTopicInReputer(ctx context.Context, in *QueryStakeFromDelegatorInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopic(ctx context.Context, in *QueryStakeFromDelegatorInTopicRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicResponse, error)
 	GetTopicStake(ctx context.Context, in *QueryTopicStakeRequest, opts ...grpc.CallOption) (*QueryTopicStakeResponse, error)
 	GetStakeRemovalsForBlock(ctx context.Context, in *QueryStakeRemovalsForBlockRequest, opts ...grpc.CallOption) (*QueryStakeRemovalsForBlockResponse, error)
@@ -248,9 +248,9 @@ func (c *queryClient) GetDelegateStakeInTopicInReputer(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *queryClient) GetDelegateStakePlacement(ctx context.Context, in *QueryDelegateStakePlacementRequest, opts ...grpc.CallOption) (*QueryDelegateStakePlacementResponse, error) {
-	out := new(QueryDelegateStakePlacementResponse)
-	err := c.cc.Invoke(ctx, Query_GetDelegateStakePlacement_FullMethodName, in, out, opts...)
+func (c *queryClient) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, in *QueryStakeFromDelegatorInTopicInReputerRequest, opts ...grpc.CallOption) (*QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+	out := new(QueryStakeFromDelegatorInTopicInReputerResponse)
+	err := c.cc.Invoke(ctx, Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -528,7 +528,7 @@ type QueryServer interface {
 	GetMultiReputerStakeInTopic(context.Context, *QueryMultiReputerStakeInTopicRequest) (*QueryMultiReputerStakeInTopicResponse, error)
 	GetStakeFromReputerInTopicInSelf(context.Context, *QueryStakeFromReputerInTopicInSelfRequest) (*QueryStakeFromReputerInTopicInSelfResponse, error)
 	GetDelegateStakeInTopicInReputer(context.Context, *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error)
-	GetDelegateStakePlacement(context.Context, *QueryDelegateStakePlacementRequest) (*QueryDelegateStakePlacementResponse, error)
+	GetStakeFromDelegatorInTopicInReputer(context.Context, *QueryStakeFromDelegatorInTopicInReputerRequest) (*QueryStakeFromDelegatorInTopicInReputerResponse, error)
 	GetStakeFromDelegatorInTopic(context.Context, *QueryStakeFromDelegatorInTopicRequest) (*QueryStakeFromDelegatorInTopicResponse, error)
 	GetTopicStake(context.Context, *QueryTopicStakeRequest) (*QueryTopicStakeResponse, error)
 	GetStakeRemovalsForBlock(context.Context, *QueryStakeRemovalsForBlockRequest) (*QueryStakeRemovalsForBlockResponse, error)
@@ -606,8 +606,8 @@ func (UnimplementedQueryServer) GetStakeFromReputerInTopicInSelf(context.Context
 func (UnimplementedQueryServer) GetDelegateStakeInTopicInReputer(context.Context, *QueryDelegateStakeInTopicInReputerRequest) (*QueryDelegateStakeInTopicInReputerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeInTopicInReputer not implemented")
 }
-func (UnimplementedQueryServer) GetDelegateStakePlacement(context.Context, *QueryDelegateStakePlacementRequest) (*QueryDelegateStakePlacementResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakePlacement not implemented")
+func (UnimplementedQueryServer) GetStakeFromDelegatorInTopicInReputer(context.Context, *QueryStakeFromDelegatorInTopicInReputerRequest) (*QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeFromDelegatorInTopicInReputer not implemented")
 }
 func (UnimplementedQueryServer) GetStakeFromDelegatorInTopic(context.Context, *QueryStakeFromDelegatorInTopicRequest) (*QueryStakeFromDelegatorInTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStakeFromDelegatorInTopic not implemented")
@@ -958,20 +958,20 @@ func _Query_GetDelegateStakeInTopicInReputer_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetDelegateStakePlacement_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryDelegateStakePlacementRequest)
+func _Query_GetStakeFromDelegatorInTopicInReputer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeFromDelegatorInTopicInReputerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetDelegateStakePlacement(ctx, in)
+		return srv.(QueryServer).GetStakeFromDelegatorInTopicInReputer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetDelegateStakePlacement_FullMethodName,
+		FullMethod: Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetDelegateStakePlacement(ctx, req.(*QueryDelegateStakePlacementRequest))
+		return srv.(QueryServer).GetStakeFromDelegatorInTopicInReputer(ctx, req.(*QueryStakeFromDelegatorInTopicInReputerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1544,8 +1544,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetDelegateStakeInTopicInReputer_Handler,
 		},
 		{
-			MethodName: "GetDelegateStakePlacement",
-			Handler:    _Query_GetDelegateStakePlacement_Handler,
+			MethodName: "GetStakeFromDelegatorInTopicInReputer",
+			Handler:    _Query_GetStakeFromDelegatorInTopicInReputer_Handler,
 		},
 		{
 			MethodName: "GetStakeFromDelegatorInTopic",

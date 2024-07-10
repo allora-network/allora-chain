@@ -52,9 +52,9 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
 	// Record Bob stake before adding more
-	bobStakedBefore, err := m.Client.QueryEmissions().GetDelegateStakePlacement(
+	bobStakedBefore, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
-		&emissionstypes.QueryDelegateStakePlacementRequest{
+		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
@@ -77,9 +77,9 @@ func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 
 	// Check Alice has stake on the topic
-	bobStakedAfter, err := m.Client.QueryEmissions().GetDelegateStakePlacement(
+	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
-		&emissionstypes.QueryDelegateStakePlacementRequest{
+		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
@@ -177,9 +177,9 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 // Unstake Bob as a delegator delegated to Alice in topic 1, then check success
 func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
-	bobStake, err := m.Client.QueryEmissions().GetDelegateStakePlacement(
+	bobStake, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
-		&emissionstypes.QueryDelegateStakePlacementRequest{
+		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
@@ -221,9 +221,9 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
 
 	// Check Bob has zero stake left
-	bobStakedAfter, err := m.Client.QueryEmissions().GetDelegateStakePlacement(
+	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
-		&emissionstypes.QueryDelegateStakePlacementRequest{
+		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
