@@ -136,3 +136,18 @@ func (qs queryServer) GetUnfulfilledWorkerNonces(
 
 	return &types.QueryUnfulfilledWorkerNoncesResponse{Nonces: &unfulfilledNonces}, nil
 }
+
+func (qs queryServer) GetInfererNetworkRegret(
+	ctx context.Context,
+	req *types.QueryInfererNetworkRegretRequest,
+) (
+	*types.QueryInfererNetworkRegretResponse,
+	error,
+) {
+	infererNetworkRegret, notFound, err := qs.k.GetInfererNetworkRegret(ctx, req.TopicId, req.ActorId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryInfererNetworkRegretResponse{Regret: &infererNetworkRegret, NotFound: notFound}, nil
+}

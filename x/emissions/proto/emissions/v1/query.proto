@@ -200,6 +200,11 @@ service Query {
     option (google.api.http).get = "/emissions/v1/unfulfilled_reputer_nonces/{topic_id}";
   }
 
+  rpc GetInfererNetworkRegret(QueryInfererNetworkRegretRequest) returns (QueryInfererNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/inferer_network_regret/{topic_id}/{actor_id}";
+  }
+
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
     option (google.api.http).get = "/emissions/v1/whitelist_admin/{address}";
   }
@@ -476,6 +481,16 @@ message QueryUnfulfilledWorkerNoncesRequest {
 
 message QueryUnfulfilledWorkerNoncesResponse {
   Nonces nonces = 1;
+}
+
+message QueryInfererNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+}
+
+message QueryInfererNetworkRegretResponse {
+  TimestampedValue regret = 1;
+  bool not_found = 2;
 }
 
 message QueryIsReputerNonceUnfulfilledRequest {

@@ -473,3 +473,34 @@ func (s *KeeperTestSuite) TestGetUnfulfilledWorkerNonces() {
 		s.Require().Equal(nonceValues[len(nonceValues)-i-1], nonce.BlockHeight, "Nonce value should match the expected value")
 	}
 }
+
+func (s *KeeperTestSuite) TestGetInfererNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := "worker-address"
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
+	emptyRegret := types.TimestampedValue{
+		BlockHeight: 0,
+		Value:       alloraMath.NewDecFromInt64(0),
+	}
+
+	req := &types.QueryInfererNetworkRegretRequest{
+		TopicId: topicId,
+		ActorId: worker,
+	}
+	response, err := s.queryServer.GetInfererNetworkRegret(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().True(response.NotFound)
+	s.Require().Equal(response.Regret, &emptyRegret)
+
+	// Set Inferer Network Regret
+	err = keeper.SetInfererNetworkRegret(ctx, topicId, worker, regret)
+	s.Require().NoError(err)
+
+	// Get Inferer Network Regret
+	response, err = s.queryServer.GetInfererNetworkRegret(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().Equal(response.Regret, &regret)
+	s.Require().False(response.NotFound)
+}
