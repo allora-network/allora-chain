@@ -134,7 +134,7 @@ func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req 
 	return &types.QueryDelegateStakeInTopicInReputerResponse{Amount: stake}, nil
 }
 
-func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicInReputerRequest) (*types.QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+func (qs queryServer) GetDelegateStakePlacement(ctx context.Context, req *types.QueryDelegateStakePlacementRequest) (*types.QueryDelegateStakePlacementResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid reputer address: %s", err)
 	}
@@ -154,7 +154,7 @@ func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context,
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: stake.Amount.SdkIntTrim()}, nil
+	return &types.QueryDelegateStakePlacementResponse{Amount: stake.Amount.SdkIntTrim()}, nil
 }
 
 func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicRequest) (*types.QueryStakeFromDelegatorInTopicResponse, error) {

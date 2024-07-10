@@ -108,7 +108,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
 	s.Require().Equal(initialStakeAmount, response.Amount, "The retrieved delegate stake should match the initial stake set for the reputer in the topic")
 }
 
-func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
+func (s *KeeperTestSuite) TestGetDelegateStakePlacement() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -126,13 +126,13 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, stakeAmount)
 	s.Require().NoError(err, "AddDelegateStake should not produce an error")
 
-	req := &types.QueryStakeFromDelegatorInTopicInReputerRequest{
+	req := &types.QueryDelegateStakePlacementRequest{
 		DelegatorAddress: delegatorAddr,
 		ReputerAddress:   reputerAddr,
 		TopicId:          topicId,
 	}
 
-	response, err := queryServer.GetStakeFromDelegatorInTopicInReputer(ctx, req)
+	response, err := queryServer.GetDelegateStakePlacement(ctx, req)
 	s.Require().NoError(err, "GetStakeFromDelegatorInTopicInReputer should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().Equal(stakeAmount, response.Amount, "The retrieved stake amount should match the delegated stake")
