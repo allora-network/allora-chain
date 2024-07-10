@@ -32,3 +32,28 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 	s.Require().NotNil(response.LossBundle)
 	s.Require().Equal(expectedBundle, response.LossBundle, "Retrieved loss bundle should match the expected bundle")
 }
+
+func (s *KeeperTestSuite) TestNewlyAddedReputerNonceIsUnfulfilled() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	newNonce := &types.Nonce{BlockHeight: 42}
+
+	req := &types.QueryIsReputerNonceUnfulfilledRequest{
+		TopicId:     topicId,
+		BlockHeight: newNonce.BlockHeight,
+	}
+	response, err := s.queryServer.GetIsReputerNonceUnfulfilled(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response, "Response should not be nil")
+	s.Require().False(response.IsReputerNonceUnfulfilled)
+
+	// Set reputer nonce
+	err = keeper.AddReputerNonce(ctx, topicId, newNonce, newNonce)
+	s.Require().NoError(err)
+
+	response, err = s.queryServer.GetIsReputerNonceUnfulfilled(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response, "Response should not be nil")
+	s.Require().True(response.IsReputerNonceUnfulfilled)
+}

@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -22,4 +23,17 @@ func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *type
 	}
 
 	return &types.QueryNetworkLossBundleAtBlockResponse{LossBundle: networkLoss}, nil
+}
+
+func (qs queryServer) GetIsReputerNonceUnfulfilled(
+	ctx context.Context,
+	req *types.QueryIsReputerNonceUnfulfilledRequest,
+) (
+	*types.QueryIsReputerNonceUnfulfilledResponse,
+	error,
+) {
+	isReputerNonceUnfulfilled, err :=
+		qs.k.IsReputerNonceUnfulfilled(ctx, req.TopicId, &types.Nonce{BlockHeight: req.BlockHeight})
+
+	return &types.QueryIsReputerNonceUnfulfilledResponse{IsReputerNonceUnfulfilled: isReputerNonceUnfulfilled}, err
 }
