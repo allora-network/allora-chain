@@ -69,3 +69,23 @@ func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiv
 
 	return &types.QueryActiveTopicsResponse{Topics: topics, Pagination: pageRes}, nil
 }
+
+// Return last payload timestamp & nonce by worker/reputer
+func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *types.QueryTopicLastCommitRequest) (*types.QueryTopicLastCommitResponse, error) {
+	lastCommit, err := qs.k.GetTopicLastCommit(ctx, req.TopicId, types.ActorType_INFERER)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryTopicLastCommitResponse{LastCommit: &lastCommit}, nil
+}
+
+// Return last payload timestamp & nonce by worker/reputer
+func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *types.QueryTopicLastCommitRequest) (*types.QueryTopicLastCommitResponse, error) {
+	lastCommit, err := qs.k.GetTopicLastCommit(ctx, req.TopicId, types.ActorType_REPUTER)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryTopicLastCommitResponse{LastCommit: &lastCommit}, nil
+}

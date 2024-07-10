@@ -40,6 +40,9 @@ func (msg *MsgCreateNewTopic) Validate() error {
 	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
 	}
+	if msg.Epsilon.Lte(alloraMath.ZeroDec()) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
+	}
 
 	return nil
 }

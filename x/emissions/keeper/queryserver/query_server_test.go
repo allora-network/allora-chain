@@ -185,6 +185,7 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 		DefaultArg:      "ETH",
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	s.MintTokensToAddress(creator, types.DefaultParams().CreateTopicFee)
@@ -215,6 +216,7 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 		DefaultArg:      "ETH",
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	creatorInitialBalance := types.DefaultParams().CreateTopicFee.Mul(cosmosMath.NewInt(3))

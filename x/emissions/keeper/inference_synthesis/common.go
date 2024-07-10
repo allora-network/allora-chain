@@ -34,20 +34,26 @@ func MakeMapFromForecasterToTheirForecast(forecasts []*emissions.Forecast) map[W
 	return forecastsByWorker
 }
 
-func ConvertWeightsToArrays(weights map[Worker]Weight) []*types.RegretInformedWeight {
+// It is assumed every key of `weights` is contained within the `workers` slice
+func ConvertWeightsToArrays(workers []Worker, weights map[Worker]Weight) []*types.RegretInformedWeight {
 	weightsArray := make([]*types.RegretInformedWeight, 0)
-	for worker, weight := range weights {
-		weightsArray = append(weightsArray, &types.RegretInformedWeight{Worker: worker, Weight: weight})
+	for _, worker := range workers {
+		weightsArray = append(weightsArray, &types.RegretInformedWeight{Worker: worker, Weight: weights[worker]})
 	}
 	return weightsArray
 }
 
+// It is assumed every key of `forecastImpliedInferenceByWorker` is contained within the `workers` slice
 func ConvertForecastImpliedInferencesToArrays(
+	workers []Worker,
 	forecastImpliedInferenceByWorker map[string]*types.Inference,
 ) []*types.WorkerAttributedValue {
 	forecastImpliedInferences := make([]*types.WorkerAttributedValue, 0)
-	for worker, inference := range forecastImpliedInferenceByWorker {
-		forecastImpliedInferences = append(forecastImpliedInferences, &types.WorkerAttributedValue{Worker: worker, Value: inference.Value})
+	for _, worker := range workers {
+		forecastImpliedInferences = append(
+			forecastImpliedInferences,
+			&types.WorkerAttributedValue{Worker: worker, Value: forecastImpliedInferenceByWorker[worker].Value},
+		)
 	}
 	return forecastImpliedInferences
 }

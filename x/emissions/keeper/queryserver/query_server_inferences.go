@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -97,10 +98,13 @@ func (qs queryServer) GetLatestNetworkInference(
 		return nil, err
 	}
 
+	inferers := alloraMath.GetSortedKeys(infererWeights)
+	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
+
 	return &types.QueryLatestNetworkInferencesAtBlockResponse{
 		NetworkInferences:         networkInferences,
-		InfererWeights:            synth.ConvertWeightsToArrays(infererWeights),
-		ForecasterWeights:         synth.ConvertWeightsToArrays(forecasterWeights),
-		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecastImpliedInferenceByWorker),
+		InfererWeights:            synth.ConvertWeightsToArrays(inferers, infererWeights),
+		ForecasterWeights:         synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
+		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
 	}, nil
 }
