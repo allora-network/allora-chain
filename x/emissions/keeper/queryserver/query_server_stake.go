@@ -346,3 +346,18 @@ func (qs queryServer) GetDelegateStakeUponReputer(
 
 	return &types.QueryDelegateStakeUponReputerResponse{Stake: delegateStakeUponReputer}, nil
 }
+
+func (qs queryServer) GetDelegateRewardPerShare(
+	ctx context.Context,
+	req *types.QueryDelegateRewardPerShareRequest,
+) (
+	*types.QueryDelegateRewardPerShareResponse,
+	error,
+) {
+	delegateRewardPerShare, err := qs.k.GetDelegateRewardPerShare(ctx, req.TopicId, req.Reputer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDelegateRewardPerShareResponse{RewardPerShare: delegateRewardPerShare}, nil
+}
