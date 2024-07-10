@@ -181,3 +181,18 @@ func (qs queryServer) GetOneInForecasterNetworkRegret(
 
 	return &types.QueryOneInForecasterNetworkRegretResponse{Regret: &oneInForecasterNetworkRegret, NotFound: notFound}, nil
 }
+
+func (qs queryServer) GetOneInForecasterSelfNetworkRegret(
+	ctx context.Context,
+	req *types.QueryOneInForecasterSelfNetworkRegretRequest,
+) (
+	*types.QueryOneInForecasterSelfNetworkRegretResponse,
+	error,
+) {
+	oneInForecasterSelfNetworkRegret, notFound, err := qs.k.GetOneInForecasterSelfNetworkRegret(ctx, req.TopicId, req.Forecaster)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryOneInForecasterSelfNetworkRegretResponse{Regret: &oneInForecasterSelfNetworkRegret, NotFound: notFound}, nil
+}

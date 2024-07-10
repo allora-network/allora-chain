@@ -568,3 +568,34 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 	s.Require().False(response.NotFound)
 }
+
+func (s *KeeperTestSuite) TestGetOneInForecasterSelfNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	forecaster := "forecaster-address"
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
+	emptyRegret := types.TimestampedValue{
+		BlockHeight: 0,
+		Value:       alloraMath.NewDecFromInt64(0),
+	}
+
+	req := &types.QueryOneInForecasterSelfNetworkRegretRequest{
+		TopicId:    topicId,
+		Forecaster: forecaster,
+	}
+	response, err := s.queryServer.GetOneInForecasterSelfNetworkRegret(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().True(response.NotFound)
+	s.Require().Equal(response.Regret, &emptyRegret)
+
+	// Set One In Forecaster Self Network Regret
+	err = keeper.SetOneInForecasterSelfNetworkRegret(ctx, topicId, forecaster, regret)
+	s.Require().NoError(err)
+
+	// Get One In Forecaster Self Network Regret
+	response, err = s.queryServer.GetOneInForecasterSelfNetworkRegret(s.ctx, req)
+	s.Require().NoError(err)
+	s.Require().Equal(response.Regret, &regret)
+	s.Require().False(response.NotFound)
+}
