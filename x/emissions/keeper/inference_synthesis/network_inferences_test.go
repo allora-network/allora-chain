@@ -103,6 +103,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		PNorm:           alloraMath.NewDecFromInt64(3),
 		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:   false,
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	})
 	s.Require().NoError(err)
 
@@ -345,8 +346,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			blockHeightPreviousLosses,
 		)
 	require.NoError(err)
-	testutil.InEpsilon2(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
-	testutil.InEpsilon2(s.T(), valueBundle.NaiveValue, epoch3Get("network_naive_inference").String())
+	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
+	testutil.InEpsilon5(s.T(), valueBundle.NaiveValue, epoch3Get("network_naive_inference").String())
 
 	for _, inference := range inferences.Inferences {
 		found := false
@@ -361,11 +362,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, forecasterValue := range valueBundle.ForecasterValues {
 		switch string(forecasterValue.Worker) {
 		case forecaster0:
-			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_0").String())
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_0").String())
 		case forecaster1:
-			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_1").String())
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_1").String())
 		case forecaster2:
-			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_2").String())
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_2").String())
 		default:
 			require.Fail("Unexpected forecaster %v", forecasterValue.Worker)
 		}
@@ -374,15 +375,15 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch string(oneOutInfererValue.Worker) {
 		case worker0:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_0").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_0").String())
 		case worker1:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_1").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_1").String())
 		case worker2:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_2").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_2").String())
 		case worker3:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_3").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_3").String())
 		case worker4:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_4").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_4").String())
 		default:
 			require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}
@@ -391,11 +392,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch string(oneOutForecasterValue.Worker) {
 		case forecaster0:
-			testutil.InEpsilon2(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_5").String())
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_5").String())
 		case forecaster1:
-			testutil.InEpsilon2(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_6").String())
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_6").String())
 		case forecaster2:
-			testutil.InEpsilon2(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_7").String())
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_7").String())
 		default:
 			require.Fail("Unexpected worker %v", oneOutForecasterValue.Worker)
 		}
@@ -404,11 +405,11 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
 		switch string(oneInForecasterValue.Worker) {
 		case forecaster0:
-			testutil.InEpsilon2(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_0").String())
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_0").String())
 		case forecaster1:
-			testutil.InEpsilon2(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_1").String())
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_1").String())
 		case forecaster2:
-			testutil.InEpsilon2(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_2").String())
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_2").String())
 		default:
 			require.Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}
@@ -448,6 +449,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 		PNorm:           alloraMath.NewDecFromInt64(3),
 		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:   false,
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	})
 	s.Require().NoError(err)
 
@@ -688,8 +690,8 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 			topicId,
 		)
 	require.NoError(err)
-	testutil.InEpsilon2(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
-	testutil.InEpsilon2(s.T(), valueBundle.NaiveValue, epoch3Get("network_naive_inference").String())
+	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
+	testutil.InEpsilon5(s.T(), valueBundle.NaiveValue, epoch3Get("network_naive_inference").String())
 
 	for _, inference := range inferences.Inferences {
 		found := false
@@ -704,11 +706,11 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 	for _, forecasterValue := range valueBundle.ForecasterValues {
 		switch string(forecasterValue.Worker) {
 		case forecaster0:
-			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_0").String())
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_0").String())
 		case forecaster1:
-			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_1").String())
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_1").String())
 		case forecaster2:
-			testutil.InEpsilon2(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_2").String())
+			testutil.InEpsilon5(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_2").String())
 		default:
 			require.Fail("Unexpected forecaster %v", forecasterValue.Worker)
 		}
@@ -717,15 +719,15 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch string(oneOutInfererValue.Worker) {
 		case worker0:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_0").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_0").String())
 		case worker1:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_1").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_1").String())
 		case worker2:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_2").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_2").String())
 		case worker3:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_3").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_3").String())
 		case worker4:
-			testutil.InEpsilon2(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_4").String())
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_4").String())
 		default:
 			require.Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}
@@ -734,11 +736,11 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch string(oneOutForecasterValue.Worker) {
 		case forecaster0:
-			testutil.InEpsilon2(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_5").String())
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_5").String())
 		case forecaster1:
-			testutil.InEpsilon2(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_6").String())
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_6").String())
 		case forecaster2:
-			testutil.InEpsilon2(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_7").String())
+			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_7").String())
 		default:
 			require.Fail("Unexpected worker %v", oneOutForecasterValue.Worker)
 		}
@@ -747,11 +749,11 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
 		switch string(oneInForecasterValue.Worker) {
 		case forecaster0:
-			testutil.InEpsilon2(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_0").String())
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_0").String())
 		case forecaster1:
-			testutil.InEpsilon2(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_1").String())
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_1").String())
 		case forecaster2:
-			testutil.InEpsilon2(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_2").String())
+			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_2").String())
 		default:
 			require.Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}

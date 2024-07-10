@@ -299,7 +299,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectCombinedInitialValueForEpoch(ep
 	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
 	valueBundle := networkInferenceBuilder.SetCombinedValue().Build()
 	s.Require().NotNil(valueBundle.CombinedValue)
-	alloratestutil.InEpsilon2(s.T(), valueBundle.CombinedValue, epochGet[epoch]("network_inference").String())
+	alloratestutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epochGet[epoch]("network_inference").String())
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectCombinedInitialValue() {
@@ -322,7 +322,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectNaiveValueForEpoch(epoch int) {
 	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
 	valueBundle := networkInferenceBuilder.SetNaiveValue().Build()
 	s.Require().NotNil(valueBundle.NaiveValue)
-	alloratestutil.InEpsilon2(s.T(), valueBundle.NaiveValue, epochGet[epoch]("network_naive_inference").String())
+	alloratestutil.InEpsilon5(s.T(), valueBundle.NaiveValue, epochGet[epoch]("network_naive_inference").String())
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectInitialNaiveValue() {
@@ -355,7 +355,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 		for _, workerAttributedValue := range valueBundle.OneOutInfererValues {
 			if workerAttributedValue.Worker == worker {
 				found = true
-				alloratestutil.InEpsilon2(s.T(), expectedValue, workerAttributedValue.Value.String())
+				alloratestutil.InEpsilon5(s.T(), expectedValue, workerAttributedValue.Value.String())
 			}
 		}
 		s.Require().True(found)
@@ -385,7 +385,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(
 		for _, workerAttributedValue := range valueBundle.OneOutForecasterValues {
 			if workerAttributedValue.Worker == worker {
 				found = true
-				alloratestutil.InEpsilon2(s.T(), expectedValue, workerAttributedValue.Value.String())
+				alloratestutil.InEpsilon5(s.T(), expectedValue, workerAttributedValue.Value.String())
 			}
 		}
 		s.Require().True(found)
@@ -419,7 +419,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(e
 		for _, workerAttributedValue := range valueBundle.OneInForecasterValues {
 			if workerAttributedValue.Worker == worker {
 				found = true
-				alloratestutil.InEpsilon2(s.T(), expectedValue, workerAttributedValue.Value.String())
+				alloratestutil.InEpsilon5(s.T(), expectedValue, workerAttributedValue.Value.String())
 			}
 		}
 		s.Require().True(found)
