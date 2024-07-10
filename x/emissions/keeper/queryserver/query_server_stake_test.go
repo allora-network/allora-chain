@@ -331,3 +331,25 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 	require.Equal(expecteds[0], *response.Removals[0], "The retrieved stake removals should match the expected stake removals")
 	require.Equal(expecteds[1], *response.Removals[1], "The retrieved stake removals should match the expected stake removals")
 }
+
+func (s *KeeperTestSuite) TestGetStakeReputerAuthority() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputerAddr := PKS[0].Address().String()
+	stakeAmount := cosmosMath.NewInt(500)
+
+	// Add stake
+	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
+	s.Require().NoError(err)
+
+	req := &types.QueryStakeReputerAuthorityRequest{
+		TopicId: topicId,
+		Reputer: reputerAddr,
+	}
+	response, err := s.queryServer.GetStakeReputerAuthority(ctx, req)
+	stakeAuthority := response.Authority
+
+	s.Require().NoError(err)
+	s.Require().Equal(stakeAmount, stakeAuthority, "Delegator stake should be equal to stake amount after addition")
+}

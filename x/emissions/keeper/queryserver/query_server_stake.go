@@ -301,3 +301,18 @@ func (qs queryServer) GetDelegateStakeRemovalInfo(
 	}
 	return &types.QueryDelegateStakeRemovalInfoResponse{Removal: &removal}, err
 }
+
+func (qs queryServer) GetStakeReputerAuthority(
+	ctx context.Context,
+	req *types.QueryStakeReputerAuthorityRequest,
+) (
+	*types.QueryStakeReputerAuthorityResponse,
+	error,
+) {
+	stakeReputerAuthority, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.Reputer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryStakeReputerAuthorityResponse{Authority: stakeReputerAuthority}, nil
+}
