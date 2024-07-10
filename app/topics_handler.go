@@ -29,13 +29,13 @@ func NewTopicsHandler(emissionsKeeper emissionskeeper.Keeper) *TopicsHandler {
 }
 
 // Calculate approximate time for the previous block as epoch timestamp
-func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, inferenceBlockHeight int64, groundTruthLag int64) (uint64, error) {
+func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, inferenceBlockHeight, groundTruthLag, epochLength int64) (uint64, error) {
 	emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
 	if err != nil {
 		return 0, err
 	}
 	approximateTimePerBlockSeconds := secondsInAMonth / emissionsParams.BlocksPerMonth
-	timeDifferenceInBlocks := ctx.BlockHeight() - inferenceBlockHeight
+	timeDifferenceInBlocks := ctx.BlockHeight() - (inferenceBlockHeight + epochLength)
 	// Ensure no time in the future is calculated because of ground truth lag
 	if groundTruthLag > timeDifferenceInBlocks {
 		timeDifferenceInBlocks = 0
@@ -95,18 +95,31 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 	} else {
 		maxRetriesToFulfilNoncesReputer = emissionsParams.MaxRetriesToFulfilNoncesReputer
 	}
-	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag)
+	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag, topic.EpochLength)
 	Logger(ctx).Warn(fmt.Sprintf("Iterating Top N Reputer Nonces: %v", len(topNReputerNonces)))
+
+	lastCommit, err := th.emissionsKeeper.GetTopicLastCommit(ctx, topic.Id, emissionstypes.ActorType_REPUTER)
+	if err != nil {
+		Logger(ctx).Warn("Error getting reputer last commit: "+err.Error(), ", first reputer commit?")
+		lastCommit = nil
+	}
 	// iterate over all the reputer nonces to find if this is unfulfilled
 	for _, nonce := range topNReputerNonces {
 		nonceCopy := nonce
+		// Get previous losses from keeper, default: reputer - epochLength
+		lastReputerCommitBlockHeight := nonceCopy.ReputerNonce.BlockHeight - topic.EpochLength
+		if lastCommit.Nonce != nil {
+			Logger(ctx).Debug(fmt.Sprintf("Reputer last commit found, setting: %v", lastCommit))
+			lastReputerCommitBlockHeight = lastCommit.Nonce.BlockHeight
+		}
+
 		Logger(ctx).Warn(fmt.Sprintf("Reputer block height found unfulfilled, requesting reputers for block: %v, worker: %v", nonceCopy.ReputerNonce.BlockHeight, nonceCopy.WorkerNonce.BlockHeight))
 		reputerValueBundle, _, _, _, err := synth.GetNetworkInferencesAtBlock(
 			ctx,
 			th.emissionsKeeper,
 			topic.Id,
 			nonceCopy.ReputerNonce.BlockHeight,
-			nonceCopy.WorkerNonce.BlockHeight,
+			lastReputerCommitBlockHeight,
 		)
 		if err != nil {
 			Logger(ctx).Error(fmt.Sprintf("Error getting latest inferences at block: %d  error: %s", nonceCopy.ReputerNonce.BlockHeight, err.Error()))
@@ -117,14 +130,18 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 			continue
 		}
 
-		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, nonceCopy.ReputerNonce.BlockHeight, topic.GroundTruthLag)
+		previousBlockApproxTime, err := th.calculatePreviousBlockApproxTime(ctx, nonceCopy.ReputerNonce.BlockHeight, topic.GroundTruthLag, topic.EpochLength)
 		if err != nil {
 			Logger(ctx).Error("Error calculating previous block approx time: " + err.Error())
 			continue
 		}
+		// Create "previous losses" nonce
+		previousLossNonce := &emissionstypes.Nonce{
+			BlockHeight: lastReputerCommitBlockHeight,
+		}
 		Logger(ctx).Debug(fmt.Sprintf("Requesting losses for topic: %d reputer nonce: %d worker nonce: %d previous block approx time: %d",
-			topic.Id, nonceCopy.ReputerNonce, nonceCopy.WorkerNonce, previousBlockApproxTime))
-		go generateLossesRequest(ctx, reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, topic.AllowNegative, *nonceCopy.ReputerNonce, *nonceCopy.WorkerNonce, previousBlockApproxTime)
+			topic.Id, nonceCopy.ReputerNonce, previousLossNonce, previousBlockApproxTime))
+		go generateLossesRequest(ctx, reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, topic.AllowNegative, *nonceCopy.ReputerNonce, *previousLossNonce, previousBlockApproxTime)
 	}
 }
 

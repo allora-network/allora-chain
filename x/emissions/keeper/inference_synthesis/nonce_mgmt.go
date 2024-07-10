@@ -25,7 +25,7 @@ func SortByBlockHeight(r []*emissions.ReputerRequestNonce) {
 }
 
 // Select the top N latest reputer nonces
-func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int, currentBlockHeight int64, groundTruthLag int64) []*emissions.ReputerRequestNonce {
+func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonces, N int, currentBlockHeight, groundTruthLag, epochLength int64) []*emissions.ReputerRequestNonce {
 	topN := make([]*emissions.ReputerRequestNonce, 0)
 	// sort reputerRequestNonces by reputer block height
 
@@ -37,7 +37,8 @@ func SelectTopNReputerNonces(reputerRequestNonces *emissions.ReputerRequestNonce
 	// loop reputerRequestNonces
 	for _, nonce := range sortedSlice {
 		nonceCopy := nonce
-		if currentBlockHeight >= nonceCopy.ReputerNonce.BlockHeight+groundTruthLag {
+		// Only select when the ground truth is available.
+		if currentBlockHeight >= nonceCopy.ReputerNonce.BlockHeight+groundTruthLag+epochLength {
 			topN = append(topN, nonceCopy)
 		}
 		if len(topN) >= N {
