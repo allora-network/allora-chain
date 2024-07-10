@@ -192,6 +192,7 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 		expectedTopNReputerNonce []*emissionstypes.ReputerRequestNonce
 		currentBlockHeight       int64
 		groundTruthLag           int64
+		epochLength              int64
 	}{
 		{
 			name: "N greater than length of nonces, zero lag",
@@ -208,6 +209,7 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     0,
+			epochLength:        1,
 		},
 		{
 			name: "N less than length of nonces, zero lag",
@@ -225,6 +227,7 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     0,
+			epochLength:        1,
 		},
 		{
 			name: "Ground truth lag cutting selection midway",
@@ -241,7 +244,8 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
 			},
 			currentBlockHeight: 10,
-			groundTruthLag:     6,
+			groundTruthLag:     5,
+			epochLength:        1,
 		},
 		{
 			name: "Big Ground truth lag, not selecting any nonces",
@@ -256,6 +260,7 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{},
 			currentBlockHeight:       10,
 			groundTruthLag:           10,
+			epochLength:              1,
 		},
 		{
 			name: "Small ground truth lag, selecting all nonces",
@@ -274,6 +279,7 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     2,
+			epochLength:        1,
 		},
 		{
 			name: "Mid ground truth lag, selecting some nonces",
@@ -290,14 +296,15 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
 			},
 			currentBlockHeight: 10,
-			groundTruthLag:     5,
+			groundTruthLag:     3,
+			epochLength:        2,
 		},
 	}
 
 	// Run test cases
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			actual := inference_synthesis.SelectTopNReputerNonces(tc.reputerRequestNonces, tc.N, tc.currentBlockHeight, tc.groundTruthLag)
+			actual := inference_synthesis.SelectTopNReputerNonces(tc.reputerRequestNonces, tc.N, tc.currentBlockHeight, tc.groundTruthLag, tc.epochLength)
 			require.Equal(t, tc.expectedTopNReputerNonce, actual, "Reputer nonces do not match")
 		})
 	}
