@@ -9,9 +9,7 @@ import "emissions/v1/nonce.proto";
 message RegretInformedWeight {
   option (gogoproto.equal) = true;
 
-  string worker = 1; // worker who created the value
-  string weight = 2 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string worker = 1;  // worker who created the value
+  string weight = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
