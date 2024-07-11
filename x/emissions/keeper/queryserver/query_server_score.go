@@ -65,3 +65,18 @@ func (qs queryServer) GetInferenceScoresUntilBlock(
 
 	return &types.QueryInferenceScoresUntilBlockResponse{Scores: inferenceScores}, nil
 }
+
+func (qs queryServer) GetWorkerInferenceScoresAtBlock(
+	ctx context.Context,
+	req *types.QueryWorkerInferenceScoresAtBlockRequest,
+) (
+	*types.QueryWorkerInferenceScoresAtBlockResponse,
+	error,
+) {
+	workerInferenceScores, err := qs.k.GetWorkerInferenceScoresAtBlock(ctx, req.TopicId, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryWorkerInferenceScoresAtBlockResponse{Scores: &workerInferenceScores}, nil
+}

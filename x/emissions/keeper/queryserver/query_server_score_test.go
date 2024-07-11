@@ -114,3 +114,39 @@ func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
 		expectedBlock--
 	}
 }
+
+func (s *KeeperTestSuite) TestGetWorkerInferenceScoresAtBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockHeight := int64(100)
+	score := types.Score{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Address:     "worker1",
+		Score:       alloraMath.NewDecFromInt64(95),
+	}
+
+	// Set the maximum number of scores using system parameters
+	maxNumScores := uint64(5)
+	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	// Insert scores more than the max limit to test trimming
+	for i := 0; i < int(maxNumScores+2); i++ {
+		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
+		s.Require().NoError(err, "Inserting worker inference score should not fail")
+	}
+
+	// Fetch scores to check if trimming happened
+	req := &types.QueryWorkerInferenceScoresAtBlockRequest{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+	}
+	response, err := s.queryServer.GetWorkerInferenceScoresAtBlock(ctx, req)
+	scores := response.Scores
+
+	s.Require().NoError(err, "Fetching scores at block should not fail")
+	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+}

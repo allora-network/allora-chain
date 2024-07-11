@@ -79,6 +79,7 @@ const (
 	Query_GetLatestForecasterScore_FullMethodName              = "/emissions.v1.Query/GetLatestForecasterScore"
 	Query_GetLatestReputerScore_FullMethodName                 = "/emissions.v1.Query/GetLatestReputerScore"
 	Query_GetInferenceScoresUntilBlock_FullMethodName          = "/emissions.v1.Query/GetInferenceScoresUntilBlock"
+	Query_GetWorkerInferenceScoresAtBlock_FullMethodName       = "/emissions.v1.Query/GetWorkerInferenceScoresAtBlock"
 )
 
 // QueryClient is the client API for Query service.
@@ -146,6 +147,7 @@ type QueryClient interface {
 	GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error)
 	GetLatestReputerScore(ctx context.Context, in *QueryLatestReputerScoreRequest, opts ...grpc.CallOption) (*QueryLatestReputerScoreResponse, error)
 	GetInferenceScoresUntilBlock(ctx context.Context, in *QueryInferenceScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryInferenceScoresUntilBlockResponse, error)
+	GetWorkerInferenceScoresAtBlock(ctx context.Context, in *QueryWorkerInferenceScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerInferenceScoresAtBlockResponse, error)
 }
 
 type queryClient struct {
@@ -696,6 +698,15 @@ func (c *queryClient) GetInferenceScoresUntilBlock(ctx context.Context, in *Quer
 	return out, nil
 }
 
+func (c *queryClient) GetWorkerInferenceScoresAtBlock(ctx context.Context, in *QueryWorkerInferenceScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerInferenceScoresAtBlockResponse, error) {
+	out := new(QueryWorkerInferenceScoresAtBlockResponse)
+	err := c.cc.Invoke(ctx, Query_GetWorkerInferenceScoresAtBlock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -761,6 +772,7 @@ type QueryServer interface {
 	GetLatestForecasterScore(context.Context, *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error)
 	GetLatestReputerScore(context.Context, *QueryLatestReputerScoreRequest) (*QueryLatestReputerScoreResponse, error)
 	GetInferenceScoresUntilBlock(context.Context, *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error)
+	GetWorkerInferenceScoresAtBlock(context.Context, *QueryWorkerInferenceScoresAtBlockRequest) (*QueryWorkerInferenceScoresAtBlockResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -947,6 +959,9 @@ func (UnimplementedQueryServer) GetLatestReputerScore(context.Context, *QueryLat
 }
 func (UnimplementedQueryServer) GetInferenceScoresUntilBlock(context.Context, *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInferenceScoresUntilBlock not implemented")
+}
+func (UnimplementedQueryServer) GetWorkerInferenceScoresAtBlock(context.Context, *QueryWorkerInferenceScoresAtBlockRequest) (*QueryWorkerInferenceScoresAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerInferenceScoresAtBlock not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -2041,6 +2056,24 @@ func _Query_GetInferenceScoresUntilBlock_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetWorkerInferenceScoresAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryWorkerInferenceScoresAtBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetWorkerInferenceScoresAtBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetWorkerInferenceScoresAtBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetWorkerInferenceScoresAtBlock(ctx, req.(*QueryWorkerInferenceScoresAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2287,6 +2320,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInferenceScoresUntilBlock",
 			Handler:    _Query_GetInferenceScoresUntilBlock_Handler,
+		},
+		{
+			MethodName: "GetWorkerInferenceScoresAtBlock",
+			Handler:    _Query_GetWorkerInferenceScoresAtBlock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
