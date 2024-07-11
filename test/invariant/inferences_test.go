@@ -17,7 +17,7 @@ func doInferenceAndReputation(
 	m *testcommon.TestConfig,
 	leaderWorker Actor,
 	leaderReputer Actor,
-	amount *cosmossdk_io_math.Int,
+	_ *cosmossdk_io_math.Int,
 	topicId uint64,
 	data *SimulationData,
 	iteration int,

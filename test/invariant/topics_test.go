@@ -59,8 +59,10 @@ func createTopic(
 	if !wasErr {
 		data.counts.incrementCreateTopicCount()
 		iterSuccessLog(m.T, iteration, actor, " created topic ", createTopicResponse.TopicId)
+		return
 	} else {
 		iterFailLog(m.T, iteration, actor, " failed to create topic")
+		return
 	}
 }
 

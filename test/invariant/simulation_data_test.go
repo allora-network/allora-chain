@@ -389,10 +389,10 @@ func (s *SimulationData) getActorFromAddr(addr string) (Actor, bool) {
 // randomly flip the fail on err case to decide whether to be aggresive and fuzzy or
 // behaved state transitions
 func (s *SimulationData) randomlyFlipFailOnErr(m *testcommon.TestConfig, iteration int) {
-	if iteration < 20 { // first 20 iterations 90% likely to be behaved
+	if iteration < 20 { // first 20 iterations be behaved
 		s.failOnErr = true
-	} else { // after the start you're, 20% likely to change from what you were previously
-		if m.Client.Rand.Intn(10) > 8 { // 20% of the time
+	} else { // after the start, be 20% likely to change from what you were previously
+		if m.Client.Rand.Intn(10) >= 8 {
 			s.failOnErr = !s.failOnErr
 		}
 	}

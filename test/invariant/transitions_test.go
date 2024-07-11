@@ -64,6 +64,23 @@ func allTransitions() ([]StateTransition, []StateTransition) {
 		}
 }
 
+// weight transitions that add registrations or stake, more heavily than those that take it away
+// 70% of the time do additive stuff
+// 30% of the time do subtractive stuff
+func pickTransitionWithWeight(m *testcommon.TestConfig) StateTransition {
+	transitionsAdditive, transitionsSubtractive := allTransitions()
+	coinFlip := m.Client.Rand.Intn(10)
+	if coinFlip < 7 {
+		randIndex := m.Client.Rand.Intn(len(transitionsAdditive))
+		stateTransition := transitionsAdditive[randIndex]
+		return stateTransition
+	} else {
+		randIndex := m.Client.Rand.Intn(len(transitionsSubtractive))
+		stateTransition := transitionsSubtractive[randIndex]
+		return stateTransition
+	}
+}
+
 // state machine dependencies for valid transitions
 //
 // fundTopic: CreateTopic

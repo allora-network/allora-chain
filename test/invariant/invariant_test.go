@@ -156,32 +156,104 @@ func simulate(
 func simulateManual(
 	m *testcommon.TestConfig,
 	faucet Actor,
-	simulationData *SimulationData,
+	data *SimulationData,
 ) {
 	iterLog(m.T, 0, "manual simulation mode")
-	reputer := pickRandomActor(m, simulationData)
-	delegator := pickRandomActorExcept(m, simulationData, []Actor{reputer})
-	worker := pickRandomActorExcept(m, simulationData, []Actor{reputer, delegator})
+	reputer := pickRandomActor(m, data)
+	delegator := pickRandomActorExcept(m, data, []Actor{reputer})
+	worker := pickRandomActorExcept(m, data, []Actor{reputer, delegator})
 	amount := cosmossdk_io_math.NewInt(1e10)
 
 	// create topic
-	createTopic(m, faucet, Actor{}, nil, 0, simulationData, 0)
+	createTopic(m, faucet, Actor{}, nil, 0, data, 0)
 	// register reputer
-	registerReputer(m, reputer, Actor{}, nil, 1, simulationData, 1)
+	registerReputer(m, reputer, Actor{}, nil, 1, data, 1)
 	// delegate from delegator on reputer
-	delegateStake(m, delegator, reputer, &amount, 1, simulationData, 2)
+	delegateStake(m, delegator, reputer, &amount, 1, data, 2)
 	// fund the topic from delegator
-	fundTopic(m, delegator, Actor{}, &amount, 1, simulationData, 5)
+	fundTopic(m, delegator, Actor{}, &amount, 1, data, 5)
 	// register worker
-	registerWorker(m, worker, Actor{}, nil, 1, simulationData, 6)
+	registerWorker(m, worker, Actor{}, nil, 1, data, 6)
 	// now nobody has stake, is the topic active?
 	// make sure an ABCI endblock has passed
 	ctx := context.Background()
 	m.Client.WaitForNextBlock(ctx)
-	isActive := len(findActiveTopics(m, simulationData)) > 0
+	isActive := len(findActiveTopics(m, data)) > 0
 	m.T.Log("Is topic active?", isActive)
-	doInferenceAndReputation(m, worker, reputer, &amount, 1, simulationData, 7)
+	doInferenceAndReputation(m, worker, reputer, nil, 1, data, 7)
 	m.T.Log("Done.")
+}
+
+// for initial state for the automatic test
+// 4 workers, 4 reputers, and 2 delegators
+// reputers and delegators not the same actors
+func pickAutoSetupActors(m *testcommon.TestConfig, data *SimulationData) (reputers []Actor, workers []Actor, delegators []Actor) {
+	reputers = make([]Actor, 0)
+	workers = make([]Actor, 0)
+	delegators = make([]Actor, 0)
+
+	reputers = append(reputers, pickRandomActor(m, data))
+	reputers = append(reputers, pickRandomActorExcept(m, data, reputers))
+	reputers = append(reputers, pickRandomActorExcept(m, data, reputers))
+	reputers = append(reputers, pickRandomActorExcept(m, data, reputers))
+
+	workers = append(workers, pickRandomActor(m, data))
+	workers = append(workers, pickRandomActorExcept(m, data, workers))
+	workers = append(workers, pickRandomActorExcept(m, data, workers))
+	workers = append(workers, pickRandomActorExcept(m, data, workers))
+	workers = append(workers, pickRandomActorExcept(m, data, workers))
+
+	delegators = append(delegators, pickRandomActorExcept(m, data, reputers))
+	delegators = append(delegators, pickRandomActorExcept(m, data, append(reputers, delegators[0])))
+
+	return reputers, workers, delegators
+}
+
+// golang does not have a ternary expression
+// pick the topic id based on whether i is even or odd
+func pickAutoSetupTopicId(i int) uint64 {
+	var topicId uint64
+	if i%2 == 0 {
+		topicId = 1
+	} else {
+		topicId = 2
+	}
+	return topicId
+}
+
+// always start the test with 2 topics created
+// 4 workers, 4 reputers, and 2 delegators
+// all with some stake, then fund the two topics
+// and run inferences on both.
+func simulateAutomaticInitialState(m *testcommon.TestConfig, faucet Actor, data *SimulationData) {
+	createTopic(m, faucet, Actor{}, nil, 0, data, 0)
+	createTopic(m, faucet, Actor{}, nil, 0, data, 1)
+	startReputers, startWorkers, startDelegators := pickAutoSetupActors(m, data)
+	for i, reputer := range startReputers {
+		topicId := pickAutoSetupTopicId(i)
+		registerReputer(m, reputer, Actor{}, nil, topicId, data, i*2+2)
+		bal, err := pickRandomBalanceLessThanHalf(m, reputer)
+		requireNoError(m.T, true, err)
+		stakeAsReputer(m, reputer, Actor{}, &bal, topicId, data, (i*2+1)+2)
+	}
+	for i, worker := range startWorkers {
+		topicId := pickAutoSetupTopicId(i)
+		registerWorker(m, worker, Actor{}, nil, topicId, data, 10+i)
+	}
+	for i, delegator := range startDelegators {
+		topicId := pickAutoSetupTopicId(i)
+		bal, err := pickRandomBalanceLessThanHalf(m, delegator)
+		requireNoError(m.T, true, err)
+		delegateStake(m, delegator, startReputers[i], &bal, topicId, data, 14+i)
+	}
+	fundAmount, err := pickRandomBalanceLessThanHalf(m, faucet)
+	requireNoError(m.T, true, err)
+	fundTopic(m, faucet, Actor{}, &fundAmount, 1, data, 16)
+	fundAmount, err = pickRandomBalanceLessThanHalf(m, faucet)
+	requireNoError(m.T, true, err)
+	fundTopic(m, faucet, Actor{}, &fundAmount, 2, data, 17)
+	doInferenceAndReputation(m, startWorkers[0], startReputers[0], nil, 1, data, 18)
+	doInferenceAndReputation(m, startWorkers[1], startReputers[1], nil, 2, data, 19)
 }
 
 // this is the body of the "normal" simulation mode
@@ -191,13 +263,13 @@ func simulateAutomatic(
 	data *SimulationData,
 	maxIterations int,
 ) {
-	// iteration 0, always create a topic to start
-	createTopic(m, faucet, Actor{}, nil, 0, data, 0)
+	// start with some initial state so we have something to work with in the test
+	simulateAutomaticInitialState(m, faucet, data)
 
 	// for every iteration
 	// pick a state transition, then run it. every 5 print a summary
 	// if the test mode is alternating, flip whether to behave nicely or not
-	for iteration := 1; maxIterations == 0 || iteration < maxIterations; iteration++ {
+	for iteration := 20; maxIterations == 0 || iteration < maxIterations+20; iteration++ {
 		if data.mode == Alternate {
 			data.randomlyFlipFailOnErr(m, iteration)
 		}
@@ -208,23 +280,6 @@ func simulateAutomatic(
 		}
 	}
 	m.T.Log("Final Summary:", data.counts)
-}
-
-// weight transitions that add registrations or stake, more heavily than those that take it away
-// 70% of the time do additive stuff
-// 30% of the time do subtractive stuff
-func pickTransitionWithWeight(m *testcommon.TestConfig) StateTransition {
-	transitionsAdditive, transitionsSubtractive := allTransitions()
-	coinFlip := m.Client.Rand.Intn(10)
-	if coinFlip < 7 {
-		randIndex := m.Client.Rand.Intn(len(transitionsAdditive))
-		stateTransition := transitionsAdditive[randIndex]
-		return stateTransition
-	} else {
-		randIndex := m.Client.Rand.Intn(len(transitionsSubtractive))
-		stateTransition := transitionsSubtractive[randIndex]
-		return stateTransition
-	}
 }
 
 // for every iteration
