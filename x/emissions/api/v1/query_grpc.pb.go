@@ -73,6 +73,7 @@ const (
 	Query_GetIdsOfActiveTopics_FullMethodName                  = "/emissions.v1.Query/GetIdsOfActiveTopics"
 	Query_GetTopicEpochLastEnded_FullMethodName                = "/emissions.v1.Query/GetTopicEpochLastEnded"
 	Query_GetTopicFeeRevenue_FullMethodName                    = "/emissions.v1.Query/GetTopicFeeRevenue"
+	Query_GetChurnableTopics_FullMethodName                    = "/emissions.v1.Query/GetChurnableTopics"
 )
 
 // QueryClient is the client API for Query service.
@@ -134,6 +135,7 @@ type QueryClient interface {
 	GetIdsOfActiveTopics(ctx context.Context, in *QueryIdsOfActiveTopicsRequest, opts ...grpc.CallOption) (*QueryIdsOfActiveTopicsResponse, error)
 	GetTopicEpochLastEnded(ctx context.Context, in *QueryTopicEpochLastEndedRequest, opts ...grpc.CallOption) (*QueryTopicEpochLastEndedResponse, error)
 	GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error)
+	GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error)
 }
 
 type queryClient struct {
@@ -630,6 +632,15 @@ func (c *queryClient) GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeR
 	return out, nil
 }
 
+func (c *queryClient) GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error) {
+	out := new(QueryChurnableTopicsResponse)
+	err := c.cc.Invoke(ctx, Query_GetChurnableTopics_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -689,6 +700,7 @@ type QueryServer interface {
 	GetIdsOfActiveTopics(context.Context, *QueryIdsOfActiveTopicsRequest) (*QueryIdsOfActiveTopicsResponse, error)
 	GetTopicEpochLastEnded(context.Context, *QueryTopicEpochLastEndedRequest) (*QueryTopicEpochLastEndedResponse, error)
 	GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error)
+	GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -857,6 +869,9 @@ func (UnimplementedQueryServer) GetTopicEpochLastEnded(context.Context, *QueryTo
 }
 func (UnimplementedQueryServer) GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicFeeRevenue not implemented")
+}
+func (UnimplementedQueryServer) GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChurnableTopics not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1843,6 +1858,24 @@ func _Query_GetTopicFeeRevenue_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetChurnableTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryChurnableTopicsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetChurnableTopics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetChurnableTopics_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetChurnableTopics(ctx, req.(*QueryChurnableTopicsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2065,6 +2098,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicFeeRevenue",
 			Handler:    _Query_GetTopicFeeRevenue_Handler,
+		},
+		{
+			MethodName: "GetChurnableTopics",
+			Handler:    _Query_GetChurnableTopics_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

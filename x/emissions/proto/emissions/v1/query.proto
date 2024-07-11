@@ -314,6 +314,11 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/topic_fee_revenue/{topic_id}";
   }
+
+  rpc GetChurnableTopics(QueryChurnableTopicsRequest) returns (QueryChurnableTopicsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/churnable_topics";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -856,4 +861,10 @@ message QueryTopicFeeRevenueResponse {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+message QueryChurnableTopicsRequest {}
+
+message QueryChurnableTopicsResponse {
+  repeated uint64 churnable_topic_ids = 1;
 }

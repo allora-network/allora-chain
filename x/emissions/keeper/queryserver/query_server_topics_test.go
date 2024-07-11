@@ -371,3 +371,34 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	s.Require().NoError(err, "Should not error when retrieving existing revenue")
 	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }
+
+func (s *KeeperTestSuite) TestGetChurnableTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(123)
+	topicId2 := uint64(456)
+
+	err := keeper.AddChurnableTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	err = keeper.AddChurnableTopic(ctx, topicId2)
+	s.Require().NoError(err)
+
+	// Ensure the first topic is retrieved
+	req := &types.QueryChurnableTopicsRequest{}
+	response, err := s.queryServer.GetChurnableTopics(ctx, req)
+	retrievedIds := response.ChurnableTopicIds
+	s.Require().NoError(err)
+	s.Require().Len(retrievedIds, 2, "Should retrieve all churn ready topics")
+
+	// Reset the churn ready topics
+	err = keeper.ResetChurnableTopics(ctx)
+	s.Require().NoError(err)
+
+	// Ensure no topics remain
+	req = &types.QueryChurnableTopicsRequest{}
+	response, err = s.queryServer.GetChurnableTopics(ctx, req)
+	remainingIds := response.ChurnableTopicIds
+	s.Require().NoError(err)
+	s.Require().Len(remainingIds, 0, "Should have no churn ready topics after reset")
+}
