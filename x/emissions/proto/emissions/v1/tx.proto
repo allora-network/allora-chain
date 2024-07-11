@@ -102,35 +102,33 @@ message OptionalParams {
     (amino.dont_omitempty) = true
   ];
   repeated uint64 gradient_descent_max_iters = 25;
-  repeated int64 max_retries_to_fulfil_nonces_worker = 26;
-  repeated int64 max_retries_to_fulfil_nonces_reputer = 27;
-  repeated string registration_fee = 28 [
+  repeated string registration_fee = 26 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-  repeated uint64 default_page_limit = 29;
-  repeated uint64 max_page_limit = 30;
-  repeated int64 min_epoch_length_record_limit = 31;
-  repeated uint64 blocks_per_month = 32;
-  repeated string p_reward_inference = 33
+  repeated uint64 default_page_limit = 27;
+  repeated uint64 max_page_limit = 28;
+  repeated int64 min_epoch_length_record_limit = 29;
+  repeated uint64 blocks_per_month = 30;
+  repeated string p_reward_inference = 31
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string p_reward_forecast = 34
+  repeated string p_reward_forecast = 32
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string p_reward_reputer = 35
+  repeated string p_reward_reputer = 33
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string c_reward_inference = 36
+  repeated string c_reward_inference = 34
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string c_reward_forecast = 37
+  repeated string c_reward_forecast = 35
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string c_norm = 38
+  repeated string c_norm = 36
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string topic_fee_revenue_decay_rate = 39
+  repeated string topic_fee_revenue_decay_rate = 37
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string epsilon_reputer = 40
+  repeated string epsilon_reputer = 38
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string min_effective_topic_revenue = 41
+  repeated string min_effective_topic_revenue = 39
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 

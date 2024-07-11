@@ -92,12 +92,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.CreateTopicFee) == 1 {
 		existingParams.CreateTopicFee = newParams.CreateTopicFee[0]
 	}
-	if len(newParams.MaxRetriesToFulfilNoncesWorker) == 1 {
-		existingParams.MaxRetriesToFulfilNoncesWorker = newParams.MaxRetriesToFulfilNoncesWorker[0]
-	}
-	if len(newParams.MaxRetriesToFulfilNoncesReputer) == 1 {
-		existingParams.MaxRetriesToFulfilNoncesReputer = newParams.MaxRetriesToFulfilNoncesReputer[0]
-	}
 	if len(newParams.RegistrationFee) == 1 {
 		existingParams.RegistrationFee = newParams.RegistrationFee[0]
 	}
