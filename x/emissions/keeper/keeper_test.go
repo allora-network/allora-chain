@@ -258,8 +258,7 @@ func (s *KeeperTestSuite) TestAddReputerNonce() {
 
 	// Set reputer nonce
 	newReputerNonce := &types.Nonce{BlockHeight: 42}
-	newWorkerNonce := &types.Nonce{BlockHeight: 43}
-	err = keeper.AddReputerNonce(ctx, topicId, newReputerNonce, newWorkerNonce)
+	err = keeper.AddReputerNonce(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 
 	unfulfilledNonces, err = keeper.GetUnfulfilledReputerNonces(ctx, topicId)
@@ -272,10 +271,6 @@ func (s *KeeperTestSuite) TestAddReputerNonce() {
 		newReputerNonce.BlockHeight,
 		unfulfilledNonces.Nonces[0].ReputerNonce.BlockHeight,
 		"Unfulfilled nonces should contain the new reputer nonce")
-	s.Require().Equal(
-		newWorkerNonce.BlockHeight,
-		unfulfilledNonces.Nonces[0].WorkerNonce.BlockHeight,
-		"Unfulfilled nonces should contain the new worker nonce")
 }
 
 func (s *KeeperTestSuite) TestNewlyAddedReputerNonceIsUnfulfilled() {
@@ -283,14 +278,13 @@ func (s *KeeperTestSuite) TestNewlyAddedReputerNonceIsUnfulfilled() {
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 	newReputerNonce := &types.Nonce{BlockHeight: 42}
-	newWorkerNonce := &types.Nonce{BlockHeight: 43}
 
 	isUnfulfilled, err := keeper.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 	s.Require().False(isUnfulfilled, "Non-existent nonce should not be listed as unfulfilled")
 
 	// Set reputer nonce
-	err = keeper.AddReputerNonce(ctx, topicId, newReputerNonce, newWorkerNonce)
+	err = keeper.AddReputerNonce(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 
 	isUnfulfilled, err = keeper.IsReputerNonceUnfulfilled(ctx, topicId, newReputerNonce)
@@ -303,10 +297,9 @@ func (s *KeeperTestSuite) TestCanFulfillNewReputerNonce() {
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 	newReputerNonce := &types.Nonce{BlockHeight: 42}
-	newWorkerNonce := &types.Nonce{BlockHeight: 43}
 
 	// Set reputer nonce
-	err := keeper.AddReputerNonce(ctx, topicId, newReputerNonce, newWorkerNonce)
+	err := keeper.AddReputerNonce(ctx, topicId, newReputerNonce)
 	s.Require().NoError(err)
 
 	// Check that the nonce is the correct nonce
@@ -338,7 +331,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 	// Set multiple reputer nonces
 	nonceValues := []int64{42, 43, 44, 45, 46}
 	for _, val := range nonceValues {
-		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val}, &types.Nonce{BlockHeight: val})
+		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add reputer nonce")
 	}
 
@@ -380,7 +373,7 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	// Initially add nonces to exceed the maxUnfulfilledRequests
 	nonceValues := []int64{10, 20, 30, 40, 50}
 	for _, val := range nonceValues {
-		err := keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val}, &types.Nonce{BlockHeight: val})
+		err := keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add reputer nonce")
 	}
 
@@ -2905,40 +2898,40 @@ func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
 			name:                 "All nonces pruned",
 			blockHeightThreshold: 10,
 			nonces: []*types.ReputerRequestNonce{
-				{ReputerNonce: &types.Nonce{BlockHeight: 5}, WorkerNonce: &types.Nonce{BlockHeight: 3}},
-				{ReputerNonce: &types.Nonce{BlockHeight: 7}, WorkerNonce: &types.Nonce{BlockHeight: 5}}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 7}}},
 			expectedNonces: []*types.ReputerRequestNonce{},
 		},
 		{
 			name:                 "Some nonces pruned",
 			blockHeightThreshold: 10,
 			nonces: []*types.ReputerRequestNonce{
-				{ReputerNonce: &types.Nonce{BlockHeight: 5}, WorkerNonce: &types.Nonce{BlockHeight: 3}},
-				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 13}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}},
 			},
 			expectedNonces: []*types.ReputerRequestNonce{
-				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}}},
 		},
 		{
 			name:                 "Nonces pruned on the edge",
 			blockHeightThreshold: 10,
 			nonces: []*types.ReputerRequestNonce{
-				{ReputerNonce: &types.Nonce{BlockHeight: 5}, WorkerNonce: &types.Nonce{BlockHeight: 3}},
-				{ReputerNonce: &types.Nonce{BlockHeight: 10}, WorkerNonce: &types.Nonce{BlockHeight: 8}},
-				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 10}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}}},
 			expectedNonces: []*types.ReputerRequestNonce{
-				{ReputerNonce: &types.Nonce{BlockHeight: 10}, WorkerNonce: &types.Nonce{BlockHeight: 8}},
-				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 10}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}}},
 		},
 		{
 			name:                 "No nonces pruned",
 			blockHeightThreshold: 10,
 			nonces: []*types.ReputerRequestNonce{
-				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 8}},
-				{ReputerNonce: &types.Nonce{BlockHeight: 20}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 20}}},
 			expectedNonces: []*types.ReputerRequestNonce{
-				{ReputerNonce: &types.Nonce{BlockHeight: 15}, WorkerNonce: &types.Nonce{BlockHeight: 8}},
-				{ReputerNonce: &types.Nonce{BlockHeight: 20}, WorkerNonce: &types.Nonce{BlockHeight: 13}}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 15}},
+				{ReputerNonce: &types.Nonce{BlockHeight: 20}}},
 		},
 	}
 	keeper := s.emissionsKeeper
@@ -2948,7 +2941,7 @@ func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
 			keeper.DeleteUnfulfilledReputerNonces(s.ctx, topicId1)
 			// Set multiple reputer nonces
 			for _, val := range tt.nonces {
-				err := keeper.AddReputerNonce(s.ctx, topicId1, val.ReputerNonce, val.WorkerNonce)
+				err := keeper.AddReputerNonce(s.ctx, topicId1, val.ReputerNonce)
 				s.Require().NoError(err, "Failed to add reputer nonce, topicId1")
 			}
 
@@ -3057,9 +3050,9 @@ func (s *KeeperTestSuite) TestDeleteUnfulfilledreputerNonces() {
 	topicId := uint64(1)
 	keeper := s.emissionsKeeper
 	// Setup initial nonces
-	err := keeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 50}, &types.Nonce{BlockHeight: 40})
+	err := keeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 50})
 	s.Require().NoError(err)
-	err = keeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 60}, &types.Nonce{BlockHeight: 50})
+	err = keeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{BlockHeight: 60})
 	s.Require().NoError(err)
 
 	// Call DeleteUnfulfilledWorkerNonces

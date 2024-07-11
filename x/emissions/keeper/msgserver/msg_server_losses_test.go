@@ -53,7 +53,7 @@ func (s *MsgServerTestSuite) getBasicReputerPayload(
 
 	keeper.AddWorkerNonce(ctx, topicId, &workerNonce)
 	keeper.FulfillWorkerNonce(ctx, topicId, &workerNonce)
-	keeper.AddReputerNonce(ctx, topicId, &reputerNonce, &workerNonce)
+	keeper.AddReputerNonce(ctx, topicId, &reputerNonce)
 
 	// add in inference and forecast data
 	expectedInferences = types.Inferences{
@@ -106,7 +106,6 @@ func (s *MsgServerTestSuite) getBasicReputerPayload(
 		},
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &reputerNonce,
-			WorkerNonce:  &workerNonce,
 		},
 	}
 
@@ -132,7 +131,6 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	reputerValueBundle *types.ValueBundle,
 	topicId uint64,
 	reputerNonce *types.Nonce,
-	workerNonce *types.Nonce,
 ) error {
 	ctx, msgServer := s.ctx, s.msgServer
 	valueBundleSignature := s.signValueBundle(reputerValueBundle, reputerPrivateKey)
@@ -143,7 +141,6 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
@@ -172,7 +169,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayload() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, _ := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: int64(block)}, expectedForecasts)
 	require.NoError(err)
@@ -180,7 +177,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayload() {
 	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
 	require.NoError(err)
 
-	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle, topicId, &reputerNonce, &workerNonce)
+	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle, topicId, &reputerNonce)
 	require.NoError(err)
 }
 
@@ -198,7 +195,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMismatchedTopicIdsIs
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, _ := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	// BEGIN MODIFICATION
 	reputerValueBundle.TopicId = topicId + 1
@@ -217,7 +214,6 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMismatchedTopicIdsIs
 		&reputerValueBundle,
 		topicId,
 		&reputerNonce,
-		&workerNonce,
 	)
 
 	require.ErrorIs(err, types.ErrNoValidBundles)
@@ -237,7 +233,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMismatchedReputerNon
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, _ := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	// BEGIN MODIFICATION
 	reputerValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight = 123
@@ -256,7 +252,6 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMismatchedReputerNon
 		&reputerValueBundle,
 		topicId,
 		&reputerNonce,
-		&workerNonce,
 	)
 
 	require.ErrorIs(err, types.ErrNoValidBundles)
@@ -276,7 +271,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithUnregisteredReputerI
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, _ := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	// BEGIN MODIFICATION
 	unregisterMsg := &types.MsgRemoveRegistration{
@@ -302,7 +297,6 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithUnregisteredReputerI
 		&reputerValueBundle,
 		topicId,
 		&reputerNonce,
-		&workerNonce,
 	)
 
 	require.ErrorIs(err, types.ErrNoValidBundles)
@@ -323,7 +317,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithUnderstakeReputerIsI
 	// BEGIN MODIFICATION
 	block := ctx.BlockHeight()
 
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, _ := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	reputerStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputerAddr.String())
 	require.NoError(err)
@@ -362,7 +356,6 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithUnderstakeReputerIsI
 		&reputerValueBundle,
 		topicId,
 		&reputerNonce,
-		&workerNonce,
 	)
 
 	require.ErrorIs(err, types.ErrNoValidBundles)
@@ -382,7 +375,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMissingInferencesIsI
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	reputerValueBundle, _, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
+	reputerValueBundle, _, expectedForecasts, topicId, reputerNonce, _ := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
 	require.NoError(err)
@@ -399,7 +392,6 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithMissingInferencesIsI
 		&reputerValueBundle,
 		topicId,
 		&reputerNonce,
-		&workerNonce,
 	)
 
 	require.ErrorIs(err, types.ErrNoValidBundles)
@@ -419,7 +411,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithIncorrectBaseWorkerN
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, _ := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 
 	// BEGIN MODIFICATION
 	reputerNonce.BlockHeight = block + 1
@@ -438,7 +430,6 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithIncorrectBaseWorkerN
 		&reputerValueBundle,
 		topicId,
 		&reputerNonce,
-		&workerNonce,
 	)
 
 	require.ErrorIs(err, types.ErrNonceAlreadyFulfilled)
@@ -483,7 +474,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 
 	keeper.AddWorkerNonce(ctx, topicId, workerNonce)
 	keeper.FulfillWorkerNonce(ctx, topicId, workerNonce)
-	keeper.AddReputerNonce(ctx, topicId, reputerNonce, workerNonce)
+	keeper.AddReputerNonce(ctx, topicId, reputerNonce)
 
 	// add in inference and forecast data
 	block := types.BlockHeight(1)
@@ -545,7 +536,6 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 		},
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 	}
 
@@ -562,7 +552,6 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{
@@ -623,7 +612,7 @@ func (s *MsgServerTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 	s.Require().NoError(err)
 
 	reputerNonce := &types.Nonce{
-		BlockHeight: 2,
+		BlockHeight: 1,
 	}
 	workerNonce := &types.Nonce{
 		BlockHeight: 1,
@@ -631,7 +620,7 @@ func (s *MsgServerTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 
 	keeper.AddWorkerNonce(ctx, topicId, workerNonce)
 	keeper.FulfillWorkerNonce(ctx, topicId, workerNonce)
-	keeper.AddReputerNonce(ctx, topicId, reputerNonce, workerNonce)
+	keeper.AddReputerNonce(ctx, topicId, reputerNonce)
 
 	// add in inference and forecast data
 	block := types.BlockHeight(1)
@@ -698,7 +687,6 @@ func (s *MsgServerTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 		},
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 	}
 
@@ -727,7 +715,6 @@ func (s *MsgServerTestSuite) TestMsgInsertHugeBulkReputerPayloadFails() {
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 		ReputerValueBundles: reputerValueBundles,
 	}
@@ -747,7 +734,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadUpdateTopicCommit() 
 	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, _ := s.getBasicReputerPayload(reputerAddr, workerAddr, block)
 	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: int64(block)}, expectedForecasts)
 	require.NoError(err)
 	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
@@ -761,7 +748,6 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadUpdateTopicCommit() 
 		&reputerValueBundle,
 		topicId,
 		&reputerNonce,
-		&workerNonce,
 	)
 	require.NoError(err, "InsertReputerPayload should not return an error")
 

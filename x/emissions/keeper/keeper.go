@@ -385,16 +385,13 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
-func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce, associatedWorkerNonce *types.Nonce) error {
+func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
 	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
 		return err
 	}
 	if nonce == nil {
 		return errors.New("nil reputer's nonce provided")
-	}
-	if associatedWorkerNonce == nil {
-		return errors.New("nil reputer's worker nonce provided")
 	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
@@ -407,7 +404,6 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 	}
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: nonce,
-		WorkerNonce:  associatedWorkerNonce,
 	}
 	nonces.Nonces = append([]*types.ReputerRequestNonce{reputerRequestNonce}, nonces.Nonces...)
 

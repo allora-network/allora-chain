@@ -564,9 +564,6 @@ func GenerateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64,
 				ReputerNonce: &types.Nonce{
 					BlockHeight: blockHeight,
 				},
-				WorkerNonce: &types.Nonce{
-					BlockHeight: blockHeight,
-				},
 			},
 			Reputer:                reputer.String(),
 			CombinedValue:          reputersLosses[i],
@@ -618,9 +615,6 @@ func GenerateHugeLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uin
 			TopicId: topicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
 				ReputerNonce: &types.Nonce{
-					BlockHeight: blockHeight,
-				},
-				WorkerNonce: &types.Nonce{
 					BlockHeight: blockHeight,
 				},
 			},
@@ -1155,9 +1149,6 @@ func GenerateSimpleLossBundles(
 			TopicId: topicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
 				ReputerNonce: &types.Nonce{
-					BlockHeight: blockHeight,
-				},
-				WorkerNonce: &types.Nonce{
 					BlockHeight: blockHeight,
 				},
 			},
