@@ -2715,6 +2715,21 @@ func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
 	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
 
+func (s *KeeperTestSuite) TestSetGetPreviousPercentageRewardToStakedReputers() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	previousPercentageReward := alloraMath.NewDecFromInt64(50)
+
+	// Set the previous percentage reward to staked reputers
+	err := keeper.SetPreviousPercentageRewardToStakedReputers(ctx, previousPercentageReward)
+	s.Require().NoError(err, "Setting previous percentage reward to staked reputers should not fail")
+
+	// Get the previous percentage reward to staked reputers
+	fetchedPercentageReward, err := keeper.GetPreviousPercentageRewardToStakedReputers(ctx)
+	s.Require().NoError(err, "Fetching previous percentage reward to staked reputers should not fail")
+	s.Require().Equal(previousPercentageReward, fetchedPercentageReward, "The fetched percentage reward should match the set value")
+}
+
 /// WHITELISTS
 
 func (s *KeeperTestSuite) TestWhitelistAdminOperations() {

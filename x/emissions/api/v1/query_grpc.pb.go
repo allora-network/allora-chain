@@ -19,74 +19,76 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName                                = "/emissions.v1.Query/Params"
-	Query_GetNextTopicId_FullMethodName                        = "/emissions.v1.Query/GetNextTopicId"
-	Query_GetTopic_FullMethodName                              = "/emissions.v1.Query/GetTopic"
-	Query_GetActiveTopics_FullMethodName                       = "/emissions.v1.Query/GetActiveTopics"
-	Query_GetWorkerLatestInferenceByTopicId_FullMethodName     = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
-	Query_GetInferencesAtBlock_FullMethodName                  = "/emissions.v1.Query/GetInferencesAtBlock"
-	Query_GetLatestTopicInferences_FullMethodName              = "/emissions.v1.Query/GetLatestTopicInferences"
-	Query_GetForecastsAtBlock_FullMethodName                   = "/emissions.v1.Query/GetForecastsAtBlock"
-	Query_GetNetworkLossBundleAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkLossBundleAtBlock"
-	Query_GetTotalStake_FullMethodName                         = "/emissions.v1.Query/GetTotalStake"
-	Query_GetReputerStakeInTopic_FullMethodName                = "/emissions.v1.Query/GetReputerStakeInTopic"
-	Query_GetMultiReputerStakeInTopic_FullMethodName           = "/emissions.v1.Query/GetMultiReputerStakeInTopic"
-	Query_GetStakeFromReputerInTopicInSelf_FullMethodName      = "/emissions.v1.Query/GetStakeFromReputerInTopicInSelf"
-	Query_GetDelegateStakeInTopicInReputer_FullMethodName      = "/emissions.v1.Query/GetDelegateStakeInTopicInReputer"
-	Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName = "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer"
-	Query_GetStakeFromDelegatorInTopic_FullMethodName          = "/emissions.v1.Query/GetStakeFromDelegatorInTopic"
-	Query_GetTopicStake_FullMethodName                         = "/emissions.v1.Query/GetTopicStake"
-	Query_GetStakeRemovalsForBlock_FullMethodName              = "/emissions.v1.Query/GetStakeRemovalsForBlock"
-	Query_GetDelegateStakeRemovalsForBlock_FullMethodName      = "/emissions.v1.Query/GetDelegateStakeRemovalsForBlock"
-	Query_GetStakeRemovalInfo_FullMethodName                   = "/emissions.v1.Query/GetStakeRemovalInfo"
-	Query_GetDelegateStakeRemovalInfo_FullMethodName           = "/emissions.v1.Query/GetDelegateStakeRemovalInfo"
-	Query_GetWorkerNodeInfo_FullMethodName                     = "/emissions.v1.Query/GetWorkerNodeInfo"
-	Query_GetReputerNodeInfo_FullMethodName                    = "/emissions.v1.Query/GetReputerNodeInfo"
-	Query_GetWorkerAddressByP2PKey_FullMethodName              = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
-	Query_GetReputerAddressByP2PKey_FullMethodName             = "/emissions.v1.Query/GetReputerAddressByP2PKey"
-	Query_IsWorkerRegisteredInTopicId_FullMethodName           = "/emissions.v1.Query/IsWorkerRegisteredInTopicId"
-	Query_IsReputerRegisteredInTopicId_FullMethodName          = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
-	Query_GetNetworkInferencesAtBlock_FullMethodName           = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
-	Query_GetLatestNetworkInference_FullMethodName             = "/emissions.v1.Query/GetLatestNetworkInference"
-	Query_GetIsWorkerNonceUnfulfilled_FullMethodName           = "/emissions.v1.Query/GetIsWorkerNonceUnfulfilled"
-	Query_GetIsReputerNonceUnfulfilled_FullMethodName          = "/emissions.v1.Query/GetIsReputerNonceUnfulfilled"
-	Query_GetUnfulfilledWorkerNonces_FullMethodName            = "/emissions.v1.Query/GetUnfulfilledWorkerNonces"
-	Query_GetUnfulfilledReputerNonces_FullMethodName           = "/emissions.v1.Query/GetUnfulfilledReputerNonces"
-	Query_GetInfererNetworkRegret_FullMethodName               = "/emissions.v1.Query/GetInfererNetworkRegret"
-	Query_GetForecasterNetworkRegret_FullMethodName            = "/emissions.v1.Query/GetForecasterNetworkRegret"
-	Query_GetOneInForecasterNetworkRegret_FullMethodName       = "/emissions.v1.Query/GetOneInForecasterNetworkRegret"
-	Query_GetOneInForecasterSelfNetworkRegret_FullMethodName   = "/emissions.v1.Query/GetOneInForecasterSelfNetworkRegret"
-	Query_IsWhitelistAdmin_FullMethodName                      = "/emissions.v1.Query/IsWhitelistAdmin"
-	Query_GetTopicLastWorkerCommitInfo_FullMethodName          = "/emissions.v1.Query/GetTopicLastWorkerCommitInfo"
-	Query_GetTopicLastReputerCommitInfo_FullMethodName         = "/emissions.v1.Query/GetTopicLastReputerCommitInfo"
-	Query_GetTopicRewardNonce_FullMethodName                   = "/emissions.v1.Query/GetTopicRewardNonce"
-	Query_GetReputerLossBundlesAtBlock_FullMethodName          = "/emissions.v1.Query/GetReputerLossBundlesAtBlock"
-	Query_GetStakeReputerAuthority_FullMethodName              = "/emissions.v1.Query/GetStakeReputerAuthority"
-	Query_GetDelegateStakePlacement_FullMethodName             = "/emissions.v1.Query/GetDelegateStakePlacement"
-	Query_GetDelegateStakeUponReputer_FullMethodName           = "/emissions.v1.Query/GetDelegateStakeUponReputer"
-	Query_GetDelegateRewardPerShare_FullMethodName             = "/emissions.v1.Query/GetDelegateRewardPerShare"
-	Query_GetStakeRemovalForReputerAndTopicId_FullMethodName   = "/emissions.v1.Query/GetStakeRemovalForReputerAndTopicId"
-	Query_GetDelegateStakeRemoval_FullMethodName               = "/emissions.v1.Query/GetDelegateStakeRemoval"
-	Query_GetPreviousTopicWeight_FullMethodName                = "/emissions.v1.Query/GetPreviousTopicWeight"
-	Query_TopicExists_FullMethodName                           = "/emissions.v1.Query/TopicExists"
-	Query_IsTopicActive_FullMethodName                         = "/emissions.v1.Query/IsTopicActive"
-	Query_GetIdsOfActiveTopics_FullMethodName                  = "/emissions.v1.Query/GetIdsOfActiveTopics"
-	Query_GetTopicEpochLastEnded_FullMethodName                = "/emissions.v1.Query/GetTopicEpochLastEnded"
-	Query_GetTopicFeeRevenue_FullMethodName                    = "/emissions.v1.Query/GetTopicFeeRevenue"
-	Query_GetChurnableTopics_FullMethodName                    = "/emissions.v1.Query/GetChurnableTopics"
-	Query_GetRewardableTopics_FullMethodName                   = "/emissions.v1.Query/GetRewardableTopics"
-	Query_GetLatestInfererScore_FullMethodName                 = "/emissions.v1.Query/GetLatestInfererScore"
-	Query_GetLatestForecasterScore_FullMethodName              = "/emissions.v1.Query/GetLatestForecasterScore"
-	Query_GetLatestReputerScore_FullMethodName                 = "/emissions.v1.Query/GetLatestReputerScore"
-	Query_GetInferenceScoresUntilBlock_FullMethodName          = "/emissions.v1.Query/GetInferenceScoresUntilBlock"
-	Query_GetWorkerInferenceScoresAtBlock_FullMethodName       = "/emissions.v1.Query/GetWorkerInferenceScoresAtBlock"
-	Query_GetForecastScoresUntilBlock_FullMethodName           = "/emissions.v1.Query/GetForecastScoresUntilBlock"
-	Query_GetWorkerForecastScoresAtBlock_FullMethodName        = "/emissions.v1.Query/GetWorkerForecastScoresAtBlock"
-	Query_GetReputersScoresAtBlock_FullMethodName              = "/emissions.v1.Query/GetReputersScoresAtBlock"
-	Query_GetListeningCoefficient_FullMethodName               = "/emissions.v1.Query/GetListeningCoefficient"
-	Query_GetPreviousReputerRewardFraction_FullMethodName      = "/emissions.v1.Query/GetPreviousReputerRewardFraction"
-	Query_GetPreviousInferenceRewardFraction_FullMethodName    = "/emissions.v1.Query/GetPreviousInferenceRewardFraction"
-	Query_GetPreviousForecastRewardFraction_FullMethodName     = "/emissions.v1.Query/GetPreviousForecastRewardFraction"
+	Query_Params_FullMethodName                                      = "/emissions.v1.Query/Params"
+	Query_GetNextTopicId_FullMethodName                              = "/emissions.v1.Query/GetNextTopicId"
+	Query_GetTopic_FullMethodName                                    = "/emissions.v1.Query/GetTopic"
+	Query_GetActiveTopics_FullMethodName                             = "/emissions.v1.Query/GetActiveTopics"
+	Query_GetWorkerLatestInferenceByTopicId_FullMethodName           = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
+	Query_GetInferencesAtBlock_FullMethodName                        = "/emissions.v1.Query/GetInferencesAtBlock"
+	Query_GetLatestTopicInferences_FullMethodName                    = "/emissions.v1.Query/GetLatestTopicInferences"
+	Query_GetForecastsAtBlock_FullMethodName                         = "/emissions.v1.Query/GetForecastsAtBlock"
+	Query_GetNetworkLossBundleAtBlock_FullMethodName                 = "/emissions.v1.Query/GetNetworkLossBundleAtBlock"
+	Query_GetTotalStake_FullMethodName                               = "/emissions.v1.Query/GetTotalStake"
+	Query_GetReputerStakeInTopic_FullMethodName                      = "/emissions.v1.Query/GetReputerStakeInTopic"
+	Query_GetMultiReputerStakeInTopic_FullMethodName                 = "/emissions.v1.Query/GetMultiReputerStakeInTopic"
+	Query_GetStakeFromReputerInTopicInSelf_FullMethodName            = "/emissions.v1.Query/GetStakeFromReputerInTopicInSelf"
+	Query_GetDelegateStakeInTopicInReputer_FullMethodName            = "/emissions.v1.Query/GetDelegateStakeInTopicInReputer"
+	Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName       = "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer"
+	Query_GetStakeFromDelegatorInTopic_FullMethodName                = "/emissions.v1.Query/GetStakeFromDelegatorInTopic"
+	Query_GetTopicStake_FullMethodName                               = "/emissions.v1.Query/GetTopicStake"
+	Query_GetStakeRemovalsForBlock_FullMethodName                    = "/emissions.v1.Query/GetStakeRemovalsForBlock"
+	Query_GetDelegateStakeRemovalsForBlock_FullMethodName            = "/emissions.v1.Query/GetDelegateStakeRemovalsForBlock"
+	Query_GetStakeRemovalInfo_FullMethodName                         = "/emissions.v1.Query/GetStakeRemovalInfo"
+	Query_GetDelegateStakeRemovalInfo_FullMethodName                 = "/emissions.v1.Query/GetDelegateStakeRemovalInfo"
+	Query_GetWorkerNodeInfo_FullMethodName                           = "/emissions.v1.Query/GetWorkerNodeInfo"
+	Query_GetReputerNodeInfo_FullMethodName                          = "/emissions.v1.Query/GetReputerNodeInfo"
+	Query_GetWorkerAddressByP2PKey_FullMethodName                    = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
+	Query_GetReputerAddressByP2PKey_FullMethodName                   = "/emissions.v1.Query/GetReputerAddressByP2PKey"
+	Query_IsWorkerRegisteredInTopicId_FullMethodName                 = "/emissions.v1.Query/IsWorkerRegisteredInTopicId"
+	Query_IsReputerRegisteredInTopicId_FullMethodName                = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
+	Query_GetNetworkInferencesAtBlock_FullMethodName                 = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
+	Query_GetLatestNetworkInference_FullMethodName                   = "/emissions.v1.Query/GetLatestNetworkInference"
+	Query_GetIsWorkerNonceUnfulfilled_FullMethodName                 = "/emissions.v1.Query/GetIsWorkerNonceUnfulfilled"
+	Query_GetIsReputerNonceUnfulfilled_FullMethodName                = "/emissions.v1.Query/GetIsReputerNonceUnfulfilled"
+	Query_GetUnfulfilledWorkerNonces_FullMethodName                  = "/emissions.v1.Query/GetUnfulfilledWorkerNonces"
+	Query_GetUnfulfilledReputerNonces_FullMethodName                 = "/emissions.v1.Query/GetUnfulfilledReputerNonces"
+	Query_GetInfererNetworkRegret_FullMethodName                     = "/emissions.v1.Query/GetInfererNetworkRegret"
+	Query_GetForecasterNetworkRegret_FullMethodName                  = "/emissions.v1.Query/GetForecasterNetworkRegret"
+	Query_GetOneInForecasterNetworkRegret_FullMethodName             = "/emissions.v1.Query/GetOneInForecasterNetworkRegret"
+	Query_GetOneInForecasterSelfNetworkRegret_FullMethodName         = "/emissions.v1.Query/GetOneInForecasterSelfNetworkRegret"
+	Query_IsWhitelistAdmin_FullMethodName                            = "/emissions.v1.Query/IsWhitelistAdmin"
+	Query_GetTopicLastWorkerCommitInfo_FullMethodName                = "/emissions.v1.Query/GetTopicLastWorkerCommitInfo"
+	Query_GetTopicLastReputerCommitInfo_FullMethodName               = "/emissions.v1.Query/GetTopicLastReputerCommitInfo"
+	Query_GetTopicRewardNonce_FullMethodName                         = "/emissions.v1.Query/GetTopicRewardNonce"
+	Query_GetReputerLossBundlesAtBlock_FullMethodName                = "/emissions.v1.Query/GetReputerLossBundlesAtBlock"
+	Query_GetStakeReputerAuthority_FullMethodName                    = "/emissions.v1.Query/GetStakeReputerAuthority"
+	Query_GetDelegateStakePlacement_FullMethodName                   = "/emissions.v1.Query/GetDelegateStakePlacement"
+	Query_GetDelegateStakeUponReputer_FullMethodName                 = "/emissions.v1.Query/GetDelegateStakeUponReputer"
+	Query_GetDelegateRewardPerShare_FullMethodName                   = "/emissions.v1.Query/GetDelegateRewardPerShare"
+	Query_GetStakeRemovalForReputerAndTopicId_FullMethodName         = "/emissions.v1.Query/GetStakeRemovalForReputerAndTopicId"
+	Query_GetDelegateStakeRemoval_FullMethodName                     = "/emissions.v1.Query/GetDelegateStakeRemoval"
+	Query_GetPreviousTopicWeight_FullMethodName                      = "/emissions.v1.Query/GetPreviousTopicWeight"
+	Query_TopicExists_FullMethodName                                 = "/emissions.v1.Query/TopicExists"
+	Query_IsTopicActive_FullMethodName                               = "/emissions.v1.Query/IsTopicActive"
+	Query_GetIdsOfActiveTopics_FullMethodName                        = "/emissions.v1.Query/GetIdsOfActiveTopics"
+	Query_GetTopicEpochLastEnded_FullMethodName                      = "/emissions.v1.Query/GetTopicEpochLastEnded"
+	Query_GetTopicFeeRevenue_FullMethodName                          = "/emissions.v1.Query/GetTopicFeeRevenue"
+	Query_GetChurnableTopics_FullMethodName                          = "/emissions.v1.Query/GetChurnableTopics"
+	Query_GetRewardableTopics_FullMethodName                         = "/emissions.v1.Query/GetRewardableTopics"
+	Query_GetLatestInfererScore_FullMethodName                       = "/emissions.v1.Query/GetLatestInfererScore"
+	Query_GetLatestForecasterScore_FullMethodName                    = "/emissions.v1.Query/GetLatestForecasterScore"
+	Query_GetLatestReputerScore_FullMethodName                       = "/emissions.v1.Query/GetLatestReputerScore"
+	Query_GetInferenceScoresUntilBlock_FullMethodName                = "/emissions.v1.Query/GetInferenceScoresUntilBlock"
+	Query_GetWorkerInferenceScoresAtBlock_FullMethodName             = "/emissions.v1.Query/GetWorkerInferenceScoresAtBlock"
+	Query_GetForecastScoresUntilBlock_FullMethodName                 = "/emissions.v1.Query/GetForecastScoresUntilBlock"
+	Query_GetWorkerForecastScoresAtBlock_FullMethodName              = "/emissions.v1.Query/GetWorkerForecastScoresAtBlock"
+	Query_GetReputersScoresAtBlock_FullMethodName                    = "/emissions.v1.Query/GetReputersScoresAtBlock"
+	Query_GetListeningCoefficient_FullMethodName                     = "/emissions.v1.Query/GetListeningCoefficient"
+	Query_GetPreviousReputerRewardFraction_FullMethodName            = "/emissions.v1.Query/GetPreviousReputerRewardFraction"
+	Query_GetPreviousInferenceRewardFraction_FullMethodName          = "/emissions.v1.Query/GetPreviousInferenceRewardFraction"
+	Query_GetPreviousForecastRewardFraction_FullMethodName           = "/emissions.v1.Query/GetPreviousForecastRewardFraction"
+	Query_GetPreviousPercentageRewardToStakedReputers_FullMethodName = "/emissions.v1.Query/GetPreviousPercentageRewardToStakedReputers"
+	Query_GetTotalRewardToDistribute_FullMethodName                  = "/emissions.v1.Query/GetTotalRewardToDistribute"
 )
 
 // QueryClient is the client API for Query service.
@@ -162,6 +164,8 @@ type QueryClient interface {
 	GetPreviousReputerRewardFraction(ctx context.Context, in *QueryPreviousReputerRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousReputerRewardFractionResponse, error)
 	GetPreviousInferenceRewardFraction(ctx context.Context, in *QueryPreviousInferenceRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousInferenceRewardFractionResponse, error)
 	GetPreviousForecastRewardFraction(ctx context.Context, in *QueryPreviousForecastRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousForecastRewardFractionResponse, error)
+	GetPreviousPercentageRewardToStakedReputers(ctx context.Context, in *QueryPreviousPercentageRewardToStakedReputersRequest, opts ...grpc.CallOption) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
+	GetTotalRewardToDistribute(ctx context.Context, in *QueryTotalRewardToDistributeRequest, opts ...grpc.CallOption) (*QueryTotalRewardToDistributeResponse, error)
 }
 
 type queryClient struct {
@@ -784,6 +788,24 @@ func (c *queryClient) GetPreviousForecastRewardFraction(ctx context.Context, in 
 	return out, nil
 }
 
+func (c *queryClient) GetPreviousPercentageRewardToStakedReputers(ctx context.Context, in *QueryPreviousPercentageRewardToStakedReputersRequest, opts ...grpc.CallOption) (*QueryPreviousPercentageRewardToStakedReputersResponse, error) {
+	out := new(QueryPreviousPercentageRewardToStakedReputersResponse)
+	err := c.cc.Invoke(ctx, Query_GetPreviousPercentageRewardToStakedReputers_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetTotalRewardToDistribute(ctx context.Context, in *QueryTotalRewardToDistributeRequest, opts ...grpc.CallOption) (*QueryTotalRewardToDistributeResponse, error) {
+	out := new(QueryTotalRewardToDistributeResponse)
+	err := c.cc.Invoke(ctx, Query_GetTotalRewardToDistribute_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -857,6 +879,8 @@ type QueryServer interface {
 	GetPreviousReputerRewardFraction(context.Context, *QueryPreviousReputerRewardFractionRequest) (*QueryPreviousReputerRewardFractionResponse, error)
 	GetPreviousInferenceRewardFraction(context.Context, *QueryPreviousInferenceRewardFractionRequest) (*QueryPreviousInferenceRewardFractionResponse, error)
 	GetPreviousForecastRewardFraction(context.Context, *QueryPreviousForecastRewardFractionRequest) (*QueryPreviousForecastRewardFractionResponse, error)
+	GetPreviousPercentageRewardToStakedReputers(context.Context, *QueryPreviousPercentageRewardToStakedReputersRequest) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
+	GetTotalRewardToDistribute(context.Context, *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -1067,6 +1091,12 @@ func (UnimplementedQueryServer) GetPreviousInferenceRewardFraction(context.Conte
 }
 func (UnimplementedQueryServer) GetPreviousForecastRewardFraction(context.Context, *QueryPreviousForecastRewardFractionRequest) (*QueryPreviousForecastRewardFractionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousForecastRewardFraction not implemented")
+}
+func (UnimplementedQueryServer) GetPreviousPercentageRewardToStakedReputers(context.Context, *QueryPreviousPercentageRewardToStakedReputersRequest) (*QueryPreviousPercentageRewardToStakedReputersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousPercentageRewardToStakedReputers not implemented")
+}
+func (UnimplementedQueryServer) GetTotalRewardToDistribute(context.Context, *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTotalRewardToDistribute not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -2305,6 +2335,42 @@ func _Query_GetPreviousForecastRewardFraction_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetPreviousPercentageRewardToStakedReputers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousPercentageRewardToStakedReputersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousPercentageRewardToStakedReputers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetPreviousPercentageRewardToStakedReputers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousPercentageRewardToStakedReputers(ctx, req.(*QueryPreviousPercentageRewardToStakedReputersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetTotalRewardToDistribute_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTotalRewardToDistributeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTotalRewardToDistribute(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTotalRewardToDistribute_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTotalRewardToDistribute(ctx, req.(*QueryTotalRewardToDistributeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2583,6 +2649,14 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPreviousForecastRewardFraction",
 			Handler:    _Query_GetPreviousForecastRewardFraction_Handler,
+		},
+		{
+			MethodName: "GetPreviousPercentageRewardToStakedReputers",
+			Handler:    _Query_GetPreviousPercentageRewardToStakedReputers_Handler,
+		},
+		{
+			MethodName: "GetTotalRewardToDistribute",
+			Handler:    _Query_GetTotalRewardToDistribute_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

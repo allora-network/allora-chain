@@ -107,3 +107,22 @@ func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched forecast reward fraction should match the set value")
 	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
+
+func (s *KeeperTestSuite) TestGetPreviousPercentageRewardToStakedReputers() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	previousPercentageReward := alloraMath.NewDecFromInt64(50)
+
+	// Set the previous percentage reward to staked reputers
+	err := keeper.SetPreviousPercentageRewardToStakedReputers(ctx, previousPercentageReward)
+	s.Require().NoError(err, "Setting previous percentage reward to staked reputers should not fail")
+
+	// Get the previous percentage reward to staked reputers
+	fetchedPercentageReward, err := keeper.GetPreviousPercentageRewardToStakedReputers(ctx)
+	req := &types.QueryPreviousPercentageRewardToStakedReputersRequest{}
+	response, err := s.queryServer.GetPreviousPercentageRewardToStakedReputers(ctx, req)
+	s.Require().NoError(err)
+	fetchedPercentageReward = response.PercentageReward
+
+	s.Require().Equal(previousPercentageReward, fetchedPercentageReward, "The fetched percentage reward should match the set value")
+}

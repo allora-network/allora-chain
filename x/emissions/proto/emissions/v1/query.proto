@@ -17,8 +17,8 @@ import "emissions/v1/reputer.proto";
 import "emissions/v1/nonce.proto";
 import "emissions/v1/topic.proto";
 import "emissions/v1/stake.proto";
-import "emissions/v1/score.proto";
 import "emissions/v1/inference.proto";
+import "emissions/v1/score.proto";
 
 // Msg defines the module Msg service.
 service Query {
@@ -391,6 +391,17 @@ service Query {
       returns (QueryPreviousForecastRewardFractionResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/previous_forecast_reward_fraction/{topic_id}/{worker}";
+  }
+
+  rpc GetPreviousPercentageRewardToStakedReputers(QueryPreviousPercentageRewardToStakedReputersRequest)
+      returns (QueryPreviousPercentageRewardToStakedReputersResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/previous_percentage_reward_to_staked_reputers";
+  }
+
+  rpc GetTotalRewardToDistribute(QueryTotalRewardToDistributeRequest) returns (QueryTotalRewardToDistributeResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/total_reward_to_distribute";
   }
 }
 
@@ -1060,4 +1071,17 @@ message QueryPreviousForecastRewardFractionResponse {
   string reward_fraction = 1
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   bool not_found = 2;
+}
+message QueryPreviousPercentageRewardToStakedReputersRequest {}
+
+message QueryPreviousPercentageRewardToStakedReputersResponse {
+  string percentage_reward = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
+
+message QueryTotalRewardToDistributeRequest {}
+
+message QueryTotalRewardToDistributeResponse {
+  string total_reward = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }

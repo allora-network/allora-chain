@@ -50,3 +50,33 @@ func (qs queryServer) GetPreviousForecastRewardFraction(
 
 	return &types.QueryPreviousForecastRewardFractionResponse{RewardFraction: rewardFraction, NotFound: notFound}, nil
 }
+
+func (qs queryServer) GetPreviousPercentageRewardToStakedReputers(
+	ctx context.Context,
+	req *types.QueryPreviousPercentageRewardToStakedReputersRequest,
+) (
+	*types.QueryPreviousPercentageRewardToStakedReputersResponse,
+	error,
+) {
+	percentageReward, err := qs.k.GetPreviousPercentageRewardToStakedReputers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryPreviousPercentageRewardToStakedReputersResponse{PercentageReward: percentageReward}, nil
+}
+
+func (qs queryServer) GetTotalRewardToDistribute(
+	ctx context.Context,
+	req *types.QueryTotalRewardToDistributeRequest,
+) (
+	*types.QueryTotalRewardToDistributeResponse,
+	error,
+) {
+	totalReward, err := qs.k.GetTotalRewardToDistribute(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryTotalRewardToDistributeResponse{TotalReward: totalReward}, nil
+}
