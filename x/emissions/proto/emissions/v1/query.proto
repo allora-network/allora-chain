@@ -319,6 +319,11 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/churnable_topics";
   }
+
+  rpc GetRewardableTopics(QueryRewardableTopicsRequest) returns (QueryRewardableTopicsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/rewardable_topics";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -867,4 +872,10 @@ message QueryChurnableTopicsRequest {}
 
 message QueryChurnableTopicsResponse {
   repeated uint64 churnable_topic_ids = 1;
+}
+
+message QueryRewardableTopicsRequest {}
+
+message QueryRewardableTopicsResponse {
+  repeated uint64 rewardable_topic_ids = 1;
 }
