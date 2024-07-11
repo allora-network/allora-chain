@@ -149,3 +149,21 @@ func (qs queryServer) IsTopicActive(
 
 	return &types.QueryIsTopicActiveResponse{IsActive: isActive}, nil
 }
+
+func (qs queryServer) GetIdsOfActiveTopics(
+	ctx context.Context,
+	req *types.QueryIdsOfActiveTopicsRequest,
+) (
+	*types.QueryIdsOfActiveTopicsResponse,
+	error,
+) {
+	activeTopicIds, paginationResponse, err := qs.k.GetIdsOfActiveTopics(ctx, req.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryIdsOfActiveTopicsResponse{
+		ActiveTopicIds: activeTopicIds,
+		Pagination:     paginationResponse,
+	}, nil
+}
