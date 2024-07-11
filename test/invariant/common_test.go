@@ -103,8 +103,13 @@ func pickRandomBalanceLessThanHalf(
 	if balOfActor.Equal(cosmossdk_io_math.ZeroInt()) {
 		return cosmossdk_io_math.ZeroInt(), nil
 	}
-	randomBalance := balOfActor.QuoRaw(2).QuoRaw(m.Client.Rand.Int63() % 1000)
-	return randomBalance, nil
+	halfBal := balOfActor.QuoRaw(2)
+	if halfBal.Equal(cosmossdk_io_math.ZeroInt()) {
+		return cosmossdk_io_math.ZeroInt(), nil
+	}
+	divisor := m.Client.Rand.Int63() % 1000
+	randomBal := halfBal.QuoRaw(divisor)
+	return randomBal, nil
 }
 
 // helper function to check if an error was thrown cumulatively

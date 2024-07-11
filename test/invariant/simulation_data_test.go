@@ -209,6 +209,9 @@ func (s *SimulationData) markStakeRemovalDelegatorStake(
 
 // take a percentage of the stake, either 1/10, 1/3, 1/2, 6/7, or the full amount
 func pickPercentOf(rand *rand.Rand, stake cosmossdk_io_math.Int) cosmossdk_io_math.Int {
+	if stake.Equal(cosmossdk_io_math.ZeroInt()) {
+		return cosmossdk_io_math.ZeroInt()
+	}
 	percent := rand.Intn(5)
 	switch percent {
 	case 0:
