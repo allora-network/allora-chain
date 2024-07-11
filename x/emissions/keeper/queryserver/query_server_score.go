@@ -80,3 +80,18 @@ func (qs queryServer) GetWorkerInferenceScoresAtBlock(
 
 	return &types.QueryWorkerInferenceScoresAtBlockResponse{Scores: &workerInferenceScores}, nil
 }
+
+func (qs queryServer) GetForecastScoresUntilBlock(
+	ctx context.Context,
+	req *types.QueryForecastScoresUntilBlockRequest,
+) (
+	*types.QueryForecastScoresUntilBlockResponse,
+	error,
+) {
+	forecastScores, err := qs.k.GetForecastScoresUntilBlock(ctx, req.TopicId, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryForecastScoresUntilBlockResponse{Scores: forecastScores}, nil
+}

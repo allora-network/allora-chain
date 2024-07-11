@@ -150,3 +150,29 @@ func (s *KeeperTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	s.Require().NoError(err, "Fetching scores at block should not fail")
 	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
 }
+
+func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockHeight := int64(105)
+
+	// Insert scores for the worker at various blocks
+	for i := int64(100); i <= 110; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockHeight: i,
+			Score:       alloraMath.NewDecFromInt64(i),
+		}
+		_ = keeper.InsertWorkerForecastScore(ctx, topicId, i, score)
+	}
+
+	req := &types.QueryForecastScoresUntilBlockRequest{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+	}
+	response, err := s.queryServer.GetForecastScoresUntilBlock(ctx, req)
+	scores := response.Scores
+	s.Require().NoError(err, "Fetching worker forecast scores until block should not fail")
+	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
+}
