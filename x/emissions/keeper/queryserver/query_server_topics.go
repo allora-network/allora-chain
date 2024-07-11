@@ -89,3 +89,141 @@ func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *ty
 
 	return &types.QueryTopicLastCommitResponse{LastCommit: &lastCommit}, nil
 }
+
+func (qs queryServer) GetTopicRewardNonce(
+	ctx context.Context,
+	req *types.QueryTopicRewardNonceRequest,
+) (
+	*types.QueryTopicRewardNonceResponse,
+	error,
+) {
+	nonce, err := qs.k.GetTopicRewardNonce(ctx, req.TopicId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryTopicRewardNonceResponse{Nonce: nonce}, nil
+}
+
+func (qs queryServer) GetPreviousTopicWeight(
+	ctx context.Context,
+	req *types.QueryPreviousTopicWeightRequest,
+) (
+	*types.QueryPreviousTopicWeightResponse,
+	error,
+) {
+	previousTopicWeight, notFound, err := qs.k.GetPreviousTopicWeight(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryPreviousTopicWeightResponse{Weight: previousTopicWeight, NotFound: notFound}, nil
+}
+
+func (qs queryServer) TopicExists(
+	ctx context.Context,
+	req *types.QueryTopicExistsRequest,
+) (
+	*types.QueryTopicExistsResponse,
+	error,
+) {
+	exists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryTopicExistsResponse{Exists: exists}, nil
+}
+
+func (qs queryServer) IsTopicActive(
+	ctx context.Context,
+	req *types.QueryIsTopicActiveRequest,
+) (
+	*types.QueryIsTopicActiveResponse,
+	error,
+) {
+	isActive, err := qs.k.IsTopicActive(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryIsTopicActiveResponse{IsActive: isActive}, nil
+}
+
+func (qs queryServer) GetIdsOfActiveTopics(
+	ctx context.Context,
+	req *types.QueryIdsOfActiveTopicsRequest,
+) (
+	*types.QueryIdsOfActiveTopicsResponse,
+	error,
+) {
+	activeTopicIds, paginationResponse, err := qs.k.GetIdsOfActiveTopics(ctx, req.Pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryIdsOfActiveTopicsResponse{
+		ActiveTopicIds: activeTopicIds,
+		Pagination:     paginationResponse,
+	}, nil
+}
+
+func (qs queryServer) GetTopicEpochLastEnded(
+	ctx context.Context,
+	req *types.QueryTopicEpochLastEndedRequest,
+) (
+	*types.QueryTopicEpochLastEndedResponse,
+	error,
+) {
+	epochLastEnded, err := qs.k.GetTopicEpochLastEnded(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryTopicEpochLastEndedResponse{EpochLastEnded: epochLastEnded}, nil
+}
+
+func (qs queryServer) GetTopicFeeRevenue(
+	ctx context.Context,
+	req *types.QueryTopicFeeRevenueRequest,
+) (
+	*types.QueryTopicFeeRevenueResponse,
+	error,
+) {
+	feeRevenue, err := qs.k.GetTopicFeeRevenue(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryTopicFeeRevenueResponse{FeeRevenue: feeRevenue}, nil
+}
+
+func (qs queryServer) GetChurnableTopics(
+	ctx context.Context,
+	req *types.QueryChurnableTopicsRequest,
+) (
+	*types.QueryChurnableTopicsResponse,
+	error,
+) {
+	churnableTopics, err := qs.k.GetChurnableTopics(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryChurnableTopicsResponse{ChurnableTopicIds: churnableTopics}, nil
+}
+
+func (qs queryServer) GetRewardableTopics(
+	ctx context.Context,
+	req *types.QueryRewardableTopicsRequest,
+) (
+	*types.QueryRewardableTopicsResponse,
+	error,
+) {
+	rewardableTopics, err := qs.k.GetRewardableTopics(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryRewardableTopicsResponse{RewardableTopicIds: rewardableTopics}, nil
+}

@@ -2,6 +2,7 @@ package queryserver
 
 import (
 	"context"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -22,4 +23,47 @@ func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *type
 	}
 
 	return &types.QueryNetworkLossBundleAtBlockResponse{LossBundle: networkLoss}, nil
+}
+
+func (qs queryServer) GetIsReputerNonceUnfulfilled(
+	ctx context.Context,
+	req *types.QueryIsReputerNonceUnfulfilledRequest,
+) (
+	*types.QueryIsReputerNonceUnfulfilledResponse,
+	error,
+) {
+	isReputerNonceUnfulfilled, err :=
+		qs.k.IsReputerNonceUnfulfilled(ctx, req.TopicId, &types.Nonce{BlockHeight: req.BlockHeight})
+
+	return &types.QueryIsReputerNonceUnfulfilledResponse{IsReputerNonceUnfulfilled: isReputerNonceUnfulfilled}, err
+}
+
+func (qs queryServer) GetUnfulfilledReputerNonces(
+	ctx context.Context,
+	req *types.QueryUnfulfilledReputerNoncesRequest,
+) (
+	*types.QueryUnfulfilledReputerNoncesResponse,
+	error,
+) {
+	unfulfilledNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryUnfulfilledReputerNoncesResponse{Nonces: &unfulfilledNonces}, nil
+}
+
+func (qs queryServer) GetReputerLossBundlesAtBlock(
+	ctx context.Context,
+	req *types.QueryReputerLossBundlesAtBlockRequest,
+) (
+	*types.QueryReputerLossBundlesAtBlockResponse,
+	error,
+) {
+	reputerLossBundles, err := qs.k.GetReputerLossBundlesAtBlock(ctx, req.TopicId, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryReputerLossBundlesAtBlockResponse{LossBundles: reputerLossBundles}, nil
 }
