@@ -207,3 +207,33 @@ func (s *KeeperTestSuite) TestGetWorkerForecastScoresAtBlock() {
 	s.Require().NoError(err, "Fetching forecast scores at block should not fail")
 	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
+
+func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockHeight := int64(100)
+
+	// Insert multiple scores at the block
+	for i := 0; i < 5; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Address:     "reputer" + strconv.Itoa(i+1),
+			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
+		}
+		_ = keeper.InsertReputerScore(ctx, topicId, blockHeight, score)
+	}
+
+	// Fetch scores at the specific block
+	req := &types.QueryReputersScoresAtBlockRequest{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+	}
+	response, err := s.queryServer.GetReputersScoresAtBlock(ctx, req)
+	s.Require().NoError(err)
+	scores := response.Scores
+
+	s.Require().NoError(err, "Fetching reputer scores at block should not fail")
+	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
+}
