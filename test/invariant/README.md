@@ -7,7 +7,7 @@ Example invocation:
 ```bash
 INVARIANT_TEST=TRUE SEED=1 RPC_MODE="SingleRpc" \
     RPC_URLS="http://localhost:26657" \
-    MAX_ITERATIONS=100 MODE="alternating" \
+    MAX_ITERATIONS=100 MODE="alternate" \
     NUM_ACTORS=10 EPOCH_LENGTH=14 \
     /usr/bin/go test -timeout 15m -run ^TestInvariantTestSuite$ -v ./test/invariant
 ```
@@ -20,7 +20,7 @@ SEED=1 # an integer used to seed randomness and name actors during the test (e.g
 RPC_MODE="SingleRpc" # Either SingleRpc, RoundRobin, or RandomBasedOnDeterministicSeed - how to interact with multiple RPC endpoints
 RPC_URLS="http://localhost:26657" # RPC endpoint urls, separated by comma if multiple
 MAX_ITERATIONS=100 # how many times to send transactions. Set to zero to continue forever
-MODE="alternating" # See Mode section below
+MODE="alternating" # See Mode section below. Valid options: "behave" "fuzz" "alternate" or "manual"
 NUM_ACTORS=10 # how many private keys to create to use as actors in this play
 EPOCH_LENGTH=14 # when we submit inferences and reputation scores, how long to wait in between the inference and the reputation
 ```
