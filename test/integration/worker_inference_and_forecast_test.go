@@ -144,9 +144,6 @@ func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightC
 	reputerNonce := &types.Nonce{
 		BlockHeight: BlockHeightCurrent,
 	}
-	workerNonce := &types.Nonce{
-		BlockHeight: BlockHeightEval,
-	}
 
 	reputerValueBundle := &types.ValueBundle{
 		TopicId:       topicId,
@@ -189,7 +186,6 @@ func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightC
 		},
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 	}
 
@@ -208,7 +204,6 @@ func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightC
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 		ReputerValueBundles: []*types.ReputerValueBundle{
 			{

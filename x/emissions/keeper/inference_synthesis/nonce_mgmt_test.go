@@ -198,14 +198,14 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			name: "N greater than length of nonces, zero lag",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
 				},
 			},
 			N: 5,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     0,
@@ -215,15 +215,15 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			name: "N less than length of nonces, zero lag",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
 				},
 			},
 			N: 2,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     0,
@@ -233,15 +233,15 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			name: "Ground truth lag cutting selection midway",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 				},
 			},
 			N: 3,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     5,
@@ -251,9 +251,9 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			name: "Big Ground truth lag, not selecting any nonces",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 				},
 			},
 			N:                        3,
@@ -266,16 +266,16 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			name: "Small ground truth lag, selecting all nonces",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 				},
 			},
 			N: 3,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     2,
@@ -285,15 +285,15 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 			name: "Mid ground truth lag, selecting some nonces",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 				},
 			},
 			N: 3,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     3,

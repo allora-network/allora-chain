@@ -2745,15 +2745,18 @@ type Params struct {
 	MaxGradientThreshold string `protobuf:"bytes,10,opt,name=max_gradient_threshold,json=maxGradientThreshold,proto3" json:"max_gradient_threshold,omitempty"` // gradient descent stops when gradient falls below this
 	MinStakeFraction     string `protobuf:"bytes,11,opt,name=min_stake_fraction,json=minStakeFraction,proto3" json:"min_stake_fraction,omitempty"`             // minimum fraction of stake to listen to when setting consensus listening
 	// coefficients
-	MaxUnfulfilledWorkerRequests    uint64 `protobuf:"varint,13,opt,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`           // max num worker request nonces to keep track of per topic
-	MaxUnfulfilledReputerRequests   uint64 `protobuf:"varint,14,opt,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"`        // max num reputer request nonces to keep track of per topic
-	TopicRewardStakeImportance      string `protobuf:"bytes,15,opt,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3" json:"topic_reward_stake_importance,omitempty"`                  // The exponent μ represents the importance of stake in the reward of a topic and has a fiducial value of 0.5
-	TopicRewardFeeRevenueImportance string `protobuf:"bytes,16,opt,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3" json:"topic_reward_fee_revenue_importance,omitempty"` // The exponent ν represents the importance of fee revenue in the reward of a topic and has a fiducial value of
-	// 0.5
-	TopicRewardAlpha string `protobuf:"bytes,17,opt,name=topic_reward_alpha,json=topicRewardAlpha,proto3" json:"topic_reward_alpha,omitempty"` // global exponential moving average parameter. Fiducial value of 0.9375 on a monthly timescale, 0.5 for weekly
-	// updates
-	TaskRewardAlpha                 string `protobuf:"bytes,18,opt,name=task_reward_alpha,json=taskRewardAlpha,proto3" json:"task_reward_alpha,omitempty"`                                                        // global exponential moving average parameter. Fiducial value of 0.1 used to calculate ~U_ij, ~V_ik, ~W_im
-	ValidatorsVsAlloraPercentReward string `protobuf:"bytes,19,opt,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3" json:"validators_vs_allora_percent_reward,omitempty"`    // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
+	MaxUnfulfilledWorkerRequests  uint64 `protobuf:"varint,13,opt,name=max_unfulfilled_worker_requests,json=maxUnfulfilledWorkerRequests,proto3" json:"max_unfulfilled_worker_requests,omitempty"`    // max num worker request nonces to keep track of per topic
+	MaxUnfulfilledReputerRequests uint64 `protobuf:"varint,14,opt,name=max_unfulfilled_reputer_requests,json=maxUnfulfilledReputerRequests,proto3" json:"max_unfulfilled_reputer_requests,omitempty"` // max num reputer request nonces to keep track of per topic
+	TopicRewardStakeImportance    string `protobuf:"bytes,15,opt,name=topic_reward_stake_importance,json=topicRewardStakeImportance,proto3" json:"topic_reward_stake_importance,omitempty"`           // The exponent μ represents the importance of stake in the reward of a
+	// topic and has a fiducial value of 0.5
+	TopicRewardFeeRevenueImportance string `protobuf:"bytes,16,opt,name=topic_reward_fee_revenue_importance,json=topicRewardFeeRevenueImportance,proto3" json:"topic_reward_fee_revenue_importance,omitempty"` // The exponent ν represents the importance of fee revenue in the reward of
+	// a topic and has a fiducial value of 0.5
+	TopicRewardAlpha string `protobuf:"bytes,17,opt,name=topic_reward_alpha,json=topicRewardAlpha,proto3" json:"topic_reward_alpha,omitempty"` // global exponential moving average parameter. Fiducial value of 0.9375 on
+	// a monthly timescale, 0.5 for weekly updates
+	TaskRewardAlpha string `protobuf:"bytes,18,opt,name=task_reward_alpha,json=taskRewardAlpha,proto3" json:"task_reward_alpha,omitempty"` // global exponential moving average parameter. Fiducial value of 0.1 used
+	// to calculate ~U_ij, ~V_ik, ~W_im
+	ValidatorsVsAlloraPercentReward string `protobuf:"bytes,19,opt,name=validators_vs_allora_percent_reward,json=validatorsVsAlloraPercentReward,proto3" json:"validators_vs_allora_percent_reward,omitempty"` // percent of total supply rewarded to cosmos network validators, rest goes
+	// to allora reputers workers etc
 	MaxSamplesToScaleScores         uint64 `protobuf:"varint,20,opt,name=max_samples_to_scale_scores,json=maxSamplesToScaleScores,proto3" json:"max_samples_to_scale_scores,omitempty"`                           // number of scores to use for standard deviation calculation
 	MaxTopInferersToReward          uint64 `protobuf:"varint,21,opt,name=max_top_inferers_to_reward,json=maxTopInferersToReward,proto3" json:"max_top_inferers_to_reward,omitempty"`                              // max number of top inferers by score to reward
 	MaxTopForecastersToReward       uint64 `protobuf:"varint,22,opt,name=max_top_forecasters_to_reward,json=maxTopForecastersToReward,proto3" json:"max_top_forecasters_to_reward,omitempty"`                     // max number of top forecasters by score to reward
@@ -2765,7 +2768,8 @@ type Params struct {
 	RegistrationFee                 string `protobuf:"bytes,28,opt,name=registration_fee,json=registrationFee,proto3" json:"registration_fee,omitempty"`                                                          // registration fee for reputer or worker
 	DefaultPageLimit                uint64 `protobuf:"varint,29,opt,name=default_page_limit,json=defaultPageLimit,proto3" json:"default_page_limit,omitempty"`                                                    // default limit for pagination
 	MaxPageLimit                    uint64 `protobuf:"varint,30,opt,name=max_page_limit,json=maxPageLimit,proto3" json:"max_page_limit,omitempty"`                                                                // max limit for pagination
-	// min number of epochs to keep network losses, reputer losses, inferences, forecasts
+	// min number of epochs to keep network losses, reputer losses, inferences,
+	// forecasts
 	MinEpochLengthRecordLimit int64 `protobuf:"varint,31,opt,name=min_epoch_length_record_limit,json=minEpochLengthRecordLimit,proto3" json:"min_epoch_length_record_limit,omitempty"`
 	// block emission rate in number of blocks expected per month
 	BlocksPerMonth           uint64 `protobuf:"varint,32,opt,name=blocks_per_month,json=blocksPerMonth,proto3" json:"blocks_per_month,omitempty"`
@@ -2776,8 +2780,9 @@ type Params struct {
 	CRewardForecast          string `protobuf:"bytes,37,opt,name=c_reward_forecast,json=cRewardForecast,proto3" json:"c_reward_forecast,omitempty"`
 	CNorm                    string `protobuf:"bytes,38,opt,name=c_norm,json=cNorm,proto3" json:"c_norm,omitempty"`
 	TopicFeeRevenueDecayRate string `protobuf:"bytes,39,opt,name=topic_fee_revenue_decay_rate,json=topicFeeRevenueDecayRate,proto3" json:"topic_fee_revenue_decay_rate,omitempty"` // decay rate for topic fee revenue
-	EpsilonReputer           string `protobuf:"bytes,40,opt,name=epsilon_reputer,json=epsilonReputer,proto3" json:"epsilon_reputer,omitempty"`                                     // a small tolerance quantity used to cap reputer scores at infinitesimally close proximities
-	MinEffectiveTopicRevenue string `protobuf:"bytes,41,opt,name=min_effective_topic_revenue,json=minEffectiveTopicRevenue,proto3" json:"min_effective_topic_revenue,omitempty"`   // we no stop dripping from the topic's effective revenue when the topic's effective revenue is below this
+	EpsilonReputer           string `protobuf:"bytes,40,opt,name=epsilon_reputer,json=epsilonReputer,proto3" json:"epsilon_reputer,omitempty"`                                     // a small tolerance quantity used to cap reputer scores at infinitesimally
+	// close proximities
+	MinEffectiveTopicRevenue string `protobuf:"bytes,41,opt,name=min_effective_topic_revenue,json=minEffectiveTopicRevenue,proto3" json:"min_effective_topic_revenue,omitempty"` // we no stop dripping from the topic's effective revenue when the topic's
 }
 
 func (x *Params) Reset() {

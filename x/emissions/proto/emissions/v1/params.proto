@@ -49,27 +49,30 @@ message Params {
   string topic_reward_stake_importance = 15 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // The exponent μ represents the importance of stake in the reward of a topic and has a fiducial value of 0.5
+  ];  // The exponent μ represents the importance of stake in the reward of a
+      // topic and has a fiducial value of 0.5
   string topic_reward_fee_revenue_importance = 16 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // The exponent ν represents the importance of fee revenue in the reward of a topic and has a fiducial value of
-      // 0.5
+  ];  // The exponent ν represents the importance of fee revenue in the reward of
+      // a topic and has a fiducial value of 0.5
   string topic_reward_alpha = 17 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // global exponential moving average parameter. Fiducial value of 0.9375 on a monthly timescale, 0.5 for weekly
-      // updates
+  ];  // global exponential moving average parameter. Fiducial value of 0.9375 on
+      // a monthly timescale, 0.5 for weekly updates
   string task_reward_alpha = 18 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // global exponential moving average parameter. Fiducial value of 0.1 used to calculate ~U_ij, ~V_ik, ~W_im
+  ];  // global exponential moving average parameter. Fiducial value of 0.1 used
+      // to calculate ~U_ij, ~V_ik, ~W_im
   string validators_vs_allora_percent_reward = 19 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // percent of total supply rewarded to cosmos network validators, rest goes to allora reputers workers etc
-  uint64 max_samples_to_scale_scores = 20;    // number of scores to use for standard deviation calculation
-  uint64 max_top_inferers_to_reward = 21;     // max number of top inferers by score to reward
+  ];                                        // percent of total supply rewarded to cosmos network validators, rest goes
+                                            // to allora reputers workers etc
+  uint64 max_samples_to_scale_scores = 20;  // number of scores to use for standard deviation calculation
+  uint64 max_top_inferers_to_reward = 21;   // max number of top inferers by score to reward
   uint64 max_top_forecasters_to_reward = 22;  // max number of top forecasters by score to reward
   uint64 max_top_reputers_to_reward = 23;     // max number of top reputers by score to reward
   string create_topic_fee = 24 [
@@ -89,7 +92,8 @@ message Params {
   ];                               // registration fee for reputer or worker
   uint64 default_page_limit = 29;  // default limit for pagination
   uint64 max_page_limit = 30;      // max limit for pagination
-  // min number of epochs to keep network losses, reputer losses, inferences, forecasts
+  // min number of epochs to keep network losses, reputer losses, inferences,
+  // forecasts
   int64 min_epoch_length_record_limit = 31;
   // block emission rate in number of blocks expected per month
   uint64 blocks_per_month = 32;
@@ -112,9 +116,11 @@ message Params {
   string epsilon_reputer = 40 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // a small tolerance quantity used to cap reputer scores at infinitesimally close proximities
+  ];  // a small tolerance quantity used to cap reputer scores at infinitesimally
+      // close proximities
   string min_effective_topic_revenue = 41 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
-  ];  // we no stop dripping from the topic's effective revenue when the topic's effective revenue is below this
+  ];  // we no stop dripping from the topic's effective revenue when the topic's
+      // effective revenue is below this
 }
