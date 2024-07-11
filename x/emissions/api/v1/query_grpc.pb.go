@@ -68,6 +68,7 @@ const (
 	Query_GetStakeRemovalForReputerAndTopicId_FullMethodName   = "/emissions.v1.Query/GetStakeRemovalForReputerAndTopicId"
 	Query_GetDelegateStakeRemoval_FullMethodName               = "/emissions.v1.Query/GetDelegateStakeRemoval"
 	Query_GetPreviousTopicWeight_FullMethodName                = "/emissions.v1.Query/GetPreviousTopicWeight"
+	Query_TopicExists_FullMethodName                           = "/emissions.v1.Query/TopicExists"
 )
 
 // QueryClient is the client API for Query service.
@@ -124,6 +125,7 @@ type QueryClient interface {
 	GetStakeRemovalForReputerAndTopicId(ctx context.Context, in *QueryStakeRemovalForReputerAndTopicIdRequest, opts ...grpc.CallOption) (*QueryStakeRemovalForReputerAndTopicIdResponse, error)
 	GetDelegateStakeRemoval(ctx context.Context, in *QueryDelegateStakeRemovalRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalResponse, error)
 	GetPreviousTopicWeight(ctx context.Context, in *QueryPreviousTopicWeightRequest, opts ...grpc.CallOption) (*QueryPreviousTopicWeightResponse, error)
+	TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error)
 }
 
 type queryClient struct {
@@ -575,6 +577,15 @@ func (c *queryClient) GetPreviousTopicWeight(ctx context.Context, in *QueryPrevi
 	return out, nil
 }
 
+func (c *queryClient) TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error) {
+	out := new(QueryTopicExistsResponse)
+	err := c.cc.Invoke(ctx, Query_TopicExists_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -629,6 +640,7 @@ type QueryServer interface {
 	GetStakeRemovalForReputerAndTopicId(context.Context, *QueryStakeRemovalForReputerAndTopicIdRequest) (*QueryStakeRemovalForReputerAndTopicIdResponse, error)
 	GetDelegateStakeRemoval(context.Context, *QueryDelegateStakeRemovalRequest) (*QueryDelegateStakeRemovalResponse, error)
 	GetPreviousTopicWeight(context.Context, *QueryPreviousTopicWeightRequest) (*QueryPreviousTopicWeightResponse, error)
+	TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -782,6 +794,9 @@ func (UnimplementedQueryServer) GetDelegateStakeRemoval(context.Context, *QueryD
 }
 func (UnimplementedQueryServer) GetPreviousTopicWeight(context.Context, *QueryPreviousTopicWeightRequest) (*QueryPreviousTopicWeightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousTopicWeight not implemented")
+}
+func (UnimplementedQueryServer) TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TopicExists not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1678,6 +1693,24 @@ func _Query_GetPreviousTopicWeight_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_TopicExists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicExistsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).TopicExists(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_TopicExists_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).TopicExists(ctx, req.(*QueryTopicExistsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1880,6 +1913,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPreviousTopicWeight",
 			Handler:    _Query_GetPreviousTopicWeight_Handler,
+		},
+		{
+			MethodName: "TopicExists",
+			Handler:    _Query_TopicExists_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

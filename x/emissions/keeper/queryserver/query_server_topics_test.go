@@ -205,3 +205,32 @@ func (s *KeeperTestSuite) TestGetPreviousTopicWeight() {
 	s.Require().NoError(err, "Getting previous topic weight should not fail")
 	s.Require().Equal(weightToSet, retrievedWeight, "Retrieved weight should match the set weight")
 }
+
+func (s *KeeperTestSuite) TestTopicExists() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Test a topic ID that does not exist
+	nonExistentTopicId := uint64(999) // Assuming this ID has not been used
+	req := &types.QueryTopicExistsRequest{TopicId: nonExistentTopicId}
+	response, err := s.queryServer.TopicExists(ctx, req)
+	exists := response.Exists
+	s.Require().NoError(err, "Checking existence for a non-existent topic should not fail")
+	s.Require().False(exists, "No topic should exist for an unused topic ID")
+
+	// Create a topic to test existence
+	existentTopicId, err := keeper.IncrementTopicId(ctx)
+	s.Require().NoError(err, "Incrementing topic ID should not fail")
+
+	newTopic := types.Topic{Id: existentTopicId}
+
+	err = keeper.SetTopic(ctx, existentTopicId, newTopic)
+	s.Require().NoError(err, "Setting a new topic should not fail")
+
+	// Test the newly created topic ID
+	req = &types.QueryTopicExistsRequest{TopicId: existentTopicId}
+	response, err = s.queryServer.TopicExists(ctx, req)
+	exists = response.Exists
+	s.Require().NoError(err, "Checking existence for an existent topic should not fail")
+	s.Require().True(exists, "Topic should exist for a newly created topic ID")
+}

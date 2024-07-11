@@ -119,3 +119,18 @@ func (qs queryServer) GetPreviousTopicWeight(
 
 	return &types.QueryPreviousTopicWeightResponse{Weight: previousTopicWeight, NotFound: notFound}, nil
 }
+
+func (qs queryServer) TopicExists(
+	ctx context.Context,
+	req *types.QueryTopicExistsRequest,
+) (
+	*types.QueryTopicExistsResponse,
+	error,
+) {
+	exists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryTopicExistsResponse{Exists: exists}, nil
+}
