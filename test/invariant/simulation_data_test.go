@@ -23,12 +23,13 @@ type SimulationData struct {
 	reputerStakes      *testcommon.RandomKeyMap[Registration, cosmossdk_io_math.Int]
 	delegatorStakes    *testcommon.RandomKeyMap[Delegation, cosmossdk_io_math.Int]
 	failOnErr          bool
+	mode               SimulationMode
 }
 
 // String is the stringer for SimulationData
 func (s *SimulationData) String() string {
 	return fmt.Sprintf(
-		"SimulationData{\nepochLength: %d,\nactors: %v,\n counts: %s,\nregisteredWorkers: %v,\nregisteredReputers: %v,\nreputerStakes: %v,\ndelegatorStakes: %v,\nnoFail: %v}",
+		"SimulationData{\nepochLength: %d,\nactors: %v,\n counts: %s,\nregisteredWorkers: %v,\nregisteredReputers: %v,\nreputerStakes: %v,\ndelegatorStakes: %v,\nfailOnErr: %v,\nmode: %s}",
 		s.epochLength,
 		s.actors,
 		s.counts,
@@ -37,6 +38,7 @@ func (s *SimulationData) String() string {
 		s.reputerStakes,
 		s.delegatorStakes,
 		s.failOnErr,
+		s.mode,
 	)
 }
 
@@ -379,4 +381,16 @@ func (s *SimulationData) getActorFromAddr(addr string) (Actor, bool) {
 		}
 	}
 	return Actor{}, false
+}
+
+// randomly flip the fail on err case to decide whether to be aggresive and fuzzy or
+// behaved state transitions
+func (s *SimulationData) randomlyFlipFailOnErr(m *testcommon.TestConfig, iteration int) {
+	if iteration < 20 { // first 20 iterations 90% likely to be behaved
+		s.failOnErr = true
+	} else { // after the start you're, 20% likely to change from what you were previously
+		if m.Client.Rand.Intn(10) > 8 { // 20% of the time
+			s.failOnErr = !s.failOnErr
+		}
+	}
 }

@@ -2,6 +2,7 @@ package invariant_test
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"context"
@@ -9,6 +10,35 @@ import (
 	cosmossdk_io_math "cosmossdk.io/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 )
+
+type SimulationMode string
+
+const (
+	Behave    SimulationMode = "behave"
+	Fuzz      SimulationMode = "fuzz"
+	Alternate SimulationMode = "alternate"
+	Manual    SimulationMode = "manual"
+)
+
+func lookupEnvSimulationMode() SimulationMode {
+	simulationModeStr, found := os.LookupEnv("MODE")
+	if !found {
+		return Behave
+	}
+	simulationModeStr = strings.ToLower(simulationModeStr)
+	switch simulationModeStr {
+	case "behave":
+		return Behave
+	case "fuzz":
+		return Fuzz
+	case "alternate":
+		return Alternate
+	case "manual":
+		return Manual
+	default:
+		return Behave
+	}
+}
 
 func TestInvariantTestSuite(t *testing.T) {
 	if _, isInvariant := os.LookupEnv("INVARIANT_TEST"); isInvariant == false {
@@ -32,14 +62,12 @@ func TestInvariantTestSuite(t *testing.T) {
 	maxIterations := testcommon.LookupEnvInt(t, "MAX_ITERATIONS", 1000)
 	numActors := testcommon.LookupEnvInt(t, "NUM_ACTORS", 100)
 	epochLength := testcommon.LookupEnvInt(t, "EPOCH_LENGTH", 12) // in blocks
-	failOnErr := testcommon.LookupEnvBool(t, "FAIL_ON_ERR", true)
-	manualSimulation := testcommon.LookupEnvBool(t, "MANUAL_SIMULATION", false)
+	mode := lookupEnvSimulationMode()
 
 	t.Log("Max Actors: ", numActors)
 	t.Log("Max Iterations: ", maxIterations)
 	t.Log("Epoch Length: ", epochLength)
-	t.Log("Fail if errors occur (try to only send valid state transitions):", failOnErr)
-	t.Log("Manual simulation mode on: ", manualSimulation)
+	t.Log("Simulation mode: ", mode)
 
 	t.Log(">>> Starting Test <<<")
 	simulate(
@@ -47,8 +75,7 @@ func TestInvariantTestSuite(t *testing.T) {
 		maxIterations,
 		numActors,
 		epochLength,
-		failOnErr,
-		manualSimulation,
+		mode,
 	)
 }
 
@@ -59,7 +86,7 @@ func simulateSetUp(
 	m *testcommon.TestConfig,
 	numActors int,
 	epochLength int,
-	failOnErr bool,
+	mode SimulationMode,
 ) (
 	faucet Actor,
 	simulationData *SimulationData,
@@ -97,7 +124,12 @@ func simulateSetUp(
 		delegatorStakes: testcommon.NewRandomKeyMap[Delegation, cosmossdk_io_math.Int](
 			m.Client.Rand,
 		),
-		failOnErr: failOnErr,
+		mode:      mode,
+		failOnErr: false,
+	}
+	// if we're in manual mode or behaving mode we want to fail on errors
+	if mode == Manual || mode == Behave {
+		data.failOnErr = true
 	}
 	return faucet, &data
 }
@@ -108,11 +140,10 @@ func simulate(
 	maxIterations int,
 	numActors int,
 	epochLength int,
-	failOnErr bool,
-	manualSimulation bool,
+	mode SimulationMode,
 ) {
-	faucet, simulationData := simulateSetUp(m, numActors, epochLength, failOnErr)
-	if manualSimulation {
+	faucet, simulationData := simulateSetUp(m, numActors, epochLength, mode)
+	if mode == Manual {
 		simulateManual(m, faucet, simulationData)
 	} else {
 		simulateAutomatic(m, faucet, simulationData, maxIterations)
@@ -165,7 +196,11 @@ func simulateAutomatic(
 
 	// for every iteration
 	// pick a state transition, then run it. every 5 print a summary
+	// if the test mode is alternating, flip whether to behave nicely or not
 	for iteration := 1; maxIterations == 0 || iteration < maxIterations; iteration++ {
+		if data.mode == Alternate {
+			data.randomlyFlipFailOnErr(m, iteration)
+		}
 		stateTransition, actor1, actor2, amount, topicId := pickTransition(m, data, iteration)
 		stateTransition.f(m, actor1, actor2, amount, topicId, data, iteration)
 		if iteration%5 == 0 {
