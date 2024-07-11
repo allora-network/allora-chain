@@ -66,14 +66,13 @@ func ComputeAndBuildEMRegret(
 	previousRegret Regret,
 	alpha alloraMath.Dec,
 	blockHeight BlockHeight,
-	noPreviousRegret bool,
 ) (emissions.TimestampedValue, error) {
 	lossDiff, err := lossA.Sub(lossB)
 	if err != nil {
 		return emissions.TimestampedValue{}, err
 	}
 
-	newRegret, err := alloraMath.CalcEma(alpha, lossDiff, previousRegret, noPreviousRegret)
+	newRegret, err := alloraMath.CalcEma(alpha, lossDiff, previousRegret, false)
 	if err != nil {
 		return emissions.TimestampedValue{}, err
 	}
@@ -93,17 +92,22 @@ func GetCalcSetNetworkRegrets(
 	networkLosses emissions.ValueBundle,
 	nonce emissions.Nonce,
 	alpha alloraMath.Dec,
+	cNorm alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	epsilon alloraMath.Dec,
 ) error {
 	// Convert the network losses to a networkLossesByWorker
 	networkLossesByWorker := ConvertValueBundleToNetworkLossesByWorker(networkLosses)
 	blockHeight := nonce.BlockHeight
+
+	workersRegrets := make([]alloraMath.Dec, 0)
 
 	// Get old regret R_{i-1,j} and Calculate then Set the new regrets R_ij for inferers
 	sort.Slice(networkLosses.InfererValues, func(i, j int) bool {
 		return networkLosses.InfererValues[i].Worker < networkLosses.InfererValues[j].Worker
 	})
 	for _, infererLoss := range networkLosses.InfererValues {
-		lastRegret, noPriorRegret, err := k.GetInfererNetworkRegret(ctx, topicId, infererLoss.Worker)
+		lastRegret, err := k.GetInfererNetworkRegret(ctx, topicId, infererLoss.Worker)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get inferer regret")
 		}
@@ -113,12 +117,12 @@ func GetCalcSetNetworkRegrets(
 			lastRegret.Value,
 			alpha,
 			blockHeight,
-			noPriorRegret,
 		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error computing and building inferer regret")
 		}
 		k.SetInfererNetworkRegret(ctx, topicId, infererLoss.Worker, newInfererRegret)
+		workersRegrets = append(workersRegrets, newInfererRegret.Value)
 	}
 
 	// Get old regret R_{i-1,k} and Calculate then Set the new regrets R_ik for forecasters
@@ -126,7 +130,7 @@ func GetCalcSetNetworkRegrets(
 		return networkLosses.ForecasterValues[i].Worker < networkLosses.ForecasterValues[j].Worker
 	})
 	for _, forecasterLoss := range networkLosses.ForecasterValues {
-		lastRegret, noPriorRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, forecasterLoss.Worker)
+		lastRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, forecasterLoss.Worker)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
@@ -136,12 +140,12 @@ func GetCalcSetNetworkRegrets(
 			lastRegret.Value,
 			alpha,
 			blockHeight,
-			noPriorRegret,
 		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error computing and building forecaster regret")
 		}
 		k.SetForecasterNetworkRegret(ctx, topicId, forecasterLoss.Worker, newForecasterRegret)
+		workersRegrets = append(workersRegrets, newForecasterRegret.Value)
 	}
 
 	// Calculate the new one-in regrets for the forecasters R^+_ij'k where j' includes all j and forecast implied inference from forecaster k
@@ -151,7 +155,7 @@ func GetCalcSetNetworkRegrets(
 	for _, oneInForecasterLoss := range networkLosses.OneInForecasterValues {
 		// Loop over the inferer losses so that their losses may be compared against the one-in forecaster's loss, for each forecaster
 		for _, infererLoss := range networkLosses.InfererValues {
-			lastRegret, noPriorRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker)
+			lastRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 			}
@@ -161,7 +165,6 @@ func GetCalcSetNetworkRegrets(
 				lastRegret.Value,
 				alpha,
 				blockHeight,
-				noPriorRegret,
 			)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error computing and building one-in forecaster regret")
@@ -169,7 +172,7 @@ func GetCalcSetNetworkRegrets(
 			k.SetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker, newOneInForecasterRegret)
 		}
 		// Self-regret for the forecaster given their own regret
-		lastRegret, noPriorRegret, err := k.GetOneInForecasterSelfNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker)
+		lastRegret, err := k.GetOneInForecasterSelfNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting one-in forecaster self regret")
 		}
@@ -179,7 +182,6 @@ func GetCalcSetNetworkRegrets(
 			lastRegret.Value,
 			alpha,
 			blockHeight,
-			noPriorRegret,
 		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error computing and building one-in forecaster self regret")
@@ -187,5 +189,53 @@ func GetCalcSetNetworkRegrets(
 		k.SetOneInForecasterSelfNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, oneInForecasterSelfRegret)
 	}
 
+	// Recalculate topic initial regret
+	updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, epsilon, pNorm, cNorm)
+	if err != nil {
+		return errorsmod.Wrapf(err, "Error calculating topic initial regret")
+	}
+	k.UpdateTopicInitialRegret(ctx, topicId, updatedTopicInitialRegret)
+
 	return nil
+}
+
+func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pNorm alloraMath.Dec, cNorm alloraMath.Dec) (alloraMath.Dec, error) {
+	stdDevRegrets, err := alloraMath.StdDev(regrets)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	denominator, err := stdDevRegrets.Add(epsilon)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	offset, err := cNorm.Sub(alloraMath.MustNewDecFromString("8.25"))
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	offset, err = offset.Quo(pNorm)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	lowerRegret := alloraMath.ZeroDec()
+	for i, regret := range regrets {
+		if i == 0 || regret.Lt(lowerRegret) {
+			lowerRegret = regret
+		}
+	}
+
+	offset, err = offset.Mul(denominator)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	initialRegret, err := lowerRegret.Add(offset)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	return initialRegret, nil
 }

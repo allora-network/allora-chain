@@ -27,6 +27,8 @@ message Topic {
   bool allow_negative = 14;
   string epsilon = 15
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string initial_regret = 16
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message TopicList {

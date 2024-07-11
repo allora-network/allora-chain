@@ -32,6 +32,7 @@ var (
 	fd_Topic_alpha_regret     protoreflect.FieldDescriptor
 	fd_Topic_allow_negative   protoreflect.FieldDescriptor
 	fd_Topic_epsilon          protoreflect.FieldDescriptor
+	fd_Topic_initial_regret   protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -52,6 +53,7 @@ func init() {
 	fd_Topic_alpha_regret = md_Topic.Fields().ByName("alpha_regret")
 	fd_Topic_allow_negative = md_Topic.Fields().ByName("allow_negative")
 	fd_Topic_epsilon = md_Topic.Fields().ByName("epsilon")
+	fd_Topic_initial_regret = md_Topic.Fields().ByName("initial_regret")
 }
 
 var _ protoreflect.Message = (*fastReflection_Topic)(nil)
@@ -209,6 +211,12 @@ func (x *fastReflection_Topic) Range(f func(protoreflect.FieldDescriptor, protor
 			return
 		}
 	}
+	if x.InitialRegret != "" {
+		value := protoreflect.ValueOfString(x.InitialRegret)
+		if !f(fd_Topic_initial_regret, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -254,6 +262,8 @@ func (x *fastReflection_Topic) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.AllowNegative != false
 	case "emissions.v1.Topic.epsilon":
 		return x.Epsilon != ""
+	case "emissions.v1.Topic.initial_regret":
+		return x.InitialRegret != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -300,6 +310,8 @@ func (x *fastReflection_Topic) Clear(fd protoreflect.FieldDescriptor) {
 		x.AllowNegative = false
 	case "emissions.v1.Topic.epsilon":
 		x.Epsilon = ""
+	case "emissions.v1.Topic.initial_regret":
+		x.InitialRegret = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -361,6 +373,9 @@ func (x *fastReflection_Topic) Get(descriptor protoreflect.FieldDescriptor) prot
 	case "emissions.v1.Topic.epsilon":
 		value := x.Epsilon
 		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Topic.initial_regret":
+		value := x.InitialRegret
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -411,6 +426,8 @@ func (x *fastReflection_Topic) Set(fd protoreflect.FieldDescriptor, value protor
 		x.AllowNegative = value.Bool()
 	case "emissions.v1.Topic.epsilon":
 		x.Epsilon = value.Interface().(string)
+	case "emissions.v1.Topic.initial_regret":
+		x.InitialRegret = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -461,6 +478,8 @@ func (x *fastReflection_Topic) Mutable(fd protoreflect.FieldDescriptor) protoref
 		panic(fmt.Errorf("field allow_negative of message emissions.v1.Topic is not mutable"))
 	case "emissions.v1.Topic.epsilon":
 		panic(fmt.Errorf("field epsilon of message emissions.v1.Topic is not mutable"))
+	case "emissions.v1.Topic.initial_regret":
+		panic(fmt.Errorf("field initial_regret of message emissions.v1.Topic is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -503,6 +522,8 @@ func (x *fastReflection_Topic) NewField(fd protoreflect.FieldDescriptor) protore
 	case "emissions.v1.Topic.allow_negative":
 		return protoreflect.ValueOfBool(false)
 	case "emissions.v1.Topic.epsilon":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.Topic.initial_regret":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -628,6 +649,10 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		l = len(x.InitialRegret)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -656,6 +681,15 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.InitialRegret) > 0 {
+			i -= len(x.InitialRegret)
+			copy(dAtA[i:], x.InitialRegret)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.InitialRegret)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x82
 		}
 		if len(x.Epsilon) > 0 {
 			i -= len(x.Epsilon)
@@ -1221,6 +1255,38 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				x.Epsilon = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 16:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field InitialRegret", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.InitialRegret = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -2331,6 +2397,7 @@ type Topic struct {
 	AlphaRegret     string `protobuf:"bytes,13,opt,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`
 	AllowNegative   bool   `protobuf:"varint,14,opt,name=allow_negative,json=allowNegative,proto3" json:"allow_negative,omitempty"`
 	Epsilon         string `protobuf:"bytes,15,opt,name=epsilon,proto3" json:"epsilon,omitempty"`
+	InitialRegret   string `protobuf:"bytes,16,opt,name=initial_regret,json=initialRegret,proto3" json:"initial_regret,omitempty"`
 }
 
 func (x *Topic) Reset() {
@@ -2458,6 +2525,13 @@ func (x *Topic) GetEpsilon() string {
 	return ""
 }
 
+func (x *Topic) GetInitialRegret() string {
+	if x != nil {
+		return x.InitialRegret
+	}
+	return ""
+}
+
 type TopicList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2555,7 +2629,7 @@ var file_emissions_v1_topic_proto_rawDesc = []byte{
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d,
 	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x2f, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x9f, 0x05, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xff, 0x05, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63,
 	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64,
 	0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x65,
@@ -2597,7 +2671,13 @@ var file_emissions_v1_topic_proto_rawDesc = []byte{
 	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
 	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
 	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52,
-	0x07, 0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e, 0x22, 0x38, 0x0a, 0x09, 0x54, 0x6f, 0x70, 0x69,
+	0x07, 0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e, 0x12, 0x5e, 0x0a, 0x0e, 0x69, 0x6e, 0x69, 0x74,
+	0x69, 0x61, 0x6c, 0x5f, 0x72, 0x65, 0x67, 0x72, 0x65, 0x74, 0x18, 0x10, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0d, 0x69, 0x6e, 0x69, 0x74, 0x69,
+	0x61, 0x6c, 0x52, 0x65, 0x67, 0x72, 0x65, 0x74, 0x22, 0x38, 0x0a, 0x09, 0x54, 0x6f, 0x70, 0x69,
 	0x63, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x2b, 0x0a, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x18,
 	0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
 	0x73, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69,

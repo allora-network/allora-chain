@@ -1119,17 +1119,14 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	err = k.SetTopic(s.ctx, topicId0, topic)
 	require.NoError(err)
 
-	worker0_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
+	worker0_0, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
-	require.True(notFound)
 
-	worker1_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
+	worker1_0, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
 	require.NoError(err)
-	require.True(notFound)
 
-	worker2_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
+	worker2_0, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
 	require.NoError(err)
-	require.True(notFound)
 
 	/// TEST 0 PART A
 
@@ -1158,17 +1155,14 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.2",
 	)
 
-	worker0_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
+	worker0_0, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker1_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
+	worker1_0, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker2_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
+	worker2_0, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
 	require.NoError(err)
-	require.False(notFound)
 
 	/// INCREASE ALPHA REGRET
 
@@ -1211,17 +1205,14 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	blockHeight4 := blockHeight3 + blockHeightDelta
 	s.ctx = s.ctx.WithBlockHeight(blockHeight4)
 
-	worker0_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
+	worker0_1, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker1_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[1].String())
+	worker1_1, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[1].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker2_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[2].String())
+	worker2_1, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[2].String())
 	require.NoError(err)
-	require.False(notFound)
 
 	require.True(worker0_0.Value.Gt(worker0_1.Value))
 	require.True(alloraMath.InDelta(worker1_0.Value, worker1_1.Value, alloraMath.MustNewDecFromString("0.00001")))

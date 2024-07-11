@@ -484,41 +484,49 @@ func (k *Keeper) SetOneInForecasterSelfNetworkRegret(ctx context.Context, topicI
 
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestInfererNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, err
+			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(0),
-			}, true, nil
+				Value:       topic.InitialRegret,
+			}, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, err
 	}
-	return regret, false, nil
+	return regret, nil
 }
 
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, err
+			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(0),
-			}, true, nil
+				Value:       topic.InitialRegret,
+			}, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, err
 	}
-	return regret, false, nil
+	return regret, nil
 }
 
 // Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, error) {
 	key := collections.Join3(topicId, forecaster, inferer)
 	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
@@ -526,14 +534,14 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       alloraMath.NewDecFromInt64(0),
-			}, true, nil
+			}, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, err
 	}
-	return regret, false, nil
+	return regret, nil
 }
 
-func (k *Keeper) GetOneInForecasterSelfNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetOneInForecasterSelfNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId) (types.TimestampedValue, error) {
 	key := collections.Join(topicId, forecaster)
 	regret, err := k.latestOneInForecasterSelfNetworkRegrets.Get(ctx, key)
 	if err != nil {
@@ -541,11 +549,11 @@ func (k *Keeper) GetOneInForecasterSelfNetworkRegret(ctx context.Context, topicI
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       alloraMath.NewDecFromInt64(0),
-			}, true, nil
+			}, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, err
 	}
-	return regret, false, nil
+	return regret, nil
 }
 
 /// PARAMETERS
@@ -1649,6 +1657,16 @@ func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.Simp
 	return activeTopicIds, &types.SimpleCursorPaginationResponse{
 		NextKey: nextKey,
 	}, nil
+}
+
+// UpdateTopicInitialRegret updates the InitialRegret for a given topic.
+func (k *Keeper) UpdateTopicInitialRegret(ctx context.Context, topicId TopicId, initialRegret alloraMath.Dec) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	topic.InitialRegret = initialRegret
+	return k.topics.Set(ctx, topicId, topic)
 }
 
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.

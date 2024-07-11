@@ -99,7 +99,7 @@ func (b *NetworkInferenceBuilder) SetNaiveValue() *NetworkInferenceBuilder {
 	palette := b.palette.Clone()
 
 	palette.Forecasters = nil
-	palette.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
+	palette.ForecasterRegrets = make(map[string]*alloraMath.Dec, 0)
 	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
 		b.logger.Warn(fmt.Sprintf("Error calculating weights for naive inference: %s", err.Error()))
@@ -121,12 +121,6 @@ func (b *NetworkInferenceBuilder) SetNaiveValue() *NetworkInferenceBuilder {
 func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Worker) (alloraMath.Dec, error) {
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld inferer %s", b.palette.TopicId, withheldInferer))
 	palette := b.palette.Clone()
-
-	// Check if withheld inferer is new
-	withheldInfererRegret, ok := palette.InfererRegrets[withheldInferer]
-	if !ok || withheldInfererRegret.noPriorRegret {
-		return alloraMath.NewNaN(), nil
-	}
 
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
@@ -257,19 +251,12 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 	forecastImpliedInferencesWithForecaster[oneInForecaster] = palette.ForecastImpliedInferenceByWorker[oneInForecaster]
 	palette.ForecastImpliedInferenceByWorker = forecastImpliedInferencesWithForecaster
 
-	regret, noPriorRegret, err := palette.K.GetOneInForecasterSelfNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster)
+	regret, err := palette.K.GetOneInForecasterSelfNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 	}
 
-	if noPriorRegret {
-		return alloraMath.NewNaN(), nil
-	}
-
-	palette.ForecasterRegrets[oneInForecaster] = &StatefulRegret{
-		regret:        regret.Value,
-		noPriorRegret: noPriorRegret,
-	}
+	palette.ForecasterRegrets[oneInForecaster] = &regret.Value
 
 	remainingForecaster := []Worker{oneInForecaster}
 	err = palette.UpdateForecastersInfo(remainingForecaster)
@@ -279,15 +266,12 @@ func (b *NetworkInferenceBuilder) calcOneInValue(oneInForecaster Worker) (allora
 
 	// Get one-in regrets for the forecaster and the inferers they provided forecasts for
 	for _, inferer := range palette.Inferers {
-		regret, noPriorRegret, err := palette.K.GetOneInForecasterNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster, inferer)
+		regret, err := palette.K.GetOneInForecasterNetworkRegret(palette.Ctx, palette.TopicId, oneInForecaster, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 		}
 
-		palette.InfererRegrets[inferer] = &StatefulRegret{
-			regret:        regret.Value,
-			noPriorRegret: noPriorRegret,
-		}
+		palette.InfererRegrets[inferer] = &regret.Value
 	}
 
 	err = palette.UpdateInferersInfo(palette.Inferers)

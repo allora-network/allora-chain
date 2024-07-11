@@ -11,21 +11,25 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 	sortedInferers := alloraMath.GetSortedKeys(inferenceByWorker)
 	sortedForecasters := alloraMath.GetSortedKeys(forecastByWorker)
 
+	topic, err := req.K.GetTopic(req.Ctx, req.TopicId)
+	if err != nil {
+		return SynthPalette{}, err
+	}
+
 	// Those values not from req are to be considered defaults
 	palette := SynthPalette{
 		Ctx:                              req.Ctx,
 		K:                                req.K,
 		Logger:                           Logger(req.Ctx),
 		TopicId:                          req.TopicId,
+		AllInferersAreNew:                topic.InitialRegret.Equal(alloraMath.ZeroDec()), // If initial regret is 0, all inferers are new
 		Inferers:                         sortedInferers,
 		InferenceByWorker:                inferenceByWorker,
-		InfererRegrets:                   make(map[string]*StatefulRegret), // Populated below
+		InfererRegrets:                   make(map[string]*alloraMath.Dec), // Populated below
 		Forecasters:                      sortedForecasters,
 		ForecastByWorker:                 forecastByWorker,
 		ForecastImpliedInferenceByWorker: nil,                              // Populated below
-		ForecasterRegrets:                make(map[string]*StatefulRegret), // Populated below
-		InferersNewStatus:                InferersAllNew,                   // Populated below
-		SingleNotNewInferer:              "",
+		ForecasterRegrets:                make(map[string]*alloraMath.Dec), // Populated below
 		NetworkCombinedLoss:              req.NetworkCombinedLoss,
 		Epsilon:                          req.Epsilon,
 		PNorm:                            req.PNorm,
@@ -33,7 +37,7 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 	}
 
 	// Populates: infererRegrets, forecasterRegrets, allInferersAreNew
-	err := palette.BootstrapRegretData()
+	err = palette.BootstrapRegretData()
 	if err != nil {
 		return SynthPalette{}, err
 	}

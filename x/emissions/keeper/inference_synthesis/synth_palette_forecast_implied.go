@@ -42,7 +42,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 			err := error(nil)
 
 			// Calculate the forecast-implied inferences I_ik
-			if p.InferersNewStatus == InferersAllNew {
+			if p.AllInferersAreNew {
 				// If all inferers are new, take regular average of inferences
 				// This means that forecasters won't be able to influence the network inference when all inferers are new
 				// However this seeds losses for forecasters for future rounds
@@ -64,7 +64,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 
 				// Approximate forecast regrets of the network inference
 				// Map inferer -> regret
-				R_ik := make(map[Worker]*StatefulRegret, len(forecastElementsByInferer))
+				R_ik := make(map[Worker]*alloraMath.Dec, len(forecastElementsByInferer))
 				// Forecast-regret-informed weights dot product with inferences to yield forecast-implied inferences
 				// Map inferer -> weight
 				w_ik := make(map[Worker]Weight, len(forecastElementsByInferer))
@@ -77,12 +77,12 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating network loss per value")
 					}
-					R_ik[j] = &StatefulRegret{regret: R_ijk, noPriorRegret: false}
+					R_ik[j] = &R_ijk
 				}
 
 				if len(sortedInferersInForecast) > 1 {
 					p.InfererRegrets = R_ik
-					p.ForecasterRegrets = make(map[string]*StatefulRegret, 0)
+					p.ForecasterRegrets = make(map[string]*alloraMath.Dec, 0)
 
 					weights, err := p.CalcWeightsGivenWorkers()
 					if err != nil {
