@@ -86,6 +86,7 @@ const (
 	Query_GetListeningCoefficient_FullMethodName               = "/emissions.v1.Query/GetListeningCoefficient"
 	Query_GetPreviousReputerRewardFraction_FullMethodName      = "/emissions.v1.Query/GetPreviousReputerRewardFraction"
 	Query_GetPreviousInferenceRewardFraction_FullMethodName    = "/emissions.v1.Query/GetPreviousInferenceRewardFraction"
+	Query_GetPreviousForecastRewardFraction_FullMethodName     = "/emissions.v1.Query/GetPreviousForecastRewardFraction"
 )
 
 // QueryClient is the client API for Query service.
@@ -160,6 +161,7 @@ type QueryClient interface {
 	GetListeningCoefficient(ctx context.Context, in *QueryListeningCoefficientRequest, opts ...grpc.CallOption) (*QueryListeningCoefficientResponse, error)
 	GetPreviousReputerRewardFraction(ctx context.Context, in *QueryPreviousReputerRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousReputerRewardFractionResponse, error)
 	GetPreviousInferenceRewardFraction(ctx context.Context, in *QueryPreviousInferenceRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousInferenceRewardFractionResponse, error)
+	GetPreviousForecastRewardFraction(ctx context.Context, in *QueryPreviousForecastRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousForecastRewardFractionResponse, error)
 }
 
 type queryClient struct {
@@ -773,6 +775,15 @@ func (c *queryClient) GetPreviousInferenceRewardFraction(ctx context.Context, in
 	return out, nil
 }
 
+func (c *queryClient) GetPreviousForecastRewardFraction(ctx context.Context, in *QueryPreviousForecastRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousForecastRewardFractionResponse, error) {
+	out := new(QueryPreviousForecastRewardFractionResponse)
+	err := c.cc.Invoke(ctx, Query_GetPreviousForecastRewardFraction_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -845,6 +856,7 @@ type QueryServer interface {
 	GetListeningCoefficient(context.Context, *QueryListeningCoefficientRequest) (*QueryListeningCoefficientResponse, error)
 	GetPreviousReputerRewardFraction(context.Context, *QueryPreviousReputerRewardFractionRequest) (*QueryPreviousReputerRewardFractionResponse, error)
 	GetPreviousInferenceRewardFraction(context.Context, *QueryPreviousInferenceRewardFractionRequest) (*QueryPreviousInferenceRewardFractionResponse, error)
+	GetPreviousForecastRewardFraction(context.Context, *QueryPreviousForecastRewardFractionRequest) (*QueryPreviousForecastRewardFractionResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -1052,6 +1064,9 @@ func (UnimplementedQueryServer) GetPreviousReputerRewardFraction(context.Context
 }
 func (UnimplementedQueryServer) GetPreviousInferenceRewardFraction(context.Context, *QueryPreviousInferenceRewardFractionRequest) (*QueryPreviousInferenceRewardFractionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousInferenceRewardFraction not implemented")
+}
+func (UnimplementedQueryServer) GetPreviousForecastRewardFraction(context.Context, *QueryPreviousForecastRewardFractionRequest) (*QueryPreviousForecastRewardFractionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousForecastRewardFraction not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -2272,6 +2287,24 @@ func _Query_GetPreviousInferenceRewardFraction_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetPreviousForecastRewardFraction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousForecastRewardFractionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousForecastRewardFraction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetPreviousForecastRewardFraction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousForecastRewardFraction(ctx, req.(*QueryPreviousForecastRewardFractionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2546,6 +2579,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPreviousInferenceRewardFraction",
 			Handler:    _Query_GetPreviousInferenceRewardFraction_Handler,
+		},
+		{
+			MethodName: "GetPreviousForecastRewardFraction",
+			Handler:    _Query_GetPreviousForecastRewardFraction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

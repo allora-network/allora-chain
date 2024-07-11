@@ -386,6 +386,12 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/previous_inference_reward_fraction/{topic_id}/{worker}";
   }
+
+  rpc GetPreviousForecastRewardFraction(QueryPreviousForecastRewardFractionRequest)
+      returns (QueryPreviousForecastRewardFractionResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/previous_forecast_reward_fraction/{topic_id}/{worker}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -1040,6 +1046,17 @@ message QueryPreviousInferenceRewardFractionRequest {
 }
 
 message QueryPreviousInferenceRewardFractionResponse {
+  string reward_fraction = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  bool not_found = 2;
+}
+
+message QueryPreviousForecastRewardFractionRequest {
+  uint64 topic_id = 1;
+  string worker = 2;
+}
+
+message QueryPreviousForecastRewardFractionResponse {
   string reward_fraction = 1
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   bool not_found = 2;
