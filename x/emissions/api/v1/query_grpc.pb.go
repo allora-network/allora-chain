@@ -71,6 +71,7 @@ const (
 	Query_TopicExists_FullMethodName                           = "/emissions.v1.Query/TopicExists"
 	Query_IsTopicActive_FullMethodName                         = "/emissions.v1.Query/IsTopicActive"
 	Query_GetIdsOfActiveTopics_FullMethodName                  = "/emissions.v1.Query/GetIdsOfActiveTopics"
+	Query_GetTopicEpochLastEnded_FullMethodName                = "/emissions.v1.Query/GetTopicEpochLastEnded"
 )
 
 // QueryClient is the client API for Query service.
@@ -130,6 +131,7 @@ type QueryClient interface {
 	TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error)
 	IsTopicActive(ctx context.Context, in *QueryIsTopicActiveRequest, opts ...grpc.CallOption) (*QueryIsTopicActiveResponse, error)
 	GetIdsOfActiveTopics(ctx context.Context, in *QueryIdsOfActiveTopicsRequest, opts ...grpc.CallOption) (*QueryIdsOfActiveTopicsResponse, error)
+	GetTopicEpochLastEnded(ctx context.Context, in *QueryTopicEpochLastEndedRequest, opts ...grpc.CallOption) (*QueryTopicEpochLastEndedResponse, error)
 }
 
 type queryClient struct {
@@ -608,6 +610,15 @@ func (c *queryClient) GetIdsOfActiveTopics(ctx context.Context, in *QueryIdsOfAc
 	return out, nil
 }
 
+func (c *queryClient) GetTopicEpochLastEnded(ctx context.Context, in *QueryTopicEpochLastEndedRequest, opts ...grpc.CallOption) (*QueryTopicEpochLastEndedResponse, error) {
+	out := new(QueryTopicEpochLastEndedResponse)
+	err := c.cc.Invoke(ctx, Query_GetTopicEpochLastEnded_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -665,6 +676,7 @@ type QueryServer interface {
 	TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error)
 	IsTopicActive(context.Context, *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error)
 	GetIdsOfActiveTopics(context.Context, *QueryIdsOfActiveTopicsRequest) (*QueryIdsOfActiveTopicsResponse, error)
+	GetTopicEpochLastEnded(context.Context, *QueryTopicEpochLastEndedRequest) (*QueryTopicEpochLastEndedResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -827,6 +839,9 @@ func (UnimplementedQueryServer) IsTopicActive(context.Context, *QueryIsTopicActi
 }
 func (UnimplementedQueryServer) GetIdsOfActiveTopics(context.Context, *QueryIdsOfActiveTopicsRequest) (*QueryIdsOfActiveTopicsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIdsOfActiveTopics not implemented")
+}
+func (UnimplementedQueryServer) GetTopicEpochLastEnded(context.Context, *QueryTopicEpochLastEndedRequest) (*QueryTopicEpochLastEndedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicEpochLastEnded not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1777,6 +1792,24 @@ func _Query_GetIdsOfActiveTopics_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetTopicEpochLastEnded_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicEpochLastEndedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicEpochLastEnded(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTopicEpochLastEnded_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicEpochLastEnded(ctx, req.(*QueryTopicEpochLastEndedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1991,6 +2024,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetIdsOfActiveTopics",
 			Handler:    _Query_GetIdsOfActiveTopics_Handler,
+		},
+		{
+			MethodName: "GetTopicEpochLastEnded",
+			Handler:    _Query_GetTopicEpochLastEnded_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

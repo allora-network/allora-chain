@@ -167,3 +167,18 @@ func (qs queryServer) GetIdsOfActiveTopics(
 		Pagination:     paginationResponse,
 	}, nil
 }
+
+func (qs queryServer) GetTopicEpochLastEnded(
+	ctx context.Context,
+	req *types.QueryTopicEpochLastEndedRequest,
+) (
+	*types.QueryTopicEpochLastEndedResponse,
+	error,
+) {
+	epochLastEnded, err := qs.k.GetTopicEpochLastEnded(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryTopicEpochLastEndedResponse{EpochLastEnded: epochLastEnded}, nil
+}

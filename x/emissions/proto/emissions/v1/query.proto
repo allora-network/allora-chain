@@ -304,6 +304,11 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/active_topic_ids";
   }
+
+  rpc GetTopicEpochLastEnded(QueryTopicEpochLastEndedRequest) returns (QueryTopicEpochLastEndedResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_epoch_last_ended/{topic_id}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -825,4 +830,12 @@ message QueryIdsOfActiveTopicsRequest {
 message QueryIdsOfActiveTopicsResponse {
   repeated uint64 active_topic_ids = 1;
   SimpleCursorPaginationResponse pagination = 2;
+}
+
+message QueryTopicEpochLastEndedRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicEpochLastEndedResponse {
+  int64 epoch_last_ended = 1;
 }

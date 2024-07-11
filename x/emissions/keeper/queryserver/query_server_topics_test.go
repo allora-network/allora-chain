@@ -319,3 +319,25 @@ func (s *KeeperTestSuite) TestGetIdsOfActiveTopics() {
 		}
 	}
 }
+
+func (s *KeeperTestSuite) TestGetTopicEpochLastEnded() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	epochLastEnded := types.BlockHeight(100)
+
+	// Setup a topic initially
+	initialTopic := types.Topic{Id: topicId}
+	_ = keeper.SetTopic(ctx, topicId, initialTopic)
+
+	// Update the epoch last ended
+	err := keeper.UpdateTopicEpochLastEnded(ctx, topicId, epochLastEnded)
+	s.Require().NoError(err, "Updating topic epoch last ended should not fail")
+
+	// Retrieve the last ended epoch for the topic
+	req := &types.QueryTopicEpochLastEndedRequest{TopicId: topicId}
+	response, err := s.queryServer.GetTopicEpochLastEnded(ctx, req)
+	retrievedEpoch := response.EpochLastEnded
+	s.Require().NoError(err, "Retrieving topic epoch last ended should not fail")
+	s.Require().Equal(epochLastEnded, retrievedEpoch, "The retrieved epoch last ended should match the updated value")
+}
