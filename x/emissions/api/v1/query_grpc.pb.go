@@ -66,6 +66,7 @@ const (
 	Query_GetDelegateStakeUponReputer_FullMethodName           = "/emissions.v1.Query/GetDelegateStakeUponReputer"
 	Query_GetDelegateRewardPerShare_FullMethodName             = "/emissions.v1.Query/GetDelegateRewardPerShare"
 	Query_GetStakeRemovalForReputerAndTopicId_FullMethodName   = "/emissions.v1.Query/GetStakeRemovalForReputerAndTopicId"
+	Query_GetDelegateStakeRemoval_FullMethodName               = "/emissions.v1.Query/GetDelegateStakeRemoval"
 )
 
 // QueryClient is the client API for Query service.
@@ -120,6 +121,7 @@ type QueryClient interface {
 	GetDelegateStakeUponReputer(ctx context.Context, in *QueryDelegateStakeUponReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeUponReputerResponse, error)
 	GetDelegateRewardPerShare(ctx context.Context, in *QueryDelegateRewardPerShareRequest, opts ...grpc.CallOption) (*QueryDelegateRewardPerShareResponse, error)
 	GetStakeRemovalForReputerAndTopicId(ctx context.Context, in *QueryStakeRemovalForReputerAndTopicIdRequest, opts ...grpc.CallOption) (*QueryStakeRemovalForReputerAndTopicIdResponse, error)
+	GetDelegateStakeRemoval(ctx context.Context, in *QueryDelegateStakeRemovalRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalResponse, error)
 }
 
 type queryClient struct {
@@ -553,6 +555,15 @@ func (c *queryClient) GetStakeRemovalForReputerAndTopicId(ctx context.Context, i
 	return out, nil
 }
 
+func (c *queryClient) GetDelegateStakeRemoval(ctx context.Context, in *QueryDelegateStakeRemovalRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalResponse, error) {
+	out := new(QueryDelegateStakeRemovalResponse)
+	err := c.cc.Invoke(ctx, Query_GetDelegateStakeRemoval_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -605,6 +616,7 @@ type QueryServer interface {
 	GetDelegateStakeUponReputer(context.Context, *QueryDelegateStakeUponReputerRequest) (*QueryDelegateStakeUponReputerResponse, error)
 	GetDelegateRewardPerShare(context.Context, *QueryDelegateRewardPerShareRequest) (*QueryDelegateRewardPerShareResponse, error)
 	GetStakeRemovalForReputerAndTopicId(context.Context, *QueryStakeRemovalForReputerAndTopicIdRequest) (*QueryStakeRemovalForReputerAndTopicIdResponse, error)
+	GetDelegateStakeRemoval(context.Context, *QueryDelegateStakeRemovalRequest) (*QueryDelegateStakeRemovalResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -752,6 +764,9 @@ func (UnimplementedQueryServer) GetDelegateRewardPerShare(context.Context, *Quer
 }
 func (UnimplementedQueryServer) GetStakeRemovalForReputerAndTopicId(context.Context, *QueryStakeRemovalForReputerAndTopicIdRequest) (*QueryStakeRemovalForReputerAndTopicIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStakeRemovalForReputerAndTopicId not implemented")
+}
+func (UnimplementedQueryServer) GetDelegateStakeRemoval(context.Context, *QueryDelegateStakeRemovalRequest) (*QueryDelegateStakeRemovalResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeRemoval not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1612,6 +1627,24 @@ func _Query_GetStakeRemovalForReputerAndTopicId_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetDelegateStakeRemoval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateStakeRemovalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetDelegateStakeRemoval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetDelegateStakeRemoval_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetDelegateStakeRemoval(ctx, req.(*QueryDelegateStakeRemovalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1806,6 +1839,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStakeRemovalForReputerAndTopicId",
 			Handler:    _Query_GetStakeRemovalForReputerAndTopicId_Handler,
+		},
+		{
+			MethodName: "GetDelegateStakeRemoval",
+			Handler:    _Query_GetDelegateStakeRemoval_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

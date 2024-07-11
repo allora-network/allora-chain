@@ -1566,6 +1566,48 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	s.Require().Len(removals, 0)
 }
 
+func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Create sample delegate stake removal information
+	removalInfo := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   int64(12),
+		BlockRemovalCompleted: int64(13),
+		TopicId:               uint64(201),
+		Reputer:               "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n",
+		Delegator:             "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+		Amount:                cosmosMath.NewInt(300),
+	}
+
+	// Set delegate stake removal information
+	err := keeper.SetDelegateStakeRemoval(ctx, removalInfo)
+	s.Require().NoError(err)
+
+	retrievedInfo, err := keeper.GetDelegateStakeRemoval(ctx,
+		removalInfo.BlockRemovalStarted,
+		removalInfo.TopicId,
+		removalInfo.Delegator,
+		removalInfo.Reputer,
+	)
+	// index is on BlockRemovalCompleted not BlockRemovalStarted
+	s.Require().Error(err)
+
+	retrievedInfo, err = keeper.GetDelegateStakeRemoval(ctx,
+		removalInfo.BlockRemovalCompleted,
+		removalInfo.TopicId,
+		removalInfo.Delegator,
+		removalInfo.Reputer,
+	)
+	s.Require().NoError(err)
+
+	s.Require().Equal(removalInfo.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted)
+	s.Require().Equal(removalInfo.TopicId, retrievedInfo.TopicId)
+	s.Require().Equal(removalInfo.Reputer, retrievedInfo.Reputer)
+	s.Require().Equal(removalInfo.Delegator, retrievedInfo.Delegator)
+	s.Require().Equal(removalInfo.Amount, retrievedInfo.Amount)
+}
+
 func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper

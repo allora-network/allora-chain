@@ -1,6 +1,7 @@
 package queryserver_test
 
 import (
+	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -118,4 +119,47 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 	result := response.LossBundles
 	require.NotNil(result)
 	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
+}
+
+func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Create sample delegate stake removal information
+	removalInfo := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   int64(12),
+		BlockRemovalCompleted: int64(13),
+		TopicId:               uint64(201),
+		Reputer:               "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n",
+		Delegator:             "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+		Amount:                cosmosMath.NewInt(300),
+	}
+
+	// Set delegate stake removal information
+	err := keeper.SetDelegateStakeRemoval(ctx, removalInfo)
+	s.Require().NoError(err)
+
+	req := &types.QueryDelegateStakeRemovalRequest{
+		BlockHeight: removalInfo.BlockRemovalStarted,
+		TopicId:     removalInfo.TopicId,
+		Reputer:     removalInfo.Reputer,
+		Delegator:   removalInfo.Delegator,
+	}
+	response, err := s.queryServer.GetDelegateStakeRemoval(ctx, req)
+	s.Require().Error(err)
+	s.Require().Nil(response)
+
+	req.BlockHeight = removalInfo.BlockRemovalCompleted
+
+	response, err = s.queryServer.GetDelegateStakeRemoval(ctx, req)
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+
+	retrievedInfo := response.StakeRemovalInfo
+
+	s.Require().Equal(removalInfo.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted)
+	s.Require().Equal(removalInfo.TopicId, retrievedInfo.TopicId)
+	s.Require().Equal(removalInfo.Reputer, retrievedInfo.Reputer)
+	s.Require().Equal(removalInfo.Delegator, retrievedInfo.Delegator)
+	s.Require().Equal(removalInfo.Amount, retrievedInfo.Amount)
 }

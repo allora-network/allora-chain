@@ -380,3 +380,18 @@ func (qs queryServer) GetStakeRemovalForReputerAndTopicId(
 
 	return &types.QueryStakeRemovalForReputerAndTopicIdResponse{StakeRemovalInfo: &stakeRemovalInfo}, nil
 }
+
+func (qs queryServer) GetDelegateStakeRemoval(
+	ctx context.Context,
+	req *types.QueryDelegateStakeRemovalRequest,
+) (
+	*types.QueryDelegateStakeRemovalResponse,
+	error,
+) {
+	delegateStakeRemoval, err := qs.k.GetDelegateStakeRemoval(ctx, req.BlockHeight, req.TopicId, req.Delegator, req.Reputer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDelegateStakeRemovalResponse{StakeRemovalInfo: &delegateStakeRemoval}, nil
+}

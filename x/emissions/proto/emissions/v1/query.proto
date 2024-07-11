@@ -278,6 +278,12 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/stake_removal/{reputer}/{topic_id}";
   }
+
+  rpc GetDelegateStakeRemoval(QueryDelegateStakeRemovalRequest) returns (QueryDelegateStakeRemovalResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+        "/emissions/v1/delegate_stake_removal/{block_height}/{topic_id}/{delegator}/{reputer}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -754,4 +760,15 @@ message QueryStakeRemovalForReputerAndTopicIdRequest {
 
 message QueryStakeRemovalForReputerAndTopicIdResponse {
   StakeRemovalInfo stake_removal_info = 1;
+}
+
+message QueryDelegateStakeRemovalRequest {
+  int64 block_height = 1;
+  uint64 topic_id = 2;
+  string delegator = 3;
+  string reputer = 4;
+}
+
+message QueryDelegateStakeRemovalResponse {
+  DelegateStakeRemovalInfo stake_removal_info = 1;
 }
