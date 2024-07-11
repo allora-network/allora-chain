@@ -43,12 +43,12 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	maxRegret := alloraMath.ZeroDec()
 	maxRegretInitialized := false
 	for _, worker := range p.Inferers {
-		regretInfo, ok := p.InfererRegrets[worker]
+		regret, ok := p.InfererRegrets[worker]
 		if !ok {
 			p.Logger.Debug(fmt.Sprintf("Cannot find worker in InfererRegrets in CalcWeightsGivenWorkers %v", worker))
 			continue
 		}
-		regretFrac, err := regretInfo.Quo(stdDevRegretsPlusEpsilon)
+		regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 		}
@@ -64,12 +64,12 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(p.ForecasterRegrets) > 0 {
 		for _, worker := range p.Forecasters {
-			regretInfo, ok := p.ForecasterRegrets[worker]
+			regret, ok := p.ForecasterRegrets[worker]
 			if !ok {
 				p.Logger.Debug(fmt.Sprintf("Cannot find worker in ForecasterRegrets in CalcWeightsGivenWorkers %v", worker))
 				continue
 			}
-			regretFrac, err := regretInfo.Quo(stdDevRegretsPlusEpsilon)
+			regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating regret fraction")
 			}
@@ -89,8 +89,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 	// Calculate the weights from the normalized regrets
 	for _, worker := range p.Inferers {
 		// If there is more than one not-new inferer, calculate the weight for the ones that are not new
-		var infererWeight = alloraMath.ZeroDec()
-		infererWeight, err = CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
+		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
 		}
@@ -206,12 +205,12 @@ func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.InfererRegrets))
 	for _, inferer := range p.Inferers {
-		regretInfo, ok := p.InfererRegrets[inferer]
+		regret, ok := p.InfererRegrets[inferer]
 		if !ok {
 			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in InfererRegrets in GetInfererRegretsSlice %v", inferer))
 			continue
 		}
-		regrets = append(regrets, *regretInfo)
+		regrets = append(regrets, *regret)
 	}
 	return regrets
 }
@@ -223,12 +222,12 @@ func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
 	}
 	regrets = make([]alloraMath.Dec, 0, len(p.ForecasterRegrets))
 	for _, forecaster := range p.Forecasters {
-		regretInfo, ok := p.ForecasterRegrets[forecaster]
+		regret, ok := p.ForecasterRegrets[forecaster]
 		if !ok {
 			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in GetForecasterRegretsSlice %v", forecaster))
 			continue
 		}
-		regrets = append(regrets, *regretInfo)
+		regrets = append(regrets, *regret)
 	}
 	return regrets
 }
@@ -239,12 +238,12 @@ func (p *SynthPalette) UpdateInferersInfo(newInferers []Worker) error {
 	infererRegrets := make(map[Worker]*alloraMath.Dec)
 
 	for _, inferer := range p.Inferers {
-		regretInfo, ok := p.InfererRegrets[inferer]
+		regret, ok := p.InfererRegrets[inferer]
 		if !ok {
 			p.Logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in UpdateInferersInfo %v", inferer))
 			continue
 		}
-		infererRegrets[inferer] = regretInfo
+		infererRegrets[inferer] = regret
 		inference, ok := p.InferenceByWorker[inferer]
 		if !ok {
 			p.Logger.Debug(fmt.Sprintf("Cannot find inferer in InferenceByWorker in UpdateInferersInfo %v", inferer))
@@ -294,12 +293,6 @@ func AccumulateWeights(
 	sumWeights alloraMath.Dec,
 ) (alloraMath.Dec, alloraMath.Dec, error) {
 	err := error(nil)
-
-	// If there is no prior regret and there is at least 1 worker of the same type (inferer/forecaster)
-	// already with a reget => skip this worker (set weight=0)
-	if !allPeersAreNew {
-		return runningUnnormalizedI_i, sumWeights, nil
-	}
 
 	// Avoid needless computation if the weight is 0 or if there is no inference
 	if weight.IsNaN() || weight.Equal(alloraMath.ZeroDec()) || inference == nil {
