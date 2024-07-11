@@ -75,6 +75,9 @@ const (
 	Query_GetTopicFeeRevenue_FullMethodName                    = "/emissions.v1.Query/GetTopicFeeRevenue"
 	Query_GetChurnableTopics_FullMethodName                    = "/emissions.v1.Query/GetChurnableTopics"
 	Query_GetRewardableTopics_FullMethodName                   = "/emissions.v1.Query/GetRewardableTopics"
+	Query_GetLatestInfererScore_FullMethodName                 = "/emissions.v1.Query/GetLatestInfererScore"
+	Query_GetLatestForecasterScore_FullMethodName              = "/emissions.v1.Query/GetLatestForecasterScore"
+	Query_GetLatestReputerScore_FullMethodName                 = "/emissions.v1.Query/GetLatestReputerScore"
 )
 
 // QueryClient is the client API for Query service.
@@ -138,6 +141,9 @@ type QueryClient interface {
 	GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error)
 	GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error)
+	GetLatestInfererScore(ctx context.Context, in *QueryLatestInfererScoreRequest, opts ...grpc.CallOption) (*QueryLatestInfererScoreResponse, error)
+	GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error)
+	GetLatestReputerScore(ctx context.Context, in *QueryLatestReputerScoreRequest, opts ...grpc.CallOption) (*QueryLatestReputerScoreResponse, error)
 }
 
 type queryClient struct {
@@ -652,6 +658,33 @@ func (c *queryClient) GetRewardableTopics(ctx context.Context, in *QueryRewardab
 	return out, nil
 }
 
+func (c *queryClient) GetLatestInfererScore(ctx context.Context, in *QueryLatestInfererScoreRequest, opts ...grpc.CallOption) (*QueryLatestInfererScoreResponse, error) {
+	out := new(QueryLatestInfererScoreResponse)
+	err := c.cc.Invoke(ctx, Query_GetLatestInfererScore_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error) {
+	out := new(QueryLatestForecasterScoreResponse)
+	err := c.cc.Invoke(ctx, Query_GetLatestForecasterScore_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetLatestReputerScore(ctx context.Context, in *QueryLatestReputerScoreRequest, opts ...grpc.CallOption) (*QueryLatestReputerScoreResponse, error) {
+	out := new(QueryLatestReputerScoreResponse)
+	err := c.cc.Invoke(ctx, Query_GetLatestReputerScore_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -713,6 +746,9 @@ type QueryServer interface {
 	GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error)
 	GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error)
+	GetLatestInfererScore(context.Context, *QueryLatestInfererScoreRequest) (*QueryLatestInfererScoreResponse, error)
+	GetLatestForecasterScore(context.Context, *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error)
+	GetLatestReputerScore(context.Context, *QueryLatestReputerScoreRequest) (*QueryLatestReputerScoreResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -887,6 +923,15 @@ func (UnimplementedQueryServer) GetChurnableTopics(context.Context, *QueryChurna
 }
 func (UnimplementedQueryServer) GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRewardableTopics not implemented")
+}
+func (UnimplementedQueryServer) GetLatestInfererScore(context.Context, *QueryLatestInfererScoreRequest) (*QueryLatestInfererScoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestInfererScore not implemented")
+}
+func (UnimplementedQueryServer) GetLatestForecasterScore(context.Context, *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestForecasterScore not implemented")
+}
+func (UnimplementedQueryServer) GetLatestReputerScore(context.Context, *QueryLatestReputerScoreRequest) (*QueryLatestReputerScoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestReputerScore not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1909,6 +1954,60 @@ func _Query_GetRewardableTopics_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetLatestInfererScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestInfererScoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestInfererScore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetLatestInfererScore_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestInfererScore(ctx, req.(*QueryLatestInfererScoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetLatestForecasterScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestForecasterScoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestForecasterScore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetLatestForecasterScore_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestForecasterScore(ctx, req.(*QueryLatestForecasterScoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetLatestReputerScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestReputerScoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestReputerScore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetLatestReputerScore_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestReputerScore(ctx, req.(*QueryLatestReputerScoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2139,6 +2238,18 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRewardableTopics",
 			Handler:    _Query_GetRewardableTopics_Handler,
+		},
+		{
+			MethodName: "GetLatestInfererScore",
+			Handler:    _Query_GetLatestInfererScore_Handler,
+		},
+		{
+			MethodName: "GetLatestForecasterScore",
+			Handler:    _Query_GetLatestForecasterScore_Handler,
+		},
+		{
+			MethodName: "GetLatestReputerScore",
+			Handler:    _Query_GetLatestReputerScore_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

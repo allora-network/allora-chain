@@ -17,6 +17,7 @@ import "emissions/v1/reputer.proto";
 import "emissions/v1/nonce.proto";
 import "emissions/v1/topic.proto";
 import "emissions/v1/stake.proto";
+import "emissions/v1/score.proto";
 import "emissions/v1/inference.proto";
 
 // Msg defines the module Msg service.
@@ -323,6 +324,21 @@ service Query {
   rpc GetRewardableTopics(QueryRewardableTopicsRequest) returns (QueryRewardableTopicsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/rewardable_topics";
+  }
+
+  rpc GetLatestInfererScore(QueryLatestInfererScoreRequest) returns (QueryLatestInfererScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/latest_inferer_score/{topic_id}/{worker}";
+  }
+
+  rpc GetLatestForecasterScore(QueryLatestForecasterScoreRequest) returns (QueryLatestForecasterScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/latest_forecaster_score/{topic_id}/{forecaster}";
+  }
+
+  rpc GetLatestReputerScore(QueryLatestReputerScoreRequest) returns (QueryLatestReputerScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/latest_reputer_score/{topic_id}/{reputer}";
   }
 }
 
@@ -878,4 +894,31 @@ message QueryRewardableTopicsRequest {}
 
 message QueryRewardableTopicsResponse {
   repeated uint64 rewardable_topic_ids = 1;
+}
+
+message QueryLatestInfererScoreRequest {
+  uint64 topic_id = 1;
+  string worker = 2;
+}
+
+message QueryLatestInfererScoreResponse {
+  Score score = 1;
+}
+
+message QueryLatestForecasterScoreRequest {
+  uint64 topic_id = 1;
+  string forecaster = 2;
+}
+
+message QueryLatestForecasterScoreResponse {
+  Score score = 1;
+}
+
+message QueryLatestReputerScoreRequest {
+  uint64 topic_id = 1;
+  string reputer = 2;
+}
+
+message QueryLatestReputerScoreResponse {
+  Score score = 1;
 }
