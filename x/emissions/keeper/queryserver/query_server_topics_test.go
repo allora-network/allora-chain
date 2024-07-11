@@ -1,6 +1,7 @@
 package queryserver_test
 
 import (
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -340,4 +341,33 @@ func (s *KeeperTestSuite) TestGetTopicEpochLastEnded() {
 	retrievedEpoch := response.EpochLastEnded
 	s.Require().NoError(err, "Retrieving topic epoch last ended should not fail")
 	s.Require().Equal(epochLastEnded, retrievedEpoch, "The retrieved epoch last ended should match the updated value")
+}
+
+func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	newTopic := types.Topic{Id: topicId}
+	err := keeper.SetTopic(ctx, topicId, newTopic)
+	s.Require().NoError(err, "Setting a new topic should not fail")
+
+	// Test getting revenue for a topic with no existing revenue
+	req := &types.QueryTopicFeeRevenueRequest{TopicId: topicId}
+	response, err := s.queryServer.GetTopicFeeRevenue(ctx, req)
+	feeRev := response.FeeRevenue
+	s.Require().NoError(err, "Should not error when revenue does not exist")
+	s.Require().Equal(cosmosMath.ZeroInt(), feeRev, "Revenue should be zero for non-existing entries")
+
+	// Setup a topic with some revenue
+	initialRevenue := cosmosMath.NewInt(100)
+	initialRevenueInt := cosmosMath.NewInt(100)
+	keeper.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+
+	// Test getting revenue for a topic with existing revenue
+	req = &types.QueryTopicFeeRevenueRequest{TopicId: topicId}
+	response, err = s.queryServer.GetTopicFeeRevenue(ctx, req)
+	feeRev = response.FeeRevenue
+	s.Require().NoError(err, "Should not error when retrieving existing revenue")
+	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }

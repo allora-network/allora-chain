@@ -182,3 +182,18 @@ func (qs queryServer) GetTopicEpochLastEnded(
 
 	return &types.QueryTopicEpochLastEndedResponse{EpochLastEnded: epochLastEnded}, nil
 }
+
+func (qs queryServer) GetTopicFeeRevenue(
+	ctx context.Context,
+	req *types.QueryTopicFeeRevenueRequest,
+) (
+	*types.QueryTopicFeeRevenueResponse,
+	error,
+) {
+	feeRevenue, err := qs.k.GetTopicFeeRevenue(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryTopicFeeRevenueResponse{FeeRevenue: feeRevenue}, nil
+}

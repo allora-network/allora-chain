@@ -309,6 +309,11 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/topic_epoch_last_ended/{topic_id}";
   }
+
+  rpc GetTopicFeeRevenue(QueryTopicFeeRevenueRequest) returns (QueryTopicFeeRevenueResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_fee_revenue/{topic_id}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -838,4 +843,17 @@ message QueryTopicEpochLastEndedRequest {
 
 message QueryTopicEpochLastEndedResponse {
   int64 epoch_last_ended = 1;
+}
+
+message QueryTopicFeeRevenueRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicFeeRevenueResponse {
+  string fee_revenue = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
