@@ -20,3 +20,18 @@ func (qs queryServer) GetPreviousReputerRewardFraction(
 
 	return &types.QueryPreviousReputerRewardFractionResponse{RewardFraction: rewardFraction, NotFound: notFound}, nil
 }
+
+func (qs queryServer) GetPreviousInferenceRewardFraction(
+	ctx context.Context,
+	req *types.QueryPreviousInferenceRewardFractionRequest,
+) (
+	*types.QueryPreviousInferenceRewardFractionResponse,
+	error,
+) {
+	rewardFraction, notFound, err := qs.k.GetPreviousInferenceRewardFraction(ctx, req.TopicId, req.Worker)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryPreviousInferenceRewardFractionResponse{RewardFraction: rewardFraction, NotFound: notFound}, nil
+}

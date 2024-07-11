@@ -38,3 +38,38 @@ func (s *KeeperTestSuite) TestGetPreviousReputerRewardFraction() {
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
 	s.Require().False(notFound, "Should not return no prior value after setting")
 }
+
+func (s *KeeperTestSuite) TestGetPreviousInferenceRewardFraction() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	worker := "workerAddressExample"
+
+	// Attempt to fetch a reward fraction before setting it
+	req := &types.QueryPreviousInferenceRewardFractionRequest{
+		TopicId: topicId,
+		Worker:  worker,
+	}
+	response, err := s.queryServer.GetPreviousInferenceRewardFraction(ctx, req)
+	s.Require().NoError(err)
+	defaultReward := response.RewardFraction
+	noPrior := response.NotFound
+
+	s.Require().NoError(err, "Fetching reward fraction should not fail when not set")
+	s.Require().True(defaultReward.IsZero(), "Should return zero reward fraction when not set")
+	s.Require().True(noPrior, "Should return no prior value when not set")
+
+	// Now set a specific reward fraction
+	setReward := alloraMath.NewDecFromInt64(75)
+	_ = keeper.SetPreviousInferenceRewardFraction(ctx, topicId, worker, setReward)
+
+	// Fetch and verify the reward fraction after setting
+	fetchedReward, noPrior, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
+	response, err = s.queryServer.GetPreviousInferenceRewardFraction(ctx, req)
+	s.Require().NoError(err)
+	defaultReward = response.RewardFraction
+	noPrior = response.NotFound
+	s.Require().NoError(err, "Fetching reward fraction should not fail after setting")
+	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
+	s.Require().False(noPrior, "Should not return no prior value after setting")
+}
