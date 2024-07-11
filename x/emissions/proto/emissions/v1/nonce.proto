@@ -7,22 +7,16 @@ import "gogoproto/gogo.proto";
 
 message Nonce {
   option (gogoproto.equal) = true;
-  int64 block_height = 1;  // block height of the request
+  int64 block_height = 1; // block height of the request
 }
 
-message Nonces {
-  repeated Nonce nonces = 1;
-}
+message Nonces { repeated Nonce nonces = 1; }
 
 message ReputerRequestNonce {
   option (gogoproto.equal) = true;
-  // associated with the reputer request
-  Nonce reputer_nonce = 1;
   // the reputers should respond to the reputer request with losses for work
   // found at this worker nonce
-  Nonce worker_nonce = 2;
+  Nonce reputer_nonce = 1;
 }
 
-message ReputerRequestNonces {
-  repeated ReputerRequestNonce nonces = 1;
-}
+message ReputerRequestNonces { repeated ReputerRequestNonce nonces = 1; }
