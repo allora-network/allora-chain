@@ -237,3 +237,36 @@ func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
 	s.Require().NoError(err, "Fetching reputer scores at block should not fail")
 	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
+
+func (s *KeeperTestSuite) TestGetListeningCoefficient() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer := "sampleReputerAddress"
+
+	// Attempt to fetch a coefficient before setting it
+	req := &types.QueryListeningCoefficientRequest{
+		TopicId: topicId,
+		Reputer: reputer,
+	}
+	response, err := s.queryServer.GetListeningCoefficient(ctx, req)
+	s.Require().NoError(err)
+	defaultCoef := response.ListeningCoefficient
+
+	s.Require().NoError(err, "Fetching coefficient should not fail when not set")
+	s.Require().Equal(alloraMath.NewDecFromInt64(1), defaultCoef.Coefficient, "Should return the default coefficient when not set")
+
+	// Now set a specific coefficient
+	setCoef := types.ListeningCoefficient{
+		Coefficient: alloraMath.NewDecFromInt64(5),
+	}
+	_ = keeper.SetListeningCoefficient(ctx, topicId, reputer, setCoef)
+
+	// Fetch and verify the coefficient after setting
+	response, err = s.queryServer.GetListeningCoefficient(ctx, req)
+	s.Require().NoError(err)
+	fetchedCoef := response.ListeningCoefficient
+
+	s.Require().NoError(err, "Fetching coefficient should not fail after setting")
+	s.Require().Equal(setCoef.Coefficient, fetchedCoef.Coefficient, "The fetched coefficient should match the set value")
+}

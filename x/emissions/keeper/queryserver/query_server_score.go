@@ -125,3 +125,18 @@ func (qs queryServer) GetReputersScoresAtBlock(
 
 	return &types.QueryReputersScoresAtBlockResponse{Scores: &reputersScores}, nil
 }
+
+func (qs queryServer) GetListeningCoefficient(
+	ctx context.Context,
+	req *types.QueryListeningCoefficientRequest,
+) (
+	*types.QueryListeningCoefficientResponse,
+	error,
+) {
+	listeningCoefficient, err := qs.k.GetListeningCoefficient(ctx, req.TopicId, req.Reputer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryListeningCoefficientResponse{ListeningCoefficient: &listeningCoefficient}, nil
+}

@@ -83,6 +83,7 @@ const (
 	Query_GetForecastScoresUntilBlock_FullMethodName           = "/emissions.v1.Query/GetForecastScoresUntilBlock"
 	Query_GetWorkerForecastScoresAtBlock_FullMethodName        = "/emissions.v1.Query/GetWorkerForecastScoresAtBlock"
 	Query_GetReputersScoresAtBlock_FullMethodName              = "/emissions.v1.Query/GetReputersScoresAtBlock"
+	Query_GetListeningCoefficient_FullMethodName               = "/emissions.v1.Query/GetListeningCoefficient"
 )
 
 // QueryClient is the client API for Query service.
@@ -154,6 +155,7 @@ type QueryClient interface {
 	GetForecastScoresUntilBlock(ctx context.Context, in *QueryForecastScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryForecastScoresUntilBlockResponse, error)
 	GetWorkerForecastScoresAtBlock(ctx context.Context, in *QueryWorkerForecastScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerForecastScoresAtBlockResponse, error)
 	GetReputersScoresAtBlock(ctx context.Context, in *QueryReputersScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryReputersScoresAtBlockResponse, error)
+	GetListeningCoefficient(ctx context.Context, in *QueryListeningCoefficientRequest, opts ...grpc.CallOption) (*QueryListeningCoefficientResponse, error)
 }
 
 type queryClient struct {
@@ -740,6 +742,15 @@ func (c *queryClient) GetReputersScoresAtBlock(ctx context.Context, in *QueryRep
 	return out, nil
 }
 
+func (c *queryClient) GetListeningCoefficient(ctx context.Context, in *QueryListeningCoefficientRequest, opts ...grpc.CallOption) (*QueryListeningCoefficientResponse, error) {
+	out := new(QueryListeningCoefficientResponse)
+	err := c.cc.Invoke(ctx, Query_GetListeningCoefficient_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -809,6 +820,7 @@ type QueryServer interface {
 	GetForecastScoresUntilBlock(context.Context, *QueryForecastScoresUntilBlockRequest) (*QueryForecastScoresUntilBlockResponse, error)
 	GetWorkerForecastScoresAtBlock(context.Context, *QueryWorkerForecastScoresAtBlockRequest) (*QueryWorkerForecastScoresAtBlockResponse, error)
 	GetReputersScoresAtBlock(context.Context, *QueryReputersScoresAtBlockRequest) (*QueryReputersScoresAtBlockResponse, error)
+	GetListeningCoefficient(context.Context, *QueryListeningCoefficientRequest) (*QueryListeningCoefficientResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -1007,6 +1019,9 @@ func (UnimplementedQueryServer) GetWorkerForecastScoresAtBlock(context.Context, 
 }
 func (UnimplementedQueryServer) GetReputersScoresAtBlock(context.Context, *QueryReputersScoresAtBlockRequest) (*QueryReputersScoresAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReputersScoresAtBlock not implemented")
+}
+func (UnimplementedQueryServer) GetListeningCoefficient(context.Context, *QueryListeningCoefficientRequest) (*QueryListeningCoefficientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetListeningCoefficient not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -2173,6 +2188,24 @@ func _Query_GetReputersScoresAtBlock_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetListeningCoefficient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryListeningCoefficientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetListeningCoefficient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetListeningCoefficient_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetListeningCoefficient(ctx, req.(*QueryListeningCoefficientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2435,6 +2468,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetReputersScoresAtBlock",
 			Handler:    _Query_GetReputersScoresAtBlock_Handler,
+		},
+		{
+			MethodName: "GetListeningCoefficient",
+			Handler:    _Query_GetListeningCoefficient_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
