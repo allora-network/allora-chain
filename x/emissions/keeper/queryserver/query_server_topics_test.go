@@ -1,6 +1,7 @@
 package queryserver_test
 
 import (
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -184,4 +185,23 @@ func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	nonce = response.Nonce
 	s.Require().NoError(err, "Getting deleted topic reward nonce should not fail")
 	s.Require().Equal(int64(0), nonce, "Nonce should be 0 after deletion")
+}
+
+func (s *KeeperTestSuite) TestGetPreviousTopicWeight() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+
+	// Set previous topic weight
+	weightToSet := alloraMath.NewDecFromInt64(10)
+	err := keeper.SetPreviousTopicWeight(ctx, topicId, weightToSet)
+	s.Require().NoError(err, "Setting previous topic weight should not fail")
+
+	// Get the previously set topic weight
+	req := &types.QueryPreviousTopicWeightRequest{TopicId: topicId}
+	response, err := s.queryServer.GetPreviousTopicWeight(ctx, req)
+	retrievedWeight := response.Weight
+
+	s.Require().NoError(err, "Getting previous topic weight should not fail")
+	s.Require().Equal(weightToSet, retrievedWeight, "Retrieved weight should match the set weight")
 }

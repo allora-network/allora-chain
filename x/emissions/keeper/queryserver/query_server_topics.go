@@ -104,3 +104,18 @@ func (qs queryServer) GetTopicRewardNonce(
 
 	return &types.QueryTopicRewardNonceResponse{Nonce: nonce}, nil
 }
+
+func (qs queryServer) GetPreviousTopicWeight(
+	ctx context.Context,
+	req *types.QueryPreviousTopicWeightRequest,
+) (
+	*types.QueryPreviousTopicWeightResponse,
+	error,
+) {
+	previousTopicWeight, notFound, err := qs.k.GetPreviousTopicWeight(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryPreviousTopicWeightResponse{Weight: previousTopicWeight, NotFound: notFound}, nil
+}

@@ -67,6 +67,7 @@ const (
 	Query_GetDelegateRewardPerShare_FullMethodName             = "/emissions.v1.Query/GetDelegateRewardPerShare"
 	Query_GetStakeRemovalForReputerAndTopicId_FullMethodName   = "/emissions.v1.Query/GetStakeRemovalForReputerAndTopicId"
 	Query_GetDelegateStakeRemoval_FullMethodName               = "/emissions.v1.Query/GetDelegateStakeRemoval"
+	Query_GetPreviousTopicWeight_FullMethodName                = "/emissions.v1.Query/GetPreviousTopicWeight"
 )
 
 // QueryClient is the client API for Query service.
@@ -122,6 +123,7 @@ type QueryClient interface {
 	GetDelegateRewardPerShare(ctx context.Context, in *QueryDelegateRewardPerShareRequest, opts ...grpc.CallOption) (*QueryDelegateRewardPerShareResponse, error)
 	GetStakeRemovalForReputerAndTopicId(ctx context.Context, in *QueryStakeRemovalForReputerAndTopicIdRequest, opts ...grpc.CallOption) (*QueryStakeRemovalForReputerAndTopicIdResponse, error)
 	GetDelegateStakeRemoval(ctx context.Context, in *QueryDelegateStakeRemovalRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalResponse, error)
+	GetPreviousTopicWeight(ctx context.Context, in *QueryPreviousTopicWeightRequest, opts ...grpc.CallOption) (*QueryPreviousTopicWeightResponse, error)
 }
 
 type queryClient struct {
@@ -564,6 +566,15 @@ func (c *queryClient) GetDelegateStakeRemoval(ctx context.Context, in *QueryDele
 	return out, nil
 }
 
+func (c *queryClient) GetPreviousTopicWeight(ctx context.Context, in *QueryPreviousTopicWeightRequest, opts ...grpc.CallOption) (*QueryPreviousTopicWeightResponse, error) {
+	out := new(QueryPreviousTopicWeightResponse)
+	err := c.cc.Invoke(ctx, Query_GetPreviousTopicWeight_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -617,6 +628,7 @@ type QueryServer interface {
 	GetDelegateRewardPerShare(context.Context, *QueryDelegateRewardPerShareRequest) (*QueryDelegateRewardPerShareResponse, error)
 	GetStakeRemovalForReputerAndTopicId(context.Context, *QueryStakeRemovalForReputerAndTopicIdRequest) (*QueryStakeRemovalForReputerAndTopicIdResponse, error)
 	GetDelegateStakeRemoval(context.Context, *QueryDelegateStakeRemovalRequest) (*QueryDelegateStakeRemovalResponse, error)
+	GetPreviousTopicWeight(context.Context, *QueryPreviousTopicWeightRequest) (*QueryPreviousTopicWeightResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -767,6 +779,9 @@ func (UnimplementedQueryServer) GetStakeRemovalForReputerAndTopicId(context.Cont
 }
 func (UnimplementedQueryServer) GetDelegateStakeRemoval(context.Context, *QueryDelegateStakeRemovalRequest) (*QueryDelegateStakeRemovalResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeRemoval not implemented")
+}
+func (UnimplementedQueryServer) GetPreviousTopicWeight(context.Context, *QueryPreviousTopicWeightRequest) (*QueryPreviousTopicWeightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousTopicWeight not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1645,6 +1660,24 @@ func _Query_GetDelegateStakeRemoval_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetPreviousTopicWeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousTopicWeightRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousTopicWeight(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetPreviousTopicWeight_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousTopicWeight(ctx, req.(*QueryPreviousTopicWeightRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1843,6 +1876,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDelegateStakeRemoval",
 			Handler:    _Query_GetDelegateStakeRemoval_Handler,
+		},
+		{
+			MethodName: "GetPreviousTopicWeight",
+			Handler:    _Query_GetPreviousTopicWeight_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
