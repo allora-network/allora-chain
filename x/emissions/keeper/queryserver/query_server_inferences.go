@@ -241,3 +241,113 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 
 	return ciRawPercentiles, ciValues, nil
 }
+
+func (qs queryServer) GetLatestTopicInferences(
+	ctx context.Context,
+	req *types.QueryLatestTopicInferencesRequest,
+) (
+	*types.QueryLatestTopicInferencesResponse,
+	error,
+) {
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
+	inferences, blockHeight, err := qs.k.GetLatestTopicInferences(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryLatestTopicInferencesResponse{Inferences: inferences, BlockHeight: blockHeight}, nil
+}
+
+func (qs queryServer) GetIsWorkerNonceUnfulfilled(
+	ctx context.Context,
+	req *types.QueryIsWorkerNonceUnfulfilledRequest,
+) (
+	*types.QueryIsWorkerNonceUnfulfilledResponse,
+	error,
+) {
+	isWorkerNonceUnfulfilled, err :=
+		qs.k.IsWorkerNonceUnfulfilled(ctx, req.TopicId, &types.Nonce{BlockHeight: req.BlockHeight})
+
+	return &types.QueryIsWorkerNonceUnfulfilledResponse{IsWorkerNonceUnfulfilled: isWorkerNonceUnfulfilled}, err
+}
+
+func (qs queryServer) GetUnfulfilledWorkerNonces(
+	ctx context.Context,
+	req *types.QueryUnfulfilledWorkerNoncesRequest,
+) (
+	*types.QueryUnfulfilledWorkerNoncesResponse,
+	error,
+) {
+	unfulfilledNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryUnfulfilledWorkerNoncesResponse{Nonces: &unfulfilledNonces}, nil
+}
+
+func (qs queryServer) GetInfererNetworkRegret(
+	ctx context.Context,
+	req *types.QueryInfererNetworkRegretRequest,
+) (
+	*types.QueryInfererNetworkRegretResponse,
+	error,
+) {
+	infererNetworkRegret, notFound, err := qs.k.GetInfererNetworkRegret(ctx, req.TopicId, req.ActorId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryInfererNetworkRegretResponse{Regret: &infererNetworkRegret, NotFound: notFound}, nil
+}
+
+func (qs queryServer) GetForecasterNetworkRegret(
+	ctx context.Context,
+	req *types.QueryForecasterNetworkRegretRequest,
+) (
+	*types.QueryForecasterNetworkRegretResponse,
+	error,
+) {
+	forecasterNetworkRegret, notFound, err := qs.k.GetForecasterNetworkRegret(ctx, req.TopicId, req.Worker)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryForecasterNetworkRegretResponse{Regret: &forecasterNetworkRegret, NotFound: notFound}, nil
+}
+
+func (qs queryServer) GetOneInForecasterNetworkRegret(
+	ctx context.Context,
+	req *types.QueryOneInForecasterNetworkRegretRequest,
+) (
+	*types.QueryOneInForecasterNetworkRegretResponse,
+	error,
+) {
+	oneInForecasterNetworkRegret, notFound, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Inferer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryOneInForecasterNetworkRegretResponse{Regret: &oneInForecasterNetworkRegret, NotFound: notFound}, nil
+}
+
+func (qs queryServer) GetOneInForecasterSelfNetworkRegret(
+	ctx context.Context,
+	req *types.QueryOneInForecasterSelfNetworkRegretRequest,
+) (
+	*types.QueryOneInForecasterSelfNetworkRegretResponse,
+	error,
+) {
+	oneInForecasterSelfNetworkRegret, notFound, err := qs.k.GetOneInForecasterSelfNetworkRegret(ctx, req.TopicId, req.Forecaster)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryOneInForecasterSelfNetworkRegretResponse{Regret: &oneInForecasterSelfNetworkRegret, NotFound: notFound}, nil
+}

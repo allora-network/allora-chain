@@ -1566,6 +1566,48 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	s.Require().Len(removals, 0)
 }
 
+func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Create sample delegate stake removal information
+	removalInfo := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   int64(12),
+		BlockRemovalCompleted: int64(13),
+		TopicId:               uint64(201),
+		Reputer:               "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n",
+		Delegator:             "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+		Amount:                cosmosMath.NewInt(300),
+	}
+
+	// Set delegate stake removal information
+	err := keeper.SetDelegateStakeRemoval(ctx, removalInfo)
+	s.Require().NoError(err)
+
+	retrievedInfo, err := keeper.GetDelegateStakeRemoval(ctx,
+		removalInfo.BlockRemovalStarted,
+		removalInfo.TopicId,
+		removalInfo.Delegator,
+		removalInfo.Reputer,
+	)
+	// index is on BlockRemovalCompleted not BlockRemovalStarted
+	s.Require().Error(err)
+
+	retrievedInfo, err = keeper.GetDelegateStakeRemoval(ctx,
+		removalInfo.BlockRemovalCompleted,
+		removalInfo.TopicId,
+		removalInfo.Delegator,
+		removalInfo.Reputer,
+	)
+	s.Require().NoError(err)
+
+	s.Require().Equal(removalInfo.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted)
+	s.Require().Equal(removalInfo.TopicId, retrievedInfo.TopicId)
+	s.Require().Equal(removalInfo.Reputer, retrievedInfo.Reputer)
+	s.Require().Equal(removalInfo.Delegator, retrievedInfo.Delegator)
+	s.Require().Equal(removalInfo.Amount, retrievedInfo.Amount)
+}
+
 func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -2188,6 +2230,36 @@ func (s *KeeperTestSuite) TestChurnableTopics() {
 	s.Require().Len(remainingIds, 0, "Should have no churn ready topics after reset")
 }
 
+/// REWARDABLE TOPICS
+
+func (s *KeeperTestSuite) TestRewardableTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(789)
+	topicId2 := uint64(101112)
+
+	// Add rewardable topics
+	err := keeper.AddRewardableTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	err = keeper.AddRewardableTopic(ctx, topicId2)
+	s.Require().NoError(err)
+
+	// Ensure the topics are retrieved
+	retrievedIds, err := keeper.GetRewardableTopics(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(retrievedIds, 2, "Should retrieve all rewardable topics")
+
+	// Reset the rewardable topics
+	err = keeper.RemoveRewardableTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Ensure no topics remain
+	remainingIds, err := keeper.GetRewardableTopics(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(remainingIds, 1)
+}
+
 /// SCORES
 
 func (s *KeeperTestSuite) TestGetLatestScores() {
@@ -2641,6 +2713,21 @@ func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
 	s.Require().NoError(err, "Fetching forecast reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched forecast reward fraction should match the set value")
 	s.Require().False(noPrior, "Should not return no prior value after setting")
+}
+
+func (s *KeeperTestSuite) TestSetGetPreviousPercentageRewardToStakedReputers() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	previousPercentageReward := alloraMath.NewDecFromInt64(50)
+
+	// Set the previous percentage reward to staked reputers
+	err := keeper.SetPreviousPercentageRewardToStakedReputers(ctx, previousPercentageReward)
+	s.Require().NoError(err, "Setting previous percentage reward to staked reputers should not fail")
+
+	// Get the previous percentage reward to staked reputers
+	fetchedPercentageReward, err := keeper.GetPreviousPercentageRewardToStakedReputers(ctx)
+	s.Require().NoError(err, "Fetching previous percentage reward to staked reputers should not fail")
+	s.Require().Equal(previousPercentageReward, fetchedPercentageReward, "The fetched percentage reward should match the set value")
 }
 
 /// WHITELISTS

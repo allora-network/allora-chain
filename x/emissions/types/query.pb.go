@@ -1328,6 +1328,102 @@ func (m *QueryInferencesAtBlockResponse) GetInferences() *Inferences {
 	return nil
 }
 
+type QueryLatestTopicInferencesRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryLatestTopicInferencesRequest) Reset()         { *m = QueryLatestTopicInferencesRequest{} }
+func (m *QueryLatestTopicInferencesRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryLatestTopicInferencesRequest) ProtoMessage()    {}
+func (*QueryLatestTopicInferencesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{28}
+}
+func (m *QueryLatestTopicInferencesRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLatestTopicInferencesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLatestTopicInferencesRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLatestTopicInferencesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLatestTopicInferencesRequest.Merge(m, src)
+}
+func (m *QueryLatestTopicInferencesRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLatestTopicInferencesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLatestTopicInferencesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLatestTopicInferencesRequest proto.InternalMessageInfo
+
+func (m *QueryLatestTopicInferencesRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryLatestTopicInferencesResponse struct {
+	Inferences  *Inferences `protobuf:"bytes,1,opt,name=inferences,proto3" json:"inferences,omitempty"`
+	BlockHeight int64       `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *QueryLatestTopicInferencesResponse) Reset()         { *m = QueryLatestTopicInferencesResponse{} }
+func (m *QueryLatestTopicInferencesResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryLatestTopicInferencesResponse) ProtoMessage()    {}
+func (*QueryLatestTopicInferencesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{29}
+}
+func (m *QueryLatestTopicInferencesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLatestTopicInferencesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLatestTopicInferencesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLatestTopicInferencesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLatestTopicInferencesResponse.Merge(m, src)
+}
+func (m *QueryLatestTopicInferencesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLatestTopicInferencesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLatestTopicInferencesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLatestTopicInferencesResponse proto.InternalMessageInfo
+
+func (m *QueryLatestTopicInferencesResponse) GetInferences() *Inferences {
+	if m != nil {
+		return m.Inferences
+	}
+	return nil
+}
+
+func (m *QueryLatestTopicInferencesResponse) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
 // Returns the forecasts on a topic posted at a block height
 type QueryForecastsAtBlockRequest struct {
 	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
@@ -1338,7 +1434,7 @@ func (m *QueryForecastsAtBlockRequest) Reset()         { *m = QueryForecastsAtBl
 func (m *QueryForecastsAtBlockRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryForecastsAtBlockRequest) ProtoMessage()    {}
 func (*QueryForecastsAtBlockRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{28}
+	return fileDescriptor_c426af2f1e908986, []int{30}
 }
 func (m *QueryForecastsAtBlockRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1393,7 +1489,7 @@ func (m *QueryForecastsAtBlockResponse) Reset()         { *m = QueryForecastsAtB
 func (m *QueryForecastsAtBlockResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryForecastsAtBlockResponse) ProtoMessage()    {}
 func (*QueryForecastsAtBlockResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{29}
+	return fileDescriptor_c426af2f1e908986, []int{31}
 }
 func (m *QueryForecastsAtBlockResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1438,7 +1534,7 @@ func (m *QueryWorkerLatestInferenceRequest) Reset()         { *m = QueryWorkerLa
 func (m *QueryWorkerLatestInferenceRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerLatestInferenceRequest) ProtoMessage()    {}
 func (*QueryWorkerLatestInferenceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{30}
+	return fileDescriptor_c426af2f1e908986, []int{32}
 }
 func (m *QueryWorkerLatestInferenceRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1489,7 +1585,7 @@ func (m *QueryWorkerLatestInferenceResponse) Reset()         { *m = QueryWorkerL
 func (m *QueryWorkerLatestInferenceResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerLatestInferenceResponse) ProtoMessage()    {}
 func (*QueryWorkerLatestInferenceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{31}
+	return fileDescriptor_c426af2f1e908986, []int{33}
 }
 func (m *QueryWorkerLatestInferenceResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1533,7 +1629,7 @@ func (m *QueryWorkerNodeInfoRequest) Reset()         { *m = QueryWorkerNodeInfoR
 func (m *QueryWorkerNodeInfoRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerNodeInfoRequest) ProtoMessage()    {}
 func (*QueryWorkerNodeInfoRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{32}
+	return fileDescriptor_c426af2f1e908986, []int{34}
 }
 func (m *QueryWorkerNodeInfoRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1577,7 +1673,7 @@ func (m *QueryWorkerNodeInfoResponse) Reset()         { *m = QueryWorkerNodeInfo
 func (m *QueryWorkerNodeInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerNodeInfoResponse) ProtoMessage()    {}
 func (*QueryWorkerNodeInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{33}
+	return fileDescriptor_c426af2f1e908986, []int{35}
 }
 func (m *QueryWorkerNodeInfoResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1621,7 +1717,7 @@ func (m *QueryReputerNodeInfoRequest) Reset()         { *m = QueryReputerNodeInf
 func (m *QueryReputerNodeInfoRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryReputerNodeInfoRequest) ProtoMessage()    {}
 func (*QueryReputerNodeInfoRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{34}
+	return fileDescriptor_c426af2f1e908986, []int{36}
 }
 func (m *QueryReputerNodeInfoRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1665,7 +1761,7 @@ func (m *QueryReputerNodeInfoResponse) Reset()         { *m = QueryReputerNodeIn
 func (m *QueryReputerNodeInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryReputerNodeInfoResponse) ProtoMessage()    {}
 func (*QueryReputerNodeInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{35}
+	return fileDescriptor_c426af2f1e908986, []int{37}
 }
 func (m *QueryReputerNodeInfoResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1709,7 +1805,7 @@ func (m *QueryWorkerAddressByP2PKeyRequest) Reset()         { *m = QueryWorkerAd
 func (m *QueryWorkerAddressByP2PKeyRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerAddressByP2PKeyRequest) ProtoMessage()    {}
 func (*QueryWorkerAddressByP2PKeyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{36}
+	return fileDescriptor_c426af2f1e908986, []int{38}
 }
 func (m *QueryWorkerAddressByP2PKeyRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1753,7 +1849,7 @@ func (m *QueryWorkerAddressByP2PKeyResponse) Reset()         { *m = QueryWorkerA
 func (m *QueryWorkerAddressByP2PKeyResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryWorkerAddressByP2PKeyResponse) ProtoMessage()    {}
 func (*QueryWorkerAddressByP2PKeyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{37}
+	return fileDescriptor_c426af2f1e908986, []int{39}
 }
 func (m *QueryWorkerAddressByP2PKeyResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1797,7 +1893,7 @@ func (m *QueryReputerAddressByP2PKeyRequest) Reset()         { *m = QueryReputer
 func (m *QueryReputerAddressByP2PKeyRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryReputerAddressByP2PKeyRequest) ProtoMessage()    {}
 func (*QueryReputerAddressByP2PKeyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{38}
+	return fileDescriptor_c426af2f1e908986, []int{40}
 }
 func (m *QueryReputerAddressByP2PKeyRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1841,7 +1937,7 @@ func (m *QueryReputerAddressByP2PKeyResponse) Reset()         { *m = QueryRepute
 func (m *QueryReputerAddressByP2PKeyResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryReputerAddressByP2PKeyResponse) ProtoMessage()    {}
 func (*QueryReputerAddressByP2PKeyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{39}
+	return fileDescriptor_c426af2f1e908986, []int{41}
 }
 func (m *QueryReputerAddressByP2PKeyResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1887,7 +1983,7 @@ func (m *QueryNetworkInferencesAtBlockRequest) Reset()         { *m = QueryNetwo
 func (m *QueryNetworkInferencesAtBlockRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryNetworkInferencesAtBlockRequest) ProtoMessage()    {}
 func (*QueryNetworkInferencesAtBlockRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{40}
+	return fileDescriptor_c426af2f1e908986, []int{42}
 }
 func (m *QueryNetworkInferencesAtBlockRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1945,7 +2041,7 @@ func (m *QueryLatestNetworkInferencesRequest) Reset()         { *m = QueryLatest
 func (m *QueryLatestNetworkInferencesRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryLatestNetworkInferencesRequest) ProtoMessage()    {}
 func (*QueryLatestNetworkInferencesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{41}
+	return fileDescriptor_c426af2f1e908986, []int{43}
 }
 func (m *QueryLatestNetworkInferencesRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1981,6 +2077,814 @@ func (m *QueryLatestNetworkInferencesRequest) GetTopicId() uint64 {
 	return 0
 }
 
+type QueryIsWorkerNonceUnfulfilledRequest struct {
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledRequest) Reset()         { *m = QueryIsWorkerNonceUnfulfilledRequest{} }
+func (m *QueryIsWorkerNonceUnfulfilledRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryIsWorkerNonceUnfulfilledRequest) ProtoMessage()    {}
+func (*QueryIsWorkerNonceUnfulfilledRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{44}
+}
+func (m *QueryIsWorkerNonceUnfulfilledRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsWorkerNonceUnfulfilledRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsWorkerNonceUnfulfilledRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsWorkerNonceUnfulfilledRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsWorkerNonceUnfulfilledRequest.Merge(m, src)
+}
+func (m *QueryIsWorkerNonceUnfulfilledRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsWorkerNonceUnfulfilledRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsWorkerNonceUnfulfilledRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsWorkerNonceUnfulfilledRequest proto.InternalMessageInfo
+
+func (m *QueryIsWorkerNonceUnfulfilledRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledRequest) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type QueryIsWorkerNonceUnfulfilledResponse struct {
+	IsWorkerNonceUnfulfilled bool `protobuf:"varint,1,opt,name=is_worker_nonce_unfulfilled,json=isWorkerNonceUnfulfilled,proto3" json:"is_worker_nonce_unfulfilled,omitempty"`
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledResponse) Reset()         { *m = QueryIsWorkerNonceUnfulfilledResponse{} }
+func (m *QueryIsWorkerNonceUnfulfilledResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryIsWorkerNonceUnfulfilledResponse) ProtoMessage()    {}
+func (*QueryIsWorkerNonceUnfulfilledResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{45}
+}
+func (m *QueryIsWorkerNonceUnfulfilledResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsWorkerNonceUnfulfilledResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsWorkerNonceUnfulfilledResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsWorkerNonceUnfulfilledResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsWorkerNonceUnfulfilledResponse.Merge(m, src)
+}
+func (m *QueryIsWorkerNonceUnfulfilledResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsWorkerNonceUnfulfilledResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsWorkerNonceUnfulfilledResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsWorkerNonceUnfulfilledResponse proto.InternalMessageInfo
+
+func (m *QueryIsWorkerNonceUnfulfilledResponse) GetIsWorkerNonceUnfulfilled() bool {
+	if m != nil {
+		return m.IsWorkerNonceUnfulfilled
+	}
+	return false
+}
+
+type QueryUnfulfilledReputerNoncesRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryUnfulfilledReputerNoncesRequest) Reset()         { *m = QueryUnfulfilledReputerNoncesRequest{} }
+func (m *QueryUnfulfilledReputerNoncesRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryUnfulfilledReputerNoncesRequest) ProtoMessage()    {}
+func (*QueryUnfulfilledReputerNoncesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{46}
+}
+func (m *QueryUnfulfilledReputerNoncesRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryUnfulfilledReputerNoncesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryUnfulfilledReputerNoncesRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryUnfulfilledReputerNoncesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryUnfulfilledReputerNoncesRequest.Merge(m, src)
+}
+func (m *QueryUnfulfilledReputerNoncesRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryUnfulfilledReputerNoncesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryUnfulfilledReputerNoncesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryUnfulfilledReputerNoncesRequest proto.InternalMessageInfo
+
+func (m *QueryUnfulfilledReputerNoncesRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryUnfulfilledReputerNoncesResponse struct {
+	Nonces *ReputerRequestNonces `protobuf:"bytes,1,opt,name=nonces,proto3" json:"nonces,omitempty"`
+}
+
+func (m *QueryUnfulfilledReputerNoncesResponse) Reset()         { *m = QueryUnfulfilledReputerNoncesResponse{} }
+func (m *QueryUnfulfilledReputerNoncesResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryUnfulfilledReputerNoncesResponse) ProtoMessage()    {}
+func (*QueryUnfulfilledReputerNoncesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{47}
+}
+func (m *QueryUnfulfilledReputerNoncesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryUnfulfilledReputerNoncesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryUnfulfilledReputerNoncesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryUnfulfilledReputerNoncesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryUnfulfilledReputerNoncesResponse.Merge(m, src)
+}
+func (m *QueryUnfulfilledReputerNoncesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryUnfulfilledReputerNoncesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryUnfulfilledReputerNoncesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryUnfulfilledReputerNoncesResponse proto.InternalMessageInfo
+
+func (m *QueryUnfulfilledReputerNoncesResponse) GetNonces() *ReputerRequestNonces {
+	if m != nil {
+		return m.Nonces
+	}
+	return nil
+}
+
+type QueryUnfulfilledWorkerNoncesRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryUnfulfilledWorkerNoncesRequest) Reset()         { *m = QueryUnfulfilledWorkerNoncesRequest{} }
+func (m *QueryUnfulfilledWorkerNoncesRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryUnfulfilledWorkerNoncesRequest) ProtoMessage()    {}
+func (*QueryUnfulfilledWorkerNoncesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{48}
+}
+func (m *QueryUnfulfilledWorkerNoncesRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryUnfulfilledWorkerNoncesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryUnfulfilledWorkerNoncesRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryUnfulfilledWorkerNoncesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryUnfulfilledWorkerNoncesRequest.Merge(m, src)
+}
+func (m *QueryUnfulfilledWorkerNoncesRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryUnfulfilledWorkerNoncesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryUnfulfilledWorkerNoncesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryUnfulfilledWorkerNoncesRequest proto.InternalMessageInfo
+
+func (m *QueryUnfulfilledWorkerNoncesRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryUnfulfilledWorkerNoncesResponse struct {
+	Nonces *Nonces `protobuf:"bytes,1,opt,name=nonces,proto3" json:"nonces,omitempty"`
+}
+
+func (m *QueryUnfulfilledWorkerNoncesResponse) Reset()         { *m = QueryUnfulfilledWorkerNoncesResponse{} }
+func (m *QueryUnfulfilledWorkerNoncesResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryUnfulfilledWorkerNoncesResponse) ProtoMessage()    {}
+func (*QueryUnfulfilledWorkerNoncesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{49}
+}
+func (m *QueryUnfulfilledWorkerNoncesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryUnfulfilledWorkerNoncesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryUnfulfilledWorkerNoncesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryUnfulfilledWorkerNoncesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryUnfulfilledWorkerNoncesResponse.Merge(m, src)
+}
+func (m *QueryUnfulfilledWorkerNoncesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryUnfulfilledWorkerNoncesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryUnfulfilledWorkerNoncesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryUnfulfilledWorkerNoncesResponse proto.InternalMessageInfo
+
+func (m *QueryUnfulfilledWorkerNoncesResponse) GetNonces() *Nonces {
+	if m != nil {
+		return m.Nonces
+	}
+	return nil
+}
+
+type QueryInfererNetworkRegretRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	ActorId string `protobuf:"bytes,2,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+}
+
+func (m *QueryInfererNetworkRegretRequest) Reset()         { *m = QueryInfererNetworkRegretRequest{} }
+func (m *QueryInfererNetworkRegretRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryInfererNetworkRegretRequest) ProtoMessage()    {}
+func (*QueryInfererNetworkRegretRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{50}
+}
+func (m *QueryInfererNetworkRegretRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryInfererNetworkRegretRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryInfererNetworkRegretRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryInfererNetworkRegretRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryInfererNetworkRegretRequest.Merge(m, src)
+}
+func (m *QueryInfererNetworkRegretRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryInfererNetworkRegretRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryInfererNetworkRegretRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryInfererNetworkRegretRequest proto.InternalMessageInfo
+
+func (m *QueryInfererNetworkRegretRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryInfererNetworkRegretRequest) GetActorId() string {
+	if m != nil {
+		return m.ActorId
+	}
+	return ""
+}
+
+type QueryInfererNetworkRegretResponse struct {
+	Regret   *TimestampedValue `protobuf:"bytes,1,opt,name=regret,proto3" json:"regret,omitempty"`
+	NotFound bool              `protobuf:"varint,2,opt,name=not_found,json=notFound,proto3" json:"not_found,omitempty"`
+}
+
+func (m *QueryInfererNetworkRegretResponse) Reset()         { *m = QueryInfererNetworkRegretResponse{} }
+func (m *QueryInfererNetworkRegretResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryInfererNetworkRegretResponse) ProtoMessage()    {}
+func (*QueryInfererNetworkRegretResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{51}
+}
+func (m *QueryInfererNetworkRegretResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryInfererNetworkRegretResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryInfererNetworkRegretResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryInfererNetworkRegretResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryInfererNetworkRegretResponse.Merge(m, src)
+}
+func (m *QueryInfererNetworkRegretResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryInfererNetworkRegretResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryInfererNetworkRegretResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryInfererNetworkRegretResponse proto.InternalMessageInfo
+
+func (m *QueryInfererNetworkRegretResponse) GetRegret() *TimestampedValue {
+	if m != nil {
+		return m.Regret
+	}
+	return nil
+}
+
+func (m *QueryInfererNetworkRegretResponse) GetNotFound() bool {
+	if m != nil {
+		return m.NotFound
+	}
+	return false
+}
+
+type QueryForecasterNetworkRegretRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Worker  string `protobuf:"bytes,2,opt,name=worker,proto3" json:"worker,omitempty"`
+}
+
+func (m *QueryForecasterNetworkRegretRequest) Reset()         { *m = QueryForecasterNetworkRegretRequest{} }
+func (m *QueryForecasterNetworkRegretRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryForecasterNetworkRegretRequest) ProtoMessage()    {}
+func (*QueryForecasterNetworkRegretRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{52}
+}
+func (m *QueryForecasterNetworkRegretRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryForecasterNetworkRegretRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryForecasterNetworkRegretRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryForecasterNetworkRegretRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryForecasterNetworkRegretRequest.Merge(m, src)
+}
+func (m *QueryForecasterNetworkRegretRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryForecasterNetworkRegretRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryForecasterNetworkRegretRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryForecasterNetworkRegretRequest proto.InternalMessageInfo
+
+func (m *QueryForecasterNetworkRegretRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryForecasterNetworkRegretRequest) GetWorker() string {
+	if m != nil {
+		return m.Worker
+	}
+	return ""
+}
+
+type QueryForecasterNetworkRegretResponse struct {
+	Regret   *TimestampedValue `protobuf:"bytes,1,opt,name=regret,proto3" json:"regret,omitempty"`
+	NotFound bool              `protobuf:"varint,2,opt,name=not_found,json=notFound,proto3" json:"not_found,omitempty"`
+}
+
+func (m *QueryForecasterNetworkRegretResponse) Reset()         { *m = QueryForecasterNetworkRegretResponse{} }
+func (m *QueryForecasterNetworkRegretResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryForecasterNetworkRegretResponse) ProtoMessage()    {}
+func (*QueryForecasterNetworkRegretResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{53}
+}
+func (m *QueryForecasterNetworkRegretResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryForecasterNetworkRegretResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryForecasterNetworkRegretResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryForecasterNetworkRegretResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryForecasterNetworkRegretResponse.Merge(m, src)
+}
+func (m *QueryForecasterNetworkRegretResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryForecasterNetworkRegretResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryForecasterNetworkRegretResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryForecasterNetworkRegretResponse proto.InternalMessageInfo
+
+func (m *QueryForecasterNetworkRegretResponse) GetRegret() *TimestampedValue {
+	if m != nil {
+		return m.Regret
+	}
+	return nil
+}
+
+func (m *QueryForecasterNetworkRegretResponse) GetNotFound() bool {
+	if m != nil {
+		return m.NotFound
+	}
+	return false
+}
+
+type QueryOneInForecasterNetworkRegretRequest struct {
+	TopicId    uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Forecaster string `protobuf:"bytes,2,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
+	Inferer    string `protobuf:"bytes,3,opt,name=inferer,proto3" json:"inferer,omitempty"`
+}
+
+func (m *QueryOneInForecasterNetworkRegretRequest) Reset() {
+	*m = QueryOneInForecasterNetworkRegretRequest{}
+}
+func (m *QueryOneInForecasterNetworkRegretRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryOneInForecasterNetworkRegretRequest) ProtoMessage()    {}
+func (*QueryOneInForecasterNetworkRegretRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{54}
+}
+func (m *QueryOneInForecasterNetworkRegretRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOneInForecasterNetworkRegretRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOneInForecasterNetworkRegretRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOneInForecasterNetworkRegretRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOneInForecasterNetworkRegretRequest.Merge(m, src)
+}
+func (m *QueryOneInForecasterNetworkRegretRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOneInForecasterNetworkRegretRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOneInForecasterNetworkRegretRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOneInForecasterNetworkRegretRequest proto.InternalMessageInfo
+
+func (m *QueryOneInForecasterNetworkRegretRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryOneInForecasterNetworkRegretRequest) GetForecaster() string {
+	if m != nil {
+		return m.Forecaster
+	}
+	return ""
+}
+
+func (m *QueryOneInForecasterNetworkRegretRequest) GetInferer() string {
+	if m != nil {
+		return m.Inferer
+	}
+	return ""
+}
+
+type QueryOneInForecasterNetworkRegretResponse struct {
+	Regret   *TimestampedValue `protobuf:"bytes,1,opt,name=regret,proto3" json:"regret,omitempty"`
+	NotFound bool              `protobuf:"varint,2,opt,name=not_found,json=notFound,proto3" json:"not_found,omitempty"`
+}
+
+func (m *QueryOneInForecasterNetworkRegretResponse) Reset() {
+	*m = QueryOneInForecasterNetworkRegretResponse{}
+}
+func (m *QueryOneInForecasterNetworkRegretResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryOneInForecasterNetworkRegretResponse) ProtoMessage() {}
+func (*QueryOneInForecasterNetworkRegretResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{55}
+}
+func (m *QueryOneInForecasterNetworkRegretResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOneInForecasterNetworkRegretResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOneInForecasterNetworkRegretResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOneInForecasterNetworkRegretResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOneInForecasterNetworkRegretResponse.Merge(m, src)
+}
+func (m *QueryOneInForecasterNetworkRegretResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOneInForecasterNetworkRegretResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOneInForecasterNetworkRegretResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOneInForecasterNetworkRegretResponse proto.InternalMessageInfo
+
+func (m *QueryOneInForecasterNetworkRegretResponse) GetRegret() *TimestampedValue {
+	if m != nil {
+		return m.Regret
+	}
+	return nil
+}
+
+func (m *QueryOneInForecasterNetworkRegretResponse) GetNotFound() bool {
+	if m != nil {
+		return m.NotFound
+	}
+	return false
+}
+
+type QueryOneInForecasterSelfNetworkRegretRequest struct {
+	TopicId    uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Forecaster string `protobuf:"bytes,2,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) Reset() {
+	*m = QueryOneInForecasterSelfNetworkRegretRequest{}
+}
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryOneInForecasterSelfNetworkRegretRequest) ProtoMessage() {}
+func (*QueryOneInForecasterSelfNetworkRegretRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{56}
+}
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOneInForecasterSelfNetworkRegretRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOneInForecasterSelfNetworkRegretRequest.Merge(m, src)
+}
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOneInForecasterSelfNetworkRegretRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOneInForecasterSelfNetworkRegretRequest proto.InternalMessageInfo
+
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) GetForecaster() string {
+	if m != nil {
+		return m.Forecaster
+	}
+	return ""
+}
+
+type QueryOneInForecasterSelfNetworkRegretResponse struct {
+	Regret   *TimestampedValue `protobuf:"bytes,1,opt,name=regret,proto3" json:"regret,omitempty"`
+	NotFound bool              `protobuf:"varint,2,opt,name=not_found,json=notFound,proto3" json:"not_found,omitempty"`
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) Reset() {
+	*m = QueryOneInForecasterSelfNetworkRegretResponse{}
+}
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryOneInForecasterSelfNetworkRegretResponse) ProtoMessage() {}
+func (*QueryOneInForecasterSelfNetworkRegretResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{57}
+}
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryOneInForecasterSelfNetworkRegretResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryOneInForecasterSelfNetworkRegretResponse.Merge(m, src)
+}
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryOneInForecasterSelfNetworkRegretResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryOneInForecasterSelfNetworkRegretResponse proto.InternalMessageInfo
+
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) GetRegret() *TimestampedValue {
+	if m != nil {
+		return m.Regret
+	}
+	return nil
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) GetNotFound() bool {
+	if m != nil {
+		return m.NotFound
+	}
+	return false
+}
+
+type QueryIsReputerNonceUnfulfilledRequest struct {
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *QueryIsReputerNonceUnfulfilledRequest) Reset()         { *m = QueryIsReputerNonceUnfulfilledRequest{} }
+func (m *QueryIsReputerNonceUnfulfilledRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryIsReputerNonceUnfulfilledRequest) ProtoMessage()    {}
+func (*QueryIsReputerNonceUnfulfilledRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{58}
+}
+func (m *QueryIsReputerNonceUnfulfilledRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsReputerNonceUnfulfilledRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsReputerNonceUnfulfilledRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsReputerNonceUnfulfilledRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsReputerNonceUnfulfilledRequest.Merge(m, src)
+}
+func (m *QueryIsReputerNonceUnfulfilledRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsReputerNonceUnfulfilledRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsReputerNonceUnfulfilledRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsReputerNonceUnfulfilledRequest proto.InternalMessageInfo
+
+func (m *QueryIsReputerNonceUnfulfilledRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryIsReputerNonceUnfulfilledRequest) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type QueryIsReputerNonceUnfulfilledResponse struct {
+	IsReputerNonceUnfulfilled bool `protobuf:"varint,1,opt,name=is_reputer_nonce_unfulfilled,json=isReputerNonceUnfulfilled,proto3" json:"is_reputer_nonce_unfulfilled,omitempty"`
+}
+
+func (m *QueryIsReputerNonceUnfulfilledResponse) Reset() {
+	*m = QueryIsReputerNonceUnfulfilledResponse{}
+}
+func (m *QueryIsReputerNonceUnfulfilledResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryIsReputerNonceUnfulfilledResponse) ProtoMessage()    {}
+func (*QueryIsReputerNonceUnfulfilledResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{59}
+}
+func (m *QueryIsReputerNonceUnfulfilledResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsReputerNonceUnfulfilledResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsReputerNonceUnfulfilledResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsReputerNonceUnfulfilledResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsReputerNonceUnfulfilledResponse.Merge(m, src)
+}
+func (m *QueryIsReputerNonceUnfulfilledResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsReputerNonceUnfulfilledResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsReputerNonceUnfulfilledResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsReputerNonceUnfulfilledResponse proto.InternalMessageInfo
+
+func (m *QueryIsReputerNonceUnfulfilledResponse) GetIsReputerNonceUnfulfilled() bool {
+	if m != nil {
+		return m.IsReputerNonceUnfulfilled
+	}
+	return false
+}
+
 type QueryNetworkInferencesAtBlockResponse struct {
 	NetworkInferences *ValueBundle `protobuf:"bytes,1,opt,name=network_inferences,json=networkInferences,proto3" json:"network_inferences,omitempty"`
 }
@@ -1989,7 +2893,7 @@ func (m *QueryNetworkInferencesAtBlockResponse) Reset()         { *m = QueryNetw
 func (m *QueryNetworkInferencesAtBlockResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryNetworkInferencesAtBlockResponse) ProtoMessage()    {}
 func (*QueryNetworkInferencesAtBlockResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{42}
+	return fileDescriptor_c426af2f1e908986, []int{60}
 }
 func (m *QueryNetworkInferencesAtBlockResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2040,7 +2944,7 @@ func (m *QueryLatestNetworkInferencesResponse) Reset()         { *m = QueryLates
 func (m *QueryLatestNetworkInferencesResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryLatestNetworkInferencesResponse) ProtoMessage()    {}
 func (*QueryLatestNetworkInferencesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{43}
+	return fileDescriptor_c426af2f1e908986, []int{61}
 }
 func (m *QueryLatestNetworkInferencesResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2122,7 +3026,7 @@ func (m *QueryIsWorkerRegisteredInTopicIdRequest) Reset() {
 func (m *QueryIsWorkerRegisteredInTopicIdRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryIsWorkerRegisteredInTopicIdRequest) ProtoMessage()    {}
 func (*QueryIsWorkerRegisteredInTopicIdRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{44}
+	return fileDescriptor_c426af2f1e908986, []int{62}
 }
 func (m *QueryIsWorkerRegisteredInTopicIdRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2175,7 +3079,7 @@ func (m *QueryIsWorkerRegisteredInTopicIdResponse) Reset() {
 func (m *QueryIsWorkerRegisteredInTopicIdResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryIsWorkerRegisteredInTopicIdResponse) ProtoMessage()    {}
 func (*QueryIsWorkerRegisteredInTopicIdResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{45}
+	return fileDescriptor_c426af2f1e908986, []int{63}
 }
 func (m *QueryIsWorkerRegisteredInTopicIdResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2222,7 +3126,7 @@ func (m *QueryIsReputerRegisteredInTopicIdRequest) Reset() {
 func (m *QueryIsReputerRegisteredInTopicIdRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryIsReputerRegisteredInTopicIdRequest) ProtoMessage()    {}
 func (*QueryIsReputerRegisteredInTopicIdRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{46}
+	return fileDescriptor_c426af2f1e908986, []int{64}
 }
 func (m *QueryIsReputerRegisteredInTopicIdRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2277,7 +3181,7 @@ func (m *QueryIsReputerRegisteredInTopicIdResponse) String() string {
 }
 func (*QueryIsReputerRegisteredInTopicIdResponse) ProtoMessage() {}
 func (*QueryIsReputerRegisteredInTopicIdResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{47}
+	return fileDescriptor_c426af2f1e908986, []int{65}
 }
 func (m *QueryIsReputerRegisteredInTopicIdResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2321,7 +3225,7 @@ func (m *QueryIsWhitelistAdminRequest) Reset()         { *m = QueryIsWhitelistAd
 func (m *QueryIsWhitelistAdminRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryIsWhitelistAdminRequest) ProtoMessage()    {}
 func (*QueryIsWhitelistAdminRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{48}
+	return fileDescriptor_c426af2f1e908986, []int{66}
 }
 func (m *QueryIsWhitelistAdminRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2365,7 +3269,7 @@ func (m *QueryIsWhitelistAdminResponse) Reset()         { *m = QueryIsWhitelistA
 func (m *QueryIsWhitelistAdminResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryIsWhitelistAdminResponse) ProtoMessage()    {}
 func (*QueryIsWhitelistAdminResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{49}
+	return fileDescriptor_c426af2f1e908986, []int{67}
 }
 func (m *QueryIsWhitelistAdminResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2409,7 +3313,7 @@ func (m *QueryStakeRemovalsForBlockRequest) Reset()         { *m = QueryStakeRem
 func (m *QueryStakeRemovalsForBlockRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryStakeRemovalsForBlockRequest) ProtoMessage()    {}
 func (*QueryStakeRemovalsForBlockRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{50}
+	return fileDescriptor_c426af2f1e908986, []int{68}
 }
 func (m *QueryStakeRemovalsForBlockRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2453,7 +3357,7 @@ func (m *QueryStakeRemovalsForBlockResponse) Reset()         { *m = QueryStakeRe
 func (m *QueryStakeRemovalsForBlockResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryStakeRemovalsForBlockResponse) ProtoMessage()    {}
 func (*QueryStakeRemovalsForBlockResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{51}
+	return fileDescriptor_c426af2f1e908986, []int{69}
 }
 func (m *QueryStakeRemovalsForBlockResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2501,7 +3405,7 @@ func (m *QueryDelegateStakeRemovalsForBlockRequest) String() string {
 }
 func (*QueryDelegateStakeRemovalsForBlockRequest) ProtoMessage() {}
 func (*QueryDelegateStakeRemovalsForBlockRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{52}
+	return fileDescriptor_c426af2f1e908986, []int{70}
 }
 func (m *QueryDelegateStakeRemovalsForBlockRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2549,7 +3453,7 @@ func (m *QueryDelegateStakeRemovalsForBlockResponse) String() string {
 }
 func (*QueryDelegateStakeRemovalsForBlockResponse) ProtoMessage() {}
 func (*QueryDelegateStakeRemovalsForBlockResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{53}
+	return fileDescriptor_c426af2f1e908986, []int{71}
 }
 func (m *QueryDelegateStakeRemovalsForBlockResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2594,7 +3498,7 @@ func (m *QueryStakeRemovalInfoRequest) Reset()         { *m = QueryStakeRemovalI
 func (m *QueryStakeRemovalInfoRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryStakeRemovalInfoRequest) ProtoMessage()    {}
 func (*QueryStakeRemovalInfoRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{54}
+	return fileDescriptor_c426af2f1e908986, []int{72}
 }
 func (m *QueryStakeRemovalInfoRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2645,7 +3549,7 @@ func (m *QueryStakeRemovalInfoResponse) Reset()         { *m = QueryStakeRemoval
 func (m *QueryStakeRemovalInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryStakeRemovalInfoResponse) ProtoMessage()    {}
 func (*QueryStakeRemovalInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{55}
+	return fileDescriptor_c426af2f1e908986, []int{73}
 }
 func (m *QueryStakeRemovalInfoResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2691,7 +3595,7 @@ func (m *QueryDelegateStakeRemovalInfoRequest) Reset()         { *m = QueryDeleg
 func (m *QueryDelegateStakeRemovalInfoRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryDelegateStakeRemovalInfoRequest) ProtoMessage()    {}
 func (*QueryDelegateStakeRemovalInfoRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{56}
+	return fileDescriptor_c426af2f1e908986, []int{74}
 }
 func (m *QueryDelegateStakeRemovalInfoRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2749,7 +3653,7 @@ func (m *QueryDelegateStakeRemovalInfoResponse) Reset()         { *m = QueryDele
 func (m *QueryDelegateStakeRemovalInfoResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryDelegateStakeRemovalInfoResponse) ProtoMessage()    {}
 func (*QueryDelegateStakeRemovalInfoResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{57}
+	return fileDescriptor_c426af2f1e908986, []int{75}
 }
 func (m *QueryDelegateStakeRemovalInfoResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2793,7 +3697,7 @@ func (m *QueryTopicLastCommitRequest) Reset()         { *m = QueryTopicLastCommi
 func (m *QueryTopicLastCommitRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryTopicLastCommitRequest) ProtoMessage()    {}
 func (*QueryTopicLastCommitRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{58}
+	return fileDescriptor_c426af2f1e908986, []int{76}
 }
 func (m *QueryTopicLastCommitRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2837,7 +3741,7 @@ func (m *QueryTopicLastCommitResponse) Reset()         { *m = QueryTopicLastComm
 func (m *QueryTopicLastCommitResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryTopicLastCommitResponse) ProtoMessage()    {}
 func (*QueryTopicLastCommitResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_c426af2f1e908986, []int{59}
+	return fileDescriptor_c426af2f1e908986, []int{77}
 }
 func (m *QueryTopicLastCommitResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -2873,6 +3777,2814 @@ func (m *QueryTopicLastCommitResponse) GetLastCommit() *TimestampedActorNonce {
 	return nil
 }
 
+type QueryTopicRewardNonceRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryTopicRewardNonceRequest) Reset()         { *m = QueryTopicRewardNonceRequest{} }
+func (m *QueryTopicRewardNonceRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicRewardNonceRequest) ProtoMessage()    {}
+func (*QueryTopicRewardNonceRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{78}
+}
+func (m *QueryTopicRewardNonceRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicRewardNonceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicRewardNonceRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicRewardNonceRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicRewardNonceRequest.Merge(m, src)
+}
+func (m *QueryTopicRewardNonceRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicRewardNonceRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicRewardNonceRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicRewardNonceRequest proto.InternalMessageInfo
+
+func (m *QueryTopicRewardNonceRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryTopicRewardNonceResponse struct {
+	Nonce int64 `protobuf:"varint,1,opt,name=nonce,proto3" json:"nonce,omitempty"`
+}
+
+func (m *QueryTopicRewardNonceResponse) Reset()         { *m = QueryTopicRewardNonceResponse{} }
+func (m *QueryTopicRewardNonceResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicRewardNonceResponse) ProtoMessage()    {}
+func (*QueryTopicRewardNonceResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{79}
+}
+func (m *QueryTopicRewardNonceResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicRewardNonceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicRewardNonceResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicRewardNonceResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicRewardNonceResponse.Merge(m, src)
+}
+func (m *QueryTopicRewardNonceResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicRewardNonceResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicRewardNonceResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicRewardNonceResponse proto.InternalMessageInfo
+
+func (m *QueryTopicRewardNonceResponse) GetNonce() int64 {
+	if m != nil {
+		return m.Nonce
+	}
+	return 0
+}
+
+type QueryReputerLossBundlesAtBlockRequest struct {
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *QueryReputerLossBundlesAtBlockRequest) Reset()         { *m = QueryReputerLossBundlesAtBlockRequest{} }
+func (m *QueryReputerLossBundlesAtBlockRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryReputerLossBundlesAtBlockRequest) ProtoMessage()    {}
+func (*QueryReputerLossBundlesAtBlockRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{80}
+}
+func (m *QueryReputerLossBundlesAtBlockRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryReputerLossBundlesAtBlockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryReputerLossBundlesAtBlockRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryReputerLossBundlesAtBlockRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryReputerLossBundlesAtBlockRequest.Merge(m, src)
+}
+func (m *QueryReputerLossBundlesAtBlockRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryReputerLossBundlesAtBlockRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryReputerLossBundlesAtBlockRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryReputerLossBundlesAtBlockRequest proto.InternalMessageInfo
+
+func (m *QueryReputerLossBundlesAtBlockRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryReputerLossBundlesAtBlockRequest) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type QueryReputerLossBundlesAtBlockResponse struct {
+	LossBundles *ReputerValueBundles `protobuf:"bytes,1,opt,name=loss_bundles,json=lossBundles,proto3" json:"loss_bundles,omitempty"`
+}
+
+func (m *QueryReputerLossBundlesAtBlockResponse) Reset() {
+	*m = QueryReputerLossBundlesAtBlockResponse{}
+}
+func (m *QueryReputerLossBundlesAtBlockResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryReputerLossBundlesAtBlockResponse) ProtoMessage()    {}
+func (*QueryReputerLossBundlesAtBlockResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{81}
+}
+func (m *QueryReputerLossBundlesAtBlockResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryReputerLossBundlesAtBlockResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryReputerLossBundlesAtBlockResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryReputerLossBundlesAtBlockResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryReputerLossBundlesAtBlockResponse.Merge(m, src)
+}
+func (m *QueryReputerLossBundlesAtBlockResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryReputerLossBundlesAtBlockResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryReputerLossBundlesAtBlockResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryReputerLossBundlesAtBlockResponse proto.InternalMessageInfo
+
+func (m *QueryReputerLossBundlesAtBlockResponse) GetLossBundles() *ReputerValueBundles {
+	if m != nil {
+		return m.LossBundles
+	}
+	return nil
+}
+
+type QueryStakeReputerAuthorityRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+}
+
+func (m *QueryStakeReputerAuthorityRequest) Reset()         { *m = QueryStakeReputerAuthorityRequest{} }
+func (m *QueryStakeReputerAuthorityRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryStakeReputerAuthorityRequest) ProtoMessage()    {}
+func (*QueryStakeReputerAuthorityRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{82}
+}
+func (m *QueryStakeReputerAuthorityRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryStakeReputerAuthorityRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryStakeReputerAuthorityRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryStakeReputerAuthorityRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStakeReputerAuthorityRequest.Merge(m, src)
+}
+func (m *QueryStakeReputerAuthorityRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryStakeReputerAuthorityRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStakeReputerAuthorityRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryStakeReputerAuthorityRequest proto.InternalMessageInfo
+
+func (m *QueryStakeReputerAuthorityRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryStakeReputerAuthorityRequest) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+type QueryStakeReputerAuthorityResponse struct {
+	Authority cosmossdk_io_math.Int `protobuf:"bytes,1,opt,name=authority,proto3,customtype=cosmossdk.io/math.Int" json:"authority"`
+}
+
+func (m *QueryStakeReputerAuthorityResponse) Reset()         { *m = QueryStakeReputerAuthorityResponse{} }
+func (m *QueryStakeReputerAuthorityResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryStakeReputerAuthorityResponse) ProtoMessage()    {}
+func (*QueryStakeReputerAuthorityResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{83}
+}
+func (m *QueryStakeReputerAuthorityResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryStakeReputerAuthorityResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryStakeReputerAuthorityResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryStakeReputerAuthorityResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStakeReputerAuthorityResponse.Merge(m, src)
+}
+func (m *QueryStakeReputerAuthorityResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryStakeReputerAuthorityResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStakeReputerAuthorityResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryStakeReputerAuthorityResponse proto.InternalMessageInfo
+
+type QueryDelegateStakePlacementRequest struct {
+	TopicId   uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Delegator string `protobuf:"bytes,2,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	Target    string `protobuf:"bytes,3,opt,name=target,proto3" json:"target,omitempty"`
+}
+
+func (m *QueryDelegateStakePlacementRequest) Reset()         { *m = QueryDelegateStakePlacementRequest{} }
+func (m *QueryDelegateStakePlacementRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryDelegateStakePlacementRequest) ProtoMessage()    {}
+func (*QueryDelegateStakePlacementRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{84}
+}
+func (m *QueryDelegateStakePlacementRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateStakePlacementRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateStakePlacementRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryDelegateStakePlacementRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateStakePlacementRequest.Merge(m, src)
+}
+func (m *QueryDelegateStakePlacementRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateStakePlacementRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateStakePlacementRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateStakePlacementRequest proto.InternalMessageInfo
+
+func (m *QueryDelegateStakePlacementRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryDelegateStakePlacementRequest) GetDelegator() string {
+	if m != nil {
+		return m.Delegator
+	}
+	return ""
+}
+
+func (m *QueryDelegateStakePlacementRequest) GetTarget() string {
+	if m != nil {
+		return m.Target
+	}
+	return ""
+}
+
+type QueryDelegateStakePlacementResponse struct {
+	DelegatorInfo *DelegatorInfo `protobuf:"bytes,1,opt,name=delegator_info,json=delegatorInfo,proto3" json:"delegator_info,omitempty"`
+}
+
+func (m *QueryDelegateStakePlacementResponse) Reset()         { *m = QueryDelegateStakePlacementResponse{} }
+func (m *QueryDelegateStakePlacementResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryDelegateStakePlacementResponse) ProtoMessage()    {}
+func (*QueryDelegateStakePlacementResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{85}
+}
+func (m *QueryDelegateStakePlacementResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateStakePlacementResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateStakePlacementResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryDelegateStakePlacementResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateStakePlacementResponse.Merge(m, src)
+}
+func (m *QueryDelegateStakePlacementResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateStakePlacementResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateStakePlacementResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateStakePlacementResponse proto.InternalMessageInfo
+
+func (m *QueryDelegateStakePlacementResponse) GetDelegatorInfo() *DelegatorInfo {
+	if m != nil {
+		return m.DelegatorInfo
+	}
+	return nil
+}
+
+type QueryDelegateStakeUponReputerRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Target  string `protobuf:"bytes,2,opt,name=target,proto3" json:"target,omitempty"`
+}
+
+func (m *QueryDelegateStakeUponReputerRequest) Reset()         { *m = QueryDelegateStakeUponReputerRequest{} }
+func (m *QueryDelegateStakeUponReputerRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryDelegateStakeUponReputerRequest) ProtoMessage()    {}
+func (*QueryDelegateStakeUponReputerRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{86}
+}
+func (m *QueryDelegateStakeUponReputerRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateStakeUponReputerRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateStakeUponReputerRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryDelegateStakeUponReputerRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateStakeUponReputerRequest.Merge(m, src)
+}
+func (m *QueryDelegateStakeUponReputerRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateStakeUponReputerRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateStakeUponReputerRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateStakeUponReputerRequest proto.InternalMessageInfo
+
+func (m *QueryDelegateStakeUponReputerRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryDelegateStakeUponReputerRequest) GetTarget() string {
+	if m != nil {
+		return m.Target
+	}
+	return ""
+}
+
+type QueryDelegateStakeUponReputerResponse struct {
+	Stake cosmossdk_io_math.Int `protobuf:"bytes,1,opt,name=stake,proto3,customtype=cosmossdk.io/math.Int" json:"stake"`
+}
+
+func (m *QueryDelegateStakeUponReputerResponse) Reset()         { *m = QueryDelegateStakeUponReputerResponse{} }
+func (m *QueryDelegateStakeUponReputerResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryDelegateStakeUponReputerResponse) ProtoMessage()    {}
+func (*QueryDelegateStakeUponReputerResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{87}
+}
+func (m *QueryDelegateStakeUponReputerResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateStakeUponReputerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateStakeUponReputerResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryDelegateStakeUponReputerResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateStakeUponReputerResponse.Merge(m, src)
+}
+func (m *QueryDelegateStakeUponReputerResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateStakeUponReputerResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateStakeUponReputerResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateStakeUponReputerResponse proto.InternalMessageInfo
+
+type QueryDelegateRewardPerShareRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+}
+
+func (m *QueryDelegateRewardPerShareRequest) Reset()         { *m = QueryDelegateRewardPerShareRequest{} }
+func (m *QueryDelegateRewardPerShareRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryDelegateRewardPerShareRequest) ProtoMessage()    {}
+func (*QueryDelegateRewardPerShareRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{88}
+}
+func (m *QueryDelegateRewardPerShareRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateRewardPerShareRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateRewardPerShareRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryDelegateRewardPerShareRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateRewardPerShareRequest.Merge(m, src)
+}
+func (m *QueryDelegateRewardPerShareRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateRewardPerShareRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateRewardPerShareRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateRewardPerShareRequest proto.InternalMessageInfo
+
+func (m *QueryDelegateRewardPerShareRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryDelegateRewardPerShareRequest) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+type QueryDelegateRewardPerShareResponse struct {
+	RewardPerShare github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,1,opt,name=reward_per_share,json=rewardPerShare,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"reward_per_share"`
+}
+
+func (m *QueryDelegateRewardPerShareResponse) Reset()         { *m = QueryDelegateRewardPerShareResponse{} }
+func (m *QueryDelegateRewardPerShareResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryDelegateRewardPerShareResponse) ProtoMessage()    {}
+func (*QueryDelegateRewardPerShareResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{89}
+}
+func (m *QueryDelegateRewardPerShareResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateRewardPerShareResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateRewardPerShareResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryDelegateRewardPerShareResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateRewardPerShareResponse.Merge(m, src)
+}
+func (m *QueryDelegateRewardPerShareResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateRewardPerShareResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateRewardPerShareResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateRewardPerShareResponse proto.InternalMessageInfo
+
+type QueryStakeRemovalForReputerAndTopicIdRequest struct {
+	Reputer string `protobuf:"bytes,1,opt,name=reputer,proto3" json:"reputer,omitempty"`
+	TopicId uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) Reset() {
+	*m = QueryStakeRemovalForReputerAndTopicIdRequest{}
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryStakeRemovalForReputerAndTopicIdRequest) ProtoMessage() {}
+func (*QueryStakeRemovalForReputerAndTopicIdRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{90}
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryStakeRemovalForReputerAndTopicIdRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStakeRemovalForReputerAndTopicIdRequest.Merge(m, src)
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStakeRemovalForReputerAndTopicIdRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryStakeRemovalForReputerAndTopicIdRequest proto.InternalMessageInfo
+
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryStakeRemovalForReputerAndTopicIdResponse struct {
+	StakeRemovalInfo *StakeRemovalInfo `protobuf:"bytes,1,opt,name=stake_removal_info,json=stakeRemovalInfo,proto3" json:"stake_removal_info,omitempty"`
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) Reset() {
+	*m = QueryStakeRemovalForReputerAndTopicIdResponse{}
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryStakeRemovalForReputerAndTopicIdResponse) ProtoMessage() {}
+func (*QueryStakeRemovalForReputerAndTopicIdResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{91}
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryStakeRemovalForReputerAndTopicIdResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStakeRemovalForReputerAndTopicIdResponse.Merge(m, src)
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStakeRemovalForReputerAndTopicIdResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryStakeRemovalForReputerAndTopicIdResponse proto.InternalMessageInfo
+
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) GetStakeRemovalInfo() *StakeRemovalInfo {
+	if m != nil {
+		return m.StakeRemovalInfo
+	}
+	return nil
+}
+
+type QueryDelegateStakeRemovalRequest struct {
+	BlockHeight int64  `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	TopicId     uint64 `protobuf:"varint,2,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Delegator   string `protobuf:"bytes,3,opt,name=delegator,proto3" json:"delegator,omitempty"`
+	Reputer     string `protobuf:"bytes,4,opt,name=reputer,proto3" json:"reputer,omitempty"`
+}
+
+func (m *QueryDelegateStakeRemovalRequest) Reset()         { *m = QueryDelegateStakeRemovalRequest{} }
+func (m *QueryDelegateStakeRemovalRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryDelegateStakeRemovalRequest) ProtoMessage()    {}
+func (*QueryDelegateStakeRemovalRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{92}
+}
+func (m *QueryDelegateStakeRemovalRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateStakeRemovalRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateStakeRemovalRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryDelegateStakeRemovalRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateStakeRemovalRequest.Merge(m, src)
+}
+func (m *QueryDelegateStakeRemovalRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateStakeRemovalRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateStakeRemovalRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateStakeRemovalRequest proto.InternalMessageInfo
+
+func (m *QueryDelegateStakeRemovalRequest) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+func (m *QueryDelegateStakeRemovalRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryDelegateStakeRemovalRequest) GetDelegator() string {
+	if m != nil {
+		return m.Delegator
+	}
+	return ""
+}
+
+func (m *QueryDelegateStakeRemovalRequest) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+type QueryDelegateStakeRemovalResponse struct {
+	StakeRemovalInfo *DelegateStakeRemovalInfo `protobuf:"bytes,1,opt,name=stake_removal_info,json=stakeRemovalInfo,proto3" json:"stake_removal_info,omitempty"`
+}
+
+func (m *QueryDelegateStakeRemovalResponse) Reset()         { *m = QueryDelegateStakeRemovalResponse{} }
+func (m *QueryDelegateStakeRemovalResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryDelegateStakeRemovalResponse) ProtoMessage()    {}
+func (*QueryDelegateStakeRemovalResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{93}
+}
+func (m *QueryDelegateStakeRemovalResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryDelegateStakeRemovalResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryDelegateStakeRemovalResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryDelegateStakeRemovalResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryDelegateStakeRemovalResponse.Merge(m, src)
+}
+func (m *QueryDelegateStakeRemovalResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryDelegateStakeRemovalResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryDelegateStakeRemovalResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryDelegateStakeRemovalResponse proto.InternalMessageInfo
+
+func (m *QueryDelegateStakeRemovalResponse) GetStakeRemovalInfo() *DelegateStakeRemovalInfo {
+	if m != nil {
+		return m.StakeRemovalInfo
+	}
+	return nil
+}
+
+type QueryPreviousTopicWeightRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryPreviousTopicWeightRequest) Reset()         { *m = QueryPreviousTopicWeightRequest{} }
+func (m *QueryPreviousTopicWeightRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryPreviousTopicWeightRequest) ProtoMessage()    {}
+func (*QueryPreviousTopicWeightRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{94}
+}
+func (m *QueryPreviousTopicWeightRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousTopicWeightRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousTopicWeightRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousTopicWeightRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousTopicWeightRequest.Merge(m, src)
+}
+func (m *QueryPreviousTopicWeightRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousTopicWeightRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousTopicWeightRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousTopicWeightRequest proto.InternalMessageInfo
+
+func (m *QueryPreviousTopicWeightRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryPreviousTopicWeightResponse struct {
+	Weight   github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,1,opt,name=weight,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"weight"`
+	NotFound bool                                            `protobuf:"varint,2,opt,name=not_found,json=notFound,proto3" json:"not_found,omitempty"`
+}
+
+func (m *QueryPreviousTopicWeightResponse) Reset()         { *m = QueryPreviousTopicWeightResponse{} }
+func (m *QueryPreviousTopicWeightResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryPreviousTopicWeightResponse) ProtoMessage()    {}
+func (*QueryPreviousTopicWeightResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{95}
+}
+func (m *QueryPreviousTopicWeightResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousTopicWeightResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousTopicWeightResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousTopicWeightResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousTopicWeightResponse.Merge(m, src)
+}
+func (m *QueryPreviousTopicWeightResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousTopicWeightResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousTopicWeightResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousTopicWeightResponse proto.InternalMessageInfo
+
+func (m *QueryPreviousTopicWeightResponse) GetNotFound() bool {
+	if m != nil {
+		return m.NotFound
+	}
+	return false
+}
+
+type QueryTopicExistsRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryTopicExistsRequest) Reset()         { *m = QueryTopicExistsRequest{} }
+func (m *QueryTopicExistsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicExistsRequest) ProtoMessage()    {}
+func (*QueryTopicExistsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{96}
+}
+func (m *QueryTopicExistsRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicExistsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicExistsRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicExistsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicExistsRequest.Merge(m, src)
+}
+func (m *QueryTopicExistsRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicExistsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicExistsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicExistsRequest proto.InternalMessageInfo
+
+func (m *QueryTopicExistsRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryTopicExistsResponse struct {
+	Exists bool `protobuf:"varint,1,opt,name=exists,proto3" json:"exists,omitempty"`
+}
+
+func (m *QueryTopicExistsResponse) Reset()         { *m = QueryTopicExistsResponse{} }
+func (m *QueryTopicExistsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicExistsResponse) ProtoMessage()    {}
+func (*QueryTopicExistsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{97}
+}
+func (m *QueryTopicExistsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicExistsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicExistsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicExistsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicExistsResponse.Merge(m, src)
+}
+func (m *QueryTopicExistsResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicExistsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicExistsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicExistsResponse proto.InternalMessageInfo
+
+func (m *QueryTopicExistsResponse) GetExists() bool {
+	if m != nil {
+		return m.Exists
+	}
+	return false
+}
+
+type QueryIsTopicActiveRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryIsTopicActiveRequest) Reset()         { *m = QueryIsTopicActiveRequest{} }
+func (m *QueryIsTopicActiveRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryIsTopicActiveRequest) ProtoMessage()    {}
+func (*QueryIsTopicActiveRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{98}
+}
+func (m *QueryIsTopicActiveRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsTopicActiveRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsTopicActiveRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsTopicActiveRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsTopicActiveRequest.Merge(m, src)
+}
+func (m *QueryIsTopicActiveRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsTopicActiveRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsTopicActiveRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsTopicActiveRequest proto.InternalMessageInfo
+
+func (m *QueryIsTopicActiveRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryIsTopicActiveResponse struct {
+	IsActive bool `protobuf:"varint,1,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+}
+
+func (m *QueryIsTopicActiveResponse) Reset()         { *m = QueryIsTopicActiveResponse{} }
+func (m *QueryIsTopicActiveResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryIsTopicActiveResponse) ProtoMessage()    {}
+func (*QueryIsTopicActiveResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{99}
+}
+func (m *QueryIsTopicActiveResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIsTopicActiveResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIsTopicActiveResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIsTopicActiveResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIsTopicActiveResponse.Merge(m, src)
+}
+func (m *QueryIsTopicActiveResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIsTopicActiveResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIsTopicActiveResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIsTopicActiveResponse proto.InternalMessageInfo
+
+func (m *QueryIsTopicActiveResponse) GetIsActive() bool {
+	if m != nil {
+		return m.IsActive
+	}
+	return false
+}
+
+type QueryIdsOfActiveTopicsRequest struct {
+	Pagination *SimpleCursorPaginationRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryIdsOfActiveTopicsRequest) Reset()         { *m = QueryIdsOfActiveTopicsRequest{} }
+func (m *QueryIdsOfActiveTopicsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryIdsOfActiveTopicsRequest) ProtoMessage()    {}
+func (*QueryIdsOfActiveTopicsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{100}
+}
+func (m *QueryIdsOfActiveTopicsRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIdsOfActiveTopicsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIdsOfActiveTopicsRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIdsOfActiveTopicsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIdsOfActiveTopicsRequest.Merge(m, src)
+}
+func (m *QueryIdsOfActiveTopicsRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIdsOfActiveTopicsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIdsOfActiveTopicsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIdsOfActiveTopicsRequest proto.InternalMessageInfo
+
+func (m *QueryIdsOfActiveTopicsRequest) GetPagination() *SimpleCursorPaginationRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+type QueryIdsOfActiveTopicsResponse struct {
+	ActiveTopicIds []uint64                        `protobuf:"varint,1,rep,packed,name=active_topic_ids,json=activeTopicIds,proto3" json:"active_topic_ids,omitempty"`
+	Pagination     *SimpleCursorPaginationResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryIdsOfActiveTopicsResponse) Reset()         { *m = QueryIdsOfActiveTopicsResponse{} }
+func (m *QueryIdsOfActiveTopicsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryIdsOfActiveTopicsResponse) ProtoMessage()    {}
+func (*QueryIdsOfActiveTopicsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{101}
+}
+func (m *QueryIdsOfActiveTopicsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryIdsOfActiveTopicsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryIdsOfActiveTopicsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryIdsOfActiveTopicsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryIdsOfActiveTopicsResponse.Merge(m, src)
+}
+func (m *QueryIdsOfActiveTopicsResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryIdsOfActiveTopicsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryIdsOfActiveTopicsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryIdsOfActiveTopicsResponse proto.InternalMessageInfo
+
+func (m *QueryIdsOfActiveTopicsResponse) GetActiveTopicIds() []uint64 {
+	if m != nil {
+		return m.ActiveTopicIds
+	}
+	return nil
+}
+
+func (m *QueryIdsOfActiveTopicsResponse) GetPagination() *SimpleCursorPaginationResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+type QueryTopicEpochLastEndedRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryTopicEpochLastEndedRequest) Reset()         { *m = QueryTopicEpochLastEndedRequest{} }
+func (m *QueryTopicEpochLastEndedRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicEpochLastEndedRequest) ProtoMessage()    {}
+func (*QueryTopicEpochLastEndedRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{102}
+}
+func (m *QueryTopicEpochLastEndedRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicEpochLastEndedRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicEpochLastEndedRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicEpochLastEndedRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicEpochLastEndedRequest.Merge(m, src)
+}
+func (m *QueryTopicEpochLastEndedRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicEpochLastEndedRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicEpochLastEndedRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicEpochLastEndedRequest proto.InternalMessageInfo
+
+func (m *QueryTopicEpochLastEndedRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryTopicEpochLastEndedResponse struct {
+	EpochLastEnded int64 `protobuf:"varint,1,opt,name=epoch_last_ended,json=epochLastEnded,proto3" json:"epoch_last_ended,omitempty"`
+}
+
+func (m *QueryTopicEpochLastEndedResponse) Reset()         { *m = QueryTopicEpochLastEndedResponse{} }
+func (m *QueryTopicEpochLastEndedResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicEpochLastEndedResponse) ProtoMessage()    {}
+func (*QueryTopicEpochLastEndedResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{103}
+}
+func (m *QueryTopicEpochLastEndedResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicEpochLastEndedResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicEpochLastEndedResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicEpochLastEndedResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicEpochLastEndedResponse.Merge(m, src)
+}
+func (m *QueryTopicEpochLastEndedResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicEpochLastEndedResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicEpochLastEndedResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicEpochLastEndedResponse proto.InternalMessageInfo
+
+func (m *QueryTopicEpochLastEndedResponse) GetEpochLastEnded() int64 {
+	if m != nil {
+		return m.EpochLastEnded
+	}
+	return 0
+}
+
+type QueryTopicFeeRevenueRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+}
+
+func (m *QueryTopicFeeRevenueRequest) Reset()         { *m = QueryTopicFeeRevenueRequest{} }
+func (m *QueryTopicFeeRevenueRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicFeeRevenueRequest) ProtoMessage()    {}
+func (*QueryTopicFeeRevenueRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{104}
+}
+func (m *QueryTopicFeeRevenueRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicFeeRevenueRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicFeeRevenueRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicFeeRevenueRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicFeeRevenueRequest.Merge(m, src)
+}
+func (m *QueryTopicFeeRevenueRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicFeeRevenueRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicFeeRevenueRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicFeeRevenueRequest proto.InternalMessageInfo
+
+func (m *QueryTopicFeeRevenueRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+type QueryTopicFeeRevenueResponse struct {
+	FeeRevenue cosmossdk_io_math.Int `protobuf:"bytes,1,opt,name=fee_revenue,json=feeRevenue,proto3,customtype=cosmossdk.io/math.Int" json:"fee_revenue"`
+}
+
+func (m *QueryTopicFeeRevenueResponse) Reset()         { *m = QueryTopicFeeRevenueResponse{} }
+func (m *QueryTopicFeeRevenueResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTopicFeeRevenueResponse) ProtoMessage()    {}
+func (*QueryTopicFeeRevenueResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{105}
+}
+func (m *QueryTopicFeeRevenueResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTopicFeeRevenueResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTopicFeeRevenueResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTopicFeeRevenueResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTopicFeeRevenueResponse.Merge(m, src)
+}
+func (m *QueryTopicFeeRevenueResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTopicFeeRevenueResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTopicFeeRevenueResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTopicFeeRevenueResponse proto.InternalMessageInfo
+
+type QueryChurnableTopicsRequest struct {
+}
+
+func (m *QueryChurnableTopicsRequest) Reset()         { *m = QueryChurnableTopicsRequest{} }
+func (m *QueryChurnableTopicsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryChurnableTopicsRequest) ProtoMessage()    {}
+func (*QueryChurnableTopicsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{106}
+}
+func (m *QueryChurnableTopicsRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryChurnableTopicsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryChurnableTopicsRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryChurnableTopicsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryChurnableTopicsRequest.Merge(m, src)
+}
+func (m *QueryChurnableTopicsRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryChurnableTopicsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryChurnableTopicsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryChurnableTopicsRequest proto.InternalMessageInfo
+
+type QueryChurnableTopicsResponse struct {
+	ChurnableTopicIds []uint64 `protobuf:"varint,1,rep,packed,name=churnable_topic_ids,json=churnableTopicIds,proto3" json:"churnable_topic_ids,omitempty"`
+}
+
+func (m *QueryChurnableTopicsResponse) Reset()         { *m = QueryChurnableTopicsResponse{} }
+func (m *QueryChurnableTopicsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryChurnableTopicsResponse) ProtoMessage()    {}
+func (*QueryChurnableTopicsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{107}
+}
+func (m *QueryChurnableTopicsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryChurnableTopicsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryChurnableTopicsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryChurnableTopicsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryChurnableTopicsResponse.Merge(m, src)
+}
+func (m *QueryChurnableTopicsResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryChurnableTopicsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryChurnableTopicsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryChurnableTopicsResponse proto.InternalMessageInfo
+
+func (m *QueryChurnableTopicsResponse) GetChurnableTopicIds() []uint64 {
+	if m != nil {
+		return m.ChurnableTopicIds
+	}
+	return nil
+}
+
+type QueryRewardableTopicsRequest struct {
+}
+
+func (m *QueryRewardableTopicsRequest) Reset()         { *m = QueryRewardableTopicsRequest{} }
+func (m *QueryRewardableTopicsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryRewardableTopicsRequest) ProtoMessage()    {}
+func (*QueryRewardableTopicsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{108}
+}
+func (m *QueryRewardableTopicsRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryRewardableTopicsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryRewardableTopicsRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryRewardableTopicsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryRewardableTopicsRequest.Merge(m, src)
+}
+func (m *QueryRewardableTopicsRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryRewardableTopicsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryRewardableTopicsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryRewardableTopicsRequest proto.InternalMessageInfo
+
+type QueryRewardableTopicsResponse struct {
+	RewardableTopicIds []uint64 `protobuf:"varint,1,rep,packed,name=rewardable_topic_ids,json=rewardableTopicIds,proto3" json:"rewardable_topic_ids,omitempty"`
+}
+
+func (m *QueryRewardableTopicsResponse) Reset()         { *m = QueryRewardableTopicsResponse{} }
+func (m *QueryRewardableTopicsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryRewardableTopicsResponse) ProtoMessage()    {}
+func (*QueryRewardableTopicsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{109}
+}
+func (m *QueryRewardableTopicsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryRewardableTopicsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryRewardableTopicsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryRewardableTopicsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryRewardableTopicsResponse.Merge(m, src)
+}
+func (m *QueryRewardableTopicsResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryRewardableTopicsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryRewardableTopicsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryRewardableTopicsResponse proto.InternalMessageInfo
+
+func (m *QueryRewardableTopicsResponse) GetRewardableTopicIds() []uint64 {
+	if m != nil {
+		return m.RewardableTopicIds
+	}
+	return nil
+}
+
+type QueryLatestInfererScoreRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Worker  string `protobuf:"bytes,2,opt,name=worker,proto3" json:"worker,omitempty"`
+}
+
+func (m *QueryLatestInfererScoreRequest) Reset()         { *m = QueryLatestInfererScoreRequest{} }
+func (m *QueryLatestInfererScoreRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryLatestInfererScoreRequest) ProtoMessage()    {}
+func (*QueryLatestInfererScoreRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{110}
+}
+func (m *QueryLatestInfererScoreRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLatestInfererScoreRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLatestInfererScoreRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLatestInfererScoreRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLatestInfererScoreRequest.Merge(m, src)
+}
+func (m *QueryLatestInfererScoreRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLatestInfererScoreRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLatestInfererScoreRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLatestInfererScoreRequest proto.InternalMessageInfo
+
+func (m *QueryLatestInfererScoreRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryLatestInfererScoreRequest) GetWorker() string {
+	if m != nil {
+		return m.Worker
+	}
+	return ""
+}
+
+type QueryLatestInfererScoreResponse struct {
+	Score *Score `protobuf:"bytes,1,opt,name=score,proto3" json:"score,omitempty"`
+}
+
+func (m *QueryLatestInfererScoreResponse) Reset()         { *m = QueryLatestInfererScoreResponse{} }
+func (m *QueryLatestInfererScoreResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryLatestInfererScoreResponse) ProtoMessage()    {}
+func (*QueryLatestInfererScoreResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{111}
+}
+func (m *QueryLatestInfererScoreResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLatestInfererScoreResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLatestInfererScoreResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLatestInfererScoreResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLatestInfererScoreResponse.Merge(m, src)
+}
+func (m *QueryLatestInfererScoreResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLatestInfererScoreResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLatestInfererScoreResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLatestInfererScoreResponse proto.InternalMessageInfo
+
+func (m *QueryLatestInfererScoreResponse) GetScore() *Score {
+	if m != nil {
+		return m.Score
+	}
+	return nil
+}
+
+type QueryLatestForecasterScoreRequest struct {
+	TopicId    uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Forecaster string `protobuf:"bytes,2,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
+}
+
+func (m *QueryLatestForecasterScoreRequest) Reset()         { *m = QueryLatestForecasterScoreRequest{} }
+func (m *QueryLatestForecasterScoreRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryLatestForecasterScoreRequest) ProtoMessage()    {}
+func (*QueryLatestForecasterScoreRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{112}
+}
+func (m *QueryLatestForecasterScoreRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLatestForecasterScoreRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLatestForecasterScoreRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLatestForecasterScoreRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLatestForecasterScoreRequest.Merge(m, src)
+}
+func (m *QueryLatestForecasterScoreRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLatestForecasterScoreRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLatestForecasterScoreRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLatestForecasterScoreRequest proto.InternalMessageInfo
+
+func (m *QueryLatestForecasterScoreRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryLatestForecasterScoreRequest) GetForecaster() string {
+	if m != nil {
+		return m.Forecaster
+	}
+	return ""
+}
+
+type QueryLatestForecasterScoreResponse struct {
+	Score *Score `protobuf:"bytes,1,opt,name=score,proto3" json:"score,omitempty"`
+}
+
+func (m *QueryLatestForecasterScoreResponse) Reset()         { *m = QueryLatestForecasterScoreResponse{} }
+func (m *QueryLatestForecasterScoreResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryLatestForecasterScoreResponse) ProtoMessage()    {}
+func (*QueryLatestForecasterScoreResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{113}
+}
+func (m *QueryLatestForecasterScoreResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLatestForecasterScoreResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLatestForecasterScoreResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLatestForecasterScoreResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLatestForecasterScoreResponse.Merge(m, src)
+}
+func (m *QueryLatestForecasterScoreResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLatestForecasterScoreResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLatestForecasterScoreResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLatestForecasterScoreResponse proto.InternalMessageInfo
+
+func (m *QueryLatestForecasterScoreResponse) GetScore() *Score {
+	if m != nil {
+		return m.Score
+	}
+	return nil
+}
+
+type QueryLatestReputerScoreRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+}
+
+func (m *QueryLatestReputerScoreRequest) Reset()         { *m = QueryLatestReputerScoreRequest{} }
+func (m *QueryLatestReputerScoreRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryLatestReputerScoreRequest) ProtoMessage()    {}
+func (*QueryLatestReputerScoreRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{114}
+}
+func (m *QueryLatestReputerScoreRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLatestReputerScoreRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLatestReputerScoreRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLatestReputerScoreRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLatestReputerScoreRequest.Merge(m, src)
+}
+func (m *QueryLatestReputerScoreRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLatestReputerScoreRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLatestReputerScoreRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLatestReputerScoreRequest proto.InternalMessageInfo
+
+func (m *QueryLatestReputerScoreRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryLatestReputerScoreRequest) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+type QueryLatestReputerScoreResponse struct {
+	Score *Score `protobuf:"bytes,1,opt,name=score,proto3" json:"score,omitempty"`
+}
+
+func (m *QueryLatestReputerScoreResponse) Reset()         { *m = QueryLatestReputerScoreResponse{} }
+func (m *QueryLatestReputerScoreResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryLatestReputerScoreResponse) ProtoMessage()    {}
+func (*QueryLatestReputerScoreResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{115}
+}
+func (m *QueryLatestReputerScoreResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryLatestReputerScoreResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryLatestReputerScoreResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryLatestReputerScoreResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryLatestReputerScoreResponse.Merge(m, src)
+}
+func (m *QueryLatestReputerScoreResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryLatestReputerScoreResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryLatestReputerScoreResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryLatestReputerScoreResponse proto.InternalMessageInfo
+
+func (m *QueryLatestReputerScoreResponse) GetScore() *Score {
+	if m != nil {
+		return m.Score
+	}
+	return nil
+}
+
+type QueryInferenceScoresUntilBlockRequest struct {
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *QueryInferenceScoresUntilBlockRequest) Reset()         { *m = QueryInferenceScoresUntilBlockRequest{} }
+func (m *QueryInferenceScoresUntilBlockRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryInferenceScoresUntilBlockRequest) ProtoMessage()    {}
+func (*QueryInferenceScoresUntilBlockRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{116}
+}
+func (m *QueryInferenceScoresUntilBlockRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryInferenceScoresUntilBlockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryInferenceScoresUntilBlockRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryInferenceScoresUntilBlockRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryInferenceScoresUntilBlockRequest.Merge(m, src)
+}
+func (m *QueryInferenceScoresUntilBlockRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryInferenceScoresUntilBlockRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryInferenceScoresUntilBlockRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryInferenceScoresUntilBlockRequest proto.InternalMessageInfo
+
+func (m *QueryInferenceScoresUntilBlockRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryInferenceScoresUntilBlockRequest) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type QueryInferenceScoresUntilBlockResponse struct {
+	Scores []*Score `protobuf:"bytes,1,rep,name=scores,proto3" json:"scores,omitempty"`
+}
+
+func (m *QueryInferenceScoresUntilBlockResponse) Reset() {
+	*m = QueryInferenceScoresUntilBlockResponse{}
+}
+func (m *QueryInferenceScoresUntilBlockResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryInferenceScoresUntilBlockResponse) ProtoMessage()    {}
+func (*QueryInferenceScoresUntilBlockResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{117}
+}
+func (m *QueryInferenceScoresUntilBlockResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryInferenceScoresUntilBlockResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryInferenceScoresUntilBlockResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryInferenceScoresUntilBlockResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryInferenceScoresUntilBlockResponse.Merge(m, src)
+}
+func (m *QueryInferenceScoresUntilBlockResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryInferenceScoresUntilBlockResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryInferenceScoresUntilBlockResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryInferenceScoresUntilBlockResponse proto.InternalMessageInfo
+
+func (m *QueryInferenceScoresUntilBlockResponse) GetScores() []*Score {
+	if m != nil {
+		return m.Scores
+	}
+	return nil
+}
+
+type QueryWorkerInferenceScoresAtBlockRequest struct {
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockRequest) Reset() {
+	*m = QueryWorkerInferenceScoresAtBlockRequest{}
+}
+func (m *QueryWorkerInferenceScoresAtBlockRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryWorkerInferenceScoresAtBlockRequest) ProtoMessage()    {}
+func (*QueryWorkerInferenceScoresAtBlockRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{118}
+}
+func (m *QueryWorkerInferenceScoresAtBlockRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryWorkerInferenceScoresAtBlockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryWorkerInferenceScoresAtBlockRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryWorkerInferenceScoresAtBlockRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryWorkerInferenceScoresAtBlockRequest.Merge(m, src)
+}
+func (m *QueryWorkerInferenceScoresAtBlockRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryWorkerInferenceScoresAtBlockRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryWorkerInferenceScoresAtBlockRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryWorkerInferenceScoresAtBlockRequest proto.InternalMessageInfo
+
+func (m *QueryWorkerInferenceScoresAtBlockRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockRequest) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type QueryWorkerInferenceScoresAtBlockResponse struct {
+	Scores *Scores `protobuf:"bytes,1,opt,name=scores,proto3" json:"scores,omitempty"`
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockResponse) Reset() {
+	*m = QueryWorkerInferenceScoresAtBlockResponse{}
+}
+func (m *QueryWorkerInferenceScoresAtBlockResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryWorkerInferenceScoresAtBlockResponse) ProtoMessage() {}
+func (*QueryWorkerInferenceScoresAtBlockResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{119}
+}
+func (m *QueryWorkerInferenceScoresAtBlockResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryWorkerInferenceScoresAtBlockResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryWorkerInferenceScoresAtBlockResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryWorkerInferenceScoresAtBlockResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryWorkerInferenceScoresAtBlockResponse.Merge(m, src)
+}
+func (m *QueryWorkerInferenceScoresAtBlockResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryWorkerInferenceScoresAtBlockResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryWorkerInferenceScoresAtBlockResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryWorkerInferenceScoresAtBlockResponse proto.InternalMessageInfo
+
+func (m *QueryWorkerInferenceScoresAtBlockResponse) GetScores() *Scores {
+	if m != nil {
+		return m.Scores
+	}
+	return nil
+}
+
+type QueryForecastScoresUntilBlockRequest struct {
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *QueryForecastScoresUntilBlockRequest) Reset()         { *m = QueryForecastScoresUntilBlockRequest{} }
+func (m *QueryForecastScoresUntilBlockRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryForecastScoresUntilBlockRequest) ProtoMessage()    {}
+func (*QueryForecastScoresUntilBlockRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{120}
+}
+func (m *QueryForecastScoresUntilBlockRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryForecastScoresUntilBlockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryForecastScoresUntilBlockRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryForecastScoresUntilBlockRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryForecastScoresUntilBlockRequest.Merge(m, src)
+}
+func (m *QueryForecastScoresUntilBlockRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryForecastScoresUntilBlockRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryForecastScoresUntilBlockRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryForecastScoresUntilBlockRequest proto.InternalMessageInfo
+
+func (m *QueryForecastScoresUntilBlockRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryForecastScoresUntilBlockRequest) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type QueryForecastScoresUntilBlockResponse struct {
+	Scores []*Score `protobuf:"bytes,1,rep,name=scores,proto3" json:"scores,omitempty"`
+}
+
+func (m *QueryForecastScoresUntilBlockResponse) Reset()         { *m = QueryForecastScoresUntilBlockResponse{} }
+func (m *QueryForecastScoresUntilBlockResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryForecastScoresUntilBlockResponse) ProtoMessage()    {}
+func (*QueryForecastScoresUntilBlockResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{121}
+}
+func (m *QueryForecastScoresUntilBlockResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryForecastScoresUntilBlockResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryForecastScoresUntilBlockResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryForecastScoresUntilBlockResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryForecastScoresUntilBlockResponse.Merge(m, src)
+}
+func (m *QueryForecastScoresUntilBlockResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryForecastScoresUntilBlockResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryForecastScoresUntilBlockResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryForecastScoresUntilBlockResponse proto.InternalMessageInfo
+
+func (m *QueryForecastScoresUntilBlockResponse) GetScores() []*Score {
+	if m != nil {
+		return m.Scores
+	}
+	return nil
+}
+
+type QueryWorkerForecastScoresAtBlockRequest struct {
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *QueryWorkerForecastScoresAtBlockRequest) Reset() {
+	*m = QueryWorkerForecastScoresAtBlockRequest{}
+}
+func (m *QueryWorkerForecastScoresAtBlockRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryWorkerForecastScoresAtBlockRequest) ProtoMessage()    {}
+func (*QueryWorkerForecastScoresAtBlockRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{122}
+}
+func (m *QueryWorkerForecastScoresAtBlockRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryWorkerForecastScoresAtBlockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryWorkerForecastScoresAtBlockRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryWorkerForecastScoresAtBlockRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryWorkerForecastScoresAtBlockRequest.Merge(m, src)
+}
+func (m *QueryWorkerForecastScoresAtBlockRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryWorkerForecastScoresAtBlockRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryWorkerForecastScoresAtBlockRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryWorkerForecastScoresAtBlockRequest proto.InternalMessageInfo
+
+func (m *QueryWorkerForecastScoresAtBlockRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryWorkerForecastScoresAtBlockRequest) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type QueryWorkerForecastScoresAtBlockResponse struct {
+	Scores *Scores `protobuf:"bytes,1,opt,name=scores,proto3" json:"scores,omitempty"`
+}
+
+func (m *QueryWorkerForecastScoresAtBlockResponse) Reset() {
+	*m = QueryWorkerForecastScoresAtBlockResponse{}
+}
+func (m *QueryWorkerForecastScoresAtBlockResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryWorkerForecastScoresAtBlockResponse) ProtoMessage()    {}
+func (*QueryWorkerForecastScoresAtBlockResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{123}
+}
+func (m *QueryWorkerForecastScoresAtBlockResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryWorkerForecastScoresAtBlockResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryWorkerForecastScoresAtBlockResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryWorkerForecastScoresAtBlockResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryWorkerForecastScoresAtBlockResponse.Merge(m, src)
+}
+func (m *QueryWorkerForecastScoresAtBlockResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryWorkerForecastScoresAtBlockResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryWorkerForecastScoresAtBlockResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryWorkerForecastScoresAtBlockResponse proto.InternalMessageInfo
+
+func (m *QueryWorkerForecastScoresAtBlockResponse) GetScores() *Scores {
+	if m != nil {
+		return m.Scores
+	}
+	return nil
+}
+
+type QueryReputersScoresAtBlockRequest struct {
+	TopicId     uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	BlockHeight int64  `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+}
+
+func (m *QueryReputersScoresAtBlockRequest) Reset()         { *m = QueryReputersScoresAtBlockRequest{} }
+func (m *QueryReputersScoresAtBlockRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryReputersScoresAtBlockRequest) ProtoMessage()    {}
+func (*QueryReputersScoresAtBlockRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{124}
+}
+func (m *QueryReputersScoresAtBlockRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryReputersScoresAtBlockRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryReputersScoresAtBlockRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryReputersScoresAtBlockRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryReputersScoresAtBlockRequest.Merge(m, src)
+}
+func (m *QueryReputersScoresAtBlockRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryReputersScoresAtBlockRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryReputersScoresAtBlockRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryReputersScoresAtBlockRequest proto.InternalMessageInfo
+
+func (m *QueryReputersScoresAtBlockRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryReputersScoresAtBlockRequest) GetBlockHeight() int64 {
+	if m != nil {
+		return m.BlockHeight
+	}
+	return 0
+}
+
+type QueryReputersScoresAtBlockResponse struct {
+	Scores *Scores `protobuf:"bytes,1,opt,name=scores,proto3" json:"scores,omitempty"`
+}
+
+func (m *QueryReputersScoresAtBlockResponse) Reset()         { *m = QueryReputersScoresAtBlockResponse{} }
+func (m *QueryReputersScoresAtBlockResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryReputersScoresAtBlockResponse) ProtoMessage()    {}
+func (*QueryReputersScoresAtBlockResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{125}
+}
+func (m *QueryReputersScoresAtBlockResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryReputersScoresAtBlockResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryReputersScoresAtBlockResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryReputersScoresAtBlockResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryReputersScoresAtBlockResponse.Merge(m, src)
+}
+func (m *QueryReputersScoresAtBlockResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryReputersScoresAtBlockResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryReputersScoresAtBlockResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryReputersScoresAtBlockResponse proto.InternalMessageInfo
+
+func (m *QueryReputersScoresAtBlockResponse) GetScores() *Scores {
+	if m != nil {
+		return m.Scores
+	}
+	return nil
+}
+
+type QueryListeningCoefficientRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+}
+
+func (m *QueryListeningCoefficientRequest) Reset()         { *m = QueryListeningCoefficientRequest{} }
+func (m *QueryListeningCoefficientRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryListeningCoefficientRequest) ProtoMessage()    {}
+func (*QueryListeningCoefficientRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{126}
+}
+func (m *QueryListeningCoefficientRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryListeningCoefficientRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryListeningCoefficientRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryListeningCoefficientRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryListeningCoefficientRequest.Merge(m, src)
+}
+func (m *QueryListeningCoefficientRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryListeningCoefficientRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryListeningCoefficientRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryListeningCoefficientRequest proto.InternalMessageInfo
+
+func (m *QueryListeningCoefficientRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryListeningCoefficientRequest) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+type QueryListeningCoefficientResponse struct {
+	ListeningCoefficient *ListeningCoefficient `protobuf:"bytes,1,opt,name=listening_coefficient,json=listeningCoefficient,proto3" json:"listening_coefficient,omitempty"`
+}
+
+func (m *QueryListeningCoefficientResponse) Reset()         { *m = QueryListeningCoefficientResponse{} }
+func (m *QueryListeningCoefficientResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryListeningCoefficientResponse) ProtoMessage()    {}
+func (*QueryListeningCoefficientResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{127}
+}
+func (m *QueryListeningCoefficientResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryListeningCoefficientResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryListeningCoefficientResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryListeningCoefficientResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryListeningCoefficientResponse.Merge(m, src)
+}
+func (m *QueryListeningCoefficientResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryListeningCoefficientResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryListeningCoefficientResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryListeningCoefficientResponse proto.InternalMessageInfo
+
+func (m *QueryListeningCoefficientResponse) GetListeningCoefficient() *ListeningCoefficient {
+	if m != nil {
+		return m.ListeningCoefficient
+	}
+	return nil
+}
+
+type QueryPreviousReputerRewardFractionRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Reputer string `protobuf:"bytes,2,opt,name=reputer,proto3" json:"reputer,omitempty"`
+}
+
+func (m *QueryPreviousReputerRewardFractionRequest) Reset() {
+	*m = QueryPreviousReputerRewardFractionRequest{}
+}
+func (m *QueryPreviousReputerRewardFractionRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryPreviousReputerRewardFractionRequest) ProtoMessage() {}
+func (*QueryPreviousReputerRewardFractionRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{128}
+}
+func (m *QueryPreviousReputerRewardFractionRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousReputerRewardFractionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousReputerRewardFractionRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousReputerRewardFractionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousReputerRewardFractionRequest.Merge(m, src)
+}
+func (m *QueryPreviousReputerRewardFractionRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousReputerRewardFractionRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousReputerRewardFractionRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousReputerRewardFractionRequest proto.InternalMessageInfo
+
+func (m *QueryPreviousReputerRewardFractionRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryPreviousReputerRewardFractionRequest) GetReputer() string {
+	if m != nil {
+		return m.Reputer
+	}
+	return ""
+}
+
+type QueryPreviousReputerRewardFractionResponse struct {
+	RewardFraction github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,1,opt,name=reward_fraction,json=rewardFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"reward_fraction"`
+	NotFound       bool                                            `protobuf:"varint,2,opt,name=not_found,json=notFound,proto3" json:"not_found,omitempty"`
+}
+
+func (m *QueryPreviousReputerRewardFractionResponse) Reset() {
+	*m = QueryPreviousReputerRewardFractionResponse{}
+}
+func (m *QueryPreviousReputerRewardFractionResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryPreviousReputerRewardFractionResponse) ProtoMessage() {}
+func (*QueryPreviousReputerRewardFractionResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{129}
+}
+func (m *QueryPreviousReputerRewardFractionResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousReputerRewardFractionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousReputerRewardFractionResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousReputerRewardFractionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousReputerRewardFractionResponse.Merge(m, src)
+}
+func (m *QueryPreviousReputerRewardFractionResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousReputerRewardFractionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousReputerRewardFractionResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousReputerRewardFractionResponse proto.InternalMessageInfo
+
+func (m *QueryPreviousReputerRewardFractionResponse) GetNotFound() bool {
+	if m != nil {
+		return m.NotFound
+	}
+	return false
+}
+
+type QueryPreviousInferenceRewardFractionRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Worker  string `protobuf:"bytes,2,opt,name=worker,proto3" json:"worker,omitempty"`
+}
+
+func (m *QueryPreviousInferenceRewardFractionRequest) Reset() {
+	*m = QueryPreviousInferenceRewardFractionRequest{}
+}
+func (m *QueryPreviousInferenceRewardFractionRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryPreviousInferenceRewardFractionRequest) ProtoMessage() {}
+func (*QueryPreviousInferenceRewardFractionRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{130}
+}
+func (m *QueryPreviousInferenceRewardFractionRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousInferenceRewardFractionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousInferenceRewardFractionRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousInferenceRewardFractionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousInferenceRewardFractionRequest.Merge(m, src)
+}
+func (m *QueryPreviousInferenceRewardFractionRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousInferenceRewardFractionRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousInferenceRewardFractionRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousInferenceRewardFractionRequest proto.InternalMessageInfo
+
+func (m *QueryPreviousInferenceRewardFractionRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryPreviousInferenceRewardFractionRequest) GetWorker() string {
+	if m != nil {
+		return m.Worker
+	}
+	return ""
+}
+
+type QueryPreviousInferenceRewardFractionResponse struct {
+	RewardFraction github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,1,opt,name=reward_fraction,json=rewardFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"reward_fraction"`
+	NotFound       bool                                            `protobuf:"varint,2,opt,name=not_found,json=notFound,proto3" json:"not_found,omitempty"`
+}
+
+func (m *QueryPreviousInferenceRewardFractionResponse) Reset() {
+	*m = QueryPreviousInferenceRewardFractionResponse{}
+}
+func (m *QueryPreviousInferenceRewardFractionResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryPreviousInferenceRewardFractionResponse) ProtoMessage() {}
+func (*QueryPreviousInferenceRewardFractionResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{131}
+}
+func (m *QueryPreviousInferenceRewardFractionResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousInferenceRewardFractionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousInferenceRewardFractionResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousInferenceRewardFractionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousInferenceRewardFractionResponse.Merge(m, src)
+}
+func (m *QueryPreviousInferenceRewardFractionResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousInferenceRewardFractionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousInferenceRewardFractionResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousInferenceRewardFractionResponse proto.InternalMessageInfo
+
+func (m *QueryPreviousInferenceRewardFractionResponse) GetNotFound() bool {
+	if m != nil {
+		return m.NotFound
+	}
+	return false
+}
+
+type QueryPreviousForecastRewardFractionRequest struct {
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Worker  string `protobuf:"bytes,2,opt,name=worker,proto3" json:"worker,omitempty"`
+}
+
+func (m *QueryPreviousForecastRewardFractionRequest) Reset() {
+	*m = QueryPreviousForecastRewardFractionRequest{}
+}
+func (m *QueryPreviousForecastRewardFractionRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryPreviousForecastRewardFractionRequest) ProtoMessage() {}
+func (*QueryPreviousForecastRewardFractionRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{132}
+}
+func (m *QueryPreviousForecastRewardFractionRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousForecastRewardFractionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousForecastRewardFractionRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousForecastRewardFractionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousForecastRewardFractionRequest.Merge(m, src)
+}
+func (m *QueryPreviousForecastRewardFractionRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousForecastRewardFractionRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousForecastRewardFractionRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousForecastRewardFractionRequest proto.InternalMessageInfo
+
+func (m *QueryPreviousForecastRewardFractionRequest) GetTopicId() uint64 {
+	if m != nil {
+		return m.TopicId
+	}
+	return 0
+}
+
+func (m *QueryPreviousForecastRewardFractionRequest) GetWorker() string {
+	if m != nil {
+		return m.Worker
+	}
+	return ""
+}
+
+type QueryPreviousForecastRewardFractionResponse struct {
+	RewardFraction github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,1,opt,name=reward_fraction,json=rewardFraction,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"reward_fraction"`
+	NotFound       bool                                            `protobuf:"varint,2,opt,name=not_found,json=notFound,proto3" json:"not_found,omitempty"`
+}
+
+func (m *QueryPreviousForecastRewardFractionResponse) Reset() {
+	*m = QueryPreviousForecastRewardFractionResponse{}
+}
+func (m *QueryPreviousForecastRewardFractionResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryPreviousForecastRewardFractionResponse) ProtoMessage() {}
+func (*QueryPreviousForecastRewardFractionResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{133}
+}
+func (m *QueryPreviousForecastRewardFractionResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousForecastRewardFractionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousForecastRewardFractionResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousForecastRewardFractionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousForecastRewardFractionResponse.Merge(m, src)
+}
+func (m *QueryPreviousForecastRewardFractionResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousForecastRewardFractionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousForecastRewardFractionResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousForecastRewardFractionResponse proto.InternalMessageInfo
+
+func (m *QueryPreviousForecastRewardFractionResponse) GetNotFound() bool {
+	if m != nil {
+		return m.NotFound
+	}
+	return false
+}
+
+type QueryPreviousPercentageRewardToStakedReputersRequest struct {
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) Reset() {
+	*m = QueryPreviousPercentageRewardToStakedReputersRequest{}
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryPreviousPercentageRewardToStakedReputersRequest) ProtoMessage() {}
+func (*QueryPreviousPercentageRewardToStakedReputersRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{134}
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousPercentageRewardToStakedReputersRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousPercentageRewardToStakedReputersRequest.Merge(m, src)
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousPercentageRewardToStakedReputersRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousPercentageRewardToStakedReputersRequest proto.InternalMessageInfo
+
+type QueryPreviousPercentageRewardToStakedReputersResponse struct {
+	PercentageReward github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,1,opt,name=percentage_reward,json=percentageReward,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"percentage_reward"`
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) Reset() {
+	*m = QueryPreviousPercentageRewardToStakedReputersResponse{}
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryPreviousPercentageRewardToStakedReputersResponse) ProtoMessage() {}
+func (*QueryPreviousPercentageRewardToStakedReputersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{135}
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryPreviousPercentageRewardToStakedReputersResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryPreviousPercentageRewardToStakedReputersResponse.Merge(m, src)
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryPreviousPercentageRewardToStakedReputersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryPreviousPercentageRewardToStakedReputersResponse proto.InternalMessageInfo
+
+type QueryTotalRewardToDistributeRequest struct {
+}
+
+func (m *QueryTotalRewardToDistributeRequest) Reset()         { *m = QueryTotalRewardToDistributeRequest{} }
+func (m *QueryTotalRewardToDistributeRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryTotalRewardToDistributeRequest) ProtoMessage()    {}
+func (*QueryTotalRewardToDistributeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{136}
+}
+func (m *QueryTotalRewardToDistributeRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTotalRewardToDistributeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTotalRewardToDistributeRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTotalRewardToDistributeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTotalRewardToDistributeRequest.Merge(m, src)
+}
+func (m *QueryTotalRewardToDistributeRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTotalRewardToDistributeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTotalRewardToDistributeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTotalRewardToDistributeRequest proto.InternalMessageInfo
+
+type QueryTotalRewardToDistributeResponse struct {
+	TotalReward github_com_allora_network_allora_chain_math.Dec `protobuf:"bytes,1,opt,name=total_reward,json=totalReward,proto3,customtype=github.com/allora-network/allora-chain/math.Dec" json:"total_reward"`
+}
+
+func (m *QueryTotalRewardToDistributeResponse) Reset()         { *m = QueryTotalRewardToDistributeResponse{} }
+func (m *QueryTotalRewardToDistributeResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryTotalRewardToDistributeResponse) ProtoMessage()    {}
+func (*QueryTotalRewardToDistributeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c426af2f1e908986, []int{137}
+}
+func (m *QueryTotalRewardToDistributeResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryTotalRewardToDistributeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryTotalRewardToDistributeResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryTotalRewardToDistributeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryTotalRewardToDistributeResponse.Merge(m, src)
+}
+func (m *QueryTotalRewardToDistributeResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryTotalRewardToDistributeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryTotalRewardToDistributeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryTotalRewardToDistributeResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "emissions.v1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "emissions.v1.QueryParamsResponse")
@@ -2902,6 +6614,8 @@ func init() {
 	proto.RegisterType((*QueryActiveTopicsResponse)(nil), "emissions.v1.QueryActiveTopicsResponse")
 	proto.RegisterType((*QueryInferencesAtBlockRequest)(nil), "emissions.v1.QueryInferencesAtBlockRequest")
 	proto.RegisterType((*QueryInferencesAtBlockResponse)(nil), "emissions.v1.QueryInferencesAtBlockResponse")
+	proto.RegisterType((*QueryLatestTopicInferencesRequest)(nil), "emissions.v1.QueryLatestTopicInferencesRequest")
+	proto.RegisterType((*QueryLatestTopicInferencesResponse)(nil), "emissions.v1.QueryLatestTopicInferencesResponse")
 	proto.RegisterType((*QueryForecastsAtBlockRequest)(nil), "emissions.v1.QueryForecastsAtBlockRequest")
 	proto.RegisterType((*QueryForecastsAtBlockResponse)(nil), "emissions.v1.QueryForecastsAtBlockResponse")
 	proto.RegisterType((*QueryWorkerLatestInferenceRequest)(nil), "emissions.v1.QueryWorkerLatestInferenceRequest")
@@ -2916,6 +6630,22 @@ func init() {
 	proto.RegisterType((*QueryReputerAddressByP2PKeyResponse)(nil), "emissions.v1.QueryReputerAddressByP2PKeyResponse")
 	proto.RegisterType((*QueryNetworkInferencesAtBlockRequest)(nil), "emissions.v1.QueryNetworkInferencesAtBlockRequest")
 	proto.RegisterType((*QueryLatestNetworkInferencesRequest)(nil), "emissions.v1.QueryLatestNetworkInferencesRequest")
+	proto.RegisterType((*QueryIsWorkerNonceUnfulfilledRequest)(nil), "emissions.v1.QueryIsWorkerNonceUnfulfilledRequest")
+	proto.RegisterType((*QueryIsWorkerNonceUnfulfilledResponse)(nil), "emissions.v1.QueryIsWorkerNonceUnfulfilledResponse")
+	proto.RegisterType((*QueryUnfulfilledReputerNoncesRequest)(nil), "emissions.v1.QueryUnfulfilledReputerNoncesRequest")
+	proto.RegisterType((*QueryUnfulfilledReputerNoncesResponse)(nil), "emissions.v1.QueryUnfulfilledReputerNoncesResponse")
+	proto.RegisterType((*QueryUnfulfilledWorkerNoncesRequest)(nil), "emissions.v1.QueryUnfulfilledWorkerNoncesRequest")
+	proto.RegisterType((*QueryUnfulfilledWorkerNoncesResponse)(nil), "emissions.v1.QueryUnfulfilledWorkerNoncesResponse")
+	proto.RegisterType((*QueryInfererNetworkRegretRequest)(nil), "emissions.v1.QueryInfererNetworkRegretRequest")
+	proto.RegisterType((*QueryInfererNetworkRegretResponse)(nil), "emissions.v1.QueryInfererNetworkRegretResponse")
+	proto.RegisterType((*QueryForecasterNetworkRegretRequest)(nil), "emissions.v1.QueryForecasterNetworkRegretRequest")
+	proto.RegisterType((*QueryForecasterNetworkRegretResponse)(nil), "emissions.v1.QueryForecasterNetworkRegretResponse")
+	proto.RegisterType((*QueryOneInForecasterNetworkRegretRequest)(nil), "emissions.v1.QueryOneInForecasterNetworkRegretRequest")
+	proto.RegisterType((*QueryOneInForecasterNetworkRegretResponse)(nil), "emissions.v1.QueryOneInForecasterNetworkRegretResponse")
+	proto.RegisterType((*QueryOneInForecasterSelfNetworkRegretRequest)(nil), "emissions.v1.QueryOneInForecasterSelfNetworkRegretRequest")
+	proto.RegisterType((*QueryOneInForecasterSelfNetworkRegretResponse)(nil), "emissions.v1.QueryOneInForecasterSelfNetworkRegretResponse")
+	proto.RegisterType((*QueryIsReputerNonceUnfulfilledRequest)(nil), "emissions.v1.QueryIsReputerNonceUnfulfilledRequest")
+	proto.RegisterType((*QueryIsReputerNonceUnfulfilledResponse)(nil), "emissions.v1.QueryIsReputerNonceUnfulfilledResponse")
 	proto.RegisterType((*QueryNetworkInferencesAtBlockResponse)(nil), "emissions.v1.QueryNetworkInferencesAtBlockResponse")
 	proto.RegisterType((*QueryLatestNetworkInferencesResponse)(nil), "emissions.v1.QueryLatestNetworkInferencesResponse")
 	proto.RegisterType((*QueryIsWorkerRegisteredInTopicIdRequest)(nil), "emissions.v1.QueryIsWorkerRegisteredInTopicIdRequest")
@@ -2934,190 +6664,410 @@ func init() {
 	proto.RegisterType((*QueryDelegateStakeRemovalInfoResponse)(nil), "emissions.v1.QueryDelegateStakeRemovalInfoResponse")
 	proto.RegisterType((*QueryTopicLastCommitRequest)(nil), "emissions.v1.QueryTopicLastCommitRequest")
 	proto.RegisterType((*QueryTopicLastCommitResponse)(nil), "emissions.v1.QueryTopicLastCommitResponse")
+	proto.RegisterType((*QueryTopicRewardNonceRequest)(nil), "emissions.v1.QueryTopicRewardNonceRequest")
+	proto.RegisterType((*QueryTopicRewardNonceResponse)(nil), "emissions.v1.QueryTopicRewardNonceResponse")
+	proto.RegisterType((*QueryReputerLossBundlesAtBlockRequest)(nil), "emissions.v1.QueryReputerLossBundlesAtBlockRequest")
+	proto.RegisterType((*QueryReputerLossBundlesAtBlockResponse)(nil), "emissions.v1.QueryReputerLossBundlesAtBlockResponse")
+	proto.RegisterType((*QueryStakeReputerAuthorityRequest)(nil), "emissions.v1.QueryStakeReputerAuthorityRequest")
+	proto.RegisterType((*QueryStakeReputerAuthorityResponse)(nil), "emissions.v1.QueryStakeReputerAuthorityResponse")
+	proto.RegisterType((*QueryDelegateStakePlacementRequest)(nil), "emissions.v1.QueryDelegateStakePlacementRequest")
+	proto.RegisterType((*QueryDelegateStakePlacementResponse)(nil), "emissions.v1.QueryDelegateStakePlacementResponse")
+	proto.RegisterType((*QueryDelegateStakeUponReputerRequest)(nil), "emissions.v1.QueryDelegateStakeUponReputerRequest")
+	proto.RegisterType((*QueryDelegateStakeUponReputerResponse)(nil), "emissions.v1.QueryDelegateStakeUponReputerResponse")
+	proto.RegisterType((*QueryDelegateRewardPerShareRequest)(nil), "emissions.v1.QueryDelegateRewardPerShareRequest")
+	proto.RegisterType((*QueryDelegateRewardPerShareResponse)(nil), "emissions.v1.QueryDelegateRewardPerShareResponse")
+	proto.RegisterType((*QueryStakeRemovalForReputerAndTopicIdRequest)(nil), "emissions.v1.QueryStakeRemovalForReputerAndTopicIdRequest")
+	proto.RegisterType((*QueryStakeRemovalForReputerAndTopicIdResponse)(nil), "emissions.v1.QueryStakeRemovalForReputerAndTopicIdResponse")
+	proto.RegisterType((*QueryDelegateStakeRemovalRequest)(nil), "emissions.v1.QueryDelegateStakeRemovalRequest")
+	proto.RegisterType((*QueryDelegateStakeRemovalResponse)(nil), "emissions.v1.QueryDelegateStakeRemovalResponse")
+	proto.RegisterType((*QueryPreviousTopicWeightRequest)(nil), "emissions.v1.QueryPreviousTopicWeightRequest")
+	proto.RegisterType((*QueryPreviousTopicWeightResponse)(nil), "emissions.v1.QueryPreviousTopicWeightResponse")
+	proto.RegisterType((*QueryTopicExistsRequest)(nil), "emissions.v1.QueryTopicExistsRequest")
+	proto.RegisterType((*QueryTopicExistsResponse)(nil), "emissions.v1.QueryTopicExistsResponse")
+	proto.RegisterType((*QueryIsTopicActiveRequest)(nil), "emissions.v1.QueryIsTopicActiveRequest")
+	proto.RegisterType((*QueryIsTopicActiveResponse)(nil), "emissions.v1.QueryIsTopicActiveResponse")
+	proto.RegisterType((*QueryIdsOfActiveTopicsRequest)(nil), "emissions.v1.QueryIdsOfActiveTopicsRequest")
+	proto.RegisterType((*QueryIdsOfActiveTopicsResponse)(nil), "emissions.v1.QueryIdsOfActiveTopicsResponse")
+	proto.RegisterType((*QueryTopicEpochLastEndedRequest)(nil), "emissions.v1.QueryTopicEpochLastEndedRequest")
+	proto.RegisterType((*QueryTopicEpochLastEndedResponse)(nil), "emissions.v1.QueryTopicEpochLastEndedResponse")
+	proto.RegisterType((*QueryTopicFeeRevenueRequest)(nil), "emissions.v1.QueryTopicFeeRevenueRequest")
+	proto.RegisterType((*QueryTopicFeeRevenueResponse)(nil), "emissions.v1.QueryTopicFeeRevenueResponse")
+	proto.RegisterType((*QueryChurnableTopicsRequest)(nil), "emissions.v1.QueryChurnableTopicsRequest")
+	proto.RegisterType((*QueryChurnableTopicsResponse)(nil), "emissions.v1.QueryChurnableTopicsResponse")
+	proto.RegisterType((*QueryRewardableTopicsRequest)(nil), "emissions.v1.QueryRewardableTopicsRequest")
+	proto.RegisterType((*QueryRewardableTopicsResponse)(nil), "emissions.v1.QueryRewardableTopicsResponse")
+	proto.RegisterType((*QueryLatestInfererScoreRequest)(nil), "emissions.v1.QueryLatestInfererScoreRequest")
+	proto.RegisterType((*QueryLatestInfererScoreResponse)(nil), "emissions.v1.QueryLatestInfererScoreResponse")
+	proto.RegisterType((*QueryLatestForecasterScoreRequest)(nil), "emissions.v1.QueryLatestForecasterScoreRequest")
+	proto.RegisterType((*QueryLatestForecasterScoreResponse)(nil), "emissions.v1.QueryLatestForecasterScoreResponse")
+	proto.RegisterType((*QueryLatestReputerScoreRequest)(nil), "emissions.v1.QueryLatestReputerScoreRequest")
+	proto.RegisterType((*QueryLatestReputerScoreResponse)(nil), "emissions.v1.QueryLatestReputerScoreResponse")
+	proto.RegisterType((*QueryInferenceScoresUntilBlockRequest)(nil), "emissions.v1.QueryInferenceScoresUntilBlockRequest")
+	proto.RegisterType((*QueryInferenceScoresUntilBlockResponse)(nil), "emissions.v1.QueryInferenceScoresUntilBlockResponse")
+	proto.RegisterType((*QueryWorkerInferenceScoresAtBlockRequest)(nil), "emissions.v1.QueryWorkerInferenceScoresAtBlockRequest")
+	proto.RegisterType((*QueryWorkerInferenceScoresAtBlockResponse)(nil), "emissions.v1.QueryWorkerInferenceScoresAtBlockResponse")
+	proto.RegisterType((*QueryForecastScoresUntilBlockRequest)(nil), "emissions.v1.QueryForecastScoresUntilBlockRequest")
+	proto.RegisterType((*QueryForecastScoresUntilBlockResponse)(nil), "emissions.v1.QueryForecastScoresUntilBlockResponse")
+	proto.RegisterType((*QueryWorkerForecastScoresAtBlockRequest)(nil), "emissions.v1.QueryWorkerForecastScoresAtBlockRequest")
+	proto.RegisterType((*QueryWorkerForecastScoresAtBlockResponse)(nil), "emissions.v1.QueryWorkerForecastScoresAtBlockResponse")
+	proto.RegisterType((*QueryReputersScoresAtBlockRequest)(nil), "emissions.v1.QueryReputersScoresAtBlockRequest")
+	proto.RegisterType((*QueryReputersScoresAtBlockResponse)(nil), "emissions.v1.QueryReputersScoresAtBlockResponse")
+	proto.RegisterType((*QueryListeningCoefficientRequest)(nil), "emissions.v1.QueryListeningCoefficientRequest")
+	proto.RegisterType((*QueryListeningCoefficientResponse)(nil), "emissions.v1.QueryListeningCoefficientResponse")
+	proto.RegisterType((*QueryPreviousReputerRewardFractionRequest)(nil), "emissions.v1.QueryPreviousReputerRewardFractionRequest")
+	proto.RegisterType((*QueryPreviousReputerRewardFractionResponse)(nil), "emissions.v1.QueryPreviousReputerRewardFractionResponse")
+	proto.RegisterType((*QueryPreviousInferenceRewardFractionRequest)(nil), "emissions.v1.QueryPreviousInferenceRewardFractionRequest")
+	proto.RegisterType((*QueryPreviousInferenceRewardFractionResponse)(nil), "emissions.v1.QueryPreviousInferenceRewardFractionResponse")
+	proto.RegisterType((*QueryPreviousForecastRewardFractionRequest)(nil), "emissions.v1.QueryPreviousForecastRewardFractionRequest")
+	proto.RegisterType((*QueryPreviousForecastRewardFractionResponse)(nil), "emissions.v1.QueryPreviousForecastRewardFractionResponse")
+	proto.RegisterType((*QueryPreviousPercentageRewardToStakedReputersRequest)(nil), "emissions.v1.QueryPreviousPercentageRewardToStakedReputersRequest")
+	proto.RegisterType((*QueryPreviousPercentageRewardToStakedReputersResponse)(nil), "emissions.v1.QueryPreviousPercentageRewardToStakedReputersResponse")
+	proto.RegisterType((*QueryTotalRewardToDistributeRequest)(nil), "emissions.v1.QueryTotalRewardToDistributeRequest")
+	proto.RegisterType((*QueryTotalRewardToDistributeResponse)(nil), "emissions.v1.QueryTotalRewardToDistributeResponse")
 }
 
 func init() { proto.RegisterFile("emissions/v1/query.proto", fileDescriptor_c426af2f1e908986) }
 
 var fileDescriptor_c426af2f1e908986 = []byte{
-	// 2844 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x5b, 0xdd, 0x6f, 0x1c, 0x57,
-	0x15, 0xcf, 0xd8, 0x8d, 0x3f, 0xae, 0x9b, 0x0f, 0xdf, 0xba, 0xe9, 0x7a, 0xed, 0xf8, 0x63, 0x12,
-	0x27, 0xfe, 0x48, 0x76, 0x62, 0x3b, 0x89, 0xad, 0xb4, 0x49, 0xea, 0x4d, 0x88, 0x63, 0x92, 0x3a,
-	0xee, 0x24, 0x4a, 0x44, 0x04, 0x2c, 0xe3, 0xdd, 0x6b, 0x7b, 0xe4, 0xd9, 0x99, 0xcd, 0xcc, 0xac,
-	0x13, 0xcb, 0x58, 0x50, 0x54, 0x21, 0x2a, 0x81, 0x84, 0x84, 0x54, 0xf1, 0xd0, 0x07, 0x78, 0xe3,
-	0x85, 0x52, 0x21, 0x3e, 0x54, 0x09, 0x1e, 0x91, 0xca, 0x13, 0x15, 0x15, 0x52, 0xd5, 0x87, 0x08,
-	0x12, 0x50, 0x11, 0x7f, 0x05, 0xda, 0x7b, 0xcf, 0x7c, 0xdc, 0xd9, 0x3b, 0x1f, 0x9b, 0xc4, 0x12,
-	0xbc, 0x54, 0xd9, 0xb9, 0xf7, 0x9c, 0xf3, 0xfb, 0x9d, 0xfb, 0x71, 0xce, 0xb9, 0xc7, 0x45, 0x39,
-	0x52, 0xd5, 0x1d, 0x47, 0xb7, 0x4c, 0x47, 0xd9, 0x9a, 0x56, 0x1e, 0xd4, 0x89, 0xbd, 0x5d, 0xa8,
-	0xd9, 0x96, 0x6b, 0xe1, 0x97, 0xfd, 0x91, 0xc2, 0xd6, 0x74, 0x7e, 0xb2, 0x6c, 0x39, 0x55, 0xcb,
-	0x51, 0x56, 0x35, 0x87, 0xb0, 0x69, 0xca, 0xd6, 0xf4, 0x2a, 0x71, 0xb5, 0x69, 0xa5, 0xa6, 0xad,
-	0xeb, 0xa6, 0xe6, 0xea, 0x96, 0xc9, 0x24, 0xf3, 0xbc, 0x4e, 0x77, 0xbb, 0x46, 0x1c, 0x18, 0x19,
-	0x5c, 0xb7, 0xac, 0x75, 0x83, 0x28, 0x5a, 0x4d, 0x57, 0x34, 0xd3, 0xb4, 0x5c, 0x2a, 0xe6, 0x8d,
-	0x0e, 0x80, 0x0d, 0x4f, 0x7d, 0x18, 0x4e, 0xbe, 0x57, 0xab, 0xea, 0xa6, 0xa5, 0xd0, 0xff, 0xc2,
-	0xa7, 0xbe, 0x75, 0x6b, 0xdd, 0xa2, 0xff, 0x54, 0x1a, 0xff, 0x82, 0xaf, 0xfd, 0x4c, 0x4b, 0x89,
-	0x0d, 0xb0, 0x1f, 0xde, 0x10, 0x07, 0xac, 0xa6, 0xd9, 0x5a, 0xd5, 0x1b, 0x7a, 0x8d, 0x1b, 0x32,
-	0xad, 0x0a, 0x11, 0xca, 0x3c, 0xb4, 0xec, 0x4d, 0x62, 0xc3, 0x50, 0x9e, 0x1b, 0xb2, 0x49, 0xad,
-	0xee, 0xfa, 0x63, 0x11, 0x1f, 0x58, 0x35, 0xbd, 0x2c, 0x1c, 0x71, 0x5c, 0x6d, 0xd3, 0x33, 0x35,
-	0xc8, 0x8d, 0xe8, 0xe6, 0x1a, 0xb1, 0x89, 0x59, 0x86, 0x51, 0xb9, 0x0f, 0xe1, 0xb7, 0x1b, 0xfe,
-	0x58, 0xa1, 0xb0, 0x55, 0xf2, 0xa0, 0x4e, 0x1c, 0x57, 0x5e, 0x46, 0xaf, 0x70, 0x5f, 0x9d, 0x9a,
-	0x65, 0x3a, 0x04, 0xcf, 0xa1, 0x0e, 0x46, 0x2f, 0x27, 0x8d, 0x48, 0xe3, 0x3d, 0x33, 0x7d, 0x85,
-	0xf0, 0x6a, 0x16, 0xd8, 0xec, 0x62, 0xf7, 0x27, 0x8f, 0x87, 0xf7, 0xfd, 0xe2, 0xcb, 0x8f, 0x26,
-	0x25, 0x15, 0xa6, 0xcb, 0x39, 0x74, 0x84, 0xea, 0xbb, 0x63, 0xb9, 0x9a, 0x71, 0xbb, 0x01, 0xce,
-	0xb3, 0xa4, 0xa3, 0xd7, 0x9a, 0x46, 0xc0, 0xda, 0x75, 0xd4, 0xa1, 0x55, 0xad, 0xba, 0xe9, 0x52,
-	0x6b, 0xdd, 0xc5, 0x33, 0x0d, 0xbd, 0x5f, 0x3c, 0x1e, 0x7e, 0x95, 0x79, 0xdf, 0xa9, 0x6c, 0x16,
-	0x74, 0x4b, 0xa9, 0x6a, 0xee, 0x46, 0x61, 0xc9, 0x74, 0xff, 0xfa, 0x9b, 0xd3, 0x08, 0x96, 0x65,
-	0xc9, 0x74, 0xc1, 0x3c, 0x93, 0xbf, 0xf0, 0xd2, 0xbf, 0x7f, 0x36, 0x2c, 0xc9, 0x77, 0xd1, 0x30,
-	0x35, 0xa5, 0x32, 0x97, 0x52, 0x63, 0x4b, 0xe6, 0x9d, 0x86, 0x13, 0x01, 0x0d, 0xce, 0xa1, 0x4e,
-	0xad, 0x52, 0xb1, 0x89, 0xc3, 0x18, 0x76, 0xab, 0xde, 0x4f, 0xdc, 0x8f, 0xba, 0xa8, 0xbb, 0x4b,
-	0x7a, 0x25, 0xd7, 0x36, 0x22, 0x8d, 0xbf, 0xa4, 0x76, 0xd2, 0xdf, 0x4b, 0x15, 0xd9, 0x46, 0x23,
-	0xf1, 0x7a, 0xf7, 0x88, 0x4b, 0x09, 0x1d, 0xa7, 0x36, 0xdf, 0xaa, 0x1b, 0xae, 0x9e, 0x40, 0x68,
-	0x10, 0x75, 0x03, 0x03, 0xd2, 0xa0, 0xd4, 0x3e, 0xde, 0xad, 0x06, 0x1f, 0x92, 0x48, 0xdd, 0x47,
-	0x63, 0x29, 0x06, 0x80, 0xd9, 0x34, 0xea, 0x64, 0xc8, 0x98, 0xfe, 0x9e, 0x99, 0xd7, 0xf8, 0x4d,
-	0x01, 0x42, 0x6b, 0x96, 0xea, 0xcd, 0x93, 0x2d, 0x34, 0x41, 0x75, 0xd3, 0xa1, 0x6b, 0xb6, 0x55,
-	0x05, 0xfd, 0xa0, 0x7a, 0xc9, 0xbc, 0x4d, 0x8c, 0x35, 0x8f, 0xc1, 0x49, 0x74, 0x08, 0xce, 0x40,
-	0x89, 0x5f, 0x9a, 0x83, 0xf0, 0x79, 0x21, 0x7d, 0x85, 0xbe, 0x8d, 0x26, 0xb3, 0x18, 0xdc, 0xa3,
-	0xb5, 0xf2, 0xe8, 0x5e, 0x25, 0x06, 0x59, 0xd7, 0x5c, 0x12, 0x76, 0xe3, 0x92, 0x09, 0x50, 0xf6,
-	0x82, 0x6e, 0x8a, 0xc1, 0x3d, 0xa2, 0xfb, 0x73, 0x09, 0x15, 0x78, 0x6f, 0x03, 0x0e, 0xcb, 0x8e,
-	0x23, 0x3d, 0x85, 0x7a, 0x2b, 0xde, 0x9c, 0x08, 0xed, 0xc3, 0xfe, 0x80, 0x47, 0x5c, 0xe0, 0xa1,
-	0xb6, 0x54, 0x0f, 0xb5, 0xf3, 0x1e, 0x7a, 0x47, 0x42, 0x4a, 0x66, 0x8c, 0x7b, 0xb6, 0x2d, 0xc6,
-	0x92, 0x21, 0x3c, 0x93, 0x77, 0x12, 0xb6, 0xc5, 0x23, 0x74, 0x22, 0xcd, 0xe0, 0x1e, 0x51, 0x9d,
-	0xf5, 0xaf, 0xff, 0x9a, 0x5e, 0x0e, 0x5f, 0xff, 0x1c, 0x5c, 0x89, 0x87, 0x1b, 0x44, 0x86, 0x40,
-	0x68, 0x8f, 0xf0, 0x55, 0xe0, 0x36, 0x5d, 0x26, 0x6e, 0x23, 0x14, 0xdf, 0xb4, 0x1c, 0xa7, 0x58,
-	0x37, 0x2b, 0x06, 0x59, 0x70, 0x8b, 0x86, 0x55, 0xde, 0x4c, 0x47, 0x8b, 0x47, 0xd1, 0xcb, 0xab,
-	0x8d, 0xa9, 0xa5, 0x0d, 0xa2, 0xaf, 0x6f, 0xb8, 0xd4, 0xf7, 0xed, 0x6a, 0x0f, 0xfd, 0x76, 0x9d,
-	0x7e, 0x92, 0xcb, 0xb0, 0xe0, 0xf1, 0x56, 0x80, 0xde, 0x05, 0xd4, 0x63, 0x58, 0x8e, 0x53, 0x5a,
-	0xa5, 0xa3, 0x10, 0x6b, 0xfb, 0xf9, 0x6b, 0xf5, 0xae, 0x66, 0xd4, 0x09, 0x13, 0x57, 0x91, 0xe1,
-	0xab, 0x92, 0xfb, 0xc1, 0x6b, 0xcb, 0xe4, 0x91, 0xcb, 0x36, 0x72, 0xc5, 0x0b, 0xb5, 0x97, 0x50,
-	0xae, 0x79, 0x08, 0x4c, 0xca, 0xe8, 0x80, 0x49, 0x1e, 0xb9, 0xa5, 0x08, 0xbd, 0x1e, 0x33, 0x98,
-	0x2b, 0x17, 0x50, 0x6f, 0xb0, 0x20, 0x19, 0x16, 0xf0, 0x5d, 0x09, 0x72, 0x0b, 0x7e, 0x73, 0x4d,
-	0xa0, 0xfd, 0x74, 0x06, 0xf0, 0x7a, 0x85, 0xe7, 0xc5, 0xe6, 0xb2, 0x19, 0xf8, 0x08, 0xea, 0x78,
-	0x18, 0xb8, 0xb3, 0x5b, 0x85, 0x5f, 0x8d, 0x13, 0x41, 0xd6, 0xd6, 0x48, 0xd9, 0xd5, 0xb7, 0x48,
-	0xc9, 0x26, 0x5b, 0xc4, 0xac, 0x13, 0x7a, 0xc4, 0xbb, 0xd5, 0xc3, 0xfe, 0x80, 0xca, 0xbe, 0xcb,
-	0xeb, 0x40, 0x7b, 0x81, 0x7e, 0xa5, 0xfa, 0xbd, 0x3c, 0x07, 0xdf, 0x40, 0x28, 0xc8, 0x33, 0x01,
-	0xd0, 0x54, 0x24, 0x7e, 0xe9, 0xd5, 0x9a, 0x41, 0xae, 0xd4, 0x6d, 0xc7, 0xb2, 0x57, 0xfc, 0xb9,
-	0xa0, 0x40, 0x0d, 0x89, 0xcb, 0xef, 0x4b, 0xa8, 0x5f, 0x60, 0x09, 0x68, 0x4f, 0xa1, 0x0e, 0x4a,
-	0xca, 0x0b, 0x93, 0x42, 0xde, 0x30, 0x05, 0xdf, 0xe4, 0x70, 0xb5, 0x51, 0x5c, 0xa7, 0xb2, 0xe1,
-	0x62, 0xe6, 0x38, 0x60, 0xdf, 0x40, 0x47, 0x29, 0xae, 0x25, 0x2f, 0xf7, 0x73, 0x5e, 0xe8, 0xbe,
-	0xbe, 0x8f, 0x86, 0xe2, 0xd4, 0x03, 0xf7, 0x79, 0x84, 0xfc, 0xbc, 0xd3, 0xcb, 0x1d, 0x73, 0x3c,
-	0x9d, 0x40, 0x58, 0x0d, 0xcd, 0x95, 0xbf, 0x8e, 0x06, 0xa9, 0xee, 0x6b, 0x96, 0x4d, 0xca, 0x9a,
-	0xe3, 0xbe, 0x58, 0xe4, 0x77, 0xc1, 0x31, 0xcd, 0xda, 0x01, 0xf8, 0x39, 0xd4, 0xbd, 0xe6, 0x8d,
-	0x01, 0xee, 0x48, 0x7a, 0xe3, 0x8b, 0xaa, 0xc1, 0x4c, 0x99, 0xa0, 0x51, 0xaa, 0xf7, 0x1e, 0xcd,
-	0xeb, 0x6f, 0x6a, 0x2e, 0x71, 0x5c, 0x9f, 0x60, 0x06, 0xe8, 0x63, 0xe8, 0x20, 0x2b, 0x09, 0x22,
-	0x11, 0xee, 0x00, 0xfb, 0x0a, 0x77, 0xbd, 0xbc, 0x81, 0xe4, 0x24, 0x33, 0xc0, 0xa1, 0x88, 0x0e,
-	0x1b, 0x74, 0xa8, 0xe4, 0xfb, 0x55, 0x4c, 0x25, 0x10, 0x3d, 0x64, 0xf0, 0xba, 0xe4, 0xd7, 0x51,
-	0x3e, 0x64, 0x69, 0xd9, 0xaa, 0xb0, 0x8c, 0x0e, 0x98, 0x1c, 0x45, 0xc8, 0xd0, 0x57, 0x6b, 0x33,
-	0xb5, 0xd2, 0x26, 0xd9, 0x86, 0xc8, 0xd4, 0xcd, 0xbe, 0xdc, 0x20, 0xdb, 0xf2, 0x5d, 0x34, 0x20,
-	0x14, 0xf6, 0x8b, 0x8a, 0xee, 0x46, 0x61, 0xd4, 0x40, 0x67, 0x01, 0xb0, 0x3c, 0x0f, 0xec, 0xd6,
-	0xda, 0x5a, 0x79, 0x43, 0xd3, 0xcd, 0x86, 0xa8, 0xda, 0x65, 0x82, 0x02, 0xf9, 0x0d, 0xd0, 0x0b,
-	0x81, 0xba, 0x45, 0x54, 0xf7, 0x60, 0x67, 0x35, 0x49, 0x3f, 0x2f, 0xac, 0x22, 0xb7, 0xf8, 0xb0,
-	0x56, 0xc5, 0xed, 0x95, 0x99, 0x95, 0x1b, 0x64, 0x3b, 0x23, 0xb8, 0x4b, 0xdc, 0xca, 0x36, 0xe9,
-	0x00, 0x88, 0xb1, 0xd5, 0x8a, 0x7c, 0x05, 0xe4, 0x55, 0x2e, 0x23, 0x6a, 0x11, 0xc4, 0x65, 0x74,
-	0x2c, 0x51, 0x49, 0x2a, 0x8a, 0x8f, 0x25, 0x3e, 0xae, 0x3e, 0xcb, 0xfd, 0x73, 0x11, 0x0d, 0x84,
-	0x4f, 0x71, 0xc9, 0xd0, 0xb8, 0x8d, 0xcc, 0x0e, 0x75, 0x2e, 0x74, 0xa8, 0x6f, 0x6a, 0xa1, 0x8d,
-	0x8b, 0xe7, 0x50, 0xae, 0x59, 0xdc, 0x26, 0x0f, 0x35, 0x9b, 0xe5, 0x84, 0xed, 0xea, 0xab, 0x11,
-	0x59, 0x95, 0x0e, 0xca, 0x6f, 0x02, 0x79, 0x76, 0xaa, 0x9a, 0x08, 0x64, 0x08, 0x7f, 0x0f, 0xf8,
-	0x70, 0x1f, 0x7f, 0x3b, 0x5e, 0x47, 0xd8, 0x64, 0x73, 0x4a, 0x4d, 0xb7, 0x64, 0x42, 0xd4, 0xef,
-	0x35, 0xa3, 0x8a, 0xe5, 0xbf, 0xed, 0x07, 0x87, 0xc7, 0xa2, 0x7e, 0xd1, 0x26, 0xf1, 0x0d, 0x74,
-	0x88, 0x69, 0xb0, 0x4b, 0x2c, 0x38, 0x37, 0xee, 0xaa, 0x46, 0x7c, 0x93, 0x79, 0x35, 0x2a, 0x59,
-	0xb7, 0x49, 0x63, 0x61, 0x2c, 0xbb, 0x4a, 0x2a, 0xf7, 0xe8, 0x54, 0xf5, 0x20, 0x88, 0xb2, 0x9f,
-	0x0e, 0x7e, 0x1b, 0x61, 0xef, 0x12, 0x0d, 0xe9, 0x6b, 0xcf, 0xac, 0xaf, 0x37, 0x90, 0xf6, 0x54,
-	0x6a, 0xa8, 0xdf, 0xfb, 0xb8, 0x54, 0xad, 0x19, 0x3a, 0xa9, 0x04, 0xe0, 0x73, 0x2f, 0x51, 0xcd,
-	0xc7, 0x78, 0xcd, 0x70, 0xe6, 0x5c, 0xd7, 0xd6, 0x57, 0xeb, 0x2e, 0xa9, 0x50, 0x07, 0xa8, 0xf1,
-	0x5a, 0xf0, 0x59, 0x74, 0xc4, 0x77, 0x62, 0x89, 0x0b, 0x39, 0xfb, 0xe9, 0x0e, 0xeb, 0xf3, 0x47,
-	0x8b, 0xc1, 0x56, 0xc3, 0x93, 0xa8, 0x97, 0x25, 0x79, 0x61, 0x81, 0x0e, 0x2a, 0x70, 0x88, 0xe6,
-	0x73, 0xa1, 0xb9, 0xdf, 0x97, 0xd0, 0xb1, 0xb2, 0x65, 0xae, 0xe9, 0x15, 0x6a, 0x43, 0x37, 0x5d,
-	0x62, 0x6f, 0x69, 0x46, 0xc9, 0xd6, 0x1e, 0x96, 0x6a, 0xc4, 0x2e, 0x13, 0xd3, 0xd5, 0x0d, 0xe2,
-	0xe4, 0x3a, 0x1b, 0x05, 0x7e, 0x71, 0x0e, 0xb2, 0x61, 0x65, 0x5d, 0x77, 0x37, 0xea, 0xab, 0x85,
-	0xb2, 0x55, 0x55, 0x34, 0xc3, 0xb0, 0x6c, 0xed, 0x34, 0xac, 0x9f, 0xf7, 0x93, 0x5e, 0x5f, 0x2c,
-	0x4f, 0xbe, 0x4a, 0xca, 0xea, 0x48, 0x60, 0x63, 0x09, 0x4c, 0xa8, 0xda, 0xc3, 0x95, 0xc0, 0x00,
-	0xae, 0xa3, 0xbc, 0x08, 0xc7, 0x56, 0xc3, 0x45, 0x4e, 0xae, 0xeb, 0xf9, 0xcc, 0xe7, 0x9a, 0xcd,
-	0x53, 0xdf, 0x3b, 0xf2, 0x37, 0xd1, 0x49, 0x96, 0x61, 0x38, 0x6c, 0x71, 0x54, 0xb2, 0xae, 0x37,
-	0x16, 0xb9, 0xb1, 0x0c, 0x7c, 0x92, 0x9b, 0x74, 0x95, 0x84, 0x2e, 0xaa, 0x36, 0xfe, 0xa2, 0xba,
-	0x85, 0xc6, 0xd3, 0xf5, 0xc3, 0xd1, 0x39, 0x86, 0x0e, 0xe8, 0x4e, 0xc9, 0xf6, 0x67, 0x50, 0x2b,
-	0x5d, 0xea, 0xcb, 0xba, 0x13, 0x48, 0xc9, 0x25, 0x5f, 0xa1, 0x5f, 0x45, 0xbe, 0x58, 0xc4, 0x2b,
-	0xf0, 0xa6, 0x90, 0x6c, 0xa0, 0x15, 0xc8, 0xf3, 0x10, 0x0f, 0x97, 0x9c, 0x7b, 0x1b, 0xba, 0x4b,
-	0x0c, 0xdd, 0x71, 0x17, 0x2a, 0x55, 0xdd, 0x4c, 0x7d, 0x1a, 0x93, 0x2f, 0x78, 0xe9, 0x65, 0x93,
-	0x24, 0xd8, 0xef, 0x47, 0x5d, 0xba, 0x53, 0xd2, 0x1a, 0xdf, 0xc0, 0x74, 0xa7, 0xee, 0xd0, 0x29,
-	0xf2, 0x35, 0x08, 0x96, 0x50, 0xdf, 0x55, 0xad, 0x2d, 0xcd, 0x70, 0xae, 0x59, 0x36, 0x17, 0x1e,
-	0xa2, 0x99, 0x9c, 0xd4, 0x9c, 0xc9, 0x7d, 0x0b, 0x02, 0x5e, 0x8c, 0x1e, 0xbf, 0xb0, 0xea, 0xb2,
-	0x61, 0x0c, 0xb2, 0xf0, 0x21, 0xc1, 0x63, 0x15, 0x88, 0xd3, 0x6c, 0xc0, 0x9f, 0x2f, 0x2f, 0x8b,
-	0x5e, 0x71, 0x9e, 0x03, 0x71, 0x4d, 0xf4, 0x48, 0x13, 0x8b, 0xbc, 0xd8, 0x84, 0xfc, 0x04, 0x8f,
-	0x5c, 0xa4, 0x26, 0xc2, 0xe0, 0x36, 0xac, 0x70, 0xd3, 0x94, 0x4c, 0x1b, 0x11, 0x1e, 0x57, 0xbc,
-	0x8d, 0x08, 0x3f, 0xe5, 0xaf, 0xc1, 0xe2, 0x37, 0x2b, 0xf5, 0x73, 0xff, 0x4e, 0x40, 0x00, 0xf1,
-	0x25, 0xcd, 0xe5, 0xde, 0x74, 0x79, 0x1b, 0x82, 0x59, 0x2c, 0xb5, 0x74, 0xdc, 0x83, 0xa8, 0xdb,
-	0x7f, 0x21, 0x01, 0xe4, 0xc1, 0x87, 0x30, 0xab, 0x76, 0x9e, 0x95, 0x0e, 0xb1, 0x3b, 0xde, 0x34,
-	0xb0, 0x7b, 0x33, 0xca, 0x2e, 0xeb, 0xb2, 0xf8, 0x2c, 0xe7, 0x21, 0x8b, 0xa5, 0x87, 0xb6, 0x91,
-	0x80, 0x5c, 0xb1, 0xaa, 0x55, 0xdd, 0xcd, 0x90, 0x60, 0x54, 0x60, 0x3d, 0x9b, 0x24, 0x01, 0xdb,
-	0x55, 0xd4, 0x43, 0xd3, 0x9d, 0x32, 0xfd, 0x0c, 0xf8, 0x22, 0xc1, 0xee, 0x8e, 0x5e, 0x25, 0x8e,
-	0xab, 0x55, 0x6b, 0xa4, 0xb2, 0x50, 0x76, 0x2d, 0x7b, 0xd9, 0x6a, 0xe4, 0xff, 0xc8, 0xf0, 0xb5,
-	0xcd, 0xfc, 0xa7, 0x80, 0xf6, 0x53, 0x33, 0x78, 0x13, 0x75, 0xb0, 0x17, 0x7e, 0x3c, 0xc2, 0x2b,
-	0x69, 0x6e, 0x20, 0xe4, 0x47, 0x13, 0x66, 0x30, 0x78, 0xf2, 0xe0, 0xf7, 0x3e, 0xfb, 0xe7, 0x4f,
-	0xda, 0x8e, 0xe0, 0x3e, 0x45, 0xd0, 0x3f, 0xc1, 0xef, 0x49, 0xe8, 0xe0, 0x22, 0x71, 0x43, 0x6f,
-	0x15, 0x78, 0x4c, 0xa0, 0xb3, 0xf9, 0x99, 0x23, 0x7f, 0x22, 0x6d, 0x1a, 0xd8, 0x1f, 0xff, 0xc1,
-	0x97, 0x1f, 0x4d, 0x4a, 0x14, 0xc4, 0x51, 0x3c, 0xc0, 0x83, 0xe0, 0xde, 0x42, 0xf0, 0x0e, 0xea,
-	0x5a, 0x24, 0x4c, 0x1e, 0x0f, 0x0b, 0xb4, 0x87, 0x1f, 0x44, 0xf2, 0x23, 0xf1, 0x13, 0xc0, 0xf0,
-	0xa9, 0xc0, 0xf0, 0x28, 0x1e, 0x56, 0x9a, 0x5b, 0x3a, 0x8e, 0xb2, 0xe3, 0xd9, 0xde, 0xc5, 0x3f,
-	0x94, 0xd0, 0xa1, 0x45, 0xe2, 0x86, 0xdf, 0x14, 0xb0, 0x88, 0xa2, 0xe0, 0x79, 0x23, 0x7f, 0x32,
-	0x75, 0x5e, 0x06, 0x5f, 0x68, 0xec, 0x99, 0x05, 0x5e, 0x26, 0x1e, 0x4b, 0x68, 0x74, 0x91, 0xb8,
-	0xc2, 0x92, 0xb3, 0xb8, 0xed, 0x2d, 0x95, 0x22, 0x30, 0x9c, 0x54, 0x0c, 0xe7, 0xcf, 0x64, 0x17,
-	0x00, 0xc8, 0x77, 0x03, 0xc8, 0x37, 0xf0, 0x52, 0x8a, 0x17, 0xa1, 0xc3, 0xe6, 0x28, 0x3b, 0x7c,
-	0x5d, 0xbd, 0xab, 0x44, 0x4b, 0x63, 0xfc, 0x6b, 0x09, 0xf5, 0x2d, 0x12, 0xb7, 0x29, 0x5d, 0xc7,
-	0x53, 0x02, 0x88, 0x71, 0x15, 0x4d, 0xfe, 0x54, 0xb6, 0xc9, 0xc0, 0xe5, 0x72, 0xc0, 0xe5, 0x2c,
-	0x9e, 0x51, 0xc4, 0x0d, 0x3b, 0x8e, 0xcf, 0x4e, 0x38, 0xbc, 0xec, 0xe2, 0x0f, 0x25, 0xf4, 0xca,
-	0x22, 0x71, 0xa3, 0xef, 0x18, 0x78, 0x52, 0x00, 0x23, 0xe6, 0x29, 0x25, 0x3f, 0x95, 0x69, 0x2e,
-	0x20, 0xbe, 0x14, 0x20, 0x9e, 0xc5, 0xd3, 0x3c, 0x62, 0xff, 0x1d, 0x24, 0x01, 0xf0, 0x9f, 0x25,
-	0x34, 0x40, 0x8f, 0xb7, 0xf8, 0x29, 0x14, 0xcf, 0x08, 0x0f, 0x71, 0xe2, 0xeb, 0x6c, 0x7e, 0xb6,
-	0x25, 0x19, 0x20, 0xb2, 0x10, 0x10, 0x39, 0x8f, 0xcf, 0x46, 0x6f, 0x01, 0x56, 0x22, 0x35, 0xd2,
-	0xf1, 0x04, 0x2e, 0xef, 0x4a, 0xe8, 0x00, 0xbd, 0x1f, 0xbc, 0x0e, 0x26, 0x3e, 0x2e, 0xbc, 0x03,
-	0x22, 0xad, 0xcf, 0xfc, 0x58, 0xca, 0x2c, 0x40, 0x78, 0x22, 0x40, 0x38, 0x80, 0xfb, 0xa3, 0x1b,
-	0xdd, 0xd5, 0x8c, 0x12, 0xed, 0xf6, 0xe2, 0xdf, 0x49, 0xe8, 0xc8, 0x22, 0x71, 0x05, 0xbd, 0x3a,
-	0x7c, 0x5a, 0x60, 0x29, 0xbe, 0x69, 0x98, 0x2f, 0x64, 0x9d, 0x0e, 0x08, 0x2f, 0x06, 0x08, 0x67,
-	0xf0, 0x19, 0x45, 0xd4, 0xbf, 0x66, 0x18, 0x95, 0x1d, 0xff, 0xdc, 0x85, 0x6e, 0xb8, 0x3f, 0xb2,
-	0xbd, 0x10, 0xd7, 0x69, 0x14, 0xee, 0x85, 0x94, 0xbe, 0xa7, 0x70, 0x2f, 0xa4, 0xb5, 0x32, 0xe5,
-	0x73, 0x01, 0x8f, 0x49, 0x3c, 0x2e, 0xe4, 0xe1, 0x30, 0x22, 0xdc, 0x0d, 0xfd, 0x0f, 0x09, 0x8d,
-	0x2c, 0x12, 0x37, 0xb1, 0xb9, 0x88, 0xe7, 0x04, 0x80, 0xb2, 0xf4, 0x3f, 0xf3, 0xf3, 0xad, 0x0b,
-	0x02, 0x9d, 0xaf, 0x06, 0x74, 0x2e, 0xe3, 0x8b, 0x09, 0xcb, 0x52, 0x72, 0x88, 0xb1, 0xa6, 0xec,
-	0x44, 0xba, 0x6a, 0xdc, 0x1a, 0xfd, 0x8b, 0x71, 0x4c, 0xec, 0x28, 0x0a, 0x39, 0x66, 0x69, 0x7a,
-	0x0a, 0x39, 0x66, 0x6a, 0x5e, 0xca, 0xcb, 0x01, 0xc7, 0x2b, 0x78, 0x41, 0xcc, 0x11, 0x12, 0x3e,
-	0xe2, 0xed, 0xc1, 0x24, 0x9e, 0xdf, 0x6d, 0x43, 0x63, 0xe1, 0xb5, 0x8c, 0x6d, 0x0b, 0xe2, 0x37,
-	0x92, 0xd6, 0x25, 0xad, 0xe3, 0x99, 0xbf, 0xf8, 0x8c, 0xd2, 0x40, 0xfb, 0x7e, 0x40, 0xfb, 0x16,
-	0x7e, 0x8b, 0xa7, 0x1d, 0xa5, 0xdb, 0xd4, 0x3b, 0xdc, 0x4d, 0x76, 0xc1, 0x67, 0x12, 0x1a, 0x4c,
-	0x72, 0x01, 0x9e, 0x6d, 0x05, 0xbb, 0x47, 0xf8, 0x6c, 0x6b, 0x42, 0xc0, 0xf3, 0x7a, 0xc0, 0xf3,
-	0x22, 0x7e, 0xbd, 0x75, 0x9e, 0x01, 0xab, 0xf7, 0xbc, 0x4b, 0xda, 0x6b, 0x26, 0xc6, 0x5c, 0xd2,
-	0x91, 0x06, 0x65, 0xcc, 0x25, 0x1d, 0xed, 0x48, 0xca, 0x53, 0x01, 0xd0, 0x11, 0x3c, 0xa4, 0x34,
-	0xff, 0x31, 0x4e, 0x18, 0xcb, 0xef, 0x25, 0x94, 0xf3, 0x3c, 0x1c, 0xad, 0xf8, 0x84, 0xa9, 0x53,
-	0x52, 0xad, 0x29, 0x4c, 0x9d, 0x12, 0x8b, 0x49, 0x79, 0x3e, 0x00, 0x7b, 0x1a, 0x4f, 0x09, 0xc0,
-	0x96, 0xbc, 0x9a, 0x31, 0x1a, 0xea, 0x3e, 0x17, 0x5c, 0x03, 0x4d, 0x0c, 0x52, 0xaf, 0x81, 0x38,
-	0x26, 0xf3, 0xad, 0x0b, 0x66, 0x88, 0xe2, 0xfc, 0x3e, 0x89, 0xa5, 0xf6, 0x4b, 0x96, 0x42, 0x45,
-	0x0b, 0x35, 0x61, 0x0a, 0x15, 0x53, 0x89, 0x0a, 0x53, 0xa8, 0xb8, 0xd2, 0x31, 0x31, 0x6a, 0x72,
-	0x50, 0xb9, 0xd4, 0x03, 0x4e, 0xee, 0x2e, 0xfe, 0x82, 0x45, 0xcd, 0xb8, 0x02, 0x53, 0x18, 0x35,
-	0x53, 0x2a, 0x69, 0x61, 0xd4, 0x4c, 0x2b, 0x81, 0x65, 0x35, 0xe0, 0xb1, 0x88, 0xbf, 0x92, 0xc5,
-	0xf7, 0x1c, 0x21, 0xff, 0xd8, 0x86, 0xc9, 0xfd, 0x54, 0x42, 0xbd, 0x7e, 0x95, 0xe1, 0xb5, 0x66,
-	0xf0, 0x78, 0x6c, 0x91, 0x10, 0xe9, 0xfd, 0xe4, 0x27, 0x32, 0xcc, 0x04, 0xf8, 0x85, 0x00, 0xfe,
-	0x31, 0x3c, 0xaa, 0x08, 0xfe, 0x2e, 0x4f, 0xd9, 0x09, 0xba, 0x24, 0xbb, 0xf8, 0x03, 0x09, 0xe1,
-	0x20, 0xcd, 0xf2, 0xb1, 0x4d, 0xc4, 0xe7, 0x4c, 0x51, 0x70, 0x93, 0x59, 0xa6, 0x02, 0x3a, 0x25,
-	0x40, 0x77, 0x1c, 0xcb, 0xc2, 0xf8, 0xc6, 0xc3, 0xfb, 0x2d, 0xbb, 0x5b, 0x84, 0x8d, 0xa3, 0x84,
-	0xb2, 0x4c, 0xdc, 0x21, 0x4a, 0x28, 0xcb, 0x62, 0xba, 0x41, 0xf2, 0xf9, 0x00, 0xf0, 0x14, 0x9e,
-	0x10, 0xb9, 0xd3, 0xbb, 0x9e, 0x79, 0xdc, 0x1f, 0x4b, 0xa8, 0x3f, 0x70, 0x6b, 0x14, 0xf8, 0x99,
-	0x78, 0x97, 0xc5, 0x20, 0x9f, 0x6e, 0x41, 0x02, 0xa0, 0xcf, 0x05, 0xd0, 0x4f, 0xe1, 0x49, 0x71,
-	0x2e, 0x21, 0xc4, 0xfe, 0x17, 0x09, 0x0d, 0x24, 0x3c, 0x1d, 0xe3, 0x73, 0xa2, 0x62, 0x30, 0xf5,
-	0x29, 0x3b, 0x7f, 0xbe, 0x55, 0xb1, 0x0c, 0x97, 0x21, 0x2c, 0x41, 0xf0, 0x16, 0xcc, 0x9d, 0x45,
-	0x2f, 0x70, 0xd2, 0x1c, 0x20, 0xe9, 0x69, 0x19, 0x8b, 0xb1, 0xa5, 0x3e, 0x76, 0xe7, 0xe7, 0x5a,
-	0x96, 0x03, 0x52, 0xc5, 0x80, 0xd4, 0x1c, 0x3e, 0x27, 0x5e, 0x9c, 0x34, 0x56, 0xef, 0xb7, 0x85,
-	0x8b, 0xce, 0xe6, 0x0a, 0x3f, 0xa1, 0xe8, 0x8c, 0x2d, 0xf4, 0x67, 0x5b, 0x92, 0x01, 0x32, 0x3f,
-	0x92, 0x02, 0x36, 0xef, 0x48, 0xf8, 0x3b, 0xe2, 0xb2, 0x53, 0x5c, 0xf9, 0xf3, 0x0d, 0x50, 0x3e,
-	0x8a, 0x45, 0xba, 0xa3, 0x30, 0x99, 0xb5, 0x3b, 0x45, 0x33, 0xd9, 0xc8, 0x2e, 0xfe, 0x03, 0x3b,
-	0x7c, 0xe2, 0xae, 0x21, 0x16, 0x1d, 0xa5, 0xe4, 0xb6, 0x68, 0x7e, 0xa6, 0x15, 0x91, 0x0c, 0x59,
-	0x49, 0xa2, 0x4b, 0xf0, 0x9f, 0x24, 0x24, 0xfb, 0xf0, 0x17, 0xb6, 0x34, 0xdd, 0xd0, 0x56, 0x0d,
-	0xf2, 0xff, 0xc7, 0xe3, 0x03, 0x09, 0x1d, 0x8e, 0x36, 0x51, 0x84, 0xf9, 0x47, 0x4c, 0x8f, 0x46,
-	0x98, 0x7f, 0xc4, 0x75, 0x65, 0x64, 0x85, 0x42, 0x9c, 0xc0, 0x27, 0x23, 0x37, 0x84, 0x37, 0x9b,
-	0x35, 0x6c, 0x42, 0xc7, 0xe7, 0x43, 0x56, 0x18, 0xf8, 0xcf, 0xcd, 0xec, 0x26, 0x62, 0xcf, 0xc4,
-	0xb1, 0x31, 0x50, 0xfc, 0xac, 0x2d, 0x8c, 0x81, 0x31, 0xef, 0xd8, 0x89, 0xf7, 0x32, 0x73, 0x5e,
-	0xe8, 0x99, 0x3b, 0xec, 0xcf, 0x5f, 0x49, 0xe8, 0x68, 0x18, 0x30, 0x5c, 0x33, 0xff, 0xbb, 0x88,
-	0x8b, 0xea, 0x27, 0x4f, 0x86, 0xa4, 0x4f, 0x9f, 0x0c, 0x49, 0x7f, 0x7f, 0x32, 0x24, 0xfd, 0xf8,
-	0xe9, 0xd0, 0xbe, 0x4f, 0x9f, 0x0e, 0xed, 0xfb, 0xfc, 0xe9, 0xd0, 0xbe, 0xfb, 0xf3, 0x19, 0xbb,
-	0xa9, 0x8f, 0x42, 0xd6, 0xe8, 0xff, 0x23, 0xb1, 0xda, 0x41, 0xff, 0xd0, 0x7f, 0xf6, 0xbf, 0x01,
-	0x00, 0x00, 0xff, 0xff, 0x3b, 0x86, 0xd2, 0x4e, 0x94, 0x31, 0x00, 0x00,
+	// 5398 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x5d, 0x5b, 0x6c, 0x1c, 0xd7,
+	0x79, 0xf6, 0x48, 0x16, 0x25, 0x1e, 0x59, 0xb7, 0x63, 0x59, 0x26, 0x97, 0x32, 0x25, 0x8d, 0x22,
+	0x8b, 0x12, 0x25, 0xae, 0x44, 0x5d, 0x2d, 0x4b, 0xb6, 0x49, 0xc9, 0xa4, 0x18, 0xc9, 0x12, 0xbd,
+	0xba, 0xd9, 0x46, 0x93, 0xf5, 0x70, 0xf7, 0x2c, 0x39, 0xd0, 0x72, 0x66, 0x3d, 0x33, 0x4b, 0x9b,
+	0x50, 0x88, 0xd8, 0x41, 0x50, 0x38, 0x40, 0x0b, 0x18, 0x28, 0x10, 0xb8, 0x40, 0x5b, 0xb4, 0x40,
+	0x1f, 0x02, 0xb4, 0x49, 0x8b, 0x22, 0x69, 0xe1, 0xa2, 0x7d, 0x28, 0x7a, 0x81, 0x83, 0xb6, 0x68,
+	0x90, 0x34, 0x80, 0x11, 0x34, 0x46, 0x6b, 0x37, 0x48, 0xdb, 0x87, 0x02, 0x7d, 0xeb, 0x63, 0x31,
+	0x73, 0xfe, 0x33, 0x33, 0x67, 0xe6, 0x3f, 0x67, 0x66, 0x79, 0x01, 0xdc, 0x17, 0xc3, 0x3b, 0xe7,
+	0xf6, 0x7d, 0xe7, 0xfa, 0xff, 0xff, 0x39, 0x1f, 0x45, 0x06, 0xd8, 0xa2, 0xed, 0xfb, 0xb6, 0xeb,
+	0xf8, 0xd5, 0xa5, 0xd3, 0xd5, 0xb7, 0xba, 0xcc, 0x5b, 0x1e, 0xeb, 0x78, 0x6e, 0xe0, 0xd2, 0x27,
+	0xe2, 0x94, 0xb1, 0xa5, 0xd3, 0x95, 0xe3, 0x0d, 0xd7, 0x5f, 0x74, 0xfd, 0xea, 0x9c, 0xe5, 0x33,
+	0x9e, 0xad, 0xba, 0x74, 0x7a, 0x8e, 0x05, 0xd6, 0xe9, 0x6a, 0xc7, 0x9a, 0xb7, 0x1d, 0x2b, 0xb0,
+	0x5d, 0x87, 0x97, 0xac, 0xc8, 0x75, 0x06, 0xcb, 0x1d, 0xe6, 0x43, 0xca, 0xfe, 0x79, 0xd7, 0x9d,
+	0x6f, 0xb3, 0xaa, 0xd5, 0xb1, 0xab, 0x96, 0xe3, 0xb8, 0x41, 0x54, 0x4c, 0xa4, 0x0e, 0x41, 0x1b,
+	0xa2, 0xfa, 0x34, 0x9c, 0xca, 0x1e, 0x6b, 0xd1, 0x76, 0xdc, 0x6a, 0xf4, 0x5f, 0xf8, 0xb4, 0x77,
+	0xde, 0x9d, 0x77, 0xa3, 0xff, 0xad, 0x86, 0xff, 0x07, 0x5f, 0x07, 0x79, 0x2d, 0x75, 0x9e, 0xc0,
+	0x7f, 0x88, 0x24, 0x09, 0x58, 0xc7, 0xf2, 0xac, 0x45, 0x91, 0xf4, 0xb4, 0x94, 0xe4, 0xb8, 0x4d,
+	0x86, 0x96, 0x79, 0xdb, 0xf5, 0x1e, 0x32, 0x0f, 0x92, 0x2a, 0x52, 0x92, 0xc7, 0x3a, 0xdd, 0x20,
+	0x4e, 0x1b, 0xc8, 0xd4, 0xe7, 0x34, 0x18, 0xde, 0x3b, 0x6e, 0xc7, 0x6e, 0xa0, 0x29, 0x7e, 0x60,
+	0x3d, 0x14, 0x65, 0xf6, 0x4b, 0x29, 0xb6, 0xd3, 0x62, 0x1e, 0x53, 0xd5, 0xe8, 0x37, 0x5c, 0x0f,
+	0x52, 0xcc, 0xbd, 0x84, 0xbe, 0x1a, 0xf6, 0xe1, 0x6c, 0x44, 0xb5, 0xc6, 0xde, 0xea, 0x32, 0x3f,
+	0x30, 0x6f, 0x91, 0x27, 0xa5, 0xaf, 0x7e, 0xc7, 0x75, 0x7c, 0x46, 0x2f, 0x90, 0x3e, 0xde, 0x25,
+	0x03, 0xc6, 0x41, 0x63, 0x64, 0xfb, 0xf8, 0xde, 0xb1, 0xf4, 0x0c, 0x18, 0xe3, 0xb9, 0x27, 0xfb,
+	0x3f, 0xfe, 0xf4, 0xc0, 0x63, 0xdf, 0xf9, 0xe5, 0x1f, 0x1f, 0x37, 0x6a, 0x90, 0xdd, 0x1c, 0x20,
+	0xfb, 0xa2, 0xfa, 0xee, 0xba, 0x81, 0xd5, 0xbe, 0x13, 0xc2, 0x16, 0x2d, 0xd9, 0xe4, 0xe9, 0x5c,
+	0x0a, 0xb4, 0x76, 0x9d, 0xf4, 0x59, 0x8b, 0x6e, 0xd7, 0x09, 0xa2, 0xd6, 0xfa, 0x27, 0x4f, 0x85,
+	0xf5, 0xfe, 0xec, 0xd3, 0x03, 0x4f, 0xf1, 0x11, 0xf3, 0x9b, 0x0f, 0xc7, 0x6c, 0xb7, 0xba, 0x68,
+	0x05, 0x0b, 0x63, 0x33, 0x4e, 0xf0, 0xe3, 0xef, 0x9f, 0x24, 0x30, 0x94, 0x33, 0x4e, 0x00, 0xcd,
+	0xf3, 0xf2, 0x97, 0x1e, 0xff, 0x8f, 0xdf, 0x3d, 0x60, 0x98, 0xf7, 0xc9, 0x81, 0xa8, 0xa9, 0x1a,
+	0x1f, 0x86, 0xa8, 0xb1, 0x19, 0xe7, 0x6e, 0xd8, 0xbd, 0x80, 0x86, 0x0e, 0x90, 0xad, 0x56, 0xb3,
+	0xe9, 0x31, 0x9f, 0x33, 0xec, 0xaf, 0x89, 0x9f, 0x74, 0x90, 0x6c, 0x8b, 0x06, 0xa2, 0x6e, 0x37,
+	0x07, 0x36, 0x1d, 0x34, 0x46, 0x1e, 0xaf, 0x6d, 0x8d, 0x7e, 0xcf, 0x34, 0x4d, 0x8f, 0x1c, 0x54,
+	0xd7, 0xbb, 0x41, 0x5c, 0xea, 0xe4, 0x4b, 0x51, 0x9b, 0xaf, 0x74, 0xdb, 0x81, 0xad, 0x21, 0xb4,
+	0x9f, 0xf4, 0x03, 0x03, 0x16, 0x52, 0xda, 0x3c, 0xd2, 0x5f, 0x4b, 0x3e, 0xe8, 0x48, 0xbd, 0x41,
+	0x8e, 0x14, 0x34, 0x00, 0xcc, 0x4e, 0x93, 0xad, 0x1c, 0x19, 0xaf, 0x7f, 0xfb, 0xf8, 0xd3, 0xf2,
+	0xa4, 0x80, 0x42, 0x2d, 0xb7, 0x26, 0xf2, 0x99, 0x2e, 0x39, 0x16, 0xd5, 0x1d, 0x25, 0x4d, 0x79,
+	0xee, 0x22, 0xd4, 0x0f, 0x55, 0xcf, 0x38, 0x77, 0x58, 0xbb, 0x25, 0x18, 0x1c, 0x25, 0xbb, 0x60,
+	0xdd, 0xd4, 0xe5, 0xa1, 0xd9, 0x09, 0x9f, 0x27, 0x8a, 0x47, 0xe8, 0x6b, 0xe4, 0x78, 0x99, 0x06,
+	0x37, 0x68, 0xac, 0x04, 0xdd, 0x6b, 0xac, 0xcd, 0xe6, 0xad, 0x80, 0xa5, 0xbb, 0x71, 0xc6, 0x01,
+	0x28, 0x1b, 0x41, 0xb7, 0xa0, 0xc1, 0x0d, 0xa2, 0xfb, 0x7b, 0x06, 0x19, 0x93, 0x7b, 0x1b, 0x70,
+	0xb8, 0x9e, 0x8a, 0xf4, 0x28, 0xd9, 0xd3, 0x14, 0x79, 0x32, 0xb4, 0x77, 0xc7, 0x09, 0x82, 0x38,
+	0xd2, 0x43, 0x9b, 0x0a, 0x7b, 0x68, 0xb3, 0xdc, 0x43, 0xef, 0x19, 0xa4, 0x5a, 0x1a, 0xe3, 0x86,
+	0x4d, 0x8b, 0x23, 0x7a, 0x08, 0xab, 0xea, 0x1d, 0xcd, 0xb4, 0x78, 0x87, 0x3c, 0x5b, 0xd4, 0xe0,
+	0x06, 0x51, 0x3d, 0x13, 0x6f, 0xff, 0x1d, 0xbb, 0x91, 0xde, 0xfe, 0x25, 0xb8, 0x86, 0x0c, 0x37,
+	0x39, 0x19, 0x92, 0x42, 0x1b, 0x84, 0xaf, 0x09, 0xbb, 0xe9, 0x2d, 0x16, 0x84, 0xc7, 0xf7, 0x4d,
+	0xd7, 0xf7, 0x27, 0xbb, 0x4e, 0xb3, 0xcd, 0x26, 0x82, 0xc9, 0xb6, 0xdb, 0x78, 0x58, 0x8c, 0x96,
+	0x1e, 0x22, 0x4f, 0xcc, 0x85, 0x59, 0xeb, 0x0b, 0xcc, 0x9e, 0x5f, 0x08, 0xa2, 0xbe, 0xdf, 0x5c,
+	0xdb, 0x1e, 0x7d, 0xbb, 0x1e, 0x7d, 0x32, 0x1b, 0x30, 0xe0, 0xea, 0x56, 0x80, 0xde, 0x25, 0xb2,
+	0xbd, 0xed, 0xfa, 0x7e, 0x7d, 0x2e, 0x4a, 0x85, 0xb3, 0x76, 0x50, 0xde, 0x56, 0xef, 0x5b, 0xed,
+	0x2e, 0xe3, 0xc5, 0x6b, 0xa4, 0x1d, 0x57, 0x65, 0x0e, 0x42, 0xaf, 0xdd, 0x62, 0xef, 0x04, 0x7c,
+	0x22, 0x37, 0xc5, 0x51, 0xfb, 0x02, 0x19, 0xc8, 0x27, 0x41, 0x93, 0x26, 0xd9, 0xe1, 0xb0, 0x77,
+	0x82, 0x7a, 0x86, 0xde, 0x76, 0x27, 0xc9, 0x6b, 0x8e, 0x91, 0x3d, 0xc9, 0x80, 0x94, 0x18, 0xc0,
+	0x6f, 0x1a, 0x60, 0x5b, 0xc8, 0x93, 0xeb, 0x18, 0xd9, 0x12, 0xe5, 0x00, 0x5e, 0x4f, 0xca, 0xbc,
+	0x78, 0x5e, 0x9e, 0x83, 0xee, 0x23, 0x7d, 0x6f, 0x27, 0xdd, 0xd9, 0x5f, 0x83, 0x5f, 0xe1, 0x8a,
+	0x60, 0xad, 0x16, 0x6b, 0x04, 0xf6, 0x12, 0xab, 0x7b, 0x6c, 0x89, 0x39, 0x5d, 0x16, 0x2d, 0xf1,
+	0xfe, 0xda, 0xee, 0x38, 0xa1, 0xc6, 0xbf, 0x9b, 0xf3, 0x40, 0x7b, 0x22, 0xfa, 0x1a, 0xd5, 0x2f,
+	0xec, 0x1c, 0x7a, 0x83, 0x90, 0xc4, 0x36, 0x05, 0x40, 0xa3, 0x99, 0xf3, 0xcb, 0x5e, 0xec, 0xb4,
+	0xd9, 0xd5, 0xae, 0xe7, 0xbb, 0xde, 0x6c, 0x9c, 0x17, 0x2a, 0xa8, 0xa5, 0x8a, 0x9b, 0xdf, 0x36,
+	0xc8, 0x20, 0xd2, 0x12, 0xd0, 0x1e, 0x25, 0x7d, 0x11, 0x29, 0x71, 0x4c, 0xa2, 0xbc, 0x21, 0x0b,
+	0xbd, 0x29, 0xe1, 0xda, 0x14, 0xe1, 0x3a, 0x51, 0x0e, 0x17, 0x6f, 0x4e, 0x02, 0xf6, 0x15, 0xf2,
+	0x4c, 0x84, 0x6b, 0x46, 0x58, 0x85, 0xfe, 0xba, 0xce, 0xeb, 0x37, 0xc8, 0xb0, 0xaa, 0x7a, 0xe0,
+	0x7e, 0x91, 0x90, 0xd8, 0x22, 0x15, 0xb6, 0xe3, 0x80, 0x4c, 0x27, 0x29, 0x5c, 0x4b, 0xe5, 0x35,
+	0x5f, 0x20, 0x87, 0xa2, 0xba, 0x6f, 0x5a, 0x01, 0xf3, 0x61, 0x26, 0x26, 0x39, 0x8b, 0xe7, 0xe0,
+	0x7b, 0x06, 0x31, 0x75, 0x15, 0xac, 0x15, 0x60, 0x99, 0xfe, 0xf9, 0x15, 0xb2, 0x3f, 0x82, 0x30,
+	0xe5, 0x7a, 0xac, 0x61, 0xf9, 0xc1, 0xfa, 0xf6, 0xfe, 0x7d, 0x18, 0xdc, 0x7c, 0xed, 0xc0, 0xed,
+	0x1c, 0xe9, 0x6f, 0x89, 0x34, 0xa0, 0x96, 0x31, 0xd1, 0xe2, 0xa2, 0xb5, 0x24, 0xa7, 0xc9, 0xa0,
+	0xe7, 0x1f, 0x44, 0xfe, 0x0c, 0xef, 0xbe, 0xb8, 0x0f, 0x4a, 0x40, 0x3f, 0x42, 0x76, 0x72, 0x57,
+	0x28, 0x73, 0x4a, 0xef, 0xe0, 0x5f, 0xe1, 0xbc, 0x32, 0x17, 0x60, 0x7c, 0x14, 0xcd, 0x00, 0x87,
+	0x49, 0xb2, 0xbb, 0x1d, 0x25, 0xd5, 0xe3, 0xae, 0xc7, 0xa9, 0x24, 0x45, 0x77, 0xb5, 0xe5, 0xba,
+	0xcc, 0xe7, 0x49, 0x25, 0xd5, 0xd2, 0x2d, 0xb7, 0xc9, 0xad, 0x52, 0x60, 0xf2, 0x0c, 0x21, 0x6d,
+	0x7b, 0xae, 0x33, 0xde, 0xa9, 0x3f, 0x64, 0xcb, 0x70, 0xba, 0xf6, 0xf3, 0x2f, 0x37, 0xd8, 0xb2,
+	0x79, 0x9f, 0x0c, 0xa1, 0x85, 0x63, 0xc7, 0xa8, 0x3f, 0x74, 0x08, 0x43, 0x74, 0x2e, 0x00, 0xab,
+	0xc8, 0xc0, 0x6e, 0xb7, 0x5a, 0x8d, 0x05, 0xcb, 0x76, 0xc2, 0xa2, 0xb5, 0x6d, 0x0e, 0x54, 0x60,
+	0x5e, 0x86, 0x7a, 0xc1, 0xd8, 0xe8, 0x11, 0xd5, 0x03, 0x98, 0x59, 0xb9, 0xd2, 0x6b, 0x85, 0x35,
+	0x29, 0x0d, 0x3e, 0x8c, 0xd5, 0xe4, 0xf2, 0xec, 0xf8, 0xec, 0x0d, 0xb6, 0x5c, 0x12, 0xdc, 0x0b,
+	0xd2, 0xc8, 0xe6, 0xea, 0x00, 0x88, 0x4a, 0x8f, 0xcb, 0xbc, 0x0a, 0xe5, 0x6b, 0x92, 0x55, 0xd7,
+	0x23, 0x88, 0x17, 0xc9, 0x61, 0x6d, 0x25, 0x85, 0x28, 0x3e, 0x32, 0x64, 0xdb, 0x60, 0x35, 0x7b,
+	0xe8, 0x15, 0x32, 0x94, 0x5e, 0xc5, 0xf5, 0xb6, 0x25, 0x4d, 0x64, 0xbe, 0xa8, 0x07, 0x52, 0x8b,
+	0xfa, 0xa6, 0x95, 0x9a, 0xb8, 0xf4, 0x02, 0x19, 0xc8, 0x17, 0xf7, 0xd8, 0xdb, 0x96, 0xc7, 0xed,
+	0xda, 0xcd, 0xb5, 0xa7, 0x32, 0x65, 0x6b, 0x51, 0xa2, 0xf9, 0x12, 0x90, 0xe7, 0xab, 0x2a, 0x47,
+	0xa0, 0xc4, 0xf6, 0x29, 0x0c, 0xa3, 0x19, 0x5f, 0x4c, 0x7c, 0xa7, 0xc1, 0xee, 0x39, 0xad, 0x6e,
+	0xbb, 0x65, 0xb7, 0xdb, 0xac, 0xb9, 0x3e, 0x5b, 0x58, 0x0b, 0x0c, 0x23, 0x75, 0x2b, 0x30, 0x4c,
+	0x57, 0xc8, 0x90, 0xed, 0xd7, 0x61, 0x5b, 0x89, 0x22, 0x26, 0xf5, 0x6e, 0x92, 0x2d, 0x6a, 0x79,
+	0x5b, 0x6d, 0xc0, 0x56, 0x54, 0x63, 0x4e, 0x00, 0x1b, 0xa9, 0x6a, 0x58, 0x39, 0x25, 0x3b, 0x44,
+	0xd8, 0x70, 0xea, 0x2a, 0x62, 0x1b, 0xae, 0x2f, 0x02, 0x28, 0xb6, 0x5c, 0x53, 0x5e, 0x77, 0xb2,
+	0x03, 0x04, 0x65, 0xa1, 0x44, 0x3c, 0x6e, 0xa9, 0x46, 0x52, 0x8c, 0xca, 0xc0, 0xbc, 0x9b, 0x67,
+	0x2a, 0xd7, 0x00, 0x28, 0x4f, 0x64, 0x50, 0x66, 0x02, 0x3a, 0x19, 0x5c, 0xaf, 0x41, 0xa0, 0x83,
+	0x4f, 0x21, 0x0f, 0x26, 0x54, 0x8d, 0xcd, 0x7b, 0x2c, 0x28, 0x31, 0x13, 0x06, 0xc9, 0x36, 0xab,
+	0x11, 0xfa, 0x30, 0xe0, 0x9a, 0x84, 0xab, 0x2c, 0xfc, 0x1d, 0xb9, 0x26, 0x87, 0x34, 0x35, 0x03,
+	0xd8, 0xf3, 0xa4, 0xcf, 0x8b, 0xbe, 0x00, 0xd8, 0xe1, 0x8c, 0x05, 0x65, 0x2f, 0x32, 0x3f, 0xb0,
+	0x16, 0x3b, 0xac, 0x19, 0x19, 0xc7, 0x35, 0xc8, 0x4d, 0x87, 0xc2, 0x5d, 0x30, 0xa8, 0xb7, 0xdc,
+	0xae, 0xc3, 0x1b, 0xde, 0x16, 0xee, 0x74, 0xc1, 0x54, 0xf8, 0xdb, 0x7c, 0x0d, 0xfa, 0x5a, 0x9c,
+	0x81, 0xbd, 0xd3, 0x0a, 0x8d, 0xd4, 0xa8, 0x6f, 0x63, 0x23, 0x35, 0xfa, 0x65, 0x3e, 0x82, 0x31,
+	0x50, 0xd6, 0xbc, 0x91, 0xb4, 0xbe, 0x4e, 0x46, 0xa2, 0xc6, 0x6f, 0x3b, 0x6c, 0xc6, 0x59, 0x3d,
+	0xb7, 0x61, 0x42, 0x5a, 0x71, 0x61, 0xe0, 0x97, 0xfa, 0x12, 0xee, 0x9b, 0x7c, 0x1f, 0xf3, 0xc0,
+	0xfc, 0x16, 0x3f, 0xcd, 0x77, 0x0d, 0x88, 0x7a, 0xe8, 0x11, 0x6c, 0x64, 0x1f, 0xd8, 0xe4, 0x04,
+	0x86, 0xe0, 0x0e, 0x6b, 0xb7, 0xd6, 0xb9, 0x1f, 0x42, 0x57, 0xe7, 0x64, 0xc9, 0xb6, 0x36, 0x92,
+	0x31, 0x8b, 0x37, 0xd2, 0xf4, 0xa6, 0xb4, 0xee, 0xfb, 0xb5, 0x0d, 0x81, 0x04, 0x4d, 0x33, 0xc0,
+	0xf2, 0x45, 0xb2, 0xdf, 0xf6, 0xeb, 0x22, 0x5c, 0xa3, 0xda, 0xb1, 0x07, 0x6d, 0x55, 0x45, 0xe6,
+	0x5b, 0xb2, 0xcf, 0xac, 0x76, 0x31, 0xae, 0x13, 0xea, 0xf0, 0x3c, 0xf5, 0x9c, 0x25, 0xaf, 0x71,
+	0x9d, 0xf7, 0x38, 0xd9, 0x8a, 0xcd, 0x9f, 0x6e, 0x81, 0x85, 0xab, 0x3c, 0x36, 0xd7, 0xbb, 0x49,
+	0x7a, 0x83, 0xec, 0x82, 0x75, 0x53, 0xe7, 0x1e, 0x6e, 0x68, 0x2c, 0x6f, 0xc6, 0x4e, 0x8d, 0x70,
+	0x0e, 0x84, 0x16, 0x9a, 0xb7, 0xc8, 0x9a, 0x0f, 0xa2, 0xac, 0xb5, 0x9d, 0x50, 0x94, 0xff, 0xf4,
+	0xe9, 0xab, 0x84, 0x26, 0x33, 0x33, 0xae, 0x6f, 0x73, 0xe9, 0xfa, 0xf6, 0x24, 0xa5, 0x45, 0x95,
+	0x16, 0x19, 0x14, 0x1f, 0x67, 0x16, 0x3b, 0x6d, 0x9b, 0x35, 0x13, 0xf0, 0x03, 0x8f, 0x47, 0x35,
+	0x1f, 0x96, 0x6b, 0x06, 0xa3, 0x2f, 0x08, 0x3c, 0x7b, 0xae, 0x1b, 0x88, 0x49, 0xac, 0xae, 0x85,
+	0x9e, 0x25, 0xfb, 0xe2, 0x4e, 0xac, 0x4b, 0x13, 0x70, 0x4b, 0x34, 0x01, 0xf7, 0xc6, 0xa9, 0x93,
+	0xc9, 0x4c, 0xa4, 0xc7, 0xc9, 0x1e, 0x1e, 0x29, 0x49, 0x17, 0xe8, 0x8b, 0x0a, 0xec, 0x8a, 0x82,
+	0x22, 0xa9, 0xbc, 0xbf, 0x6a, 0x90, 0xc3, 0x0d, 0xd7, 0x69, 0xd9, 0xcd, 0xa8, 0x0d, 0xdb, 0x09,
+	0x98, 0xb7, 0x64, 0xb5, 0xeb, 0x9e, 0xf5, 0x76, 0xbd, 0xc3, 0xbc, 0x06, 0x73, 0x02, 0xbb, 0xcd,
+	0xfc, 0x81, 0xad, 0x07, 0x37, 0x8f, 0xf4, 0x4f, 0x5e, 0x80, 0x90, 0x52, 0x75, 0xde, 0x0e, 0x16,
+	0xba, 0x73, 0x63, 0x0d, 0x77, 0xb1, 0x6a, 0xb5, 0xdb, 0xae, 0x67, 0x9d, 0x84, 0xf1, 0x13, 0x3f,
+	0x23, 0xfb, 0x99, 0x07, 0x9b, 0xae, 0xb1, 0x46, 0xed, 0x60, 0xd2, 0xc6, 0x0c, 0x34, 0x51, 0xb3,
+	0xde, 0x9e, 0x4d, 0x1a, 0xa0, 0x5d, 0x52, 0xc1, 0x70, 0x2c, 0x85, 0x5d, 0xe4, 0x0f, 0x6c, 0x5b,
+	0x5b, 0xf3, 0x03, 0xf9, 0xe6, 0xa3, 0xbe, 0xf7, 0xcd, 0xaf, 0x92, 0xa3, 0x92, 0x95, 0x55, 0x63,
+	0xf3, 0x76, 0x38, 0xc8, 0xe1, 0x30, 0xc8, 0x91, 0x22, 0xdd, 0xf6, 0x90, 0xb2, 0x94, 0x37, 0xc9,
+	0x96, 0xf2, 0x6d, 0x38, 0x72, 0xb4, 0xf5, 0xc3, 0xd2, 0x39, 0x4c, 0x76, 0x44, 0xfb, 0x82, 0xc8,
+	0x01, 0x1b, 0xc1, 0x13, 0xe1, 0x46, 0x20, 0xbe, 0x99, 0xf5, 0xb8, 0xc2, 0xd8, 0x5a, 0x5a, 0x5f,
+	0xc4, 0xb3, 0x70, 0x44, 0xe9, 0x1b, 0xe8, 0x05, 0xf2, 0x45, 0x70, 0xc8, 0x66, 0xfc, 0x07, 0x0b,
+	0x76, 0xc0, 0xda, 0xb6, 0x1f, 0x4c, 0x34, 0x17, 0x6d, 0xa7, 0xf0, 0x7e, 0xc9, 0xbc, 0x24, 0x62,
+	0x34, 0xb9, 0x92, 0xd0, 0xfe, 0x20, 0xd9, 0x66, 0xfb, 0x75, 0x2b, 0xfc, 0x06, 0x4d, 0x6f, 0xb5,
+	0xfd, 0x28, 0x8b, 0x39, 0x05, 0xd6, 0x13, 0x04, 0x49, 0x17, 0xdd, 0x25, 0xab, 0xed, 0x4f, 0xb9,
+	0x9e, 0xe4, 0x9f, 0x64, 0xf7, 0x75, 0x23, 0xbf, 0xaf, 0xbf, 0x09, 0x1e, 0x97, 0xa2, 0x9e, 0xd8,
+	0xb2, 0xdd, 0xe6, 0x41, 0x1a, 0x84, 0xb2, 0x86, 0x91, 0x1b, 0x1f, 0x28, 0x1e, 0xb9, 0xa3, 0x71,
+	0x7e, 0xf3, 0x16, 0x76, 0x15, 0xb2, 0x06, 0xc4, 0x1d, 0xec, 0xa6, 0x43, 0x89, 0x7c, 0x32, 0x87,
+	0xfc, 0x59, 0x19, 0x39, 0x56, 0x4d, 0x86, 0xc1, 0x1d, 0x18, 0xe1, 0x5c, 0x96, 0x52, 0x13, 0x11,
+	0x4e, 0x42, 0x31, 0x11, 0xe1, 0xa7, 0xf9, 0x3a, 0x0c, 0x7e, 0xbe, 0xd2, 0x38, 0x3e, 0xb5, 0x15,
+	0x10, 0xe0, 0xe6, 0x42, 0xae, 0xa0, 0xc8, 0x6e, 0x2e, 0xc3, 0x61, 0xa6, 0xa4, 0x56, 0x8c, 0x7b,
+	0x3f, 0xe9, 0x8f, 0xaf, 0x19, 0x00, 0x79, 0xf2, 0x21, 0xcd, 0x6a, 0xb3, 0xcc, 0xca, 0x86, 0xb3,
+	0x5b, 0xdd, 0x34, 0xb0, 0x7b, 0x29, 0xcb, 0xae, 0xec, 0xb0, 0xc4, 0x2c, 0x2f, 0x42, 0x18, 0x25,
+	0x5a, 0xb4, 0xa1, 0x07, 0x7c, 0xd5, 0x5d, 0x5c, 0xb4, 0x83, 0x52, 0x1e, 0xee, 0x7e, 0xbc, 0x24,
+	0x60, 0xbb, 0x46, 0xb6, 0x47, 0xfe, 0x76, 0x23, 0xfa, 0x0c, 0xf8, 0x0e, 0x2b, 0x8d, 0xb5, 0x89,
+	0xd0, 0xa1, 0x89, 0xac, 0x98, 0x1a, 0x69, 0xc7, 0xb5, 0x99, 0xcf, 0xa5, 0x5b, 0xe1, 0xde, 0x39,
+	0xcf, 0x54, 0x0c, 0xf0, 0x1c, 0xcc, 0x8d, 0x7c, 0x51, 0x40, 0xb8, 0x97, 0x6c, 0x89, 0x0c, 0x2b,
+	0x58, 0x1f, 0xfc, 0x47, 0x6c, 0x0a, 0xc2, 0xce, 0x96, 0x5c, 0x36, 0xac, 0x6f, 0xf4, 0xd1, 0x01,
+	0x53, 0x50, 0xd3, 0x4c, 0xdc, 0x91, 0x4f, 0xa4, 0x2e, 0x35, 0x84, 0x9d, 0x74, 0x08, 0x75, 0x8b,
+	0x53, 0xe6, 0x92, 0x5f, 0xdb, 0x9e, 0xdc, 0x6e, 0x84, 0x2e, 0xa8, 0xb4, 0xd5, 0xf1, 0xa0, 0x4e,
+	0x37, 0x58, 0x70, 0x3d, 0x3b, 0x58, 0x5e, 0xd3, 0x1a, 0x0c, 0xe4, 0xcd, 0x2f, 0x5b, 0x33, 0xb0,
+	0xb8, 0x45, 0xfa, 0x2d, 0xf1, 0x71, 0xd5, 0x97, 0x4f, 0x49, 0x15, 0x66, 0x17, 0x5a, 0x95, 0xa6,
+	0xf8, 0x6c, 0xdb, 0x6a, 0xb0, 0x45, 0xe6, 0x04, 0x6b, 0x5e, 0x9c, 0xfb, 0x48, 0x5f, 0x60, 0x79,
+	0xf3, 0x2c, 0x80, 0xb5, 0x09, 0xbf, 0x4c, 0x1b, 0xbc, 0x5e, 0x55, 0xb3, 0xf1, 0x86, 0xb9, 0x33,
+	0xb9, 0x79, 0x4c, 0x05, 0x11, 0x87, 0xd0, 0xf5, 0xe9, 0x7a, 0xd1, 0xa2, 0xdc, 0xd1, 0x4c, 0xff,
+	0x34, 0x5f, 0xc7, 0x36, 0xa0, 0x7b, 0x1d, 0x37, 0x7b, 0x07, 0xac, 0xf7, 0xb0, 0x81, 0xc5, 0x26,
+	0x89, 0x85, 0x8b, 0x6d, 0x30, 0x52, 0xd5, 0xc0, 0x63, 0x8a, 0x6c, 0x89, 0xde, 0xca, 0xac, 0x7a,
+	0xc4, 0x78, 0x71, 0xf3, 0xf5, 0xcc, 0x68, 0xf1, 0xe5, 0x38, 0xcb, 0xbc, 0x3b, 0x0b, 0x96, 0xc7,
+	0xd6, 0x34, 0xfd, 0xde, 0x37, 0x32, 0x43, 0x92, 0xad, 0x1b, 0xa8, 0x58, 0x64, 0x37, 0x0f, 0xfd,
+	0x85, 0x36, 0x6b, 0xdd, 0x0f, 0xd3, 0x80, 0xd5, 0xaa, 0x4d, 0xc6, 0x9d, 0x9e, 0xd4, 0x94, 0xd9,
+	0x00, 0xbf, 0x39, 0xbd, 0xdd, 0x4e, 0xb9, 0x9e, 0x58, 0x13, 0x4e, 0x33, 0x63, 0x7b, 0xa5, 0x48,
+	0x19, 0x12, 0x29, 0xdd, 0x65, 0xf4, 0x0a, 0x38, 0xcc, 0xc5, 0x8d, 0x00, 0xf1, 0x9b, 0x84, 0x46,
+	0x83, 0x50, 0x87, 0x3d, 0x3f, 0x3d, 0x1f, 0x8b, 0x4e, 0xc3, 0xdd, 0x7e, 0xe6, 0x8b, 0xf9, 0xa1,
+	0x01, 0xb1, 0x2c, 0xec, 0x6c, 0x29, 0x6f, 0x80, 0x68, 0x18, 0xca, 0x2b, 0x73, 0xb3, 0xe6, 0xd8,
+	0x7c, 0x5c, 0x9e, 0x09, 0xcb, 0xb0, 0xc5, 0xe1, 0xc8, 0xa0, 0x37, 0xee, 0x6a, 0x7a, 0xa3, 0xec,
+	0xe9, 0x99, 0xef, 0x95, 0xcb, 0xf0, 0x42, 0x6a, 0xd6, 0x63, 0x4b, 0xb6, 0xdb, 0xf5, 0xa3, 0x31,
+	0x00, 0xb7, 0xb0, 0xf8, 0xa4, 0xfa, 0x40, 0xf4, 0x29, 0x5a, 0x1c, 0x80, 0xdf, 0x8e, 0xaf, 0x74,
+	0xd7, 0x38, 0x6b, 0xc5, 0x5d, 0xb0, 0x36, 0x20, 0x72, 0x36, 0xfd, 0x86, 0xe0, 0xe5, 0x77, 0x6c,
+	0x3f, 0x28, 0x13, 0x3d, 0x1d, 0x87, 0x1b, 0x63, 0xa9, 0x14, 0xe0, 0xdf, 0x47, 0xfa, 0x58, 0xf4,
+	0x05, 0x8c, 0x70, 0xf8, 0x65, 0x9e, 0x87, 0xbb, 0xdf, 0x19, 0xce, 0x7a, 0x02, 0xae, 0xa0, 0x0b,
+	0xdb, 0x7a, 0x0e, 0x6e, 0xa5, 0x32, 0xe5, 0xa0, 0xb5, 0x21, 0xd2, 0x1f, 0x1a, 0xfd, 0xd1, 0x47,
+	0x68, 0x70, 0x9b, 0xed, 0xf3, 0x4c, 0x66, 0x5b, 0xb8, 0x0c, 0x4d, 0xff, 0x76, 0x6b, 0xc3, 0x6f,
+	0xb7, 0x3f, 0x34, 0xc4, 0x35, 0x6f, 0xbe, 0x39, 0x40, 0x3b, 0x42, 0x76, 0x73, 0xa8, 0xf1, 0x33,
+	0x02, 0x6e, 0x67, 0x3f, 0x5e, 0xdb, 0x69, 0x25, 0xf9, 0x67, 0x9a, 0xeb, 0x7d, 0xbf, 0x2d, 0xa6,
+	0x2d, 0x1f, 0xaf, 0x8e, 0xdb, 0x58, 0x08, 0x0d, 0xb9, 0x97, 0x9d, 0x66, 0x99, 0x80, 0x97, 0x79,
+	0x13, 0x66, 0x2d, 0x5a, 0x3a, 0x61, 0xc6, 0xc2, 0x14, 0x7e, 0xf7, 0xc2, 0xc2, 0x34, 0xd8, 0x0d,
+	0x76, 0x32, 0xa9, 0x84, 0x6c, 0x89, 0x4e, 0x31, 0xf1, 0x0a, 0xa1, 0x04, 0x8e, 0xb7, 0xd2, 0x36,
+	0x62, 0xba, 0x24, 0x60, 0x78, 0x95, 0x6c, 0x6f, 0xb1, 0xe4, 0xb9, 0xc3, 0x6a, 0x8f, 0x32, 0xd2,
+	0x8a, 0xab, 0x36, 0x9f, 0x01, 0xb0, 0x57, 0x17, 0xba, 0x9e, 0x63, 0xcd, 0xb5, 0xe5, 0xf9, 0x63,
+	0xde, 0x02, 0x44, 0xb9, 0x64, 0x40, 0x34, 0x46, 0x9e, 0x6c, 0x88, 0xa4, 0xdc, 0x90, 0xef, 0x69,
+	0x48, 0xa5, 0x66, 0x9a, 0xbe, 0x39, 0x1c, 0x5f, 0x57, 0x86, 0xe7, 0x4d, 0xbe, 0xbd, 0x57, 0x61,
+	0x42, 0xe7, 0xd3, 0xa1, 0xc1, 0x53, 0x64, 0xaf, 0x17, 0xa7, 0xe5, 0x5a, 0xa4, 0x9e, 0x5c, 0x2e,
+	0x6c, 0xf2, 0x0e, 0x4c, 0xda, 0xf4, 0xc5, 0xb2, 0x77, 0xa7, 0xe1, 0x96, 0x3a, 0xad, 0x55, 0x91,
+	0xfd, 0x9b, 0x30, 0xdf, 0xb0, 0x4a, 0x93, 0x47, 0x2e, 0xd1, 0x2b, 0x5b, 0xfc, 0x91, 0x0b, 0xcf,
+	0xcb, 0x73, 0x98, 0x5f, 0x95, 0x9e, 0x38, 0xa4, 0x62, 0xc7, 0x25, 0x51, 0x16, 0xc5, 0xa6, 0x6f,
+	0x4b, 0x2f, 0x20, 0x72, 0xf5, 0xf7, 0x0e, 0xf8, 0x9e, 0xd4, 0xa7, 0xe2, 0x6d, 0x68, 0x49, 0xb4,
+	0x6a, 0x0b, 0x48, 0xee, 0x55, 0xb9, 0xda, 0xde, 0x41, 0xc6, 0xa1, 0x70, 0x11, 0x36, 0x8c, 0x52,
+	0xfd, 0x7b, 0x4e, 0x60, 0xb7, 0xd7, 0xd1, 0xff, 0xb9, 0x27, 0x42, 0xe1, 0xea, 0x66, 0x92, 0xf7,
+	0x3f, 0x11, 0x32, 0xc5, 0xfb, 0x1f, 0x0e, 0x1e, 0xb2, 0x98, 0x0b, 0x10, 0xfa, 0xe2, 0x91, 0xb4,
+	0x4c, 0xe5, 0xeb, 0xea, 0xc0, 0xbd, 0x0e, 0x11, 0x19, 0x7d, 0x4b, 0xc9, 0x75, 0x61, 0xcc, 0x01,
+	0xb9, 0x2e, 0xe4, 0x85, 0x62, 0x12, 0xcd, 0xcc, 0x05, 0xd8, 0xc6, 0x8c, 0xc0, 0x5d, 0x18, 0x68,
+	0x75, 0x2b, 0xab, 0x19, 0x80, 0x79, 0x08, 0x96, 0xf2, 0x6e, 0x91, 0xeb, 0x5e, 0xd7, 0xfe, 0x7f,
+	0x4d, 0x1a, 0x69, 0x45, 0x43, 0xab, 0xea, 0x7e, 0x0b, 0xf6, 0x15, 0x58, 0x49, 0xfe, 0x06, 0x80,
+	0xaf, 0xc9, 0x4f, 0x34, 0xfc, 0xf5, 0x80, 0xfd, 0x00, 0x8e, 0xe3, 0x9b, 0xb6, 0x1f, 0x30, 0xc7,
+	0x76, 0xe6, 0xaf, 0xba, 0xac, 0xd5, 0xb2, 0x1b, 0x76, 0x39, 0x7f, 0x58, 0xbd, 0xbf, 0x7c, 0x4d,
+	0xec, 0xb3, 0x68, 0xc5, 0x80, 0xf5, 0x01, 0x79, 0xaa, 0x2d, 0xd2, 0xeb, 0x8d, 0x24, 0x03, 0x7e,
+	0x8b, 0x8f, 0x56, 0xb5, 0xb7, 0x8d, 0x7c, 0x35, 0xdf, 0x84, 0x75, 0x26, 0x6c, 0xe3, 0xd8, 0x45,
+	0x0d, 0x8f, 0xac, 0x29, 0x2f, 0xb4, 0x8f, 0x62, 0xbb, 0x6b, 0x75, 0xfc, 0xfe, 0xc0, 0x80, 0x60,
+	0x68, 0x41, 0x13, 0xc0, 0xf4, 0x4d, 0xb2, 0x0b, 0x1c, 0xc9, 0x16, 0x24, 0xad, 0x93, 0x1f, 0x29,
+	0x5a, 0xd2, 0x5b, 0xe6, 0x6f, 0x92, 0x51, 0x09, 0x6c, 0xea, 0xcd, 0x57, 0x8f, 0x3d, 0xa2, 0x3a,
+	0xa5, 0xbf, 0x6b, 0x80, 0x1f, 0x5b, 0xd8, 0xc4, 0x17, 0xa3, 0x47, 0xea, 0x99, 0xe1, 0x13, 0x7b,
+	0xc1, 0xba, 0x75, 0xc8, 0x1f, 0x1a, 0x99, 0x3e, 0x57, 0xb5, 0xf0, 0xc5, 0xe8, 0x8f, 0xf3, 0xe4,
+	0xac, 0x84, 0x16, 0xae, 0xd0, 0xac, 0x79, 0x18, 0xbf, 0xbb, 0x6e, 0xe4, 0xd1, 0x8a, 0xf7, 0x37,
+	0xb1, 0x15, 0xf9, 0xdb, 0x06, 0x39, 0xd7, 0x63, 0x41, 0x20, 0xdc, 0x24, 0x7b, 0x3a, 0x71, 0x5e,
+	0xf1, 0xc2, 0x6a, 0x8d, 0x94, 0x77, 0x77, 0x32, 0xad, 0x9b, 0x47, 0x20, 0xd0, 0x13, 0x29, 0x9e,
+	0x04, 0xa2, 0x6b, 0xb6, 0x0f, 0x57, 0xa5, 0x82, 0xc6, 0x37, 0xc4, 0xc3, 0x33, 0x65, 0x3e, 0x40,
+	0xfd, 0x06, 0x79, 0x22, 0x08, 0xb3, 0xac, 0x13, 0xe0, 0xed, 0x41, 0xd2, 0xde, 0xf8, 0xfb, 0x8b,
+	0x64, 0x4b, 0x04, 0x82, 0x3e, 0x24, 0x7d, 0x5c, 0xde, 0x45, 0x0f, 0xca, 0x7b, 0x60, 0x5e, 0x3d,
+	0x56, 0x39, 0xa4, 0xc9, 0xc1, 0x41, 0x9b, 0xfb, 0xbf, 0xf1, 0x93, 0x7f, 0xff, 0x8d, 0x4d, 0xfb,
+	0xe8, 0xde, 0x2a, 0x22, 0xb8, 0xa3, 0xdf, 0x32, 0xc8, 0xce, 0x69, 0x16, 0xa4, 0x1e, 0xaa, 0xd3,
+	0x23, 0x48, 0x9d, 0xf9, 0x37, 0xee, 0x95, 0x67, 0x8b, 0xb2, 0x41, 0xfb, 0x23, 0xef, 0x87, 0xce,
+	0x50, 0x04, 0xe2, 0x19, 0x3a, 0x24, 0x83, 0x90, 0x1e, 0xc2, 0xd3, 0x47, 0x64, 0xdb, 0x34, 0xe3,
+	0xe5, 0xe9, 0x01, 0xa4, 0xf6, 0xf4, 0x6b, 0xf8, 0xca, 0x41, 0x75, 0x06, 0x68, 0xf8, 0x44, 0xd2,
+	0xf0, 0x21, 0x7a, 0xa0, 0x9a, 0x57, 0xfa, 0xf9, 0xd5, 0x47, 0xa2, 0xed, 0x15, 0xfa, 0x6b, 0x06,
+	0xd9, 0x35, 0xcd, 0x82, 0xb4, 0xb7, 0x4d, 0x31, 0x8a, 0x88, 0xf7, 0x5f, 0x39, 0x5a, 0x98, 0xaf,
+	0x44, 0x5f, 0xa4, 0xfd, 0x79, 0x9f, 0x7e, 0x6a, 0x90, 0x43, 0xd3, 0x2c, 0x40, 0xdf, 0xea, 0x4e,
+	0x2e, 0x8b, 0xa1, 0xaa, 0x22, 0x0d, 0xeb, 0x5e, 0x11, 0x57, 0x4e, 0x95, 0x2f, 0x00, 0x90, 0xef,
+	0x27, 0x90, 0x6f, 0xd0, 0x99, 0x82, 0x5e, 0x04, 0x49, 0xa6, 0x5f, 0x7d, 0x24, 0x3f, 0x48, 0x5e,
+	0xa9, 0x66, 0xdf, 0x14, 0xd3, 0x3f, 0x31, 0xc8, 0xde, 0x69, 0x16, 0xe4, 0x9e, 0x99, 0xd0, 0x51,
+	0x04, 0xa2, 0xea, 0x29, 0x68, 0xe5, 0x44, 0xb9, 0xcc, 0xc0, 0xe5, 0xc5, 0x84, 0xcb, 0x59, 0x3a,
+	0x5e, 0xc5, 0x75, 0x9c, 0x12, 0x9f, 0x47, 0x69, 0xbb, 0x6c, 0x85, 0xfe, 0xa9, 0x41, 0x06, 0xa6,
+	0x59, 0x80, 0xbe, 0x70, 0x47, 0x07, 0x43, 0xf7, 0x98, 0x1e, 0x1d, 0x0c, 0xed, 0xe3, 0x79, 0xf3,
+	0x42, 0x42, 0xe0, 0x04, 0x3d, 0x2e, 0x13, 0xc8, 0xf6, 0xb0, 0x34, 0xbb, 0xbf, 0x67, 0x90, 0x27,
+	0xa7, 0x59, 0x90, 0x7d, 0xb9, 0x4e, 0x8f, 0x23, 0x10, 0x14, 0x8f, 0xe7, 0x2b, 0xa3, 0xa5, 0xf2,
+	0x02, 0xd2, 0x17, 0x12, 0xa4, 0x67, 0xe8, 0x69, 0x19, 0x69, 0xfc, 0xf2, 0x5d, 0xd3, 0xd3, 0x3f,
+	0x34, 0xc8, 0x50, 0xb4, 0x2f, 0xe1, 0x02, 0x1e, 0x3a, 0x8e, 0xee, 0x3e, 0x5a, 0x4d, 0x51, 0xe5,
+	0x4c, 0x4f, 0x65, 0x80, 0xc8, 0x44, 0x42, 0xe4, 0x3c, 0x3d, 0x9b, 0xdd, 0xbe, 0xf8, 0x9b, 0xa4,
+	0xb6, 0xeb, 0xeb, 0xb8, 0x7c, 0xd3, 0x20, 0x3b, 0xa2, 0x8d, 0x4d, 0xe8, 0x6e, 0xe9, 0x97, 0xd0,
+	0xcd, 0x2b, 0x23, 0xd8, 0xad, 0x1c, 0x29, 0xc8, 0x05, 0x08, 0x9f, 0x4d, 0x10, 0x0e, 0xd1, 0xc1,
+	0xec, 0x0a, 0x0d, 0x8f, 0xab, 0x28, 0xfa, 0x1c, 0x4e, 0xde, 0x7d, 0xd3, 0x2c, 0x40, 0x14, 0xa6,
+	0xf4, 0x24, 0xd2, 0x92, 0x5a, 0xea, 0x5a, 0x19, 0x2b, 0x9b, 0x1d, 0x10, 0x5e, 0x49, 0x10, 0x8e,
+	0xd3, 0x53, 0x55, 0x4c, 0xa9, 0xcd, 0x31, 0x56, 0x1f, 0xc5, 0x1b, 0x46, 0x6a, 0xf2, 0xfe, 0x25,
+	0x9f, 0x0b, 0x2a, 0x7d, 0x2c, 0x3a, 0x17, 0x0a, 0xd4, 0xba, 0xe8, 0x5c, 0x28, 0x12, 0xe0, 0x9a,
+	0xe7, 0x12, 0x1e, 0xc7, 0xe9, 0x08, 0xca, 0xc3, 0xe7, 0x44, 0xa4, 0xc5, 0xf7, 0x6f, 0x06, 0x39,
+	0x38, 0xcd, 0x02, 0xad, 0x24, 0x96, 0x5e, 0x40, 0x00, 0x95, 0x51, 0xed, 0x56, 0x2e, 0xf6, 0x5e,
+	0x10, 0xe8, 0x7c, 0x39, 0xa1, 0xf3, 0x22, 0xbd, 0xa2, 0x19, 0x96, 0xba, 0xcf, 0xda, 0xad, 0xea,
+	0xa3, 0x8c, 0x16, 0x54, 0x1a, 0xa3, 0x5f, 0x70, 0x8e, 0x5a, 0x1d, 0x2c, 0xca, 0xb1, 0x8c, 0x54,
+	0x17, 0xe5, 0x58, 0x4a, 0x72, 0x6b, 0xde, 0x4a, 0x38, 0x5e, 0xa5, 0x13, 0x38, 0x47, 0xb8, 0x2a,
+	0x62, 0x62, 0x0e, 0xea, 0x78, 0xbe, 0xbb, 0x89, 0x1c, 0x49, 0x8f, 0xa5, 0x52, 0xcc, 0x4a, 0x2f,
+	0xeb, 0xc6, 0xa5, 0x48, 0xa7, 0x5b, 0xb9, 0xb2, 0xca, 0xd2, 0x40, 0xfb, 0x8d, 0x84, 0xf6, 0x6d,
+	0xfa, 0x8a, 0x4c, 0x3b, 0x4b, 0x37, 0xa7, 0x78, 0x5d, 0xd1, 0x77, 0xc1, 0x4f, 0x0c, 0xb2, 0x5f,
+	0xd7, 0x05, 0xf4, 0x4c, 0x2f, 0xd8, 0x05, 0xe1, 0xb3, 0xbd, 0x15, 0x02, 0x9e, 0xd7, 0x13, 0x9e,
+	0x57, 0xe8, 0xf3, 0xbd, 0xf3, 0x4c, 0x58, 0x7d, 0x4b, 0x6c, 0xd2, 0x42, 0x02, 0xab, 0xd8, 0xa4,
+	0x33, 0xb2, 0x5a, 0xc5, 0x26, 0x9d, 0xd5, 0xd1, 0x9a, 0xa3, 0x09, 0xd0, 0x83, 0x74, 0xb8, 0x9a,
+	0xff, 0xe3, 0x12, 0x69, 0x2c, 0x7f, 0xc6, 0xcd, 0x0c, 0xf4, 0x89, 0x15, 0x6a, 0x66, 0xe8, 0x1e,
+	0x77, 0xa1, 0x66, 0x86, 0xf6, 0xf5, 0x96, 0x79, 0x31, 0x01, 0x7b, 0x92, 0x8e, 0x22, 0x60, 0xc5,
+	0x5d, 0xa8, 0x9f, 0x3d, 0xea, 0x3e, 0x41, 0xb6, 0x81, 0x1c, 0x83, 0xc2, 0x6d, 0x40, 0xc5, 0xe4,
+	0x62, 0xef, 0x05, 0x4b, 0x9c, 0xe2, 0xf2, 0x3c, 0x51, 0x52, 0xfb, 0x2e, 0x37, 0xa1, 0xb2, 0x77,
+	0xbb, 0xa8, 0x09, 0xa5, 0x78, 0xfa, 0x85, 0x9a, 0x50, 0xaa, 0xb7, 0x5a, 0xda, 0x53, 0x53, 0x82,
+	0x2a, 0x99, 0x1e, 0xb0, 0x72, 0x57, 0xe8, 0xcf, 0xf8, 0xa9, 0xa9, 0xba, 0x93, 0x46, 0x4f, 0xcd,
+	0x82, 0xa7, 0x6b, 0xe8, 0xa9, 0x59, 0xf4, 0xe6, 0xcc, 0xac, 0x25, 0x3c, 0xa6, 0xe9, 0xcb, 0x65,
+	0xfa, 0x5e, 0x22, 0x14, 0x2f, 0xdb, 0x34, 0xb9, 0x0f, 0x0d, 0xb2, 0x27, 0x76, 0x8f, 0x84, 0x18,
+	0x8f, 0x8e, 0x28, 0xbd, 0x9b, 0x8c, 0xda, 0xaf, 0x72, 0xac, 0x44, 0x4e, 0x80, 0x3f, 0x96, 0xc0,
+	0x3f, 0x4c, 0x0f, 0x55, 0x91, 0xbf, 0x40, 0x53, 0x7d, 0x94, 0xe8, 0xe2, 0x56, 0xe8, 0x6f, 0x19,
+	0x84, 0x26, 0x66, 0x56, 0x8c, 0xed, 0x98, 0xda, 0x66, 0xca, 0x82, 0x3b, 0x5e, 0x26, 0x2b, 0xa0,
+	0xab, 0x26, 0xe8, 0xbe, 0x44, 0x4d, 0xf4, 0x7c, 0x93, 0xe1, 0xfd, 0x80, 0xef, 0x2d, 0xa8, 0x54,
+	0x50, 0xe3, 0x4f, 0xe2, 0x9a, 0x40, 0x8d, 0x3f, 0xa9, 0xd0, 0xff, 0x99, 0xe7, 0x13, 0xc0, 0xa3,
+	0xf4, 0x18, 0xd6, 0x9d, 0x62, 0x7b, 0x96, 0x71, 0x7f, 0x64, 0x90, 0xc1, 0xa4, 0x5b, 0xb3, 0xc0,
+	0x4f, 0xa9, 0xbb, 0x4c, 0x81, 0xfc, 0x74, 0x0f, 0x25, 0x4a, 0x78, 0x5f, 0x99, 0x03, 0x53, 0xc6,
+	0xfe, 0x4f, 0x06, 0x19, 0xd2, 0xbc, 0xd5, 0xa6, 0xe7, 0x30, 0x2f, 0xb6, 0xf0, 0xed, 0x78, 0xe5,
+	0x7c, 0xaf, 0xc5, 0x4a, 0x6c, 0x86, 0x30, 0x04, 0xc9, 0xe3, 0x6b, 0x69, 0x2d, 0x8a, 0x83, 0x33,
+	0xb2, 0x01, 0x74, 0x6f, 0xb9, 0x29, 0x8e, 0xad, 0xf0, 0x75, 0x79, 0xe5, 0x42, 0xcf, 0xe5, 0x80,
+	0xd4, 0x64, 0x42, 0xea, 0x02, 0x3d, 0x87, 0x0f, 0x4e, 0x11, 0xab, 0x6f, 0x6f, 0x4a, 0x3b, 0x9d,
+	0xf9, 0xd0, 0x84, 0xc6, 0xe9, 0x54, 0x46, 0x28, 0xce, 0xf4, 0x54, 0x06, 0xc8, 0xfc, 0xba, 0x91,
+	0xb0, 0x79, 0xcf, 0xa0, 0x5f, 0xc7, 0xdd, 0x4e, 0x3c, 0x64, 0x21, 0x4b, 0x5e, 0xe5, 0x53, 0x2c,
+	0xa3, 0x87, 0x85, 0xcc, 0x3c, 0x9a, 0x89, 0xe5, 0xe4, 0x29, 0x2b, 0xf4, 0x2f, 0xf8, 0xe2, 0xc3,
+	0x65, 0x3a, 0xf4, 0xb4, 0x32, 0x8e, 0xa1, 0x12, 0xc2, 0x56, 0xc6, 0x7b, 0x29, 0x52, 0xc2, 0x2a,
+	0xd1, 0x76, 0x09, 0xfd, 0x5b, 0x83, 0x98, 0x31, 0xfc, 0x89, 0x25, 0xcb, 0x6e, 0x5b, 0x73, 0x6d,
+	0xf6, 0xff, 0x8f, 0xc7, 0x27, 0xfc, 0x48, 0x57, 0x89, 0x77, 0xd1, 0xf9, 0x59, 0xa0, 0x27, 0x46,
+	0xe7, 0x67, 0x91, 0x3a, 0xd8, 0x9c, 0x4d, 0x28, 0xbc, 0x4c, 0xaf, 0x66, 0x02, 0x69, 0x6a, 0xd9,
+	0xb0, 0x26, 0x46, 0xf2, 0x2f, 0xdc, 0xa9, 0x50, 0xea, 0xdc, 0xe8, 0x19, 0xdd, 0xc6, 0xa0, 0x22,
+	0x77, 0xb6, 0xb7, 0x42, 0xc0, 0xee, 0xd5, 0x84, 0xdd, 0x14, 0xbd, 0x96, 0x63, 0xa7, 0xd4, 0xd8,
+	0x69, 0xe8, 0xfd, 0x8d, 0x41, 0x2a, 0xd3, 0x2c, 0x50, 0x88, 0x84, 0xd1, 0x99, 0xa7, 0x97, 0x24,
+	0xa3, 0x33, 0xaf, 0x40, 0x83, 0xac, 0x8d, 0x7f, 0xa6, 0x78, 0x48, 0xe3, 0x27, 0x4d, 0xc0, 0x8f,
+	0xf9, 0x04, 0x54, 0x49, 0xb2, 0x69, 0x01, 0x28, 0x4c, 0x02, 0x8e, 0x4e, 0xc0, 0x22, 0xcd, 0xb7,
+	0xf9, 0x52, 0xc2, 0xe4, 0x1c, 0x3d, 0xa3, 0x66, 0x22, 0x8d, 0x95, 0x44, 0xe5, 0xaf, 0x0d, 0xf2,
+	0x74, 0x1c, 0x7f, 0x96, 0xb5, 0xb2, 0x74, 0x4c, 0x19, 0x55, 0x46, 0x65, 0xbd, 0x95, 0x6a, 0xe9,
+	0xfc, 0x00, 0x7f, 0x3a, 0x81, 0x7f, 0x99, 0x5e, 0xc2, 0x02, 0xd1, 0x5e, 0x5d, 0x6c, 0x05, 0x5c,
+	0x8d, 0x2a, 0x1f, 0x58, 0xa0, 0xed, 0x5e, 0xa1, 0xff, 0xc8, 0xe7, 0x95, 0x42, 0xf4, 0x8b, 0xce,
+	0x2b, 0xbd, 0x44, 0x19, 0x9d, 0x57, 0x05, 0x9a, 0x62, 0xad, 0x17, 0x9e, 0x12, 0x48, 0x6a, 0x18,
+	0xf1, 0x19, 0xb7, 0x42, 0xff, 0xc7, 0x20, 0x07, 0xa6, 0x59, 0xa0, 0x53, 0x32, 0xa3, 0xa6, 0x45,
+	0x09, 0xf1, 0x35, 0x6a, 0x5a, 0x94, 0x91, 0x4c, 0x9b, 0x5f, 0x49, 0xe8, 0xd5, 0xe8, 0xac, 0x4c,
+	0xcf, 0x75, 0x58, 0xdd, 0x76, 0xea, 0xe5, 0x58, 0x26, 0xb9, 0x56, 0xaa, 0x8f, 0x60, 0x9c, 0x57,
+	0xe8, 0xff, 0x1a, 0xe4, 0x70, 0x9e, 0x73, 0x4e, 0xcf, 0x4c, 0x2f, 0x15, 0xe3, 0x57, 0x09, 0xae,
+	0x2b, 0xcf, 0xaf, 0xaa, 0x2c, 0xf0, 0x7f, 0x2d, 0xe1, 0xff, 0x0a, 0xbd, 0x51, 0xc4, 0xdf, 0x67,
+	0xed, 0x56, 0xc9, 0x4e, 0x08, 0x7d, 0xa5, 0xdd, 0x59, 0x19, 0x1e, 0xea, 0x50, 0x2b, 0x54, 0x7e,
+	0xa8, 0x43, 0xad, 0xd2, 0xf5, 0x99, 0xd5, 0x88, 0xc2, 0x31, 0x7a, 0x34, 0x63, 0xf2, 0x8a, 0xdc,
+	0x5c, 0xf2, 0x97, 0xb2, 0x07, 0xbf, 0xc7, 0x0f, 0xa5, 0x58, 0xb0, 0xc4, 0x37, 0x55, 0x2e, 0x34,
+	0x52, 0x3a, 0x75, 0xb8, 0x30, 0x0a, 0x75, 0xea, 0x14, 0x4a, 0x28, 0xad, 0xa3, 0xc1, 0x7b, 0x32,
+	0x25, 0x94, 0x4a, 0x6f, 0x6a, 0x7f, 0x64, 0x90, 0x67, 0xd2, 0x80, 0x61, 0xf3, 0xfc, 0x02, 0x23,
+	0xfe, 0x0e, 0x8f, 0xaa, 0x64, 0x25, 0x57, 0xf4, 0xb8, 0xfa, 0x7a, 0x37, 0x2b, 0xe9, 0x42, 0x27,
+	0x81, 0x4a, 0xc3, 0xa5, 0xb5, 0xbe, 0x38, 0x2c, 0x78, 0x89, 0x11, 0x1d, 0x19, 0x69, 0xa8, 0xff,
+	0xcc, 0x67, 0x83, 0x52, 0x7f, 0x85, 0x9a, 0x28, 0x45, 0xa2, 0x30, 0xd4, 0x44, 0x29, 0x94, 0x78,
+	0x99, 0x33, 0x09, 0x8b, 0x17, 0xe8, 0x65, 0xdc, 0xdb, 0x49, 0x6b, 0xc0, 0x34, 0xa6, 0xc9, 0xdf,
+	0x49, 0xc1, 0x46, 0x59, 0x8c, 0xa5, 0x0b, 0x36, 0xa2, 0x82, 0x30, 0x5d, 0xb0, 0x11, 0xd7, 0x79,
+	0x69, 0xcf, 0x42, 0x11, 0x15, 0x02, 0xdf, 0x5a, 0x94, 0xc5, 0x03, 0x5e, 0x3f, 0xe5, 0x4e, 0x0a,
+	0x2e, 0xb4, 0x42, 0x23, 0x04, 0x5a, 0x29, 0x18, 0x1a, 0x21, 0xd0, 0xab, 0xb8, 0xcc, 0x3b, 0x09,
+	0x97, 0xeb, 0x74, 0x4a, 0x1b, 0xea, 0xea, 0x88, 0xc2, 0xca, 0x60, 0x17, 0x97, 0x5e, 0xad, 0xd0,
+	0x1f, 0x23, 0x81, 0xbc, 0x94, 0xf4, 0xaa, 0x38, 0x90, 0x97, 0x97, 0x80, 0x15, 0x07, 0xf2, 0x10,
+	0x6d, 0x97, 0xf6, 0xbe, 0x28, 0xc3, 0xae, 0xdb, 0x71, 0x9d, 0x7a, 0x1c, 0x7f, 0x4a, 0x11, 0x14,
+	0xa4, 0xfe, 0x5e, 0x1e, 0x2c, 0x59, 0x82, 0xa5, 0x1d, 0x2c, 0x54, 0x09, 0xa6, 0x1d, 0x2c, 0x5c,
+	0xdf, 0xa5, 0x5d, 0x43, 0x31, 0x9d, 0xac, 0x02, 0x0c, 0x9f, 0x7a, 0x3f, 0xe7, 0x47, 0x78, 0x91,
+	0xc2, 0x0a, 0x3d, 0xc2, 0x4b, 0x6a, 0xbf, 0xd0, 0x23, 0xbc, 0xac, 0xa4, 0xab, 0x97, 0x58, 0xb2,
+	0x20, 0x95, 0xde, 0xfa, 0x7e, 0xce, 0x8d, 0x65, 0x2c, 0xd4, 0x8b, 0x1a, 0xcb, 0x1a, 0xa9, 0x17,
+	0x6a, 0x2c, 0xeb, 0x04, 0x58, 0xa6, 0x95, 0x60, 0xbf, 0x4f, 0xef, 0x96, 0x8b, 0x1f, 0x4b, 0x5b,
+	0x5c, 0x71, 0x38, 0xf9, 0xfb, 0xfc, 0x6a, 0x1c, 0x51, 0x53, 0xa1, 0x57, 0xe3, 0x6a, 0xd1, 0x16,
+	0x7a, 0x35, 0xae, 0x11, 0x69, 0x99, 0xcf, 0x27, 0xe4, 0x4e, 0xd1, 0xb1, 0xcc, 0x13, 0x2d, 0x28,
+	0x07, 0x2f, 0xa4, 0xb8, 0x0a, 0x2b, 0x3d, 0x2c, 0x1f, 0x18, 0x64, 0x7b, 0x4a, 0x39, 0x45, 0x95,
+	0x77, 0x51, 0x92, 0x1e, 0x0b, 0x7d, 0xb9, 0x85, 0x08, 0xb0, 0xcc, 0xf1, 0x04, 0xdb, 0x51, 0x7a,
+	0x04, 0x3b, 0x2a, 0xb9, 0x22, 0x2b, 0x0d, 0xe9, 0x37, 0x0d, 0xb2, 0x43, 0x12, 0x58, 0xd1, 0xa3,
+	0xa8, 0x89, 0x96, 0x97, 0x6e, 0x55, 0x46, 0x8a, 0x33, 0x96, 0xb8, 0x87, 0xb7, 0x45, 0x77, 0xf1,
+	0xf7, 0x54, 0x69, 0x6c, 0xbf, 0x03, 0x4f, 0x8e, 0xb2, 0xaa, 0x2a, 0xfc, 0xc9, 0x91, 0x42, 0xea,
+	0x85, 0x3f, 0x39, 0x52, 0x09, 0xb5, 0xb4, 0xf7, 0x7e, 0x59, 0x05, 0x17, 0xfd, 0x01, 0x9f, 0x86,
+	0x88, 0x3c, 0x0a, 0x9d, 0x86, 0x6a, 0x11, 0x16, 0x3a, 0x0d, 0x35, 0xaa, 0x2b, 0xf3, 0x72, 0x02,
+	0xf3, 0x34, 0xad, 0xa2, 0x43, 0x9d, 0x11, 0x65, 0xa5, 0x3b, 0xf6, 0xf7, 0xf9, 0x95, 0x47, 0x46,
+	0x4e, 0xa5, 0xb6, 0x35, 0x73, 0x62, 0x2d, 0xb5, 0xad, 0x99, 0x57, 0x67, 0x95, 0xb0, 0x35, 0x53,
+	0xe2, 0xad, 0x34, 0xcc, 0x0f, 0x39, 0xcc, 0x8c, 0xc6, 0x0a, 0x85, 0x89, 0xcb, 0xb4, 0x50, 0x98,
+	0x0a, 0xc9, 0x96, 0x76, 0xe4, 0x33, 0x5a, 0x2e, 0x3f, 0x74, 0x84, 0x9e, 0x8c, 0x6c, 0x4b, 0x59,
+	0x8e, 0x45, 0xf1, 0xab, 0x20, 0x54, 0xd3, 0x85, 0x9a, 0xc1, 0x2a, 0x7d, 0x97, 0xf6, 0x71, 0x64,
+	0x56, 0xf8, 0xe5, 0xd3, 0x8f, 0x0c, 0xf2, 0x54, 0x1c, 0x40, 0x4d, 0xab, 0xb0, 0xe8, 0x09, 0x65,
+	0x00, 0x14, 0x51, 0x80, 0x55, 0x4e, 0x96, 0xcc, 0x0d, 0x20, 0xaf, 0x26, 0x20, 0x2f, 0xd2, 0xf3,
+	0x9a, 0xe7, 0x6e, 0x5e, 0x3d, 0x92, 0x34, 0xa0, 0x21, 0x85, 0x1f, 0xa6, 0xdf, 0xec, 0x65, 0x34,
+	0x59, 0x9a, 0x37, 0x7b, 0xb8, 0x3a, 0x4c, 0xf3, 0x66, 0x4f, 0x21, 0xf7, 0xd2, 0x5a, 0x4d, 0x40,
+	0x22, 0xed, 0x3d, 0xe7, 0x78, 0xa4, 0xfd, 0xe5, 0x3f, 0x4f, 0x8f, 0x43, 0x5a, 0xb7, 0xa5, 0x19,
+	0x07, 0x44, 0x35, 0xa6, 0x19, 0x07, 0x4c, 0x0c, 0x66, 0x5e, 0x4b, 0x28, 0x3c, 0x47, 0x2f, 0xa0,
+	0x14, 0xe2, 0xf7, 0x42, 0x39, 0xfc, 0xf1, 0x21, 0x2b, 0x42, 0xbc, 0x2a, 0xfd, 0x16, 0x1e, 0xe2,
+	0x2d, 0x10, 0x95, 0xe1, 0x21, 0xde, 0x22, 0x89, 0x98, 0x3e, 0xc4, 0x1b, 0xff, 0x71, 0x2c, 0xae,
+	0x93, 0xa9, 0x77, 0xc3, 0xf2, 0xfc, 0x0f, 0x5f, 0x69, 0xfc, 0xa8, 0xff, 0xe4, 0xa1, 0x2b, 0x9d,
+	0xba, 0x0b, 0x0d, 0x5d, 0x95, 0x10, 0x9e, 0xa1, 0xa1, 0xab, 0x32, 0x32, 0x32, 0xf3, 0x5e, 0xc2,
+	0xf3, 0xcb, 0xf4, 0x3a, 0x7a, 0xd5, 0x97, 0xa3, 0x6b, 0x05, 0x85, 0x5c, 0xe1, 0x22, 0x42, 0x25,
+	0x04, 0xa3, 0xba, 0x20, 0xa2, 0x6a, 0x20, 0xcf, 0xf4, 0x54, 0xa6, 0xc4, 0x45, 0x84, 0x58, 0x38,
+	0xbd, 0x0d, 0xe3, 0x2f, 0x0c, 0x32, 0x1c, 0x0f, 0x23, 0x2a, 0x12, 0x43, 0xaf, 0x6b, 0x8b, 0xd5,
+	0x6b, 0x95, 0xf3, 0xbd, 0x16, 0x03, 0x8e, 0x77, 0x13, 0x8e, 0x33, 0x74, 0x1a, 0x1d, 0xc3, 0x2c,
+	0xd5, 0x12, 0x43, 0xf8, 0x0f, 0x7c, 0x5b, 0x44, 0xf5, 0x64, 0xe8, 0xb6, 0xa8, 0x13, 0xb7, 0x55,
+	0x4e, 0x95, 0x2f, 0x00, 0xac, 0x5e, 0x49, 0x58, 0x4d, 0xd2, 0x97, 0x54, 0x6f, 0x29, 0x4b, 0xd3,
+	0xf9, 0x2b, 0xee, 0xa1, 0x60, 0x32, 0x31, 0xd4, 0x43, 0xd1, 0x68, 0xde, 0x50, 0x0f, 0x45, 0x27,
+	0x65, 0x33, 0x5f, 0x4e, 0xb8, 0x5c, 0xa2, 0x17, 0x33, 0xfb, 0x23, 0xa6, 0x71, 0xc3, 0x37, 0xc8,
+	0x5f, 0xf2, 0xc7, 0x53, 0x5a, 0x51, 0x19, 0xfa, 0x78, 0xaa, 0x8c, 0xd2, 0x0d, 0x7d, 0x3c, 0x55,
+	0x4a, 0xbf, 0xa6, 0x5d, 0x64, 0xb1, 0x8f, 0x92, 0xdc, 0xb1, 0x4b, 0x3a, 0x26, 0x9c, 0xe9, 0x7f,
+	0xf3, 0x0b, 0xd9, 0x02, 0xb9, 0x18, 0x7d, 0x4e, 0x03, 0x59, 0xaf, 0x62, 0xab, 0x5c, 0x5a, 0x4d,
+	0xd1, 0x12, 0x87, 0x43, 0xcc, 0x37, 0xd9, 0x36, 0x75, 0x8c, 0x85, 0x11, 0xf2, 0x5f, 0x5c, 0xce,
+	0xa1, 0x97, 0x83, 0x51, 0xdd, 0x10, 0x69, 0x35, 0x6a, 0x95, 0xe7, 0x56, 0x51, 0xb2, 0x97, 0xd1,
+	0x8d, 0x37, 0x98, 0x32, 0x64, 0xdf, 0xdd, 0x44, 0x46, 0x53, 0x64, 0x8b, 0x44, 0x61, 0x74, 0x52,
+	0x03, 0xbe, 0xa4, 0x14, 0xad, 0x72, 0x75, 0x4d, 0x75, 0x94, 0xb8, 0xc7, 0x8a, 0xbb, 0x22, 0xa7,
+	0x5b, 0xab, 0x07, 0x2e, 0x0f, 0x3f, 0xc4, 0xd7, 0x8d, 0x7e, 0x68, 0xa8, 0x55, 0xc4, 0x93, 0xff,
+	0xbc, 0xa0, 0x0c, 0xbd, 0x97, 0xd3, 0x8b, 0xd4, 0xd0, 0x7b, 0xb9, 0x02, 0xbd, 0x9a, 0xd6, 0x4f,
+	0x4e, 0x0b, 0xd9, 0x42, 0x06, 0xcd, 0xb8, 0xf8, 0x64, 0xed, 0xe3, 0xcf, 0x86, 0x8d, 0x1f, 0x7d,
+	0x36, 0x6c, 0xfc, 0xeb, 0x67, 0xc3, 0xc6, 0x07, 0x9f, 0x0f, 0x3f, 0xf6, 0xa3, 0xcf, 0x87, 0x1f,
+	0xfb, 0xe4, 0xf3, 0xe1, 0xc7, 0xde, 0xb8, 0x58, 0x52, 0xe2, 0xf6, 0x4e, 0xaa, 0xad, 0xe8, 0x9f,
+	0x9c, 0x9b, 0xeb, 0x8b, 0xfe, 0x0d, 0xb4, 0x33, 0xff, 0x17, 0x00, 0x00, 0xff, 0xff, 0x96, 0x8e,
+	0x1a, 0xf5, 0xe3, 0x6e, 0x00, 0x00,
 }
 
 func (this *QueryTotalStakeResponse) Equal(that interface{}) bool {
@@ -3308,6 +7258,7 @@ type QueryClient interface {
 	GetActiveTopics(ctx context.Context, in *QueryActiveTopicsRequest, opts ...grpc.CallOption) (*QueryActiveTopicsResponse, error)
 	GetWorkerLatestInferenceByTopicId(ctx context.Context, in *QueryWorkerLatestInferenceRequest, opts ...grpc.CallOption) (*QueryWorkerLatestInferenceResponse, error)
 	GetInferencesAtBlock(ctx context.Context, in *QueryInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryInferencesAtBlockResponse, error)
+	GetLatestTopicInferences(ctx context.Context, in *QueryLatestTopicInferencesRequest, opts ...grpc.CallOption) (*QueryLatestTopicInferencesResponse, error)
 	GetForecastsAtBlock(ctx context.Context, in *QueryForecastsAtBlockRequest, opts ...grpc.CallOption) (*QueryForecastsAtBlockResponse, error)
 	GetNetworkLossBundleAtBlock(ctx context.Context, in *QueryNetworkLossBundleAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(ctx context.Context, in *QueryTotalStakeRequest, opts ...grpc.CallOption) (*QueryTotalStakeResponse, error)
@@ -3331,9 +7282,47 @@ type QueryClient interface {
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
 	GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
 	GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
+	GetIsWorkerNonceUnfulfilled(ctx context.Context, in *QueryIsWorkerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsWorkerNonceUnfulfilledResponse, error)
+	GetIsReputerNonceUnfulfilled(ctx context.Context, in *QueryIsReputerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsReputerNonceUnfulfilledResponse, error)
+	GetUnfulfilledWorkerNonces(ctx context.Context, in *QueryUnfulfilledWorkerNoncesRequest, opts ...grpc.CallOption) (*QueryUnfulfilledWorkerNoncesResponse, error)
+	GetUnfulfilledReputerNonces(ctx context.Context, in *QueryUnfulfilledReputerNoncesRequest, opts ...grpc.CallOption) (*QueryUnfulfilledReputerNoncesResponse, error)
+	GetInfererNetworkRegret(ctx context.Context, in *QueryInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryInfererNetworkRegretResponse, error)
+	GetForecasterNetworkRegret(ctx context.Context, in *QueryForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryForecasterNetworkRegretResponse, error)
+	GetOneInForecasterNetworkRegret(ctx context.Context, in *QueryOneInForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterNetworkRegretResponse, error)
+	GetOneInForecasterSelfNetworkRegret(ctx context.Context, in *QueryOneInForecasterSelfNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterSelfNetworkRegretResponse, error)
 	IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error)
 	GetTopicLastWorkerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
+	GetTopicRewardNonce(ctx context.Context, in *QueryTopicRewardNonceRequest, opts ...grpc.CallOption) (*QueryTopicRewardNonceResponse, error)
+	GetReputerLossBundlesAtBlock(ctx context.Context, in *QueryReputerLossBundlesAtBlockRequest, opts ...grpc.CallOption) (*QueryReputerLossBundlesAtBlockResponse, error)
+	GetStakeReputerAuthority(ctx context.Context, in *QueryStakeReputerAuthorityRequest, opts ...grpc.CallOption) (*QueryStakeReputerAuthorityResponse, error)
+	GetDelegateStakePlacement(ctx context.Context, in *QueryDelegateStakePlacementRequest, opts ...grpc.CallOption) (*QueryDelegateStakePlacementResponse, error)
+	GetDelegateStakeUponReputer(ctx context.Context, in *QueryDelegateStakeUponReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeUponReputerResponse, error)
+	GetDelegateRewardPerShare(ctx context.Context, in *QueryDelegateRewardPerShareRequest, opts ...grpc.CallOption) (*QueryDelegateRewardPerShareResponse, error)
+	GetStakeRemovalForReputerAndTopicId(ctx context.Context, in *QueryStakeRemovalForReputerAndTopicIdRequest, opts ...grpc.CallOption) (*QueryStakeRemovalForReputerAndTopicIdResponse, error)
+	GetDelegateStakeRemoval(ctx context.Context, in *QueryDelegateStakeRemovalRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalResponse, error)
+	GetPreviousTopicWeight(ctx context.Context, in *QueryPreviousTopicWeightRequest, opts ...grpc.CallOption) (*QueryPreviousTopicWeightResponse, error)
+	TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error)
+	IsTopicActive(ctx context.Context, in *QueryIsTopicActiveRequest, opts ...grpc.CallOption) (*QueryIsTopicActiveResponse, error)
+	GetIdsOfActiveTopics(ctx context.Context, in *QueryIdsOfActiveTopicsRequest, opts ...grpc.CallOption) (*QueryIdsOfActiveTopicsResponse, error)
+	GetTopicEpochLastEnded(ctx context.Context, in *QueryTopicEpochLastEndedRequest, opts ...grpc.CallOption) (*QueryTopicEpochLastEndedResponse, error)
+	GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error)
+	GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error)
+	GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error)
+	GetLatestInfererScore(ctx context.Context, in *QueryLatestInfererScoreRequest, opts ...grpc.CallOption) (*QueryLatestInfererScoreResponse, error)
+	GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error)
+	GetLatestReputerScore(ctx context.Context, in *QueryLatestReputerScoreRequest, opts ...grpc.CallOption) (*QueryLatestReputerScoreResponse, error)
+	GetInferenceScoresUntilBlock(ctx context.Context, in *QueryInferenceScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryInferenceScoresUntilBlockResponse, error)
+	GetWorkerInferenceScoresAtBlock(ctx context.Context, in *QueryWorkerInferenceScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerInferenceScoresAtBlockResponse, error)
+	GetForecastScoresUntilBlock(ctx context.Context, in *QueryForecastScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryForecastScoresUntilBlockResponse, error)
+	GetWorkerForecastScoresAtBlock(ctx context.Context, in *QueryWorkerForecastScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerForecastScoresAtBlockResponse, error)
+	GetReputersScoresAtBlock(ctx context.Context, in *QueryReputersScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryReputersScoresAtBlockResponse, error)
+	GetListeningCoefficient(ctx context.Context, in *QueryListeningCoefficientRequest, opts ...grpc.CallOption) (*QueryListeningCoefficientResponse, error)
+	GetPreviousReputerRewardFraction(ctx context.Context, in *QueryPreviousReputerRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousReputerRewardFractionResponse, error)
+	GetPreviousInferenceRewardFraction(ctx context.Context, in *QueryPreviousInferenceRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousInferenceRewardFractionResponse, error)
+	GetPreviousForecastRewardFraction(ctx context.Context, in *QueryPreviousForecastRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousForecastRewardFractionResponse, error)
+	GetPreviousPercentageRewardToStakedReputers(ctx context.Context, in *QueryPreviousPercentageRewardToStakedReputersRequest, opts ...grpc.CallOption) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
+	GetTotalRewardToDistribute(ctx context.Context, in *QueryTotalRewardToDistributeRequest, opts ...grpc.CallOption) (*QueryTotalRewardToDistributeResponse, error)
 }
 
 type queryClient struct {
@@ -3392,6 +7381,15 @@ func (c *queryClient) GetWorkerLatestInferenceByTopicId(ctx context.Context, in 
 func (c *queryClient) GetInferencesAtBlock(ctx context.Context, in *QueryInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryInferencesAtBlockResponse, error) {
 	out := new(QueryInferencesAtBlockResponse)
 	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetInferencesAtBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetLatestTopicInferences(ctx context.Context, in *QueryLatestTopicInferencesRequest, opts ...grpc.CallOption) (*QueryLatestTopicInferencesResponse, error) {
+	out := new(QueryLatestTopicInferencesResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetLatestTopicInferences", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3605,6 +7603,78 @@ func (c *queryClient) GetLatestAvailableNetworkInference(ctx context.Context, in
 	return out, nil
 }
 
+func (c *queryClient) GetIsWorkerNonceUnfulfilled(ctx context.Context, in *QueryIsWorkerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsWorkerNonceUnfulfilledResponse, error) {
+	out := new(QueryIsWorkerNonceUnfulfilledResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetIsWorkerNonceUnfulfilled", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetIsReputerNonceUnfulfilled(ctx context.Context, in *QueryIsReputerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsReputerNonceUnfulfilledResponse, error) {
+	out := new(QueryIsReputerNonceUnfulfilledResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetIsReputerNonceUnfulfilled", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetUnfulfilledWorkerNonces(ctx context.Context, in *QueryUnfulfilledWorkerNoncesRequest, opts ...grpc.CallOption) (*QueryUnfulfilledWorkerNoncesResponse, error) {
+	out := new(QueryUnfulfilledWorkerNoncesResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetUnfulfilledWorkerNonces", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetUnfulfilledReputerNonces(ctx context.Context, in *QueryUnfulfilledReputerNoncesRequest, opts ...grpc.CallOption) (*QueryUnfulfilledReputerNoncesResponse, error) {
+	out := new(QueryUnfulfilledReputerNoncesResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetUnfulfilledReputerNonces", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetInfererNetworkRegret(ctx context.Context, in *QueryInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryInfererNetworkRegretResponse, error) {
+	out := new(QueryInfererNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetInfererNetworkRegret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetForecasterNetworkRegret(ctx context.Context, in *QueryForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryForecasterNetworkRegretResponse, error) {
+	out := new(QueryForecasterNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetForecasterNetworkRegret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetOneInForecasterNetworkRegret(ctx context.Context, in *QueryOneInForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterNetworkRegretResponse, error) {
+	out := new(QueryOneInForecasterNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetOneInForecasterNetworkRegret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetOneInForecasterSelfNetworkRegret(ctx context.Context, in *QueryOneInForecasterSelfNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterSelfNetworkRegretResponse, error) {
+	out := new(QueryOneInForecasterSelfNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetOneInForecasterSelfNetworkRegret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error) {
 	out := new(QueryIsWhitelistAdminResponse)
 	err := c.cc.Invoke(ctx, "/emissions.v1.Query/IsWhitelistAdmin", in, out, opts...)
@@ -3632,6 +7702,276 @@ func (c *queryClient) GetTopicLastReputerCommitInfo(ctx context.Context, in *Que
 	return out, nil
 }
 
+func (c *queryClient) GetTopicRewardNonce(ctx context.Context, in *QueryTopicRewardNonceRequest, opts ...grpc.CallOption) (*QueryTopicRewardNonceResponse, error) {
+	out := new(QueryTopicRewardNonceResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetTopicRewardNonce", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetReputerLossBundlesAtBlock(ctx context.Context, in *QueryReputerLossBundlesAtBlockRequest, opts ...grpc.CallOption) (*QueryReputerLossBundlesAtBlockResponse, error) {
+	out := new(QueryReputerLossBundlesAtBlockResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetReputerLossBundlesAtBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetStakeReputerAuthority(ctx context.Context, in *QueryStakeReputerAuthorityRequest, opts ...grpc.CallOption) (*QueryStakeReputerAuthorityResponse, error) {
+	out := new(QueryStakeReputerAuthorityResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetStakeReputerAuthority", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetDelegateStakePlacement(ctx context.Context, in *QueryDelegateStakePlacementRequest, opts ...grpc.CallOption) (*QueryDelegateStakePlacementResponse, error) {
+	out := new(QueryDelegateStakePlacementResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetDelegateStakePlacement", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetDelegateStakeUponReputer(ctx context.Context, in *QueryDelegateStakeUponReputerRequest, opts ...grpc.CallOption) (*QueryDelegateStakeUponReputerResponse, error) {
+	out := new(QueryDelegateStakeUponReputerResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetDelegateStakeUponReputer", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetDelegateRewardPerShare(ctx context.Context, in *QueryDelegateRewardPerShareRequest, opts ...grpc.CallOption) (*QueryDelegateRewardPerShareResponse, error) {
+	out := new(QueryDelegateRewardPerShareResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetDelegateRewardPerShare", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetStakeRemovalForReputerAndTopicId(ctx context.Context, in *QueryStakeRemovalForReputerAndTopicIdRequest, opts ...grpc.CallOption) (*QueryStakeRemovalForReputerAndTopicIdResponse, error) {
+	out := new(QueryStakeRemovalForReputerAndTopicIdResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetStakeRemovalForReputerAndTopicId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetDelegateStakeRemoval(ctx context.Context, in *QueryDelegateStakeRemovalRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalResponse, error) {
+	out := new(QueryDelegateStakeRemovalResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetDelegateStakeRemoval", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetPreviousTopicWeight(ctx context.Context, in *QueryPreviousTopicWeightRequest, opts ...grpc.CallOption) (*QueryPreviousTopicWeightResponse, error) {
+	out := new(QueryPreviousTopicWeightResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetPreviousTopicWeight", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error) {
+	out := new(QueryTopicExistsResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/TopicExists", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) IsTopicActive(ctx context.Context, in *QueryIsTopicActiveRequest, opts ...grpc.CallOption) (*QueryIsTopicActiveResponse, error) {
+	out := new(QueryIsTopicActiveResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/IsTopicActive", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetIdsOfActiveTopics(ctx context.Context, in *QueryIdsOfActiveTopicsRequest, opts ...grpc.CallOption) (*QueryIdsOfActiveTopicsResponse, error) {
+	out := new(QueryIdsOfActiveTopicsResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetIdsOfActiveTopics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetTopicEpochLastEnded(ctx context.Context, in *QueryTopicEpochLastEndedRequest, opts ...grpc.CallOption) (*QueryTopicEpochLastEndedResponse, error) {
+	out := new(QueryTopicEpochLastEndedResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetTopicEpochLastEnded", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error) {
+	out := new(QueryTopicFeeRevenueResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetTopicFeeRevenue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error) {
+	out := new(QueryChurnableTopicsResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetChurnableTopics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error) {
+	out := new(QueryRewardableTopicsResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetRewardableTopics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetLatestInfererScore(ctx context.Context, in *QueryLatestInfererScoreRequest, opts ...grpc.CallOption) (*QueryLatestInfererScoreResponse, error) {
+	out := new(QueryLatestInfererScoreResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetLatestInfererScore", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error) {
+	out := new(QueryLatestForecasterScoreResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetLatestForecasterScore", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetLatestReputerScore(ctx context.Context, in *QueryLatestReputerScoreRequest, opts ...grpc.CallOption) (*QueryLatestReputerScoreResponse, error) {
+	out := new(QueryLatestReputerScoreResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetLatestReputerScore", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetInferenceScoresUntilBlock(ctx context.Context, in *QueryInferenceScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryInferenceScoresUntilBlockResponse, error) {
+	out := new(QueryInferenceScoresUntilBlockResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetInferenceScoresUntilBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetWorkerInferenceScoresAtBlock(ctx context.Context, in *QueryWorkerInferenceScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerInferenceScoresAtBlockResponse, error) {
+	out := new(QueryWorkerInferenceScoresAtBlockResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetWorkerInferenceScoresAtBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetForecastScoresUntilBlock(ctx context.Context, in *QueryForecastScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryForecastScoresUntilBlockResponse, error) {
+	out := new(QueryForecastScoresUntilBlockResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetForecastScoresUntilBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetWorkerForecastScoresAtBlock(ctx context.Context, in *QueryWorkerForecastScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerForecastScoresAtBlockResponse, error) {
+	out := new(QueryWorkerForecastScoresAtBlockResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetWorkerForecastScoresAtBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetReputersScoresAtBlock(ctx context.Context, in *QueryReputersScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryReputersScoresAtBlockResponse, error) {
+	out := new(QueryReputersScoresAtBlockResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetReputersScoresAtBlock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetListeningCoefficient(ctx context.Context, in *QueryListeningCoefficientRequest, opts ...grpc.CallOption) (*QueryListeningCoefficientResponse, error) {
+	out := new(QueryListeningCoefficientResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetListeningCoefficient", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetPreviousReputerRewardFraction(ctx context.Context, in *QueryPreviousReputerRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousReputerRewardFractionResponse, error) {
+	out := new(QueryPreviousReputerRewardFractionResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetPreviousReputerRewardFraction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetPreviousInferenceRewardFraction(ctx context.Context, in *QueryPreviousInferenceRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousInferenceRewardFractionResponse, error) {
+	out := new(QueryPreviousInferenceRewardFractionResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetPreviousInferenceRewardFraction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetPreviousForecastRewardFraction(ctx context.Context, in *QueryPreviousForecastRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousForecastRewardFractionResponse, error) {
+	out := new(QueryPreviousForecastRewardFractionResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetPreviousForecastRewardFraction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetPreviousPercentageRewardToStakedReputers(ctx context.Context, in *QueryPreviousPercentageRewardToStakedReputersRequest, opts ...grpc.CallOption) (*QueryPreviousPercentageRewardToStakedReputersResponse, error) {
+	out := new(QueryPreviousPercentageRewardToStakedReputersResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetPreviousPercentageRewardToStakedReputers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetTotalRewardToDistribute(ctx context.Context, in *QueryTotalRewardToDistributeRequest, opts ...grpc.CallOption) (*QueryTotalRewardToDistributeResponse, error) {
+	out := new(QueryTotalRewardToDistributeResponse)
+	err := c.cc.Invoke(ctx, "/emissions.v1.Query/GetTotalRewardToDistribute", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Params returns the module parameters.
@@ -3641,6 +7981,7 @@ type QueryServer interface {
 	GetActiveTopics(context.Context, *QueryActiveTopicsRequest) (*QueryActiveTopicsResponse, error)
 	GetWorkerLatestInferenceByTopicId(context.Context, *QueryWorkerLatestInferenceRequest) (*QueryWorkerLatestInferenceResponse, error)
 	GetInferencesAtBlock(context.Context, *QueryInferencesAtBlockRequest) (*QueryInferencesAtBlockResponse, error)
+	GetLatestTopicInferences(context.Context, *QueryLatestTopicInferencesRequest) (*QueryLatestTopicInferencesResponse, error)
 	GetForecastsAtBlock(context.Context, *QueryForecastsAtBlockRequest) (*QueryForecastsAtBlockResponse, error)
 	GetNetworkLossBundleAtBlock(context.Context, *QueryNetworkLossBundleAtBlockRequest) (*QueryNetworkLossBundleAtBlockResponse, error)
 	GetTotalStake(context.Context, *QueryTotalStakeRequest) (*QueryTotalStakeResponse, error)
@@ -3664,9 +8005,47 @@ type QueryServer interface {
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
 	GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
 	GetLatestAvailableNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
+	GetIsWorkerNonceUnfulfilled(context.Context, *QueryIsWorkerNonceUnfulfilledRequest) (*QueryIsWorkerNonceUnfulfilledResponse, error)
+	GetIsReputerNonceUnfulfilled(context.Context, *QueryIsReputerNonceUnfulfilledRequest) (*QueryIsReputerNonceUnfulfilledResponse, error)
+	GetUnfulfilledWorkerNonces(context.Context, *QueryUnfulfilledWorkerNoncesRequest) (*QueryUnfulfilledWorkerNoncesResponse, error)
+	GetUnfulfilledReputerNonces(context.Context, *QueryUnfulfilledReputerNoncesRequest) (*QueryUnfulfilledReputerNoncesResponse, error)
+	GetInfererNetworkRegret(context.Context, *QueryInfererNetworkRegretRequest) (*QueryInfererNetworkRegretResponse, error)
+	GetForecasterNetworkRegret(context.Context, *QueryForecasterNetworkRegretRequest) (*QueryForecasterNetworkRegretResponse, error)
+	GetOneInForecasterNetworkRegret(context.Context, *QueryOneInForecasterNetworkRegretRequest) (*QueryOneInForecasterNetworkRegretResponse, error)
+	GetOneInForecasterSelfNetworkRegret(context.Context, *QueryOneInForecasterSelfNetworkRegretRequest) (*QueryOneInForecasterSelfNetworkRegretResponse, error)
 	IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error)
 	GetTopicLastWorkerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
+	GetTopicRewardNonce(context.Context, *QueryTopicRewardNonceRequest) (*QueryTopicRewardNonceResponse, error)
+	GetReputerLossBundlesAtBlock(context.Context, *QueryReputerLossBundlesAtBlockRequest) (*QueryReputerLossBundlesAtBlockResponse, error)
+	GetStakeReputerAuthority(context.Context, *QueryStakeReputerAuthorityRequest) (*QueryStakeReputerAuthorityResponse, error)
+	GetDelegateStakePlacement(context.Context, *QueryDelegateStakePlacementRequest) (*QueryDelegateStakePlacementResponse, error)
+	GetDelegateStakeUponReputer(context.Context, *QueryDelegateStakeUponReputerRequest) (*QueryDelegateStakeUponReputerResponse, error)
+	GetDelegateRewardPerShare(context.Context, *QueryDelegateRewardPerShareRequest) (*QueryDelegateRewardPerShareResponse, error)
+	GetStakeRemovalForReputerAndTopicId(context.Context, *QueryStakeRemovalForReputerAndTopicIdRequest) (*QueryStakeRemovalForReputerAndTopicIdResponse, error)
+	GetDelegateStakeRemoval(context.Context, *QueryDelegateStakeRemovalRequest) (*QueryDelegateStakeRemovalResponse, error)
+	GetPreviousTopicWeight(context.Context, *QueryPreviousTopicWeightRequest) (*QueryPreviousTopicWeightResponse, error)
+	TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error)
+	IsTopicActive(context.Context, *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error)
+	GetIdsOfActiveTopics(context.Context, *QueryIdsOfActiveTopicsRequest) (*QueryIdsOfActiveTopicsResponse, error)
+	GetTopicEpochLastEnded(context.Context, *QueryTopicEpochLastEndedRequest) (*QueryTopicEpochLastEndedResponse, error)
+	GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error)
+	GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error)
+	GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error)
+	GetLatestInfererScore(context.Context, *QueryLatestInfererScoreRequest) (*QueryLatestInfererScoreResponse, error)
+	GetLatestForecasterScore(context.Context, *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error)
+	GetLatestReputerScore(context.Context, *QueryLatestReputerScoreRequest) (*QueryLatestReputerScoreResponse, error)
+	GetInferenceScoresUntilBlock(context.Context, *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error)
+	GetWorkerInferenceScoresAtBlock(context.Context, *QueryWorkerInferenceScoresAtBlockRequest) (*QueryWorkerInferenceScoresAtBlockResponse, error)
+	GetForecastScoresUntilBlock(context.Context, *QueryForecastScoresUntilBlockRequest) (*QueryForecastScoresUntilBlockResponse, error)
+	GetWorkerForecastScoresAtBlock(context.Context, *QueryWorkerForecastScoresAtBlockRequest) (*QueryWorkerForecastScoresAtBlockResponse, error)
+	GetReputersScoresAtBlock(context.Context, *QueryReputersScoresAtBlockRequest) (*QueryReputersScoresAtBlockResponse, error)
+	GetListeningCoefficient(context.Context, *QueryListeningCoefficientRequest) (*QueryListeningCoefficientResponse, error)
+	GetPreviousReputerRewardFraction(context.Context, *QueryPreviousReputerRewardFractionRequest) (*QueryPreviousReputerRewardFractionResponse, error)
+	GetPreviousInferenceRewardFraction(context.Context, *QueryPreviousInferenceRewardFractionRequest) (*QueryPreviousInferenceRewardFractionResponse, error)
+	GetPreviousForecastRewardFraction(context.Context, *QueryPreviousForecastRewardFractionRequest) (*QueryPreviousForecastRewardFractionResponse, error)
+	GetPreviousPercentageRewardToStakedReputers(context.Context, *QueryPreviousPercentageRewardToStakedReputersRequest) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
+	GetTotalRewardToDistribute(context.Context, *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -3690,6 +8069,9 @@ func (*UnimplementedQueryServer) GetWorkerLatestInferenceByTopicId(ctx context.C
 }
 func (*UnimplementedQueryServer) GetInferencesAtBlock(ctx context.Context, req *QueryInferencesAtBlockRequest) (*QueryInferencesAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInferencesAtBlock not implemented")
+}
+func (*UnimplementedQueryServer) GetLatestTopicInferences(ctx context.Context, req *QueryLatestTopicInferencesRequest) (*QueryLatestTopicInferencesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestTopicInferences not implemented")
 }
 func (*UnimplementedQueryServer) GetForecastsAtBlock(ctx context.Context, req *QueryForecastsAtBlockRequest) (*QueryForecastsAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetForecastsAtBlock not implemented")
@@ -3760,6 +8142,30 @@ func (*UnimplementedQueryServer) GetLatestNetworkInference(ctx context.Context, 
 func (*UnimplementedQueryServer) GetLatestAvailableNetworkInference(ctx context.Context, req *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLatestAvailableNetworkInference not implemented")
 }
+func (*UnimplementedQueryServer) GetIsWorkerNonceUnfulfilled(ctx context.Context, req *QueryIsWorkerNonceUnfulfilledRequest) (*QueryIsWorkerNonceUnfulfilledResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIsWorkerNonceUnfulfilled not implemented")
+}
+func (*UnimplementedQueryServer) GetIsReputerNonceUnfulfilled(ctx context.Context, req *QueryIsReputerNonceUnfulfilledRequest) (*QueryIsReputerNonceUnfulfilledResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIsReputerNonceUnfulfilled not implemented")
+}
+func (*UnimplementedQueryServer) GetUnfulfilledWorkerNonces(ctx context.Context, req *QueryUnfulfilledWorkerNoncesRequest) (*QueryUnfulfilledWorkerNoncesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUnfulfilledWorkerNonces not implemented")
+}
+func (*UnimplementedQueryServer) GetUnfulfilledReputerNonces(ctx context.Context, req *QueryUnfulfilledReputerNoncesRequest) (*QueryUnfulfilledReputerNoncesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUnfulfilledReputerNonces not implemented")
+}
+func (*UnimplementedQueryServer) GetInfererNetworkRegret(ctx context.Context, req *QueryInfererNetworkRegretRequest) (*QueryInfererNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInfererNetworkRegret not implemented")
+}
+func (*UnimplementedQueryServer) GetForecasterNetworkRegret(ctx context.Context, req *QueryForecasterNetworkRegretRequest) (*QueryForecasterNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetForecasterNetworkRegret not implemented")
+}
+func (*UnimplementedQueryServer) GetOneInForecasterNetworkRegret(ctx context.Context, req *QueryOneInForecasterNetworkRegretRequest) (*QueryOneInForecasterNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOneInForecasterNetworkRegret not implemented")
+}
+func (*UnimplementedQueryServer) GetOneInForecasterSelfNetworkRegret(ctx context.Context, req *QueryOneInForecasterSelfNetworkRegretRequest) (*QueryOneInForecasterSelfNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOneInForecasterSelfNetworkRegret not implemented")
+}
 func (*UnimplementedQueryServer) IsWhitelistAdmin(ctx context.Context, req *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistAdmin not implemented")
 }
@@ -3768,6 +8174,96 @@ func (*UnimplementedQueryServer) GetTopicLastWorkerCommitInfo(ctx context.Contex
 }
 func (*UnimplementedQueryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicLastReputerCommitInfo not implemented")
+}
+func (*UnimplementedQueryServer) GetTopicRewardNonce(ctx context.Context, req *QueryTopicRewardNonceRequest) (*QueryTopicRewardNonceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicRewardNonce not implemented")
+}
+func (*UnimplementedQueryServer) GetReputerLossBundlesAtBlock(ctx context.Context, req *QueryReputerLossBundlesAtBlockRequest) (*QueryReputerLossBundlesAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReputerLossBundlesAtBlock not implemented")
+}
+func (*UnimplementedQueryServer) GetStakeReputerAuthority(ctx context.Context, req *QueryStakeReputerAuthorityRequest) (*QueryStakeReputerAuthorityResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeReputerAuthority not implemented")
+}
+func (*UnimplementedQueryServer) GetDelegateStakePlacement(ctx context.Context, req *QueryDelegateStakePlacementRequest) (*QueryDelegateStakePlacementResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakePlacement not implemented")
+}
+func (*UnimplementedQueryServer) GetDelegateStakeUponReputer(ctx context.Context, req *QueryDelegateStakeUponReputerRequest) (*QueryDelegateStakeUponReputerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeUponReputer not implemented")
+}
+func (*UnimplementedQueryServer) GetDelegateRewardPerShare(ctx context.Context, req *QueryDelegateRewardPerShareRequest) (*QueryDelegateRewardPerShareResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateRewardPerShare not implemented")
+}
+func (*UnimplementedQueryServer) GetStakeRemovalForReputerAndTopicId(ctx context.Context, req *QueryStakeRemovalForReputerAndTopicIdRequest) (*QueryStakeRemovalForReputerAndTopicIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakeRemovalForReputerAndTopicId not implemented")
+}
+func (*UnimplementedQueryServer) GetDelegateStakeRemoval(ctx context.Context, req *QueryDelegateStakeRemovalRequest) (*QueryDelegateStakeRemovalResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDelegateStakeRemoval not implemented")
+}
+func (*UnimplementedQueryServer) GetPreviousTopicWeight(ctx context.Context, req *QueryPreviousTopicWeightRequest) (*QueryPreviousTopicWeightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousTopicWeight not implemented")
+}
+func (*UnimplementedQueryServer) TopicExists(ctx context.Context, req *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TopicExists not implemented")
+}
+func (*UnimplementedQueryServer) IsTopicActive(ctx context.Context, req *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsTopicActive not implemented")
+}
+func (*UnimplementedQueryServer) GetIdsOfActiveTopics(ctx context.Context, req *QueryIdsOfActiveTopicsRequest) (*QueryIdsOfActiveTopicsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIdsOfActiveTopics not implemented")
+}
+func (*UnimplementedQueryServer) GetTopicEpochLastEnded(ctx context.Context, req *QueryTopicEpochLastEndedRequest) (*QueryTopicEpochLastEndedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicEpochLastEnded not implemented")
+}
+func (*UnimplementedQueryServer) GetTopicFeeRevenue(ctx context.Context, req *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicFeeRevenue not implemented")
+}
+func (*UnimplementedQueryServer) GetChurnableTopics(ctx context.Context, req *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChurnableTopics not implemented")
+}
+func (*UnimplementedQueryServer) GetRewardableTopics(ctx context.Context, req *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRewardableTopics not implemented")
+}
+func (*UnimplementedQueryServer) GetLatestInfererScore(ctx context.Context, req *QueryLatestInfererScoreRequest) (*QueryLatestInfererScoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestInfererScore not implemented")
+}
+func (*UnimplementedQueryServer) GetLatestForecasterScore(ctx context.Context, req *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestForecasterScore not implemented")
+}
+func (*UnimplementedQueryServer) GetLatestReputerScore(ctx context.Context, req *QueryLatestReputerScoreRequest) (*QueryLatestReputerScoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestReputerScore not implemented")
+}
+func (*UnimplementedQueryServer) GetInferenceScoresUntilBlock(ctx context.Context, req *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInferenceScoresUntilBlock not implemented")
+}
+func (*UnimplementedQueryServer) GetWorkerInferenceScoresAtBlock(ctx context.Context, req *QueryWorkerInferenceScoresAtBlockRequest) (*QueryWorkerInferenceScoresAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerInferenceScoresAtBlock not implemented")
+}
+func (*UnimplementedQueryServer) GetForecastScoresUntilBlock(ctx context.Context, req *QueryForecastScoresUntilBlockRequest) (*QueryForecastScoresUntilBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetForecastScoresUntilBlock not implemented")
+}
+func (*UnimplementedQueryServer) GetWorkerForecastScoresAtBlock(ctx context.Context, req *QueryWorkerForecastScoresAtBlockRequest) (*QueryWorkerForecastScoresAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerForecastScoresAtBlock not implemented")
+}
+func (*UnimplementedQueryServer) GetReputersScoresAtBlock(ctx context.Context, req *QueryReputersScoresAtBlockRequest) (*QueryReputersScoresAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReputersScoresAtBlock not implemented")
+}
+func (*UnimplementedQueryServer) GetListeningCoefficient(ctx context.Context, req *QueryListeningCoefficientRequest) (*QueryListeningCoefficientResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetListeningCoefficient not implemented")
+}
+func (*UnimplementedQueryServer) GetPreviousReputerRewardFraction(ctx context.Context, req *QueryPreviousReputerRewardFractionRequest) (*QueryPreviousReputerRewardFractionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousReputerRewardFraction not implemented")
+}
+func (*UnimplementedQueryServer) GetPreviousInferenceRewardFraction(ctx context.Context, req *QueryPreviousInferenceRewardFractionRequest) (*QueryPreviousInferenceRewardFractionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousInferenceRewardFraction not implemented")
+}
+func (*UnimplementedQueryServer) GetPreviousForecastRewardFraction(ctx context.Context, req *QueryPreviousForecastRewardFractionRequest) (*QueryPreviousForecastRewardFractionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousForecastRewardFraction not implemented")
+}
+func (*UnimplementedQueryServer) GetPreviousPercentageRewardToStakedReputers(ctx context.Context, req *QueryPreviousPercentageRewardToStakedReputersRequest) (*QueryPreviousPercentageRewardToStakedReputersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousPercentageRewardToStakedReputers not implemented")
+}
+func (*UnimplementedQueryServer) GetTotalRewardToDistribute(ctx context.Context, req *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTotalRewardToDistribute not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -3878,6 +8374,24 @@ func _Query_GetInferencesAtBlock_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).GetInferencesAtBlock(ctx, req.(*QueryInferencesAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetLatestTopicInferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestTopicInferencesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestTopicInferences(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetLatestTopicInferences",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestTopicInferences(ctx, req.(*QueryLatestTopicInferencesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -4296,6 +8810,150 @@ func _Query_GetLatestAvailableNetworkInference_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetIsWorkerNonceUnfulfilled_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIsWorkerNonceUnfulfilledRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetIsWorkerNonceUnfulfilled(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetIsWorkerNonceUnfulfilled",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetIsWorkerNonceUnfulfilled(ctx, req.(*QueryIsWorkerNonceUnfulfilledRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetIsReputerNonceUnfulfilled_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIsReputerNonceUnfulfilledRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetIsReputerNonceUnfulfilled(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetIsReputerNonceUnfulfilled",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetIsReputerNonceUnfulfilled(ctx, req.(*QueryIsReputerNonceUnfulfilledRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetUnfulfilledWorkerNonces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryUnfulfilledWorkerNoncesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetUnfulfilledWorkerNonces(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetUnfulfilledWorkerNonces",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetUnfulfilledWorkerNonces(ctx, req.(*QueryUnfulfilledWorkerNoncesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetUnfulfilledReputerNonces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryUnfulfilledReputerNoncesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetUnfulfilledReputerNonces(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetUnfulfilledReputerNonces",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetUnfulfilledReputerNonces(ctx, req.(*QueryUnfulfilledReputerNoncesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetInfererNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryInfererNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetInfererNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetInfererNetworkRegret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetInfererNetworkRegret(ctx, req.(*QueryInfererNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetForecasterNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryForecasterNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetForecasterNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetForecasterNetworkRegret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetForecasterNetworkRegret(ctx, req.(*QueryForecasterNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetOneInForecasterNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOneInForecasterNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetOneInForecasterNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetOneInForecasterNetworkRegret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetOneInForecasterNetworkRegret(ctx, req.(*QueryOneInForecasterNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetOneInForecasterSelfNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOneInForecasterSelfNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetOneInForecasterSelfNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetOneInForecasterSelfNetworkRegret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetOneInForecasterSelfNetworkRegret(ctx, req.(*QueryOneInForecasterSelfNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_IsWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryIsWhitelistAdminRequest)
 	if err := dec(in); err != nil {
@@ -4350,6 +9008,546 @@ func _Query_GetTopicLastReputerCommitInfo_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetTopicRewardNonce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicRewardNonceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicRewardNonce(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetTopicRewardNonce",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicRewardNonce(ctx, req.(*QueryTopicRewardNonceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetReputerLossBundlesAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryReputerLossBundlesAtBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetReputerLossBundlesAtBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetReputerLossBundlesAtBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetReputerLossBundlesAtBlock(ctx, req.(*QueryReputerLossBundlesAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetStakeReputerAuthority_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeReputerAuthorityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetStakeReputerAuthority(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetStakeReputerAuthority",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetStakeReputerAuthority(ctx, req.(*QueryStakeReputerAuthorityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetDelegateStakePlacement_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateStakePlacementRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetDelegateStakePlacement(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetDelegateStakePlacement",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetDelegateStakePlacement(ctx, req.(*QueryDelegateStakePlacementRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetDelegateStakeUponReputer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateStakeUponReputerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetDelegateStakeUponReputer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetDelegateStakeUponReputer",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetDelegateStakeUponReputer(ctx, req.(*QueryDelegateStakeUponReputerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetDelegateRewardPerShare_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateRewardPerShareRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetDelegateRewardPerShare(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetDelegateRewardPerShare",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetDelegateRewardPerShare(ctx, req.(*QueryDelegateRewardPerShareRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetStakeRemovalForReputerAndTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStakeRemovalForReputerAndTopicIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetStakeRemovalForReputerAndTopicId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetStakeRemovalForReputerAndTopicId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetStakeRemovalForReputerAndTopicId(ctx, req.(*QueryStakeRemovalForReputerAndTopicIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetDelegateStakeRemoval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryDelegateStakeRemovalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetDelegateStakeRemoval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetDelegateStakeRemoval",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetDelegateStakeRemoval(ctx, req.(*QueryDelegateStakeRemovalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetPreviousTopicWeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousTopicWeightRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousTopicWeight(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetPreviousTopicWeight",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousTopicWeight(ctx, req.(*QueryPreviousTopicWeightRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_TopicExists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicExistsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).TopicExists(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/TopicExists",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).TopicExists(ctx, req.(*QueryTopicExistsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_IsTopicActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIsTopicActiveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).IsTopicActive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/IsTopicActive",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).IsTopicActive(ctx, req.(*QueryIsTopicActiveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetIdsOfActiveTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIdsOfActiveTopicsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetIdsOfActiveTopics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetIdsOfActiveTopics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetIdsOfActiveTopics(ctx, req.(*QueryIdsOfActiveTopicsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetTopicEpochLastEnded_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicEpochLastEndedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicEpochLastEnded(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetTopicEpochLastEnded",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicEpochLastEnded(ctx, req.(*QueryTopicEpochLastEndedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetTopicFeeRevenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicFeeRevenueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicFeeRevenue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetTopicFeeRevenue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicFeeRevenue(ctx, req.(*QueryTopicFeeRevenueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetChurnableTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryChurnableTopicsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetChurnableTopics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetChurnableTopics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetChurnableTopics(ctx, req.(*QueryChurnableTopicsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetRewardableTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryRewardableTopicsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetRewardableTopics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetRewardableTopics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetRewardableTopics(ctx, req.(*QueryRewardableTopicsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetLatestInfererScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestInfererScoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestInfererScore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetLatestInfererScore",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestInfererScore(ctx, req.(*QueryLatestInfererScoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetLatestForecasterScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestForecasterScoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestForecasterScore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetLatestForecasterScore",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestForecasterScore(ctx, req.(*QueryLatestForecasterScoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetLatestReputerScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestReputerScoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestReputerScore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetLatestReputerScore",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestReputerScore(ctx, req.(*QueryLatestReputerScoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetInferenceScoresUntilBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryInferenceScoresUntilBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetInferenceScoresUntilBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetInferenceScoresUntilBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetInferenceScoresUntilBlock(ctx, req.(*QueryInferenceScoresUntilBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetWorkerInferenceScoresAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryWorkerInferenceScoresAtBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetWorkerInferenceScoresAtBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetWorkerInferenceScoresAtBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetWorkerInferenceScoresAtBlock(ctx, req.(*QueryWorkerInferenceScoresAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetForecastScoresUntilBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryForecastScoresUntilBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetForecastScoresUntilBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetForecastScoresUntilBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetForecastScoresUntilBlock(ctx, req.(*QueryForecastScoresUntilBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetWorkerForecastScoresAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryWorkerForecastScoresAtBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetWorkerForecastScoresAtBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetWorkerForecastScoresAtBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetWorkerForecastScoresAtBlock(ctx, req.(*QueryWorkerForecastScoresAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetReputersScoresAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryReputersScoresAtBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetReputersScoresAtBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetReputersScoresAtBlock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetReputersScoresAtBlock(ctx, req.(*QueryReputersScoresAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetListeningCoefficient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryListeningCoefficientRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetListeningCoefficient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetListeningCoefficient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetListeningCoefficient(ctx, req.(*QueryListeningCoefficientRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetPreviousReputerRewardFraction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousReputerRewardFractionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousReputerRewardFraction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetPreviousReputerRewardFraction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousReputerRewardFraction(ctx, req.(*QueryPreviousReputerRewardFractionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetPreviousInferenceRewardFraction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousInferenceRewardFractionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousInferenceRewardFraction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetPreviousInferenceRewardFraction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousInferenceRewardFraction(ctx, req.(*QueryPreviousInferenceRewardFractionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetPreviousForecastRewardFraction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousForecastRewardFractionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousForecastRewardFraction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetPreviousForecastRewardFraction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousForecastRewardFraction(ctx, req.(*QueryPreviousForecastRewardFractionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetPreviousPercentageRewardToStakedReputers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryPreviousPercentageRewardToStakedReputersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousPercentageRewardToStakedReputers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetPreviousPercentageRewardToStakedReputers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousPercentageRewardToStakedReputers(ctx, req.(*QueryPreviousPercentageRewardToStakedReputersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetTotalRewardToDistribute_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTotalRewardToDistributeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTotalRewardToDistribute(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/emissions.v1.Query/GetTotalRewardToDistribute",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTotalRewardToDistribute(ctx, req.(*QueryTotalRewardToDistributeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "emissions.v1.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -4377,6 +9575,10 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInferencesAtBlock",
 			Handler:    _Query_GetInferencesAtBlock_Handler,
+		},
+		{
+			MethodName: "GetLatestTopicInferences",
+			Handler:    _Query_GetLatestTopicInferences_Handler,
 		},
 		{
 			MethodName: "GetForecastsAtBlock",
@@ -4471,6 +9673,38 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetLatestAvailableNetworkInference_Handler,
 		},
 		{
+			MethodName: "GetIsWorkerNonceUnfulfilled",
+			Handler:    _Query_GetIsWorkerNonceUnfulfilled_Handler,
+		},
+		{
+			MethodName: "GetIsReputerNonceUnfulfilled",
+			Handler:    _Query_GetIsReputerNonceUnfulfilled_Handler,
+		},
+		{
+			MethodName: "GetUnfulfilledWorkerNonces",
+			Handler:    _Query_GetUnfulfilledWorkerNonces_Handler,
+		},
+		{
+			MethodName: "GetUnfulfilledReputerNonces",
+			Handler:    _Query_GetUnfulfilledReputerNonces_Handler,
+		},
+		{
+			MethodName: "GetInfererNetworkRegret",
+			Handler:    _Query_GetInfererNetworkRegret_Handler,
+		},
+		{
+			MethodName: "GetForecasterNetworkRegret",
+			Handler:    _Query_GetForecasterNetworkRegret_Handler,
+		},
+		{
+			MethodName: "GetOneInForecasterNetworkRegret",
+			Handler:    _Query_GetOneInForecasterNetworkRegret_Handler,
+		},
+		{
+			MethodName: "GetOneInForecasterSelfNetworkRegret",
+			Handler:    _Query_GetOneInForecasterSelfNetworkRegret_Handler,
+		},
+		{
 			MethodName: "IsWhitelistAdmin",
 			Handler:    _Query_IsWhitelistAdmin_Handler,
 		},
@@ -4481,6 +9715,126 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicLastReputerCommitInfo",
 			Handler:    _Query_GetTopicLastReputerCommitInfo_Handler,
+		},
+		{
+			MethodName: "GetTopicRewardNonce",
+			Handler:    _Query_GetTopicRewardNonce_Handler,
+		},
+		{
+			MethodName: "GetReputerLossBundlesAtBlock",
+			Handler:    _Query_GetReputerLossBundlesAtBlock_Handler,
+		},
+		{
+			MethodName: "GetStakeReputerAuthority",
+			Handler:    _Query_GetStakeReputerAuthority_Handler,
+		},
+		{
+			MethodName: "GetDelegateStakePlacement",
+			Handler:    _Query_GetDelegateStakePlacement_Handler,
+		},
+		{
+			MethodName: "GetDelegateStakeUponReputer",
+			Handler:    _Query_GetDelegateStakeUponReputer_Handler,
+		},
+		{
+			MethodName: "GetDelegateRewardPerShare",
+			Handler:    _Query_GetDelegateRewardPerShare_Handler,
+		},
+		{
+			MethodName: "GetStakeRemovalForReputerAndTopicId",
+			Handler:    _Query_GetStakeRemovalForReputerAndTopicId_Handler,
+		},
+		{
+			MethodName: "GetDelegateStakeRemoval",
+			Handler:    _Query_GetDelegateStakeRemoval_Handler,
+		},
+		{
+			MethodName: "GetPreviousTopicWeight",
+			Handler:    _Query_GetPreviousTopicWeight_Handler,
+		},
+		{
+			MethodName: "TopicExists",
+			Handler:    _Query_TopicExists_Handler,
+		},
+		{
+			MethodName: "IsTopicActive",
+			Handler:    _Query_IsTopicActive_Handler,
+		},
+		{
+			MethodName: "GetIdsOfActiveTopics",
+			Handler:    _Query_GetIdsOfActiveTopics_Handler,
+		},
+		{
+			MethodName: "GetTopicEpochLastEnded",
+			Handler:    _Query_GetTopicEpochLastEnded_Handler,
+		},
+		{
+			MethodName: "GetTopicFeeRevenue",
+			Handler:    _Query_GetTopicFeeRevenue_Handler,
+		},
+		{
+			MethodName: "GetChurnableTopics",
+			Handler:    _Query_GetChurnableTopics_Handler,
+		},
+		{
+			MethodName: "GetRewardableTopics",
+			Handler:    _Query_GetRewardableTopics_Handler,
+		},
+		{
+			MethodName: "GetLatestInfererScore",
+			Handler:    _Query_GetLatestInfererScore_Handler,
+		},
+		{
+			MethodName: "GetLatestForecasterScore",
+			Handler:    _Query_GetLatestForecasterScore_Handler,
+		},
+		{
+			MethodName: "GetLatestReputerScore",
+			Handler:    _Query_GetLatestReputerScore_Handler,
+		},
+		{
+			MethodName: "GetInferenceScoresUntilBlock",
+			Handler:    _Query_GetInferenceScoresUntilBlock_Handler,
+		},
+		{
+			MethodName: "GetWorkerInferenceScoresAtBlock",
+			Handler:    _Query_GetWorkerInferenceScoresAtBlock_Handler,
+		},
+		{
+			MethodName: "GetForecastScoresUntilBlock",
+			Handler:    _Query_GetForecastScoresUntilBlock_Handler,
+		},
+		{
+			MethodName: "GetWorkerForecastScoresAtBlock",
+			Handler:    _Query_GetWorkerForecastScoresAtBlock_Handler,
+		},
+		{
+			MethodName: "GetReputersScoresAtBlock",
+			Handler:    _Query_GetReputersScoresAtBlock_Handler,
+		},
+		{
+			MethodName: "GetListeningCoefficient",
+			Handler:    _Query_GetListeningCoefficient_Handler,
+		},
+		{
+			MethodName: "GetPreviousReputerRewardFraction",
+			Handler:    _Query_GetPreviousReputerRewardFraction_Handler,
+		},
+		{
+			MethodName: "GetPreviousInferenceRewardFraction",
+			Handler:    _Query_GetPreviousInferenceRewardFraction_Handler,
+		},
+		{
+			MethodName: "GetPreviousForecastRewardFraction",
+			Handler:    _Query_GetPreviousForecastRewardFraction_Handler,
+		},
+		{
+			MethodName: "GetPreviousPercentageRewardToStakedReputers",
+			Handler:    _Query_GetPreviousPercentageRewardToStakedReputers_Handler,
+		},
+		{
+			MethodName: "GetTotalRewardToDistribute",
+			Handler:    _Query_GetTotalRewardToDistribute_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -5429,6 +10783,74 @@ func (m *QueryInferencesAtBlockResponse) MarshalToSizedBuffer(dAtA []byte) (int,
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryLatestTopicInferencesRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLatestTopicInferencesRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLatestTopicInferencesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryLatestTopicInferencesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLatestTopicInferencesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLatestTopicInferencesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Inferences != nil {
+		{
+			size, err := m.Inferences.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *QueryForecastsAtBlockRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -5877,6 +11299,591 @@ func (m *QueryLatestNetworkInferencesRequest) MarshalToSizedBuffer(dAtA []byte) 
 	_ = l
 	if m.TopicId != 0 {
 		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.IsWorkerNonceUnfulfilled {
+		i--
+		if m.IsWorkerNonceUnfulfilled {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryUnfulfilledReputerNoncesRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryUnfulfilledReputerNoncesRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryUnfulfilledReputerNoncesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryUnfulfilledReputerNoncesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryUnfulfilledReputerNoncesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryUnfulfilledReputerNoncesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Nonces != nil {
+		{
+			size, err := m.Nonces.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryUnfulfilledWorkerNoncesRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryUnfulfilledWorkerNoncesRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryUnfulfilledWorkerNoncesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryUnfulfilledWorkerNoncesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryUnfulfilledWorkerNoncesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryUnfulfilledWorkerNoncesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Nonces != nil {
+		{
+			size, err := m.Nonces.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryInfererNetworkRegretRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryInfererNetworkRegretRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryInfererNetworkRegretRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ActorId) > 0 {
+		i -= len(m.ActorId)
+		copy(dAtA[i:], m.ActorId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.ActorId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryInfererNetworkRegretResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryInfererNetworkRegretResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryInfererNetworkRegretResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NotFound {
+		i--
+		if m.NotFound {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Regret != nil {
+		{
+			size, err := m.Regret.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryForecasterNetworkRegretRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryForecasterNetworkRegretRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryForecasterNetworkRegretRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Worker) > 0 {
+		i -= len(m.Worker)
+		copy(dAtA[i:], m.Worker)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Worker)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryForecasterNetworkRegretResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryForecasterNetworkRegretResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryForecasterNetworkRegretResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NotFound {
+		i--
+		if m.NotFound {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Regret != nil {
+		{
+			size, err := m.Regret.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryOneInForecasterNetworkRegretRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOneInForecasterNetworkRegretRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOneInForecasterNetworkRegretRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Inferer) > 0 {
+		i -= len(m.Inferer)
+		copy(dAtA[i:], m.Inferer)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Inferer)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Forecaster) > 0 {
+		i -= len(m.Forecaster)
+		copy(dAtA[i:], m.Forecaster)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Forecaster)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryOneInForecasterNetworkRegretResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOneInForecasterNetworkRegretResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOneInForecasterNetworkRegretResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NotFound {
+		i--
+		if m.NotFound {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Regret != nil {
+		{
+			size, err := m.Regret.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Forecaster) > 0 {
+		i -= len(m.Forecaster)
+		copy(dAtA[i:], m.Forecaster)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Forecaster)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NotFound {
+		i--
+		if m.NotFound {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.Regret != nil {
+		{
+			size, err := m.Regret.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIsReputerNonceUnfulfilledRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsReputerNonceUnfulfilledRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsReputerNonceUnfulfilledRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIsReputerNonceUnfulfilledResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsReputerNonceUnfulfilledResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsReputerNonceUnfulfilledResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.IsReputerNonceUnfulfilled {
+		i--
+		if m.IsReputerNonceUnfulfilled {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
 		i--
 		dAtA[i] = 0x8
 	}
@@ -6572,6 +12579,2059 @@ func (m *QueryTopicLastCommitResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryTopicRewardNonceRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTopicRewardNonceRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTopicRewardNonceRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTopicRewardNonceResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTopicRewardNonceResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTopicRewardNonceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Nonce != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.Nonce))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryReputerLossBundlesAtBlockRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryReputerLossBundlesAtBlockRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryReputerLossBundlesAtBlockRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryReputerLossBundlesAtBlockResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryReputerLossBundlesAtBlockResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryReputerLossBundlesAtBlockResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.LossBundles != nil {
+		{
+			size, err := m.LossBundles.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryStakeReputerAuthorityRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryStakeReputerAuthorityRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryStakeReputerAuthorityRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryStakeReputerAuthorityResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryStakeReputerAuthorityResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryStakeReputerAuthorityResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Authority.Size()
+		i -= size
+		if _, err := m.Authority.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryDelegateStakePlacementRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryDelegateStakePlacementRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryDelegateStakePlacementRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Target) > 0 {
+		i -= len(m.Target)
+		copy(dAtA[i:], m.Target)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Target)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryDelegateStakePlacementResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryDelegateStakePlacementResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryDelegateStakePlacementResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.DelegatorInfo != nil {
+		{
+			size, err := m.DelegatorInfo.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryDelegateStakeUponReputerRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryDelegateStakeUponReputerRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryDelegateStakeUponReputerRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Target) > 0 {
+		i -= len(m.Target)
+		copy(dAtA[i:], m.Target)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Target)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryDelegateStakeUponReputerResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryDelegateStakeUponReputerResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryDelegateStakeUponReputerResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.Stake.Size()
+		i -= size
+		if _, err := m.Stake.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryDelegateRewardPerShareRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryDelegateRewardPerShareRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryDelegateRewardPerShareRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryDelegateRewardPerShareResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryDelegateRewardPerShareResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryDelegateRewardPerShareResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.RewardPerShare.Size()
+		i -= size
+		if _, err := m.RewardPerShare.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.StakeRemovalInfo != nil {
+		{
+			size, err := m.StakeRemovalInfo.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryDelegateStakeRemovalRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryDelegateStakeRemovalRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryDelegateStakeRemovalRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.Delegator) > 0 {
+		i -= len(m.Delegator)
+		copy(dAtA[i:], m.Delegator)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Delegator)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryDelegateStakeRemovalResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryDelegateStakeRemovalResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryDelegateStakeRemovalResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.StakeRemovalInfo != nil {
+		{
+			size, err := m.StakeRemovalInfo.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousTopicWeightRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousTopicWeightRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousTopicWeightRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousTopicWeightResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousTopicWeightResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousTopicWeightResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NotFound {
+		i--
+		if m.NotFound {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	{
+		size := m.Weight.Size()
+		i -= size
+		if _, err := m.Weight.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTopicExistsRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTopicExistsRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTopicExistsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTopicExistsResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTopicExistsResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTopicExistsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Exists {
+		i--
+		if m.Exists {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIsTopicActiveRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsTopicActiveRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsTopicActiveRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIsTopicActiveResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIsTopicActiveResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIsTopicActiveResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.IsActive {
+		i--
+		if m.IsActive {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIdsOfActiveTopicsRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIdsOfActiveTopicsRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIdsOfActiveTopicsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryIdsOfActiveTopicsResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryIdsOfActiveTopicsResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryIdsOfActiveTopicsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.ActiveTopicIds) > 0 {
+		dAtA30 := make([]byte, len(m.ActiveTopicIds)*10)
+		var j29 int
+		for _, num := range m.ActiveTopicIds {
+			for num >= 1<<7 {
+				dAtA30[j29] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j29++
+			}
+			dAtA30[j29] = uint8(num)
+			j29++
+		}
+		i -= j29
+		copy(dAtA[i:], dAtA30[:j29])
+		i = encodeVarintQuery(dAtA, i, uint64(j29))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTopicEpochLastEndedRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTopicEpochLastEndedRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTopicEpochLastEndedRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTopicEpochLastEndedResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTopicEpochLastEndedResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTopicEpochLastEndedResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.EpochLastEnded != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.EpochLastEnded))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTopicFeeRevenueRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTopicFeeRevenueRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTopicFeeRevenueRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTopicFeeRevenueResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTopicFeeRevenueResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTopicFeeRevenueResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.FeeRevenue.Size()
+		i -= size
+		if _, err := m.FeeRevenue.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryChurnableTopicsRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryChurnableTopicsRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryChurnableTopicsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryChurnableTopicsResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryChurnableTopicsResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryChurnableTopicsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ChurnableTopicIds) > 0 {
+		dAtA32 := make([]byte, len(m.ChurnableTopicIds)*10)
+		var j31 int
+		for _, num := range m.ChurnableTopicIds {
+			for num >= 1<<7 {
+				dAtA32[j31] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j31++
+			}
+			dAtA32[j31] = uint8(num)
+			j31++
+		}
+		i -= j31
+		copy(dAtA[i:], dAtA32[:j31])
+		i = encodeVarintQuery(dAtA, i, uint64(j31))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryRewardableTopicsRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryRewardableTopicsRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryRewardableTopicsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryRewardableTopicsResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryRewardableTopicsResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryRewardableTopicsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.RewardableTopicIds) > 0 {
+		dAtA34 := make([]byte, len(m.RewardableTopicIds)*10)
+		var j33 int
+		for _, num := range m.RewardableTopicIds {
+			for num >= 1<<7 {
+				dAtA34[j33] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j33++
+			}
+			dAtA34[j33] = uint8(num)
+			j33++
+		}
+		i -= j33
+		copy(dAtA[i:], dAtA34[:j33])
+		i = encodeVarintQuery(dAtA, i, uint64(j33))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryLatestInfererScoreRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLatestInfererScoreRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLatestInfererScoreRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Worker) > 0 {
+		i -= len(m.Worker)
+		copy(dAtA[i:], m.Worker)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Worker)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryLatestInfererScoreResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLatestInfererScoreResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLatestInfererScoreResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Score != nil {
+		{
+			size, err := m.Score.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryLatestForecasterScoreRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLatestForecasterScoreRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLatestForecasterScoreRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Forecaster) > 0 {
+		i -= len(m.Forecaster)
+		copy(dAtA[i:], m.Forecaster)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Forecaster)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryLatestForecasterScoreResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLatestForecasterScoreResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLatestForecasterScoreResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Score != nil {
+		{
+			size, err := m.Score.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryLatestReputerScoreRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLatestReputerScoreRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLatestReputerScoreRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryLatestReputerScoreResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryLatestReputerScoreResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryLatestReputerScoreResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Score != nil {
+		{
+			size, err := m.Score.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryInferenceScoresUntilBlockRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryInferenceScoresUntilBlockRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryInferenceScoresUntilBlockRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryInferenceScoresUntilBlockResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryInferenceScoresUntilBlockResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryInferenceScoresUntilBlockResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Scores) > 0 {
+		for iNdEx := len(m.Scores) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Scores[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Scores != nil {
+		{
+			size, err := m.Scores.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryForecastScoresUntilBlockRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryForecastScoresUntilBlockRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryForecastScoresUntilBlockRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryForecastScoresUntilBlockResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryForecastScoresUntilBlockResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryForecastScoresUntilBlockResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Scores) > 0 {
+		for iNdEx := len(m.Scores) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Scores[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryWorkerForecastScoresAtBlockRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryWorkerForecastScoresAtBlockRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryWorkerForecastScoresAtBlockRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryWorkerForecastScoresAtBlockResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryWorkerForecastScoresAtBlockResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryWorkerForecastScoresAtBlockResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Scores != nil {
+		{
+			size, err := m.Scores.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryReputersScoresAtBlockRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryReputersScoresAtBlockRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryReputersScoresAtBlockRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.BlockHeight))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryReputersScoresAtBlockResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryReputersScoresAtBlockResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryReputersScoresAtBlockResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Scores != nil {
+		{
+			size, err := m.Scores.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryListeningCoefficientRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryListeningCoefficientRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryListeningCoefficientRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryListeningCoefficientResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryListeningCoefficientResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryListeningCoefficientResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.ListeningCoefficient != nil {
+		{
+			size, err := m.ListeningCoefficient.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousReputerRewardFractionRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousReputerRewardFractionRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousReputerRewardFractionRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Reputer) > 0 {
+		i -= len(m.Reputer)
+		copy(dAtA[i:], m.Reputer)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Reputer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousReputerRewardFractionResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousReputerRewardFractionResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousReputerRewardFractionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NotFound {
+		i--
+		if m.NotFound {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	{
+		size := m.RewardFraction.Size()
+		i -= size
+		if _, err := m.RewardFraction.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousInferenceRewardFractionRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousInferenceRewardFractionRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousInferenceRewardFractionRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Worker) > 0 {
+		i -= len(m.Worker)
+		copy(dAtA[i:], m.Worker)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Worker)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousInferenceRewardFractionResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousInferenceRewardFractionResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousInferenceRewardFractionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NotFound {
+		i--
+		if m.NotFound {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	{
+		size := m.RewardFraction.Size()
+		i -= size
+		if _, err := m.RewardFraction.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousForecastRewardFractionRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousForecastRewardFractionRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousForecastRewardFractionRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Worker) > 0 {
+		i -= len(m.Worker)
+		copy(dAtA[i:], m.Worker)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Worker)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.TopicId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.TopicId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousForecastRewardFractionResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousForecastRewardFractionResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousForecastRewardFractionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.NotFound {
+		i--
+		if m.NotFound {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x10
+	}
+	{
+		size := m.RewardFraction.Size()
+		i -= size
+		if _, err := m.RewardFraction.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.PercentageReward.Size()
+		i -= size
+		if _, err := m.PercentageReward.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTotalRewardToDistributeRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTotalRewardToDistributeRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTotalRewardToDistributeRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryTotalRewardToDistributeResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryTotalRewardToDistributeResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryTotalRewardToDistributeResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.TotalReward.Size()
+		i -= size
+		if _, err := m.TotalReward.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -6960,6 +15020,34 @@ func (m *QueryInferencesAtBlockResponse) Size() (n int) {
 	return n
 }
 
+func (m *QueryLatestTopicInferencesRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryLatestTopicInferencesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Inferences != nil {
+		l = m.Inferences.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
 func (m *QueryForecastsAtBlockRequest) Size() (n int) {
 	if m == nil {
 		return 0
@@ -7147,6 +15235,242 @@ func (m *QueryLatestNetworkInferencesRequest) Size() (n int) {
 	_ = l
 	if m.TopicId != 0 {
 		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *QueryIsWorkerNonceUnfulfilledResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.IsWorkerNonceUnfulfilled {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryUnfulfilledReputerNoncesRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryUnfulfilledReputerNoncesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Nonces != nil {
+		l = m.Nonces.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryUnfulfilledWorkerNoncesRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryUnfulfilledWorkerNoncesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Nonces != nil {
+		l = m.Nonces.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryInfererNetworkRegretRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.ActorId)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryInfererNetworkRegretResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Regret != nil {
+		l = m.Regret.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.NotFound {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryForecasterNetworkRegretRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Worker)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryForecasterNetworkRegretResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Regret != nil {
+		l = m.Regret.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.NotFound {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryOneInForecasterNetworkRegretRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Forecaster)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.Inferer)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryOneInForecasterNetworkRegretResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Regret != nil {
+		l = m.Regret.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.NotFound {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Forecaster)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Regret != nil {
+		l = m.Regret.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.NotFound {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryIsReputerNonceUnfulfilledRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *QueryIsReputerNonceUnfulfilledResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.IsReputerNonceUnfulfilled {
+		n += 2
 	}
 	return n
 }
@@ -7432,6 +15756,831 @@ func (m *QueryTopicLastCommitResponse) Size() (n int) {
 		l = m.LastCommit.Size()
 		n += 1 + l + sovQuery(uint64(l))
 	}
+	return n
+}
+
+func (m *QueryTopicRewardNonceRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryTopicRewardNonceResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Nonce != 0 {
+		n += 1 + sovQuery(uint64(m.Nonce))
+	}
+	return n
+}
+
+func (m *QueryReputerLossBundlesAtBlockRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *QueryReputerLossBundlesAtBlockResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.LossBundles != nil {
+		l = m.LossBundles.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryStakeReputerAuthorityRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryStakeReputerAuthorityResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Authority.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryDelegateStakePlacementRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.Target)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryDelegateStakePlacementResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.DelegatorInfo != nil {
+		l = m.DelegatorInfo.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryDelegateStakeUponReputerRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Target)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryDelegateStakeUponReputerResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Stake.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryDelegateRewardPerShareRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryDelegateRewardPerShareResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.RewardPerShare.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.StakeRemovalInfo != nil {
+		l = m.StakeRemovalInfo.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryDelegateStakeRemovalRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Delegator)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryDelegateStakeRemovalResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.StakeRemovalInfo != nil {
+		l = m.StakeRemovalInfo.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryPreviousTopicWeightRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryPreviousTopicWeightResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Weight.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	if m.NotFound {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryTopicExistsRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryTopicExistsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Exists {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryIsTopicActiveRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryIsTopicActiveResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.IsActive {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryIdsOfActiveTopicsRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryIdsOfActiveTopicsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.ActiveTopicIds) > 0 {
+		l = 0
+		for _, e := range m.ActiveTopicIds {
+			l += sovQuery(uint64(e))
+		}
+		n += 1 + sovQuery(uint64(l)) + l
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryTopicEpochLastEndedRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryTopicEpochLastEndedResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.EpochLastEnded != 0 {
+		n += 1 + sovQuery(uint64(m.EpochLastEnded))
+	}
+	return n
+}
+
+func (m *QueryTopicFeeRevenueRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	return n
+}
+
+func (m *QueryTopicFeeRevenueResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.FeeRevenue.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryChurnableTopicsRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *QueryChurnableTopicsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.ChurnableTopicIds) > 0 {
+		l = 0
+		for _, e := range m.ChurnableTopicIds {
+			l += sovQuery(uint64(e))
+		}
+		n += 1 + sovQuery(uint64(l)) + l
+	}
+	return n
+}
+
+func (m *QueryRewardableTopicsRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *QueryRewardableTopicsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.RewardableTopicIds) > 0 {
+		l = 0
+		for _, e := range m.RewardableTopicIds {
+			l += sovQuery(uint64(e))
+		}
+		n += 1 + sovQuery(uint64(l)) + l
+	}
+	return n
+}
+
+func (m *QueryLatestInfererScoreRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Worker)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryLatestInfererScoreResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Score != nil {
+		l = m.Score.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryLatestForecasterScoreRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Forecaster)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryLatestForecasterScoreResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Score != nil {
+		l = m.Score.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryLatestReputerScoreRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryLatestReputerScoreResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Score != nil {
+		l = m.Score.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryInferenceScoresUntilBlockRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *QueryInferenceScoresUntilBlockResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Scores) > 0 {
+		for _, e := range m.Scores {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *QueryWorkerInferenceScoresAtBlockResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Scores != nil {
+		l = m.Scores.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryForecastScoresUntilBlockRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *QueryForecastScoresUntilBlockResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Scores) > 0 {
+		for _, e := range m.Scores {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *QueryWorkerForecastScoresAtBlockRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *QueryWorkerForecastScoresAtBlockResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Scores != nil {
+		l = m.Scores.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryReputersScoresAtBlockRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	if m.BlockHeight != 0 {
+		n += 1 + sovQuery(uint64(m.BlockHeight))
+	}
+	return n
+}
+
+func (m *QueryReputersScoresAtBlockResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Scores != nil {
+		l = m.Scores.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryListeningCoefficientRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryListeningCoefficientResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.ListeningCoefficient != nil {
+		l = m.ListeningCoefficient.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryPreviousReputerRewardFractionRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Reputer)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryPreviousReputerRewardFractionResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.RewardFraction.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	if m.NotFound {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryPreviousInferenceRewardFractionRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Worker)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryPreviousInferenceRewardFractionResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.RewardFraction.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	if m.NotFound {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryPreviousForecastRewardFractionRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TopicId != 0 {
+		n += 1 + sovQuery(uint64(m.TopicId))
+	}
+	l = len(m.Worker)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryPreviousForecastRewardFractionResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.RewardFraction.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	if m.NotFound {
+		n += 2
+	}
+	return n
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.PercentageReward.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryTotalRewardToDistributeRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *QueryTotalRewardToDistributeResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.TotalReward.Size()
+	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
 
@@ -9895,6 +19044,180 @@ func (m *QueryInferencesAtBlockResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *QueryLatestTopicInferencesRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLatestTopicInferencesRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLatestTopicInferencesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryLatestTopicInferencesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLatestTopicInferencesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLatestTopicInferencesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Inferences", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Inferences == nil {
+				m.Inferences = &Inferences{}
+			}
+			if err := m.Inferences.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *QueryForecastsAtBlockRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -11075,6 +20398,1492 @@ func (m *QueryLatestNetworkInferencesRequest) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsWorkerNonceUnfulfilledRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsWorkerNonceUnfulfilledRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsWorkerNonceUnfulfilledRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsWorkerNonceUnfulfilledResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsWorkerNonceUnfulfilledResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsWorkerNonceUnfulfilledResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsWorkerNonceUnfulfilled", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsWorkerNonceUnfulfilled = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryUnfulfilledReputerNoncesRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryUnfulfilledReputerNoncesRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryUnfulfilledReputerNoncesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryUnfulfilledReputerNoncesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryUnfulfilledReputerNoncesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryUnfulfilledReputerNoncesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonces", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Nonces == nil {
+				m.Nonces = &ReputerRequestNonces{}
+			}
+			if err := m.Nonces.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryUnfulfilledWorkerNoncesRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryUnfulfilledWorkerNoncesRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryUnfulfilledWorkerNoncesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryUnfulfilledWorkerNoncesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryUnfulfilledWorkerNoncesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryUnfulfilledWorkerNoncesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonces", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Nonces == nil {
+				m.Nonces = &Nonces{}
+			}
+			if err := m.Nonces.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryInfererNetworkRegretRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryInfererNetworkRegretRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryInfererNetworkRegretRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ActorId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ActorId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryInfererNetworkRegretResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryInfererNetworkRegretResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryInfererNetworkRegretResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Regret", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Regret == nil {
+				m.Regret = &TimestampedValue{}
+			}
+			if err := m.Regret.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NotFound", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.NotFound = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryForecasterNetworkRegretRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryForecasterNetworkRegretRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryForecasterNetworkRegretRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Worker", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Worker = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryForecasterNetworkRegretResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryForecasterNetworkRegretResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryForecasterNetworkRegretResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Regret", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Regret == nil {
+				m.Regret = &TimestampedValue{}
+			}
+			if err := m.Regret.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NotFound", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.NotFound = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOneInForecasterNetworkRegretRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOneInForecasterNetworkRegretRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOneInForecasterNetworkRegretRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Forecaster", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Forecaster = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Inferer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Inferer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOneInForecasterNetworkRegretResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOneInForecasterNetworkRegretResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOneInForecasterNetworkRegretResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Regret", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Regret == nil {
+				m.Regret = &TimestampedValue{}
+			}
+			if err := m.Regret.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NotFound", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.NotFound = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOneInForecasterSelfNetworkRegretRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOneInForecasterSelfNetworkRegretRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOneInForecasterSelfNetworkRegretRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Forecaster", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Forecaster = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryOneInForecasterSelfNetworkRegretResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryOneInForecasterSelfNetworkRegretResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryOneInForecasterSelfNetworkRegretResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Regret", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Regret == nil {
+				m.Regret = &TimestampedValue{}
+			}
+			if err := m.Regret.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NotFound", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.NotFound = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsReputerNonceUnfulfilledRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsReputerNonceUnfulfilledRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsReputerNonceUnfulfilledRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsReputerNonceUnfulfilledResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsReputerNonceUnfulfilledResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsReputerNonceUnfulfilledResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsReputerNonceUnfulfilled", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsReputerNonceUnfulfilled = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipQuery(dAtA[iNdEx:])
@@ -12817,6 +23626,5356 @@ func (m *QueryTopicLastCommitResponse) Unmarshal(dAtA []byte) error {
 				m.LastCommit = &TimestampedActorNonce{}
 			}
 			if err := m.LastCommit.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTopicRewardNonceRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTopicRewardNonceRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTopicRewardNonceRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTopicRewardNonceResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTopicRewardNonceResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTopicRewardNonceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
+			}
+			m.Nonce = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Nonce |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryReputerLossBundlesAtBlockRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryReputerLossBundlesAtBlockRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryReputerLossBundlesAtBlockRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryReputerLossBundlesAtBlockResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryReputerLossBundlesAtBlockResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryReputerLossBundlesAtBlockResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LossBundles", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.LossBundles == nil {
+				m.LossBundles = &ReputerValueBundles{}
+			}
+			if err := m.LossBundles.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryStakeReputerAuthorityRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryStakeReputerAuthorityRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryStakeReputerAuthorityRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryStakeReputerAuthorityResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryStakeReputerAuthorityResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryStakeReputerAuthorityResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Authority.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryDelegateStakePlacementRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryDelegateStakePlacementRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryDelegateStakePlacementRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Target", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Target = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryDelegateStakePlacementResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryDelegateStakePlacementResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryDelegateStakePlacementResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DelegatorInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.DelegatorInfo == nil {
+				m.DelegatorInfo = &DelegatorInfo{}
+			}
+			if err := m.DelegatorInfo.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryDelegateStakeUponReputerRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryDelegateStakeUponReputerRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryDelegateStakeUponReputerRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Target", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Target = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryDelegateStakeUponReputerResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryDelegateStakeUponReputerResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryDelegateStakeUponReputerResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Stake", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Stake.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryDelegateRewardPerShareRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryDelegateRewardPerShareRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryDelegateRewardPerShareRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryDelegateRewardPerShareResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryDelegateRewardPerShareResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryDelegateRewardPerShareResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardPerShare", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.RewardPerShare.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryStakeRemovalForReputerAndTopicIdRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryStakeRemovalForReputerAndTopicIdRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryStakeRemovalForReputerAndTopicIdResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryStakeRemovalForReputerAndTopicIdResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryStakeRemovalForReputerAndTopicIdResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StakeRemovalInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.StakeRemovalInfo == nil {
+				m.StakeRemovalInfo = &StakeRemovalInfo{}
+			}
+			if err := m.StakeRemovalInfo.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryDelegateStakeRemovalRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryDelegateStakeRemovalRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryDelegateStakeRemovalRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Delegator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Delegator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryDelegateStakeRemovalResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryDelegateStakeRemovalResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryDelegateStakeRemovalResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field StakeRemovalInfo", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.StakeRemovalInfo == nil {
+				m.StakeRemovalInfo = &DelegateStakeRemovalInfo{}
+			}
+			if err := m.StakeRemovalInfo.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousTopicWeightRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousTopicWeightRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousTopicWeightRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousTopicWeightResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousTopicWeightResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousTopicWeightResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Weight", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Weight.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NotFound", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.NotFound = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTopicExistsRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTopicExistsRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTopicExistsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTopicExistsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTopicExistsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTopicExistsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Exists", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Exists = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsTopicActiveRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsTopicActiveRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsTopicActiveRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIsTopicActiveResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIsTopicActiveResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIsTopicActiveResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field IsActive", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.IsActive = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIdsOfActiveTopicsRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIdsOfActiveTopicsRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIdsOfActiveTopicsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &SimpleCursorPaginationRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryIdsOfActiveTopicsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryIdsOfActiveTopicsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryIdsOfActiveTopicsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowQuery
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.ActiveTopicIds = append(m.ActiveTopicIds, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowQuery
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthQuery
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthQuery
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.ActiveTopicIds) == 0 {
+					m.ActiveTopicIds = make([]uint64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowQuery
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.ActiveTopicIds = append(m.ActiveTopicIds, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field ActiveTopicIds", wireType)
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &SimpleCursorPaginationResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTopicEpochLastEndedRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTopicEpochLastEndedRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTopicEpochLastEndedRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTopicEpochLastEndedResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTopicEpochLastEndedResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTopicEpochLastEndedResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EpochLastEnded", wireType)
+			}
+			m.EpochLastEnded = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.EpochLastEnded |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTopicFeeRevenueRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTopicFeeRevenueRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTopicFeeRevenueRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTopicFeeRevenueResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTopicFeeRevenueResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTopicFeeRevenueResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FeeRevenue", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.FeeRevenue.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryChurnableTopicsRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryChurnableTopicsRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryChurnableTopicsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryChurnableTopicsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryChurnableTopicsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryChurnableTopicsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowQuery
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.ChurnableTopicIds = append(m.ChurnableTopicIds, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowQuery
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthQuery
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthQuery
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.ChurnableTopicIds) == 0 {
+					m.ChurnableTopicIds = make([]uint64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowQuery
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.ChurnableTopicIds = append(m.ChurnableTopicIds, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChurnableTopicIds", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryRewardableTopicsRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryRewardableTopicsRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryRewardableTopicsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryRewardableTopicsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryRewardableTopicsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryRewardableTopicsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType == 0 {
+				var v uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowQuery
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.RewardableTopicIds = append(m.RewardableTopicIds, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowQuery
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthQuery
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthQuery
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.RewardableTopicIds) == 0 {
+					m.RewardableTopicIds = make([]uint64, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint64
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowQuery
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint64(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.RewardableTopicIds = append(m.RewardableTopicIds, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardableTopicIds", wireType)
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryLatestInfererScoreRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLatestInfererScoreRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLatestInfererScoreRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Worker", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Worker = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryLatestInfererScoreResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLatestInfererScoreResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLatestInfererScoreResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Score", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Score == nil {
+				m.Score = &Score{}
+			}
+			if err := m.Score.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryLatestForecasterScoreRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLatestForecasterScoreRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLatestForecasterScoreRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Forecaster", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Forecaster = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryLatestForecasterScoreResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLatestForecasterScoreResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLatestForecasterScoreResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Score", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Score == nil {
+				m.Score = &Score{}
+			}
+			if err := m.Score.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryLatestReputerScoreRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLatestReputerScoreRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLatestReputerScoreRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryLatestReputerScoreResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryLatestReputerScoreResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryLatestReputerScoreResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Score", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Score == nil {
+				m.Score = &Score{}
+			}
+			if err := m.Score.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryInferenceScoresUntilBlockRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryInferenceScoresUntilBlockRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryInferenceScoresUntilBlockRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryInferenceScoresUntilBlockResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryInferenceScoresUntilBlockResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryInferenceScoresUntilBlockResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Scores", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Scores = append(m.Scores, &Score{})
+			if err := m.Scores[len(m.Scores)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryWorkerInferenceScoresAtBlockRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryWorkerInferenceScoresAtBlockRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryWorkerInferenceScoresAtBlockRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryWorkerInferenceScoresAtBlockResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryWorkerInferenceScoresAtBlockResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryWorkerInferenceScoresAtBlockResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Scores", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Scores == nil {
+				m.Scores = &Scores{}
+			}
+			if err := m.Scores.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryForecastScoresUntilBlockRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryForecastScoresUntilBlockRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryForecastScoresUntilBlockRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryForecastScoresUntilBlockResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryForecastScoresUntilBlockResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryForecastScoresUntilBlockResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Scores", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Scores = append(m.Scores, &Score{})
+			if err := m.Scores[len(m.Scores)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryWorkerForecastScoresAtBlockRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryWorkerForecastScoresAtBlockRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryWorkerForecastScoresAtBlockRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryWorkerForecastScoresAtBlockResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryWorkerForecastScoresAtBlockResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryWorkerForecastScoresAtBlockResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Scores", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Scores == nil {
+				m.Scores = &Scores{}
+			}
+			if err := m.Scores.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryReputersScoresAtBlockRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryReputersScoresAtBlockRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryReputersScoresAtBlockRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
+			}
+			m.BlockHeight = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BlockHeight |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryReputersScoresAtBlockResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryReputersScoresAtBlockResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryReputersScoresAtBlockResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Scores", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Scores == nil {
+				m.Scores = &Scores{}
+			}
+			if err := m.Scores.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryListeningCoefficientRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryListeningCoefficientRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryListeningCoefficientRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryListeningCoefficientResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryListeningCoefficientResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryListeningCoefficientResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ListeningCoefficient", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ListeningCoefficient == nil {
+				m.ListeningCoefficient = &ListeningCoefficient{}
+			}
+			if err := m.ListeningCoefficient.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousReputerRewardFractionRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousReputerRewardFractionRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousReputerRewardFractionRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Reputer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Reputer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousReputerRewardFractionResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousReputerRewardFractionResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousReputerRewardFractionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardFraction", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.RewardFraction.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NotFound", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.NotFound = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousInferenceRewardFractionRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousInferenceRewardFractionRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousInferenceRewardFractionRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Worker", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Worker = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousInferenceRewardFractionResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousInferenceRewardFractionResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousInferenceRewardFractionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardFraction", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.RewardFraction.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NotFound", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.NotFound = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousForecastRewardFractionRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousForecastRewardFractionRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousForecastRewardFractionRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+			}
+			m.TopicId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TopicId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Worker", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Worker = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousForecastRewardFractionResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousForecastRewardFractionResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousForecastRewardFractionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardFraction", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.RewardFraction.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NotFound", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.NotFound = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousPercentageRewardToStakedReputersRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousPercentageRewardToStakedReputersRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryPreviousPercentageRewardToStakedReputersResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryPreviousPercentageRewardToStakedReputersResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryPreviousPercentageRewardToStakedReputersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PercentageReward", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.PercentageReward.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTotalRewardToDistributeRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTotalRewardToDistributeRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTotalRewardToDistributeRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryTotalRewardToDistributeResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryTotalRewardToDistributeResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryTotalRewardToDistributeResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TotalReward", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.TotalReward.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
