@@ -374,6 +374,12 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/listening_coefficient/{topic_id}/{reputer}";
   }
+
+  rpc GetPreviousReputerRewardFraction(QueryPreviousReputerRewardFractionRequest)
+      returns (QueryPreviousReputerRewardFractionResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/previous_reputer_reward_fraction/{topic_id}/{reputer}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -1009,4 +1015,15 @@ message QueryListeningCoefficientRequest {
 
 message QueryListeningCoefficientResponse {
   ListeningCoefficient listening_coefficient = 1;
+}
+
+message QueryPreviousReputerRewardFractionRequest {
+  uint64 topic_id = 1;
+  string reputer = 2;
+}
+
+message QueryPreviousReputerRewardFractionResponse {
+  string reward_fraction = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  bool not_found = 2;
 }
