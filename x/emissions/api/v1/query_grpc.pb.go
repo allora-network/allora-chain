@@ -78,6 +78,7 @@ const (
 	Query_GetLatestInfererScore_FullMethodName                 = "/emissions.v1.Query/GetLatestInfererScore"
 	Query_GetLatestForecasterScore_FullMethodName              = "/emissions.v1.Query/GetLatestForecasterScore"
 	Query_GetLatestReputerScore_FullMethodName                 = "/emissions.v1.Query/GetLatestReputerScore"
+	Query_GetInferenceScoresUntilBlock_FullMethodName          = "/emissions.v1.Query/GetInferenceScoresUntilBlock"
 )
 
 // QueryClient is the client API for Query service.
@@ -144,6 +145,7 @@ type QueryClient interface {
 	GetLatestInfererScore(ctx context.Context, in *QueryLatestInfererScoreRequest, opts ...grpc.CallOption) (*QueryLatestInfererScoreResponse, error)
 	GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error)
 	GetLatestReputerScore(ctx context.Context, in *QueryLatestReputerScoreRequest, opts ...grpc.CallOption) (*QueryLatestReputerScoreResponse, error)
+	GetInferenceScoresUntilBlock(ctx context.Context, in *QueryInferenceScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryInferenceScoresUntilBlockResponse, error)
 }
 
 type queryClient struct {
@@ -685,6 +687,15 @@ func (c *queryClient) GetLatestReputerScore(ctx context.Context, in *QueryLatest
 	return out, nil
 }
 
+func (c *queryClient) GetInferenceScoresUntilBlock(ctx context.Context, in *QueryInferenceScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryInferenceScoresUntilBlockResponse, error) {
+	out := new(QueryInferenceScoresUntilBlockResponse)
+	err := c.cc.Invoke(ctx, Query_GetInferenceScoresUntilBlock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -749,6 +760,7 @@ type QueryServer interface {
 	GetLatestInfererScore(context.Context, *QueryLatestInfererScoreRequest) (*QueryLatestInfererScoreResponse, error)
 	GetLatestForecasterScore(context.Context, *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error)
 	GetLatestReputerScore(context.Context, *QueryLatestReputerScoreRequest) (*QueryLatestReputerScoreResponse, error)
+	GetInferenceScoresUntilBlock(context.Context, *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -932,6 +944,9 @@ func (UnimplementedQueryServer) GetLatestForecasterScore(context.Context, *Query
 }
 func (UnimplementedQueryServer) GetLatestReputerScore(context.Context, *QueryLatestReputerScoreRequest) (*QueryLatestReputerScoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLatestReputerScore not implemented")
+}
+func (UnimplementedQueryServer) GetInferenceScoresUntilBlock(context.Context, *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInferenceScoresUntilBlock not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -2008,6 +2023,24 @@ func _Query_GetLatestReputerScore_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetInferenceScoresUntilBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryInferenceScoresUntilBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetInferenceScoresUntilBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetInferenceScoresUntilBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetInferenceScoresUntilBlock(ctx, req.(*QueryInferenceScoresUntilBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2250,6 +2283,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLatestReputerScore",
 			Handler:    _Query_GetLatestReputerScore_Handler,
+		},
+		{
+			MethodName: "GetInferenceScoresUntilBlock",
+			Handler:    _Query_GetInferenceScoresUntilBlock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

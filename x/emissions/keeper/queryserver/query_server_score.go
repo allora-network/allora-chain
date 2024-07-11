@@ -50,3 +50,18 @@ func (qs queryServer) GetLatestReputerScore(
 
 	return &types.QueryLatestReputerScoreResponse{Score: &latestReputerScore}, nil
 }
+
+func (qs queryServer) GetInferenceScoresUntilBlock(
+	ctx context.Context,
+	req *types.QueryInferenceScoresUntilBlockRequest,
+) (
+	*types.QueryInferenceScoresUntilBlockResponse,
+	error,
+) {
+	inferenceScores, err := qs.k.GetInferenceScoresUntilBlock(ctx, req.TopicId, req.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryInferenceScoresUntilBlockResponse{Scores: inferenceScores}, nil
+}
