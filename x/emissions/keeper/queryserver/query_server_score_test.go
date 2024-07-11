@@ -1,6 +1,8 @@
 package queryserver_test
 
 import (
+	"strconv"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -175,4 +177,33 @@ func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
 	scores := response.Scores
 	s.Require().NoError(err, "Fetching worker forecast scores until block should not fail")
 	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
+}
+
+func (s *KeeperTestSuite) TestGetWorkerForecastScoresAtBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockHeight := int64(100)
+
+	// Insert scores at the block
+	for i := 0; i < 5; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Address:     "worker" + strconv.Itoa(i+1),
+			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
+		}
+		_ = keeper.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
+	}
+
+	// Fetch scores at the specific block
+	req := &types.QueryWorkerForecastScoresAtBlockRequest{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+	}
+	response, err := s.queryServer.GetWorkerForecastScoresAtBlock(ctx, req)
+	scores := response.Scores
+
+	s.Require().NoError(err, "Fetching forecast scores at block should not fail")
+	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
