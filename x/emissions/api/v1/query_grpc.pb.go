@@ -90,6 +90,8 @@ const (
 	Query_GetPreviousForecastRewardFraction_FullMethodName           = "/emissions.v1.Query/GetPreviousForecastRewardFraction"
 	Query_GetPreviousPercentageRewardToStakedReputers_FullMethodName = "/emissions.v1.Query/GetPreviousPercentageRewardToStakedReputers"
 	Query_GetTotalRewardToDistribute_FullMethodName                  = "/emissions.v1.Query/GetTotalRewardToDistribute"
+	Query_GetTopicLastWorkerPayload_FullMethodName                   = "/emissions.v1.Query/GetTopicLastWorkerPayload"
+	Query_GetTopicLastReputerPayload_FullMethodName                  = "/emissions.v1.Query/GetTopicLastReputerPayload"
 )
 
 // QueryClient is the client API for Query service.
@@ -168,6 +170,8 @@ type QueryClient interface {
 	GetPreviousForecastRewardFraction(ctx context.Context, in *QueryPreviousForecastRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousForecastRewardFractionResponse, error)
 	GetPreviousPercentageRewardToStakedReputers(ctx context.Context, in *QueryPreviousPercentageRewardToStakedReputersRequest, opts ...grpc.CallOption) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
 	GetTotalRewardToDistribute(ctx context.Context, in *QueryTotalRewardToDistributeRequest, opts ...grpc.CallOption) (*QueryTotalRewardToDistributeResponse, error)
+	GetTopicLastWorkerPayload(ctx context.Context, in *QueryTopicLastWorkerPayloadRequest, opts ...grpc.CallOption) (*QueryTopicLastWorkerPayloadResponse, error)
+	GetTopicLastReputerPayload(ctx context.Context, in *QueryTopicLastReputerPayloadRequest, opts ...grpc.CallOption) (*QueryTopicLastReputerPayloadResponse, error)
 }
 
 type queryClient struct {
@@ -817,6 +821,24 @@ func (c *queryClient) GetTotalRewardToDistribute(ctx context.Context, in *QueryT
 	return out, nil
 }
 
+func (c *queryClient) GetTopicLastWorkerPayload(ctx context.Context, in *QueryTopicLastWorkerPayloadRequest, opts ...grpc.CallOption) (*QueryTopicLastWorkerPayloadResponse, error) {
+	out := new(QueryTopicLastWorkerPayloadResponse)
+	err := c.cc.Invoke(ctx, Query_GetTopicLastWorkerPayload_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetTopicLastReputerPayload(ctx context.Context, in *QueryTopicLastReputerPayloadRequest, opts ...grpc.CallOption) (*QueryTopicLastReputerPayloadResponse, error) {
+	out := new(QueryTopicLastReputerPayloadResponse)
+	err := c.cc.Invoke(ctx, Query_GetTopicLastReputerPayload_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -893,6 +915,8 @@ type QueryServer interface {
 	GetPreviousForecastRewardFraction(context.Context, *QueryPreviousForecastRewardFractionRequest) (*QueryPreviousForecastRewardFractionResponse, error)
 	GetPreviousPercentageRewardToStakedReputers(context.Context, *QueryPreviousPercentageRewardToStakedReputersRequest) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
 	GetTotalRewardToDistribute(context.Context, *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error)
+	GetTopicLastWorkerPayload(context.Context, *QueryTopicLastWorkerPayloadRequest) (*QueryTopicLastWorkerPayloadResponse, error)
+	GetTopicLastReputerPayload(context.Context, *QueryTopicLastReputerPayloadRequest) (*QueryTopicLastReputerPayloadResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -1112,6 +1136,12 @@ func (UnimplementedQueryServer) GetPreviousPercentageRewardToStakedReputers(cont
 }
 func (UnimplementedQueryServer) GetTotalRewardToDistribute(context.Context, *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTotalRewardToDistribute not implemented")
+}
+func (UnimplementedQueryServer) GetTopicLastWorkerPayload(context.Context, *QueryTopicLastWorkerPayloadRequest) (*QueryTopicLastWorkerPayloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicLastWorkerPayload not implemented")
+}
+func (UnimplementedQueryServer) GetTopicLastReputerPayload(context.Context, *QueryTopicLastReputerPayloadRequest) (*QueryTopicLastReputerPayloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicLastReputerPayload not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -2404,6 +2434,42 @@ func _Query_GetTotalRewardToDistribute_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetTopicLastWorkerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicLastWorkerPayloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicLastWorkerPayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTopicLastWorkerPayload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicLastWorkerPayload(ctx, req.(*QueryTopicLastWorkerPayloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetTopicLastReputerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicLastReputerPayloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicLastReputerPayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTopicLastReputerPayload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicLastReputerPayload(ctx, req.(*QueryTopicLastReputerPayloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2694,6 +2760,14 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTotalRewardToDistribute",
 			Handler:    _Query_GetTotalRewardToDistribute_Handler,
+		},
+		{
+			MethodName: "GetTopicLastWorkerPayload",
+			Handler:    _Query_GetTopicLastWorkerPayload_Handler,
+		},
+		{
+			MethodName: "GetTopicLastReputerPayload",
+			Handler:    _Query_GetTopicLastReputerPayload_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
