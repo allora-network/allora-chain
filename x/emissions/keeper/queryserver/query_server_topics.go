@@ -134,3 +134,18 @@ func (qs queryServer) TopicExists(
 
 	return &types.QueryTopicExistsResponse{Exists: exists}, nil
 }
+
+func (qs queryServer) IsTopicActive(
+	ctx context.Context,
+	req *types.QueryIsTopicActiveRequest,
+) (
+	*types.QueryIsTopicActiveResponse,
+	error,
+) {
+	isActive, err := qs.k.IsTopicActive(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryIsTopicActiveResponse{IsActive: isActive}, nil
+}

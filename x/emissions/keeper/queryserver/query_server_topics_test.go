@@ -234,3 +234,47 @@ func (s *KeeperTestSuite) TestTopicExists() {
 	s.Require().NoError(err, "Checking existence for an existent topic should not fail")
 	s.Require().True(exists, "Topic should exist for a newly created topic ID")
 }
+
+func (s *KeeperTestSuite) TestIsTopicActive() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(3)
+
+	// Assume topic initially active
+	initialTopic := types.Topic{Id: topicId}
+	_ = keeper.SetTopic(ctx, topicId, initialTopic)
+
+	// Activate the topic
+	err := keeper.ActivateTopic(ctx, topicId)
+	s.Require().NoError(err, "Reactivating topic should not fail")
+
+	// Check if topic is active
+	req := &types.QueryIsTopicActiveRequest{TopicId: topicId}
+	response, err := s.queryServer.IsTopicActive(ctx, req)
+	topicActive := response.IsActive
+
+	s.Require().NoError(err, "Getting topic should not fail after reactivation")
+	s.Require().True(topicActive, "Topic should be active again")
+
+	// Inactivate the topic
+	err = keeper.InactivateTopic(ctx, topicId)
+	s.Require().NoError(err, "Inactivating topic should not fail")
+
+	// Check if topic is inactive
+	req = &types.QueryIsTopicActiveRequest{TopicId: topicId}
+	response, err = s.queryServer.IsTopicActive(ctx, req)
+	topicActive = response.IsActive
+	s.Require().NoError(err, "Getting topic should not fail after inactivation")
+	s.Require().False(topicActive, "Topic should be inactive")
+
+	// Activate the topic
+	err = keeper.ActivateTopic(ctx, topicId)
+	s.Require().NoError(err, "Reactivating topic should not fail")
+
+	// Check if topic is active again
+	req = &types.QueryIsTopicActiveRequest{TopicId: topicId}
+	response, err = s.queryServer.IsTopicActive(ctx, req)
+	topicActive = response.IsActive
+	s.Require().NoError(err, "Getting topic should not fail after reactivation")
+	s.Require().True(topicActive, "Topic should be active again")
+}

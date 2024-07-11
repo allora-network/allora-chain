@@ -69,6 +69,7 @@ const (
 	Query_GetDelegateStakeRemoval_FullMethodName               = "/emissions.v1.Query/GetDelegateStakeRemoval"
 	Query_GetPreviousTopicWeight_FullMethodName                = "/emissions.v1.Query/GetPreviousTopicWeight"
 	Query_TopicExists_FullMethodName                           = "/emissions.v1.Query/TopicExists"
+	Query_IsTopicActive_FullMethodName                         = "/emissions.v1.Query/IsTopicActive"
 )
 
 // QueryClient is the client API for Query service.
@@ -126,6 +127,7 @@ type QueryClient interface {
 	GetDelegateStakeRemoval(ctx context.Context, in *QueryDelegateStakeRemovalRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalResponse, error)
 	GetPreviousTopicWeight(ctx context.Context, in *QueryPreviousTopicWeightRequest, opts ...grpc.CallOption) (*QueryPreviousTopicWeightResponse, error)
 	TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error)
+	IsTopicActive(ctx context.Context, in *QueryIsTopicActiveRequest, opts ...grpc.CallOption) (*QueryIsTopicActiveResponse, error)
 }
 
 type queryClient struct {
@@ -586,6 +588,15 @@ func (c *queryClient) TopicExists(ctx context.Context, in *QueryTopicExistsReque
 	return out, nil
 }
 
+func (c *queryClient) IsTopicActive(ctx context.Context, in *QueryIsTopicActiveRequest, opts ...grpc.CallOption) (*QueryIsTopicActiveResponse, error) {
+	out := new(QueryIsTopicActiveResponse)
+	err := c.cc.Invoke(ctx, Query_IsTopicActive_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -641,6 +652,7 @@ type QueryServer interface {
 	GetDelegateStakeRemoval(context.Context, *QueryDelegateStakeRemovalRequest) (*QueryDelegateStakeRemovalResponse, error)
 	GetPreviousTopicWeight(context.Context, *QueryPreviousTopicWeightRequest) (*QueryPreviousTopicWeightResponse, error)
 	TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error)
+	IsTopicActive(context.Context, *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -797,6 +809,9 @@ func (UnimplementedQueryServer) GetPreviousTopicWeight(context.Context, *QueryPr
 }
 func (UnimplementedQueryServer) TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TopicExists not implemented")
+}
+func (UnimplementedQueryServer) IsTopicActive(context.Context, *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsTopicActive not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1711,6 +1726,24 @@ func _Query_TopicExists_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_IsTopicActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryIsTopicActiveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).IsTopicActive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_IsTopicActive_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).IsTopicActive(ctx, req.(*QueryIsTopicActiveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1917,6 +1950,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TopicExists",
 			Handler:    _Query_TopicExists_Handler,
+		},
+		{
+			MethodName: "IsTopicActive",
+			Handler:    _Query_IsTopicActive_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -294,6 +294,11 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/topic_exists/{topic_id}";
   }
+
+  rpc IsTopicActive(QueryIsTopicActiveRequest) returns (QueryIsTopicActiveResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/is_topic_active/{topic_id}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -799,4 +804,12 @@ message QueryTopicExistsRequest {
 
 message QueryTopicExistsResponse {
   bool exists = 1;
+}
+
+message QueryIsTopicActiveRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryIsTopicActiveResponse {
+  bool is_active = 1;
 }
