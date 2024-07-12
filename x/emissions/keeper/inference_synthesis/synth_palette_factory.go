@@ -2,6 +2,8 @@ package inference_synthesis
 
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // Could use Builder pattern in the future to make this cleaner
@@ -11,8 +13,10 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 	sortedInferers := alloraMath.GetSortedKeys(inferenceByWorker)
 	sortedForecasters := alloraMath.GetSortedKeys(forecastByWorker)
 
-	topic, err := req.K.GetTopic(req.Ctx, req.TopicId)
-	if err != nil {
+	topicExists, err := req.K.TopicExists(req.Ctx, req.TopicId)
+	if !topicExists {
+		return SynthPalette{}, status.Errorf(codes.NotFound, "topic %v not found", msg.TopicId)
+	} else if err != nil {
 		return SynthPalette{}, err
 	}
 
