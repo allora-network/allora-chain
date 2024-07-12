@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 	"sort"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -325,12 +324,22 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, err
 	}
 
+<<<<<<< HEAD
 	workerNonce := &types.Nonce{
 		BlockHeight: msg.Nonce.BlockHeight - topic.EpochLength,
 	}
 	sdkCtx.Logger().Debug(fmt.Sprintf("InsertBulkWorkerPayload workerNonce %d", workerNonce.BlockHeight))
 
 	err = ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce, workerNonce)
+=======
+	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	if err != nil {
+		return nil, types.ErrInvalidTopicId
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err = ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce)
+>>>>>>> dev
 	if err != nil {
 		return nil, err
 	}

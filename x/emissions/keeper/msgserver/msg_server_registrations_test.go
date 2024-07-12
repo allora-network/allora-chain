@@ -323,6 +323,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 	s.MintTokensToAddress(worker, cosmosMath.NewInt(10).Mul(cosmosOneE18))
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  worker.String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -337,6 +338,20 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         worker.String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)

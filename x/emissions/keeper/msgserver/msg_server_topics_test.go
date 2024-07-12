@@ -19,6 +19,7 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  sender,
 		Metadata:                 "Some metadata for the new topic",
 		LossLogic:                "logic",
@@ -33,6 +34,20 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         sender,
+		Metadata:        "Some metadata for the new topic",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
@@ -66,6 +81,7 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 
 	// Create a MsgCreateNewTopic message
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  sender,
 		Metadata:                 "Some metadata for the new topic",
 		LossLogic:                "logic",
@@ -80,6 +96,20 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         sender,
+		Metadata:        "Some metadata for the new topic",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0"),
+>>>>>>> dev
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)

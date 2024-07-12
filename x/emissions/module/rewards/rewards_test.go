@@ -205,6 +205,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -219,6 +220,20 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -281,8 +296,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -303,9 +316,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -345,6 +355,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -359,6 +370,20 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -439,8 +464,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -461,9 +484,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -492,6 +512,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Create topic
 	newTopicMsg = &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -506,6 +527,20 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -567,8 +602,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	})
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, &types.Nonce{
-		BlockHeight: block,
-	}, &types.Nonce{
 		BlockHeight: block,
 	})
 	s.Require().NoError(err)
@@ -635,6 +668,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -649,6 +683,20 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alphaRegret,
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	require.NoError(err)
@@ -728,7 +776,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	err = s.emissionsKeeper.AddReputerNonce(
 		s.ctx,
 		topicId,
-		&types.Nonce{BlockHeight: blockHeight}, &types.Nonce{BlockHeight: blockHeight},
+		&types.Nonce{BlockHeight: blockHeight},
 	)
 	require.NoError(err)
 
@@ -771,7 +819,6 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
-			WorkerNonce:  &types.Nonce{BlockHeight: blockHeight},
 		},
 		ReputerValueBundles: lossBundles.ReputerValueBundles,
 	})
@@ -1268,6 +1315,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -1282,6 +1330,20 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1343,8 +1405,6 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -1365,9 +1425,6 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -1419,6 +1476,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Create new topic
 	newTopicMsg = &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -1433,6 +1491,20 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1494,8 +1566,6 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -1516,9 +1586,6 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -1577,6 +1644,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -1591,6 +1659,20 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1663,8 +1745,6 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -1698,9 +1778,6 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -1763,6 +1840,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	// Create first topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -1778,6 +1856,20 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1873,8 +1965,6 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId2, &types.Nonce{
@@ -1882,8 +1972,6 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	})
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, &types.Nonce{
-		BlockHeight: block,
-	}, &types.Nonce{
 		BlockHeight: block,
 	})
 	s.Require().NoError(err)
@@ -1933,9 +2021,6 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 			ReputerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
-			WorkerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
 		},
 		ReputerValueBundles: lossBundles.ReputerValueBundles,
 	})
@@ -1946,9 +2031,6 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		TopicId: topicId2,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -1979,6 +2061,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputer.String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -1993,6 +2076,20 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputer.String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2052,8 +2149,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: blockHeight,
-	}, &types.Nonce{
-		BlockHeight: blockHeight,
 	})
 	s.Require().NoError(err)
 
@@ -2089,9 +2184,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 			ReputerNonce: &types.Nonce{
 				BlockHeight: blockHeight,
 			},
-			WorkerNonce: &types.Nonce{
-				BlockHeight: blockHeight,
-			},
 		},
 		Reputer:                reputer.String(),
 		CombinedValue:          alloraMath.MustNewDecFromString("0.01127"),
@@ -2114,9 +2206,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: blockHeight,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: blockHeight,
 			},
 		},
@@ -2178,6 +2267,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -2192,6 +2282,20 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2255,8 +2359,6 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -2277,9 +2379,6 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -2344,6 +2443,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -2358,6 +2458,20 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2419,8 +2533,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -2441,9 +2553,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -2493,6 +2602,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Create new topic
 	newTopicMsg = &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -2507,6 +2617,20 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2568,8 +2692,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -2593,9 +2715,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -2634,6 +2753,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Create new topic
 	newTopicMsg = &types.MsgCreateNewTopic{
+<<<<<<< HEAD
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossLogic:                "logic",
@@ -2648,6 +2768,20 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
+=======
+		Creator:         reputerAddrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+>>>>>>> dev
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2709,8 +2843,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -2734,9 +2866,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
