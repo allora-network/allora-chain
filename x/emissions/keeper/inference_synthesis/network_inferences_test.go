@@ -91,9 +91,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
 	}
 
-	alphaRegret := alloraMath.MustNewDecFromString("0.1")
-	pNorm := alloraMath.MustNewDecFromString("3")
-
 	params, err := keeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
@@ -109,8 +106,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		EpochLength:     100,
 		GroundTruthLag:  10,
 		DefaultArg:      "defaultarg",
-		PNorm:           pNorm,
-		AlphaRegret:     alphaRegret,
+		PNorm:           alloraMath.MustNewDecFromString("3"),
+		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:   false,
 	})
 	s.Require().NoError(err)
@@ -144,7 +141,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		topicId,
 		lossValueBundle,
 		simpleNonce,
-		alphaRegret,
+		topic.AlphaRegret,
 		params.CNorm,
 		topic.PNorm,
 		topic.Epsilon,
