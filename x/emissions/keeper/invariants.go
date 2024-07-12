@@ -383,14 +383,20 @@ func StakingInvariantPendingRewardForDelegatorsEqualRewardPerShareMinusRewardDeb
 		alloraPendingAddr := k.authKeeper.GetModuleAccount(ctx, emissionstypes.AlloraPendingRewardForDelegatorAccountName).GetAddress()
 		bal := k.GetBankBalance(ctx, alloraPendingAddr, params.DefaultBondDenom).Amount
 		rewards := accumulatedRewardsBeyondRewardDebt.SdkIntTrim()
-		broken := !bal.Equal(rewards)
+		// we define the invariant as holding if the rewards we think we
+		// have to pay people is equal to the balance we have earmarked to pay them
+		// OR if the balance we have earmarked to pay them is greater than the rewards
+		// we think we owe them + 1 (for rounding error)
+		notbroken := rewards.Equal(bal) || rewards.AddRaw(1).Equal(bal)
+		broken := !notbroken
 		if broken {
 			return sdk.FormatInvariant(
 				emissionstypes.ModuleName,
 				"emissions module pending reward for delegators equal reward per share minus reward debt",
-				fmt.Sprintf("Pending Reward For Delegators: %s | Accumulated Rewards Beyond Reward Debt: %s",
+				fmt.Sprintf("Pending Reward For Delegators Module Account Balance: %s | Accumulated Rewards Beyond Reward Debt: %s | Accumulated Rewards Beyond Reward Debt as Dec: %s",
 					bal.String(),
 					rewards.String(),
+					accumulatedRewardsBeyondRewardDebt.String(),
 				),
 			), broken
 		}

@@ -5,8 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"context"
-
 	cosmossdk_io_math "cosmossdk.io/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 )
@@ -176,11 +174,17 @@ func simulateManual(
 	registerWorker(m, worker, Actor{}, nil, 1, data, 6)
 	// now nobody has stake, is the topic active?
 	// make sure an ABCI endblock has passed
-	ctx := context.Background()
-	m.Client.WaitForNextBlock(ctx)
-	isActive := len(findActiveTopics(m, data)) > 0
-	m.T.Log("Is topic active?", isActive)
-	doInferenceAndReputation(m, worker, reputer, nil, 1, data, 7)
+	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 7)
+	doInferenceAndReputation(m, worker, reputer, nil, 1, data, 8)
+	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 9)
+	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 10)
+	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 11)
+	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 12)
+	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 13)
+	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 14)
+	doInferenceAndReputation(m, worker, reputer, nil, 1, data, 15)
+	amount2 := amount.QuoRaw(2)
+	undelegateStake(m, delegator, reputer, &amount2, 1, data, 16)
 	m.T.Log("Done.")
 }
 
