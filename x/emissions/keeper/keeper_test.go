@@ -1559,6 +1559,48 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	s.Require().Len(removals, 0)
 }
 
+func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	// Create sample delegate stake removal information
+	removalInfo := types.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   int64(12),
+		BlockRemovalCompleted: int64(13),
+		TopicId:               uint64(201),
+		Reputer:               "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n",
+		Delegator:             "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+		Amount:                cosmosMath.NewInt(300),
+	}
+
+	// Set delegate stake removal information
+	err := keeper.SetDelegateStakeRemoval(ctx, removalInfo)
+	s.Require().NoError(err)
+
+	retrievedInfo, err := keeper.GetDelegateStakeRemoval(ctx,
+		removalInfo.BlockRemovalStarted,
+		removalInfo.TopicId,
+		removalInfo.Delegator,
+		removalInfo.Reputer,
+	)
+	// index is on BlockRemovalCompleted not BlockRemovalStarted
+	s.Require().Error(err)
+
+	retrievedInfo, err = keeper.GetDelegateStakeRemoval(ctx,
+		removalInfo.BlockRemovalCompleted,
+		removalInfo.TopicId,
+		removalInfo.Delegator,
+		removalInfo.Reputer,
+	)
+	s.Require().NoError(err)
+
+	s.Require().Equal(removalInfo.BlockRemovalStarted, retrievedInfo.BlockRemovalStarted)
+	s.Require().Equal(removalInfo.TopicId, retrievedInfo.TopicId)
+	s.Require().Equal(removalInfo.Reputer, retrievedInfo.Reputer)
+	s.Require().Equal(removalInfo.Delegator, retrievedInfo.Delegator)
+	s.Require().Equal(removalInfo.Amount, retrievedInfo.Amount)
+}
+
 func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -2053,9 +2095,9 @@ func (s *KeeperTestSuite) TestUpdateAndGetTopicEpochLastEnded() {
 	s.Require().NoError(err, "Updating topic epoch last ended should not fail")
 
 	// Retrieve the last ended epoch for the topic
-	retrievedEpoch, err := keeper.GetTopicEpochLastEnded(ctx, topicId)
+	topic, err := keeper.GetTopic(ctx, topicId)
 	s.Require().NoError(err, "Retrieving topic epoch last ended should not fail")
-	s.Require().Equal(epochLastEnded, retrievedEpoch, "The retrieved epoch last ended should match the updated value")
+	s.Require().Equal(epochLastEnded, topic.EpochLastEnded, "The retrieved epoch last ended should match the updated value")
 }
 
 func (s *KeeperTestSuite) TestTopicExists() {
@@ -2101,6 +2143,50 @@ func (s *KeeperTestSuite) TestGetTopic() {
 	s.Require().NoError(err, "Retrieving an existent topic should not fail")
 	s.Require().Equal(newTopic, retrievedTopic, "Retrieved topic should match the set topic")
 	s.Require().Equal(newTopic.Metadata, retrievedTopic.Metadata, "Retrieved topic should match the set topic")
+}
+
+func (s *KeeperTestSuite) TestSetGetTopicLastWorkerPayload() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(123)
+	blockHeight := int64(1000)
+	nonce := &types.Nonce{BlockHeight: blockHeight}
+	actor := "allo1j62tlhf5empp365vy39kgvr92uzrmglm7krt6p"
+
+	// Set the worker payload
+	err := keeper.SetTopicLastWorkerPayload(ctx, topicId, blockHeight, nonce, actor)
+	s.Require().NoError(err)
+
+	// Get the worker payload
+	payload, err := keeper.GetTopicLastWorkerPayload(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Check the retrieved values
+	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
+	s.Require().Equal(actor, payload.Actor, "Actor ID should match")
+	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
+}
+
+func (s *KeeperTestSuite) TestSetGetTopicLastReputerPayload() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(456)
+	blockHeight := int64(2000)
+	nonce := &types.Nonce{BlockHeight: blockHeight}
+	actor := "allo1j62tlhf5empp365vy39kgvr92uzrmglm7krt6p"
+
+	// Set the reputer payload
+	err := keeper.SetTopicLastReputerPayload(ctx, topicId, blockHeight, nonce, actor)
+	s.Require().NoError(err)
+
+	// Get the reputer payload
+	payload, err := keeper.GetTopicLastReputerPayload(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Check the retrieved values
+	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
+	s.Require().Equal(actor, payload.Actor, "Actor ID should match")
+	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
 }
 
 /// FEE REVENUE
@@ -2179,6 +2265,36 @@ func (s *KeeperTestSuite) TestChurnableTopics() {
 	remainingIds, err := keeper.GetChurnableTopics(ctx)
 	s.Require().NoError(err)
 	s.Require().Len(remainingIds, 0, "Should have no churn ready topics after reset")
+}
+
+/// REWARDABLE TOPICS
+
+func (s *KeeperTestSuite) TestRewardableTopics() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(789)
+	topicId2 := uint64(101112)
+
+	// Add rewardable topics
+	err := keeper.AddRewardableTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	err = keeper.AddRewardableTopic(ctx, topicId2)
+	s.Require().NoError(err)
+
+	// Ensure the topics are retrieved
+	retrievedIds, err := keeper.GetRewardableTopics(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(retrievedIds, 2, "Should retrieve all rewardable topics")
+
+	// Reset the rewardable topics
+	err = keeper.RemoveRewardableTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Ensure no topics remain
+	remainingIds, err := keeper.GetRewardableTopics(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(remainingIds, 1)
 }
 
 /// SCORES
@@ -2634,6 +2750,21 @@ func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
 	s.Require().NoError(err, "Fetching forecast reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched forecast reward fraction should match the set value")
 	s.Require().False(noPrior, "Should not return no prior value after setting")
+}
+
+func (s *KeeperTestSuite) TestSetGetPreviousPercentageRewardToStakedReputers() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	previousPercentageReward := alloraMath.NewDecFromInt64(50)
+
+	// Set the previous percentage reward to staked reputers
+	err := keeper.SetPreviousPercentageRewardToStakedReputers(ctx, previousPercentageReward)
+	s.Require().NoError(err, "Setting previous percentage reward to staked reputers should not fail")
+
+	// Get the previous percentage reward to staked reputers
+	fetchedPercentageReward, err := keeper.GetPreviousPercentageRewardToStakedReputers(ctx)
+	s.Require().NoError(err, "Fetching previous percentage reward to staked reputers should not fail")
+	s.Require().Equal(previousPercentageReward, fetchedPercentageReward, "The fetched percentage reward should match the set value")
 }
 
 /// WHITELISTS

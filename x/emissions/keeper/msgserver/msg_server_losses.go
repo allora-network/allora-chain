@@ -214,6 +214,11 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
+	err = ms.k.SetTopicLastReputerPayload(ctx, topic.Id, blockHeight, msg.ReputerRequestNonce.ReputerNonce, msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+
 	return &types.MsgInsertBulkReputerPayloadResponse{}, nil
 }
 

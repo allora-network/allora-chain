@@ -139,8 +139,13 @@ func GetLatestNetworkInference(
 	map[string]*emissions.Inference,
 	map[string]alloraMath.Dec,
 	map[string]alloraMath.Dec,
+	int64,
+	int64,
 	error,
 ) {
+	inferenceBlockHeight := int64(0)
+	lossBlockHeight := int64(0)
+
 	networkInferences := &emissions.ValueBundle{
 		TopicId:          topicId,
 		InfererValues:    make([]*emissions.WorkerAttributedValue, 0),
@@ -150,12 +155,12 @@ func GetLatestNetworkInference(
 	var infererWeights map[string]alloraMath.Dec
 	var forecasterWeights map[string]alloraMath.Dec
 
-	inferences, infBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId)
+	inferences, inferenceBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId)
 	if err != nil || len(inferences.Inferences) == 0 {
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting inferences: %s", err.Error()))
 		}
-		return networkInferences, nil, infererWeights, forecasterWeights, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v", topicId)
+		return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v", topicId)
 	}
 	for _, infererence := range inferences.Inferences {
 		networkInferences.InfererValues = append(networkInferences.InfererValues, &emissions.WorkerAttributedValue{
@@ -164,7 +169,7 @@ func GetLatestNetworkInference(
 		})
 	}
 
-	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, infBlockHeight)
+	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferenceBlockHeight)
 	if err != nil {
 		Logger(ctx).Warn(fmt.Sprintf("Error getting forecasts: %s", err.Error()))
 		if errors.Is(err, collections.ErrNotFound) {
@@ -172,29 +177,30 @@ func GetLatestNetworkInference(
 				Forecasts: make([]*emissions.Forecast, 0),
 			}
 		} else {
-			return networkInferences, nil, infererWeights, forecasterWeights, nil
+			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
 		}
 	}
 
 	if len(inferences.Inferences) > 1 {
 		moduleParams, err := k.GetParams(ctx)
 		if err != nil {
-			return networkInferences, nil, infererWeights, forecasterWeights, err
+			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err
 		}
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
-			return networkInferences, nil, infererWeights, forecasterWeights, nil
+			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
 		}
-		previousLossNonce := infBlockHeight - topic.EpochLength
-		if previousLossNonce < 0 {
+		lossBlockHeight = inferenceBlockHeight - topic.EpochLength
+		if lossBlockHeight < 0 {
 			Logger(ctx).Warn("Network inference is not available for the epoch yet")
-			return networkInferences, nil, infererWeights, forecasterWeights, nil
+			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
 		}
-		networkLosses, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, previousLossNonce)
+		networkLosses, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, lossBlockHeight)
+
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting network losses: %s", err.Error()))
-			return networkInferences, nil, infererWeights, forecasterWeights, nil
+			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
 		}
 		networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
 			SynthRequest{
@@ -211,7 +217,7 @@ func GetLatestNetworkInference(
 		)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
-			return networkInferences, nil, infererWeights, forecasterWeights, err
+			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err
 		}
 		networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
 		forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
@@ -239,5 +245,5 @@ func GetLatestNetworkInference(
 		}
 	}
 
-	return networkInferences, forecastImpliedInferencesByWorker, infererWeights, forecasterWeights, nil
+	return networkInferences, forecastImpliedInferencesByWorker, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
 }

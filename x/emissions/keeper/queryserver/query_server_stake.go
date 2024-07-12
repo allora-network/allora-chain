@@ -301,3 +301,97 @@ func (qs queryServer) GetDelegateStakeRemovalInfo(
 	}
 	return &types.QueryDelegateStakeRemovalInfoResponse{Removal: &removal}, err
 }
+
+func (qs queryServer) GetStakeReputerAuthority(
+	ctx context.Context,
+	req *types.QueryStakeReputerAuthorityRequest,
+) (
+	*types.QueryStakeReputerAuthorityResponse,
+	error,
+) {
+	stakeReputerAuthority, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.Reputer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryStakeReputerAuthorityResponse{Authority: stakeReputerAuthority}, nil
+}
+
+func (qs queryServer) GetDelegateStakePlacement(
+	ctx context.Context,
+	req *types.QueryDelegateStakePlacementRequest,
+) (
+	*types.QueryDelegateStakePlacementResponse,
+	error,
+) {
+	delegateStakePlacement, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, req.Delegator, req.Target)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDelegateStakePlacementResponse{DelegatorInfo: &delegateStakePlacement}, nil
+}
+
+func (qs queryServer) GetDelegateStakeUponReputer(
+	ctx context.Context,
+	req *types.QueryDelegateStakeUponReputerRequest,
+) (
+	*types.QueryDelegateStakeUponReputerResponse,
+	error,
+) {
+	delegateStakeUponReputer, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, req.Target)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDelegateStakeUponReputerResponse{Stake: delegateStakeUponReputer}, nil
+}
+
+func (qs queryServer) GetDelegateRewardPerShare(
+	ctx context.Context,
+	req *types.QueryDelegateRewardPerShareRequest,
+) (
+	*types.QueryDelegateRewardPerShareResponse,
+	error,
+) {
+	delegateRewardPerShare, err := qs.k.GetDelegateRewardPerShare(ctx, req.TopicId, req.Reputer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDelegateRewardPerShareResponse{RewardPerShare: delegateRewardPerShare}, nil
+}
+
+func (qs queryServer) GetStakeRemovalForReputerAndTopicId(
+	ctx context.Context,
+	req *types.QueryStakeRemovalForReputerAndTopicIdRequest,
+) (
+	*types.QueryStakeRemovalForReputerAndTopicIdResponse,
+	error,
+) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	stakeRemovalInfo, found, err := qs.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, req.Reputer, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return &types.QueryStakeRemovalForReputerAndTopicIdResponse{}, nil
+	}
+
+	return &types.QueryStakeRemovalForReputerAndTopicIdResponse{StakeRemovalInfo: &stakeRemovalInfo}, nil
+}
+
+func (qs queryServer) GetDelegateStakeRemoval(
+	ctx context.Context,
+	req *types.QueryDelegateStakeRemovalRequest,
+) (
+	*types.QueryDelegateStakeRemovalResponse,
+	error,
+) {
+	delegateStakeRemoval, err := qs.k.GetDelegateStakeRemoval(ctx, req.BlockHeight, req.TopicId, req.Delegator, req.Reputer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryDelegateStakeRemovalResponse{StakeRemovalInfo: &delegateStakeRemoval}, nil
+}
