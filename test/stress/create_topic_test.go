@@ -25,7 +25,7 @@ func createTopic(
 		InferenceLogic:  "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
 		InferenceMethod: "allora-inference-function.wasm",
 		EpochLength:     epochLength,
-		GroundTruthLag:  0,
+		GroundTruthLag:  epochLength,
 		DefaultArg:      "ETH",
 		PNorm:           alloraMath.NewDecFromInt64(3),
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
