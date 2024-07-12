@@ -177,8 +177,13 @@ service Query {
                                    "{block_height_last_inference}/last_reward/{block_height_last_reward}";
   }
 
-  rpc GetLatestNetworkInference(QueryLatestNetworkInferencesAtBlockRequest)
-      returns (QueryLatestNetworkInferencesAtBlockResponse) {
+  rpc GetLatestNetworkInference(QueryLatestNetworkInferencesRequest) returns (QueryLatestNetworkInferencesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
+  }
+
+  rpc GetLatestAvailableNetworkInference(QueryLatestNetworkInferencesRequest)
+      returns (QueryLatestNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
   }
@@ -402,6 +407,16 @@ service Query {
   rpc GetTotalRewardToDistribute(QueryTotalRewardToDistributeRequest) returns (QueryTotalRewardToDistributeResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/total_reward_to_distribute";
+  }
+
+  rpc GetTopicLastWorkerPayload(QueryTopicLastWorkerPayloadRequest) returns (QueryTopicLastWorkerPayloadResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_last_worker_payload/{topic_id}";
+  }
+
+  rpc GetTopicLastReputerPayload(QueryTopicLastReputerPayloadRequest) returns (QueryTopicLastReputerPayloadResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_last_reputer_payload/{topic_id}";
   }
 }
 
@@ -648,7 +663,7 @@ message QueryNetworkInferencesAtBlockRequest {
   int64 block_height_last_reward = 3;
 }
 
-message QueryLatestNetworkInferencesAtBlockRequest {
+message QueryLatestNetworkInferencesRequest {
   uint64 topic_id = 1;
 }
 
@@ -731,11 +746,17 @@ message QueryNetworkInferencesAtBlockResponse {
   ValueBundle network_inferences = 1;
 }
 
-message QueryLatestNetworkInferencesAtBlockResponse {
+message QueryLatestNetworkInferencesResponse {
   ValueBundle network_inferences = 1;
   repeated RegretInformedWeight inferer_weights = 2;
   repeated RegretInformedWeight forecaster_weights = 3;
   repeated WorkerAttributedValue forecastImpliedInferences = 4;
+  int64 inference_block_height = 5;
+  int64 loss_block_height = 6;
+  repeated string confidence_interval_raw_percentiles = 7
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string confidence_interval_values = 8
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message QueryIsWorkerRegisteredInTopicIdRequest {
@@ -1084,4 +1105,20 @@ message QueryTotalRewardToDistributeRequest {}
 message QueryTotalRewardToDistributeResponse {
   string total_reward = 1
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
+
+message QueryTopicLastWorkerPayloadRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicLastWorkerPayloadResponse {
+  TimestampedActorNonce payload = 1;
+}
+
+message QueryTopicLastReputerPayloadRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicLastReputerPayloadResponse {
+  TimestampedActorNonce payload = 1;
 }

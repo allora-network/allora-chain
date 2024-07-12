@@ -48,6 +48,7 @@ const (
 	Query_IsReputerRegisteredInTopicId_FullMethodName                = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
 	Query_GetNetworkInferencesAtBlock_FullMethodName                 = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
 	Query_GetLatestNetworkInference_FullMethodName                   = "/emissions.v1.Query/GetLatestNetworkInference"
+	Query_GetLatestAvailableNetworkInference_FullMethodName          = "/emissions.v1.Query/GetLatestAvailableNetworkInference"
 	Query_GetIsWorkerNonceUnfulfilled_FullMethodName                 = "/emissions.v1.Query/GetIsWorkerNonceUnfulfilled"
 	Query_GetIsReputerNonceUnfulfilled_FullMethodName                = "/emissions.v1.Query/GetIsReputerNonceUnfulfilled"
 	Query_GetUnfulfilledWorkerNonces_FullMethodName                  = "/emissions.v1.Query/GetUnfulfilledWorkerNonces"
@@ -89,6 +90,8 @@ const (
 	Query_GetPreviousForecastRewardFraction_FullMethodName           = "/emissions.v1.Query/GetPreviousForecastRewardFraction"
 	Query_GetPreviousPercentageRewardToStakedReputers_FullMethodName = "/emissions.v1.Query/GetPreviousPercentageRewardToStakedReputers"
 	Query_GetTotalRewardToDistribute_FullMethodName                  = "/emissions.v1.Query/GetTotalRewardToDistribute"
+	Query_GetTopicLastWorkerPayload_FullMethodName                   = "/emissions.v1.Query/GetTopicLastWorkerPayload"
+	Query_GetTopicLastReputerPayload_FullMethodName                  = "/emissions.v1.Query/GetTopicLastReputerPayload"
 )
 
 // QueryClient is the client API for Query service.
@@ -124,7 +127,8 @@ type QueryClient interface {
 	IsWorkerRegisteredInTopicId(ctx context.Context, in *QueryIsWorkerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
-	GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesAtBlockResponse, error)
+	GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
+	GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
 	GetIsWorkerNonceUnfulfilled(ctx context.Context, in *QueryIsWorkerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsWorkerNonceUnfulfilledResponse, error)
 	GetIsReputerNonceUnfulfilled(ctx context.Context, in *QueryIsReputerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsReputerNonceUnfulfilledResponse, error)
 	GetUnfulfilledWorkerNonces(ctx context.Context, in *QueryUnfulfilledWorkerNoncesRequest, opts ...grpc.CallOption) (*QueryUnfulfilledWorkerNoncesResponse, error)
@@ -166,6 +170,8 @@ type QueryClient interface {
 	GetPreviousForecastRewardFraction(ctx context.Context, in *QueryPreviousForecastRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousForecastRewardFractionResponse, error)
 	GetPreviousPercentageRewardToStakedReputers(ctx context.Context, in *QueryPreviousPercentageRewardToStakedReputersRequest, opts ...grpc.CallOption) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
 	GetTotalRewardToDistribute(ctx context.Context, in *QueryTotalRewardToDistributeRequest, opts ...grpc.CallOption) (*QueryTotalRewardToDistributeResponse, error)
+	GetTopicLastWorkerPayload(ctx context.Context, in *QueryTopicLastWorkerPayloadRequest, opts ...grpc.CallOption) (*QueryTopicLastWorkerPayloadResponse, error)
+	GetTopicLastReputerPayload(ctx context.Context, in *QueryTopicLastReputerPayloadRequest, opts ...grpc.CallOption) (*QueryTopicLastReputerPayloadResponse, error)
 }
 
 type queryClient struct {
@@ -428,9 +434,18 @@ func (c *queryClient) GetNetworkInferencesAtBlock(ctx context.Context, in *Query
 	return out, nil
 }
 
-func (c *queryClient) GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesAtBlockResponse, error) {
-	out := new(QueryLatestNetworkInferencesAtBlockResponse)
+func (c *queryClient) GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error) {
+	out := new(QueryLatestNetworkInferencesResponse)
 	err := c.cc.Invoke(ctx, Query_GetLatestNetworkInference_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error) {
+	out := new(QueryLatestNetworkInferencesResponse)
+	err := c.cc.Invoke(ctx, Query_GetLatestAvailableNetworkInference_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -806,6 +821,24 @@ func (c *queryClient) GetTotalRewardToDistribute(ctx context.Context, in *QueryT
 	return out, nil
 }
 
+func (c *queryClient) GetTopicLastWorkerPayload(ctx context.Context, in *QueryTopicLastWorkerPayloadRequest, opts ...grpc.CallOption) (*QueryTopicLastWorkerPayloadResponse, error) {
+	out := new(QueryTopicLastWorkerPayloadResponse)
+	err := c.cc.Invoke(ctx, Query_GetTopicLastWorkerPayload_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetTopicLastReputerPayload(ctx context.Context, in *QueryTopicLastReputerPayloadRequest, opts ...grpc.CallOption) (*QueryTopicLastReputerPayloadResponse, error) {
+	out := new(QueryTopicLastReputerPayloadResponse)
+	err := c.cc.Invoke(ctx, Query_GetTopicLastReputerPayload_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -839,7 +872,8 @@ type QueryServer interface {
 	IsWorkerRegisteredInTopicId(context.Context, *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(context.Context, *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
-	GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesAtBlockRequest) (*QueryLatestNetworkInferencesAtBlockResponse, error)
+	GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
+	GetLatestAvailableNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
 	GetIsWorkerNonceUnfulfilled(context.Context, *QueryIsWorkerNonceUnfulfilledRequest) (*QueryIsWorkerNonceUnfulfilledResponse, error)
 	GetIsReputerNonceUnfulfilled(context.Context, *QueryIsReputerNonceUnfulfilledRequest) (*QueryIsReputerNonceUnfulfilledResponse, error)
 	GetUnfulfilledWorkerNonces(context.Context, *QueryUnfulfilledWorkerNoncesRequest) (*QueryUnfulfilledWorkerNoncesResponse, error)
@@ -881,6 +915,8 @@ type QueryServer interface {
 	GetPreviousForecastRewardFraction(context.Context, *QueryPreviousForecastRewardFractionRequest) (*QueryPreviousForecastRewardFractionResponse, error)
 	GetPreviousPercentageRewardToStakedReputers(context.Context, *QueryPreviousPercentageRewardToStakedReputersRequest) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
 	GetTotalRewardToDistribute(context.Context, *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error)
+	GetTopicLastWorkerPayload(context.Context, *QueryTopicLastWorkerPayloadRequest) (*QueryTopicLastWorkerPayloadResponse, error)
+	GetTopicLastReputerPayload(context.Context, *QueryTopicLastReputerPayloadRequest) (*QueryTopicLastReputerPayloadResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -972,8 +1008,11 @@ func (UnimplementedQueryServer) IsReputerRegisteredInTopicId(context.Context, *Q
 func (UnimplementedQueryServer) GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkInferencesAtBlock not implemented")
 }
-func (UnimplementedQueryServer) GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesAtBlockRequest) (*QueryLatestNetworkInferencesAtBlockResponse, error) {
+func (UnimplementedQueryServer) GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLatestNetworkInference not implemented")
+}
+func (UnimplementedQueryServer) GetLatestAvailableNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestAvailableNetworkInference not implemented")
 }
 func (UnimplementedQueryServer) GetIsWorkerNonceUnfulfilled(context.Context, *QueryIsWorkerNonceUnfulfilledRequest) (*QueryIsWorkerNonceUnfulfilledResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIsWorkerNonceUnfulfilled not implemented")
@@ -1097,6 +1136,12 @@ func (UnimplementedQueryServer) GetPreviousPercentageRewardToStakedReputers(cont
 }
 func (UnimplementedQueryServer) GetTotalRewardToDistribute(context.Context, *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTotalRewardToDistribute not implemented")
+}
+func (UnimplementedQueryServer) GetTopicLastWorkerPayload(context.Context, *QueryTopicLastWorkerPayloadRequest) (*QueryTopicLastWorkerPayloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicLastWorkerPayload not implemented")
+}
+func (UnimplementedQueryServer) GetTopicLastReputerPayload(context.Context, *QueryTopicLastReputerPayloadRequest) (*QueryTopicLastReputerPayloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopicLastReputerPayload not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1616,7 +1661,7 @@ func _Query_GetNetworkInferencesAtBlock_Handler(srv interface{}, ctx context.Con
 }
 
 func _Query_GetLatestNetworkInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLatestNetworkInferencesAtBlockRequest)
+	in := new(QueryLatestNetworkInferencesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1628,7 +1673,25 @@ func _Query_GetLatestNetworkInference_Handler(srv interface{}, ctx context.Conte
 		FullMethod: Query_GetLatestNetworkInference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetLatestNetworkInference(ctx, req.(*QueryLatestNetworkInferencesAtBlockRequest))
+		return srv.(QueryServer).GetLatestNetworkInference(ctx, req.(*QueryLatestNetworkInferencesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetLatestAvailableNetworkInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryLatestNetworkInferencesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetLatestAvailableNetworkInference(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetLatestAvailableNetworkInference_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetLatestAvailableNetworkInference(ctx, req.(*QueryLatestNetworkInferencesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2371,6 +2434,42 @@ func _Query_GetTotalRewardToDistribute_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetTopicLastWorkerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicLastWorkerPayloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicLastWorkerPayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTopicLastWorkerPayload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicLastWorkerPayload(ctx, req.(*QueryTopicLastWorkerPayloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetTopicLastReputerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryTopicLastReputerPayloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetTopicLastReputerPayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetTopicLastReputerPayload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetTopicLastReputerPayload(ctx, req.(*QueryTopicLastReputerPayloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2493,6 +2592,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetLatestNetworkInference",
 			Handler:    _Query_GetLatestNetworkInference_Handler,
+		},
+		{
+			MethodName: "GetLatestAvailableNetworkInference",
+			Handler:    _Query_GetLatestAvailableNetworkInference_Handler,
 		},
 		{
 			MethodName: "GetIsWorkerNonceUnfulfilled",
@@ -2657,6 +2760,14 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTotalRewardToDistribute",
 			Handler:    _Query_GetTotalRewardToDistribute_Handler,
+		},
+		{
+			MethodName: "GetTopicLastWorkerPayload",
+			Handler:    _Query_GetTopicLastWorkerPayload_Handler,
+		},
+		{
+			MethodName: "GetTopicLastReputerPayload",
+			Handler:    _Query_GetTopicLastReputerPayload_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

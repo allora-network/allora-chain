@@ -227,3 +227,33 @@ func (qs queryServer) GetRewardableTopics(
 
 	return &types.QueryRewardableTopicsResponse{RewardableTopicIds: rewardableTopics}, nil
 }
+
+func (qs queryServer) GetTopicLastWorkerPayload(
+	ctx context.Context,
+	req *types.QueryTopicLastWorkerPayloadRequest,
+) (
+	*types.QueryTopicLastWorkerPayloadResponse,
+	error,
+) {
+	payload, err := qs.k.GetTopicLastWorkerPayload(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryTopicLastWorkerPayloadResponse{Payload: &payload}, nil
+}
+
+func (qs queryServer) GetTopicLastReputerPayload(
+	ctx context.Context,
+	req *types.QueryTopicLastReputerPayloadRequest,
+) (
+	*types.QueryTopicLastReputerPayloadResponse,
+	error,
+) {
+	payload, err := qs.k.GetTopicLastReputerPayload(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryTopicLastReputerPayloadResponse{Payload: &payload}, nil
+}
