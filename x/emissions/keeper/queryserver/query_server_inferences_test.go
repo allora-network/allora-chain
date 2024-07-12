@@ -846,6 +846,11 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	require.Equal(len(response.InfererWeights), 5)
 	require.Equal(len(response.ForecasterWeights), 3)
 	require.Equal(len(response.ForecastImpliedInferences), 3)
+	require.Equal(len(response.ConfidenceIntervalRawPercentiles), 5)
+	require.Equal(len(response.ConfidenceIntervalValues), 5)
+
+	require.Equal(response.InferenceBlockHeight, inferenceBlockHeight2)
+	require.Equal(response.LossBlockHeight, lossBlockHeight)
 }
 
 func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingInferences() {

@@ -3,6 +3,8 @@ package math
 import (
 	"cmp"
 	"sort"
+
+	"errors"
 )
 
 // all exponential moving average functions take the form
@@ -229,6 +231,145 @@ func Phi(p, c, x Dec) (Dec, error) {
 	result, err := Ln(onePlusEToThePtimesXminusC)
 	if err != nil {
 		return Dec{}, err
+	}
+
+	return result, nil
+}
+
+// CumulativeSum calculates the cumulative sum of an array of Dec values.
+func CumulativeSum(arr []Dec) ([]Dec, error) {
+	result := make([]Dec, len(arr))
+	sum := ZeroDec()
+
+	for i, val := range arr {
+		var err error
+		sum, err = sum.Add(val)
+		if err != nil {
+			return nil, err
+		}
+		result[i] = sum
+	}
+	return result, nil
+}
+
+// LinearInterpolation performs linear interpolation on Dec values.
+func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
+	if len(xp) != len(fp) {
+		return nil, errors.New("xp and fp must have the same length")
+	}
+
+	result := make([]Dec, len(x))
+	for i, xi := range x {
+		if xi.Lte(xp[0]) {
+			result[i] = fp[0]
+		} else if xi.Gte(xp[len(xp)-1]) {
+			result[i] = fp[len(fp)-1]
+		} else {
+			// Find the interval xp[i] <= xi < xp[i + 1]
+			j := 0
+			for xi.Gte(xp[j+1]) {
+				j++
+			}
+			// Linear interpolation formula
+			denominator, err := xp[j+1].Sub(xp[j])
+			if err != nil {
+				return nil, err
+			}
+			numerator, err := xi.Sub(xp[j])
+			if err != nil {
+				return nil, err
+			}
+			t, err := numerator.Quo(denominator)
+			if err != nil {
+				return nil, err
+			}
+			oneMinusT, err := OneDec().Sub(t)
+			if err != nil {
+				return nil, err
+			}
+			fpjMulOneMinusT, err := fp[j].Mul(oneMinusT)
+			if err != nil {
+				return nil, err
+			}
+			fpjPlusOneMulT, err := fp[j+1].Mul(t)
+			if err != nil {
+				return nil, err
+			}
+			fp_j_t, err := fpjMulOneMinusT.Add(fpjPlusOneMulT)
+			if err != nil {
+				return nil, err
+			}
+			result[i] = fp_j_t
+		}
+	}
+	return result, nil
+}
+
+// WeightedPercentile calculates weighted percentiles of Dec values.
+func WeightedPercentile(data, weights, percentiles []Dec) ([]Dec, error) {
+	if len(weights) != len(data) {
+		return nil, errors.New("the length of data and weights must be the same")
+	}
+	hundred := MustNewDecFromString("100")
+	zero := ZeroDec()
+	for _, p := range percentiles {
+		if p.Gt(hundred) || p.Lt(zero) {
+			return nil, errors.New("percentile must have a value between 0 and 100")
+		}
+	}
+
+	// Sort data and weights
+	type pair struct {
+		value  Dec
+		weight Dec
+	}
+	pairs := make([]pair, len(data))
+	for i := range data {
+		pairs[i] = pair{data[i], weights[i]}
+	}
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].value.Lt(pairs[j].value)
+	})
+
+	sortedData := make([]Dec, len(data))
+	sortedWeights := make([]Dec, len(data))
+	for i := range pairs {
+		sortedData[i] = pairs[i].value
+		sortedWeights[i] = pairs[i].weight
+	}
+
+	// Compute the cumulative sum of weights and normalize by the last value
+	csw, err := CumulativeSum(sortedWeights)
+	if err != nil {
+		return nil, err
+	}
+	normalizedWeights := make([]Dec, len(csw))
+	for i, value := range csw {
+		halfWeight, err := sortedWeights[i].Quo(NewDecFromInt64(2))
+		if err != nil {
+			return nil, err
+		}
+		valueSubHalfWeight, err := value.Sub(halfWeight)
+		if err != nil {
+			return nil, err
+		}
+		normalizedWeights[i], err = valueSubHalfWeight.Quo(csw[len(csw)-1])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Interpolate to compute the percentiles
+	quantiles := make([]Dec, len(percentiles))
+	for i, p := range percentiles {
+		quantiles[i], err = p.Quo(hundred)
+		if err != nil {
+			return nil, err
+		}
+	}
+	result, err := LinearInterpolation(quantiles, normalizedWeights, sortedData)
+	if err != nil {
+		return nil, err
 	}
 
 	return result, nil

@@ -9,6 +9,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -101,16 +102,34 @@ func (qs queryServer) GetLatestNetworkInference(
 		return nil, err
 	}
 
+	ciRawPercentiles, ciValues, err :=
+		qs.GetConfidenceIntervalsForInferenceData(
+			networkInferences,
+			forecastImpliedInferenceByWorker,
+			infererWeights,
+			forecasterWeights,
+		)
+
+	if ciRawPercentiles == nil {
+		ciRawPercentiles = []alloraMath.Dec{}
+	}
+
+	if ciValues == nil {
+		ciValues = []alloraMath.Dec{}
+	}
+
 	inferers := alloraMath.GetSortedKeys(infererWeights)
 	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
 
 	return &types.QueryLatestNetworkInferencesResponse{
-		NetworkInferences:         networkInferences,
-		InfererWeights:            synth.ConvertWeightsToArrays(inferers, infererWeights),
-		ForecasterWeights:         synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
-		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
-		InferenceBlockHeight:      inferenceBlockHeight,
-		LossBlockHeight:           lossBlockHeight,
+		NetworkInferences:                networkInferences,
+		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
+		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
+		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
+		InferenceBlockHeight:             inferenceBlockHeight,
+		LossBlockHeight:                  lossBlockHeight,
+		ConfidenceIntervalRawPercentiles: ciRawPercentiles,
+		ConfidenceIntervalValues:         ciValues,
 	}, nil
 }
 
@@ -140,22 +159,87 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 			lastWorkerCommit.Nonce.BlockHeight,
 			lastReputerCommit.Nonce.BlockHeight,
 		)
-
 	if err != nil {
 		return nil, err
+	}
+
+	ciRawPercentiles, ciValues, err :=
+		qs.GetConfidenceIntervalsForInferenceData(
+			networkInferences,
+			forecastImpliedInferenceByWorker,
+			infererWeights,
+			forecasterWeights,
+		)
+
+	if ciRawPercentiles == nil {
+		ciRawPercentiles = []alloraMath.Dec{}
+	}
+
+	if ciValues == nil {
+		ciValues = []alloraMath.Dec{}
 	}
 
 	inferers := alloraMath.GetSortedKeys(infererWeights)
 	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
 
 	return &types.QueryLatestNetworkInferencesResponse{
-		NetworkInferences:         networkInferences,
-		InfererWeights:            synth.ConvertWeightsToArrays(inferers, infererWeights),
-		ForecasterWeights:         synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
-		ForecastImpliedInferences: synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
-		InferenceBlockHeight:      lastWorkerCommit.Nonce.BlockHeight,
-		LossBlockHeight:           lastReputerCommit.Nonce.BlockHeight,
+		NetworkInferences:                networkInferences,
+		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
+		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
+		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
+		InferenceBlockHeight:             lastWorkerCommit.Nonce.BlockHeight,
+		LossBlockHeight:                  lastReputerCommit.Nonce.BlockHeight,
+		ConfidenceIntervalRawPercentiles: ciRawPercentiles,
+		ConfidenceIntervalValues:         ciValues,
 	}, nil
+}
+
+func (qs queryServer) GetConfidenceIntervalsForInferenceData(
+	networkInferences *emissions.ValueBundle,
+	forecastImpliedInferenceByWorker map[string]*emissions.Inference,
+	infererWeights map[string]alloraMath.Dec,
+	forecasterWeights map[string]alloraMath.Dec,
+) ([]alloraMath.Dec, []alloraMath.Dec, error) {
+	var inferences []alloraMath.Dec // from inferers + forecast-implied inferences
+	var weights []alloraMath.Dec    // weights of all workers
+
+	for _, inference := range networkInferences.InfererValues {
+		weight, exists := infererWeights[inference.Worker]
+		if exists {
+			inferences = append(inferences, inference.Value)
+			weights = append(weights, weight)
+		}
+	}
+
+	for _, forecast := range networkInferences.ForecasterValues {
+		weight, exists := forecasterWeights[forecast.Worker]
+		if exists {
+			inferences = append(inferences, forecastImpliedInferenceByWorker[forecast.Worker].Value)
+			weights = append(weights, weight)
+		}
+	}
+
+	ciRawPercentiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("2.28"),
+		alloraMath.MustNewDecFromString("15.87"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.MustNewDecFromString("84.13"),
+		alloraMath.MustNewDecFromString("97.72"),
+	}
+
+	var ciValues []alloraMath.Dec
+	var err error
+	if len(inferences) == 0 {
+		ciRawPercentiles = []alloraMath.Dec{}
+		ciValues = []alloraMath.Dec{}
+	} else {
+		ciValues, err = alloraMath.WeightedPercentile(inferences, weights, ciRawPercentiles)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	return ciRawPercentiles, ciValues, nil
 }
 
 func (qs queryServer) GetLatestTopicInferences(

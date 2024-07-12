@@ -27297,14 +27297,108 @@ func (x *_QueryLatestNetworkInferencesResponse_4_list) IsValid() bool {
 	return x.list != nil
 }
 
+var _ protoreflect.List = (*_QueryLatestNetworkInferencesResponse_7_list)(nil)
+
+type _QueryLatestNetworkInferencesResponse_7_list struct {
+	list *[]string
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_7_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_7_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_7_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_7_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_7_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message QueryLatestNetworkInferencesResponse at list field ConfidenceIntervalRawPercentiles as it is not of Message kind"))
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_7_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_7_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_7_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_QueryLatestNetworkInferencesResponse_8_list)(nil)
+
+type _QueryLatestNetworkInferencesResponse_8_list struct {
+	list *[]string
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_8_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_8_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfString((*x.list)[i])
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_8_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_8_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.String()
+	concreteValue := valueUnwrapped
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_8_list) AppendMutable() protoreflect.Value {
+	panic(fmt.Errorf("AppendMutable can not be called on message QueryLatestNetworkInferencesResponse at list field ConfidenceIntervalValues as it is not of Message kind"))
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_8_list) Truncate(n int) {
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_8_list) NewElement() protoreflect.Value {
+	v := ""
+	return protoreflect.ValueOfString(v)
+}
+
+func (x *_QueryLatestNetworkInferencesResponse_8_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
-	md_QueryLatestNetworkInferencesResponse                           protoreflect.MessageDescriptor
-	fd_QueryLatestNetworkInferencesResponse_network_inferences        protoreflect.FieldDescriptor
-	fd_QueryLatestNetworkInferencesResponse_inferer_weights           protoreflect.FieldDescriptor
-	fd_QueryLatestNetworkInferencesResponse_forecaster_weights        protoreflect.FieldDescriptor
-	fd_QueryLatestNetworkInferencesResponse_forecastImpliedInferences protoreflect.FieldDescriptor
-	fd_QueryLatestNetworkInferencesResponse_inference_block_height    protoreflect.FieldDescriptor
-	fd_QueryLatestNetworkInferencesResponse_loss_block_height         protoreflect.FieldDescriptor
+	md_QueryLatestNetworkInferencesResponse                                     protoreflect.MessageDescriptor
+	fd_QueryLatestNetworkInferencesResponse_network_inferences                  protoreflect.FieldDescriptor
+	fd_QueryLatestNetworkInferencesResponse_inferer_weights                     protoreflect.FieldDescriptor
+	fd_QueryLatestNetworkInferencesResponse_forecaster_weights                  protoreflect.FieldDescriptor
+	fd_QueryLatestNetworkInferencesResponse_forecastImpliedInferences           protoreflect.FieldDescriptor
+	fd_QueryLatestNetworkInferencesResponse_inference_block_height              protoreflect.FieldDescriptor
+	fd_QueryLatestNetworkInferencesResponse_loss_block_height                   protoreflect.FieldDescriptor
+	fd_QueryLatestNetworkInferencesResponse_confidence_interval_raw_percentiles protoreflect.FieldDescriptor
+	fd_QueryLatestNetworkInferencesResponse_confidence_interval_values          protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -27316,6 +27410,8 @@ func init() {
 	fd_QueryLatestNetworkInferencesResponse_forecastImpliedInferences = md_QueryLatestNetworkInferencesResponse.Fields().ByName("forecastImpliedInferences")
 	fd_QueryLatestNetworkInferencesResponse_inference_block_height = md_QueryLatestNetworkInferencesResponse.Fields().ByName("inference_block_height")
 	fd_QueryLatestNetworkInferencesResponse_loss_block_height = md_QueryLatestNetworkInferencesResponse.Fields().ByName("loss_block_height")
+	fd_QueryLatestNetworkInferencesResponse_confidence_interval_raw_percentiles = md_QueryLatestNetworkInferencesResponse.Fields().ByName("confidence_interval_raw_percentiles")
+	fd_QueryLatestNetworkInferencesResponse_confidence_interval_values = md_QueryLatestNetworkInferencesResponse.Fields().ByName("confidence_interval_values")
 }
 
 var _ protoreflect.Message = (*fastReflection_QueryLatestNetworkInferencesResponse)(nil)
@@ -27419,6 +27515,18 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) Range(f func(proto
 			return
 		}
 	}
+	if len(x.ConfidenceIntervalRawPercentiles) != 0 {
+		value := protoreflect.ValueOfList(&_QueryLatestNetworkInferencesResponse_7_list{list: &x.ConfidenceIntervalRawPercentiles})
+		if !f(fd_QueryLatestNetworkInferencesResponse_confidence_interval_raw_percentiles, value) {
+			return
+		}
+	}
+	if len(x.ConfidenceIntervalValues) != 0 {
+		value := protoreflect.ValueOfList(&_QueryLatestNetworkInferencesResponse_8_list{list: &x.ConfidenceIntervalValues})
+		if !f(fd_QueryLatestNetworkInferencesResponse_confidence_interval_values, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -27446,6 +27554,10 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) Has(fd protoreflec
 		return x.InferenceBlockHeight != int64(0)
 	case "emissions.v1.QueryLatestNetworkInferencesResponse.loss_block_height":
 		return x.LossBlockHeight != int64(0)
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_raw_percentiles":
+		return len(x.ConfidenceIntervalRawPercentiles) != 0
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_values":
+		return len(x.ConfidenceIntervalValues) != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.QueryLatestNetworkInferencesResponse"))
@@ -27474,6 +27586,10 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) Clear(fd protorefl
 		x.InferenceBlockHeight = int64(0)
 	case "emissions.v1.QueryLatestNetworkInferencesResponse.loss_block_height":
 		x.LossBlockHeight = int64(0)
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_raw_percentiles":
+		x.ConfidenceIntervalRawPercentiles = nil
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_values":
+		x.ConfidenceIntervalValues = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.QueryLatestNetworkInferencesResponse"))
@@ -27517,6 +27633,18 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) Get(descriptor pro
 	case "emissions.v1.QueryLatestNetworkInferencesResponse.loss_block_height":
 		value := x.LossBlockHeight
 		return protoreflect.ValueOfInt64(value)
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_raw_percentiles":
+		if len(x.ConfidenceIntervalRawPercentiles) == 0 {
+			return protoreflect.ValueOfList(&_QueryLatestNetworkInferencesResponse_7_list{})
+		}
+		listValue := &_QueryLatestNetworkInferencesResponse_7_list{list: &x.ConfidenceIntervalRawPercentiles}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_values":
+		if len(x.ConfidenceIntervalValues) == 0 {
+			return protoreflect.ValueOfList(&_QueryLatestNetworkInferencesResponse_8_list{})
+		}
+		listValue := &_QueryLatestNetworkInferencesResponse_8_list{list: &x.ConfidenceIntervalValues}
+		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.QueryLatestNetworkInferencesResponse"))
@@ -27555,6 +27683,14 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) Set(fd protoreflec
 		x.InferenceBlockHeight = value.Int()
 	case "emissions.v1.QueryLatestNetworkInferencesResponse.loss_block_height":
 		x.LossBlockHeight = value.Int()
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_raw_percentiles":
+		lv := value.List()
+		clv := lv.(*_QueryLatestNetworkInferencesResponse_7_list)
+		x.ConfidenceIntervalRawPercentiles = *clv.list
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_values":
+		lv := value.List()
+		clv := lv.(*_QueryLatestNetworkInferencesResponse_8_list)
+		x.ConfidenceIntervalValues = *clv.list
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.QueryLatestNetworkInferencesResponse"))
@@ -27598,6 +27734,18 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) Mutable(fd protore
 		}
 		value := &_QueryLatestNetworkInferencesResponse_4_list{list: &x.ForecastImpliedInferences}
 		return protoreflect.ValueOfList(value)
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_raw_percentiles":
+		if x.ConfidenceIntervalRawPercentiles == nil {
+			x.ConfidenceIntervalRawPercentiles = []string{}
+		}
+		value := &_QueryLatestNetworkInferencesResponse_7_list{list: &x.ConfidenceIntervalRawPercentiles}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_values":
+		if x.ConfidenceIntervalValues == nil {
+			x.ConfidenceIntervalValues = []string{}
+		}
+		value := &_QueryLatestNetworkInferencesResponse_8_list{list: &x.ConfidenceIntervalValues}
+		return protoreflect.ValueOfList(value)
 	case "emissions.v1.QueryLatestNetworkInferencesResponse.inference_block_height":
 		panic(fmt.Errorf("field inference_block_height of message emissions.v1.QueryLatestNetworkInferencesResponse is not mutable"))
 	case "emissions.v1.QueryLatestNetworkInferencesResponse.loss_block_height":
@@ -27631,6 +27779,12 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) NewField(fd protor
 		return protoreflect.ValueOfInt64(int64(0))
 	case "emissions.v1.QueryLatestNetworkInferencesResponse.loss_block_height":
 		return protoreflect.ValueOfInt64(int64(0))
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_raw_percentiles":
+		list := []string{}
+		return protoreflect.ValueOfList(&_QueryLatestNetworkInferencesResponse_7_list{list: &list})
+	case "emissions.v1.QueryLatestNetworkInferencesResponse.confidence_interval_values":
+		list := []string{}
+		return protoreflect.ValueOfList(&_QueryLatestNetworkInferencesResponse_8_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.QueryLatestNetworkInferencesResponse"))
@@ -27728,6 +27882,18 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) ProtoMethods() *pr
 		if x.LossBlockHeight != 0 {
 			n += 1 + runtime.Sov(uint64(x.LossBlockHeight))
 		}
+		if len(x.ConfidenceIntervalRawPercentiles) > 0 {
+			for _, s := range x.ConfidenceIntervalRawPercentiles {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.ConfidenceIntervalValues) > 0 {
+			for _, s := range x.ConfidenceIntervalValues {
+				l = len(s)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -27756,6 +27922,24 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) ProtoMethods() *pr
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.ConfidenceIntervalValues) > 0 {
+			for iNdEx := len(x.ConfidenceIntervalValues) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.ConfidenceIntervalValues[iNdEx])
+				copy(dAtA[i:], x.ConfidenceIntervalValues[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ConfidenceIntervalValues[iNdEx])))
+				i--
+				dAtA[i] = 0x42
+			}
+		}
+		if len(x.ConfidenceIntervalRawPercentiles) > 0 {
+			for iNdEx := len(x.ConfidenceIntervalRawPercentiles) - 1; iNdEx >= 0; iNdEx-- {
+				i -= len(x.ConfidenceIntervalRawPercentiles[iNdEx])
+				copy(dAtA[i:], x.ConfidenceIntervalRawPercentiles[iNdEx])
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ConfidenceIntervalRawPercentiles[iNdEx])))
+				i--
+				dAtA[i] = 0x3a
+			}
 		}
 		if x.LossBlockHeight != 0 {
 			i = runtime.EncodeVarint(dAtA, i, uint64(x.LossBlockHeight))
@@ -28054,6 +28238,70 @@ func (x *fastReflection_QueryLatestNetworkInferencesResponse) ProtoMethods() *pr
 						break
 					}
 				}
+			case 7:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ConfidenceIntervalRawPercentiles", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ConfidenceIntervalRawPercentiles = append(x.ConfidenceIntervalRawPercentiles, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
+			case 8:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ConfidenceIntervalValues", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ConfidenceIntervalValues = append(x.ConfidenceIntervalValues, string(dAtA[iNdEx:postIndex]))
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -65985,12 +66233,14 @@ type QueryLatestNetworkInferencesResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	NetworkInferences         *ValueBundle             `protobuf:"bytes,1,opt,name=network_inferences,json=networkInferences,proto3" json:"network_inferences,omitempty"`
-	InfererWeights            []*RegretInformedWeight  `protobuf:"bytes,2,rep,name=inferer_weights,json=infererWeights,proto3" json:"inferer_weights,omitempty"`
-	ForecasterWeights         []*RegretInformedWeight  `protobuf:"bytes,3,rep,name=forecaster_weights,json=forecasterWeights,proto3" json:"forecaster_weights,omitempty"`
-	ForecastImpliedInferences []*WorkerAttributedValue `protobuf:"bytes,4,rep,name=forecastImpliedInferences,proto3" json:"forecastImpliedInferences,omitempty"`
-	InferenceBlockHeight      int64                    `protobuf:"varint,5,opt,name=inference_block_height,json=inferenceBlockHeight,proto3" json:"inference_block_height,omitempty"`
-	LossBlockHeight           int64                    `protobuf:"varint,6,opt,name=loss_block_height,json=lossBlockHeight,proto3" json:"loss_block_height,omitempty"`
+	NetworkInferences                *ValueBundle             `protobuf:"bytes,1,opt,name=network_inferences,json=networkInferences,proto3" json:"network_inferences,omitempty"`
+	InfererWeights                   []*RegretInformedWeight  `protobuf:"bytes,2,rep,name=inferer_weights,json=infererWeights,proto3" json:"inferer_weights,omitempty"`
+	ForecasterWeights                []*RegretInformedWeight  `protobuf:"bytes,3,rep,name=forecaster_weights,json=forecasterWeights,proto3" json:"forecaster_weights,omitempty"`
+	ForecastImpliedInferences        []*WorkerAttributedValue `protobuf:"bytes,4,rep,name=forecastImpliedInferences,proto3" json:"forecastImpliedInferences,omitempty"`
+	InferenceBlockHeight             int64                    `protobuf:"varint,5,opt,name=inference_block_height,json=inferenceBlockHeight,proto3" json:"inference_block_height,omitempty"`
+	LossBlockHeight                  int64                    `protobuf:"varint,6,opt,name=loss_block_height,json=lossBlockHeight,proto3" json:"loss_block_height,omitempty"`
+	ConfidenceIntervalRawPercentiles []string                 `protobuf:"bytes,7,rep,name=confidence_interval_raw_percentiles,json=confidenceIntervalRawPercentiles,proto3" json:"confidence_interval_raw_percentiles,omitempty"`
+	ConfidenceIntervalValues         []string                 `protobuf:"bytes,8,rep,name=confidence_interval_values,json=confidenceIntervalValues,proto3" json:"confidence_interval_values,omitempty"`
 }
 
 func (x *QueryLatestNetworkInferencesResponse) Reset() {
@@ -66053,6 +66303,20 @@ func (x *QueryLatestNetworkInferencesResponse) GetLossBlockHeight() int64 {
 		return x.LossBlockHeight
 	}
 	return 0
+}
+
+func (x *QueryLatestNetworkInferencesResponse) GetConfidenceIntervalRawPercentiles() []string {
+	if x != nil {
+		return x.ConfidenceIntervalRawPercentiles
+	}
+	return nil
+}
+
+func (x *QueryLatestNetworkInferencesResponse) GetConfidenceIntervalValues() []string {
+	if x != nil {
+		return x.ConfidenceIntervalValues
+	}
+	return nil
 }
 
 type QueryIsWorkerRegisteredInTopicIdRequest struct {
@@ -69477,7 +69741,7 @@ var file_emissions_v1_query_proto_rawDesc = []byte{
 	0x28, 0x0b, 0x32, 0x19, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
 	0x31, 0x2e, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x52, 0x11, 0x6e,
 	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
-	0x22, 0xd5, 0x03, 0x0a, 0x24, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x74, 0x65, 0x73, 0x74,
+	0x22, 0xd5, 0x05, 0x0a, 0x24, 0x51, 0x75, 0x65, 0x72, 0x79, 0x4c, 0x61, 0x74, 0x65, 0x73, 0x74,
 	0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
 	0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x48, 0x0a, 0x12, 0x6e, 0x65, 0x74,
 	0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18,
@@ -69506,7 +69770,23 @@ var file_emissions_v1_query_proto_rawDesc = []byte{
 	0x65, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x2a, 0x0a, 0x11,
 	0x6c, 0x6f, 0x73, 0x73, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68,
 	0x74, 0x18, 0x06, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0f, 0x6c, 0x6f, 0x73, 0x73, 0x42, 0x6c, 0x6f,
-	0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x22, 0x5e, 0x0a, 0x27, 0x51, 0x75, 0x65, 0x72,
+	0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x86, 0x01, 0x0a, 0x23, 0x63, 0x6f, 0x6e,
+	0x66, 0x69, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x5f, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c,
+	0x5f, 0x72, 0x61, 0x77, 0x5f, 0x70, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x69, 0x6c, 0x65, 0x73,
+	0x18, 0x07, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
+	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52,
+	0x20, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72,
+	0x76, 0x61, 0x6c, 0x52, 0x61, 0x77, 0x50, 0x65, 0x72, 0x63, 0x65, 0x6e, 0x74, 0x69, 0x6c, 0x65,
+	0x73, 0x12, 0x75, 0x0a, 0x1a, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x5f,
+	0x69, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18,
+	0x08, 0x20, 0x03, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67,
+	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
+	0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d,
+	0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x18,
+	0x63, 0x6f, 0x6e, 0x66, 0x69, 0x64, 0x65, 0x6e, 0x63, 0x65, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x76,
+	0x61, 0x6c, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22, 0x5e, 0x0a, 0x27, 0x51, 0x75, 0x65, 0x72,
 	0x79, 0x49, 0x73, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
 	0x72, 0x65, 0x64, 0x49, 0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75,
 	0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18,
