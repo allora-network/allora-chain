@@ -40,29 +40,30 @@ func doInferenceAndReputation(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 	topic := resp.Topic
-	blockHeightEpochStart := topic.EpochLastEnded + topic.EpochLength
+	workerNonce := topic.EpochLastEnded + topic.EpochLength
 	workers := data.getWorkersForTopic(topicId)
-	iterLog(m.T, iteration, " starting worker bulk topic id ", topicId, " leader worker ", leaderWorker, " workers ", workers)
-	workerBulkErrored := insertWorkerBulk(m, data, topic, leaderWorker, workers, blockHeightEpochStart)
+	iterLog(m.T, iteration, " starting worker bulk topic id ", topicId, " leader worker ", leaderWorker, " workers ", workers, "worker nonce ", workerNonce)
+	workerBulkErrored := insertWorkerBulk(m, data, topic, leaderWorker, workers, workerNonce)
 	if workerBulkErrored {
 		iterFailLog(m.T, iteration, "worker bulk errored topic ", topicId)
 		return
 	}
 	iterLog(m.T, iteration, "produced inference for topic id", topicId)
-	iterLog(m.T, iteration, "waiting for block epoch start", blockHeightEpochStart)
-	err = m.Client.WaitForBlockHeight(ctx, blockHeightEpochStart)
+	iterLog(m.T, iteration, "waiting for block epoch start", workerNonce)
+	err = m.Client.WaitForBlockHeight(ctx, workerNonce)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 	blockHeightNow, err := m.Client.BlockHeight(ctx)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 	reputers := data.getReputersForTopicWithStake(topicId)
+	reputerNonce := blockHeightNow + topic.EpochLength
 	iterLog(
 		m.T, iteration, " starting reputer bulk topic id ", topicId, "leader reputer ", leaderReputer,
-		" workers ", workers, " reputers ", reputers, " block height epoch start ", blockHeightEpochStart,
+		" workers ", workers, " reputers ", reputers, " worker nonce ", workerNonce, " reputer nonce ", reputerNonce,
 		" block height  now ", blockHeightNow,
 	)
-	reputerBulkErrored := insertReputerBulk(m, data, topic, leaderReputer, reputers, workers, blockHeightNow, blockHeightEpochStart)
+	reputerBulkErrored := insertReputerBulk(m, data, topic, leaderReputer, reputers, workers, reputerNonce)
 	if reputerBulkErrored {
 		iterFailLog(m.T, iteration, "reputer bulk errored topic", topicId)
 		return
@@ -101,18 +102,18 @@ func insertWorkerBulk(
 	topic *emissionstypes.Topic,
 	leaderWorker Actor,
 	workers []Actor,
-	blockHeight int64,
+	workerNonce int64,
 ) bool {
 	// Get Bundles
 	workerDataBundles := make([]*emissionstypes.WorkerDataBundle, 0)
 	for _, worker := range workers {
 		workerDataBundles = append(workerDataBundles,
-			generateSingleWorkerBundle(m, topic.Id, blockHeight, worker, workers))
+			generateSingleWorkerBundle(m, topic.Id, workerNonce, worker, workers))
 	}
 	if len(workerDataBundles) == 0 {
 		return true
 	}
-	return insertLeaderWorkerBulk(m, data, topic.Id, blockHeight, leaderWorker, workerDataBundles)
+	return insertLeaderWorkerBulk(m, data, topic.Id, workerNonce, leaderWorker, workerDataBundles)
 }
 
 // create inferences and forecasts for a worker
@@ -172,11 +173,11 @@ func insertLeaderWorkerBulk(
 	m *testcommon.TestConfig,
 	data *SimulationData,
 	topicId uint64,
-	blockHeight int64,
+	workerNonce int64,
 	leaderWorker Actor,
 	WorkerDataBundles []*emissionstypes.WorkerDataBundle) bool {
 	wasErr := false
-	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+	nonce := emissionstypes.Nonce{BlockHeight: workerNonce}
 
 	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &emissionstypes.MsgInsertBulkWorkerPayload{
@@ -209,20 +210,16 @@ func insertReputerBulk(
 	leaderReputer Actor,
 	reputers,
 	workers []Actor,
-	BlockHeightCurrent,
-	BlockHeightEval int64,
+	workerNonce int64,
 ) bool {
 	wasErr := false
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
 	// Nonces are last two blockHeights
 	reputerNonce := &emissionstypes.Nonce{
-		BlockHeight: BlockHeightCurrent,
+		BlockHeight: workerNonce,
 	}
-	workerNonce := &emissionstypes.Nonce{
-		BlockHeight: BlockHeightEval,
-	}
-	valueBundle := generateValueBundle(m, topicId, workers, reputerNonce, workerNonce)
+	valueBundle := generateValueBundle(m, topicId, workers, reputerNonce)
 	reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
 	for _, reputer := range reputers {
 		reputerValueBundle := generateSingleReputerValueBundle(m, reputer, valueBundle)
@@ -237,7 +234,6 @@ func insertReputerBulk(
 		reputerValueBundles,
 		leaderReputer.addr,
 		reputerNonce,
-		workerNonce,
 	)
 	ctx := context.Background()
 	txResp, err := m.Client.BroadcastTx(ctx, leaderReputer.acc, reputerValueBundleMsg)
@@ -257,8 +253,7 @@ func generateValueBundle(
 	m *testcommon.TestConfig,
 	topicId uint64,
 	workers []Actor,
-	reputerNonce,
-	workerNonce *emissionstypes.Nonce,
+	reputerNonce *emissionstypes.Nonce,
 ) emissionstypes.ValueBundle {
 	return emissionstypes.ValueBundle{
 		TopicId:                topicId,
@@ -271,7 +266,6 @@ func generateValueBundle(
 		OneInForecasterValues:  generateWorkerAttributedValueLosses(m, workers, 50, 50),
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 	}
 }
@@ -307,14 +301,13 @@ func generateReputerValueBundleMsg(
 	topicId uint64,
 	reputerValueBundles []*emissionstypes.ReputerValueBundle,
 	leaderReputerAddress string,
-	reputerNonce, workerNonce *emissionstypes.Nonce) *emissionstypes.MsgInsertBulkReputerPayload {
+	reputerNonce *emissionstypes.Nonce) *emissionstypes.MsgInsertBulkReputerPayload {
 
 	return &emissionstypes.MsgInsertBulkReputerPayload{
 		Sender:  leaderReputerAddress,
 		TopicId: topicId,
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 		ReputerValueBundles: reputerValueBundles,
 	}
