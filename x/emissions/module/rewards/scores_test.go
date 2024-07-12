@@ -51,6 +51,7 @@ import (
 func (s *RewardsTestSuite) TestGetInferenceScores() {
 	topicId := uint64(1)
 	block := int64(1003)
+	createNewTopic(s)
 
 	// Generate workers data for tests
 	reportedLosses, err := mockNetworkLosses(s, topicId, block)
@@ -91,6 +92,7 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	topicId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
+	createNewTopic(s)
 
 	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
 	require.NoError(err)
@@ -124,6 +126,8 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 func (s *RewardsTestSuite) TestGetForecastScores() {
 	topicId := uint64(1)
 	block := int64(1003)
+
+	createNewTopic(s)
 
 	// Generate workers data for tests
 	reportedLosses, err := mockNetworkLosses(s, topicId, block)
@@ -164,6 +168,7 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 	topicId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
+	createNewTopic(s)
 
 	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
 	require.NoError(err)

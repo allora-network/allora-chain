@@ -20,19 +20,22 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Greater(m.T, topicIdStart.NextTopicId, uint64(0))
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:         m.AliceAddr,
-		Metadata:        "ETH 24h Prediction",
-		LossLogic:       "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
-		LossMethod:      "loss-calculation-eth.wasm",
-		InferenceLogic:  "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
-		InferenceMethod: "allora-inference-function.wasm",
-		EpochLength:     5,
-		GroundTruthLag:  20,
-		DefaultArg:      "ETH",
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:   true,
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  m.AliceAddr,
+		Metadata:                 "ETH 24h Prediction",
+		LossLogic:                "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
+		LossMethod:               "loss-calculation-eth.wasm",
+		InferenceLogic:           "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
+		InferenceMethod:          "allora-inference-function.wasm",
+		EpochLength:              5,
+		GroundTruthLag:           20,
+		DefaultArg:               "ETH",
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)

@@ -10,17 +10,20 @@ import (
 
 func createNewTopic(s *RewardsTestSuite) uint64 {
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         s.addrs[5].String(),
-		Metadata:        "test",
-		LossLogic:       "logic",
-		LossMethod:      "method",
-		EpochLength:     10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(1),
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  s.addrs[5].String(),
+		Metadata:                 "test",
+		LossLogic:                "logic",
+		LossMethod:               "method",
+		EpochLength:              10800,
+		InferenceLogic:           "Ilogic",
+		InferenceMethod:          "Imethod",
+		DefaultArg:               "ETH",
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
