@@ -73,8 +73,8 @@ func NewClient(
 	client.RpcCounterSeed = 0
 	if rpcConnectionType == RandomBasedOnDeterministicSeed {
 		client.RpcCounterSeed = seed
-		client.Rand = rand.New(rand.NewSource(seed))
 	}
+	client.Rand = rand.New(rand.NewSource(seed))
 
 	for i, rpcAddress := range nodeRpcAddresses {
 		cosmosClient, err := cosmosclient.New(
