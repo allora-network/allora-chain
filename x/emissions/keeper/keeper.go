@@ -66,11 +66,11 @@ type Keeper struct {
 	// map of (topic, block_height, reputer) -> score
 	reputerScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
 	// map of (topic, block_height, worker) -> score
-	latestInfererScoresByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
+	infererScoreEmasByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, block_height, worker) -> score
-	latestForecasterScoresByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
+	forecasterScoreEmasByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, block_height, reputer) -> score
-	latestReputerScoresByReputer collections.Map[collections.Pair[TopicId, ActorId], types.Score]
+	reputerScoreEmasByReputer collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, reputer) -> listening coefficient
 	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, ActorId], types.ListeningCoefficient]
 	// map of (topic, reputer) -> previous reward (used for EMA)
@@ -884,7 +884,8 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce typ
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 	ctx context.Context,
 	topicId TopicId,
-	worker ActorId) (types.Inference, error) {
+	worker ActorId,
+) (types.Inference, error) {
 	key := collections.Join(topicId, worker)
 	return k.inferences.Get(ctx, key)
 }
@@ -1181,7 +1182,8 @@ func (k *Keeper) RemoveReputerStake(
 	blockHeight BlockHeight,
 	topicId TopicId,
 	reputer ActorId,
-	stakeToRemove cosmosMath.Int) error {
+	stakeToRemove cosmosMath.Int,
+) error {
 	// CHECKS
 	if stakeToRemove.IsZero() {
 		return nil
@@ -2091,21 +2093,32 @@ func (k *Keeper) RemoveRewardableTopic(ctx context.Context, topicId TopicId) err
 /// SCORES
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
-	oldScore, err := k.GetLatestInfererScore(ctx, topicId, worker)
+func (k *Keeper) UpdateInfererScoreEma(
+	ctx context.Context,
+	topicId TopicId,
+	alpha alloraMath.Dec,
+	worker ActorId,
+	score types.Score,
+) error {
+	oldScore, err := k.GetInfererScoreEma(ctx, topicId, worker)
 	if err != nil {
 		return err
 	}
 	if oldScore.BlockHeight >= score.BlockHeight {
 		return nil
 	}
+	newScore, err := alloraMath.CalcEma(alpha, score.Score, oldScore.Score, oldScore.TopicId == 0)
+	if err != nil {
+		return err
+	}
+	score.Score = newScore
 	key := collections.Join(topicId, worker)
-	return k.latestInfererScoresByWorker.Set(ctx, key, score)
+	return k.infererScoreEmasByWorker.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
+func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
-	score, err := k.latestInfererScoresByWorker.Get(ctx, key)
+	score, err := k.infererScoreEmasByWorker.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Score{}, nil
@@ -2116,21 +2129,32 @@ func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 }
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
-	oldScore, err := k.GetLatestForecasterScore(ctx, topicId, worker)
+func (k *Keeper) UpdateForecasterScoreEma(
+	ctx context.Context,
+	topicId TopicId,
+	alpha alloraMath.Dec,
+	worker ActorId,
+	score types.Score,
+) error {
+	oldScore, err := k.GetForecasterScoreEma(ctx, topicId, worker)
 	if err != nil {
 		return err
 	}
 	if oldScore.BlockHeight >= score.BlockHeight {
 		return nil
 	}
+	newScore, err := alloraMath.CalcEma(alpha, score.Score, oldScore.Score, oldScore.TopicId == 0)
+	if err != nil {
+		return err
+	}
+	score.Score = newScore
 	key := collections.Join(topicId, worker)
-	return k.latestForecasterScoresByWorker.Set(ctx, key, score)
+	return k.forecasterScoreEmasByWorker.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
+func (k *Keeper) GetForecasterScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
-	score, err := k.latestForecasterScoresByWorker.Get(ctx, key)
+	score, err := k.forecasterScoreEmasByWorker.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Score{}, nil
@@ -2141,21 +2165,32 @@ func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, 
 }
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, reputer ActorId, score types.Score) error {
-	oldScore, err := k.GetLatestReputerScore(ctx, topicId, reputer)
+func (k *Keeper) UpdateReputerScoreEma(
+	ctx context.Context,
+	topicId TopicId,
+	alpha alloraMath.Dec,
+	reputer ActorId,
+	score types.Score,
+) error {
+	oldScore, err := k.GetReputerScoreEma(ctx, topicId, reputer)
 	if err != nil {
 		return err
 	}
 	if oldScore.BlockHeight >= score.BlockHeight {
 		return nil
 	}
+	newScore, err := alloraMath.CalcEma(alpha, score.Score, oldScore.Score, oldScore.TopicId == 0)
+	if err != nil {
+		return err
+	}
+	score.Score = newScore
 	key := collections.Join(topicId, reputer)
-	return k.latestReputerScoresByReputer.Set(ctx, key, score)
+	return k.reputerScoreEmasByReputer.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, reputer ActorId) (types.Score, error) {
+func (k *Keeper) GetReputerScoreEma(ctx context.Context, topicId TopicId, reputer ActorId) (types.Score, error) {
 	key := collections.Join(topicId, reputer)
-	score, err := k.latestReputerScoresByReputer.Get(ctx, key)
+	score, err := k.reputerScoreEmasByReputer.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Score{}, nil

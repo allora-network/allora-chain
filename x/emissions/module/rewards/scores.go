@@ -109,7 +109,7 @@ func GenerateReputerScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
-		err = keeper.SetLatestReputerScore(ctx, topicId, reputer, newScore)
+		err = keeper.UpdateReputerScoreEma(ctx, topicId, topic.AlphaRegret, reputer, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error setting latest reputer score")
 		}
@@ -147,6 +147,11 @@ func GenerateInferenceScores(
 		return newScores, nil
 	}
 
+	topic, err := keeper.GetTopic(ctx, topicId)
+	if err != nil {
+		return []types.Score{}, errors.Wrapf(err, "Error getting topic %v", topicId)
+	}
+
 	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
 		workerNewScore, err := oneOutLoss.Value.Sub(networkLosses.CombinedValue)
 		if err != nil {
@@ -163,7 +168,7 @@ func GenerateInferenceScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
-		err = keeper.SetLatestInfererScore(ctx, topicId, oneOutLoss.Worker, newScore)
+		err = keeper.UpdateInfererScoreEma(ctx, topicId, topic.AlphaRegret, oneOutLoss.Worker, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "error setting latest inferer score")
 		}
@@ -218,6 +223,11 @@ func GenerateForecastScores(
 		return []types.Score{}, errors.Wrapf(err, "Error getting fUniqueAgg")
 	}
 
+	topic, err := keeper.GetTopic(ctx, topicId)
+	if err != nil {
+		return []types.Score{}, errors.Wrapf(err, "Error getting topic %v", topicId)
+	}
+
 	for i, oneInNaiveLoss := range networkLosses.OneInForecasterValues {
 		// Get worker score for one in loss
 		workerScoreOneIn, err := networkLosses.NaiveValue.Sub(oneInNaiveLoss.Value)
@@ -241,7 +251,7 @@ func GenerateForecastScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
 		}
-		err = keeper.SetLatestForecasterScore(ctx, topicId, oneInNaiveLoss.Worker, newScore)
+		err = keeper.UpdateForecasterScoreEma(ctx, topicId, topic.AlphaRegret, oneInNaiveLoss.Worker, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error setting latest forecaster score")
 		}

@@ -29,6 +29,16 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrGroundTruthLagTooBig
 	}
 
+	if err := params.ValidateTopicActiveInfererQuantile(msg.ActiveInfererQuantile); err != nil {
+		return nil, err
+	}
+	if err := params.ValidateTopicActiveForecasterQuantile(msg.ActiveForecasterQuantile); err != nil {
+		return nil, err
+	}
+	if err := params.ValidateTopicActiveReputerQuantile(msg.ActiveReputerQuantile); err != nil {
+		return nil, err
+	}
+
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
 	err = checkBalanceAndSendFee(ctx, ms, msg.Creator, params.CreateTopicFee)
 	if err != nil {

@@ -37,6 +37,7 @@ func (msg *MsgCreateNewTopic) Validate() error {
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
+	// Validation of actor quantiles is stateful and happens in the topic creation handler
 
 	return nil
 }
