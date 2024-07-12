@@ -477,7 +477,7 @@ func (s *KeeperTestSuite) TestGetUnfulfilledWorkerNonces() {
 func (s *KeeperTestSuite) TestGetInfererNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	topicId := s.CreateOneTopic()
 	worker := "worker-address"
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	emptyRegret := types.TimestampedValue{
@@ -491,7 +491,6 @@ func (s *KeeperTestSuite) TestGetInfererNetworkRegret() {
 	}
 	response, err := s.queryServer.GetInfererNetworkRegret(s.ctx, req)
 	s.Require().NoError(err)
-	s.Require().True(response.NotFound)
 	s.Require().Equal(response.Regret, &emptyRegret)
 
 	// Set Inferer Network Regret
@@ -502,13 +501,12 @@ func (s *KeeperTestSuite) TestGetInfererNetworkRegret() {
 	response, err = s.queryServer.GetInfererNetworkRegret(s.ctx, req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &regret)
-	s.Require().False(response.NotFound)
 }
 
 func (s *KeeperTestSuite) TestGetForecasterNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	topicId := s.CreateOneTopic()
 	worker := "worker-address"
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	emptyRegret := types.TimestampedValue{
@@ -522,7 +520,6 @@ func (s *KeeperTestSuite) TestGetForecasterNetworkRegret() {
 	}
 	response, err := s.queryServer.GetForecasterNetworkRegret(s.ctx, req)
 	s.Require().NoError(err)
-	s.Require().True(response.NotFound)
 	s.Require().Equal(response.Regret, &emptyRegret)
 
 	// Set Forecaster Network Regret
@@ -533,13 +530,12 @@ func (s *KeeperTestSuite) TestGetForecasterNetworkRegret() {
 	response, err = s.queryServer.GetForecasterNetworkRegret(s.ctx, req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &regret)
-	s.Require().False(response.NotFound)
 }
 
 func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	topicId := s.CreateOneTopic()
 	forecaster := "forecaster-address"
 	inferer := "inferer-address"
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
@@ -555,7 +551,6 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
 	}
 	response, err := s.queryServer.GetOneInForecasterNetworkRegret(s.ctx, req)
 	s.Require().NoError(err)
-	s.Require().True(response.NotFound)
 	s.Require().Equal(response.Regret, &emptyRegret)
 
 	// Set One In Forecaster Network Regret
@@ -566,13 +561,12 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
 	response, err = s.queryServer.GetOneInForecasterNetworkRegret(s.ctx, req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &regret)
-	s.Require().False(response.NotFound)
 }
 
 func (s *KeeperTestSuite) TestGetOneInForecasterSelfNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	topicId := uint64(1)
+	topicId := s.CreateOneTopic()
 	forecaster := "forecaster-address"
 	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	emptyRegret := types.TimestampedValue{
@@ -586,7 +580,6 @@ func (s *KeeperTestSuite) TestGetOneInForecasterSelfNetworkRegret() {
 	}
 	response, err := s.queryServer.GetOneInForecasterSelfNetworkRegret(s.ctx, req)
 	s.Require().NoError(err)
-	s.Require().True(response.NotFound)
 	s.Require().Equal(response.Regret, &emptyRegret)
 
 	// Set One In Forecaster Self Network Regret
@@ -597,7 +590,6 @@ func (s *KeeperTestSuite) TestGetOneInForecasterSelfNetworkRegret() {
 	response, err = s.queryServer.GetOneInForecasterSelfNetworkRegret(s.ctx, req)
 	s.Require().NoError(err)
 	s.Require().Equal(response.Regret, &regret)
-	s.Require().False(response.NotFound)
 }
 
 func (s *KeeperTestSuite) TestGetLatestTopicInferences() {

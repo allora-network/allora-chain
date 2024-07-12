@@ -186,7 +186,16 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 	types.EmitNewNetworkLossSetEvent(sdkCtx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
 
-	err = synth.GetCalcSetNetworkRegrets(sdkCtx, ms.k, msg.TopicId, networkLossBundle, *msg.ReputerRequestNonce.ReputerNonce, topic.AlphaRegret)
+	err = synth.GetCalcSetNetworkRegrets(
+		sdkCtx,
+		ms.k,
+		msg.TopicId,
+		networkLossBundle,
+		*msg.ReputerRequestNonce.ReputerNonce,
+		topic.AlphaRegret,
+		params.CNorm,
+		topic.PNorm,
+		topic.Epsilon)
 	if err != nil {
 		return nil, err
 	}

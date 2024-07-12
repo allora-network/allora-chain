@@ -1110,18 +1110,6 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	err = k.SetTopic(s.ctx, topicId0, topic)
 	require.NoError(err)
 
-	worker0_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
-	require.NoError(err)
-	require.True(notFound)
-
-	worker1_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
-	require.NoError(err)
-	require.True(notFound)
-
-	worker2_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
-	require.NoError(err)
-	require.True(notFound)
-
 	/// TEST 0 PART A
 
 	s.getRewardsDistribution(
@@ -1133,6 +1121,9 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.1",
 		"0.1",
 	)
+
+	worker0_0, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
+	require.NoError(err)
 
 	/// TEST 0 PART B
 
@@ -1149,17 +1140,23 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.2",
 	)
 
-	worker0_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
-	require.NoError(err)
-	require.False(notFound)
+	worker0_0FirstRegret := worker0_0.Value
 
-	worker1_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
+	worker0_0, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker2_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
+	worker1_0, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
 	require.NoError(err)
-	require.False(notFound)
+
+	worker2_0, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
+	require.NoError(err)
+
+	worker0_0RegretDecrease, err := worker0_0FirstRegret.Sub(worker0_0.Value)
+	require.NoError(err)
+	worker0_0RegretDecreaseRate, err := worker0_0RegretDecrease.Quo(worker0_0FirstRegret)
+	require.NoError(err)
+
+	require.True(worker0_0RegretDecreaseRate.Equal(alphaRegret))
 
 	/// INCREASE ALPHA REGRET
 
@@ -1184,6 +1181,9 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.1",
 	)
 
+	worker0_1, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
+	require.NoError(err)
+
 	/// TEST 1 PART B
 
 	blockHeight3 := blockHeight2 + blockHeightDelta
@@ -1199,24 +1199,28 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.2",
 	)
 
-	blockHeight4 := blockHeight3 + blockHeightDelta
-	s.ctx = s.ctx.WithBlockHeight(blockHeight4)
+	worker0_1FirstRegret := worker0_1.Value
 
-	worker0_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
+	worker0_1, err = k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker1_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[1].String())
+	worker1_1, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[1].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker2_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[2].String())
+	worker2_1, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[2].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	require.True(worker0_0.Value.Gt(worker0_1.Value))
+	worker0_1RegretDecrease, err := worker0_1FirstRegret.Sub(worker0_1.Value)
+	require.NoError(err)
+	worker0_1RegretDecreaseRate, err := worker0_1RegretDecrease.Quo(worker0_1FirstRegret)
+	require.NoError(err)
+	require.True(worker0_1RegretDecreaseRate.Equal(alphaRegret))
+
+	// Check alpha impact in regrets - Topic 0 (alpha 0.1) vs Topic 1 (alpha 0.2)
+	require.True(worker0_1RegretDecreaseRate.Gt(worker0_0RegretDecreaseRate))
+
 	require.True(alloraMath.InDelta(worker1_0.Value, worker1_1.Value, alloraMath.MustNewDecFromString("0.00001")))
-	require.True(alloraMath.InDelta(worker2_0.Value, worker2_1.Value, alloraMath.MustNewDecFromString("0.00001")))
+	require.True(worker2_0.Value.Gt(worker2_1.Value))
 }
 
 func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMoreParticipants() {
