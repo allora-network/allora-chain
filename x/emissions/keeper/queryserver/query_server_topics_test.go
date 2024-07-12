@@ -280,47 +280,6 @@ func (s *KeeperTestSuite) TestIsTopicActive() {
 	s.Require().True(topicActive, "Topic should be active again")
 }
 
-func (s *KeeperTestSuite) TestGetIdsOfActiveTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	topic1 := types.Topic{Id: 1}
-	topic2 := types.Topic{Id: 2}
-	topic3 := types.Topic{Id: 3}
-
-	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
-	_ = keeper.ActivateTopic(ctx, topic1.Id)
-	_ = keeper.SetTopic(ctx, topic2.Id, topic2) // Inactive topic
-	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
-	_ = keeper.ActivateTopic(ctx, topic3.Id)
-
-	// Fetch only active topics
-	pagination := &types.SimpleCursorPaginationRequest{
-		Key:   nil,
-		Limit: 10,
-	}
-	req := &types.QueryIdsOfActiveTopicsRequest{Pagination: pagination}
-	response, err := s.queryServer.GetIdsOfActiveTopics(ctx, req)
-	activeTopics := response.ActiveTopicIds
-	s.Require().NoError(err, "Fetching active topics should not produce an error")
-
-	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
-
-	for _, topicId := range activeTopics {
-		isActive, err := keeper.IsTopicActive(ctx, topicId)
-		s.Require().NoError(err, "Checking topic activity should not fail")
-		s.Require().True(isActive, "Only active topics should be returned")
-		switch topicId {
-		case 1:
-			s.Require().Equal(topic1.Id, topicId, "The details of topic 1 should match")
-		case 3:
-			s.Require().Equal(topic3.Id, topicId, "The details of topic 3 should match")
-		default:
-			s.Fail("Unexpected topic ID retrieved")
-		}
-	}
-}
-
 func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper

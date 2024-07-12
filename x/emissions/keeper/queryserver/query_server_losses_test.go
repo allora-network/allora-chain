@@ -52,7 +52,7 @@ func (s *KeeperTestSuite) TestGetIsReputerNonceUnfulfilled() {
 	s.Require().False(response.IsReputerNonceUnfulfilled)
 
 	// Set reputer nonce
-	err = keeper.AddReputerNonce(ctx, topicId, newNonce, newNonce)
+	err = keeper.AddReputerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 
 	response, err = s.queryServer.GetIsReputerNonceUnfulfilled(s.ctx, req)
@@ -78,7 +78,7 @@ func (s *KeeperTestSuite) TestGetUnfulfilledReputerNonces() {
 	// Set multiple reputer nonces
 	nonceValues := []int64{42, 43, 44}
 	for _, val := range nonceValues {
-		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val}, &types.Nonce{BlockHeight: val})
+		err = keeper.AddReputerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add reputer nonce")
 	}
 
