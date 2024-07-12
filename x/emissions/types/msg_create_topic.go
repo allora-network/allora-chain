@@ -31,8 +31,8 @@ func (msg *MsgCreateNewTopic) Validate() error {
 	if msg.EpochLength <= 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epoch length must be greater than zero")
 	}
-	if msg.GroundTruthLag < 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag cannot be negative")
+	if msg.GroundTruthLag < msg.EpochLength {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag cannot be lower than epoch length")
 	}
 	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) || msg.AlphaRegret.Gt(alloraMath.OneDec()) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")

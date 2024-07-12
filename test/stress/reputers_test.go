@@ -196,8 +196,7 @@ func generateWithheldWorkerAttributedValueLosses(
 func generateValueBundle(
 	topicId uint64,
 	workerAddresses NameToAccountMap,
-	reputerNonce,
-	workerNonce *emissionstypes.Nonce,
+	reputerNonce *emissionstypes.Nonce,
 ) emissionstypes.ValueBundle {
 	return emissionstypes.ValueBundle{
 		TopicId:                topicId,
@@ -210,7 +209,6 @@ func generateValueBundle(
 		OneInForecasterValues:  generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 	}
 }
@@ -247,14 +245,13 @@ func generateReputerValueBundleMsg(
 	topicId uint64,
 	reputerValueBundles []*emissionstypes.ReputerValueBundle,
 	leaderReputerAddress string,
-	reputerNonce, workerNonce *emissionstypes.Nonce) *emissionstypes.MsgInsertBulkReputerPayload {
+	reputerNonce *emissionstypes.Nonce) *emissionstypes.MsgInsertBulkReputerPayload {
 
 	return &emissionstypes.MsgInsertBulkReputerPayload{
 		Sender:  leaderReputerAddress,
 		TopicId: topicId,
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 		ReputerValueBundles: reputerValueBundles,
 	}
@@ -276,11 +273,8 @@ func insertReputerBulk(
 	reputerNonce := &emissionstypes.Nonce{
 		BlockHeight: BlockHeightCurrent,
 	}
-	workerNonce := &emissionstypes.Nonce{
-		BlockHeight: BlockHeightEval,
-	}
 	leaderReputer := reputerAddresses[leaderReputerAccountName]
-	valueBundle := generateValueBundle(topicId, workerAddresses, reputerNonce, workerNonce)
+	valueBundle := generateValueBundle(topicId, workerAddresses, reputerNonce)
 	reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
 	for reputerAddressName := range reputerAddresses {
 		reputer := reputerAddresses[reputerAddressName]
@@ -293,7 +287,6 @@ func insertReputerBulk(
 		reputerValueBundles,
 		leaderReputer.addr,
 		reputerNonce,
-		workerNonce,
 	)
 	LeaderAcc, err := m.Client.AccountRegistryGetByName(leaderReputerAccountName)
 	if err != nil {

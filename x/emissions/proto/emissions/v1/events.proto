@@ -6,18 +6,19 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 import "gogoproto/gogo.proto";
 import "emissions/v1/reputer.proto";
 
-// We choose a denormalized schema for events to balance the size and number of events,
-// as well as the complexity of likely downstream write and read patterns.
-// One likely cares about how the topic performs in totality and may want to update
-// topic state after all topic information is in, or in some chronological order.
-// If one normalizs by actor type, then the event volume is likely to be much higher and
-// one would have to wait an undetermined amount of time (how many actors participated
+// We choose a denormalized schema for events to balance the size and number of
+// events, as well as the complexity of likely downstream write and read
+// patterns. One likely cares about how the topic performs in totality and may
+// want to update topic state after all topic information is in, or in some
+// chronological order. If one normalizs by actor type, then the event volume is
+// likely to be much higher and one would have to wait an undetermined amount of
+// time (how many actors participated
 // == how many events to wait for) to update an topic state-level metric.
-// Furthermore, we know that the size of each of these messages is bounded by the global
-// parameters that bound the max number of actors and topics.
-// If one were to track per-actor-per-type metrics, then one immediately knows that they
-// were included and participated or not in the topic at a particular block height as
-// soon as one event from the topic is recorded.
+// Furthermore, we know that the size of each of these messages is bounded by
+// the global parameters that bound the max number of actors and topics. If one
+// were to track per-actor-per-type metrics, then one immediately knows that
+// they were included and participated or not in the topic at a particular block
+// height as soon as one event from the topic is recorded.
 
 enum ActorType {
   INFERER = 0;

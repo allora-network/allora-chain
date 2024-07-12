@@ -510,6 +510,7 @@ func CreateTopic(ctx context.Context, msgServer types.MsgServer, creator string)
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
