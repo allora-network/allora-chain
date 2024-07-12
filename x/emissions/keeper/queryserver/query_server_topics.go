@@ -150,39 +150,6 @@ func (qs queryServer) IsTopicActive(
 	return &types.QueryIsTopicActiveResponse{IsActive: isActive}, nil
 }
 
-func (qs queryServer) GetIdsOfActiveTopics(
-	ctx context.Context,
-	req *types.QueryIdsOfActiveTopicsRequest,
-) (
-	*types.QueryIdsOfActiveTopicsResponse,
-	error,
-) {
-	activeTopicIds, paginationResponse, err := qs.k.GetIdsOfActiveTopics(ctx, req.Pagination)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryIdsOfActiveTopicsResponse{
-		ActiveTopicIds: activeTopicIds,
-		Pagination:     paginationResponse,
-	}, nil
-}
-
-func (qs queryServer) GetTopicEpochLastEnded(
-	ctx context.Context,
-	req *types.QueryTopicEpochLastEndedRequest,
-) (
-	*types.QueryTopicEpochLastEndedResponse,
-	error,
-) {
-	epochLastEnded, err := qs.k.GetTopicEpochLastEnded(ctx, req.TopicId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryTopicEpochLastEndedResponse{EpochLastEnded: epochLastEnded}, nil
-}
-
 func (qs queryServer) GetTopicFeeRevenue(
 	ctx context.Context,
 	req *types.QueryTopicFeeRevenueRequest,

@@ -1665,15 +1665,6 @@ func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId,
 	return k.topics.Set(ctx, topicId, topic)
 }
 
-func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TopicId) (BlockHeight, error) {
-	topic, err := k.topics.Get(ctx, topicId)
-	if err != nil {
-		return 0, err
-	}
-	ret := topic.EpochLastEnded
-	return ret, nil
-}
-
 // True if worker is registered in topic, else False
 func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId, worker ActorId) (bool, error) {
 	topickey := collections.Join(topicId, worker)

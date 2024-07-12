@@ -71,8 +71,6 @@ const (
 	Query_GetPreviousTopicWeight_FullMethodName                      = "/emissions.v1.Query/GetPreviousTopicWeight"
 	Query_TopicExists_FullMethodName                                 = "/emissions.v1.Query/TopicExists"
 	Query_IsTopicActive_FullMethodName                               = "/emissions.v1.Query/IsTopicActive"
-	Query_GetIdsOfActiveTopics_FullMethodName                        = "/emissions.v1.Query/GetIdsOfActiveTopics"
-	Query_GetTopicEpochLastEnded_FullMethodName                      = "/emissions.v1.Query/GetTopicEpochLastEnded"
 	Query_GetTopicFeeRevenue_FullMethodName                          = "/emissions.v1.Query/GetTopicFeeRevenue"
 	Query_GetChurnableTopics_FullMethodName                          = "/emissions.v1.Query/GetChurnableTopics"
 	Query_GetRewardableTopics_FullMethodName                         = "/emissions.v1.Query/GetRewardableTopics"
@@ -151,8 +149,6 @@ type QueryClient interface {
 	GetPreviousTopicWeight(ctx context.Context, in *QueryPreviousTopicWeightRequest, opts ...grpc.CallOption) (*QueryPreviousTopicWeightResponse, error)
 	TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error)
 	IsTopicActive(ctx context.Context, in *QueryIsTopicActiveRequest, opts ...grpc.CallOption) (*QueryIsTopicActiveResponse, error)
-	GetIdsOfActiveTopics(ctx context.Context, in *QueryIdsOfActiveTopicsRequest, opts ...grpc.CallOption) (*QueryIdsOfActiveTopicsResponse, error)
-	GetTopicEpochLastEnded(ctx context.Context, in *QueryTopicEpochLastEndedRequest, opts ...grpc.CallOption) (*QueryTopicEpochLastEndedResponse, error)
 	GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error)
 	GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error)
@@ -650,24 +646,6 @@ func (c *queryClient) IsTopicActive(ctx context.Context, in *QueryIsTopicActiveR
 	return out, nil
 }
 
-func (c *queryClient) GetIdsOfActiveTopics(ctx context.Context, in *QueryIdsOfActiveTopicsRequest, opts ...grpc.CallOption) (*QueryIdsOfActiveTopicsResponse, error) {
-	out := new(QueryIdsOfActiveTopicsResponse)
-	err := c.cc.Invoke(ctx, Query_GetIdsOfActiveTopics_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) GetTopicEpochLastEnded(ctx context.Context, in *QueryTopicEpochLastEndedRequest, opts ...grpc.CallOption) (*QueryTopicEpochLastEndedResponse, error) {
-	out := new(QueryTopicEpochLastEndedResponse)
-	err := c.cc.Invoke(ctx, Query_GetTopicEpochLastEnded_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error) {
 	out := new(QueryTopicFeeRevenueResponse)
 	err := c.cc.Invoke(ctx, Query_GetTopicFeeRevenue_FullMethodName, in, out, opts...)
@@ -896,8 +874,6 @@ type QueryServer interface {
 	GetPreviousTopicWeight(context.Context, *QueryPreviousTopicWeightRequest) (*QueryPreviousTopicWeightResponse, error)
 	TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error)
 	IsTopicActive(context.Context, *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error)
-	GetIdsOfActiveTopics(context.Context, *QueryIdsOfActiveTopicsRequest) (*QueryIdsOfActiveTopicsResponse, error)
-	GetTopicEpochLastEnded(context.Context, *QueryTopicEpochLastEndedRequest) (*QueryTopicEpochLastEndedResponse, error)
 	GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error)
 	GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error)
@@ -1079,12 +1055,6 @@ func (UnimplementedQueryServer) TopicExists(context.Context, *QueryTopicExistsRe
 }
 func (UnimplementedQueryServer) IsTopicActive(context.Context, *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsTopicActive not implemented")
-}
-func (UnimplementedQueryServer) GetIdsOfActiveTopics(context.Context, *QueryIdsOfActiveTopicsRequest) (*QueryIdsOfActiveTopicsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetIdsOfActiveTopics not implemented")
-}
-func (UnimplementedQueryServer) GetTopicEpochLastEnded(context.Context, *QueryTopicEpochLastEndedRequest) (*QueryTopicEpochLastEndedResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTopicEpochLastEnded not implemented")
 }
 func (UnimplementedQueryServer) GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicFeeRevenue not implemented")
@@ -2092,42 +2062,6 @@ func _Query_IsTopicActive_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetIdsOfActiveTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryIdsOfActiveTopicsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetIdsOfActiveTopics(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetIdsOfActiveTopics_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetIdsOfActiveTopics(ctx, req.(*QueryIdsOfActiveTopicsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_GetTopicEpochLastEnded_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTopicEpochLastEndedRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetTopicEpochLastEnded(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetTopicEpochLastEnded_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetTopicEpochLastEnded(ctx, req.(*QueryTopicEpochLastEndedRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_GetTopicFeeRevenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryTopicFeeRevenueRequest)
 	if err := dec(in); err != nil {
@@ -2684,14 +2618,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IsTopicActive",
 			Handler:    _Query_IsTopicActive_Handler,
-		},
-		{
-			MethodName: "GetIdsOfActiveTopics",
-			Handler:    _Query_GetIdsOfActiveTopics_Handler,
-		},
-		{
-			MethodName: "GetTopicEpochLastEnded",
-			Handler:    _Query_GetTopicEpochLastEnded_Handler,
 		},
 		{
 			MethodName: "GetTopicFeeRevenue",

@@ -2102,9 +2102,9 @@ func (s *KeeperTestSuite) TestUpdateAndGetTopicEpochLastEnded() {
 	s.Require().NoError(err, "Updating topic epoch last ended should not fail")
 
 	// Retrieve the last ended epoch for the topic
-	retrievedEpoch, err := keeper.GetTopicEpochLastEnded(ctx, topicId)
+	topic, err := keeper.GetTopic(ctx, topicId)
 	s.Require().NoError(err, "Retrieving topic epoch last ended should not fail")
-	s.Require().Equal(epochLastEnded, retrievedEpoch, "The retrieved epoch last ended should match the updated value")
+	s.Require().Equal(epochLastEnded, topic.EpochLastEnded, "The retrieved epoch last ended should match the updated value")
 }
 
 func (s *KeeperTestSuite) TestTopicExists() {
