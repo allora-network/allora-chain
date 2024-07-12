@@ -33,11 +33,12 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	ReputerScoreEmas[worker5Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)}
 
 	topActors, allActorsSorted := FindTopNByScoreDesc(3, ReputerScoreEmas, 1)
+	require.Equal(t, 5, len(allActorsSorted))
 	require.Equal(t, 3, len(topActors))
 	require.Equal(t, worker5Addr.String(), topActors[0])
 	require.Equal(t, worker1Addr.String(), topActors[1])
 	require.Equal(t, worker3Addr.String(), topActors[2])
-	require.Equal(t, 3, len(allActorsSorted))
+
 }
 
 func TestFindTopNByScoreDescWithNils(t *testing.T) {
