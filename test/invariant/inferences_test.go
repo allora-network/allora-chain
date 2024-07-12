@@ -41,29 +41,34 @@ func doInferenceAndReputation(
 	wasErr = orErr(wasErr, err)
 	topic := resp.Topic
 	workerNonce := topic.EpochLastEnded + topic.EpochLength
-	workers := data.getWorkersForTopic(topicId)
-	iterLog(m.T, iteration, " starting worker bulk topic id ", topicId, " leader worker ", leaderWorker, " workers ", workers, "worker nonce ", workerNonce)
-	workerBulkErrored := insertWorkerBulk(m, data, topic, leaderWorker, workers, workerNonce)
-	if workerBulkErrored {
-		iterFailLog(m.T, iteration, "worker bulk errored topic ", topicId)
-		return
-	}
-	iterLog(m.T, iteration, "produced inference for topic id", topicId)
-	iterLog(m.T, iteration, "waiting for block epoch start", workerNonce)
-	err = m.Client.WaitForBlockHeight(ctx, workerNonce)
+	err = m.Client.WaitForBlockHeight(ctx, workerNonce+1)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 	blockHeightNow, err := m.Client.BlockHeight(ctx)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
+	workers := data.getWorkersForTopic(topicId)
+	iterLog(m.T, iteration, " starting worker bulk topic id ", topicId,
+		" leader worker ", leaderWorker, " workers ", workers, "worker nonce ",
+		workerNonce, " block height now ", blockHeightNow)
+	workerBulkErrored := insertWorkerBulk(m, data, topic, leaderWorker, workers, workerNonce)
+	if workerBulkErrored {
+		iterFailLog(m.T, iteration, "worker bulk errored topic ", topicId)
+		return
+	}
+	iterLog(m.T, iteration, "produced worker inference for topic id", topicId)
+	reputerWaitBlocks := blockHeightNow + topic.GroundTruthLag + 1
+	iterLog(m.T, iteration, "waiting for ground truth block height reputer bulk upload block ", reputerWaitBlocks)
+	err = m.Client.WaitForBlockHeight(ctx, reputerWaitBlocks)
+	requireNoError(m.T, data.failOnErr, err)
+	wasErr = orErr(wasErr, err)
 	reputers := data.getReputersForTopicWithStake(topicId)
-	reputerNonce := blockHeightNow + topic.EpochLength
 	iterLog(
 		m.T, iteration, " starting reputer bulk topic id ", topicId, "leader reputer ", leaderReputer,
-		" workers ", workers, " reputers ", reputers, " worker nonce ", workerNonce, " reputer nonce ", reputerNonce,
-		" block height  now ", blockHeightNow,
+		" workers ", workers, " reputers ", reputers, " worker nonce ", workerNonce,
+		" block height  now ", reputerWaitBlocks,
 	)
-	reputerBulkErrored := insertReputerBulk(m, data, topic, leaderReputer, reputers, workers, reputerNonce)
+	reputerBulkErrored := insertReputerBulk(m, data, topic, leaderReputer, reputers, workers, workerNonce)
 	if reputerBulkErrored {
 		iterFailLog(m.T, iteration, "reputer bulk errored topic", topicId)
 		return
