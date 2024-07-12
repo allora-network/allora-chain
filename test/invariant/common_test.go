@@ -107,7 +107,7 @@ func pickRandomBalanceLessThanHalf(
 	if halfBal.Equal(cosmossdk_io_math.ZeroInt()) {
 		return cosmossdk_io_math.ZeroInt(), nil
 	}
-	divisor := m.Client.Rand.Int63() % 1000
+	divisor := m.Client.Rand.Int63()%1000 + 1
 	randomBal := halfBal.QuoRaw(divisor)
 	return randomBal, nil
 }
