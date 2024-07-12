@@ -3,6 +3,7 @@ package inference_synthesis_test
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"reflect"
 	"testing"
 
@@ -90,7 +91,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
 	}
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
+	alphaRegret := alloraMath.MustNewDecFromString("0.1")
+	pNorm := alloraMath.MustNewDecFromString("3")
+
+	params, err := keeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+
+	err = s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
 		Id:              topicId,
 		Creator:         "creator",
 		Metadata:        "metadata",
@@ -102,11 +109,14 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 		EpochLength:     100,
 		GroundTruthLag:  10,
 		DefaultArg:      "defaultarg",
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
+		PNorm:           pNorm,
+		AlphaRegret:     alphaRegret,
 		AllowNegative:   false,
 	})
 	s.Require().NoError(err)
+
+	topic, err := keeper.GetTopic(s.ctx, topicId)
+	require.NoError(err)
 
 	reputer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
 	reputer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
@@ -118,13 +128,32 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	forecaster1 := "allo1e92saykj94jw3z55g4d3lfz098ppk0suwzc03a"
 	forecaster2 := "allo1pk6mxny5p79t8zhkm23z7u3zmfuz2gn0snxkkt"
 
-	// Set Previous Loss
-	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
+	lossValueBundle := emissionstypes.ValueBundle{
 		CombinedValue:       epoch2Get("network_loss_reputers"),
 		ReputerRequestNonce: reputerRequestNonce,
 		TopicId:             topicId,
-	})
+	}
+
+	// Set Previous Loss
+	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, lossValueBundle)
 	require.NoError(err)
+
+	inferencesynthesis.GetCalcSetNetworkRegrets(
+		s.ctx,
+		keeper,
+		topicId,
+		lossValueBundle,
+		simpleNonce,
+		alphaRegret,
+		params.CNorm,
+		topic.PNorm,
+		topic.Epsilon,
+	)
+
+	topic, err = keeper.GetTopic(s.ctx, topicId)
+	require.NoError(err)
+
+	log.Printf("topic.InitialRegret: %v", topic.InitialRegret)
 
 	// Set Inferences
 	inferences := emissionstypes.Inferences{

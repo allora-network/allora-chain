@@ -1,6 +1,7 @@
 package inference_synthesis
 
 import (
+	"log"
 	"sort"
 
 	errorsmod "cosmossdk.io/errors"
@@ -241,6 +242,8 @@ func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pN
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
+
+	log.Printf("Calculated dummy regret: %v", dummyRegret)
 
 	return dummyRegret, nil
 }
