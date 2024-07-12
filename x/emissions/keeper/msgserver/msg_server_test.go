@@ -187,12 +187,12 @@ func (s *MsgServerTestSuite) CreateOneTopic() uint64 {
 	creator := sdk.AccAddress(PKS[0].Address())
 
 	newTopicMsg := &types.MsgCreateNewTopic{
-<<<<<<< HEAD
 		Creator:                  creator.String(),
 		Metadata:                 metadata,
 		LossLogic:                "logic",
 		LossMethod:               "method",
 		EpochLength:              10800,
+		GroundTruthLag:           10800,
 		InferenceLogic:           "Ilogic",
 		InferenceMethod:          "Imethod",
 		DefaultArg:               "ETH",
@@ -202,20 +202,6 @@ func (s *MsgServerTestSuite) CreateOneTopic() uint64 {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
-=======
-		Creator:         creator.String(),
-		Metadata:        metadata,
-		LossLogic:       "logic",
-		LossMethod:      "method",
-		EpochLength:     10800,
-		GroundTruthLag:  10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(1),
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
->>>>>>> dev
 	}
 
 	s.MintTokensToAddress(creator, types.DefaultParams().CreateTopicFee)
@@ -236,12 +222,12 @@ func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 	creator := sdk.AccAddress(PKS[0].Address())
 
 	newTopicMsg := &types.MsgCreateNewTopic{
-<<<<<<< HEAD
 		Creator:                  creator.String(),
 		Metadata:                 metadata,
 		LossLogic:                "logic",
 		LossMethod:               "method",
 		EpochLength:              10800,
+		GroundTruthLag:           10800,
 		InferenceLogic:           "Ilogic",
 		InferenceMethod:          "Imethod",
 		DefaultArg:               "ETH",
@@ -251,20 +237,6 @@ func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
-=======
-		Creator:         creator.String(),
-		Metadata:        metadata,
-		LossLogic:       "logic",
-		LossMethod:      "method",
-		EpochLength:     10800,
-		GroundTruthLag:  10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(1),
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
->>>>>>> dev
 	}
 
 	creatorInitialBalance := types.DefaultParams().CreateTopicFee.Mul(cosmosMath.NewInt(3))
