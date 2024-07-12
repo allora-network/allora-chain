@@ -65,7 +65,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					sdkCtx.Logger().Warn(fmt.Sprintf("Error updating last inference ran: %s", err.Error()))
 				}
 				// Add Worker Nonces
-				nextNonce := types.Nonce{BlockHeight: blockHeight + topic.EpochLength}
+				nextNonce := types.Nonce{BlockHeight: blockHeight}
 				err = am.keeper.AddWorkerNonce(sdkCtx, topic.Id, &nextNonce)
 				if err != nil {
 					sdkCtx.Logger().Warn(fmt.Sprintf("Error adding worker nonce: %s", err.Error()))
@@ -86,16 +86,17 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				} else {
 					MaxUnfulfilledReputerRequests = moduleParams.MaxUnfulfilledReputerRequests
 				}
-				reputerPruningBlock := blockHeight - (int64(MaxUnfulfilledReputerRequests)*topic.EpochLength + topic.GroundTruthLag)
+				// Adding one to cover for one extra epochLength
+				reputerPruningBlock := blockHeight - (int64(MaxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag)
 				if reputerPruningBlock > 0 {
 					sdkCtx.Logger().Warn(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, blockHeight))
 					am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
 
+					// Reputer nonces need to check worker nonces from one epoch before
 					workerPruningBlock := reputerPruningBlock - topic.EpochLength
 					if workerPruningBlock > 0 {
 						sdkCtx.Logger().Debug("Pruning worker nonces before block: ", workerPruningBlock, " for topic: ", topic.Id)
 						// Prune old worker nonces previous to current blockHeight to avoid inserting inferences after its time has passed
-						// Reputer nonces need to check worker nonces one epoch before the reputer nonces
 						am.keeper.PruneWorkerNonces(sdkCtx, topic.Id, workerPruningBlock)
 					}
 				}

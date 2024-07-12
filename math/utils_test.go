@@ -240,3 +240,75 @@ func TestMedian(t *testing.T) {
 		})
 	}
 }
+
+func TestWeightedInferences(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("2"),
+		alloraMath.MustNewDecFromString("3"),
+		alloraMath.MustNewDecFromString("4"),
+		alloraMath.MustNewDecFromString("5"),
+	}
+	weights := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("1"),
+	}
+	percentiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.MustNewDecFromString("100"),
+	}
+	expected := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("3"),
+		alloraMath.MustNewDecFromString("5"),
+	}
+
+	result, err := alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.NoError(t, err)
+	require.Len(t, result, len(expected))
+	for i, r := range result {
+		require.True(t, alloraMath.InDelta(expected[i], r, alloraMath.MustNewDecFromString("0.000001")))
+	}
+}
+
+func TestWeightedInferences2(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("20"),
+		alloraMath.MustNewDecFromString("30"),
+		alloraMath.MustNewDecFromString("40"),
+		alloraMath.MustNewDecFromString("50"),
+	}
+	weights := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+		alloraMath.MustNewDecFromString("0.3"),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.5"),
+	}
+	percentiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("25"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.MustNewDecFromString("75"),
+		alloraMath.MustNewDecFromString("90"),
+	}
+	expected := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("16.666666666666664"),
+		alloraMath.MustNewDecFromString("27"),
+		alloraMath.MustNewDecFromString("38.57142857142857"),
+		alloraMath.MustNewDecFromString("47.22222222222222"),
+		alloraMath.MustNewDecFromString("50"),
+	}
+
+	result, err := alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.NoError(t, err)
+	require.Len(t, result, len(expected))
+	for i, r := range result {
+		require.True(t, alloraMath.InDelta(expected[i], r, alloraMath.MustNewDecFromString("0.000001")))
+	}
+}

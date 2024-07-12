@@ -30,6 +30,7 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
