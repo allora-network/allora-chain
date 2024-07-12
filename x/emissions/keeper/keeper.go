@@ -482,7 +482,7 @@ func (k *Keeper) SetOneInForecasterSelfNetworkRegret(ctx context.Context, topicI
 	return k.latestOneInForecasterSelfNetworkRegrets.Set(ctx, key, regret)
 }
 
-// Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
+// Returns the regret of a inferer from comparing loss of inferer relative to loss of other inferers
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, error) {
 	key := collections.Join(topicId, worker)
@@ -503,7 +503,7 @@ func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 	return regret, nil
 }
 
-// Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
+// Returns the regret of a forecaster from comparing loss of forecaster relative to loss of other forecasters
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, error) {
 	key := collections.Join(topicId, worker)
@@ -524,16 +524,20 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 	return regret, nil
 }
 
-// Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
+// Returns the regret of a forecaster from comparing loss of forecaster relative to loss of other forecasters
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, error) {
 	key := collections.Join3(topicId, forecaster, inferer)
 	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, err
+			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(0),
+				Value:       topic.InitialRegret,
 			}, nil
 		}
 		return types.TimestampedValue{}, err
@@ -546,9 +550,13 @@ func (k *Keeper) GetOneInForecasterSelfNetworkRegret(ctx context.Context, topicI
 	regret, err := k.latestOneInForecasterSelfNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, err
+			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(0),
+				Value:       topic.InitialRegret,
 			}, nil
 		}
 		return types.TimestampedValue{}, err

@@ -612,6 +612,7 @@ func (s *KeeperTestSuite) TestGetForecasterNetworkRegretNotFound() {
 func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegretNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
+	s.CreateOneTopic()
 	topicId := uint64(1)
 	forecaster := "nonexistent-forecaster-address"
 	inferer := "nonexistent-inferer-address"
@@ -707,6 +708,8 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetworkRegrets() {
 	ctx := s.ctx
+	s.CreateOneTopic() // Topic 1
+	s.CreateOneTopic() // Topic 2
 	keeper := s.emissionsKeeper
 	forecaster := "forecaster-address"
 	inferer := "inferer-address"
