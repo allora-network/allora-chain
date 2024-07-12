@@ -328,6 +328,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",

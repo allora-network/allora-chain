@@ -296,15 +296,15 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 			},
 			currentBlockHeight: 10,
-			groundTruthLag:     3,
-			epochLength:        2,
+			groundTruthLag:     5,
+			epochLength:        1,
 		},
 	}
 
 	// Run test cases
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			actual := inference_synthesis.SelectTopNReputerNonces(tc.reputerRequestNonces, tc.N, tc.currentBlockHeight, tc.groundTruthLag, tc.epochLength)
+			actual := inference_synthesis.SelectTopNReputerNonces(tc.reputerRequestNonces, tc.N, tc.currentBlockHeight, tc.groundTruthLag)
 			require.Equal(t, tc.expectedTopNReputerNonce, actual, "Reputer nonces do not match")
 		})
 	}
