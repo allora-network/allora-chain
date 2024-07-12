@@ -238,7 +238,6 @@ func (b *NetworkInferenceBuilder) SetOneOutForecasterValues() *NetworkInferenceB
 				Value:  oneOutInference,
 			})
 		}
-	
 		b.logger.Debug(fmt.Sprintf("One-out forecaster inferences calculated for topic %v", b.palette.TopicId))
 	}
 	b.oneOutForecasterInferences = oneOutImpliedInferences
