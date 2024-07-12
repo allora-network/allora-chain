@@ -200,6 +200,7 @@ func GetCalcSetNetworkRegrets(
 }
 
 func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pNorm alloraMath.Dec, cNorm alloraMath.Dec) (alloraMath.Dec, error) {
+	// Calculate the Denominator
 	stdDevRegrets, err := alloraMath.StdDev(regrets)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
@@ -210,32 +211,36 @@ func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pN
 		return alloraMath.ZeroDec(), err
 	}
 
-	offset, err := cNorm.Sub(alloraMath.MustNewDecFromString("8.25"))
+	// calculate the offset
+	eightPointTwoFive := alloraMath.MustNewDecFromString("8.25")
+
+	eightPointTwoFiveDividedByPnorm, err := eightPointTwoFive.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
 
-	offset, err = offset.Quo(pNorm)
+	offset, err := cNorm.Sub(eightPointTwoFiveDividedByPnorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
 
-	lowerRegret := alloraMath.ZeroDec()
+	// calculate the dummy regret
+	offSetTimesDenominator, err := offset.Mul(denominator)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	minimumRegret := alloraMath.ZeroDec()
 	for i, regret := range regrets {
-		if i == 0 || regret.Lt(lowerRegret) {
-			lowerRegret = regret
+		if i == 0 || regret.Lt(minimumRegret) {
+			minimumRegret = regret
 		}
 	}
 
-	offset, err = offset.Mul(denominator)
+	dummyRegret, err := minimumRegret.Add(offSetTimesDenominator)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
 
-	initialRegret, err := lowerRegret.Add(offset)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-
-	return initialRegret, nil
+	return dummyRegret, nil
 }
