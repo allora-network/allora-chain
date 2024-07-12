@@ -689,7 +689,6 @@ message QueryInfererNetworkRegretRequest {
 
 message QueryInfererNetworkRegretResponse {
   TimestampedValue regret = 1;
-  bool not_found = 2;
 }
 
 message QueryForecasterNetworkRegretRequest {
@@ -699,7 +698,6 @@ message QueryForecasterNetworkRegretRequest {
 
 message QueryForecasterNetworkRegretResponse {
   TimestampedValue regret = 1;
-  bool not_found = 2;
 }
 
 message QueryOneInForecasterNetworkRegretRequest {
@@ -710,7 +708,6 @@ message QueryOneInForecasterNetworkRegretRequest {
 
 message QueryOneInForecasterNetworkRegretResponse {
   TimestampedValue regret = 1;
-  bool not_found = 2;
 }
 
 message QueryOneInForecasterSelfNetworkRegretRequest {
@@ -720,7 +717,6 @@ message QueryOneInForecasterSelfNetworkRegretRequest {
 
 message QueryOneInForecasterSelfNetworkRegretResponse {
   TimestampedValue regret = 1;
-  bool not_found = 2;
 }
 
 message QueryIsReputerNonceUnfulfilledRequest {

@@ -299,12 +299,12 @@ func (qs queryServer) GetInfererNetworkRegret(
 	*types.QueryInfererNetworkRegretResponse,
 	error,
 ) {
-	infererNetworkRegret, notFound, err := qs.k.GetInfererNetworkRegret(ctx, req.TopicId, req.ActorId)
+	infererNetworkRegret, err := qs.k.GetInfererNetworkRegret(ctx, req.TopicId, req.ActorId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryInfererNetworkRegretResponse{Regret: &infererNetworkRegret, NotFound: notFound}, nil
+	return &types.QueryInfererNetworkRegretResponse{Regret: &infererNetworkRegret}, nil
 }
 
 func (qs queryServer) GetForecasterNetworkRegret(
@@ -314,12 +314,12 @@ func (qs queryServer) GetForecasterNetworkRegret(
 	*types.QueryForecasterNetworkRegretResponse,
 	error,
 ) {
-	forecasterNetworkRegret, notFound, err := qs.k.GetForecasterNetworkRegret(ctx, req.TopicId, req.Worker)
+	forecasterNetworkRegret, err := qs.k.GetForecasterNetworkRegret(ctx, req.TopicId, req.Worker)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryForecasterNetworkRegretResponse{Regret: &forecasterNetworkRegret, NotFound: notFound}, nil
+	return &types.QueryForecasterNetworkRegretResponse{Regret: &forecasterNetworkRegret}, nil
 }
 
 func (qs queryServer) GetOneInForecasterNetworkRegret(
@@ -329,12 +329,12 @@ func (qs queryServer) GetOneInForecasterNetworkRegret(
 	*types.QueryOneInForecasterNetworkRegretResponse,
 	error,
 ) {
-	oneInForecasterNetworkRegret, notFound, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Inferer)
+	oneInForecasterNetworkRegret, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Inferer)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryOneInForecasterNetworkRegretResponse{Regret: &oneInForecasterNetworkRegret, NotFound: notFound}, nil
+	return &types.QueryOneInForecasterNetworkRegretResponse{Regret: &oneInForecasterNetworkRegret}, nil
 }
 
 func (qs queryServer) GetOneInForecasterSelfNetworkRegret(
@@ -344,10 +344,10 @@ func (qs queryServer) GetOneInForecasterSelfNetworkRegret(
 	*types.QueryOneInForecasterSelfNetworkRegretResponse,
 	error,
 ) {
-	oneInForecasterSelfNetworkRegret, notFound, err := qs.k.GetOneInForecasterSelfNetworkRegret(ctx, req.TopicId, req.Forecaster)
+	oneInForecasterSelfNetworkRegret, err := qs.k.GetOneInForecasterSelfNetworkRegret(ctx, req.TopicId, req.Forecaster)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryOneInForecasterSelfNetworkRegretResponse{Regret: &oneInForecasterSelfNetworkRegret, NotFound: notFound}, nil
+	return &types.QueryOneInForecasterSelfNetworkRegretResponse{Regret: &oneInForecasterSelfNetworkRegret}, nil
 }

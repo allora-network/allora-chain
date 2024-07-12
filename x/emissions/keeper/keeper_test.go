@@ -578,44 +578,6 @@ func (s *KeeperTestSuite) TestSetAndGetOneInForecasterNetworkRegret() {
 	s.Require().Equal(regret.BlockHeight, gotRegret.BlockHeight)
 }
 
-func (s *KeeperTestSuite) TestGetInfererNetworkRegretNotFound() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
-	worker := "nonexistent-inferer-address"
-
-	// Attempt to get Inferer Network Regret for a nonexistent worker
-	regret, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
-	s.Require().NoError(err)
-	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}, regret, "Default regret value should be returned for nonexistent inferer")
-}
-
-func (s *KeeperTestSuite) TestGetForecasterNetworkRegretNotFound() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
-	worker := "nonexistent-forecaster-address"
-
-	// Attempt to get Forecaster Network Regret for a nonexistent worker
-	regret, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
-	s.Require().NoError(err)
-	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}, regret, "Default regret value should be returned for nonexistent forecaster")
-}
-
-func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegretNotFound() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	s.CreateOneTopic()
-	topicId := uint64(1)
-	forecaster := "nonexistent-forecaster-address"
-	inferer := "nonexistent-inferer-address"
-
-	// Attempt to get One-In Forecaster Network Regret for a nonexistent forecaster-inferer pair
-	regret, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
-	s.Require().NoError(err)
-	s.Require().Equal(types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}, regret, "Default regret value should be returned for nonexistent forecaster-inferer pair")
-}
-
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
