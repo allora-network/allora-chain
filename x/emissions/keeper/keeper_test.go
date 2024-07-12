@@ -187,6 +187,7 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
