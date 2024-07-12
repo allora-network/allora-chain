@@ -32,10 +32,12 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	ReputerScoreEmas[worker4Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker4Addr.String(), Score: alloraMath.NewDecFromInt64(20)}
 	ReputerScoreEmas[worker5Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)}
 
-	topActors := FindTopNByScoreDesc(3, ReputerScoreEmas, 1)
+	topActors, allActorsSorted := FindTopNByScoreDesc(3, ReputerScoreEmas, 1)
+	require.Equal(t, 3, len(topActors))
 	require.Equal(t, worker5Addr.String(), topActors[0])
 	require.Equal(t, worker1Addr.String(), topActors[1])
 	require.Equal(t, worker3Addr.String(), topActors[2])
+	require.Equal(t, 3, len(allActorsSorted))
 }
 
 func TestFindTopNByScoreDescWithNils(t *testing.T) {
@@ -55,13 +57,15 @@ func TestFindTopNByScoreDescWithNils(t *testing.T) {
 	ReputerScoreEmas[worker5Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)}
 
 	// Actors with nil scores sent to the end
-	topActors := FindTopNByScoreDesc(3, ReputerScoreEmas, 1)
+	topActors, allActorsSorted := FindTopNByScoreDesc(3, ReputerScoreEmas, 1)
+	require.Equal(t, 3, len(topActors))
 	require.Equal(t, worker5Addr.String(), topActors[0])
 	require.Equal(t, worker3Addr.String(), topActors[1])
 	require.Equal(t, worker1Addr.String(), topActors[2])
+	require.Equal(t, 3, len(allActorsSorted))
 }
 
-func TestGetQuantileOfDescendingSliceAsAscending(t *testing.T) {
+func TestGetQuantileOfDescSliceAsAsc(t *testing.T) {
 	scoresByActor := map[Actor]Score{
 		"w1": types.Score{Score: alloraMath.NewDecFromInt64(90)},
 		"w2": types.Score{Score: alloraMath.NewDecFromInt64(80)},
@@ -75,14 +79,14 @@ func TestGetQuantileOfDescendingSliceAsAscending(t *testing.T) {
 	quantile := alloraMath.MustNewDecFromString("0.5")
 	expectedResult := alloraMath.NewDecFromInt64(70)
 
-	result, err := GetQuantileOfDescendingSliceAsAscending(scoresByActor, sortedSlice, quantile)
+	result, err := GetQuantileOfDescSliceAsAsc(scoresByActor, sortedSlice, quantile)
 	require.NoError(t, err)
 	require.Equal(t, expectedResult, result)
 
 	quantile = alloraMath.MustNewDecFromString("0.2")
 	expectedResult = alloraMath.NewDecFromInt64(58)
 
-	result, err = GetQuantileOfDescendingSliceAsAscending(scoresByActor, sortedSlice, quantile)
+	result, err = GetQuantileOfDescSliceAsAsc(scoresByActor, sortedSlice, quantile)
 	require.NoError(t, err)
 	expectedInt, err := expectedResult.Int64()
 	require.NoError(t, err)
