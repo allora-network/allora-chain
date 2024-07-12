@@ -192,105 +192,112 @@ func TestSelectTopNReputerNonces(t *testing.T) {
 		expectedTopNReputerNonce []*emissionstypes.ReputerRequestNonce
 		currentBlockHeight       int64
 		groundTruthLag           int64
+		epochLength              int64
 	}{
 		{
 			name: "N greater than length of nonces, zero lag",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
 				},
 			},
 			N: 5,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     0,
+			epochLength:        1,
 		},
 		{
 			name: "N less than length of nonces, zero lag",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
 				},
 			},
 			N: 2,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     0,
+			epochLength:        1,
 		},
 		{
 			name: "Ground truth lag cutting selection midway",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 				},
 			},
 			N: 3,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
 			},
 			currentBlockHeight: 10,
-			groundTruthLag:     6,
+			groundTruthLag:     5,
+			epochLength:        1,
 		},
 		{
 			name: "Big Ground truth lag, not selecting any nonces",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 2}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 				},
 			},
 			N:                        3,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{},
 			currentBlockHeight:       10,
 			groundTruthLag:           10,
+			epochLength:              1,
 		},
 		{
 			name: "Small ground truth lag, selecting all nonces",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 				},
 			},
 			N: 3,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     2,
+			epochLength:        1,
 		},
 		{
 			name: "Mid ground truth lag, selecting some nonces",
 			reputerRequestNonces: &emissionstypes.ReputerRequestNonces{
 				Nonces: []*emissionstypes.ReputerRequestNonce{
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 6}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+					{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 				},
 			},
 			N: 3,
 			expectedTopNReputerNonce: []*emissionstypes.ReputerRequestNonce{
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
-				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}, WorkerNonce: &emissionstypes.Nonce{BlockHeight: 3}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 5}},
+				{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 4}},
 			},
 			currentBlockHeight: 10,
 			groundTruthLag:     5,
+			epochLength:        1,
 		},
 	}
 

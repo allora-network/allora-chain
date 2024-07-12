@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-	"fmt"
 	"sort"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -285,13 +284,8 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, types.ErrInvalidTopicId
 	}
 
-	workerNonce := &types.Nonce{
-		BlockHeight: msg.Nonce.BlockHeight - topic.EpochLength,
-	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.Logger().Debug(fmt.Sprintf("InsertBulkWorkerPayload workerNonce %d", workerNonce.BlockHeight))
-
-	err = ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce, workerNonce)
+	err = ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce)
 	if err != nil {
 		return nil, err
 	}
