@@ -76,9 +76,9 @@ const (
 	Query_GetTopicFeeRevenue_FullMethodName                          = "/emissions.v1.Query/GetTopicFeeRevenue"
 	Query_GetChurnableTopics_FullMethodName                          = "/emissions.v1.Query/GetChurnableTopics"
 	Query_GetRewardableTopics_FullMethodName                         = "/emissions.v1.Query/GetRewardableTopics"
-	Query_GetLatestInfererScore_FullMethodName                       = "/emissions.v1.Query/GetLatestInfererScore"
-	Query_GetLatestForecasterScore_FullMethodName                    = "/emissions.v1.Query/GetLatestForecasterScore"
-	Query_GetLatestReputerScore_FullMethodName                       = "/emissions.v1.Query/GetLatestReputerScore"
+	Query_GetInfererScoreEma_FullMethodName                          = "/emissions.v1.Query/GetInfererScoreEma"
+	Query_GetForecasterScoreEma_FullMethodName                       = "/emissions.v1.Query/GetForecasterScoreEma"
+	Query_GetReputerScoreEma_FullMethodName                          = "/emissions.v1.Query/GetReputerScoreEma"
 	Query_GetInferenceScoresUntilBlock_FullMethodName                = "/emissions.v1.Query/GetInferenceScoresUntilBlock"
 	Query_GetWorkerInferenceScoresAtBlock_FullMethodName             = "/emissions.v1.Query/GetWorkerInferenceScoresAtBlock"
 	Query_GetForecastScoresUntilBlock_FullMethodName                 = "/emissions.v1.Query/GetForecastScoresUntilBlock"
@@ -156,9 +156,9 @@ type QueryClient interface {
 	GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error)
 	GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error)
-	GetLatestInfererScore(ctx context.Context, in *QueryLatestInfererScoreRequest, opts ...grpc.CallOption) (*QueryLatestInfererScoreResponse, error)
-	GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error)
-	GetLatestReputerScore(ctx context.Context, in *QueryLatestReputerScoreRequest, opts ...grpc.CallOption) (*QueryLatestReputerScoreResponse, error)
+	GetInfererScoreEma(ctx context.Context, in *QueryInfererScoreEmaRequest, opts ...grpc.CallOption) (*QueryInfererScoreEmaResponse, error)
+	GetForecasterScoreEma(ctx context.Context, in *QueryForecasterScoreEmaRequest, opts ...grpc.CallOption) (*QueryForecasterScoreEmaResponse, error)
+	GetReputerScoreEma(ctx context.Context, in *QueryReputerScoreEmaRequest, opts ...grpc.CallOption) (*QueryReputerScoreEmaResponse, error)
 	GetInferenceScoresUntilBlock(ctx context.Context, in *QueryInferenceScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryInferenceScoresUntilBlockResponse, error)
 	GetWorkerInferenceScoresAtBlock(ctx context.Context, in *QueryWorkerInferenceScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerInferenceScoresAtBlockResponse, error)
 	GetForecastScoresUntilBlock(ctx context.Context, in *QueryForecastScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryForecastScoresUntilBlockResponse, error)
@@ -695,27 +695,27 @@ func (c *queryClient) GetRewardableTopics(ctx context.Context, in *QueryRewardab
 	return out, nil
 }
 
-func (c *queryClient) GetLatestInfererScore(ctx context.Context, in *QueryLatestInfererScoreRequest, opts ...grpc.CallOption) (*QueryLatestInfererScoreResponse, error) {
-	out := new(QueryLatestInfererScoreResponse)
-	err := c.cc.Invoke(ctx, Query_GetLatestInfererScore_FullMethodName, in, out, opts...)
+func (c *queryClient) GetInfererScoreEma(ctx context.Context, in *QueryInfererScoreEmaRequest, opts ...grpc.CallOption) (*QueryInfererScoreEmaResponse, error) {
+	out := new(QueryInfererScoreEmaResponse)
+	err := c.cc.Invoke(ctx, Query_GetInfererScoreEma_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error) {
-	out := new(QueryLatestForecasterScoreResponse)
-	err := c.cc.Invoke(ctx, Query_GetLatestForecasterScore_FullMethodName, in, out, opts...)
+func (c *queryClient) GetForecasterScoreEma(ctx context.Context, in *QueryForecasterScoreEmaRequest, opts ...grpc.CallOption) (*QueryForecasterScoreEmaResponse, error) {
+	out := new(QueryForecasterScoreEmaResponse)
+	err := c.cc.Invoke(ctx, Query_GetForecasterScoreEma_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) GetLatestReputerScore(ctx context.Context, in *QueryLatestReputerScoreRequest, opts ...grpc.CallOption) (*QueryLatestReputerScoreResponse, error) {
-	out := new(QueryLatestReputerScoreResponse)
-	err := c.cc.Invoke(ctx, Query_GetLatestReputerScore_FullMethodName, in, out, opts...)
+func (c *queryClient) GetReputerScoreEma(ctx context.Context, in *QueryReputerScoreEmaRequest, opts ...grpc.CallOption) (*QueryReputerScoreEmaResponse, error) {
+	out := new(QueryReputerScoreEmaResponse)
+	err := c.cc.Invoke(ctx, Query_GetReputerScoreEma_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -901,9 +901,9 @@ type QueryServer interface {
 	GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error)
 	GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error)
-	GetLatestInfererScore(context.Context, *QueryLatestInfererScoreRequest) (*QueryLatestInfererScoreResponse, error)
-	GetLatestForecasterScore(context.Context, *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error)
-	GetLatestReputerScore(context.Context, *QueryLatestReputerScoreRequest) (*QueryLatestReputerScoreResponse, error)
+	GetInfererScoreEma(context.Context, *QueryInfererScoreEmaRequest) (*QueryInfererScoreEmaResponse, error)
+	GetForecasterScoreEma(context.Context, *QueryForecasterScoreEmaRequest) (*QueryForecasterScoreEmaResponse, error)
+	GetReputerScoreEma(context.Context, *QueryReputerScoreEmaRequest) (*QueryReputerScoreEmaResponse, error)
 	GetInferenceScoresUntilBlock(context.Context, *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error)
 	GetWorkerInferenceScoresAtBlock(context.Context, *QueryWorkerInferenceScoresAtBlockRequest) (*QueryWorkerInferenceScoresAtBlockResponse, error)
 	GetForecastScoresUntilBlock(context.Context, *QueryForecastScoresUntilBlockRequest) (*QueryForecastScoresUntilBlockResponse, error)
@@ -1095,14 +1095,14 @@ func (UnimplementedQueryServer) GetChurnableTopics(context.Context, *QueryChurna
 func (UnimplementedQueryServer) GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRewardableTopics not implemented")
 }
-func (UnimplementedQueryServer) GetLatestInfererScore(context.Context, *QueryLatestInfererScoreRequest) (*QueryLatestInfererScoreResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLatestInfererScore not implemented")
+func (UnimplementedQueryServer) GetInfererScoreEma(context.Context, *QueryInfererScoreEmaRequest) (*QueryInfererScoreEmaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInfererScoreEma not implemented")
 }
-func (UnimplementedQueryServer) GetLatestForecasterScore(context.Context, *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLatestForecasterScore not implemented")
+func (UnimplementedQueryServer) GetForecasterScoreEma(context.Context, *QueryForecasterScoreEmaRequest) (*QueryForecasterScoreEmaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetForecasterScoreEma not implemented")
 }
-func (UnimplementedQueryServer) GetLatestReputerScore(context.Context, *QueryLatestReputerScoreRequest) (*QueryLatestReputerScoreResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLatestReputerScore not implemented")
+func (UnimplementedQueryServer) GetReputerScoreEma(context.Context, *QueryReputerScoreEmaRequest) (*QueryReputerScoreEmaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReputerScoreEma not implemented")
 }
 func (UnimplementedQueryServer) GetInferenceScoresUntilBlock(context.Context, *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInferenceScoresUntilBlock not implemented")
@@ -2182,56 +2182,56 @@ func _Query_GetRewardableTopics_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetLatestInfererScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLatestInfererScoreRequest)
+func _Query_GetInfererScoreEma_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryInfererScoreEmaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetLatestInfererScore(ctx, in)
+		return srv.(QueryServer).GetInfererScoreEma(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetLatestInfererScore_FullMethodName,
+		FullMethod: Query_GetInfererScoreEma_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetLatestInfererScore(ctx, req.(*QueryLatestInfererScoreRequest))
+		return srv.(QueryServer).GetInfererScoreEma(ctx, req.(*QueryInfererScoreEmaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetLatestForecasterScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLatestForecasterScoreRequest)
+func _Query_GetForecasterScoreEma_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryForecasterScoreEmaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetLatestForecasterScore(ctx, in)
+		return srv.(QueryServer).GetForecasterScoreEma(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetLatestForecasterScore_FullMethodName,
+		FullMethod: Query_GetForecasterScoreEma_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetLatestForecasterScore(ctx, req.(*QueryLatestForecasterScoreRequest))
+		return srv.(QueryServer).GetForecasterScoreEma(ctx, req.(*QueryForecasterScoreEmaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetLatestReputerScore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLatestReputerScoreRequest)
+func _Query_GetReputerScoreEma_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryReputerScoreEmaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetLatestReputerScore(ctx, in)
+		return srv.(QueryServer).GetReputerScoreEma(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetLatestReputerScore_FullMethodName,
+		FullMethod: Query_GetReputerScoreEma_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetLatestReputerScore(ctx, req.(*QueryLatestReputerScoreRequest))
+		return srv.(QueryServer).GetReputerScoreEma(ctx, req.(*QueryReputerScoreEmaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2706,16 +2706,16 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetRewardableTopics_Handler,
 		},
 		{
-			MethodName: "GetLatestInfererScore",
-			Handler:    _Query_GetLatestInfererScore_Handler,
+			MethodName: "GetInfererScoreEma",
+			Handler:    _Query_GetInfererScoreEma_Handler,
 		},
 		{
-			MethodName: "GetLatestForecasterScore",
-			Handler:    _Query_GetLatestForecasterScore_Handler,
+			MethodName: "GetForecasterScoreEma",
+			Handler:    _Query_GetForecasterScoreEma_Handler,
 		},
 		{
-			MethodName: "GetLatestReputerScore",
-			Handler:    _Query_GetLatestReputerScore_Handler,
+			MethodName: "GetReputerScoreEma",
+			Handler:    _Query_GetReputerScoreEma_Handler,
 		},
 		{
 			MethodName: "GetInferenceScoresUntilBlock",

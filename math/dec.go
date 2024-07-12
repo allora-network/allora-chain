@@ -171,6 +171,14 @@ func NewDecFromUint64(x uint64) (Dec, error) {
 	return NewDecFromString(strRep)
 }
 
+func InvUint64(x uint64) (Dec, error) {
+	valFromUint, err := NewDecFromUint64(x)
+	if err != nil {
+		return Dec{}, err
+	}
+	return OneDec().Quo(valFromUint)
+}
+
 // NewDecFinite returns a decimal with a value of coeff * 10^exp.
 func NewDecFinite(coeff int64, exp int32) Dec {
 	var res Dec

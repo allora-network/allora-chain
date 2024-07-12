@@ -10,6 +10,7 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
 		return nil, err
 	}
+
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {
 		return nil, err
@@ -17,10 +18,12 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if !isAdmin {
 		return nil, types.ErrNotWhitelistAdmin
 	}
+
 	existingParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	// every option is a repeated field, so we interpret an empty array as "make no change"
 	newParams := msg.Params
 	if len(newParams.Version) == 1 {
@@ -89,6 +92,15 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxTopReputersToReward) == 1 {
 		existingParams.MaxTopReputersToReward = newParams.MaxTopReputersToReward[0]
 	}
+	if len(newParams.MaxActiveInferersQuantile) == 1 {
+		existingParams.MaxActiveInferersQuantile = newParams.MaxActiveInferersQuantile[0]
+	}
+	if len(newParams.MaxActiveForecastersQuantile) == 1 {
+		existingParams.MaxActiveForecastersQuantile = newParams.MaxActiveForecastersQuantile[0]
+	}
+	if len(newParams.MaxActiveReputersQuantile) == 1 {
+		existingParams.MaxActiveReputersQuantile = newParams.MaxActiveReputersQuantile[0]
+	}
 	if len(newParams.CreateTopicFee) == 1 {
 		existingParams.CreateTopicFee = newParams.CreateTopicFee[0]
 	}
@@ -143,13 +155,16 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MinEffectiveTopicRevenue) == 1 {
 		existingParams.MinEffectiveTopicRevenue = newParams.MinEffectiveTopicRevenue[0]
 	}
+
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err
 	}
+
 	err = ms.k.SetParams(ctx, existingParams)
 	if err != nil {
 		return nil, err
 	}
+
 	return &types.MsgUpdateParamsResponse{}, nil
 }

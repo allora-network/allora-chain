@@ -37,6 +37,16 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, types.ErrTopicCadenceBelowMinimum
 	}
 
+	if err := params.ValidateTopicActiveInfererQuantile(msg.ActiveInfererQuantile); err != nil {
+		return nil, err
+	}
+	if err := params.ValidateTopicActiveForecasterQuantile(msg.ActiveForecasterQuantile); err != nil {
+		return nil, err
+	}
+	if err := params.ValidateTopicActiveReputerQuantile(msg.ActiveReputerQuantile); err != nil {
+		return nil, err
+	}
+
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
 	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Creator, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
 	if err != nil {
@@ -44,21 +54,24 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	topic := types.Topic{
-		Id:              id,
-		Creator:         msg.Creator,
-		Metadata:        msg.Metadata,
-		LossLogic:       msg.LossLogic,
-		LossMethod:      msg.LossMethod,
-		InferenceLogic:  msg.InferenceLogic,
-		InferenceMethod: msg.InferenceMethod,
-		EpochLastEnded:  0,
-		EpochLength:     msg.EpochLength,
-		GroundTruthLag:  msg.GroundTruthLag,
-		DefaultArg:      msg.DefaultArg,
-		PNorm:           msg.PNorm,
-		AlphaRegret:     msg.AlphaRegret,
-		AllowNegative:   msg.AllowNegative,
-		Epsilon:         msg.Epsilon,
+		Id:                       id,
+		Creator:                  msg.Creator,
+		Metadata:                 msg.Metadata,
+		LossLogic:                msg.LossLogic,
+		LossMethod:               msg.LossMethod,
+		InferenceLogic:           msg.InferenceLogic,
+		InferenceMethod:          msg.InferenceMethod,
+		EpochLastEnded:           0,
+		EpochLength:              msg.EpochLength,
+		GroundTruthLag:           msg.GroundTruthLag,
+		DefaultArg:               msg.DefaultArg,
+		PNorm:                    msg.PNorm,
+		AlphaRegret:              msg.AlphaRegret,
+		AllowNegative:            msg.AllowNegative,
+		Epsilon:                  msg.Epsilon,
+		ActiveInfererQuantile:    msg.ActiveInfererQuantile,
+		ActiveForecasterQuantile: msg.ActiveForecasterQuantile,
+		ActiveReputerQuantile:    msg.ActiveReputerQuantile,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -15,16 +16,18 @@ import (
 // Signatures, anti-synil procedures, and "skimming of only the top few workers by score
 // descending" should be done here.
 func verifyAndInsertInferencesFromTopInferers(
-	ctx context.Context,
+	ctx sdk.Context,
 	ms msgServer,
+	blockHeight int64,
 	topicId uint64,
-	nonce types.Nonce,
-	// inferences []*types.Inference,
-	workerDataBundles []*types.WorkerDataBundle,
 	maxTopWorkersToReward uint64,
+	topicQuantile alloraMath.Dec,
+	alphaRegret alloraMath.Dec,
+	nonce types.Nonce,
+	workerDataBundles []*types.WorkerDataBundle,
 ) (map[string]bool, error) {
 	inferencesByInferer := make(map[string]*types.Inference)
-	latestInfererScores := make(map[string]types.Score)
+	infererScoreEmas := make(map[string]types.Score)
 	errors := make(map[string]string)
 	if len(workerDataBundles) == 0 {
 		return nil, types.ErrNoValidBundles
@@ -64,19 +67,22 @@ func verifyAndInsertInferencesFromTopInferers(
 			}
 
 			// Get the latest score for each inferer => only take top few by score descending
-			latestScore, err := ms.k.GetLatestInfererScore(ctx, topicId, inference.Inferer)
+			latestScore, err := ms.k.GetInfererScoreEma(ctx, topicId, inference.Inferer)
 			if err != nil {
 				errors[workerDataBundle.Worker] = "Latest score not found"
 				continue
 			}
 			/// Filtering done now, now write what we must for inclusion
-			latestInfererScores[inference.Inferer] = latestScore
+			infererScoreEmas[inference.Inferer] = latestScore
 			inferencesByInferer[inference.Inferer] = inference
 		}
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topInferers := FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.BlockHeight)
+	topInferers, allInferersSorted := FindTopNByScoreDesc(maxTopWorkersToReward, infererScoreEmas, nonce.BlockHeight)
+	// There is an edge case when all reputers are random.
+	// Technically we should sort by stake with pseudo-random tiebreaker, however this adds unnecessary complexity
+	// given how rare this possibility is. Futhermore, score ultimately may matter more than stake.
 
 	// Build list of inferences that pass all filters
 	// AND are from top performing inferers among those who have submitted inferences in this batch
@@ -91,6 +97,20 @@ func verifyAndInsertInferencesFromTopInferers(
 		return nil, types.ErrNoValidBundles
 	}
 
+	err := ms.UpdateScoresOfPassiveActorsWithActiveQuantile(
+		ctx,
+		blockHeight,
+		maxTopWorkersToReward,
+		topicId,
+		alphaRegret,
+		topicQuantile,
+		infererScoreEmas,
+		topInferers,
+		allInferersSorted,
+		acceptedInferers,
+		types.ActorType_INFERER,
+	)
+
 	// Ensure deterministic ordering of inferences
 	sort.Slice(inferencesFromTopInferers, func(i, j int) bool {
 		return inferencesFromTopInferers[i].Inferer < inferencesFromTopInferers[j].Inferer
@@ -100,7 +120,7 @@ func verifyAndInsertInferencesFromTopInferers(
 	inferencesToInsert := types.Inferences{
 		Inferences: inferencesFromTopInferers,
 	}
-	err := ms.k.InsertInferences(ctx, topicId, nonce, inferencesToInsert)
+	err = ms.k.InsertInferences(ctx, topicId, nonce, inferencesToInsert)
 	if err != nil {
 		return nil, err
 	}
@@ -114,17 +134,20 @@ func verifyAndInsertInferencesFromTopInferers(
 // Signatures, anti-synil procedures, and "skimming of only the top few workers by score
 // descending" should be done here.
 func verifyAndInsertForecastsFromTopForecasters(
-	ctx context.Context,
+	ctx sdk.Context,
 	ms msgServer,
+	blockHeight int64,
 	topicId uint64,
+	maxTopWorkersToReward uint64,
+	topicQuantile alloraMath.Dec,
+	alphaRegret alloraMath.Dec,
 	nonce types.Nonce,
 	workerDataBundle []*types.WorkerDataBundle,
 	// Inferers in the current batch, assumed to have passed VerifyAndInsertInferencesFromTopInferers() filters
 	acceptedInferersOfBatch map[string]bool,
-	maxTopWorkersToReward uint64,
 ) error {
 	forecastsByForecaster := make(map[string]*types.Forecast)
-	latestForecasterScores := make(map[string]types.Score)
+	forecasterScoreEmas := make(map[string]types.Score)
 	for _, workerDataBundle := range workerDataBundle {
 		/// Do filters first, then consider the inferenes for inclusion
 		/// Do filters on the per payload first, then on each forecaster
@@ -175,24 +198,40 @@ func verifyAndInsertForecastsFromTopForecasters(
 			/// Filtering done now, now write what we must for inclusion
 
 			// Get the latest score for each forecaster => only take top few by score descending
-			latestScore, err := ms.k.GetLatestForecasterScore(ctx, topicId, forecast.Forecaster)
+			latestScoreEma, err := ms.k.GetForecasterScoreEma(ctx, topicId, forecast.Forecaster)
 			if err != nil {
 				continue
 			}
-			latestForecasterScores[forecast.Forecaster] = latestScore
+			forecasterScoreEmas[forecast.Forecaster] = latestScoreEma
 			forecastsByForecaster[forecast.Forecaster] = forecast
 		}
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topForecasters := FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.BlockHeight)
+	topForecasters, allForecastersSorted := FindTopNByScoreDesc(maxTopWorkersToReward, forecasterScoreEmas, nonce.BlockHeight)
 
 	// Build list of forecasts that pass all filters
 	// AND are from top performing forecasters among those who have submitted forecasts in this batch
 	forecastsFromTopForecasters := make([]*types.Forecast, 0)
+	forecasterToIsTop := make(map[string]bool, 0)
 	for _, worker := range topForecasters {
 		forecastsFromTopForecasters = append(forecastsFromTopForecasters, forecastsByForecaster[worker])
+		forecasterToIsTop[worker] = true
 	}
+
+	err := ms.UpdateScoresOfPassiveActorsWithActiveQuantile(
+		ctx,
+		blockHeight,
+		maxTopWorkersToReward,
+		topicId,
+		alphaRegret,
+		topicQuantile,
+		forecasterScoreEmas,
+		topForecasters,
+		allForecastersSorted,
+		forecasterToIsTop,
+		types.ActorType_FORECASTER,
+	)
 
 	// Though less than ideal because it produces less-acurate network inferences,
 	// it is fine if no forecasts are accepted
@@ -206,7 +245,7 @@ func verifyAndInsertForecastsFromTopForecasters(
 	forecastsToInsert := types.Forecasts{
 		Forecasts: forecastsFromTopForecasters,
 	}
-	err := ms.k.InsertForecasts(ctx, topicId, nonce, forecastsToInsert)
+	err = ms.k.InsertForecasts(ctx, topicId, nonce, forecastsToInsert)
 	if err != nil {
 		return err
 	}
@@ -226,12 +265,9 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, err
 	}
 
-	// Check if the topic exists
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	// Check if the topic exists and get its parameters
+	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
 	if err != nil {
-		return nil, err
-	}
-	if !topicExists {
 		return nil, types.ErrInvalidTopicId
 	}
 
@@ -250,26 +286,35 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, err
 	}
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockHeight := sdkCtx.BlockHeight()
+
 	acceptedInferers, err := verifyAndInsertInferencesFromTopInferers(
-		ctx,
+		sdkCtx,
 		ms,
+		blockHeight,
 		msg.TopicId,
+		moduleParams.MaxTopInferersToReward,
+		topic.ActiveInfererQuantile,
+		topic.AlphaRegret,
 		*msg.Nonce,
 		msg.WorkerDataBundles,
-		moduleParams.MaxTopInferersToReward,
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	err = verifyAndInsertForecastsFromTopForecasters(
-		ctx,
+		sdkCtx,
 		ms,
+		blockHeight,
 		msg.TopicId,
+		moduleParams.MaxTopForecastersToReward,
+		topic.ActiveForecasterQuantile,
+		topic.AlphaRegret,
 		*msg.Nonce,
 		msg.WorkerDataBundles,
 		acceptedInferers,
-		moduleParams.MaxTopForecastersToReward,
 	)
 	if err != nil {
 		return nil, err
@@ -280,15 +325,9 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, err
 	}
 
-	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
-	if err != nil {
-		return nil, types.ErrInvalidTopicId
-	}
-
 	workerNonce := &types.Nonce{
 		BlockHeight: msg.Nonce.BlockHeight - topic.EpochLength,
 	}
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.Logger().Debug(fmt.Sprintf("InsertBulkWorkerPayload workerNonce %d", workerNonce.BlockHeight))
 
 	err = ms.k.AddReputerNonce(ctx, topic.Id, msg.Nonce, workerNonce)
@@ -296,7 +335,6 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 		return nil, err
 	}
 
-	blockHeight := sdkCtx.BlockHeight()
 	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.Nonce, msg.Sender, types.ActorType_INFERER)
 	if err != nil {
 		return nil, err

@@ -2315,15 +2315,15 @@ func (s *KeeperTestSuite) TestGetLatestScores() {
 	reputer := "reputer1"
 
 	// Test getting latest scores when none are set
-	infererScore, err := keeper.GetLatestInfererScore(ctx, topicId, worker)
+	infererScore, err := keeper.GetInfererScoreEma(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching latest inferer score should not fail")
 	s.Require().Equal(types.Score{}, infererScore, "Inferer score should be empty if not set")
 
-	forecasterScore, err := keeper.GetLatestForecasterScore(ctx, topicId, forecaster)
+	forecasterScore, err := keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
 	s.Require().NoError(err, "Fetching latest forecaster score should not fail")
 	s.Require().Equal(types.Score{}, forecasterScore, "Forecaster score should be empty if not set")
 
-	reputerScore, err := keeper.GetLatestReputerScore(ctx, topicId, reputer)
+	reputerScore, err := keeper.GetReputerScoreEma(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching latest reputer score should not fail")
 	s.Require().Equal(types.Score{}, reputerScore, "Reputer score should be empty if not set")
 }
@@ -2339,20 +2339,20 @@ func (s *KeeperTestSuite) TestSetLatestScores() {
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set an initial score for inferer and attempt to update with an older score
-	_ = keeper.SetLatestInfererScore(ctx, topicId, worker, newScore)
-	err := keeper.SetLatestInfererScore(ctx, topicId, worker, oldScore)
+	_ = keeper.UpdateInfererScoreEma(ctx, topicId, worker, newScore)
+	err := keeper.UpdateInfererScoreEma(ctx, topicId, worker, oldScore)
 	s.Require().NoError(err, "Setting an older inferer score should not fail but should not update")
-	updatedScore, _ := keeper.GetLatestInfererScore(ctx, topicId, worker)
+	updatedScore, _ := keeper.GetInfererScoreEma(ctx, topicId, worker)
 	s.Require().NotEqual(oldScore.Score, updatedScore.Score, "Older score should not replace newer score")
 
 	// Set a new score for forecaster
-	_ = keeper.SetLatestForecasterScore(ctx, topicId, forecaster, newScore)
-	forecasterScore, _ := keeper.GetLatestForecasterScore(ctx, topicId, forecaster)
+	_ = keeper.UpdateForecasterScoreEma(ctx, topicId, forecaster, newScore)
+	forecasterScore, _ := keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
 	s.Require().Equal(newScore.Score, forecasterScore.Score, "Newer forecaster score should be set")
 
 	// Set a new score for reputer
-	_ = keeper.SetLatestReputerScore(ctx, topicId, reputer, newScore)
-	reputerScore, _ := keeper.GetLatestReputerScore(ctx, topicId, reputer)
+	_ = keeper.UpdateReputerScoreEma(ctx, topicId, reputer, newScore)
+	reputerScore, _ := keeper.GetReputerScoreEma(ctx, topicId, reputer)
 	s.Require().Equal(newScore.Score, reputerScore.Score, "Newer reputer score should be set")
 }
 

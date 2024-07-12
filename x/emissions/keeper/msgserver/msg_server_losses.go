@@ -77,7 +77,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	// Iterate through the array to ensure each reputer is in the whitelist
 	// and get get score for each reputer => later we can skim only the top few by score descending
 	lossBundlesByReputer := make(map[string]*types.ReputerValueBundle)
-	latestReputerScores := make(map[string]types.Score)
+	reputerScoreEmas := make(map[string]types.Score)
 	for _, bundle := range msg.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
 			continue
@@ -132,21 +132,22 @@ func (ms msgServer) InsertBulkReputerPayload(
 			/// Filtering done now, now write what we must for inclusion
 
 			// Get the latest score for each reputer
-			latestScore, err := ms.k.GetLatestReputerScore(ctx, bundle.ValueBundle.TopicId, reputer)
+			latestScore, err := ms.k.GetReputerScoreEma(ctx, bundle.ValueBundle.TopicId, reputer)
 			if err != nil {
 				continue
 			}
-			latestReputerScores[bundle.ValueBundle.Reputer] = latestScore
+			reputerScoreEmas[bundle.ValueBundle.Reputer] = latestScore
 			lossBundlesByReputer[bundle.ValueBundle.Reputer] = filteredBundle
 		}
 	}
 
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	topReputers, allReputersSorted := FindTopNByScoreDesc(params.MaxTopReputersToReward, reputerScoreEmas, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
 	stakesByReputer := make(map[string]cosmosMath.Int)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
+	reputerIsTop := make(map[string]bool, 0)
 	for _, reputer := range topReputers {
 		stake, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, reputer)
 		if err != nil {
@@ -155,7 +156,25 @@ func (ms msgServer) InsertBulkReputerPayload(
 
 		lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, lossBundlesByReputer[reputer])
 		stakesByReputer[reputer] = stake
+		reputerIsTop[reputer] = true
 	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockHeight := sdkCtx.BlockHeight()
+	err = ms.UpdateScoresOfPassiveActorsWithActiveQuantile(
+		sdkCtx,
+		blockHeight,
+		params.MaxTopReputersToReward,
+		topic.Id,
+		topic.AlphaRegret,
+		topic.ActiveReputerQuantile,
+		reputerScoreEmas,
+		topReputers,
+		allReputersSorted,
+		reputerIsTop,
+		types.ActorType_REPUTER,
+	)
+
 	// sort by reputer score descending
 	sort.Slice(lossBundlesFromTopReputers, func(i, j int) bool {
 		return lossBundlesFromTopReputers[i].ValueBundle.Reputer < lossBundlesFromTopReputers[j].ValueBundle.Reputer
@@ -178,7 +197,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle))
 
 	networkLossBundle.ReputerRequestNonce = msg.ReputerRequestNonce
@@ -212,7 +230,6 @@ func (ms msgServer) InsertBulkReputerPayload(
 		return nil, err
 	}
 
-	blockHeight := sdkCtx.BlockHeight()
 	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.ReputerRequestNonce.ReputerNonce, msg.Sender, types.ActorType_REPUTER)
 	if err != nil {
 		return nil, err

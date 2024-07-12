@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
@@ -10,50 +11,53 @@ import (
 // DefaultParams returns default module parameters.
 func DefaultParams() Params {
 	return Params{
-		Version:                         "0.0.3",                                  // version of the protocol should be in lockstep with github release tag version
-		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),   // total weight for a topic < this => don't run inference solicatation or loss update
-		MaxTopicsPerBlock:               uint64(128),                              // max number of topics to run cadence for per block
-		RequiredMinimumStake:            cosmosMath.NewInt(100),                   // minimum stake required to be a worker or reputer
-		RemoveStakeDelayWindow:          int64((60 * 60 * 24 * 7 * 3) / 5),        // ~approx 3 weeks assuming 5 second block time, number of blocks to wait before finalizing a stake withdrawal
-		MinEpochLength:                  12,                                       // shortest number of blocks per epoch topics are allowed to set as their cadence
-		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),  // controls resilience of reward payouts against copycat workers
-		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),  // speed of gradient descent
-		GradientDescentMaxIters:         uint64(10),                               // max iterations on gradient descent
-		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"), // gradient descent stops when gradient falls below this
-		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),   // minimum fraction of stake that should be listened to when setting consensus listening coefficients
-		EpsilonReputer:                  alloraMath.MustNewDecFromString("0.01"),  // a small tolerance quantity used to cap reputer scores at infinitesimally close proximities
-		MaxUnfulfilledWorkerRequests:    uint64(100),                              // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
-		MaxUnfulfilledReputerRequests:   uint64(100),                              // maximum number of outstanding nonces for reputer requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
-		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),   // importance of stake in determining rewards for a topic
-		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),   // importance of fee revenue in determining rewards for a topic
-		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),   // alpha for topic reward calculation; coupled with blocktime, or how often rewards are calculated
-		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),   // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
-		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),  // 25% rewards go to cosmos network validators
-		MaxSamplesToScaleScores:         uint64(10),                               // maximum number of previous scores to store and use for standard deviation calculation
-		MaxTopInferersToReward:          uint64(48),                               // max this many top inferers by score are rewarded for a topic
-		MaxTopForecastersToReward:       uint64(6),                                // max this many top forecasters by score are rewarded for a topic
-		MaxTopReputersToReward:          uint64(12),                               // max this many top reputers by score are rewarded for a topic
-		CreateTopicFee:                  cosmosMath.NewInt(10),                    // topic registration fee
-		MaxRetriesToFulfilNoncesWorker:  int64(1),                                 // max throttle of simultaneous unfulfilled worker requests
-		MaxRetriesToFulfilNoncesReputer: int64(3),                                 // max throttle of simultaneous unfulfilled reputer requests
-		RegistrationFee:                 cosmosMath.NewInt(10),                    // how much workers and reputers must pay to register per topic
-		DefaultPageLimit:                uint64(100),                              // how many topics to return per page during churn of requests
-		MaxPageLimit:                    uint64(1000),                             // max limit for pagination
-		MinEpochLengthRecordLimit:       int64(3),                                 // minimum number of epochs to keep records for a topic
-		MaxSerializedMsgLength:          int64(1000 * 1000),                       // maximum size of data to msg and query server in bytes
-		BlocksPerMonth:                  uint64(525960),                           // ~5 seconds block time, 6311520 per year, 525960 per month
-		PRewardInference:                alloraMath.NewDecFromInt64(1),            // fiducial value for rewards calculation
-		PRewardForecast:                 alloraMath.NewDecFromInt64(3),            // fiducial value for rewards calculation
-		PRewardReputer:                  alloraMath.NewDecFromInt64(3),            // fiducial value for rewards calculation
-		CRewardInference:                alloraMath.MustNewDecFromString("0.75"),  // fiducial value for rewards calculation
-		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),  // fiducial value for rewards calculation
-		CNorm:                           alloraMath.MustNewDecFromString("0.75"),  // fiducial value for inference synthesis
-		TopicFeeRevenueDecayRate:        alloraMath.MustNewDecFromString("0.025"), // rate at which topic fee revenue decays over time
-		MinEffectiveTopicRevenue:        alloraMath.MustNewDecFromString("0.01"),  // we no stop dripping from the topic's effective revenue when the topic's effective revenue is below this
+		Version:                         "0.0.3",
+		MinTopicWeight:                  alloraMath.MustNewDecFromString("100"),
+		MaxTopicsPerBlock:               uint64(16),
+		RequiredMinimumStake:            cosmosMath.NewInt(100),
+		RemoveStakeDelayWindow:          int64((60 * 60 * 24 * 7 * 3) / 5),
+		MinEpochLength:                  12,
+		BetaEntropy:                     alloraMath.MustNewDecFromString("0.25"),
+		LearningRate:                    alloraMath.MustNewDecFromString("0.05"),
+		GradientDescentMaxIters:         uint64(10),
+		MaxGradientThreshold:            alloraMath.MustNewDecFromString("0.001"),
+		MinStakeFraction:                alloraMath.MustNewDecFromString("0.5"),
+		EpsilonReputer:                  alloraMath.MustNewDecFromString("0.01"),
+		MaxUnfulfilledWorkerRequests:    uint64(100),
+		MaxUnfulfilledReputerRequests:   uint64(100),
+		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("0.5"),
+		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("0.5"),
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),
+		TaskRewardAlpha:                 alloraMath.MustNewDecFromString("0.1"),
+		ValidatorsVsAlloraPercentReward: alloraMath.MustNewDecFromString("0.25"),
+		MaxSamplesToScaleScores:         uint64(10),
+		MaxTopInferersToReward:          uint64(48),
+		MaxTopForecastersToReward:       uint64(6),
+		MaxTopReputersToReward:          uint64(12),
+		MaxActiveInferersQuantile:       alloraMath.MustNewDecFromString("0.25"),
+		MaxActiveForecastersQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		MaxActiveReputersQuantile:       alloraMath.MustNewDecFromString("0.25"),
+		CreateTopicFee:                  cosmosMath.NewInt(10),
+		MaxRetriesToFulfilNoncesWorker:  int64(1),
+		MaxRetriesToFulfilNoncesReputer: int64(3),
+		RegistrationFee:                 cosmosMath.NewInt(10),
+		DefaultPageLimit:                uint64(100),
+		MaxPageLimit:                    uint64(1000),
+		MinEpochLengthRecordLimit:       int64(3),
+		MaxSerializedMsgLength:          int64(1000 * 1000),
+		BlocksPerMonth:                  uint64(525960),
+		PRewardInference:                alloraMath.NewDecFromInt64(1),
+		PRewardForecast:                 alloraMath.NewDecFromInt64(3),
+		PRewardReputer:                  alloraMath.NewDecFromInt64(3),
+		CRewardInference:                alloraMath.MustNewDecFromString("0.75"),
+		CRewardForecast:                 alloraMath.MustNewDecFromString("0.75"),
+		CNorm:                           alloraMath.MustNewDecFromString("0.75"),
+		TopicFeeRevenueDecayRate:        alloraMath.MustNewDecFromString("0.025"),
+		MinEffectiveTopicRevenue:        alloraMath.MustNewDecFromString("0.01"),
 	}
 }
 
-// Validate does the sanity check on the params.
+// Validate does the stateless sanity check on the params.
 func (p Params) Validate() error {
 	if err := validateVersion(p.Version); err != nil {
 		return err
@@ -115,13 +119,22 @@ func (p Params) Validate() error {
 	if err := validateMaxSamplesToScaleScores(p.MaxSamplesToScaleScores); err != nil {
 		return err
 	}
-	if err := validateMaxTopInferersToReward(p.MaxTopInferersToReward); err != nil {
+	if err := validateMaxTopInferersToReward(p.MaxTopInferersToReward, p.MaxActiveInferersQuantile); err != nil {
 		return err
 	}
-	if err := validateMaxTopForecastersToReward(p.MaxTopForecastersToReward); err != nil {
+	if err := validateMaxTopForecastersToReward(p.MaxTopForecastersToReward, p.MaxActiveForecastersQuantile); err != nil {
 		return err
 	}
-	if err := validateMaxTopReputersToReward(p.MaxTopReputersToReward); err != nil {
+	if err := validateMaxTopReputersToReward(p.MaxTopReputersToReward, p.MaxActiveReputersQuantile); err != nil {
+		return err
+	}
+	if err := validateMaxActiveInferersQuantile(p.MaxActiveInferersQuantile, p.MaxTopInferersToReward); err != nil {
+		return err
+	}
+	if err := validateMaxActiveForecastersQuantile(p.MaxActiveForecastersQuantile, p.MaxTopForecastersToReward); err != nil {
+		return err
+	}
+	if err := validateMaxActiveReputersQuantile(p.MaxActiveReputersQuantile, p.MaxTopReputersToReward); err != nil {
 		return err
 	}
 	if err := validateCreateTopicFee(p.CreateTopicFee); err != nil {
@@ -408,22 +421,88 @@ func validateMaxSamplesToScaleScores(i uint64) error {
 	return nil
 }
 
-// max this many top workers by score are rewarded for a topic
-// Should be zero or positive. Enforced by uint type
-func validateMaxTopInferersToReward(_ uint64) error {
+// 1/MaxTop<Actor>sToReward should be less than maxActive<Actor>sQuantile
+// and the topic <Actor>Quantile should fit between them (greater than former and less than or equal to latter).
+func validateMaxTopActorVsActiveActorQuantile(maxTopActorsToReward uint64, maxActiveActorsQuantile alloraMath.Dec, errMsg *errors.Error) error {
+	oneOverMax, err := alloraMath.InvUint64(maxTopActorsToReward)
+	if err != nil {
+		return err
+	}
+	if oneOverMax.Gte(maxActiveActorsQuantile) {
+		return errMsg
+	}
+	return nil
+}
+
+func validateActiveActorQuantile(maxTopActorsToReward uint64, maxActiveActorsQuantile alloraMath.Dec, errMsg *errors.Error) error {
+	// Check quantile is over maxTopActorsToReward
+	err := validateMaxTopActorVsActiveActorQuantile(
+		maxTopActorsToReward,
+		maxActiveActorsQuantile,
+		errMsg,
+	)
+	if err != nil {
+		return err
+	}
+	// Check quantile does not exceed nor equal 100%
+	if maxActiveActorsQuantile.Gte(alloraMath.MustNewDecFromString("100")) {
+		return ErrMustBeBelow100Percent
+	}
 	return nil
 }
 
 // max this many top workers by score are rewarded for a topic
 // Should be zero or positive. Enforced by uint type
-func validateMaxTopForecastersToReward(_ uint64) error {
-	return nil
+func validateMaxTopInferersToReward(maxTopInferersToReward uint64, maxActiveInferersQuantile alloraMath.Dec) error {
+	return validateMaxTopActorVsActiveActorQuantile(
+		maxTopInferersToReward,
+		maxActiveInferersQuantile,
+		ErrMaxTopInferersIncompatibleWithActiveQuantile,
+	)
+}
+
+// max this many top workers by score are rewarded for a topic
+// Should be zero or positive. Enforced by uint type
+func validateMaxTopForecastersToReward(maxTopForecastersToReward uint64, maxActiveForecastersQuantile alloraMath.Dec) error {
+	return validateMaxTopActorVsActiveActorQuantile(
+		maxTopForecastersToReward,
+		maxActiveForecastersQuantile,
+		ErrMaxTopForecastersIncompatibleWithActiveQuantile,
+	)
 }
 
 // max this many top reputers by score are rewarded for a topic
 // Should be zero or positive. Enforced by uint type
-func validateMaxTopReputersToReward(_ uint64) error {
-	return nil
+func validateMaxTopReputersToReward(maxTopReputersToReward uint64, maxActiveReputersQuantile alloraMath.Dec) error {
+	return validateMaxTopActorVsActiveActorQuantile(
+		maxTopReputersToReward,
+		maxActiveReputersQuantile,
+		ErrMaxTopReputersIncompatibleWithActiveQuantile,
+	)
+}
+
+func validateMaxActiveInferersQuantile(maxActiveInferersQuantile alloraMath.Dec, maxTopInferersToReward uint64) error {
+	return validateActiveActorQuantile(
+		maxTopInferersToReward,
+		maxActiveInferersQuantile,
+		ErrMaxTopInferersIncompatibleWithActiveQuantile,
+	)
+}
+
+func validateMaxActiveForecastersQuantile(maxActiveForecastersQuantile alloraMath.Dec, maxTopForecastersToReward uint64) error {
+	return validateActiveActorQuantile(
+		maxTopForecastersToReward,
+		maxActiveForecastersQuantile,
+		ErrMaxTopForecastersIncompatibleWithActiveQuantile,
+	)
+}
+
+func validateMaxActiveReputersQuantile(maxActiveReputersQuantile alloraMath.Dec, maxTopReputersToReward uint64) error {
+	return validateActiveActorQuantile(
+		maxTopReputersToReward,
+		maxActiveReputersQuantile,
+		ErrMaxTopReputersIncompatibleWithActiveQuantile,
+	)
 }
 
 // topic registration fee
@@ -527,4 +606,53 @@ func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
 // Whether an alloraDec is between the value of (0, 1) exclusive
 func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
 	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+}
+
+func validateActiveActorTopicQuantile(
+	maxTopActorsToReward uint64,
+	maxActiveActorsQuantile alloraMath.Dec,
+	topicActiveActorsQuantile alloraMath.Dec,
+	errMsg *errors.Error,
+) error {
+	// Check topic quantile is over maxTopActorsToReward
+	err := validateMaxTopActorVsActiveActorQuantile(
+		maxTopActorsToReward,
+		topicActiveActorsQuantile,
+		errMsg,
+	)
+	if err != nil {
+		return err
+	}
+	// Check topic quantile does not exceed the global max
+	if topicActiveActorsQuantile.Gt(maxActiveActorsQuantile) {
+		return ErrMustBeBelow100Percent
+	}
+	return nil
+}
+
+func (p Params) ValidateTopicActiveInfererQuantile(topicQuantile alloraMath.Dec) error {
+	return validateActiveActorTopicQuantile(
+		p.MaxTopInferersToReward,
+		p.MaxActiveInferersQuantile,
+		topicQuantile,
+		ErrMaxTopInferersIncompatibleWithActiveQuantile,
+	)
+}
+
+func (p Params) ValidateTopicActiveForecasterQuantile(topicQuantile alloraMath.Dec) error {
+	return validateActiveActorTopicQuantile(
+		p.MaxTopForecastersToReward,
+		p.MaxActiveForecastersQuantile,
+		topicQuantile,
+		ErrMaxTopForecastersIncompatibleWithActiveQuantile,
+	)
+}
+
+func (p Params) ValidateTopicActiveReputerQuantile(topicQuantile alloraMath.Dec) error {
+	return validateActiveActorTopicQuantile(
+		p.MaxTopReputersToReward,
+		p.MaxActiveReputersQuantile,
+		topicQuantile,
+		ErrMaxTopReputersIncompatibleWithActiveQuantile,
+	)
 }

@@ -16,22 +16,25 @@ import (
 )
 
 var (
-	md_Topic                  protoreflect.MessageDescriptor
-	fd_Topic_id               protoreflect.FieldDescriptor
-	fd_Topic_creator          protoreflect.FieldDescriptor
-	fd_Topic_metadata         protoreflect.FieldDescriptor
-	fd_Topic_loss_logic       protoreflect.FieldDescriptor
-	fd_Topic_loss_method      protoreflect.FieldDescriptor
-	fd_Topic_inference_logic  protoreflect.FieldDescriptor
-	fd_Topic_inference_method protoreflect.FieldDescriptor
-	fd_Topic_epoch_last_ended protoreflect.FieldDescriptor
-	fd_Topic_epoch_length     protoreflect.FieldDescriptor
-	fd_Topic_ground_truth_lag protoreflect.FieldDescriptor
-	fd_Topic_default_arg      protoreflect.FieldDescriptor
-	fd_Topic_p_norm           protoreflect.FieldDescriptor
-	fd_Topic_alpha_regret     protoreflect.FieldDescriptor
-	fd_Topic_allow_negative   protoreflect.FieldDescriptor
-	fd_Topic_epsilon          protoreflect.FieldDescriptor
+	md_Topic                            protoreflect.MessageDescriptor
+	fd_Topic_id                         protoreflect.FieldDescriptor
+	fd_Topic_creator                    protoreflect.FieldDescriptor
+	fd_Topic_metadata                   protoreflect.FieldDescriptor
+	fd_Topic_loss_logic                 protoreflect.FieldDescriptor
+	fd_Topic_loss_method                protoreflect.FieldDescriptor
+	fd_Topic_inference_logic            protoreflect.FieldDescriptor
+	fd_Topic_inference_method           protoreflect.FieldDescriptor
+	fd_Topic_epoch_last_ended           protoreflect.FieldDescriptor
+	fd_Topic_epoch_length               protoreflect.FieldDescriptor
+	fd_Topic_ground_truth_lag           protoreflect.FieldDescriptor
+	fd_Topic_default_arg                protoreflect.FieldDescriptor
+	fd_Topic_p_norm                     protoreflect.FieldDescriptor
+	fd_Topic_alpha_regret               protoreflect.FieldDescriptor
+	fd_Topic_allow_negative             protoreflect.FieldDescriptor
+	fd_Topic_epsilon                    protoreflect.FieldDescriptor
+	fd_Topic_active_inferer_quantile    protoreflect.FieldDescriptor
+	fd_Topic_active_forecaster_quantile protoreflect.FieldDescriptor
+	fd_Topic_active_reputer_quantile    protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -52,6 +55,9 @@ func init() {
 	fd_Topic_alpha_regret = md_Topic.Fields().ByName("alpha_regret")
 	fd_Topic_allow_negative = md_Topic.Fields().ByName("allow_negative")
 	fd_Topic_epsilon = md_Topic.Fields().ByName("epsilon")
+	fd_Topic_active_inferer_quantile = md_Topic.Fields().ByName("active_inferer_quantile")
+	fd_Topic_active_forecaster_quantile = md_Topic.Fields().ByName("active_forecaster_quantile")
+	fd_Topic_active_reputer_quantile = md_Topic.Fields().ByName("active_reputer_quantile")
 }
 
 var _ protoreflect.Message = (*fastReflection_Topic)(nil)
@@ -209,6 +215,24 @@ func (x *fastReflection_Topic) Range(f func(protoreflect.FieldDescriptor, protor
 			return
 		}
 	}
+	if x.ActiveInfererQuantile != "" {
+		value := protoreflect.ValueOfString(x.ActiveInfererQuantile)
+		if !f(fd_Topic_active_inferer_quantile, value) {
+			return
+		}
+	}
+	if x.ActiveForecasterQuantile != "" {
+		value := protoreflect.ValueOfString(x.ActiveForecasterQuantile)
+		if !f(fd_Topic_active_forecaster_quantile, value) {
+			return
+		}
+	}
+	if x.ActiveReputerQuantile != "" {
+		value := protoreflect.ValueOfString(x.ActiveReputerQuantile)
+		if !f(fd_Topic_active_reputer_quantile, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -254,6 +278,12 @@ func (x *fastReflection_Topic) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.AllowNegative != false
 	case "emissions.v1.Topic.epsilon":
 		return x.Epsilon != ""
+	case "emissions.v1.Topic.active_inferer_quantile":
+		return x.ActiveInfererQuantile != ""
+	case "emissions.v1.Topic.active_forecaster_quantile":
+		return x.ActiveForecasterQuantile != ""
+	case "emissions.v1.Topic.active_reputer_quantile":
+		return x.ActiveReputerQuantile != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -300,6 +330,12 @@ func (x *fastReflection_Topic) Clear(fd protoreflect.FieldDescriptor) {
 		x.AllowNegative = false
 	case "emissions.v1.Topic.epsilon":
 		x.Epsilon = ""
+	case "emissions.v1.Topic.active_inferer_quantile":
+		x.ActiveInfererQuantile = ""
+	case "emissions.v1.Topic.active_forecaster_quantile":
+		x.ActiveForecasterQuantile = ""
+	case "emissions.v1.Topic.active_reputer_quantile":
+		x.ActiveReputerQuantile = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -361,6 +397,15 @@ func (x *fastReflection_Topic) Get(descriptor protoreflect.FieldDescriptor) prot
 	case "emissions.v1.Topic.epsilon":
 		value := x.Epsilon
 		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Topic.active_inferer_quantile":
+		value := x.ActiveInfererQuantile
+		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Topic.active_forecaster_quantile":
+		value := x.ActiveForecasterQuantile
+		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Topic.active_reputer_quantile":
+		value := x.ActiveReputerQuantile
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -411,6 +456,12 @@ func (x *fastReflection_Topic) Set(fd protoreflect.FieldDescriptor, value protor
 		x.AllowNegative = value.Bool()
 	case "emissions.v1.Topic.epsilon":
 		x.Epsilon = value.Interface().(string)
+	case "emissions.v1.Topic.active_inferer_quantile":
+		x.ActiveInfererQuantile = value.Interface().(string)
+	case "emissions.v1.Topic.active_forecaster_quantile":
+		x.ActiveForecasterQuantile = value.Interface().(string)
+	case "emissions.v1.Topic.active_reputer_quantile":
+		x.ActiveReputerQuantile = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -461,6 +512,12 @@ func (x *fastReflection_Topic) Mutable(fd protoreflect.FieldDescriptor) protoref
 		panic(fmt.Errorf("field allow_negative of message emissions.v1.Topic is not mutable"))
 	case "emissions.v1.Topic.epsilon":
 		panic(fmt.Errorf("field epsilon of message emissions.v1.Topic is not mutable"))
+	case "emissions.v1.Topic.active_inferer_quantile":
+		panic(fmt.Errorf("field active_inferer_quantile of message emissions.v1.Topic is not mutable"))
+	case "emissions.v1.Topic.active_forecaster_quantile":
+		panic(fmt.Errorf("field active_forecaster_quantile of message emissions.v1.Topic is not mutable"))
+	case "emissions.v1.Topic.active_reputer_quantile":
+		panic(fmt.Errorf("field active_reputer_quantile of message emissions.v1.Topic is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topic"))
@@ -503,6 +560,12 @@ func (x *fastReflection_Topic) NewField(fd protoreflect.FieldDescriptor) protore
 	case "emissions.v1.Topic.allow_negative":
 		return protoreflect.ValueOfBool(false)
 	case "emissions.v1.Topic.epsilon":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.Topic.active_inferer_quantile":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.Topic.active_forecaster_quantile":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.Topic.active_reputer_quantile":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -628,6 +691,18 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
+		l = len(x.ActiveInfererQuantile)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.ActiveForecasterQuantile)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.ActiveReputerQuantile)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -656,6 +731,33 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.ActiveReputerQuantile) > 0 {
+			i -= len(x.ActiveReputerQuantile)
+			copy(dAtA[i:], x.ActiveReputerQuantile)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ActiveReputerQuantile)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x92
+		}
+		if len(x.ActiveForecasterQuantile) > 0 {
+			i -= len(x.ActiveForecasterQuantile)
+			copy(dAtA[i:], x.ActiveForecasterQuantile)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ActiveForecasterQuantile)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x8a
+		}
+		if len(x.ActiveInfererQuantile) > 0 {
+			i -= len(x.ActiveInfererQuantile)
+			copy(dAtA[i:], x.ActiveInfererQuantile)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.ActiveInfererQuantile)))
+			i--
+			dAtA[i] = 0x1
+			i--
+			dAtA[i] = 0x82
 		}
 		if len(x.Epsilon) > 0 {
 			i -= len(x.Epsilon)
@@ -1221,6 +1323,102 @@ func (x *fastReflection_Topic) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				x.Epsilon = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 16:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ActiveInfererQuantile", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ActiveInfererQuantile = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 17:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ActiveForecasterQuantile", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ActiveForecasterQuantile = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 18:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field ActiveReputerQuantile", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.ActiveReputerQuantile = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -2316,21 +2514,24 @@ type Topic struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id              uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Creator         string `protobuf:"bytes,2,opt,name=creator,proto3" json:"creator,omitempty"`
-	Metadata        string `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	LossLogic       string `protobuf:"bytes,4,opt,name=loss_logic,json=lossLogic,proto3" json:"loss_logic,omitempty"`
-	LossMethod      string `protobuf:"bytes,5,opt,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
-	InferenceLogic  string `protobuf:"bytes,6,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
-	InferenceMethod string `protobuf:"bytes,7,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
-	EpochLastEnded  int64  `protobuf:"varint,8,opt,name=epoch_last_ended,json=epochLastEnded,proto3" json:"epoch_last_ended,omitempty"`
-	EpochLength     int64  `protobuf:"varint,9,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
-	GroundTruthLag  int64  `protobuf:"varint,10,opt,name=ground_truth_lag,json=groundTruthLag,proto3" json:"ground_truth_lag,omitempty"`
-	DefaultArg      string `protobuf:"bytes,11,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
-	PNorm           string `protobuf:"bytes,12,opt,name=p_norm,json=pNorm,proto3" json:"p_norm,omitempty"`
-	AlphaRegret     string `protobuf:"bytes,13,opt,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`
-	AllowNegative   bool   `protobuf:"varint,14,opt,name=allow_negative,json=allowNegative,proto3" json:"allow_negative,omitempty"`
-	Epsilon         string `protobuf:"bytes,15,opt,name=epsilon,proto3" json:"epsilon,omitempty"`
+	Id                       uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Creator                  string `protobuf:"bytes,2,opt,name=creator,proto3" json:"creator,omitempty"`
+	Metadata                 string `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	LossLogic                string `protobuf:"bytes,4,opt,name=loss_logic,json=lossLogic,proto3" json:"loss_logic,omitempty"`
+	LossMethod               string `protobuf:"bytes,5,opt,name=loss_method,json=lossMethod,proto3" json:"loss_method,omitempty"`
+	InferenceLogic           string `protobuf:"bytes,6,opt,name=inference_logic,json=inferenceLogic,proto3" json:"inference_logic,omitempty"`
+	InferenceMethod          string `protobuf:"bytes,7,opt,name=inference_method,json=inferenceMethod,proto3" json:"inference_method,omitempty"`
+	EpochLastEnded           int64  `protobuf:"varint,8,opt,name=epoch_last_ended,json=epochLastEnded,proto3" json:"epoch_last_ended,omitempty"`
+	EpochLength              int64  `protobuf:"varint,9,opt,name=epoch_length,json=epochLength,proto3" json:"epoch_length,omitempty"`
+	GroundTruthLag           int64  `protobuf:"varint,10,opt,name=ground_truth_lag,json=groundTruthLag,proto3" json:"ground_truth_lag,omitempty"`
+	DefaultArg               string `protobuf:"bytes,11,opt,name=default_arg,json=defaultArg,proto3" json:"default_arg,omitempty"`
+	PNorm                    string `protobuf:"bytes,12,opt,name=p_norm,json=pNorm,proto3" json:"p_norm,omitempty"`
+	AlphaRegret              string `protobuf:"bytes,13,opt,name=alpha_regret,json=alphaRegret,proto3" json:"alpha_regret,omitempty"`
+	AllowNegative            bool   `protobuf:"varint,14,opt,name=allow_negative,json=allowNegative,proto3" json:"allow_negative,omitempty"`
+	Epsilon                  string `protobuf:"bytes,15,opt,name=epsilon,proto3" json:"epsilon,omitempty"`
+	ActiveInfererQuantile    string `protobuf:"bytes,16,opt,name=active_inferer_quantile,json=activeInfererQuantile,proto3" json:"active_inferer_quantile,omitempty"`
+	ActiveForecasterQuantile string `protobuf:"bytes,17,opt,name=active_forecaster_quantile,json=activeForecasterQuantile,proto3" json:"active_forecaster_quantile,omitempty"`
+	ActiveReputerQuantile    string `protobuf:"bytes,18,opt,name=active_reputer_quantile,json=activeReputerQuantile,proto3" json:"active_reputer_quantile,omitempty"`
 }
 
 func (x *Topic) Reset() {
@@ -2458,6 +2659,27 @@ func (x *Topic) GetEpsilon() string {
 	return ""
 }
 
+func (x *Topic) GetActiveInfererQuantile() string {
+	if x != nil {
+		return x.ActiveInfererQuantile
+	}
+	return ""
+}
+
+func (x *Topic) GetActiveForecasterQuantile() string {
+	if x != nil {
+		return x.ActiveForecasterQuantile
+	}
+	return ""
+}
+
+func (x *Topic) GetActiveReputerQuantile() string {
+	if x != nil {
+		return x.ActiveReputerQuantile
+	}
+	return ""
+}
+
 type TopicList struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2555,7 +2777,7 @@ var file_emissions_v1_topic_proto_rawDesc = []byte{
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d,
 	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x2f, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x9f, 0x05, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf8, 0x07, 0x0a, 0x05, 0x54, 0x6f, 0x70, 0x69, 0x63,
 	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64,
 	0x12, 0x18, 0x0a, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x07, 0x63, 0x72, 0x65, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x6d, 0x65,
@@ -2597,32 +2819,53 @@ var file_emissions_v1_topic_proto_rawDesc = []byte{
 	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
 	0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61,
 	0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52,
-	0x07, 0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e, 0x22, 0x38, 0x0a, 0x09, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x2b, 0x0a, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x18,
-	0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69,
-	0x63, 0x73, 0x22, 0x81, 0x01, 0x0a, 0x15, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
-	0x65, 0x64, 0x41, 0x63, 0x74, 0x6f, 0x72, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x21, 0x0a, 0x0c,
-	0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01,
-	0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12,
-	0x14, 0x0a, 0x05, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05,
-	0x61, 0x63, 0x74, 0x6f, 0x72, 0x12, 0x29, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65,
-	0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x6f, 0x70,
-	0x69, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x07, 0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f, 0x6e, 0x12, 0x6f, 0x0a, 0x17, 0x61, 0x63, 0x74, 0x69,
+	0x76, 0x65, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x5f, 0x71, 0x75, 0x61, 0x6e, 0x74,
+	0x69, 0x6c, 0x65, 0x18, 0x10, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda,
+	0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c,
+	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c,
+	0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44,
+	0x65, 0x63, 0x52, 0x15, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65,
+	0x72, 0x51, 0x75, 0x61, 0x6e, 0x74, 0x69, 0x6c, 0x65, 0x12, 0x75, 0x0a, 0x1a, 0x61, 0x63, 0x74,
+	0x69, 0x76, 0x65, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x71,
+	0x75, 0x61, 0x6e, 0x74, 0x69, 0x6c, 0x65, 0x18, 0x11, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8,
+	0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
+	0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b,
+	0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61,
+	0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x18, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x46, 0x6f,
+	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x51, 0x75, 0x61, 0x6e, 0x74, 0x69, 0x6c, 0x65,
+	0x12, 0x6f, 0x0a, 0x17, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74,
+	0x65, 0x72, 0x5f, 0x71, 0x75, 0x61, 0x6e, 0x74, 0x69, 0x6c, 0x65, 0x18, 0x12, 0x20, 0x01, 0x28,
+	0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75,
 	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
 	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
-	0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70,
-	0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58,
-	0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca,
-	0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02,
-	0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50,
-	0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x15, 0x61, 0x63, 0x74, 0x69,
+	0x76, 0x65, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x51, 0x75, 0x61, 0x6e, 0x74, 0x69, 0x6c,
+	0x65, 0x22, 0x38, 0x0a, 0x09, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x2b,
+	0x0a, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x13,
+	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x6f,
+	0x70, 0x69, 0x63, 0x52, 0x06, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x22, 0x81, 0x01, 0x0a, 0x15,
+	0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x65, 0x64, 0x41, 0x63, 0x74, 0x6f, 0x72,
+	0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68,
+	0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f,
+	0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x63, 0x74, 0x6f,
+	0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x61, 0x63, 0x74, 0x6f, 0x72, 0x12, 0x29,
+	0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x4e, 0x6f, 0x6e,
+	0x63, 0x65, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x42,
+	0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f,
+	0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61,
+	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c,
+	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61,
+	0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a,
+	0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
