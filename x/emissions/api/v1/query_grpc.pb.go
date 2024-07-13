@@ -50,7 +50,7 @@ const (
 	Query_GetLatestNetworkInference_FullMethodName                   = "/emissions.v1.Query/GetLatestNetworkInference"
 	Query_GetLatestAvailableNetworkInference_FullMethodName          = "/emissions.v1.Query/GetLatestAvailableNetworkInference"
 	Query_GetIsWorkerNonceUnfulfilled_FullMethodName                 = "/emissions.v1.Query/GetIsWorkerNonceUnfulfilled"
-	Query_GetIsReputerNonceUnfulfilled_FullMethodName                = "/emissions.v1.Query/GetIsReputerNonceUnfulfilled"
+	Query_IsReputerNonceUnfulfilled_FullMethodName                   = "/emissions.v1.Query/IsReputerNonceUnfulfilled"
 	Query_GetUnfulfilledWorkerNonces_FullMethodName                  = "/emissions.v1.Query/GetUnfulfilledWorkerNonces"
 	Query_GetUnfulfilledReputerNonces_FullMethodName                 = "/emissions.v1.Query/GetUnfulfilledReputerNonces"
 	Query_GetInfererNetworkRegret_FullMethodName                     = "/emissions.v1.Query/GetInfererNetworkRegret"
@@ -128,7 +128,7 @@ type QueryClient interface {
 	GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
 	GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
 	GetIsWorkerNonceUnfulfilled(ctx context.Context, in *QueryIsWorkerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsWorkerNonceUnfulfilledResponse, error)
-	GetIsReputerNonceUnfulfilled(ctx context.Context, in *QueryIsReputerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsReputerNonceUnfulfilledResponse, error)
+	IsReputerNonceUnfulfilled(ctx context.Context, in *QueryIsReputerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsReputerNonceUnfulfilledResponse, error)
 	GetUnfulfilledWorkerNonces(ctx context.Context, in *QueryUnfulfilledWorkerNoncesRequest, opts ...grpc.CallOption) (*QueryUnfulfilledWorkerNoncesResponse, error)
 	GetUnfulfilledReputerNonces(ctx context.Context, in *QueryUnfulfilledReputerNoncesRequest, opts ...grpc.CallOption) (*QueryUnfulfilledReputerNoncesResponse, error)
 	GetInfererNetworkRegret(ctx context.Context, in *QueryInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryInfererNetworkRegretResponse, error)
@@ -457,9 +457,9 @@ func (c *queryClient) GetIsWorkerNonceUnfulfilled(ctx context.Context, in *Query
 	return out, nil
 }
 
-func (c *queryClient) GetIsReputerNonceUnfulfilled(ctx context.Context, in *QueryIsReputerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsReputerNonceUnfulfilledResponse, error) {
+func (c *queryClient) IsReputerNonceUnfulfilled(ctx context.Context, in *QueryIsReputerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsReputerNonceUnfulfilledResponse, error) {
 	out := new(QueryIsReputerNonceUnfulfilledResponse)
-	err := c.cc.Invoke(ctx, Query_GetIsReputerNonceUnfulfilled_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Query_IsReputerNonceUnfulfilled_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -853,7 +853,7 @@ type QueryServer interface {
 	GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
 	GetLatestAvailableNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
 	GetIsWorkerNonceUnfulfilled(context.Context, *QueryIsWorkerNonceUnfulfilledRequest) (*QueryIsWorkerNonceUnfulfilledResponse, error)
-	GetIsReputerNonceUnfulfilled(context.Context, *QueryIsReputerNonceUnfulfilledRequest) (*QueryIsReputerNonceUnfulfilledResponse, error)
+	IsReputerNonceUnfulfilled(context.Context, *QueryIsReputerNonceUnfulfilledRequest) (*QueryIsReputerNonceUnfulfilledResponse, error)
 	GetUnfulfilledWorkerNonces(context.Context, *QueryUnfulfilledWorkerNoncesRequest) (*QueryUnfulfilledWorkerNoncesResponse, error)
 	GetUnfulfilledReputerNonces(context.Context, *QueryUnfulfilledReputerNoncesRequest) (*QueryUnfulfilledReputerNoncesResponse, error)
 	GetInfererNetworkRegret(context.Context, *QueryInfererNetworkRegretRequest) (*QueryInfererNetworkRegretResponse, error)
@@ -993,8 +993,8 @@ func (UnimplementedQueryServer) GetLatestAvailableNetworkInference(context.Conte
 func (UnimplementedQueryServer) GetIsWorkerNonceUnfulfilled(context.Context, *QueryIsWorkerNonceUnfulfilledRequest) (*QueryIsWorkerNonceUnfulfilledResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIsWorkerNonceUnfulfilled not implemented")
 }
-func (UnimplementedQueryServer) GetIsReputerNonceUnfulfilled(context.Context, *QueryIsReputerNonceUnfulfilledRequest) (*QueryIsReputerNonceUnfulfilledResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetIsReputerNonceUnfulfilled not implemented")
+func (UnimplementedQueryServer) IsReputerNonceUnfulfilled(context.Context, *QueryIsReputerNonceUnfulfilledRequest) (*QueryIsReputerNonceUnfulfilledResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsReputerNonceUnfulfilled not implemented")
 }
 func (UnimplementedQueryServer) GetUnfulfilledWorkerNonces(context.Context, *QueryUnfulfilledWorkerNoncesRequest) (*QueryUnfulfilledWorkerNoncesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUnfulfilledWorkerNonces not implemented")
@@ -1684,20 +1684,20 @@ func _Query_GetIsWorkerNonceUnfulfilled_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetIsReputerNonceUnfulfilled_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Query_IsReputerNonceUnfulfilled_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryIsReputerNonceUnfulfilledRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GetIsReputerNonceUnfulfilled(ctx, in)
+		return srv.(QueryServer).IsReputerNonceUnfulfilled(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Query_GetIsReputerNonceUnfulfilled_FullMethodName,
+		FullMethod: Query_IsReputerNonceUnfulfilled_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetIsReputerNonceUnfulfilled(ctx, req.(*QueryIsReputerNonceUnfulfilledRequest))
+		return srv.(QueryServer).IsReputerNonceUnfulfilled(ctx, req.(*QueryIsReputerNonceUnfulfilledRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2536,8 +2536,8 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetIsWorkerNonceUnfulfilled_Handler,
 		},
 		{
-			MethodName: "GetIsReputerNonceUnfulfilled",
-			Handler:    _Query_GetIsReputerNonceUnfulfilled_Handler,
+			MethodName: "IsReputerNonceUnfulfilled",
+			Handler:    _Query_IsReputerNonceUnfulfilled_Handler,
 		},
 		{
 			MethodName: "GetUnfulfilledWorkerNonces",

@@ -194,7 +194,7 @@ service Query {
     option (google.api.http).get = "/emissions/v1/is_worker_nonce_unfulfilled/{topic_id}/{block_height}";
   }
 
-  rpc GetIsReputerNonceUnfulfilled(QueryIsReputerNonceUnfulfilledRequest)
+  rpc IsReputerNonceUnfulfilled(QueryIsReputerNonceUnfulfilledRequest)
       returns (QueryIsReputerNonceUnfulfilledResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/is_reputer_nonce_unfulfilled/{topic_id}/{block_height}";
