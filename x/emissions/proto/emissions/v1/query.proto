@@ -952,7 +952,7 @@ message QueryRewardableTopicsResponse {
 
 message QueryLatestInfererScoreRequest {
   uint64 topic_id = 1;
-  string worker = 2;
+  string inferer = 2;
 }
 
 message QueryLatestInfererScoreResponse {

@@ -13,7 +13,7 @@ func (qs queryServer) GetLatestInfererScore(
 	*types.QueryLatestInfererScoreResponse,
 	error,
 ) {
-	latestInfererScore, err := qs.k.GetLatestInfererScore(ctx, req.TopicId, req.Worker)
+	latestInfererScore, err := qs.k.GetLatestInfererScore(ctx, req.TopicId, req.Inferer)
 	if err != nil {
 		return nil, err
 	}
