@@ -107,7 +107,7 @@ func GetCalcSetNetworkRegrets(
 		return networkLosses.InfererValues[i].Worker < networkLosses.InfererValues[j].Worker
 	})
 	for _, infererLoss := range networkLosses.InfererValues {
-		lastRegret, err := k.GetInfererNetworkRegret(ctx, topicId, infererLoss.Worker)
+		lastRegret, newParticipant, err := k.GetInfererNetworkRegret(ctx, topicId, infererLoss.Worker)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get inferer regret")
 		}
@@ -122,7 +122,9 @@ func GetCalcSetNetworkRegrets(
 			return errorsmod.Wrapf(err, "Error computing and building inferer regret")
 		}
 		k.SetInfererNetworkRegret(ctx, topicId, infererLoss.Worker, newInfererRegret)
-		workersRegrets = append(workersRegrets, newInfererRegret.Value)
+		if !newParticipant {
+			workersRegrets = append(workersRegrets, newInfererRegret.Value)
+		}
 	}
 
 	// Get old regret R_{i-1,k} and Calculate then Set the new regrets R_ik for forecasters
@@ -130,7 +132,7 @@ func GetCalcSetNetworkRegrets(
 		return networkLosses.ForecasterValues[i].Worker < networkLosses.ForecasterValues[j].Worker
 	})
 	for _, forecasterLoss := range networkLosses.ForecasterValues {
-		lastRegret, err := k.GetForecasterNetworkRegret(ctx, topicId, forecasterLoss.Worker)
+		lastRegret, newParticipant, err := k.GetForecasterNetworkRegret(ctx, topicId, forecasterLoss.Worker)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
@@ -145,7 +147,9 @@ func GetCalcSetNetworkRegrets(
 			return errorsmod.Wrapf(err, "Error computing and building forecaster regret")
 		}
 		k.SetForecasterNetworkRegret(ctx, topicId, forecasterLoss.Worker, newForecasterRegret)
-		workersRegrets = append(workersRegrets, newForecasterRegret.Value)
+		if !newParticipant {
+			workersRegrets = append(workersRegrets, newForecasterRegret.Value)
+		}
 	}
 
 	// Calculate the new one-in regrets for the forecasters R^+_ij'k where j' includes all j and forecast implied inference from forecaster k
@@ -155,7 +159,7 @@ func GetCalcSetNetworkRegrets(
 	for _, oneInForecasterLoss := range networkLosses.OneInForecasterValues {
 		// Loop over the inferer losses so that their losses may be compared against the one-in forecaster's loss, for each forecaster
 		for _, infererLoss := range networkLosses.InfererValues {
-			lastRegret, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker)
+			lastRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 			}
@@ -172,7 +176,7 @@ func GetCalcSetNetworkRegrets(
 			k.SetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker, newOneInForecasterRegret)
 		}
 		// Self-regret for the forecaster given their own regret
-		lastRegret, err := k.GetOneInForecasterSelfNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker)
+		lastRegret, _, err := k.GetOneInForecasterSelfNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting one-in forecaster self regret")
 		}
