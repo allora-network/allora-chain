@@ -264,7 +264,7 @@ func (qs queryServer) GetLatestTopicInferences(
 	return &types.QueryLatestTopicInferencesResponse{Inferences: inferences, BlockHeight: blockHeight}, nil
 }
 
-func (qs queryServer) GetIsWorkerNonceUnfulfilled(
+func (qs queryServer) IsWorkerNonceUnfulfilled(
 	ctx context.Context,
 	req *types.QueryIsWorkerNonceUnfulfilledRequest,
 ) (
