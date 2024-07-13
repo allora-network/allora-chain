@@ -23,7 +23,7 @@ func (s *KeeperTestSuite) TestGetLatestInfererScore() {
 
 	req := &types.QueryLatestInfererScoreRequest{
 		TopicId: topicId,
-		Worker:  worker,
+		Inferer: worker,
 	}
 	response, err := s.queryServer.GetLatestInfererScore(ctx, req)
 	s.Require().NoError(err)

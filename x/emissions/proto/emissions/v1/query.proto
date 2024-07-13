@@ -323,7 +323,7 @@ service Query {
 
   rpc GetLatestInfererScore(QueryLatestInfererScoreRequest) returns (QueryLatestInfererScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/latest_inferer_score/{topic_id}/{worker}";
+    option (google.api.http).get = "/emissions/v1/latest_inferer_score/{topic_id}/{inferer}";
   }
 
   rpc GetLatestForecasterScore(QueryLatestForecasterScoreRequest) returns (QueryLatestForecasterScoreResponse) {

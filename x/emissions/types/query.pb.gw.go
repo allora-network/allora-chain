@@ -3593,15 +3593,15 @@ func request_Query_GetLatestInfererScore_0(ctx context.Context, marshaler runtim
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["worker"]
+	val, ok = pathParams["inferer"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "worker")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "inferer")
 	}
 
-	protoReq.Worker, err = runtime.String(val)
+	protoReq.Inferer, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "worker", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "inferer", err)
 	}
 
 	msg, err := client.GetLatestInfererScore(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -3631,15 +3631,15 @@ func local_request_Query_GetLatestInfererScore_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["worker"]
+	val, ok = pathParams["inferer"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "worker")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "inferer")
 	}
 
-	protoReq.Worker, err = runtime.String(val)
+	protoReq.Inferer, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "worker", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "inferer", err)
 	}
 
 	msg, err := server.GetLatestInfererScore(ctx, &protoReq)
@@ -7841,7 +7841,7 @@ var (
 
 	pattern_Query_GetRewardableTopics_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"emissions", "v1", "rewardable_topics"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetLatestInfererScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "latest_inferer_score", "topic_id", "worker"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetLatestInfererScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "latest_inferer_score", "topic_id", "inferer"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GetLatestForecasterScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "latest_forecaster_score", "topic_id", "forecaster"}, "", runtime.AssumeColonVerbOpt(false)))
 
