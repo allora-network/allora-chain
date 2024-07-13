@@ -25,7 +25,7 @@ func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *type
 	return &types.QueryNetworkLossBundleAtBlockResponse{LossBundle: networkLoss}, nil
 }
 
-func (qs queryServer) GetIsReputerNonceUnfulfilled(
+func (qs queryServer) IsReputerNonceUnfulfilled(
 	ctx context.Context,
 	req *types.QueryIsReputerNonceUnfulfilledRequest,
 ) (
