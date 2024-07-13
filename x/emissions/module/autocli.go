@@ -287,7 +287,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetPreviousTopicWeight ",
+					RpcMethod: "GetPreviousTopicWeight",
 					Use:       "previous-topic-weight [topic_id]",
 					Short:     "Return previous topic weight. Useful for extrapolating future and previous topic weight and the topic's likelihood for churn",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
