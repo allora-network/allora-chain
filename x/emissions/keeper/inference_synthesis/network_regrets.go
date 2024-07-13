@@ -194,11 +194,13 @@ func GetCalcSetNetworkRegrets(
 	}
 
 	// Recalculate topic initial regret
-	updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, epsilon, pNorm, cNorm)
-	if err != nil {
-		return errorsmod.Wrapf(err, "Error calculating topic initial regret")
+	if len(workersRegrets) > 0 {
+		updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, epsilon, pNorm, cNorm)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Error calculating topic initial regret")
+		}
+		k.UpdateTopicInitialRegret(ctx, topicId, updatedTopicInitialRegret)
 	}
-	k.UpdateTopicInitialRegret(ctx, topicId, updatedTopicInitialRegret)
 
 	return nil
 }
