@@ -255,7 +255,6 @@ func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
 	if len(xp) != len(fp) {
 		return nil, errors.New("xp and fp must have the same length")
 	}
-
 	result := make([]Dec, len(x))
 	for i, xi := range x {
 		if xi.Lte(xp[0]) {
@@ -263,41 +262,15 @@ func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
 		} else if xi.Gte(xp[len(xp)-1]) {
 			result[i] = fp[len(fp)-1]
 		} else {
-			// Find the interval xp[i] <= xi < xp[i + 1]
-			j := 0
-			for xi.Gte(xp[j+1]) {
-				j++
-			}
-			// Linear interpolation formula
-			denominator, err := xp[j+1].Sub(xp[j])
+			j := sort.Search(len(xp)-1, func(j int) bool { return xi.Lt(xp[j+1]) })
+			t, err := xi.Sub(xp[j]).Quo(xp[j+1].Sub(xp[j]))
 			if err != nil {
 				return nil, err
 			}
-			numerator, err := xi.Sub(xp[j])
+			result[i], err = fp[j].Mul(OneDec().Sub(t)).Add(fp[j+1].Mul(t))
 			if err != nil {
 				return nil, err
 			}
-			t, err := numerator.Quo(denominator)
-			if err != nil {
-				return nil, err
-			}
-			oneMinusT, err := OneDec().Sub(t)
-			if err != nil {
-				return nil, err
-			}
-			fpjMulOneMinusT, err := fp[j].Mul(oneMinusT)
-			if err != nil {
-				return nil, err
-			}
-			fpjPlusOneMulT, err := fp[j+1].Mul(t)
-			if err != nil {
-				return nil, err
-			}
-			fp_j_t, err := fpjMulOneMinusT.Add(fpjPlusOneMulT)
-			if err != nil {
-				return nil, err
-			}
-			result[i] = fp_j_t
 		}
 	}
 	return result, nil
