@@ -1122,7 +1122,7 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.1",
 	)
 
-	worker0_0, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
+	worker0_0, _, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
 
 	/// TEST 0 PART B
@@ -1142,13 +1142,13 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 
 	worker0_0FirstRegret := worker0_0.Value
 
-	worker0_0, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
+	worker0_0, _, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
 
-	worker1_0, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
+	worker1_0, _, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
 	require.NoError(err)
 
-	worker2_0, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
+	worker2_0, _, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
 	require.NoError(err)
 
 	worker0_0RegretDecrease, err := worker0_0FirstRegret.Sub(worker0_0.Value)
@@ -1181,7 +1181,7 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.1",
 	)
 
-	worker0_1, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
+	worker0_1, _, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
 	require.NoError(err)
 
 	/// TEST 1 PART B
@@ -1201,13 +1201,13 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 
 	worker0_1FirstRegret := worker0_1.Value
 
-	worker0_1, err = k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
+	worker0_1, _, err = k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
 	require.NoError(err)
 
-	worker1_1, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[1].String())
+	worker1_1, _, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[1].String())
 	require.NoError(err)
 
-	worker2_1, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[2].String())
+	worker2_1, _, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[2].String())
 	require.NoError(err)
 
 	worker0_1RegretDecrease, err := worker0_1FirstRegret.Sub(worker0_1.Value)
