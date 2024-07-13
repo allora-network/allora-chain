@@ -36,7 +36,7 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 	s.Require().Equal(expectedBundle, response.LossBundle, "Retrieved loss bundle should match the expected bundle")
 }
 
-func (s *KeeperTestSuite) TestGetIsReputerNonceUnfulfilled() {
+func (s *KeeperTestSuite) TestIsReputerNonceUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -46,7 +46,7 @@ func (s *KeeperTestSuite) TestGetIsReputerNonceUnfulfilled() {
 		TopicId:     topicId,
 		BlockHeight: newNonce.BlockHeight,
 	}
-	response, err := s.queryServer.GetIsReputerNonceUnfulfilled(s.ctx, req)
+	response, err := s.queryServer.IsReputerNonceUnfulfilled(s.ctx, req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().False(response.IsReputerNonceUnfulfilled)
@@ -55,7 +55,7 @@ func (s *KeeperTestSuite) TestGetIsReputerNonceUnfulfilled() {
 	err = keeper.AddReputerNonce(ctx, topicId, newNonce)
 	s.Require().NoError(err)
 
-	response, err = s.queryServer.GetIsReputerNonceUnfulfilled(s.ctx, req)
+	response, err = s.queryServer.IsReputerNonceUnfulfilled(s.ctx, req)
 	s.Require().NoError(err)
 	s.Require().NotNil(response, "Response should not be nil")
 	s.Require().True(response.IsReputerNonceUnfulfilled)
