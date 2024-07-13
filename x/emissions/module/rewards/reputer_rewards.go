@@ -2,10 +2,10 @@ package rewards
 
 import (
 	"cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -152,49 +152,49 @@ func GetRewardForReputerFromTotalReward(
 	for _, reputerReward := range reputerDelegatorRewards {
 		reputer := reputerReward.Address
 		reward := reputerReward.Reward
-		totalStakeAmount, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputer)
+		totalStakeAmountInt, err := keeper.GetStakeReputerAuthority(ctx, topicId, reputer)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get reputer stake")
 		}
+		totalStakeAmountDec, err := alloraMath.NewDecFromSdkInt(totalStakeAmountInt)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to convert reputer total stake to dec")
+		}
 		// calculate reward for delegator total staked amount and send it to AlloraPendingRewardForDelegatorAccountName
-		totalDelegatorStakeAmount, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputer)
+		totalDelegatorStakeAmountInt, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputer)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to get reputer upon stake")
 		}
+		totalDelegatorStakeAmountDec, err := alloraMath.NewDecFromSdkInt(totalDelegatorStakeAmountInt)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to convert delegator stake upon reputer to dec")
+		}
 
-		fraction := totalDelegatorStakeAmount.Mul(synth.CosmosIntOneE18()).Quo(totalStakeAmount)
-		fractionUint, err := alloraMath.NewDecFromSdkInt(fraction)
+		fractionDec, err := totalDelegatorStakeAmountDec.Quo(totalStakeAmountDec)
 		if err != nil {
 			return nil, err
 		}
-		delegatorReward, err := reward.Mul(fractionUint)
+		delegatorRewardDec, err := reward.Mul(fractionDec)
 		if err != nil {
 			return nil, err
 		}
-		e18, err := alloraMath.NewDecFromSdkInt(synth.CosmosIntOneE18())
+		delegatorRewardInt := delegatorRewardDec.SdkIntTrim()
+		delegatorRewardDec, err = alloraMath.NewDecFromSdkInt(delegatorRewardInt)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to reconvert delegator reward from int to dec")
 		}
-		delegatorReward, err = delegatorReward.Quo(e18)
-		if err != nil {
-			return nil, err
-		}
-		if delegatorReward.Gt(alloraMath.NewDecFromInt64(0)) {
+		if delegatorRewardInt.GT(cosmosMath.ZeroInt()) {
 			// update reward share
 			// new_share = current_share + (reward / total_stake)
-			totalDelegatorStakeAmountDec, err := alloraMath.NewDecFromSdkInt(totalDelegatorStakeAmount)
+			addShareDec, err := delegatorRewardDec.Quo(totalDelegatorStakeAmountDec)
 			if err != nil {
 				return nil, err
 			}
-			addShare, err := delegatorReward.Quo(totalDelegatorStakeAmountDec)
+			currentShareDec, err := keeper.GetDelegateRewardPerShare(ctx, topicId, reputer)
 			if err != nil {
 				return nil, err
 			}
-			currentShare, err := keeper.GetDelegateRewardPerShare(ctx, topicId, reputer)
-			if err != nil {
-				return nil, err
-			}
-			newShare, err := currentShare.Add(addShare)
+			newShare, err := currentShareDec.Add(addShareDec)
 			if err != nil {
 				return nil, err
 			}
@@ -206,14 +206,16 @@ func GetRewardForReputerFromTotalReward(
 				ctx,
 				types.AlloraRewardsAccountName,
 				types.AlloraPendingRewardForDelegatorAccountName,
-				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, delegatorReward.SdkIntTrim())),
+				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, delegatorRewardInt)),
 			)
 			if err != nil {
 				return nil, errors.Wrapf(err, "failed to send coins to allora pend reward account")
 			}
 		}
 		// Send remain rewards to reputer
-		reputerRw, err := reward.Sub(delegatorReward)
+		// delegatorRewardDec has already been trimmed.
+		// Any decimals are left in reputerRw to be trimmed elsewhere
+		reputerRw, err := reward.Sub(delegatorRewardDec)
 		if err != nil {
 			return nil, err
 		}

@@ -2105,6 +2105,7 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	activeTopics, pageRes, err = keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Equal(1, len(activeTopics), "Should retrieve exactly one active topics")
+	s.Require().NotNil(pageRes, "Next key should not be nil")
 	for _, topicId := range activeTopics {
 		isActive, err := keeper.IsTopicActive(ctx, topicId)
 		s.Require().NoError(err, "Checking topic activity should not fail")
@@ -2120,6 +2121,7 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	activeTopics, pageRes, err = keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Equal(0, len(activeTopics), "Should retrieve exactly one active topics")
+	s.Require().NotNil(pageRes, "Next key should not be nil")
 }
 
 func (s *KeeperTestSuite) TestIncrementTopicId() {

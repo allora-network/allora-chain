@@ -41,6 +41,7 @@ func doInferenceAndReputation(
 	wasErr = orErr(wasErr, err)
 	topic := resp.Topic
 	workerNonce := topic.EpochLastEnded + topic.EpochLength
+	iterLog(m.T, iteration, "waiting for next epoch to start so we can produce inferences for the current epoch: ", workerNonce+1)
 	err = m.Client.WaitForBlockHeight(ctx, workerNonce+1)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
