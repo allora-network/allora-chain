@@ -15,9 +15,6 @@ func (msg *MsgInsertBulkReputerPayload) ValidateTopLevel() error {
 	if msg.ReputerRequestNonce == nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "reputer request nonce cannot be nil")
 	}
-	if msg.ReputerRequestNonce.WorkerNonce == nil {
-		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "worker nonce cannot be nil")
-	}
 	if msg.ReputerRequestNonce.ReputerNonce == nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "reputer nonce cannot be nil")
 	}

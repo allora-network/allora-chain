@@ -14,9 +14,11 @@ import "emissions/v1/params.proto";
 import "emissions/v1/node.proto";
 import "emissions/v1/worker.proto";
 import "emissions/v1/reputer.proto";
+import "emissions/v1/nonce.proto";
 import "emissions/v1/topic.proto";
 import "emissions/v1/stake.proto";
 import "emissions/v1/inference.proto";
+import "emissions/v1/score.proto";
 
 // Msg defines the module Msg service.
 service Query {
@@ -50,6 +52,11 @@ service Query {
   rpc GetInferencesAtBlock(QueryInferencesAtBlockRequest) returns (QueryInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/inferences/{topic_id}/{block_height}";
+  }
+
+  rpc GetLatestTopicInferences(QueryLatestTopicInferencesRequest) returns (QueryLatestTopicInferencesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/latest_inferences/{topic_id}";
   }
 
   rpc GetForecastsAtBlock(QueryForecastsAtBlockRequest) returns (QueryForecastsAtBlockResponse) {
@@ -170,10 +177,60 @@ service Query {
                                    "{block_height_last_inference}/last_reward/{block_height_last_reward}";
   }
 
-  rpc GetLatestNetworkInference(QueryLatestNetworkInferencesAtBlockRequest)
-      returns (QueryLatestNetworkInferencesAtBlockResponse) {
+  rpc GetLatestNetworkInference(QueryLatestNetworkInferencesRequest) returns (QueryLatestNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
+  }
+
+  rpc GetLatestAvailableNetworkInference(QueryLatestNetworkInferencesRequest)
+      returns (QueryLatestNetworkInferencesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/network_inferences/{topic_id}";
+  }
+
+  rpc GetIsWorkerNonceUnfulfilled(QueryIsWorkerNonceUnfulfilledRequest)
+      returns (QueryIsWorkerNonceUnfulfilledResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/is_worker_nonce_unfulfilled/{topic_id}/{block_height}";
+  }
+
+  rpc GetIsReputerNonceUnfulfilled(QueryIsReputerNonceUnfulfilledRequest)
+      returns (QueryIsReputerNonceUnfulfilledResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/is_reputer_nonce_unfulfilled/{topic_id}/{block_height}";
+  }
+
+  rpc GetUnfulfilledWorkerNonces(QueryUnfulfilledWorkerNoncesRequest) returns (QueryUnfulfilledWorkerNoncesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/unfulfilled_worker_nonces/{topic_id}";
+  }
+
+  rpc GetUnfulfilledReputerNonces(QueryUnfulfilledReputerNoncesRequest)
+      returns (QueryUnfulfilledReputerNoncesResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/unfulfilled_reputer_nonces/{topic_id}";
+  }
+
+  rpc GetInfererNetworkRegret(QueryInfererNetworkRegretRequest) returns (QueryInfererNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/inferer_network_regret/{topic_id}/{actor_id}";
+  }
+
+  rpc GetForecasterNetworkRegret(QueryForecasterNetworkRegretRequest) returns (QueryForecasterNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/forecaster_network_regret/{topic_id}/{worker}";
+  }
+
+  rpc GetOneInForecasterNetworkRegret(QueryOneInForecasterNetworkRegretRequest)
+      returns (QueryOneInForecasterNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/one_in_forecaster_network_regret/{topic_id}/{forecaster}/{inferer}";
+  }
+
+  rpc GetOneInForecasterSelfNetworkRegret(QueryOneInForecasterSelfNetworkRegretRequest)
+      returns (QueryOneInForecasterSelfNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/one_in_forecaster_self_network_regret/{topic_id}/{forecaster}";
   }
 
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
@@ -188,6 +245,168 @@ service Query {
   rpc GetTopicLastReputerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/topic_last_commit/{topic_id}";
+  }
+
+  rpc GetTopicRewardNonce(QueryTopicRewardNonceRequest) returns (QueryTopicRewardNonceResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_reward_nonce/{topic_id}";
+  }
+
+  rpc GetReputerLossBundlesAtBlock(QueryReputerLossBundlesAtBlockRequest)
+      returns (QueryReputerLossBundlesAtBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputer_loss_bundles/{topic_id}/{block_height}";
+  }
+
+  rpc GetStakeReputerAuthority(QueryStakeReputerAuthorityRequest) returns (QueryStakeReputerAuthorityResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/stake_reputer_authority/{topic_id}/{reputer}";
+  }
+
+  rpc GetDelegateStakePlacement(QueryDelegateStakePlacementRequest) returns (QueryDelegateStakePlacementResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake_placement/{topic_id}/{delegator}/{target}";
+  }
+
+  rpc GetDelegateStakeUponReputer(QueryDelegateStakeUponReputerRequest)
+      returns (QueryDelegateStakeUponReputerResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_stake_upon_reputer/{topic_id}/{target}";
+  }
+
+  rpc GetDelegateRewardPerShare(QueryDelegateRewardPerShareRequest) returns (QueryDelegateRewardPerShareResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/delegate_reward_per_share/{topic_id}/{reputer}";
+  }
+
+  rpc GetStakeRemovalForReputerAndTopicId(QueryStakeRemovalForReputerAndTopicIdRequest)
+      returns (QueryStakeRemovalForReputerAndTopicIdResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/stake_removal/{reputer}/{topic_id}";
+  }
+
+  rpc GetDelegateStakeRemoval(QueryDelegateStakeRemovalRequest) returns (QueryDelegateStakeRemovalResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+        "/emissions/v1/delegate_stake_removal/{block_height}/{topic_id}/{delegator}/{reputer}";
+  }
+
+  rpc GetPreviousTopicWeight(QueryPreviousTopicWeightRequest) returns (QueryPreviousTopicWeightResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/previous_topic_weight/{topic_id}";
+  }
+
+  rpc TopicExists(QueryTopicExistsRequest) returns (QueryTopicExistsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_exists/{topic_id}";
+  }
+
+  rpc IsTopicActive(QueryIsTopicActiveRequest) returns (QueryIsTopicActiveResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/is_topic_active/{topic_id}";
+  }
+
+  rpc GetTopicFeeRevenue(QueryTopicFeeRevenueRequest) returns (QueryTopicFeeRevenueResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_fee_revenue/{topic_id}";
+  }
+
+  rpc GetChurnableTopics(QueryChurnableTopicsRequest) returns (QueryChurnableTopicsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/churnable_topics";
+  }
+
+  rpc GetRewardableTopics(QueryRewardableTopicsRequest) returns (QueryRewardableTopicsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/rewardable_topics";
+  }
+
+  rpc GetLatestInfererScore(QueryLatestInfererScoreRequest) returns (QueryLatestInfererScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/latest_inferer_score/{topic_id}/{worker}";
+  }
+
+  rpc GetLatestForecasterScore(QueryLatestForecasterScoreRequest) returns (QueryLatestForecasterScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/latest_forecaster_score/{topic_id}/{forecaster}";
+  }
+
+  rpc GetLatestReputerScore(QueryLatestReputerScoreRequest) returns (QueryLatestReputerScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/latest_reputer_score/{topic_id}/{reputer}";
+  }
+
+  rpc GetInferenceScoresUntilBlock(QueryInferenceScoresUntilBlockRequest)
+      returns (QueryInferenceScoresUntilBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/inference_scores_until_block/{topic_id}/{block_height}";
+  }
+
+  rpc GetWorkerInferenceScoresAtBlock(QueryWorkerInferenceScoresAtBlockRequest)
+      returns (QueryWorkerInferenceScoresAtBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/worker_inference_scores_at_block/{topic_id}/{block_height}";
+  }
+
+  rpc GetForecastScoresUntilBlock(QueryForecastScoresUntilBlockRequest)
+      returns (QueryForecastScoresUntilBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/forecast_scores_until_block/{topic_id}/{block_height}";
+  }
+
+  rpc GetWorkerForecastScoresAtBlock(QueryWorkerForecastScoresAtBlockRequest)
+      returns (QueryWorkerForecastScoresAtBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/worker_forecast_scores_at_block/{topic_id}/{block_height}";
+  }
+
+  rpc GetReputersScoresAtBlock(QueryReputersScoresAtBlockRequest) returns (QueryReputersScoresAtBlockResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/reputers_scores_at_block/{topic_id}/{block_height}";
+  }
+
+  rpc GetListeningCoefficient(QueryListeningCoefficientRequest) returns (QueryListeningCoefficientResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/listening_coefficient/{topic_id}/{reputer}";
+  }
+
+  rpc GetPreviousReputerRewardFraction(QueryPreviousReputerRewardFractionRequest)
+      returns (QueryPreviousReputerRewardFractionResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/previous_reputer_reward_fraction/{topic_id}/{reputer}";
+  }
+
+  rpc GetPreviousInferenceRewardFraction(QueryPreviousInferenceRewardFractionRequest)
+      returns (QueryPreviousInferenceRewardFractionResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/previous_inference_reward_fraction/{topic_id}/{worker}";
+  }
+
+  rpc GetPreviousForecastRewardFraction(QueryPreviousForecastRewardFractionRequest)
+      returns (QueryPreviousForecastRewardFractionResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/previous_forecast_reward_fraction/{topic_id}/{worker}";
+  }
+
+  rpc GetPreviousPercentageRewardToStakedReputers(QueryPreviousPercentageRewardToStakedReputersRequest)
+      returns (QueryPreviousPercentageRewardToStakedReputersResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/previous_percentage_reward_to_staked_reputers";
+  }
+
+  rpc GetTotalRewardToDistribute(QueryTotalRewardToDistributeRequest) returns (QueryTotalRewardToDistributeResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/total_reward_to_distribute";
+  }
+
+  rpc GetTopicLastWorkerPayload(QueryTopicLastWorkerPayloadRequest) returns (QueryTopicLastWorkerPayloadResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_last_worker_payload/{topic_id}";
+  }
+
+  rpc GetTopicLastReputerPayload(QueryTopicLastReputerPayloadRequest) returns (QueryTopicLastReputerPayloadResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v1/topic_last_reputer_payload/{topic_id}";
   }
 }
 
@@ -364,6 +583,15 @@ message QueryInferencesAtBlockResponse {
   Inferences inferences = 1;
 }
 
+message QueryLatestTopicInferencesRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryLatestTopicInferencesResponse {
+  Inferences inferences = 1;
+  int64 block_height = 2;
+}
+
 // Returns the forecasts on a topic posted at a block height
 message QueryForecastsAtBlockRequest {
   uint64 topic_id = 1;
@@ -425,19 +653,96 @@ message QueryNetworkInferencesAtBlockRequest {
   int64 block_height_last_reward = 3;
 }
 
-message QueryLatestNetworkInferencesAtBlockRequest {
+message QueryLatestNetworkInferencesRequest {
   uint64 topic_id = 1;
+}
+
+message QueryIsWorkerNonceUnfulfilledRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryIsWorkerNonceUnfulfilledResponse {
+  bool is_worker_nonce_unfulfilled = 1;
+}
+
+message QueryUnfulfilledReputerNoncesRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryUnfulfilledReputerNoncesResponse {
+  ReputerRequestNonces nonces = 1;
+}
+
+message QueryUnfulfilledWorkerNoncesRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryUnfulfilledWorkerNoncesResponse {
+  Nonces nonces = 1;
+}
+
+message QueryInfererNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+}
+
+message QueryInfererNetworkRegretResponse {
+  TimestampedValue regret = 1;
+}
+
+message QueryForecasterNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string worker = 2;
+}
+
+message QueryForecasterNetworkRegretResponse {
+  TimestampedValue regret = 1;
+}
+
+message QueryOneInForecasterNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string forecaster = 2;
+  string inferer = 3;
+}
+
+message QueryOneInForecasterNetworkRegretResponse {
+  TimestampedValue regret = 1;
+}
+
+message QueryOneInForecasterSelfNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string forecaster = 2;
+}
+
+message QueryOneInForecasterSelfNetworkRegretResponse {
+  TimestampedValue regret = 1;
+}
+
+message QueryIsReputerNonceUnfulfilledRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryIsReputerNonceUnfulfilledResponse {
+  bool is_reputer_nonce_unfulfilled = 1;
 }
 
 message QueryNetworkInferencesAtBlockResponse {
   ValueBundle network_inferences = 1;
 }
 
-message QueryLatestNetworkInferencesAtBlockResponse {
+message QueryLatestNetworkInferencesResponse {
   ValueBundle network_inferences = 1;
   repeated RegretInformedWeight inferer_weights = 2;
   repeated RegretInformedWeight forecaster_weights = 3;
   repeated WorkerAttributedValue forecastImpliedInferences = 4;
+  int64 inference_block_height = 5;
+  int64 loss_block_height = 6;
+  repeated string confidence_interval_raw_percentiles = 7
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string confidence_interval_values = 8
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message QueryIsWorkerRegisteredInTopicIdRequest {
@@ -507,4 +812,283 @@ message QueryTopicLastCommitRequest {
 
 message QueryTopicLastCommitResponse {
   TimestampedActorNonce last_commit = 1;
+}
+
+message QueryTopicRewardNonceRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicRewardNonceResponse {
+  int64 nonce = 1;
+}
+
+message QueryReputerLossBundlesAtBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryReputerLossBundlesAtBlockResponse {
+  ReputerValueBundles loss_bundles = 1;
+}
+
+message QueryStakeReputerAuthorityRequest {
+  uint64 topic_id = 1;
+  string reputer = 2;
+}
+
+message QueryStakeReputerAuthorityResponse {
+  string authority = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryDelegateStakePlacementRequest {
+  uint64 topic_id = 1;
+  string delegator = 2;
+  string target = 3;
+}
+
+message QueryDelegateStakePlacementResponse {
+  DelegatorInfo delegator_info = 1;
+}
+
+message QueryDelegateStakeUponReputerRequest {
+  uint64 topic_id = 1;
+  string target = 2;
+}
+
+message QueryDelegateStakeUponReputerResponse {
+  string stake = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryDelegateRewardPerShareRequest {
+  uint64 topic_id = 1;
+  string reputer = 2;
+}
+
+message QueryDelegateRewardPerShareResponse {
+  string reward_per_share = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
+
+message QueryStakeRemovalForReputerAndTopicIdRequest {
+  string reputer = 1;
+  uint64 topic_id = 2;
+}
+
+message QueryStakeRemovalForReputerAndTopicIdResponse {
+  StakeRemovalInfo stake_removal_info = 1;
+}
+
+message QueryDelegateStakeRemovalRequest {
+  int64 block_height = 1;
+  uint64 topic_id = 2;
+  string delegator = 3;
+  string reputer = 4;
+}
+
+message QueryDelegateStakeRemovalResponse {
+  DelegateStakeRemovalInfo stake_removal_info = 1;
+}
+
+message QueryPreviousTopicWeightRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryPreviousTopicWeightResponse {
+  string weight = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  bool not_found = 2;
+}
+
+message QueryTopicExistsRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicExistsResponse {
+  bool exists = 1;
+}
+
+message QueryIsTopicActiveRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryIsTopicActiveResponse {
+  bool is_active = 1;
+}
+
+message QueryTopicFeeRevenueRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicFeeRevenueResponse {
+  string fee_revenue = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+message QueryChurnableTopicsRequest {}
+
+message QueryChurnableTopicsResponse {
+  repeated uint64 churnable_topic_ids = 1;
+}
+
+message QueryRewardableTopicsRequest {}
+
+message QueryRewardableTopicsResponse {
+  repeated uint64 rewardable_topic_ids = 1;
+}
+
+message QueryLatestInfererScoreRequest {
+  uint64 topic_id = 1;
+  string worker = 2;
+}
+
+message QueryLatestInfererScoreResponse {
+  Score score = 1;
+}
+
+message QueryLatestForecasterScoreRequest {
+  uint64 topic_id = 1;
+  string forecaster = 2;
+}
+
+message QueryLatestForecasterScoreResponse {
+  Score score = 1;
+}
+
+message QueryLatestReputerScoreRequest {
+  uint64 topic_id = 1;
+  string reputer = 2;
+}
+
+message QueryLatestReputerScoreResponse {
+  Score score = 1;
+}
+
+message QueryInferenceScoresUntilBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryInferenceScoresUntilBlockResponse {
+  repeated Score scores = 1;
+}
+
+message QueryWorkerInferenceScoresAtBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryWorkerInferenceScoresAtBlockResponse {
+  Scores scores = 1;
+}
+
+message QueryForecastScoresUntilBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryForecastScoresUntilBlockResponse {
+  repeated Score scores = 1;
+}
+
+message QueryWorkerForecastScoresAtBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryWorkerForecastScoresAtBlockResponse {
+  Scores scores = 1;
+}
+
+message QueryReputersScoresAtBlockRequest {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+}
+
+message QueryReputersScoresAtBlockResponse {
+  Scores scores = 1;
+}
+
+message QueryListeningCoefficientRequest {
+  uint64 topic_id = 1;
+  string reputer = 2;
+}
+
+message QueryListeningCoefficientResponse {
+  ListeningCoefficient listening_coefficient = 1;
+}
+
+message QueryPreviousReputerRewardFractionRequest {
+  uint64 topic_id = 1;
+  string reputer = 2;
+}
+
+message QueryPreviousReputerRewardFractionResponse {
+  string reward_fraction = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  bool not_found = 2;
+}
+
+message QueryPreviousInferenceRewardFractionRequest {
+  uint64 topic_id = 1;
+  string worker = 2;
+}
+
+message QueryPreviousInferenceRewardFractionResponse {
+  string reward_fraction = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  bool not_found = 2;
+}
+
+message QueryPreviousForecastRewardFractionRequest {
+  uint64 topic_id = 1;
+  string worker = 2;
+}
+
+message QueryPreviousForecastRewardFractionResponse {
+  string reward_fraction = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  bool not_found = 2;
+}
+message QueryPreviousPercentageRewardToStakedReputersRequest {}
+
+message QueryPreviousPercentageRewardToStakedReputersResponse {
+  string percentage_reward = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
+
+message QueryTotalRewardToDistributeRequest {}
+
+message QueryTotalRewardToDistributeResponse {
+  string total_reward = 1
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
+
+message QueryTopicLastWorkerPayloadRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicLastWorkerPayloadResponse {
+  TimestampedActorNonce payload = 1;
+}
+
+message QueryTopicLastReputerPayloadRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicLastReputerPayloadResponse {
+  TimestampedActorNonce payload = 1;
 }

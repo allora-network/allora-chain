@@ -172,8 +172,10 @@ type Keeper struct {
 	/// RECORD COMMITS
 
 	//
-	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
-	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
+	topicLastWorkerCommit   collections.Map[TopicId, types.TimestampedActorNonce]
+	topicLastReputerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
+	topicLastWorkerPayload  collections.Map[TopicId, types.TimestampedActorNonce]
+	topicLastReputerPayload collections.Map[TopicId, types.TimestampedActorNonce]
 }
 
 func NewKeeper(
@@ -242,6 +244,8 @@ func NewKeeper(
 		topicRewardNonce:                         collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
 		topicLastWorkerCommit:                    collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerCommit:                   collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		topicLastWorkerPayload:                   collections.NewMap(sb, types.TopicLastWorkerPayloadKey, "topic_last_worker_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		topicLastReputerPayload:                  collections.NewMap(sb, types.TopicLastReputerPayloadKey, "topic_last_reputer_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -385,16 +389,13 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
-func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce, associatedWorkerNonce *types.Nonce) error {
+func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
 	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
 		return err
 	}
 	if nonce == nil {
 		return errors.New("nil reputer's nonce provided")
-	}
-	if associatedWorkerNonce == nil {
-		return errors.New("nil reputer's worker nonce provided")
 	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
@@ -404,14 +405,9 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			return nil
 		}
-		// Do nothing if the associated worker nonce is already in the list
-		if n.WorkerNonce.BlockHeight == associatedWorkerNonce.BlockHeight {
-			return nil
-		}
 	}
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: nonce,
-		WorkerNonce:  associatedWorkerNonce,
 	}
 	nonces.Nonces = append([]*types.ReputerRequestNonce{reputerRequestNonce}, nonces.Nonces...)
 
@@ -482,16 +478,20 @@ func (k *Keeper) SetOneInForecasterSelfNetworkRegret(ctx context.Context, topicI
 	return k.latestOneInForecasterSelfNetworkRegrets.Set(ctx, key, regret)
 }
 
-// Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
+// Returns the regret of a inferer from comparing loss of inferer relative to loss of other inferers
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestInfererNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, false, err
+			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(0),
+				Value:       topic.InitialRegret,
 			}, true, nil
 		}
 		return types.TimestampedValue{}, false, err
@@ -499,16 +499,20 @@ func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 	return regret, false, nil
 }
 
-// Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
+// Returns the regret of a forecaster from comparing loss of forecaster relative to loss of other forecasters
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
 	key := collections.Join(topicId, worker)
 	regret, err := k.latestForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, false, err
+			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(0),
+				Value:       topic.InitialRegret,
 			}, true, nil
 		}
 		return types.TimestampedValue{}, false, err
@@ -516,16 +520,20 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 	return regret, false, nil
 }
 
-// Returns the regret of a worker from comparing loss of worker relative to loss of other inferers
+// Returns the regret of a forecaster from comparing loss of forecaster relative to loss of other forecasters
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
 	key := collections.Join3(topicId, forecaster, inferer)
 	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, false, err
+			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(0),
+				Value:       topic.InitialRegret,
 			}, true, nil
 		}
 		return types.TimestampedValue{}, false, err
@@ -538,9 +546,13 @@ func (k *Keeper) GetOneInForecasterSelfNetworkRegret(ctx context.Context, topicI
 	regret, err := k.latestOneInForecasterSelfNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, false, err
+			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       alloraMath.NewDecFromInt64(0),
+				Value:       topic.InitialRegret,
 			}, true, nil
 		}
 		return types.TimestampedValue{}, false, err
@@ -1651,6 +1663,16 @@ func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.Simp
 	}, nil
 }
 
+// UpdateTopicInitialRegret updates the InitialRegret for a given topic.
+func (k *Keeper) UpdateTopicInitialRegret(ctx context.Context, topicId TopicId, initialRegret alloraMath.Dec) error {
+	topic, err := k.topics.Get(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	topic.InitialRegret = initialRegret
+	return k.topics.Set(ctx, topicId, topic)
+}
+
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
 func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId, epochLastEnded BlockHeight) error {
 	topic, err := k.topics.Get(ctx, topicId)
@@ -1659,15 +1681,6 @@ func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId,
 	}
 	topic.EpochLastEnded = epochLastEnded
 	return k.topics.Set(ctx, topicId, topic)
-}
-
-func (k *Keeper) GetTopicEpochLastEnded(ctx context.Context, topicId TopicId) (BlockHeight, error) {
-	topic, err := k.topics.Get(ctx, topicId)
-	if err != nil {
-		return 0, err
-	}
-	ret := topic.EpochLastEnded
-	return ret, nil
 }
 
 // True if worker is registered in topic, else False
@@ -2350,4 +2363,28 @@ func (k *Keeper) GetTopicLastCommit(ctx context.Context, topic TopicId, actorTyp
 		return k.topicLastReputerCommit.Get(ctx, topic)
 	}
 	return k.topicLastWorkerCommit.Get(ctx, topic)
+}
+
+func (k *Keeper) SetTopicLastWorkerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actor ActorId) error {
+	return k.topicLastWorkerPayload.Set(ctx, topic, types.TimestampedActorNonce{
+		BlockHeight: blockHeight,
+		Actor:       actor,
+		Nonce:       nonce,
+	})
+}
+
+func (k *Keeper) GetTopicLastWorkerPayload(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
+	return k.topicLastWorkerPayload.Get(ctx, topic)
+}
+
+func (k *Keeper) SetTopicLastReputerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actor ActorId) error {
+	return k.topicLastReputerPayload.Set(ctx, topic, types.TimestampedActorNonce{
+		BlockHeight: blockHeight,
+		Actor:       actor,
+		Nonce:       nonce,
+	})
+}
+
+func (k *Keeper) GetTopicLastReputerPayload(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
+	return k.topicLastReputerPayload.Get(ctx, topic)
 }

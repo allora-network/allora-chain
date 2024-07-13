@@ -681,7 +681,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 	})
 
 	// Calculate
-	valueBundle, _, _, _, err :=
+	valueBundle, _, _, _, _, _, err :=
 		inferencesynthesis.GetLatestNetworkInference(
 			s.ctx,
 			s.emissionsKeeper,

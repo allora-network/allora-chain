@@ -210,6 +210,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -278,8 +279,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -300,9 +299,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -347,6 +343,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -433,8 +430,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -455,9 +450,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -491,6 +483,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -558,8 +551,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	})
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, &types.Nonce{
-		BlockHeight: block,
-	}, &types.Nonce{
 		BlockHeight: block,
 	})
 	s.Require().NoError(err)
@@ -631,6 +622,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -716,7 +708,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	err = s.emissionsKeeper.AddReputerNonce(
 		s.ctx,
 		topicId,
-		&types.Nonce{BlockHeight: blockHeight}, &types.Nonce{BlockHeight: blockHeight},
+		&types.Nonce{BlockHeight: blockHeight},
 	)
 	require.NoError(err)
 
@@ -759,7 +751,6 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
-			WorkerNonce:  &types.Nonce{BlockHeight: blockHeight},
 		},
 		ReputerValueBundles: lossBundles.ReputerValueBundles,
 	})
@@ -1119,18 +1110,6 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 	err = k.SetTopic(s.ctx, topicId0, topic)
 	require.NoError(err)
 
-	worker0_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
-	require.NoError(err)
-	require.True(notFound)
-
-	worker1_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
-	require.NoError(err)
-	require.True(notFound)
-
-	worker2_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
-	require.NoError(err)
-	require.True(notFound)
-
 	/// TEST 0 PART A
 
 	s.getRewardsDistribution(
@@ -1142,6 +1121,9 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.1",
 		"0.1",
 	)
+
+	worker0_0, _, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
+	require.NoError(err)
 
 	/// TEST 0 PART B
 
@@ -1158,17 +1140,23 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.2",
 	)
 
-	worker0_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
-	require.NoError(err)
-	require.False(notFound)
+	worker0_0FirstRegret := worker0_0.Value
 
-	worker1_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
+	worker0_0, _, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker2_0, notFound, err = k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
+	worker1_0, _, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[1].String())
 	require.NoError(err)
-	require.False(notFound)
+
+	worker2_0, _, err := k.GetInfererNetworkRegret(s.ctx, topicId0, workerAddrs[2].String())
+	require.NoError(err)
+
+	worker0_0RegretDecrease, err := worker0_0FirstRegret.Sub(worker0_0.Value)
+	require.NoError(err)
+	worker0_0RegretDecreaseRate, err := worker0_0RegretDecrease.Quo(worker0_0FirstRegret)
+	require.NoError(err)
+
+	require.True(worker0_0RegretDecreaseRate.Equal(alphaRegret))
 
 	/// INCREASE ALPHA REGRET
 
@@ -1193,6 +1181,9 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.1",
 	)
 
+	worker0_1, _, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
+	require.NoError(err)
+
 	/// TEST 1 PART B
 
 	blockHeight3 := blockHeight2 + blockHeightDelta
@@ -1208,24 +1199,28 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		"0.2",
 	)
 
-	blockHeight4 := blockHeight3 + blockHeightDelta
-	s.ctx = s.ctx.WithBlockHeight(blockHeight4)
+	worker0_1FirstRegret := worker0_1.Value
 
-	worker0_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
+	worker0_1, _, err = k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[0].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker1_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[1].String())
+	worker1_1, _, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[1].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	worker2_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[2].String())
+	worker2_1, _, err := k.GetInfererNetworkRegret(s.ctx, topicId1, workerAddrs[2].String())
 	require.NoError(err)
-	require.False(notFound)
 
-	require.True(worker0_0.Value.Gt(worker0_1.Value))
+	worker0_1RegretDecrease, err := worker0_1FirstRegret.Sub(worker0_1.Value)
+	require.NoError(err)
+	worker0_1RegretDecreaseRate, err := worker0_1RegretDecrease.Quo(worker0_1FirstRegret)
+	require.NoError(err)
+	require.True(worker0_1RegretDecreaseRate.Equal(alphaRegret))
+
+	// Check alpha impact in regrets - Topic 0 (alpha 0.1) vs Topic 1 (alpha 0.2)
+	require.True(worker0_1RegretDecreaseRate.Gt(worker0_0RegretDecreaseRate))
+
 	require.True(alloraMath.InDelta(worker1_0.Value, worker1_1.Value, alloraMath.MustNewDecFromString("0.00001")))
-	require.True(alloraMath.InDelta(worker2_0.Value, worker2_1.Value, alloraMath.MustNewDecFromString("0.00001")))
+	require.True(worker2_0.Value.Gt(worker2_1.Value))
 }
 
 func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMoreParticipants() {
@@ -1261,6 +1256,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -1328,8 +1324,6 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -1350,9 +1344,6 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -1409,6 +1400,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -1476,8 +1468,6 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -1498,9 +1488,6 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -1564,6 +1551,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -1642,8 +1630,6 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -1677,9 +1663,6 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -1746,8 +1729,8 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		Metadata:        "test",
 		LossLogic:       "logic",
 		LossMethod:      "method",
-		GroundTruthLag:  10,
 		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -1849,8 +1832,6 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId2, &types.Nonce{
@@ -1858,8 +1839,6 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	})
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, &types.Nonce{
-		BlockHeight: block,
-	}, &types.Nonce{
 		BlockHeight: block,
 	})
 	s.Require().NoError(err)
@@ -1909,9 +1888,6 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 			ReputerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
-			WorkerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
 		},
 		ReputerValueBundles: lossBundles.ReputerValueBundles,
 	})
@@ -1922,9 +1898,6 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		TopicId: topicId2,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -1960,6 +1933,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -2025,8 +1999,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: blockHeight,
-	}, &types.Nonce{
-		BlockHeight: blockHeight,
 	})
 	s.Require().NoError(err)
 
@@ -2062,9 +2034,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 			ReputerNonce: &types.Nonce{
 				BlockHeight: blockHeight,
 			},
-			WorkerNonce: &types.Nonce{
-				BlockHeight: blockHeight,
-			},
 		},
 		Reputer:                reputer.String(),
 		CombinedValue:          alloraMath.MustNewDecFromString("0.01127"),
@@ -2087,9 +2056,6 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: blockHeight,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: blockHeight,
 			},
 		},
@@ -2156,6 +2122,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -2225,8 +2192,6 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -2247,9 +2212,6 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -2319,6 +2281,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -2386,8 +2349,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -2408,9 +2369,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -2465,6 +2423,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -2532,8 +2491,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -2557,9 +2514,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},
@@ -2603,6 +2557,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -2670,8 +2625,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
-	}, &types.Nonce{
-		BlockHeight: block,
 	})
 	s.Require().NoError(err)
 
@@ -2695,9 +2648,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		TopicId: topicId,
 		ReputerRequestNonce: &types.ReputerRequestNonce{
 			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-			WorkerNonce: &types.Nonce{
 				BlockHeight: block,
 			},
 		},

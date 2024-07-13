@@ -24,6 +24,7 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -68,6 +69,7 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -84,19 +86,19 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 	s.Require().Nil(result)
 }
 
-func (s *MsgServerTestSuite) TestUpdateTopicLossUpdateLastRan() {
+func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {
 	ctx := s.ctx
 	require := s.Require()
 	topicId := s.CreateOneTopic()
 
 	// Mock setup for topic
-	inferenceTs := int64(0x0)
+	inferenceTs := int64(20)
 
 	err := s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTs)
 	require.NoError(err, "UpdateTopicEpochLastEnded should not return an error")
 
-	result, err := s.emissionsKeeper.GetTopicEpochLastEnded(s.ctx, topicId)
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().NotNil(result)
-	s.Require().Equal(result, inferenceTs)
+	s.Require().NotNil(topic)
+	s.Require().Equal(topic.EpochLastEnded, inferenceTs)
 }
