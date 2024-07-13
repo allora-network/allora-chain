@@ -299,7 +299,7 @@ func (qs queryServer) GetInfererNetworkRegret(
 	*types.QueryInfererNetworkRegretResponse,
 	error,
 ) {
-	infererNetworkRegret, err := qs.k.GetInfererNetworkRegret(ctx, req.TopicId, req.ActorId)
+	infererNetworkRegret, _, err := qs.k.GetInfererNetworkRegret(ctx, req.TopicId, req.ActorId)
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +314,7 @@ func (qs queryServer) GetForecasterNetworkRegret(
 	*types.QueryForecasterNetworkRegretResponse,
 	error,
 ) {
-	forecasterNetworkRegret, err := qs.k.GetForecasterNetworkRegret(ctx, req.TopicId, req.Worker)
+	forecasterNetworkRegret, _, err := qs.k.GetForecasterNetworkRegret(ctx, req.TopicId, req.Worker)
 	if err != nil {
 		return nil, err
 	}
@@ -329,7 +329,7 @@ func (qs queryServer) GetOneInForecasterNetworkRegret(
 	*types.QueryOneInForecasterNetworkRegretResponse,
 	error,
 ) {
-	oneInForecasterNetworkRegret, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Inferer)
+	oneInForecasterNetworkRegret, _, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Inferer)
 	if err != nil {
 		return nil, err
 	}
@@ -344,7 +344,7 @@ func (qs queryServer) GetOneInForecasterSelfNetworkRegret(
 	*types.QueryOneInForecasterSelfNetworkRegretResponse,
 	error,
 ) {
-	oneInForecasterSelfNetworkRegret, err := qs.k.GetOneInForecasterSelfNetworkRegret(ctx, req.TopicId, req.Forecaster)
+	oneInForecasterSelfNetworkRegret, _, err := qs.k.GetOneInForecasterSelfNetworkRegret(ctx, req.TopicId, req.Forecaster)
 	if err != nil {
 		return nil, err
 	}

@@ -14,7 +14,7 @@ func (p *SynthPalette) BootstrapRegretData() error {
 	p.Logger.Debug(fmt.Sprintf("Bootstrapping regret data for topic %v", p.TopicId))
 
 	for _, inferer := range p.Inferers {
-		regret, err := p.K.GetInfererNetworkRegret(p.Ctx, p.TopicId, inferer)
+		regret, _, err := p.K.GetInfererNetworkRegret(p.Ctx, p.TopicId, inferer)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting inferer regret")
 		}
@@ -24,7 +24,7 @@ func (p *SynthPalette) BootstrapRegretData() error {
 	}
 
 	for _, forecaster := range p.Forecasters {
-		regret, err := p.K.GetForecasterNetworkRegret(p.Ctx, p.TopicId, forecaster)
+		regret, _, err := p.K.GetForecasterNetworkRegret(p.Ctx, p.TopicId, forecaster)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}

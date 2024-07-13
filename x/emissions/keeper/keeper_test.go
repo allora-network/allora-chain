@@ -535,7 +535,7 @@ func (s *KeeperTestSuite) TestSetAndGetInfererNetworkRegret() {
 	s.Require().NoError(err)
 
 	// Get Inferer Network Regret
-	gotRegret, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
+	gotRegret, _, err := keeper.GetInfererNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 }
@@ -553,7 +553,7 @@ func (s *KeeperTestSuite) TestSetAndGetForecasterNetworkRegret() {
 	s.Require().NoError(err)
 
 	// Get Forecaster Network Regret
-	gotRegret, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
+	gotRegret, _, err := keeper.GetForecasterNetworkRegret(ctx, topicId, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 	s.Require().Equal(regret.BlockHeight, gotRegret.BlockHeight)
@@ -573,7 +573,7 @@ func (s *KeeperTestSuite) TestSetAndGetOneInForecasterNetworkRegret() {
 	s.Require().NoError(err)
 
 	// Get One-In Forecaster Network Regret
-	gotRegret, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
+	gotRegret, _, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret, gotRegret)
 	s.Require().Equal(regret.BlockHeight, gotRegret.BlockHeight)
@@ -592,11 +592,11 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
 
 	// Initial regrets should be zero
-	gotRegret1, err := keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, _, err := keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(noRegret, gotRegret1, "Initial regret should be zero for Topic ID 1")
 
-	gotRegret2, err := keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
+	gotRegret2, _, err := keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(noRegret, gotRegret2, "Initial regret should be zero for Topic ID 2")
 
@@ -611,12 +611,12 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 	s.Require().NoError(err)
 
 	// Get and compare regrets after setting them
-	gotRegret1, err = keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, _, err = keeper.GetInfererNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
 
-	gotRegret2, err = keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
+	gotRegret2, _, err = keeper.GetInfererNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
@@ -638,7 +638,7 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 	regret1 := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
 	regret2 := types.TimestampedValue{BlockHeight: 200, Value: alloraMath.NewDecFromInt64(20)}
 
-	gotRegret1, err := keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, _, err := keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(noRagret, gotRegret1)
 
@@ -649,12 +649,12 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 	s.Require().NoError(err)
 
 	// Get and compare regrets
-	gotRegret1, err = keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
+	gotRegret1, _, err = keeper.GetForecasterNetworkRegret(ctx, topicId1, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
 
-	gotRegret2, err := keeper.GetForecasterNetworkRegret(ctx, topicId2, worker)
+	gotRegret2, _, err := keeper.GetForecasterNetworkRegret(ctx, topicId2, worker)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
@@ -678,11 +678,11 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
 
 	// Initial regrets should be zero
-	gotRegret1, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
+	gotRegret1, _, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(noRegret, gotRegret1, "Initial regret should be zero for Topic ID 1")
 
-	gotRegret2, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
+	gotRegret2, _, err := keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(noRegret, gotRegret2, "Initial regret should be zero for Topic ID 2")
 
@@ -697,12 +697,12 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 	s.Require().NoError(err)
 
 	// Get and compare regrets after setting them
-	gotRegret1, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
+	gotRegret1, _, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId1, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret1, gotRegret1)
 	s.Require().Equal(regret1.BlockHeight, gotRegret1.BlockHeight)
 
-	gotRegret2, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
+	gotRegret2, _, err = keeper.GetOneInForecasterNetworkRegret(ctx, topicId2, forecaster, inferer)
 	s.Require().NoError(err)
 	s.Require().Equal(regret2, gotRegret2)
 	s.Require().Equal(regret2.BlockHeight, gotRegret2.BlockHeight)
