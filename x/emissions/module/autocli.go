@@ -64,11 +64,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get Rewardable Topics",
 				},
 				{
-					RpcMethod: "GetRewardableTopics",
-					Use:       "rewardable-topics",
-					Short:     "Get Rewardable Topics",
-				},
-				{
 					RpcMethod: "GetReputerStakeInTopic",
 					Use:       "stake-in-topic-reputer [address] [topic_id]",
 					Short:     "Get reputer stake in a topic, including stake delegated to them in that topic",
@@ -402,6 +397,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Return scores for topic worker at a block height. Default is empty. May not exist if it was already pruned",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
 					},
 				},
 				{
@@ -410,6 +406,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Return scores for topic worker at a block height. Default is empty. May not exist if it was already pruned",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
 					},
 				},
 				{
