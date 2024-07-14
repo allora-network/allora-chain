@@ -1919,7 +1919,7 @@ func local_request_Query_GetLatestAvailableNetworkInference_0(ctx context.Contex
 
 }
 
-func request_Query_GetIsWorkerNonceUnfulfilled_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Query_IsWorkerNonceUnfulfilled_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryIsWorkerNonceUnfulfilledRequest
 	var metadata runtime.ServerMetadata
 
@@ -1952,12 +1952,12 @@ func request_Query_GetIsWorkerNonceUnfulfilled_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height", err)
 	}
 
-	msg, err := client.GetIsWorkerNonceUnfulfilled(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.IsWorkerNonceUnfulfilled(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Query_GetIsWorkerNonceUnfulfilled_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_Query_IsWorkerNonceUnfulfilled_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryIsWorkerNonceUnfulfilledRequest
 	var metadata runtime.ServerMetadata
 
@@ -1990,12 +1990,12 @@ func local_request_Query_GetIsWorkerNonceUnfulfilled_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height", err)
 	}
 
-	msg, err := server.GetIsWorkerNonceUnfulfilled(ctx, &protoReq)
+	msg, err := server.IsWorkerNonceUnfulfilled(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_Query_GetIsReputerNonceUnfulfilled_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_Query_IsReputerNonceUnfulfilled_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryIsReputerNonceUnfulfilledRequest
 	var metadata runtime.ServerMetadata
 
@@ -2028,12 +2028,12 @@ func request_Query_GetIsReputerNonceUnfulfilled_0(ctx context.Context, marshaler
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height", err)
 	}
 
-	msg, err := client.GetIsReputerNonceUnfulfilled(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.IsReputerNonceUnfulfilled(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Query_GetIsReputerNonceUnfulfilled_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_Query_IsReputerNonceUnfulfilled_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QueryIsReputerNonceUnfulfilledRequest
 	var metadata runtime.ServerMetadata
 
@@ -2066,7 +2066,7 @@ func local_request_Query_GetIsReputerNonceUnfulfilled_0(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height", err)
 	}
 
-	msg, err := server.GetIsReputerNonceUnfulfilled(ctx, &protoReq)
+	msg, err := server.IsReputerNonceUnfulfilled(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -3593,15 +3593,15 @@ func request_Query_GetLatestInfererScore_0(ctx context.Context, marshaler runtim
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["worker"]
+	val, ok = pathParams["inferer"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "worker")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "inferer")
 	}
 
-	protoReq.Worker, err = runtime.String(val)
+	protoReq.Inferer, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "worker", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "inferer", err)
 	}
 
 	msg, err := client.GetLatestInfererScore(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -3631,15 +3631,15 @@ func local_request_Query_GetLatestInfererScore_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
 	}
 
-	val, ok = pathParams["worker"]
+	val, ok = pathParams["inferer"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "worker")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "inferer")
 	}
 
-	protoReq.Worker, err = runtime.String(val)
+	protoReq.Inferer, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "worker", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "inferer", err)
 	}
 
 	msg, err := server.GetLatestInfererScore(ctx, &protoReq)
@@ -5323,7 +5323,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetIsWorkerNonceUnfulfilled_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_IsWorkerNonceUnfulfilled_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -5334,7 +5334,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Query_GetIsWorkerNonceUnfulfilled_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Query_IsWorkerNonceUnfulfilled_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -5342,11 +5342,11 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Query_GetIsWorkerNonceUnfulfilled_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_IsWorkerNonceUnfulfilled_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetIsReputerNonceUnfulfilled_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_IsReputerNonceUnfulfilled_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -5357,7 +5357,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Query_GetIsReputerNonceUnfulfilled_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Query_IsReputerNonceUnfulfilled_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -5365,7 +5365,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Query_GetIsReputerNonceUnfulfilled_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_IsReputerNonceUnfulfilled_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -6907,7 +6907,7 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetIsWorkerNonceUnfulfilled_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_IsWorkerNonceUnfulfilled_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -6916,18 +6916,18 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Query_GetIsWorkerNonceUnfulfilled_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Query_IsWorkerNonceUnfulfilled_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Query_GetIsWorkerNonceUnfulfilled_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_IsWorkerNonceUnfulfilled_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetIsReputerNonceUnfulfilled_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_IsReputerNonceUnfulfilled_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -6936,14 +6936,14 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Query_GetIsReputerNonceUnfulfilled_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Query_IsReputerNonceUnfulfilled_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Query_GetIsReputerNonceUnfulfilled_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_IsReputerNonceUnfulfilled_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -7791,9 +7791,9 @@ var (
 
 	pattern_Query_GetLatestAvailableNetworkInference_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v1", "network_inferences", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetIsWorkerNonceUnfulfilled_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "is_worker_nonce_unfulfilled", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_IsWorkerNonceUnfulfilled_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "is_worker_nonce_unfulfilled", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetIsReputerNonceUnfulfilled_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "is_reputer_nonce_unfulfilled", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_IsReputerNonceUnfulfilled_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "is_reputer_nonce_unfulfilled", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GetUnfulfilledWorkerNonces_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v1", "unfulfilled_worker_nonces", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
@@ -7841,7 +7841,7 @@ var (
 
 	pattern_Query_GetRewardableTopics_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"emissions", "v1", "rewardable_topics"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetLatestInfererScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "latest_inferer_score", "topic_id", "worker"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetLatestInfererScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "latest_inferer_score", "topic_id", "inferer"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GetLatestForecasterScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v1", "latest_forecaster_score", "topic_id", "forecaster"}, "", runtime.AssumeColonVerbOpt(false)))
 
@@ -7935,9 +7935,9 @@ var (
 
 	forward_Query_GetLatestAvailableNetworkInference_0 = runtime.ForwardResponseMessage
 
-	forward_Query_GetIsWorkerNonceUnfulfilled_0 = runtime.ForwardResponseMessage
+	forward_Query_IsWorkerNonceUnfulfilled_0 = runtime.ForwardResponseMessage
 
-	forward_Query_GetIsReputerNonceUnfulfilled_0 = runtime.ForwardResponseMessage
+	forward_Query_IsReputerNonceUnfulfilled_0 = runtime.ForwardResponseMessage
 
 	forward_Query_GetUnfulfilledWorkerNonces_0 = runtime.ForwardResponseMessage
 
