@@ -1,9 +1,10 @@
 #!/bin/bash
-set -eu
+set -ex
 
-NETWORK="${NETWORK:-edgenet}"                 #! Replace with your network name
+NETWORK="${NETWORK:-testnet-1}"                 #! Replace with your network name
 GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
 SEEDS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/seeds.txt"
+PEERS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/peers.txt"
 
 export APP_HOME="${APP_HOME:-./data}"
 INIT_FLAG="${APP_HOME}/.initialized"
@@ -46,7 +47,27 @@ if [ ! -f $INIT_FLAG ]; then
 fi
 echo "Node is initialized"
 
-SEEDS=$(curl -s ${SEEDS_URL})
+SEEDS=$(curl -Ls ${SEEDS_URL})
+PEERS=$(curl -Ls ${PEERS_URL})
+
+if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
+    echo "Enable state sync"
+    TRUST_HEIGHT=$(($(curl -s $STATE_SYNC_RPC1/block | jq -r '.result.block.header.height')-1000))
+    # TRUST_HEIGHT=93000
+
+    curl -s "$STATE_SYNC_RPC1/block?height=$TRUST_HEIGHT"
+
+    TRUST_HEIGHT_HASH=$(curl -s $STATE_SYNC_RPC1/block?height=$TRUST_HEIGHT | jq -r '.result.block_id.hash')
+
+    echo "$TRUST_HEIGHT====$TRUST_HEIGHT_HASH"
+    cat ${APP_HOME}/config/config.toml
+    dasel put -t bool -v true 'statesync.enable' -f ${APP_HOME}/config/config.toml
+    dasel put -t string -v "$STATE_SYNC_RPC1,$STATE_SYNC_RPC2" 'statesync.rpc_servers' -f ${APP_HOME}/config/config.toml
+    dasel put -t int -v $TRUST_HEIGHT 'statesync.trust_height' -f ${APP_HOME}/config/config.toml
+    dasel put -t string -v $TRUST_HEIGHT_HASH 'statesync.trust_hash' -f ${APP_HOME}/config/config.toml
+    dasel put -t string -v '336h' 'statesync.trust_period' -f ${APP_HOME}/config/config.toml
+
+fi
 
 echo "Starting validator node"
 allorad \
@@ -56,4 +77,5 @@ allorad \
     --minimum-gas-prices=0${DENOM} \
     --rpc.laddr=tcp://0.0.0.0:26657 \
     --p2p.seeds=$SEEDS \
-    --log_level "*:error,state:info,server:info,rewards:debug,inference_synthesis:debug,topic_handler:debug"
+    --p2p.persistent_peers $PEERS
+
