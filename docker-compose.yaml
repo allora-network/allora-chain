@@ -3,11 +3,13 @@ services:
   sample_validator:
     container_name: sample_validator
     # build: .
-    image: "alloranetwork/allora-chain:v0.2.7"
+    image: "alloranetwork/allora-chain:v0.2.14"
     environment:
-      - NETWORK=edgenet
+      - NETWORK=testnet-1
       - MONIKER=sample_validator
       - APP_HOME=./data
+      - STATE_SYNC_RPC1=https://sentry-0-rpc.testnet-1.testnet.allora.network:443
+      - STATE_SYNC_RPC2=https://sentry-2-rpc.testnet-1.testnet.allora.network:443
     volumes:
       - ./data:/data
       - ./scripts/:/scripts
