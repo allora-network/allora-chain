@@ -2,6 +2,7 @@ package inference_synthesis_test
 
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -496,4 +497,24 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	require.True(forecasterRegret0_0.Value.Gt(forecasterRegret1_0.Value))
 	require.Equal(forecasterRegret0_1.Value, forecasterRegret1_1.Value)
 	require.Equal(forecasterRegret0_2.Value, forecasterRegret1_2.Value)
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcTopicInitialRegret() {
+	require := s.Require()
+
+	regrets := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.6445506208021189"),
+		alloraMath.MustNewDecFromString("1.0216386898413485"),
+		alloraMath.MustNewDecFromString("0.6092049398135028"),
+		alloraMath.MustNewDecFromString("0.6971588004566455"),
+		alloraMath.MustNewDecFromString("0.9030751421888253"),
+		alloraMath.MustNewDecFromString("0.8219035038858344"),
+	}
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
+
+	calculatedInitialRegret, err := inference_synthesis.CalcTopicInitialRegret(regrets, epsilon, pNorm, cNorm)
+	require.NoError(err)
+	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.3150416097077003")
 }
