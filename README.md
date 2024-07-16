@@ -78,6 +78,8 @@ run `docker compose up -d` to run detached.
 docker compose pull
 docker compose up node
 ```
+To run only head: `docker compose up head`
+
 *NOTE:* You also can comment head service in the docker file.
 
 ### See logs
