@@ -432,7 +432,7 @@ func (s *MsgServerTestSuite) TestInsertingReputerPayloadWithIncorrectBaseWorkerN
 		&reputerNonce,
 	)
 
-	require.ErrorIs(err, types.ErrNonceAlreadyFulfilled)
+	require.ErrorIs(err, types.ErrUnfulfilledNonceNotFound)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayloadInvalid() {

@@ -241,7 +241,7 @@ func (ms msgServer) InsertBulkWorkerPayload(ctx context.Context, msg *types.MsgI
 	}
 	// If the nonce is already fulfilled, return an error
 	if !nonceUnfulfilled {
-		return nil, types.ErrNonceAlreadyFulfilled
+		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
 	moduleParams, err := ms.k.GetParams(ctx)

@@ -45,7 +45,7 @@ var (
 	ErrPhiCannotBeZero                          = errors.Register(ModuleName, 41, "phi: cannot be zero")
 	ErrSumWeightsLessThanEta                    = errors.Register(ModuleName, 42, "sum weights less than eta")
 	ErrSliceLengthMismatch                      = errors.Register(ModuleName, 43, "slice length mismatch")
-	ErrNonceAlreadyFulfilled                    = errors.Register(ModuleName, 44, "nonce already fulfilled")
+	ErrUnfulfilledNonceNotFound                 = errors.Register(ModuleName, 44, "unfulfilled nonce not found")
 	ErrNonceStillUnfulfilled                    = errors.Register(ModuleName, 45, "nonce still unfulfilled")
 	ErrTopicCreatorNotEnoughDenom               = errors.Register(ModuleName, 46, "topic creator does not have enough denom")
 	ErrSignatureVerificationFailed              = errors.Register(ModuleName, 47, "signature verification was failed")
