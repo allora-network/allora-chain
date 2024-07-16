@@ -59,15 +59,14 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 	maxTopicPages uint64,
 ) error {
 	topicPageKey := make([]byte, 0)
-	i := uint64(0)
+	pageIterationCounter := uint64(0)
 	for {
 		topicPageRequest := &types.SimpleCursorPaginationRequest{Limit: topicPageLimit, Key: topicPageKey}
 		topicsActive, topicPageResponse, err := k.GetIdsOfActiveTopics(ctx, topicPageRequest)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting ids of active topics: %s", err.Error()))
-			continue
+			break
 		}
-
 		for _, topicId := range topicsActive {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
@@ -86,11 +85,11 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 		}
 
 		// if pageResponse.NextKey is empty then we have reached the end of the list
-		if topicsActive == nil || i > maxTopicPages {
+		if topicsActive == nil || len(topicsActive) == 0 || pageIterationCounter > maxTopicPages {
 			break
 		}
 		topicPageKey = topicPageResponse.NextKey
-		i++
+		pageIterationCounter++
 	}
 	return nil
 }
