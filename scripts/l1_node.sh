@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-NETWORK="${NETWORK:-edgenet}"                 #! Replace with your network name
+NETWORK="${NETWORK:-allora-testnet-1}"                 #! Replace with your network name
 GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
 SEEDS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/seeds.txt"
 HEADS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/heads.txt"
