@@ -519,7 +519,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
 	require.NoError(err)
 	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
-	require.ErrorIs(err, types.ErrNonceAlreadyFulfilled)
+	require.ErrorIs(err, types.ErrUnfulfilledNonceNotFound)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadUpdateTopicCommit() {

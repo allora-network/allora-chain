@@ -114,8 +114,8 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 	// iterate over all the reputer nonces to find if this is unfulfilled
 	for _, nonce := range topNReputerNonces {
 		nonceCopy := nonce
-		// Get previous losses from keeper, default: reputationTime (reputerBlock + GTLag) - epochLength
-		lastReputerCommitBlockHeight := nonceCopy.ReputerNonce.BlockHeight + topic.GroundTruthLag - topic.EpochLength
+		// Get previous losses from keeper, default: reputationTime (reputerBlock - epochLength)
+		lastReputerCommitBlockHeight := max(0, nonceCopy.ReputerNonce.BlockHeight-topic.EpochLength)
 		if lastCommit.Nonce != nil {
 			Logger(ctx).Debug(fmt.Sprintf("Reputer last commit found, setting: %v", lastCommit))
 			lastReputerCommitBlockHeight = lastCommit.Nonce.BlockHeight
