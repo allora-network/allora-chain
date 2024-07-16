@@ -1,6 +1,6 @@
 # Change all occurrences of "sample_validator" to your prerferred name
 services:
-  sample_validator:
+  node:
     container_name: sample_validator
     image: "alloranetwork/allora-chain:v0.2.14"
     environment:

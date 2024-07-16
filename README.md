@@ -49,12 +49,16 @@ make init
 allorad start
 ```
 
-## Run a node
+When you run a node you have 2 options:
+ - Run node and a Head, main advantage is - you can use the head for your workers and reputers
+ - Run only a node, in this case you will use Allora's heads.
+
+## Run a node with script
 `scripts/l1_node.sh`, you will see the log in the output of the script.
 
 *NOTE:* `scripts/l1_node.sh` will generate keys for the node. For production environments you need to use a proper keys storage, and follow secrets management best practices.
 
-## Run a node with docker compose
+## Run a node and a head with docker compose
 
 ### Run
 ```
@@ -65,6 +69,16 @@ docker compose up
 run `docker compose up -d` to run detached.
 
 *NOTE:* Don't forget to pull the images first, to ensure that you're using the latest images.
+
+
+## Run only a node with docker compose
+
+### Run
+```
+docker compose pull
+docker compose up node
+```
+*NOTE:* You also can comment head service in the docker file.
 
 ### See logs
 `docker compose logs -f`
