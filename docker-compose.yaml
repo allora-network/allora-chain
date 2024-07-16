@@ -5,7 +5,7 @@ services:
     # build: .
     image: "alloranetwork/allora-chain:v0.2.14"
     environment:
-      - NETWORK=testnet-1
+      - NETWORK=allora-testnet-1
       - MONIKER=sample_validator
       - APP_HOME=./data
       - STATE_SYNC_RPC1=https://sentry-0-rpc.testnet-1.testnet.allora.network:443
