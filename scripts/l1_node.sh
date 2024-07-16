@@ -55,19 +55,20 @@ if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
     TRUST_HEIGHT=$(($(curl -s $STATE_SYNC_RPC1/block | jq -r '.result.block.header.height')))
 
     #* Snapshots are taken every 1000 blocks so we need to round down to the nearest 1000
-    TRUST_HEIGHT=$(($TRUST_HEIGHT - ($TRUST_HEIGHT % 1000)))
+    # TRUST_HEIGHT=$(($TRUST_HEIGHT - ($TRUST_HEIGHT % 1000)))
+    TRUST_HEIGHT=$(($TRUST_HEIGHT - 3000))
 
     curl -s "$STATE_SYNC_RPC1/block?height=$TRUST_HEIGHT"
 
     TRUST_HEIGHT_HASH=$(curl -s $STATE_SYNC_RPC1/block?height=$TRUST_HEIGHT | jq -r '.result.block_id.hash')
 
     echo "Trust height: $TRUST_HEIGHT $TRUST_HEIGHT_HASH"
-    cat ${APP_HOME}/config/config.toml
-    dasel put -t bool -v true 'statesync.enable' -f ${APP_HOME}/config/config.toml
-    dasel put -t string -v "$STATE_SYNC_RPC1,$STATE_SYNC_RPC2" 'statesync.rpc_servers' -f ${APP_HOME}/config/config.toml
-    dasel put -t int -v $TRUST_HEIGHT 'statesync.trust_height' -f ${APP_HOME}/config/config.toml
-    dasel put -t string -v $TRUST_HEIGHT_HASH 'statesync.trust_hash' -f ${APP_HOME}/config/config.toml
-    dasel put -t string -v '336h' 'statesync.trust_period' -f ${APP_HOME}/config/config.toml
+
+    dasel put statesync.enable -t bool -v true -f ${APP_HOME}/config/config.toml
+    dasel put statesync.rpc_servers -t string -v "$STATE_SYNC_RPC1,$STATE_SYNC_RPC2" -f ${APP_HOME}/config/config.toml
+    dasel put statesync.trust_height -t string -v $TRUST_HEIGHT -f ${APP_HOME}/config/config.toml
+    dasel put statesync.trust_hash -t string -v $TRUST_HEIGHT_HASH -f ${APP_HOME}/config/config.toml
+    # dasel put -t string -v '336h' 'statesync.trust_period' -f ${APP_HOME}/config/config.toml
 fi
 
 echo "Starting validator node"
@@ -79,4 +80,3 @@ allorad \
     --rpc.laddr=tcp://0.0.0.0:26657 \
     --p2p.seeds=$SEEDS \
     --p2p.persistent_peers $PEERS
-
