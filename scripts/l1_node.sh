@@ -1,9 +1,10 @@
 #!/bin/bash
 set -eu
 
-NETWORK="${NETWORK:-edgenet}"                 #! Replace with your network name
+NETWORK="${NETWORK:-allora-testnet-1}"                 #! Replace with your network name
 GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
 SEEDS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/seeds.txt"
+HEADS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/heads.txt"
 
 export APP_HOME="${APP_HOME:-./data}"
 INIT_FLAG="${APP_HOME}/.initialized"
@@ -47,6 +48,8 @@ fi
 echo "Node is initialized"
 
 SEEDS=$(curl -s ${SEEDS_URL})
+
+export BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-$(curl -Ls ${HEADS_URL})}"
 
 echo "Starting validator node"
 allorad \
