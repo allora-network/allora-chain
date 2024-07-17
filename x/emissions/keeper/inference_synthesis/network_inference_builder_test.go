@@ -20,6 +20,7 @@ import (
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
+	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
@@ -89,8 +90,8 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 
 	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
 	var addrsStr []string = make([]string, 0)
-	pubkeys := simtestutil.CreateTestPubKeys(5)
-	for i := 0; i < 5; i++ {
+	pubkeys := simtestutil.CreateTestPubKeys(50)
+	for i := 0; i < 50; i++ {
 		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
 		addrsStr = append(addrsStr, addrs[i].String())
 	}
@@ -162,7 +163,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	topicId := uint64(1)
 	blockHeight := int64(1)
 
-	epochGetters := GetSimulatedValuesGetterForEpochs()
+	epochGetters := testdata.GetSimulatedValuesGetterForEpochs()
 	epochGet := epochGetters[epochNumber]
 
 	networkLossPrevious := alloraMath.ZeroDec()
