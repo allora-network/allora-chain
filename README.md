@@ -79,7 +79,7 @@ With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up
 
 ## Run a validator
 
-You can refer to the Allora documentation for detailled instructions on [running a full node](https://docs.allora.network/docs/running-a-full-node) and [staking a validator](https://docs.allora.network/docs/stake-a-validator).
+You can refer to the Allora documentation for detailled instructions on [running a full node](https://docs.allora.network/devs/validators/run-full-node) and [staking a validator](https://docs.allora.network/devs/validators/stake-a-validator).
 
 1. Run and sync a full Allora node following [the instructions](https://docs.allora.network/devs/validators/run-full-node).
 
