@@ -40,6 +40,9 @@ if [ ! -f $INIT_FLAG ]; then
     allorad --home=${APP_HOME} config set client chain-id ${NETWORK}
     allorad --home=${APP_HOME} config set client keyring-backend $KEYRING_BACKEND
 
+    dasel put mempool.max_txs_bytes -t int -v 2097152 -f ${APP_HOME}/config/config.toml
+    dasel put mempool.size -t int -v 1000 -f ${APP_HOME}/config/config.toml
+
     #* Create symlink for allorad config
     ln -sf . ${APP_HOME}/.allorad
 
@@ -65,7 +68,7 @@ if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
     echo "Trust height: $TRUST_HEIGHT $TRUST_HEIGHT_HASH"
 
     dasel put statesync.enable -t bool -v true -f ${APP_HOME}/config/config.toml
-    dasel put statesync.rpc_servers -t string -v "$STATE_SYNC_RPC1,$STATE_SYNC_RPC2" -f ${APP_HOME}/config/config.toml
+    dasel put statesync.rpc_servers -t string -v "$STATE_SYNC_RPC1,$STATE_SYNC_RPC1" -f ${APP_HOME}/config/config.toml
     dasel put statesync.trust_height -t string -v $TRUST_HEIGHT -f ${APP_HOME}/config/config.toml
     dasel put statesync.trust_hash -t string -v $TRUST_HEIGHT_HASH -f ${APP_HOME}/config/config.toml
     # dasel put -t string -v '336h' 'statesync.trust_period' -f ${APP_HOME}/config/config.toml
