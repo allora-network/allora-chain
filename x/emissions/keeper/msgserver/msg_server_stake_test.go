@@ -419,6 +419,21 @@ func (s *MsgServerTestSuite) TestRemoveMultipleReputersSameBlock() {
 	require.Contains(stakePlacements2, expected2)
 }
 
+func (s *MsgServerTestSuite) TestStartRemoveStakeNegative() {
+	ctx := s.ctx
+	require := s.Require()
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+
+	msg := &types.MsgRemoveStake{
+		Sender:  senderAddr.String(),
+		TopicId: uint64(123),
+		Amount:  cosmosMath.NewInt(-1),
+	}
+
+	_, err := s.msgServer.RemoveStake(ctx, msg)
+	require.ErrorIs(err, types.ErrInvalidValue)
+}
+
 func (s *MsgServerTestSuite) TestDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
@@ -888,6 +903,52 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
 	expected.BlockRemovalStarted = newStartBlock
 	expected.BlockRemovalCompleted = newEndBlock
 	require.Equal(expected, stakePlacements[0])
+}
+
+func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeNegative() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := sdk.AccAddress(PKS[0].Address())
+	reputerAddr := sdk.AccAddress(PKS[1].Address())
+	topicId := uint64(123)
+	stakeAmount := cosmosMath.NewInt(50)
+
+	reputerInfo := types.OffchainNode{
+		LibP2PKey:    "reputer-libp2p-key-sample",
+		MultiAddress: "reputer-multi-address-sample",
+		Owner:        "reputer-owner-sample",
+		NodeAddress:  "reputer-node-address-sample",
+		NodeId:       "reputer-node-id-sample",
+	}
+
+	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
+
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
+
+	msg := &types.MsgDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  stakeAmount,
+	}
+
+	// Perform the stake delegation
+	response, err := s.msgServer.DelegateStake(ctx, msg)
+	require.NoError(err)
+	require.NotNil(response, "Response should not be nil after successful delegation")
+
+	msg2 := &types.MsgRemoveDelegateStake{
+		Sender:  delegatorAddr.String(),
+		Reputer: reputerAddr.String(),
+		TopicId: topicId,
+		Amount:  cosmosMath.NewInt(-1),
+	}
+
+	// Perform the stake removal initiation
+	_, err = s.msgServer.RemoveDelegateStake(ctx, msg2)
+	require.Error(err, types.ErrInvalidValue)
 }
 
 func (s *MsgServerTestSuite) TestRemoveDelegateStakeMultipleReputersSameDelegator() {

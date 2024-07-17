@@ -62,6 +62,9 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
+	if msg.Amount.IsNegative() {
+		return nil, types.ErrInvalidValue
+	}
 
 	// Check the sender has enough stake already placed on the topic to remove the stake
 	stakePlaced, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Sender)
@@ -174,6 +177,9 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemoveDelegateStake) (*types.MsgRemoveDelegateStakeResponse, error) {
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
+	}
+	if msg.Amount.IsNegative() {
+		return nil, types.ErrInvalidValue
 	}
 
 	// Check the delegator has enough stake already placed on the topic to remove the stake
