@@ -40,6 +40,7 @@ if [ ! -f $INIT_FLAG ]; then
     allorad --home=${APP_HOME} config set client chain-id ${NETWORK}
     allorad --home=${APP_HOME} config set client keyring-backend $KEYRING_BACKEND
 
+    #* Mitigate mempool spamming attacks
     dasel put mempool.max_txs_bytes -t int -v 2097152 -f ${APP_HOME}/config/config.toml
     dasel put mempool.size -t int -v 1000 -f ${APP_HOME}/config/config.toml
 
