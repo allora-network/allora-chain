@@ -3,9 +3,11 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // InitGenesis initializes the module state from a genesis state.
@@ -17,28 +19,597 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	k.authKeeper.SetModuleAccount(ctx, alloraRewardsModuleAccount)
 	alloraPendingRewardsModuleAccount := k.authKeeper.GetModuleAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName)
 	k.authKeeper.SetModuleAccount(ctx, alloraPendingRewardsModuleAccount)
+
+	// go through the genesis state object
+
+	// params Params
 	if err := k.SetParams(ctx, data.Params); err != nil {
 		return err
 	}
-	if err := k.SetTotalStake(ctx, cosmosMath.ZeroInt()); err != nil {
-		return err
+	// nextTopicId uint64
+	if data.NextTopicId == 0 {
+		// reserve topic ID 0 for future use
+		if _, err := k.IncrementTopicId(ctx); err != nil {
+			return err
+		}
+	} else {
+		if err := k.nextTopicId.Set(ctx, data.NextTopicId); err != nil {
+			return err
+		}
 	}
-	// reserve topic ID 0 for future use
-	if _, err := k.IncrementTopicId(ctx); err != nil {
-		return err
+	//Topics       []*TopicIdAndTopic
+	if len(data.Topics) != 0 {
+		for _, topic := range data.Topics {
+			if topic != nil {
+				if err := k.topics.Set(ctx, topic.TopicId, *topic.Topic); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//ActiveTopics []uint64
+	if len(data.ActiveTopics) != 0 {
+		for _, topicId := range data.ActiveTopics {
+			if err := k.activeTopics.Set(ctx, topicId); err != nil {
+				return err
+			}
+		}
+	}
+	//ChurnableTopics []uint64
+	if len(data.ChurnableTopics) != 0 {
+		for _, topicId := range data.ChurnableTopics {
+			if err := k.churnableTopics.Set(ctx, topicId); err != nil {
+				return err
+			}
+		}
+	}
+	//RewardableTopics []uint64
+	if len(data.RewardableTopics) != 0 {
+		for _, topicId := range data.RewardableTopics {
+			if err := k.rewardableTopics.Set(ctx, topicId); err != nil {
+				return err
+			}
+		}
+	}
+	//TopicWorkers []*TopicAndActorId
+	if len(data.TopicWorkers) != 0 {
+		for _, topicAndActorId := range data.TopicWorkers {
+			if topicAndActorId != nil {
+				if err := k.topicWorkers.Set(ctx, collections.Join(topicAndActorId.TopicId, topicAndActorId.ActorId)); err != nil {
+					return err
+				}
+			}
+		}
+
+	}
+	//TopicReputers []*TopicAndActorId
+	if len(data.TopicReputers) != 0 {
+		for _, topicAndActorId := range data.TopicReputers {
+			if topicAndActorId != nil {
+				if err := k.topicReputers.Set(ctx, collections.Join(topicAndActorId.TopicId, topicAndActorId.ActorId)); err != nil {
+					return err
+				}
+			}
+		}
+
+	}
+	//TopicRewardNonce []*TopicIdAndBlockHeight
+	if len(data.TopicRewardNonce) != 0 {
+		for _, topicIdAndBlockHeight := range data.TopicRewardNonce {
+			if topicIdAndBlockHeight != nil {
+				if err := k.topicRewardNonce.Set(ctx, topicIdAndBlockHeight.TopicId, topicIdAndBlockHeight.BlockHeight); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//InfererScoresByBlock []*TopicIdBlockHeightScores
+	if len(data.InfererScoresByBlock) != 0 {
+		for _, topicIdBlockHeightScores := range data.InfererScoresByBlock {
+			if topicIdBlockHeightScores != nil {
+				if err := k.infererScoresByBlock.Set(ctx,
+					collections.Join(topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight),
+					*topicIdBlockHeightScores.Scores); err != nil {
+					return err
+				}
+			}
+		}
+
+	}
+	//ForecasterScoresByBlock []*TopicIdBlockHeightScores
+	if len(data.ForecasterScoresByBlock) != 0 {
+		for _, topicIdBlockHeightScores := range data.ForecasterScoresByBlock {
+			if topicIdBlockHeightScores != nil {
+				if err := k.forecasterScoresByBlock.Set(
+					ctx,
+					collections.Join(topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight),
+					*topicIdBlockHeightScores.Scores); err != nil {
+					return err
+				}
+			}
+		}
+
+	}
+	//ReputerScoresByBlock []*TopicIdBlockHeightScores
+	if len(data.ReputerScoresByBlock) != 0 {
+		for _, topicIdBlockHeightScores := range data.ReputerScoresByBlock {
+			if topicIdBlockHeightScores != nil {
+				if err := k.reputerScoresByBlock.Set(
+					ctx,
+					collections.Join(topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight),
+					*topicIdBlockHeightScores.Scores); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//LatestInfererScoresByWorker []*TopicIdActorIdScore
+	if len(data.LatestInfererScoresByWorker) != 0 {
+		for _, topicIdActorIdScore := range data.LatestInfererScoresByWorker {
+			if topicIdActorIdScore != nil {
+				if err := k.latestInfererScoresByWorker.Set(ctx,
+					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
+					*topicIdActorIdScore.Score); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//LatestForecasterScoresByWorker []*TopicIdActorIdScore
+	if len(data.LatestForecasterScoresByWorker) != 0 {
+		for _, topicIdActorIdScore := range data.LatestForecasterScoresByWorker {
+			if topicIdActorIdScore != nil {
+				if err := k.latestForecasterScoresByWorker.Set(ctx,
+					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
+					*topicIdActorIdScore.Score); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//LatestReputerScoresByReputer []*TopicIdActorIdScore
+	if len(data.LatestReputerScoresByReputer) != 0 {
+		for _, topicIdActorIdScore := range data.LatestReputerScoresByReputer {
+			if topicIdActorIdScore != nil {
+				if err := k.latestReputerScoresByReputer.Set(ctx,
+					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
+					*topicIdActorIdScore.Score); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//ReputerListeningCoefficient []*TopicIdActorIdListeningCoefficient
+	if len(data.ReputerListeningCoefficient) != 0 {
+		for _, topicIdActorIdListeningCoefficient := range data.ReputerListeningCoefficient {
+			if topicIdActorIdListeningCoefficient != nil {
+				if err := k.reputerListeningCoefficient.Set(ctx,
+					collections.Join(topicIdActorIdListeningCoefficient.TopicId, topicIdActorIdListeningCoefficient.ActorId),
+					*topicIdActorIdListeningCoefficient.ListeningCoefficient); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//PreviousReputerRewardFraction []*TopicIdActorIdDec
+	if len(data.PreviousReputerRewardFraction) != 0 {
+		for _, topicIdActorIdDec := range data.PreviousReputerRewardFraction {
+			if topicIdActorIdDec != nil {
+				if err := k.previousReputerRewardFraction.Set(ctx,
+					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
+					topicIdActorIdDec.Dec); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//PreviousInferenceRewardFraction []*TopicIdActorIdDec
+	if len(data.PreviousInferenceRewardFraction) != 0 {
+		for _, topicIdActorIdDec := range data.PreviousInferenceRewardFraction {
+			if topicIdActorIdDec != nil {
+				if err := k.previousInferenceRewardFraction.Set(ctx,
+					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
+					topicIdActorIdDec.Dec); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//PreviousForecastRewardFraction []*TopicIdActorIdDec
+	if len(data.PreviousForecastRewardFraction) != 0 {
+		for _, topicIdActorIdDec := range data.PreviousForecastRewardFraction {
+			if topicIdActorIdDec != nil {
+				if err := k.previousForecastRewardFraction.Set(ctx,
+					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
+					topicIdActorIdDec.Dec); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	// TotalStake cosmossdk_io_math.Int
+	if data.TotalStake.GT(cosmosMath.ZeroInt()) {
+		if err := k.totalStake.Set(ctx, data.TotalStake); err != nil {
+			return err
+		}
+	} else {
+		if err := k.totalStake.Set(ctx, cosmosMath.ZeroInt()); err != nil {
+			return err
+		}
+	}
+	//TopicStake []*TopicIdAndInt
+	if len(data.TopicStake) != 0 {
+		for _, topicIdAndInt := range data.TopicStake {
+			if topicIdAndInt != nil {
+				if err := k.topicStake.Set(ctx, topicIdAndInt.TopicId, topicIdAndInt.Int); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//StakeReputerAuthority []*TopicIdActorIdInt
+	if len(data.StakeReputerAuthority) != 0 {
+		for _, topicIdActorIdInt := range data.StakeReputerAuthority {
+			if topicIdActorIdInt != nil {
+				if err := k.stakeReputerAuthority.Set(ctx,
+					collections.Join(topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId),
+					topicIdActorIdInt.Int); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//StakeSumFromDelegator []*TopicIdActorIdInt
+	if len(data.StakeSumFromDelegator) != 0 {
+		for _, topicIdActorIdInt := range data.StakeSumFromDelegator {
+			if topicIdActorIdInt != nil {
+				if err := k.stakeSumFromDelegator.Set(ctx,
+					collections.Join(topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId),
+					topicIdActorIdInt.Int); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//DelegatedStakes []*TopicIdDelegatorReputerDelegatorInfo
+	if len(data.DelegatedStakes) != 0 {
+		for _, topicIdDelegatorReputerDelegatorInfo := range data.DelegatedStakes {
+			if topicIdDelegatorReputerDelegatorInfo != nil {
+				if err := k.delegatedStakes.Set(ctx,
+					collections.Join3(
+						topicIdDelegatorReputerDelegatorInfo.TopicId,
+						topicIdDelegatorReputerDelegatorInfo.Delegator,
+						topicIdDelegatorReputerDelegatorInfo.Reputer,
+					),
+					*topicIdDelegatorReputerDelegatorInfo.DelegatorInfo); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//StakeFromDelegatorsUponReputer []*TopicIdActorIdInt
+	if len(data.StakeFromDelegatorsUponReputer) != 0 {
+		for _, topicIdActorIdInt := range data.StakeFromDelegatorsUponReputer {
+			if topicIdActorIdInt != nil {
+				if err := k.stakeFromDelegatorsUponReputer.Set(ctx,
+					collections.Join(topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId),
+					topicIdActorIdInt.Int); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//DelegateRewardPerShare []*TopicIdActorIdDec
+	if len(data.DelegateRewardPerShare) != 0 {
+		for _, topicIdActorIdDec := range data.DelegateRewardPerShare {
+			if topicIdActorIdDec != nil {
+				if err := k.delegateRewardPerShare.Set(ctx,
+					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
+					topicIdActorIdDec.Dec); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//StakeRemovalsByBlock []*BlockHeightTopicIdReputerStakeRemovalInfo
+	if len(data.StakeRemovalsByBlock) != 0 {
+		for _, blockHeightTopicIdReputerStakeRemovalInfo := range data.StakeRemovalsByBlock {
+			if blockHeightTopicIdReputerStakeRemovalInfo != nil {
+				if err := k.stakeRemovalsByBlock.Set(ctx,
+					collections.Join3(
+						blockHeightTopicIdReputerStakeRemovalInfo.BlockHeight,
+						blockHeightTopicIdReputerStakeRemovalInfo.TopicId,
+						blockHeightTopicIdReputerStakeRemovalInfo.Reputer),
+					*blockHeightTopicIdReputerStakeRemovalInfo.StakeRemovalInfo); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//StakeRemovalsByActor []*ActorIdTopicIdBlockHeight
+	if len(data.StakeRemovalsByActor) != 0 {
+		for _, actorIdTopicIdBlockHeight := range data.StakeRemovalsByActor {
+			if actorIdTopicIdBlockHeight != nil {
+				if err := k.stakeRemovalsByActor.Set(ctx,
+					collections.Join3(
+						actorIdTopicIdBlockHeight.ActorId,
+						actorIdTopicIdBlockHeight.TopicId,
+						actorIdTopicIdBlockHeight.BlockHeight)); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//DelegateStakeRemovalsByBlock []*BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo
+	if len(data.DelegateStakeRemovalsByBlock) != 0 {
+		for _, blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo := range data.DelegateStakeRemovalsByBlock {
+			if blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo != nil {
+				if err := k.delegateStakeRemovalsByBlock.Set(ctx,
+					Join4(
+						blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.BlockHeight,
+						blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.TopicId,
+						blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.Delegator,
+						blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.Reputer,
+					),
+					*blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.DelegateStakeRemovalInfo); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//DelegateStakeRemovalsByActor []*DelegatorReputerTopicIdBlockHeight
+	if len(data.DelegateStakeRemovalsByActor) != 0 {
+		for _, delegatorReputerTopicIdBlockHeight := range data.DelegateStakeRemovalsByActor {
+			if delegatorReputerTopicIdBlockHeight != nil {
+				if err := k.delegateStakeRemovalsByActor.Set(ctx,
+					Join4(
+						delegatorReputerTopicIdBlockHeight.Delegator,
+						delegatorReputerTopicIdBlockHeight.Reputer,
+						delegatorReputerTopicIdBlockHeight.TopicId,
+						delegatorReputerTopicIdBlockHeight.BlockHeight)); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	//Inferences []*TopicIdActorIdInference
+	if len(data.Inferences) != 0 {
+		for _, topicIdActorIdInference := range data.Inferences {
+			if topicIdActorIdInference != nil {
+				if err := k.inferences.Set(ctx,
+					collections.Join(
+						topicIdActorIdInference.TopicId,
+						topicIdActorIdInference.ActorId),
+					*topicIdActorIdInference.Inference); err != nil {
+					return err
+				}
+			}
+		}
 	}
 
-	// add core team to the whitelists
-	if err := k.addCoreTeamToWhitelists(ctx, data.CoreTeamAddresses); err != nil {
-		return err
+	// Forecasts []*TopicIdActorIdForecast
+	if len(data.Forecasts) != 0 {
+		for _, topicIdActorIdForecast := range data.Forecasts {
+			if topicIdActorIdForecast != nil {
+				if err := k.forecasts.Set(ctx,
+					collections.Join(
+						topicIdActorIdForecast.TopicId,
+						topicIdActorIdForecast.ActorId),
+					*topicIdActorIdForecast.Forecast); err != nil {
+					return err
+				}
+			}
+		}
 	}
 
-	// For mint module inflation rate calculation set the initial
-	// "previous percentage of rewards that went to staked reputers" to 30%
-	if err := k.SetPreviousPercentageRewardToStakedReputers(ctx, alloraMath.MustNewDecFromString("0.3")); err != nil {
-		return err
+	// Workers []*LibP2PKeyAndOffchainNode
+	if len(data.Workers) != 0 {
+		for _, libP2PKeyAndOffchainNode := range data.Workers {
+			if libP2PKeyAndOffchainNode != nil {
+				if err := k.workers.Set(
+					ctx,
+					libP2PKeyAndOffchainNode.LibP2PKey,
+					*libP2PKeyAndOffchainNode.OffchainNode); err != nil {
+					return err
+				}
+			}
+		}
 	}
 
+	// Reputers []*LibP2PKeyAndOffchainNode
+	if len(data.Reputers) != 0 {
+		for _, libP2PKeyAndOffchainNode := range data.Reputers {
+			if libP2PKeyAndOffchainNode != nil {
+				if err := k.reputers.Set(
+					ctx,
+					libP2PKeyAndOffchainNode.LibP2PKey,
+					*libP2PKeyAndOffchainNode.OffchainNode); err != nil {
+					return err
+				}
+			}
+		}
+
+	}
+
+	// TopicFeeRevenue []*TopicIdAndInt
+	if len(data.TopicFeeRevenue) != 0 {
+		for _, topicIdAndInt := range data.TopicFeeRevenue {
+			if topicIdAndInt != nil {
+				if err := k.topicFeeRevenue.Set(ctx, topicIdAndInt.TopicId, topicIdAndInt.Int); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	// PreviousTopicWeight []*TopicIdAndDec
+	if len(data.PreviousTopicWeight) != 0 {
+		for _, topicIdAndDec := range data.PreviousTopicWeight {
+			if topicIdAndDec != nil {
+				if err := k.previousTopicWeight.Set(
+					ctx,
+					topicIdAndDec.TopicId,
+					topicIdAndDec.Dec); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	//AllInferences []*TopicIdBlockHeightInferences
+	if len(data.AllInferences) != 0 {
+		for _, topicIdBlockHeightInferences := range data.AllInferences {
+			if err := k.allInferences.Set(ctx,
+				collections.Join(topicIdBlockHeightInferences.TopicId, topicIdBlockHeightInferences.BlockHeight),
+				*topicIdBlockHeightInferences.Inferences); err != nil {
+				return err
+			}
+		}
+	}
+	//AllForecasts []*TopicIdBlockHeightForecasts
+	if len(data.AllForecasts) != 0 {
+		for _, topicIdBlockHeightForecasts := range data.AllForecasts {
+			if err := k.allForecasts.Set(ctx,
+				collections.Join(topicIdBlockHeightForecasts.TopicId, topicIdBlockHeightForecasts.BlockHeight),
+				*topicIdBlockHeightForecasts.Forecasts); err != nil {
+				return err
+			}
+		}
+	}
+	//AllLossBundles []*TopicIdBlockHeightReputerValueBundles
+	if len(data.AllLossBundles) != 0 {
+		for _, topicIdBlockHeightReputerValueBundles := range data.AllLossBundles {
+			if err := k.allLossBundles.Set(ctx,
+				collections.Join(topicIdBlockHeightReputerValueBundles.TopicId, topicIdBlockHeightReputerValueBundles.BlockHeight),
+				*topicIdBlockHeightReputerValueBundles.ReputerValueBundles); err != nil {
+				return err
+			}
+		}
+	}
+	//NetworkLossBundles []*TopicIdBlockHeightValueBundles
+	if len(data.NetworkLossBundles) != 0 {
+		for _, topicIdBlockHeightValueBundles := range data.NetworkLossBundles {
+			if err := k.networkLossBundles.Set(ctx,
+				collections.Join(topicIdBlockHeightValueBundles.TopicId, topicIdBlockHeightValueBundles.BlockHeight),
+				*topicIdBlockHeightValueBundles.ValueBundle); err != nil {
+				return err
+			}
+		}
+	}
+	//PreviousPercentageRewardToStakedReputers github_com_allora_network_allora_chain_math.Dec
+	if data.PreviousPercentageRewardToStakedReputers != alloraMath.ZeroDec() {
+		if err := k.SetPreviousPercentageRewardToStakedReputers(ctx, data.PreviousPercentageRewardToStakedReputers); err != nil {
+			return err
+		}
+	} else {
+		// For mint module inflation rate calculation set the initial
+		// "previous percentage of rewards that went to staked reputers" to 30%
+		if err := k.SetPreviousPercentageRewardToStakedReputers(ctx, alloraMath.MustNewDecFromString("0.3")); err != nil {
+			return err
+		}
+	}
+	//UnfulfilledWorkerNonces []*TopicIdAndNonces
+	if len(data.UnfulfilledWorkerNonces) != 0 {
+		for _, topicIdAndNonces := range data.UnfulfilledWorkerNonces {
+			if err := k.unfulfilledWorkerNonces.Set(ctx, topicIdAndNonces.TopicId, *topicIdAndNonces.Nonces); err != nil {
+				return err
+			}
+		}
+	}
+	//UnfulfilledReputerNonces []*TopicIdAndReputerRequestNonces
+	if len(data.UnfulfilledReputerNonces) != 0 {
+		for _, topicIdAndReputerRequestNonces := range data.UnfulfilledReputerNonces {
+			if err := k.unfulfilledReputerNonces.Set(ctx, topicIdAndReputerRequestNonces.TopicId, *topicIdAndReputerRequestNonces.ReputerRequestNonces); err != nil {
+				return err
+			}
+		}
+	}
+	//LatestInfererNetworkRegrets []*TopicIdActorIdTimeStampedValue
+	if len(data.LatestInfererNetworkRegrets) != 0 {
+		for _, topicIdActorIdTimeStampedValue := range data.LatestInfererNetworkRegrets {
+			if err := k.latestInfererNetworkRegrets.Set(ctx,
+				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
+				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
+				return err
+			}
+		}
+	}
+	//LatestForecasterNetworkRegrets []*TopicIdActorIdTimeStampedValue
+	if len(data.LatestForecasterNetworkRegrets) != 0 {
+		for _, topicIdActorIdTimeStampedValue := range data.LatestForecasterNetworkRegrets {
+			if err := k.latestForecasterNetworkRegrets.Set(ctx,
+				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
+				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
+				return err
+			}
+		}
+	}
+	//LatestOneInForecasterNetworkRegrets []*TopicIdActorIdActorIdTimeStampedValue
+	if len(data.LatestOneInForecasterNetworkRegrets) != 0 {
+		for _, topicIdActorIdActorIdTimeStampedValue := range data.LatestOneInForecasterNetworkRegrets {
+			if err := k.latestOneInForecasterNetworkRegrets.Set(ctx,
+				collections.Join3(
+					topicIdActorIdActorIdTimeStampedValue.TopicId,
+					topicIdActorIdActorIdTimeStampedValue.ActorId1,
+					topicIdActorIdActorIdTimeStampedValue.ActorId2),
+				*topicIdActorIdActorIdTimeStampedValue.TimestampedValue); err != nil {
+				return err
+			}
+		}
+	}
+	//LatestOneInForecasterSelfNetworkRegrets []*TopicIdActorIdTimeStampedValue
+	if len(data.LatestOneInForecasterSelfNetworkRegrets) != 0 {
+		for _, topicIdActorIdTimeStampedValue := range data.LatestOneInForecasterSelfNetworkRegrets {
+			if err := k.latestOneInForecasterSelfNetworkRegrets.Set(ctx,
+				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
+				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
+				return err
+			}
+		}
+	}
+	//CoreTeamAddresses []string
+	if len(data.CoreTeamAddresses) != 0 {
+		// make sure what we are storage isn't garbage
+		for _, address := range data.CoreTeamAddresses {
+			_, err := sdk.AccAddressFromBech32(address)
+			if err != nil {
+				return err
+			}
+		}
+		if err := k.addCoreTeamToWhitelists(ctx, data.CoreTeamAddresses); err != nil {
+			return err
+		}
+	}
+	//TopicLastWorkerCommit   []*TopicIdTimestampedActorNonce
+	if len(data.TopicLastWorkerCommit) != 0 {
+		for _, topicIdTimestampedActorNonce := range data.TopicLastWorkerCommit {
+			if err := k.topicLastWorkerCommit.Set(ctx,
+				topicIdTimestampedActorNonce.TopicId,
+				*topicIdTimestampedActorNonce.TimestampedActorNonce); err != nil {
+				return err
+			}
+		}
+	}
+	//TopicLastReputerCommit  []*TopicIdTimestampedActorNonce
+	if len(data.TopicLastReputerCommit) != 0 {
+		for _, topicIdTimestampedActorNonce := range data.TopicLastReputerCommit {
+			if err := k.topicLastReputerCommit.Set(ctx,
+				topicIdTimestampedActorNonce.TopicId,
+				*topicIdTimestampedActorNonce.TimestampedActorNonce); err != nil {
+				return err
+			}
+		}
+	}
+	//TopicLastWorkerPayload  []*TopicIdTimestampedActorNonce
+	if len(data.TopicLastWorkerPayload) != 0 {
+		for _, topicIdTimestampedActorNonce := range data.TopicLastWorkerPayload {
+			if err := k.topicLastWorkerPayload.Set(ctx,
+				topicIdTimestampedActorNonce.TopicId,
+				*topicIdTimestampedActorNonce.TimestampedActorNonce,
+			); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
