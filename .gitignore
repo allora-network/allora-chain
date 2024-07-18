@@ -22,6 +22,8 @@ go.work
 
 # Data folder
 data/
+data_head/
+data_validator/
 # Account info
 *.account_info
 

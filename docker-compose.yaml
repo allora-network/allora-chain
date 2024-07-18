@@ -1,17 +1,35 @@
 # Change all occurrences of "sample_validator" to your prerferred name
 services:
-  sample_validator:
+  node:
     container_name: sample_validator
-    # build: .
-    image: "alloranetwork/allora-chain:v0.2.7"
+    image: "alloranetwork/allora-chain:v0.2.14"
     environment:
-      - NETWORK=edgenet
+      - NETWORK=allora-testnet-1
       - MONIKER=sample_validator
-      - APP_HOME=./data
+      - APP_HOME=/data
+      - BLOCKLESS_API_URL=http://head:6000/api/v1/functions/execute   # URL to the head node's API
     volumes:
-      - ./data:/data
+      - ./data_validator:/data
       - ./scripts/:/scripts
     ports:
       - "26656-26657:26656-26657"
     user: "0:0"
     entrypoint: /scripts/l1_node.sh
+
+  # Head node
+  head:
+    container_name: head
+    image: "alloranetwork/allora-inference-base-head:latest"
+    environment:
+      - NETWORK=allora-testnet-1
+      - APP_HOME=/data
+      - DIALBACK_PORT=9010                         # P2P Port, the node will announce to the network
+      - DIALBACK_ADDRESS=dns-name.to-access.head   # Name the node will announce to the network
+    volumes:
+      - ./data_head:/data
+      - ./scripts/:/scripts
+    ports:
+      - "9010:9010"                                # P2P Port
+      - "6000:6000"                                # API Port
+    user: "0:0"
+    entrypoint: /scripts/head.sh
