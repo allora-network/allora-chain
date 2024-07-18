@@ -29,6 +29,7 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsvOutputs() {
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
@@ -149,8 +150,6 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsvOutputs() {
 		epoch301Get("reputer_score_3"),
 		epoch301Get("reputer_score_4"),
 	}
-	fmt.Println("expectedScores :::", expectedScores)
-	fmt.Println("scores :::", scores)
 	for i, reputerScore := range scores {
 		testutil.InEpsilon5(s.T(), reputerScore.Score, expectedScores[i].String())
 	}

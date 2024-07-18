@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -72,7 +73,7 @@ func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 }
 
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
-	epochGet := GetSimulatedValuesGetterForEpochs()
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[2]
 	epoch3Get := epochGet[3]
 
@@ -417,7 +418,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithJustOneNotNewForecaster() {
-	epochGet := GetSimulatedValuesGetterForEpochs()
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[2]
 	epoch3Get := epochGet[3]
 
@@ -758,7 +759,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithJustOne
 
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithAllInferersForecastersNew() {
 	s.SetupTest()
-	epochGet := GetSimulatedValuesGetterForEpochs()
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[2]
 	epoch3Get := epochGet[3]
 
@@ -1024,7 +1025,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithAllInfe
 
 func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 	s.SetupTest()
-	epochGet := GetSimulatedValuesGetterForEpochs()
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[2]
 	epoch3Get := epochGet[3]
 
