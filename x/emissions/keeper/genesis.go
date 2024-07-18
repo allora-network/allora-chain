@@ -3,6 +3,8 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
+
 	"cosmossdk.io/collections"
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -24,17 +26,17 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 
 	// params Params
 	if err := k.SetParams(ctx, data.Params); err != nil {
-		return err
+		return errors.Wrap(err, "error setting params")
 	}
 	// nextTopicId uint64
 	if data.NextTopicId == 0 {
 		// reserve topic ID 0 for future use
 		if _, err := k.IncrementTopicId(ctx); err != nil {
-			return err
+			return errors.Wrap(err, "error incrementing topic ID")
 		}
 	} else {
 		if err := k.nextTopicId.Set(ctx, data.NextTopicId); err != nil {
-			return err
+			return errors.Wrap(err, "error setting next topic ID")
 		}
 	}
 	//Topics       []*TopicIdAndTopic
@@ -42,7 +44,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		for _, topic := range data.Topics {
 			if topic != nil {
 				if err := k.topics.Set(ctx, topic.TopicId, *topic.Topic); err != nil {
-					return err
+					return errors.Wrap(err, "error setting topic")
 				}
 			}
 		}
@@ -51,7 +53,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.ActiveTopics) != 0 {
 		for _, topicId := range data.ActiveTopics {
 			if err := k.activeTopics.Set(ctx, topicId); err != nil {
-				return err
+				return errors.Wrap(err, "error setting activeTopics")
 			}
 		}
 	}
@@ -59,7 +61,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.ChurnableTopics) != 0 {
 		for _, topicId := range data.ChurnableTopics {
 			if err := k.churnableTopics.Set(ctx, topicId); err != nil {
-				return err
+				return errors.Wrap(err, "error setting churnableTopics")
 			}
 		}
 	}
@@ -67,7 +69,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.RewardableTopics) != 0 {
 		for _, topicId := range data.RewardableTopics {
 			if err := k.rewardableTopics.Set(ctx, topicId); err != nil {
-				return err
+				return errors.Wrap(err, "error setting rewardableTopics")
 			}
 		}
 	}
@@ -76,7 +78,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		for _, topicAndActorId := range data.TopicWorkers {
 			if topicAndActorId != nil {
 				if err := k.topicWorkers.Set(ctx, collections.Join(topicAndActorId.TopicId, topicAndActorId.ActorId)); err != nil {
-					return err
+					return errors.Wrap(err, "error setting topicWorkers")
 				}
 			}
 		}
@@ -87,7 +89,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		for _, topicAndActorId := range data.TopicReputers {
 			if topicAndActorId != nil {
 				if err := k.topicReputers.Set(ctx, collections.Join(topicAndActorId.TopicId, topicAndActorId.ActorId)); err != nil {
-					return err
+					return errors.Wrap(err, "error setting topicReputers")
 				}
 			}
 		}
@@ -98,7 +100,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		for _, topicIdAndBlockHeight := range data.TopicRewardNonce {
 			if topicIdAndBlockHeight != nil {
 				if err := k.topicRewardNonce.Set(ctx, topicIdAndBlockHeight.TopicId, topicIdAndBlockHeight.BlockHeight); err != nil {
-					return err
+					return errors.Wrap(err, "error setting topicRewardNonce")
 				}
 			}
 		}
@@ -110,7 +112,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.infererScoresByBlock.Set(ctx,
 					collections.Join(topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight),
 					*topicIdBlockHeightScores.Scores); err != nil {
-					return err
+					return errors.Wrap(err, "error setting infererScoresByBlock")
 				}
 			}
 		}
@@ -124,7 +126,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 					ctx,
 					collections.Join(topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight),
 					*topicIdBlockHeightScores.Scores); err != nil {
-					return err
+					return errors.Wrap(err, "error setting forecasterScoresByBlock")
 				}
 			}
 		}
@@ -138,7 +140,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 					ctx,
 					collections.Join(topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight),
 					*topicIdBlockHeightScores.Scores); err != nil {
-					return err
+					return errors.Wrap(err, "error setting reputerScoresByBlock")
 				}
 			}
 		}
@@ -150,7 +152,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.latestInfererScoresByWorker.Set(ctx,
 					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
 					*topicIdActorIdScore.Score); err != nil {
-					return err
+					return errors.Wrap(err, "error setting latestInfererScoresByWorker")
 				}
 			}
 		}
@@ -162,7 +164,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.latestForecasterScoresByWorker.Set(ctx,
 					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
 					*topicIdActorIdScore.Score); err != nil {
-					return err
+					return errors.Wrap(err, "error setting latestForecasterScoresByWorker")
 				}
 			}
 		}
@@ -174,7 +176,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.latestReputerScoresByReputer.Set(ctx,
 					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
 					*topicIdActorIdScore.Score); err != nil {
-					return err
+					return errors.Wrap(err, "error setting latestReputerScoresByReputer")
 				}
 			}
 		}
@@ -186,7 +188,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.reputerListeningCoefficient.Set(ctx,
 					collections.Join(topicIdActorIdListeningCoefficient.TopicId, topicIdActorIdListeningCoefficient.ActorId),
 					*topicIdActorIdListeningCoefficient.ListeningCoefficient); err != nil {
-					return err
+					return errors.Wrap(err, "error setting reputerListeningCoefficient")
 				}
 			}
 		}
@@ -198,7 +200,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.previousReputerRewardFraction.Set(ctx,
 					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
 					topicIdActorIdDec.Dec); err != nil {
-					return err
+					return errors.Wrap(err, "error setting previousReputerRewardFraction")
 				}
 			}
 		}
@@ -210,7 +212,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.previousInferenceRewardFraction.Set(ctx,
 					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
 					topicIdActorIdDec.Dec); err != nil {
-					return err
+					return errors.Wrap(err, "error setting previousInferenceRewardFraction")
 				}
 			}
 		}
@@ -222,7 +224,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.previousForecastRewardFraction.Set(ctx,
 					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
 					topicIdActorIdDec.Dec); err != nil {
-					return err
+					return errors.Wrap(err, "error setting previousForecastRewardFraction")
 				}
 			}
 		}
@@ -230,11 +232,11 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// TotalStake cosmossdk_io_math.Int
 	if data.TotalStake.GT(cosmosMath.ZeroInt()) {
 		if err := k.totalStake.Set(ctx, data.TotalStake); err != nil {
-			return err
+			return errors.Wrap(err, "error setting totalStake")
 		}
 	} else {
 		if err := k.totalStake.Set(ctx, cosmosMath.ZeroInt()); err != nil {
-			return err
+			return errors.Wrap(err, "error setting totalStake to zero int")
 		}
 	}
 	//TopicStake []*TopicIdAndInt
@@ -242,7 +244,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		for _, topicIdAndInt := range data.TopicStake {
 			if topicIdAndInt != nil {
 				if err := k.topicStake.Set(ctx, topicIdAndInt.TopicId, topicIdAndInt.Int); err != nil {
-					return err
+					return errors.Wrap(err, "error setting topicStake")
 				}
 			}
 		}
@@ -254,7 +256,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.stakeReputerAuthority.Set(ctx,
 					collections.Join(topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId),
 					topicIdActorIdInt.Int); err != nil {
-					return err
+					return errors.Wrap(err, "error setting stakeReputerAuthority")
 				}
 			}
 		}
@@ -266,7 +268,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.stakeSumFromDelegator.Set(ctx,
 					collections.Join(topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId),
 					topicIdActorIdInt.Int); err != nil {
-					return err
+					return errors.Wrap(err, "error setting stakeSumFromDelegator")
 				}
 			}
 		}
@@ -282,7 +284,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 						topicIdDelegatorReputerDelegatorInfo.Reputer,
 					),
 					*topicIdDelegatorReputerDelegatorInfo.DelegatorInfo); err != nil {
-					return err
+					return errors.Wrap(err, "error setting delegatedStakes")
 				}
 			}
 		}
@@ -294,7 +296,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.stakeFromDelegatorsUponReputer.Set(ctx,
 					collections.Join(topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId),
 					topicIdActorIdInt.Int); err != nil {
-					return err
+					return errors.Wrap(err, "error setting stakeFromDelegatorsUponReputer")
 				}
 			}
 		}
@@ -306,7 +308,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				if err := k.delegateRewardPerShare.Set(ctx,
 					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
 					topicIdActorIdDec.Dec); err != nil {
-					return err
+					return errors.Wrap(err, "error setting delegateRewardPerShare")
 				}
 			}
 		}
@@ -321,7 +323,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 						blockHeightTopicIdReputerStakeRemovalInfo.TopicId,
 						blockHeightTopicIdReputerStakeRemovalInfo.Reputer),
 					*blockHeightTopicIdReputerStakeRemovalInfo.StakeRemovalInfo); err != nil {
-					return err
+					return errors.Wrap(err, "error setting stakeRemovalsByBlock")
 				}
 			}
 		}
@@ -335,7 +337,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 						actorIdTopicIdBlockHeight.ActorId,
 						actorIdTopicIdBlockHeight.TopicId,
 						actorIdTopicIdBlockHeight.BlockHeight)); err != nil {
-					return err
+					return errors.Wrap(err, "error setting stakeRemovalsByActor")
 				}
 			}
 		}
@@ -352,7 +354,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 						blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.Reputer,
 					),
 					*blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.DelegateStakeRemovalInfo); err != nil {
-					return err
+					return errors.Wrap(err, "error setting delegateStakeRemovalsByBlock")
 				}
 			}
 		}
@@ -367,7 +369,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 						delegatorReputerTopicIdBlockHeight.Reputer,
 						delegatorReputerTopicIdBlockHeight.TopicId,
 						delegatorReputerTopicIdBlockHeight.BlockHeight)); err != nil {
-					return err
+					return errors.Wrap(err, "error setting delegateStakeRemovalsByActor")
 				}
 			}
 		}
@@ -381,7 +383,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 						topicIdActorIdInference.TopicId,
 						topicIdActorIdInference.ActorId),
 					*topicIdActorIdInference.Inference); err != nil {
-					return err
+					return errors.Wrap(err, "error setting inferences")
 				}
 			}
 		}
@@ -396,7 +398,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 						topicIdActorIdForecast.TopicId,
 						topicIdActorIdForecast.ActorId),
 					*topicIdActorIdForecast.Forecast); err != nil {
-					return err
+					return errors.Wrap(err, "error setting forecasts")
 				}
 			}
 		}
@@ -410,7 +412,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 					ctx,
 					libP2PKeyAndOffchainNode.LibP2PKey,
 					*libP2PKeyAndOffchainNode.OffchainNode); err != nil {
-					return err
+					return errors.Wrap(err, "error setting workers")
 				}
 			}
 		}
@@ -424,7 +426,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 					ctx,
 					libP2PKeyAndOffchainNode.LibP2PKey,
 					*libP2PKeyAndOffchainNode.OffchainNode); err != nil {
-					return err
+					return errors.Wrap(err, "error setting reputers")
 				}
 			}
 		}
@@ -436,7 +438,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		for _, topicIdAndInt := range data.TopicFeeRevenue {
 			if topicIdAndInt != nil {
 				if err := k.topicFeeRevenue.Set(ctx, topicIdAndInt.TopicId, topicIdAndInt.Int); err != nil {
-					return err
+					return errors.Wrap(err, "error setting topicFeeRevenue")
 				}
 			}
 		}
@@ -449,7 +451,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 					ctx,
 					topicIdAndDec.TopicId,
 					topicIdAndDec.Dec); err != nil {
-					return err
+					return errors.Wrap(err, "error setting previousTopicWeight")
 				}
 			}
 		}
@@ -461,7 +463,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := k.allInferences.Set(ctx,
 				collections.Join(topicIdBlockHeightInferences.TopicId, topicIdBlockHeightInferences.BlockHeight),
 				*topicIdBlockHeightInferences.Inferences); err != nil {
-				return err
+				return errors.Wrap(err, "error setting allInferences")
 			}
 		}
 	}
@@ -471,7 +473,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := k.allForecasts.Set(ctx,
 				collections.Join(topicIdBlockHeightForecasts.TopicId, topicIdBlockHeightForecasts.BlockHeight),
 				*topicIdBlockHeightForecasts.Forecasts); err != nil {
-				return err
+				return errors.Wrap(err, "error setting allForecasts")
 			}
 		}
 	}
@@ -481,7 +483,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := k.allLossBundles.Set(ctx,
 				collections.Join(topicIdBlockHeightReputerValueBundles.TopicId, topicIdBlockHeightReputerValueBundles.BlockHeight),
 				*topicIdBlockHeightReputerValueBundles.ReputerValueBundles); err != nil {
-				return err
+				return errors.Wrap(err, "error setting allLossBundles")
 			}
 		}
 	}
@@ -491,27 +493,27 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := k.networkLossBundles.Set(ctx,
 				collections.Join(topicIdBlockHeightValueBundles.TopicId, topicIdBlockHeightValueBundles.BlockHeight),
 				*topicIdBlockHeightValueBundles.ValueBundle); err != nil {
-				return err
+				return errors.Wrap(err, "error setting networkLossBundles")
 			}
 		}
 	}
 	//PreviousPercentageRewardToStakedReputers github_com_allora_network_allora_chain_math.Dec
 	if data.PreviousPercentageRewardToStakedReputers != alloraMath.ZeroDec() {
 		if err := k.SetPreviousPercentageRewardToStakedReputers(ctx, data.PreviousPercentageRewardToStakedReputers); err != nil {
-			return err
+			return errors.Wrap(err, "error setting previousPercentageRewardToStakedReputers")
 		}
 	} else {
 		// For mint module inflation rate calculation set the initial
 		// "previous percentage of rewards that went to staked reputers" to 30%
 		if err := k.SetPreviousPercentageRewardToStakedReputers(ctx, alloraMath.MustNewDecFromString("0.3")); err != nil {
-			return err
+			return errors.Wrap(err, "error setting previousPercentageRewardToStakedReputers to 0.3")
 		}
 	}
 	//UnfulfilledWorkerNonces []*TopicIdAndNonces
 	if len(data.UnfulfilledWorkerNonces) != 0 {
 		for _, topicIdAndNonces := range data.UnfulfilledWorkerNonces {
 			if err := k.unfulfilledWorkerNonces.Set(ctx, topicIdAndNonces.TopicId, *topicIdAndNonces.Nonces); err != nil {
-				return err
+				return errors.Wrap(err, "error setting unfulfilledWorkerNonces")
 			}
 		}
 	}
@@ -519,7 +521,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.UnfulfilledReputerNonces) != 0 {
 		for _, topicIdAndReputerRequestNonces := range data.UnfulfilledReputerNonces {
 			if err := k.unfulfilledReputerNonces.Set(ctx, topicIdAndReputerRequestNonces.TopicId, *topicIdAndReputerRequestNonces.ReputerRequestNonces); err != nil {
-				return err
+				return errors.Wrap(err, "error setting unfulfilledReputerNonces")
 			}
 		}
 	}
@@ -529,7 +531,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := k.latestInfererNetworkRegrets.Set(ctx,
 				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
-				return err
+				return errors.Wrap(err, "error setting latestInfererNetworkRegrets")
 			}
 		}
 	}
@@ -539,7 +541,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := k.latestForecasterNetworkRegrets.Set(ctx,
 				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
-				return err
+				return errors.Wrap(err, "error setting latestForecasterNetworkRegrets")
 			}
 		}
 	}
@@ -552,7 +554,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 					topicIdActorIdActorIdTimeStampedValue.ActorId1,
 					topicIdActorIdActorIdTimeStampedValue.ActorId2),
 				*topicIdActorIdActorIdTimeStampedValue.TimestampedValue); err != nil {
-				return err
+				return errors.Wrap(err, "error setting latestOneInForecasterNetworkRegrets")
 			}
 		}
 	}
@@ -562,7 +564,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := k.latestOneInForecasterSelfNetworkRegrets.Set(ctx,
 				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
-				return err
+				return errors.Wrap(err, "error setting latestOneInForecasterSelfNetworkRegrets")
 			}
 		}
 	}
@@ -572,11 +574,11 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		for _, address := range data.CoreTeamAddresses {
 			_, err := sdk.AccAddressFromBech32(address)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "error converting core team address from bech32")
 			}
 		}
 		if err := k.addCoreTeamToWhitelists(ctx, data.CoreTeamAddresses); err != nil {
-			return err
+			return errors.Wrap(err, "error adding core team addresses to whitelists")
 		}
 	}
 	//TopicLastWorkerCommit   []*TopicIdTimestampedActorNonce
@@ -585,7 +587,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := k.topicLastWorkerCommit.Set(ctx,
 				topicIdTimestampedActorNonce.TopicId,
 				*topicIdTimestampedActorNonce.TimestampedActorNonce); err != nil {
-				return err
+				return errors.Wrap(err, "error setting topicLastWorkerCommit")
 			}
 		}
 	}
@@ -595,7 +597,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			if err := k.topicLastReputerCommit.Set(ctx,
 				topicIdTimestampedActorNonce.TopicId,
 				*topicIdTimestampedActorNonce.TimestampedActorNonce); err != nil {
-				return err
+				return errors.Wrap(err, "error setting topicLastReputerCommit")
 			}
 		}
 	}
@@ -606,7 +608,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				topicIdTimestampedActorNonce.TopicId,
 				*topicIdTimestampedActorNonce.TimestampedActorNonce,
 			); err != nil {
-				return err
+				return errors.Wrap(err, "error setting topicLastWorkerPayload")
 			}
 		}
 	}
@@ -617,23 +619,23 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) {
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get module params")
 	}
 
 	nextTopicId, err := k.nextTopicId.Peek(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get next topic ID")
 	}
 
 	topicsIter, err := k.topics.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate topics")
 	}
 	topics := make([]*types.TopicIdAndTopic, 0)
 	for ; topicsIter.Valid(); topicsIter.Next() {
 		keyValue, err := topicsIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: topicsIter")
 		}
 		value := keyValue.Value
 		topic := types.TopicIdAndTopic{
@@ -646,12 +648,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	activeTopics := make([]uint64, 0)
 	activeTopicsIter, err := k.activeTopics.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate active topics")
 	}
 	for ; activeTopicsIter.Valid(); activeTopicsIter.Next() {
 		key, err := activeTopicsIter.Key()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key: activeTopicsIter")
 		}
 		activeTopics = append(activeTopics, key)
 	}
@@ -659,12 +661,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	churnableTopics := make([]uint64, 0)
 	churnableTopicsIter, err := k.churnableTopics.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate churnable topics")
 	}
 	for ; churnableTopicsIter.Valid(); churnableTopicsIter.Next() {
 		key, err := churnableTopicsIter.Key()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key: churnableTopicsIter")
 		}
 		churnableTopics = append(churnableTopics, key)
 	}
@@ -672,12 +674,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	rewardableTopics := make([]uint64, 0)
 	rewardableTopicsIter, err := k.rewardableTopics.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate rewardable topics")
 	}
 	for ; rewardableTopicsIter.Valid(); rewardableTopicsIter.Next() {
 		key, err := rewardableTopicsIter.Key()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key: rewardableTopicsIter")
 		}
 		rewardableTopics = append(rewardableTopics, key)
 	}
@@ -685,12 +687,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	topicWorkers := make([]*types.TopicAndActorId, 0)
 	topicWorkersIter, err := k.topicWorkers.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate topic workers")
 	}
 	for ; topicWorkersIter.Valid(); topicWorkersIter.Next() {
 		key, err := topicWorkersIter.Key()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key: topicWorkersIter")
 		}
 		topicIdAndActorId := types.TopicAndActorId{
 			TopicId: key.K1(),
@@ -702,12 +704,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	topicReputers := make([]*types.TopicAndActorId, 0)
 	topicReputersIter, err := k.topicReputers.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate topic reputers")
 	}
 	for ; topicReputersIter.Valid(); topicReputersIter.Next() {
 		key, err := topicReputersIter.Key()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key: topicReputersIter")
 		}
 		topicIdAndActorId := types.TopicAndActorId{
 			TopicId: key.K1(),
@@ -719,12 +721,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	topicRewardNonce := make([]*types.TopicIdAndBlockHeight, 0)
 	topicRewardNonceIter, err := k.topicRewardNonce.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate topic reward nonce")
 	}
 	for ; topicRewardNonceIter.Valid(); topicRewardNonceIter.Next() {
 		keyValue, err := topicRewardNonceIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: topicRewardNonceIter")
 		}
 		topicIdAndBlockHeight := types.TopicIdAndBlockHeight{
 			TopicId:     keyValue.Key,
@@ -736,12 +738,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	infererScoresByBlock := make([]*types.TopicIdBlockHeightScores, 0)
 	infererScoresByBlockIter, err := k.infererScoresByBlock.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate inferer scores by block")
 	}
 	for ; infererScoresByBlockIter.Valid(); infererScoresByBlockIter.Next() {
 		keyValue, err := infererScoresByBlockIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: infererScoresByBlockIter")
 		}
 		value := keyValue.Value
 		topicIdBlockHeightScores := types.TopicIdBlockHeightScores{
@@ -755,12 +757,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	forecasterScoresByBlock := make([]*types.TopicIdBlockHeightScores, 0)
 	forecasterScoresByBlockIter, err := k.forecasterScoresByBlock.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate forecaster scores by block")
 	}
 	for ; forecasterScoresByBlockIter.Valid(); forecasterScoresByBlockIter.Next() {
 		keyValue, err := forecasterScoresByBlockIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: forecasterScoresByBlockIter")
 		}
 		value := keyValue.Value
 		topicIdBlockHeightScores := types.TopicIdBlockHeightScores{
@@ -774,12 +776,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	reputerScoresByBlock := make([]*types.TopicIdBlockHeightScores, 0)
 	reputerScoresByBlockIter, err := k.reputerScoresByBlock.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate reputer scores by block")
 	}
 	for ; reputerScoresByBlockIter.Valid(); reputerScoresByBlockIter.Next() {
 		keyValue, err := reputerScoresByBlockIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: reputerScoresByBlockIter")
 		}
 		value := keyValue.Value
 		topicIdBlockHeightScores := types.TopicIdBlockHeightScores{
@@ -793,12 +795,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	latestInfererScoresByWorker := make([]*types.TopicIdActorIdScore, 0)
 	latestInfererScoresByWorkerIter, err := k.latestInfererScoresByWorker.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate latest inferer scores by worker")
 	}
 	for ; latestInfererScoresByWorkerIter.Valid(); latestInfererScoresByWorkerIter.Next() {
 		keyValue, err := latestInfererScoresByWorkerIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: latestInfererScoresByWorkerIter")
 		}
 		value := keyValue.Value
 		topicIdActorIdScore := types.TopicIdActorIdScore{
@@ -812,12 +814,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	latestForecasterScoresByWorker := make([]*types.TopicIdActorIdScore, 0)
 	latestForecasterScoresByWorkerIter, err := k.latestForecasterScoresByWorker.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate latest forecaster scores by worker")
 	}
 	for ; latestForecasterScoresByWorkerIter.Valid(); latestForecasterScoresByWorkerIter.Next() {
 		keyValue, err := latestForecasterScoresByWorkerIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: latestForecasterScoresByWorkerIter")
 		}
 		value := keyValue.Value
 		topicIdActorIdScore := types.TopicIdActorIdScore{
@@ -831,12 +833,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	latestReputerScoresByReputer := make([]*types.TopicIdActorIdScore, 0)
 	latestReputerScoresByReputerIter, err := k.latestReputerScoresByReputer.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate latest reputer scores by reputer")
 	}
 	for ; latestReputerScoresByReputerIter.Valid(); latestReputerScoresByReputerIter.Next() {
 		keyValue, err := latestReputerScoresByReputerIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: latestReputerScoresByReputerIter")
 		}
 		value := keyValue.Value
 		topicIdActorIdScore := types.TopicIdActorIdScore{
@@ -850,12 +852,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	reputerListeningCoefficient := make([]*types.TopicIdActorIdListeningCoefficient, 0)
 	reputerListeningCoefficientIter, err := k.reputerListeningCoefficient.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate reputer listening coefficient")
 	}
 	for ; reputerListeningCoefficientIter.Valid(); reputerListeningCoefficientIter.Next() {
 		keyValue, err := reputerListeningCoefficientIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: reputerListeningCoefficientIter")
 		}
 		value := keyValue.Value
 		topicIdActorIdListeningCoefficient := types.TopicIdActorIdListeningCoefficient{
@@ -869,12 +871,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	previousReputerRewardFraction := make([]*types.TopicIdActorIdDec, 0)
 	previousReputerRewardFractionIter, err := k.previousReputerRewardFraction.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate previous reputer reward fraction")
 	}
 	for ; previousReputerRewardFractionIter.Valid(); previousReputerRewardFractionIter.Next() {
 		keyValue, err := previousReputerRewardFractionIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: previousReputerRewardFractionIter")
 		}
 		topicIdActorIdDec := types.TopicIdActorIdDec{
 			TopicId: keyValue.Key.K1(),
@@ -887,12 +889,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	previousInferenceRewardFraction := make([]*types.TopicIdActorIdDec, 0)
 	previousInferenceRewardFractionIter, err := k.previousInferenceRewardFraction.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate previous inference reward fraction")
 	}
 	for ; previousInferenceRewardFractionIter.Valid(); previousInferenceRewardFractionIter.Next() {
 		keyValue, err := previousInferenceRewardFractionIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: previousInferenceRewardFractionIter")
 		}
 		topicIdActorIdDec := types.TopicIdActorIdDec{
 			TopicId: keyValue.Key.K1(),
@@ -905,12 +907,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	previousForecastRewardFraction := make([]*types.TopicIdActorIdDec, 0)
 	previousForecastRewardFractionIter, err := k.previousForecastRewardFraction.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate previous forecast reward fraction")
 	}
 	for ; previousForecastRewardFractionIter.Valid(); previousForecastRewardFractionIter.Next() {
 		keyValue, err := previousForecastRewardFractionIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: previousForecastRewardFractionIter")
 		}
 		topicIdActorIdDec := types.TopicIdActorIdDec{
 			TopicId: keyValue.Key.K1(),
@@ -922,39 +924,35 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 
 	totalStake, err := k.totalStake.Get(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get total stake")
 	}
 
 	// Fill in the values from keeper.go
 
 	// topicStake
 	topicStake := make([]*types.TopicIdAndInt, 0)
-	topicStakeIter, err := k.topicStake.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	for ; topicStakeIter.Valid(); topicStakeIter.Next() {
-		keyValue, err := topicStakeIter.KeyValue()
+	var i uint64
+	for i = 1; i < nextTopicId; i++ {
+		stake, err := k.topicStake.Get(ctx, i)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(err, "failed to get topic stake %d", i)
 		}
-		topicIdAndInt := types.TopicIdAndInt{
-			TopicId: keyValue.Key,
-			Int:     keyValue.Value,
-		}
-		topicStake = append(topicStake, &topicIdAndInt)
+		topicStake = append(topicStake, &types.TopicIdAndInt{
+			TopicId: i,
+			Int:     stake,
+		})
 	}
 
 	// stakeReputerAuthority
 	stakeReputerAuthority := make([]*types.TopicIdActorIdInt, 0)
 	stakeReputerAuthorityIter, err := k.stakeReputerAuthority.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate stake reputer authority")
 	}
 	for ; stakeReputerAuthorityIter.Valid(); stakeReputerAuthorityIter.Next() {
 		keyValue, err := stakeReputerAuthorityIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: stakeReputerAuthorityIter")
 		}
 		topicIdActorIdInt := types.TopicIdActorIdInt{
 			TopicId: keyValue.Key.K1(),
@@ -968,12 +966,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	stakeSumFromDelegator := make([]*types.TopicIdActorIdInt, 0)
 	stakeSumFromDelegatorIter, err := k.stakeSumFromDelegator.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate stake sum from delegator")
 	}
 	for ; stakeSumFromDelegatorIter.Valid(); stakeSumFromDelegatorIter.Next() {
 		keyValue, err := stakeSumFromDelegatorIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: stakeSumFromDelegatorIter")
 		}
 		topicIdActorIdInt := types.TopicIdActorIdInt{
 			TopicId: keyValue.Key.K1(),
@@ -987,12 +985,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	delegatedStakes := make([]*types.TopicIdDelegatorReputerDelegatorInfo, 0)
 	delegatedStakesIter, err := k.delegatedStakes.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate delegated stakes")
 	}
 	for ; delegatedStakesIter.Valid(); delegatedStakesIter.Next() {
 		keyValue, err := delegatedStakesIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: delegatedStakesIter")
 		}
 		value := keyValue.Value
 		topicIdDelegatorReputerDelegatorInfo := types.TopicIdDelegatorReputerDelegatorInfo{
@@ -1008,12 +1006,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	stakeFromDelegatorsUponReputer := make([]*types.TopicIdActorIdInt, 0)
 	stakeFromDelegatorsUponReputerIter, err := k.stakeFromDelegatorsUponReputer.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate stake from delegators upon reputer")
 	}
 	for ; stakeFromDelegatorsUponReputerIter.Valid(); stakeFromDelegatorsUponReputerIter.Next() {
 		keyValue, err := stakeFromDelegatorsUponReputerIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: stakeFromDelegatorsUponReputerIter")
 		}
 		topicIdActorIdInt := types.TopicIdActorIdInt{
 			TopicId: keyValue.Key.K1(),
@@ -1027,12 +1025,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	delegateRewardPerShare := make([]*types.TopicIdActorIdDec, 0)
 	delegateRewardPerShareIter, err := k.delegateRewardPerShare.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate delegate reward per share")
 	}
 	for ; delegateRewardPerShareIter.Valid(); delegateRewardPerShareIter.Next() {
 		keyValue, err := delegateRewardPerShareIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: delegateRewardPerShareIter")
 		}
 		topicIdActorIdDec := types.TopicIdActorIdDec{
 			TopicId: keyValue.Key.K1(),
@@ -1046,12 +1044,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	stakeRemovalsByBlock := make([]*types.BlockHeightTopicIdReputerStakeRemovalInfo, 0)
 	stakeRemovalsByBlockIter, err := k.stakeRemovalsByBlock.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate stake removals by block")
 	}
 	for ; stakeRemovalsByBlockIter.Valid(); stakeRemovalsByBlockIter.Next() {
 		keyValue, err := stakeRemovalsByBlockIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: stakeRemovalsByBlockIter")
 		}
 		value := keyValue.Value
 		blockHeightTopicIdReputerStakeRemovalInfo := types.BlockHeightTopicIdReputerStakeRemovalInfo{
@@ -1066,12 +1064,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	stakeRemovalsByActor := make([]*types.ActorIdTopicIdBlockHeight, 0)
 	stakeRemovalsByActorIter, err := k.stakeRemovalsByActor.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate stake removals by actor")
 	}
 	for ; stakeRemovalsByActorIter.Valid(); stakeRemovalsByActorIter.Next() {
 		key, err := stakeRemovalsByActorIter.Key()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key: stakeRemovalsByActorIter")
 		}
 		actorIdTopicIdBlockHeight := types.ActorIdTopicIdBlockHeight{
 			ActorId:     key.K1(),
@@ -1085,12 +1083,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	delegateStakeRemovalsByBlock := make([]*types.BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo, 0)
 	delegateStakeRemovalsByBlockIter, err := k.delegateStakeRemovalsByBlock.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate delegate stake removals by block")
 	}
 	for ; delegateStakeRemovalsByBlockIter.Valid(); delegateStakeRemovalsByBlockIter.Next() {
 		keyValue, err := delegateStakeRemovalsByBlockIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: delegateStakeRemovalsByBlockIter")
 		}
 		value := keyValue.Value
 		blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo := types.BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo{
@@ -1105,12 +1103,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	delegateStakeRemovalsByActor := make([]*types.DelegatorReputerTopicIdBlockHeight, 0)
 	delegateStakeRemovalsByActorIter, err := k.delegateStakeRemovalsByActor.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate delegate stake removals by actor")
 	}
 	for ; delegateStakeRemovalsByActorIter.Valid(); delegateStakeRemovalsByActorIter.Next() {
 		key, err := delegateStakeRemovalsByActorIter.Key()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key: delegateStakeRemovalsByActorIter")
 		}
 		delegatorReputerTopicIdBlockHeight := types.DelegatorReputerTopicIdBlockHeight{
 			Delegator:   key.K1(),
@@ -1125,12 +1123,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	inferences := make([]*types.TopicIdActorIdInference, 0)
 	inferencesIter, err := k.inferences.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate inferences")
 	}
 	for ; inferencesIter.Valid(); inferencesIter.Next() {
 		keyValue, err := inferencesIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: inferencesIter")
 		}
 		value := keyValue.Value
 		topicIdActorIdInference := types.TopicIdActorIdInference{
@@ -1145,12 +1143,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	forecasts := make([]*types.TopicIdActorIdForecast, 0)
 	forecastsIter, err := k.forecasts.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate forecasts")
 	}
 	for ; forecastsIter.Valid(); forecastsIter.Next() {
 		keyValue, err := forecastsIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: forecastsIter")
 		}
 		value := keyValue.Value
 		topicIdActorIdForecast := types.TopicIdActorIdForecast{
@@ -1165,12 +1163,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	workers := make([]*types.LibP2PKeyAndOffchainNode, 0)
 	workersIter, err := k.workers.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate workers")
 	}
 	for ; workersIter.Valid(); workersIter.Next() {
 		keyValue, err := workersIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: workersIter")
 		}
 		value := keyValue.Value
 		libP2PKeyAndOffchainNode := types.LibP2PKeyAndOffchainNode{
@@ -1184,12 +1182,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	reputers := make([]*types.LibP2PKeyAndOffchainNode, 0)
 	reputersIter, err := k.reputers.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate reputers")
 	}
 	for ; reputersIter.Valid(); reputersIter.Next() {
 		keyValue, err := reputersIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: reputersIter")
 		}
 		libP2PKeyAndOffchainNode := types.LibP2PKeyAndOffchainNode{
 			LibP2PKey:    keyValue.Key,
@@ -1202,12 +1200,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	topicFeeRevenue := make([]*types.TopicIdAndInt, 0)
 	topicFeeRevenueIter, err := k.topicFeeRevenue.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate topic fee revenue")
 	}
 	for ; topicFeeRevenueIter.Valid(); topicFeeRevenueIter.Next() {
 		keyValue, err := topicFeeRevenueIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: topicFeeRevenueIter")
 		}
 		topicIdAndInt := types.TopicIdAndInt{
 			TopicId: keyValue.Key,
@@ -1220,12 +1218,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	previousTopicWeight := make([]*types.TopicIdAndDec, 0)
 	previousTopicWeightIter, err := k.previousTopicWeight.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate previous topic weight")
 	}
 	for ; previousTopicWeightIter.Valid(); previousTopicWeightIter.Next() {
 		keyValue, err := previousTopicWeightIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: previousTopicWeightIter")
 		}
 		topicIdAndDec := types.TopicIdAndDec{
 			TopicId: keyValue.Key,
@@ -1238,12 +1236,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	allInferences := make([]*types.TopicIdBlockHeightInferences, 0)
 	allInferencesIter, err := k.allInferences.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate all inferences")
 	}
 	for ; allInferencesIter.Valid(); allInferencesIter.Next() {
 		keyValue, err := allInferencesIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: allInferencesIter")
 		}
 		value := keyValue.Value
 		topicIdBlockHeightInferences := types.TopicIdBlockHeightInferences{
@@ -1258,12 +1256,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	allForecasts := make([]*types.TopicIdBlockHeightForecasts, 0)
 	allForecastsIter, err := k.allForecasts.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate all forecasts")
 	}
 	for ; allForecastsIter.Valid(); allForecastsIter.Next() {
 		keyValue, err := allForecastsIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: allForecastsIter")
 		}
 		value := keyValue.Value
 		topicIdBlockHeightForecasts := types.TopicIdBlockHeightForecasts{
@@ -1278,12 +1276,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	allLossBundles := make([]*types.TopicIdBlockHeightReputerValueBundles, 0)
 	allLossBundlesIter, err := k.allLossBundles.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate all loss bundles")
 	}
 	for ; allLossBundlesIter.Valid(); allLossBundlesIter.Next() {
 		keyValue, err := allLossBundlesIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: allLossBundlesIter")
 		}
 		value := keyValue.Value
 		topicIdBlockHeightValueBundles := types.TopicIdBlockHeightReputerValueBundles{
@@ -1298,12 +1296,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	networkLossBundles := make([]*types.TopicIdBlockHeightValueBundles, 0)
 	networkLossBundlesIter, err := k.networkLossBundles.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate network loss bundles")
 	}
 	for ; networkLossBundlesIter.Valid(); networkLossBundlesIter.Next() {
 		keyValue, err := networkLossBundlesIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: networkLossBundlesIter")
 		}
 		value := keyValue.Value
 		topicIdBlockHeightValueBundles := types.TopicIdBlockHeightValueBundles{
@@ -1317,19 +1315,19 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	// previousPercentageRewardToStakedReputers
 	previousPercentageRewardToStakedReputers, err := k.previousPercentageRewardToStakedReputers.Get(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get previous percentage reward to staked reputers")
 	}
 
 	// unfulfilledWorkerNonces
 	unfulfilledWorkerNonces := make([]*types.TopicIdAndNonces, 0)
 	unfulfilledWorkerNoncesIter, err := k.unfulfilledWorkerNonces.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate unfulfilled worker nonces")
 	}
 	for ; unfulfilledWorkerNoncesIter.Valid(); unfulfilledWorkerNoncesIter.Next() {
 		keyValue, err := unfulfilledWorkerNoncesIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: unfulfilledWorkerNoncesIter")
 		}
 		topicIdAndNonces := types.TopicIdAndNonces{
 			TopicId: keyValue.Key,
@@ -1342,12 +1340,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	unfulfilledReputerNonces := make([]*types.TopicIdAndReputerRequestNonces, 0)
 	unfulfilledReputerNoncesIter, err := k.unfulfilledReputerNonces.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate unfulfilled reputer nonces")
 	}
 	for ; unfulfilledReputerNoncesIter.Valid(); unfulfilledReputerNoncesIter.Next() {
 		keyValue, err := unfulfilledReputerNoncesIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: unfulfilledReputerNoncesIter")
 		}
 		value := keyValue.Value
 		topicIdAndReputerRequestNonces := types.TopicIdAndReputerRequestNonces{
@@ -1360,12 +1358,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	latestInfererNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
 	latestInfererNetworkRegretsIter, err := k.latestInfererNetworkRegrets.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate latest inferer network regrets")
 	}
 	for ; latestInfererNetworkRegretsIter.Valid(); latestInfererNetworkRegretsIter.Next() {
 		keyValue, err := latestInfererNetworkRegretsIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: latestInfererNetworkRegretsIter")
 		}
 		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
 			TopicId:          keyValue.Key.K1(),
@@ -1378,12 +1376,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	latestForecasterNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
 	latestForecasterNetworkRegretsIter, err := k.latestForecasterNetworkRegrets.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate latest forecaster network regrets")
 	}
 	for ; latestForecasterNetworkRegretsIter.Valid(); latestForecasterNetworkRegretsIter.Next() {
 		keyValue, err := latestForecasterNetworkRegretsIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: latestForecasterNetworkRegretsIter")
 		}
 		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
 			TopicId:          keyValue.Key.K1(),
@@ -1396,12 +1394,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	latestOneInForecasterNetworkRegrets := make([]*types.TopicIdActorIdActorIdTimeStampedValue, 0)
 	latestOneInForecasterNetworkRegretsIter, err := k.latestOneInForecasterNetworkRegrets.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate latest one in forecaster network regrets")
 	}
 	for ; latestOneInForecasterNetworkRegretsIter.Valid(); latestOneInForecasterNetworkRegretsIter.Next() {
 		keyValue, err := latestOneInForecasterNetworkRegretsIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: latestOneInForecasterNetworkRegretsIter")
 		}
 		topicIdActorIdActorIdTimeStampedValue := types.TopicIdActorIdActorIdTimeStampedValue{
 			TopicId:          keyValue.Key.K1(),
@@ -1415,12 +1413,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	latestOneInForecasterSelfNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
 	latestOneInForecasterSelfNetworkRegretsIter, err := k.latestOneInForecasterSelfNetworkRegrets.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate latest one in forecaster self network regrets")
 	}
 	for ; latestOneInForecasterSelfNetworkRegretsIter.Valid(); latestOneInForecasterSelfNetworkRegretsIter.Next() {
 		keyValue, err := latestOneInForecasterSelfNetworkRegretsIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: latestOneInForecasterSelfNetworkRegretsIter")
 		}
 		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
 			TopicId:          keyValue.Key.K1(),
@@ -1433,12 +1431,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	coreTeamAddresses := make([]string, 0)
 	coreTeamAddressesIter, err := k.whitelistAdmins.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate core team addresses")
 	}
 	for ; coreTeamAddressesIter.Valid(); coreTeamAddressesIter.Next() {
 		key, err := coreTeamAddressesIter.Key()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key: coreTeamAddressesIter")
 		}
 		coreTeamAddresses = append(coreTeamAddresses, key)
 	}
@@ -1446,12 +1444,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	topicLastWorkerCommit := make([]*types.TopicIdTimestampedActorNonce, 0)
 	topicLastWorkerCommitIter, err := k.topicLastWorkerCommit.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate topic last worker commit")
 	}
 	for ; topicLastWorkerCommitIter.Valid(); topicLastWorkerCommitIter.Next() {
 		keyValue, err := topicLastWorkerCommitIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: topicLastWorkerCommitIter")
 		}
 		topicIdTimestampedActorNonce := types.TopicIdTimestampedActorNonce{
 			TopicId:               keyValue.Key,
@@ -1463,12 +1461,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	topicLastReputerCommit := make([]*types.TopicIdTimestampedActorNonce, 0)
 	topicLastReputerCommitIter, err := k.topicLastReputerCommit.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate topic last reputer commit")
 	}
 	for ; topicLastReputerCommitIter.Valid(); topicLastReputerCommitIter.Next() {
 		keyValue, err := topicLastReputerCommitIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: topicLastReputerCommitIter")
 		}
 		topicIdTimestampedActorNonce := types.TopicIdTimestampedActorNonce{
 			TopicId:               keyValue.Key,
@@ -1480,12 +1478,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	topicLastWorkerPayload := make([]*types.TopicIdTimestampedActorNonce, 0)
 	topicLastWorkerPayloadIter, err := k.topicLastWorkerPayload.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate topic last worker payload")
 	}
 	for ; topicLastWorkerPayloadIter.Valid(); topicLastWorkerPayloadIter.Next() {
 		keyValue, err := topicLastWorkerPayloadIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: topicLastWorkerPayloadIter")
 		}
 		topicIdTimestampedActorNonce := types.TopicIdTimestampedActorNonce{
 			TopicId:               keyValue.Key,
@@ -1497,12 +1495,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	topicLastReputerPayload := make([]*types.TopicIdTimestampedActorNonce, 0)
 	topicLastReputerPayloadIter, err := k.topicLastReputerPayload.Iterate(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to iterate topic last reputer payload")
 	}
 	for ; topicLastReputerPayloadIter.Valid(); topicLastReputerPayloadIter.Next() {
 		keyValue, err := topicLastReputerPayloadIter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get key value: topicLastReputerPayloadIter")
 		}
 		topicIdTimestampedActorNonce := types.TopicIdTimestampedActorNonce{
 			TopicId:               keyValue.Key,
