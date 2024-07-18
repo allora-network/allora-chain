@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 
-NETWORK="${NETWORK:-testnet-1}"                 #! Replace with your network name
+NETWORK="${NETWORK:-allora-testnet-1}"                 #! Replace with your network name
 GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
 SEEDS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/seeds.txt"
 PEERS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/peers.txt"
@@ -59,8 +59,7 @@ if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
     TRUST_HEIGHT=$(($(curl -s $STATE_SYNC_RPC1/block | jq -r '.result.block.header.height')))
 
     #* Snapshots are taken every 1000 blocks so we need to round down to the nearest 1000
-    # TRUST_HEIGHT=$(($TRUST_HEIGHT - ($TRUST_HEIGHT % 1000)))
-    TRUST_HEIGHT=$(($TRUST_HEIGHT - 3000))
+    TRUST_HEIGHT=$(($TRUST_HEIGHT - ($TRUST_HEIGHT % 1000)))
 
     curl -s "$STATE_SYNC_RPC1/block?height=$TRUST_HEIGHT"
 
@@ -69,10 +68,9 @@ if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
     echo "Trust height: $TRUST_HEIGHT $TRUST_HEIGHT_HASH"
 
     dasel put statesync.enable -t bool -v true -f ${APP_HOME}/config/config.toml
-    dasel put statesync.rpc_servers -t string -v "$STATE_SYNC_RPC1,$STATE_SYNC_RPC1" -f ${APP_HOME}/config/config.toml
+    dasel put statesync.rpc_servers -t string -v "$STATE_SYNC_RPC1,$STATE_SYNC_RPC2" -f ${APP_HOME}/config/config.toml
     dasel put statesync.trust_height -t string -v $TRUST_HEIGHT -f ${APP_HOME}/config/config.toml
     dasel put statesync.trust_hash -t string -v $TRUST_HEIGHT_HASH -f ${APP_HOME}/config/config.toml
-    # dasel put -t string -v '336h' 'statesync.trust_period' -f ${APP_HOME}/config/config.toml
 fi
 
 echo "Starting validator node"

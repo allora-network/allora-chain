@@ -8,8 +8,8 @@ services:
       - NETWORK=allora-testnet-1
       - MONIKER=sample_validator
       - APP_HOME=./data
-      - STATE_SYNC_RPC1=https://sentry-0-rpc.testnet-1.testnet.allora.network:443
-      - STATE_SYNC_RPC2=https://sentry-2-rpc.testnet-1.testnet.allora.network:443
+      # - STATE_SYNC_RPC1=https://allora-rpc.testnet-1.testnet.allora.network:443
+      # - STATE_SYNC_RPC2=https://allora-rpc.testnet-1.testnet.allora.network:443
     volumes:
       - ./data:/data
       - ./scripts/:/scripts
