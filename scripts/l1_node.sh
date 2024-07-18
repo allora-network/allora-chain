@@ -5,6 +5,7 @@ NETWORK="${NETWORK:-allora-testnet-1}"                 #! Replace with your netw
 GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
 SEEDS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/seeds.txt"
 PEERS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/peers.txt"
+HEADS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/heads.txt"
 
 export APP_HOME="${APP_HOME:-./data}"
 INIT_FLAG="${APP_HOME}/.initialized"
@@ -72,6 +73,8 @@ if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
     dasel put statesync.trust_height -t string -v $TRUST_HEIGHT -f ${APP_HOME}/config/config.toml
     dasel put statesync.trust_hash -t string -v $TRUST_HEIGHT_HASH -f ${APP_HOME}/config/config.toml
 fi
+
+export BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-$(curl -Ls ${HEADS_URL})}"
 
 echo "Starting validator node"
 allorad \
