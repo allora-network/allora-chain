@@ -95,52 +95,52 @@ message GenesisState {
   // key set of (delegator, reputer, topicId, blockHeight) to existence of a removal in the forwards map
   repeated DelegatorReputerTopicIdBlockHeight delegateStakeRemovalsByActor = 31;
 
-	/// MISC GLOBAL STATE
-	// map of (topic, worker) -> inference
+  /// MISC GLOBAL STATE
+  // map of (topic, worker) -> inference
   repeated TopicIdActorIdInference inferences = 32;
-	// map of (topic, worker) -> forecast[]
+  // map of (topic, worker) -> forecast[]
   repeated TopicIdActorIdForecast forecasts = 33;
-	// map of worker id to node data about that worker
+  // map of worker id to node data about that worker
   repeated LibP2pKeyAndOffchainNode workers = 34;
-	// map of reputer id to node data about that reputer
+  // map of reputer id to node data about that reputer
   repeated LibP2pKeyAndOffchainNode reputers = 35;
-	// fee revenue collected by a topic over the course of the last reward cadence
+  // fee revenue collected by a topic over the course of the last reward cadence
   repeated TopicIdAndInt topicFeeRevenue = 36;
-	// store previous weights for exponential moving average in rewards calc
+  // store previous weights for exponential moving average in rewards calc
   repeated TopicIdAndDec previousTopicWeight = 37;
-	// map of (topic, block_height) -> Inference
+  // map of (topic, block_height) -> Inference
   repeated TopicIdBlockHeightInferences allInferences = 38;
-	// map of (topic, block_height) -> Forecast
+  // map of (topic, block_height) -> Forecast
   repeated TopicIdBlockHeightForecasts allForecasts = 39;
-	// map of (topic, block_height) -> ReputerValueBundles (1 per reputer active at that time)
+  // map of (topic, block_height) -> ReputerValueBundles (1 per reputer active at that time)
   repeated TopicIdBlockHeightReputerValueBundles allLossBundles = 40;
-	// map of (topic, block_height) -> ValueBundle (1 network wide bundle per timestep)
+  // map of (topic, block_height) -> ValueBundle (1 network wide bundle per timestep)
   repeated TopicIdBlockHeightValueBundles networkLossBundles = 41;
-	// Percentage of all rewards, paid out to staked reputers, during the previous reward cadence. Used by mint module
+  // Percentage of all rewards, paid out to staked reputers, during the previous reward cadence. Used by mint module
   string previousPercentageRewardToStakedReputers = 42
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 
-	/// NONCES
-	// map of (topic) -> unfulfilled nonces
+  /// NONCES
+  // map of (topic) -> unfulfilled nonces
   repeated TopicIdAndNonces unfulfilledWorkerNonces = 43;
-	// map of (topic) -> unfulfilled nonces
+  // map of (topic) -> unfulfilled nonces
   repeated TopicIdAndReputerRequestNonces unfulfilledReputerNonces = 44;
 
-	/// REGRETS
-	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other inferers
+  /// REGRETS
+  // map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other inferers
   repeated TopicIdActorIdTimeStampedValue latestInfererNetworkRegrets = 45;
-	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other forecasters
+  // map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other forecasters
   repeated TopicIdActorIdTimeStampedValue latestForecasterNetworkRegrets = 46;
-	// map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
-	// all network inferer (3rd index) regrets L_ij made under the regime of the one-in forecaster (2nd index)
+  // map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
+  // all network inferer (3rd index) regrets L_ij made under the regime of the one-in forecaster (2nd index)
   repeated TopicIdActorIdActorIdTimeStampedValue latestOneInForecasterNetworkRegrets = 47;
-	// the forecaster (2nd index) regrets made under the regime of the same forecaster as a one-in forecaster
+  // the forecaster (2nd index) regrets made under the regime of the same forecaster as a one-in forecaster
   repeated TopicIdActorIdTimeStampedValue latestOneInForecasterSelfNetworkRegrets = 48;
 
-	/// WHITELISTS
+  /// WHITELISTS
   repeated string core_team_addresses = 2;
 
-	/// RECORD COMMITS
+  /// RECORD COMMITS
   repeated TopicIdTimestampedActorNonce topicLastWorkerCommit = 49;
   repeated TopicIdTimestampedActorNonce topicLastReputerCommit = 50;
   repeated TopicIdTimestampedActorNonce topicLastWorkerPayload = 51;
