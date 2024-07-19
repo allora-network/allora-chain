@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"sync"
 
 	"cosmossdk.io/log"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -48,7 +47,12 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, infer
 	return previousBlockApproxTime, nil
 }
 
-func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstypes.Topic) {
+func (th *TopicsHandler) requestTopicWorkers(
+	ctx sdk.Context,
+	blockHeight int64,
+	maxRetriesToFulfilNoncesWorker int64,
+	topic emissionstypes.Topic,
+) {
 	Logger(ctx).Debug(fmt.Sprintf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
 		topic.Id, topic.Metadata, topic.DefaultArg))
 
@@ -59,15 +63,8 @@ func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstyp
 	}
 	// Filter workerNonces to only include those that are within the epoch length
 	// This is to avoid requesting inferences for epochs that have already ended
-	workerNonces = synth.FilterNoncesWithinEpochLength(workerNonces, ctx.BlockHeight(), topic.EpochLength)
+	workerNonces = synth.FilterNoncesWithinEpochLength(workerNonces, blockHeight, topic.EpochLength)
 
-	maxRetriesToFulfilNoncesWorker := emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesWorker
-	emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
-	if err != nil {
-		Logger(ctx).Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
-	} else {
-		maxRetriesToFulfilNoncesWorker = emissionsParams.MaxRetriesToFulfilNoncesWorker
-	}
 	sortedWorkerNonces := synth.SelectTopNWorkerNonces(workerNonces, int(maxRetriesToFulfilNoncesWorker))
 	Logger(ctx).Debug(fmt.Sprintf("Iterating Top N Worker Nonces: %d", len(sortedWorkerNonces)))
 	// iterate over all the worker nonces to find if this is unfulfilled
@@ -78,8 +75,12 @@ func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstyp
 	}
 }
 
-func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionstypes.Topic) {
-	currentBlockHeight := ctx.BlockHeight()
+func (th *TopicsHandler) requestTopicReputers(
+	ctx sdk.Context,
+	currentBlockHeight int64,
+	maxRetriesToFulfilNoncesReputer int64,
+	topic emissionstypes.Topic,
+) {
 	Logger(ctx).Debug(fmt.Sprintf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
 		topic.Id, topic.Metadata, topic.DefaultArg))
 	reputerNonces, err := th.emissionsKeeper.GetUnfulfilledReputerNonces(ctx, topic.Id)
@@ -92,13 +93,6 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		return
 	}
 	// No filtering - reputation of previous rounds can still be retried if work has been done.
-	maxRetriesToFulfilNoncesReputer := emissionstypes.DefaultParams().MaxRetriesToFulfilNoncesReputer
-	emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
-	if err != nil {
-		Logger(ctx).Warn(fmt.Sprintf("Error getting max num of retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
-	} else {
-		maxRetriesToFulfilNoncesReputer = emissionsParams.MaxRetriesToFulfilNoncesReputer
-	}
 	topNReputerNonces := synth.SelectTopNReputerNonces(&reputerNonces, int(maxRetriesToFulfilNoncesReputer), currentBlockHeight, topic.GroundTruthLag)
 	if len(topNReputerNonces) == 0 {
 		Logger(ctx).Debug("No eligible reputer nonces found: ", topic.Id)
@@ -161,24 +155,24 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 			Logger(ctx).Error("Error getting max number of topics per block: " + err.Error())
 			return nil, err
 		}
+		emissionsParams, err := th.emissionsKeeper.GetParams(ctx)
+		if err != nil {
+			Logger(ctx).Error("Error getting emissions params: " + err.Error())
+			return nil, err
+		}
+		blockHeight := ctx.BlockHeight()
 
-		var wg sync.WaitGroup
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
 		for _, churnableTopicId := range churnableTopics {
-			wg.Add(1)
-			go func(topicId TopicId) {
-				defer wg.Done()
-				topic, err := th.emissionsKeeper.GetTopic(ctx, topicId)
-				if err != nil {
-					Logger(ctx).Error("Error getting topic: " + err.Error())
-					return
-				}
-				th.requestTopicWorkers(ctx, topic)
-				th.requestTopicReputers(ctx, topic)
-			}(churnableTopicId)
+			topic, err := th.emissionsKeeper.GetTopic(ctx, churnableTopicId)
+			if err != nil {
+				Logger(ctx).Error("Error getting topic: " + err.Error())
+				continue
+			}
+			th.requestTopicWorkers(ctx, blockHeight, emissionsParams.MaxRetriesToFulfilNoncesWorker, topic)
+			th.requestTopicReputers(ctx, blockHeight, emissionsParams.MaxRetriesToFulfilNoncesReputer, topic)
 		}
-		wg.Wait()
 		// Return the transactions as they came
 		return &abci.ResponsePrepareProposal{Txs: req.Txs}, nil
 	}
