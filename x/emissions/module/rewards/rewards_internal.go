@@ -48,7 +48,7 @@ func GetScoreFractions(
 }
 
 // Mapping function used by score fraction calculation
-// M(T) = φ_p[ T / σ(T) ]
+// M(T) = φ_p (abs[ T / σ(T) + ɛ])
 // phi is the phi function
 // sigma is NOT the sigma function but rather represents standard deviation
 func GetMappingFunctionValues(
@@ -56,41 +56,37 @@ func GetMappingFunctionValues(
 	latestTimeStepsScores []alloraMath.Dec, // σ(T) - scores for stdDev (from multiple workers/time steps)
 	pReward alloraMath.Dec, // p
 	cReward alloraMath.Dec, // c
-	epsilon alloraMath.Dec,
+	epsilon alloraMath.Dec, // ɛ
 ) ([]alloraMath.Dec, error) {
-	stdDevPlusMedianTimesEpsilon := alloraMath.OneDec()
-	if len(latestTimeStepsScores) > 0 {
-		stdDev, err := alloraMath.StdDev(latestTimeStepsScores)
+	stdDev := alloraMath.ZeroDec()
+
+	var err error
+	if len(latestTimeStepsScores) > 1 {
+		stdDev, err = alloraMath.StdDev(latestTimeStepsScores)
 		if err != nil {
 			return nil, errors.Wrapf(err, "err getting stdDev")
 		}
-		median, err := alloraMath.Median(latestTimeStepsScores)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting median")
-		}
-		medianTimesEpsilon, err := median.Mul(epsilon)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting medianTimesEpsilon")
-		}
-		stdDevPlusMedianTimesEpsilon, err = stdDev.Add(medianTimesEpsilon)
-		if err != nil {
-			return nil, errors.Wrapf(err, "err getting stdDevPlusMedianTimesEpsilon")
-		}
+		stdDev = stdDev.Abs()
 	}
+
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
 	for i, score := range latestWorkerScores {
-		if stdDevPlusMedianTimesEpsilon.IsZero() || stdDevPlusMedianTimesEpsilon.Lt(epsilon) {
-			// if standard deviation is zero
-			// then all scores are the same and losses are the same
+		if stdDev.Lt(epsilon) {
+			// if standard deviation is smaller than epsilon, or zero,
+			// then all scores are the very close to the same and losses are the same
 			// therefore everyone should be paid the same, so we
 			// return the plain value 1 for everybody
 			ret[i] = alloraMath.OneDec()
 		} else {
-			frac, err := score.Quo(stdDevPlusMedianTimesEpsilon)
+			stdDevPlusEpsilon, err := stdDev.Add(epsilon)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrapf(err, "err adding epsilon to stdDev")
 			}
-			ret[i], err = alloraMath.Phi(pReward, cReward, frac)
+			scoreDividedByStdDevPlusEpsilon, err := score.Quo(stdDevPlusEpsilon)
+			if err != nil {
+				return nil, errors.Wrapf(err, "err dividing score by stdDevPlusEpsilon")
+			}
+			ret[i], err = alloraMath.Phi(pReward, cReward, scoreDividedByStdDevPlusEpsilon)
 			if err != nil {
 				return nil, errors.Wrapf(err, "err calculating phi")
 			}
@@ -310,7 +306,7 @@ func GetConsensusScore(
 	reputerLosses,
 	consensusLosses,
 	mostDistantValues []alloraMath.Dec,
-	tolerance alloraMath.Dec,
+	epsilonReputer alloraMath.Dec,
 	epsilon alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	if len(reputerLosses) != len(consensusLosses) {
@@ -368,11 +364,11 @@ func GetConsensusScore(
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
-	distanceOverConsensusNormPlusFTolerance, err := distanceOverConsensusNorm.Add(tolerance)
+	distanceOverConsensusNormPlusEpsilonReputer, err := distanceOverConsensusNorm.Add(epsilonReputer)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
-	score, err := alloraMath.OneDec().Quo(distanceOverConsensusNormPlusFTolerance)
+	score, err := alloraMath.OneDec().Quo(distanceOverConsensusNormPlusEpsilonReputer)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
@@ -389,7 +385,7 @@ func GetAllConsensusScores(
 	stakes []alloraMath.Dec,
 	allListeningCoefficients []alloraMath.Dec,
 	numReputers int64,
-	tolerance alloraMath.Dec,
+	epsilonReputer alloraMath.Dec,
 	epsilon alloraMath.Dec,
 ) ([]alloraMath.Dec, error) {
 	// Get adjusted stakes
@@ -418,7 +414,7 @@ func GetAllConsensusScores(
 	scores := make([]alloraMath.Dec, numReputers)
 	for i := int64(0); i < numReputers; i++ {
 		losses := allLosses[i]
-		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues, tolerance, epsilon)
+		scores[i], err = GetConsensusScore(losses, consensus, mostDistantValues, epsilonReputer, epsilon)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error in GetConsensusScore")
 		}
@@ -440,7 +436,7 @@ func GetAllReputersOutput(
 	numReputers int64,
 	learningRate alloraMath.Dec,
 	gradientDescentMaxIters uint64,
-	tolerance alloraMath.Dec,
+	epsilonReputer alloraMath.Dec,
 	epsilon alloraMath.Dec,
 	minStakeFraction alloraMath.Dec,
 	maxGradientThreshold alloraMath.Dec,
@@ -466,7 +462,7 @@ func GetAllReputersOutput(
 			coeffs := make([]alloraMath.Dec, len(coefficients))
 			copy(coeffs, coefficients)
 
-			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, tolerance, epsilon)
+			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, epsilonReputer, epsilon)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
@@ -477,7 +473,7 @@ func GetAllReputersOutput(
 				return nil, nil, err
 			}
 
-			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, tolerance, epsilon)
+			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, epsilonReputer, epsilon)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}

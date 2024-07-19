@@ -31,8 +31,8 @@ func (msg *MsgCreateNewTopic) Validate() error {
 	if msg.EpochLength <= 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epoch length must be greater than zero")
 	}
-	if msg.GroundTruthLag < 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag cannot be negative")
+	if msg.GroundTruthLag < msg.EpochLength {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag cannot be lower than epoch length")
 	}
 	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) || msg.AlphaRegret.Gt(alloraMath.OneDec()) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
@@ -40,8 +40,8 @@ func (msg *MsgCreateNewTopic) Validate() error {
 	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
 	}
-	if msg.Tolerance.Lte(alloraMath.ZeroDec()) || msg.Tolerance.Gt(alloraMath.MustNewDecFromString("0.01")) {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "tolerance must be greater than 0 and less than 0.01")
+	if msg.Epsilon.Lte(alloraMath.ZeroDec()) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
 
 	return nil

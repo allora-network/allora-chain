@@ -328,12 +328,13 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     epochLength,
+		GroundTruthLag:  epochLength,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		PNorm:           alloraMath.NewDecFromInt64(3),
-		Tolerance:       alloraMath.MustNewDecFromString("0.01"),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)

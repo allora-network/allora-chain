@@ -510,12 +510,13 @@ func CreateTopic(ctx context.Context, msgServer types.MsgServer, creator string)
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		PNorm:           alloraMath.NewDecFromInt64(3),
-		Tolerance:       alloraMath.MustNewDecFromString("0.01"),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	}
 	res, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	if err != nil {

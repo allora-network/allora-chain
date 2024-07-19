@@ -64,7 +64,7 @@ func (s *InferenceSynthesisTestSuite) TestComputeAndBuildEMRegret() {
 
 	blockHeight := int64(123)
 
-	result, err := inference_synthesis.ComputeAndBuildEMRegret(lossA, lossB, previous, alpha, blockHeight, false)
+	result, err := inference_synthesis.ComputeAndBuildEMRegret(lossA, lossB, previous, alpha, blockHeight)
 	require.NoError(err)
 
 	expected, err := alloraMath.NewDecFromString("210")
@@ -80,7 +80,10 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 
 	worker1 := "worker1"
 	worker2 := "worker2"
-	worker3 := "worker3"
+
+	pNorm := alloraMath.MustNewDecFromString("0.1")
+	cNorm := alloraMath.MustNewDecFromString("0.1")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
 
 	valueBundle := types.ValueBundle{
 		CombinedValue: alloraMath.MustNewDecFromString("500"),
@@ -124,6 +127,9 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 		valueBundle,
 		nonce,
 		alpha,
+		cNorm,
+		pNorm,
+		epsilon,
 	)
 	require.NoError(err)
 
@@ -131,47 +137,19 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	expected := alloraMath.MustNewDecFromString("210")
 	expectedOneIn := alloraMath.MustNewDecFromString("180")
 
-	worker3LastRegret, worker3NoPriorRegret, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker3)
-	require.NoError(err)
-	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
-	require.True(worker3NoPriorRegret)
-
-	worker3LastRegret, worker3NoPriorRegret, err = k.GetForecasterNetworkRegret(s.ctx, topicId, worker3)
-	require.NoError(err)
-	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
-	require.True(worker3NoPriorRegret)
-
-	worker3LastRegret, worker3NoPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker1)
-	require.NoError(err)
-	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
-	require.True(worker3NoPriorRegret)
-
-	worker3LastRegret, worker3NoPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker2)
-	require.NoError(err)
-	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
-	require.True(worker3NoPriorRegret)
-
-	worker3LastRegret, worker3NoPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker3)
-	require.NoError(err)
-	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
-	require.True(worker3NoPriorRegret)
-
 	for _, acc := range bothAccs {
-		lastRegret, noPriorRegret, err := k.GetInfererNetworkRegret(s.ctx, topicId, acc)
+		lastRegret, _, err := k.GetInfererNetworkRegret(s.ctx, topicId, acc)
 		require.NoError(err)
 		require.True(alloraMath.InDelta(expected, lastRegret.Value, alloraMath.MustNewDecFromString("0.0001")))
-		require.False(noPriorRegret)
 
-		lastRegret, noPriorRegret, err = k.GetForecasterNetworkRegret(s.ctx, topicId, acc)
+		lastRegret, _, err = k.GetForecasterNetworkRegret(s.ctx, topicId, acc)
 		require.NoError(err)
 		require.True(alloraMath.InDelta(expected, lastRegret.Value, alloraMath.MustNewDecFromString("0.0001")))
-		require.False(noPriorRegret)
 
 		for _, accInner := range bothAccs {
-			lastRegret, noPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, acc, accInner)
+			lastRegret, _, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, acc, accInner)
 			require.NoError(err)
 			require.True(alloraMath.InDelta(expectedOneIn, lastRegret.Value, alloraMath.MustNewDecFromString("0.0001")))
-			require.False(noPriorRegret)
 		}
 	}
 }
@@ -183,6 +161,10 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	worker1 := "worker1"
 	worker2 := "worker2"
 	worker3 := "worker3"
+
+	pNorm := alloraMath.MustNewDecFromString("0.1")
+	cNorm := alloraMath.MustNewDecFromString("0.1")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
 
 	valueBundle := types.ValueBundle{
 		CombinedValue: alloraMath.MustNewDecFromString("500"),
@@ -240,6 +222,9 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 		valueBundle,
 		nonce,
 		alpha,
+		cNorm,
+		pNorm,
+		epsilon,
 	)
 	require.NoError(err)
 
@@ -248,19 +233,16 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	// expectedOneIn := alloraMath.MustNewDecFromString("180")
 
 	for _, workerAcc := range allWorkerAccs {
-		lastRegret, noPriorRegret, err := k.GetInfererNetworkRegret(s.ctx, topicId, workerAcc)
+		lastRegret, _, err := k.GetInfererNetworkRegret(s.ctx, topicId, workerAcc)
 		require.NoError(err)
 		require.True(alloraMath.InDelta(expected, lastRegret.Value, alloraMath.MustNewDecFromString("0.0001")))
-		require.False(noPriorRegret)
 
-		lastRegret, noPriorRegret, err = k.GetForecasterNetworkRegret(s.ctx, topicId, workerAcc)
+		lastRegret, _, err = k.GetForecasterNetworkRegret(s.ctx, topicId, workerAcc)
 		require.NoError(err)
-		require.False(noPriorRegret)
 
 		for _, innerWorkerAcc := range allWorkerAccs {
-			lastRegret, noPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, workerAcc, innerWorkerAcc)
+			lastRegret, _, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, workerAcc, innerWorkerAcc)
 			require.NoError(err)
-			require.False(noPriorRegret)
 		}
 	}
 }
@@ -275,6 +257,9 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	blockHeight := int64(1003)
 	nonce := types.Nonce{BlockHeight: blockHeight}
 	alpha := alloraMath.MustNewDecFromString("0.1")
+	pNorm := alloraMath.MustNewDecFromString("0.1")
+	cNorm := alloraMath.MustNewDecFromString("0.1")
+	epsilon := alloraMath.MustNewDecFromString("0.0001")
 
 	worker0 := "worker0"
 	worker1 := "worker1"
@@ -356,29 +341,26 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 		networkLossesValueBundle0,
 		nonce,
 		alpha,
+		cNorm,
+		pNorm,
+		epsilon,
 	)
 	require.NoError(err)
 
 	// Record resulting regrets
 
-	infererRegret0_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker0)
-	require.False(notFound)
+	infererRegret0_0, _, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker0)
 	require.NoError(err)
-	infererRegret0_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker1)
-	require.False(notFound)
+	infererRegret0_1, _, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker1)
 	require.NoError(err)
-	infererRegret0_2, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker2)
-	require.False(notFound)
+	infererRegret0_2, _, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker2)
 	require.NoError(err)
 
-	forecasterRegret0_0, notFound, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker0)
-	require.False(notFound)
+	forecasterRegret0_0, _, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker0)
 	require.NoError(err)
-	forecasterRegret0_1, notFound, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker1)
-	require.False(notFound)
+	forecasterRegret0_1, _, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker1)
 	require.NoError(err)
-	forecasterRegret0_2, notFound, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker2)
-	require.False(notFound)
+	forecasterRegret0_2, _, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker2)
 	require.NoError(err)
 
 	// Test 1
@@ -392,29 +374,26 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 		networkLossesValueBundle1,
 		nonce,
 		alpha,
+		cNorm,
+		pNorm,
+		epsilon,
 	)
 	require.NoError(err)
 
 	// Record resulting regrets
 
-	infererRegret1_0, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker0)
-	require.False(notFound)
+	infererRegret1_0, _, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker0)
 	require.NoError(err)
-	infererRegret1_1, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker1)
-	require.False(notFound)
+	infererRegret1_1, _, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker1)
 	require.NoError(err)
-	infererRegret1_2, notFound, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker2)
-	require.False(notFound)
+	infererRegret1_2, _, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker2)
 	require.NoError(err)
 
-	forecasterRegret1_0, notFound, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker0)
-	require.False(notFound)
+	forecasterRegret1_0, _, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker0)
 	require.NoError(err)
-	forecasterRegret1_1, notFound, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker1)
-	require.False(notFound)
+	forecasterRegret1_1, _, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker1)
 	require.NoError(err)
-	forecasterRegret1_2, notFound, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker2)
-	require.False(notFound)
+	forecasterRegret1_2, _, err := k.GetForecasterNetworkRegret(s.ctx, topicId, worker2)
 	require.NoError(err)
 
 	// Test

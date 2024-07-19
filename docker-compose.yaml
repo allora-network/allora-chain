@@ -3,9 +3,9 @@ services:
   sample_validator:
     container_name: sample_validator
     # build: .
-    image: "alloranetwork/allora-chain:v0.2.7"
+    image: "alloranetwork/allora-chain:v0.2.14"
     environment:
-      - NETWORK=edgenet
+      - NETWORK=allora-testnet-1
       - MONIKER=sample_validator
       - APP_HOME=./data
     volumes:

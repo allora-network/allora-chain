@@ -2,6 +2,7 @@ package msgserver_test
 
 import (
 	"errors"
+	"fmt"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -30,12 +31,13 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 		LossLogic:       "logic",
 		LossMethod:      "method",
 		EpochLength:     10800,
+		GroundTruthLag:  10800,
 		InferenceLogic:  "Ilogic",
 		InferenceMethod: "Imethod",
 		DefaultArg:      "ETH",
 		AlphaRegret:     alloraMath.NewDecFromInt64(1),
 		PNorm:           alloraMath.NewDecFromInt64(3),
-		Tolerance:       alloraMath.MustNewDecFromString("0.01"),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	reputerInitialBalance := types.DefaultParams().CreateTopicFee.Add(cosmosMath.Int(reputerInitialBalanceUint))
@@ -1490,7 +1492,15 @@ func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 	delegatorReward0 := delegatorBal1.Amount.Sub(delegatorBal0.Amount)
 	reputerReward := reputerRewards[0].Reward.SdkIntTrim()
 
-	s.Require().Equal(delegatorReward0, reputerReward, "Delegator and reputer rewards must be equal")
+	// in the case where the rewards is an odd number e.g.
+	// 9 / 2 = 4.5
+	// the delegator gets the number rounded down, e.g. 4
+	// and the reputer gets the number rounded up, e.g. 5
+	condition := delegatorReward0.Equal(reputerReward) || delegatorReward0.AddRaw(1).Equal(reputerReward)
+	s.Require().True(condition,
+		fmt.Sprintf("Delegator and reputer rewards must be equal: %s | %s",
+			delegatorReward0.String(), reputerReward.String()),
+	)
 
 	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg)
 	s.Require().NoError(err)
@@ -1678,10 +1688,20 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	delegatorReward2 := delegatorBal3.Amount.Sub(delegatorBal2.Amount)
 	largeDelegatorReward2 := largeDelegatorBal3.Amount.Sub(largeDelegatorBal2.Amount)
 
-	s.Require().Equal(delegatorReward0, reputerReward0, "Delegator and reputer rewards must be equal in all rounds")
-	s.Require().Equal(delegatorReward1, reputerReward1, "Delegator and reputer rewards must be equal in all rounds")
+	condition := delegatorReward0.Equal(reputerReward0) || delegatorReward0.AddRaw(1).Equal(reputerReward0)
+	s.Require().True(condition,
+		fmt.Sprintf("Delegator and reputer rewards must be equal (or reputer = delegator + 1) in all rounds: %s | %s",
+			delegatorReward0.String(), reputerReward0.String()),
+	)
+	condition = delegatorReward1.Equal(reputerReward1) || delegatorReward1.AddRaw(1).Equal(reputerReward1)
+	s.Require().True(condition, fmt.Sprintf("Delegator and reputer rewards must be equal in all rounds %s | %s",
+		delegatorReward1.String(), reputerReward1.String()),
+	)
 	s.Require().Equal(reputerReward0, reputerReward1, "Delegator and reputer rewards must be equal from the first to the second round")
-	s.Require().Equal(delegatorReward2, reputerReward2, "Delegator and reputer rewards must be equal in all rounds")
+	condition = delegatorReward2.Equal(reputerReward2) || delegatorReward2.AddRaw(1).Equal(reputerReward2)
+	s.Require().True(condition, fmt.Sprintf("Delegator and reputer rewards must be equal in all rounds %s | %s",
+		delegatorReward2.String(), reputerReward2.String()),
+	)
 
 	normalizedLargeDelegatorReward, err := alloraMath.NewDecFromInt64(largeDelegatorReward2.Int64()).Quo(alloraMath.NewDecFromInt64(largeDelegatorRatio.Int64()))
 	s.Require().NoError(err)

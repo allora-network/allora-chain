@@ -1,6 +1,8 @@
 package integration_test
 
 import (
+	"context"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -8,11 +10,12 @@ import (
 )
 
 func checkIfAdmin(m testCommon.TestConfig, address string) bool {
+	ctx := context.Background()
 	paramsReq := &emissionstypes.QueryIsWhitelistAdminRequest{
 		Address: address,
 	}
 	p, err := m.Client.QueryEmissions().IsWhitelistAdmin(
-		m.Ctx,
+		ctx,
 		paramsReq,
 	)
 	require.NoError(m.T, err)
@@ -22,29 +25,30 @@ func checkIfAdmin(m testCommon.TestConfig, address string) bool {
 
 // Test that whitelisted admin can successfully update params and others cannot
 func UpdateParamsChecks(m testCommon.TestConfig) {
+	ctx := context.Background()
 	// Ensure Alice is in the whitelist and Bob is not
 	require.True(m.T, checkIfAdmin(m, m.AliceAddr))
 	require.False(m.T, checkIfAdmin(m, m.BobAddr))
 
 	// Keep old params to revert back to
 	oldParams := GetEmissionsParams(m)
-	oldEpsilon := oldParams.Epsilon
+	oldEpsilonReputer := oldParams.EpsilonReputer
 
 	// Should succeed for Alice because she's a whitelist admin
-	newEpsilon := alloraMath.NewDecFinite(1, 99)
-	input := []alloraMath.Dec{newEpsilon}
+	newEpsilonReputer := alloraMath.NewDecFinite(1, 99)
+	input := []alloraMath.Dec{newEpsilonReputer}
 	updateParamRequest := &emissionstypes.MsgUpdateParams{
 		Sender: m.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
-			Epsilon: input,
+			EpsilonReputer: input,
 			// These are set for subsequent tests
 			MaxTopReputersToReward: []uint64{24},
 			MinEpochLength:         []int64{1},
 		},
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, updateParamRequest)
+	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, updateParamRequest)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
 	// Should fail for Bob because he's not a whitelist admin
@@ -52,28 +56,28 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 	updateParamRequest = &emissionstypes.MsgUpdateParams{
 		Sender: m.BobAddr,
 		Params: &emissionstypes.OptionalParams{
-			Epsilon: input,
+			EpsilonReputer: input,
 		},
 	}
-	_, err = m.Client.BroadcastTx(m.Ctx, m.BobAcc, updateParamRequest)
+	_, err = m.Client.BroadcastTx(ctx, m.BobAcc, updateParamRequest)
 	require.Error(m.T, err)
 	// Check that error is due to Bob not being a whitelist admin
 	require.Contains(m.T, err.Error(), "not whitelist admin")
 
 	// Check that the epsilon was updated by Alice successfully
 	updatedParams := GetEmissionsParams(m)
-	require.Equal(m.T, updatedParams.Epsilon.String(), newEpsilon.String())
+	require.Equal(m.T, updatedParams.EpsilonReputer.String(), newEpsilonReputer.String())
 
-	// Set the epsilon back to the original value
-	input = []alloraMath.Dec{oldEpsilon}
+	// Set the epsilon reputer back to the original value
+	input = []alloraMath.Dec{oldEpsilonReputer}
 	updateParamRequest = &emissionstypes.MsgUpdateParams{
 		Sender: m.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
-			Epsilon: input,
+			EpsilonReputer: input,
 		},
 	}
-	txResp, err = m.Client.BroadcastTx(m.Ctx, m.AliceAcc, updateParamRequest)
+	txResp, err = m.Client.BroadcastTx(ctx, m.AliceAcc, updateParamRequest)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 }

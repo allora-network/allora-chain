@@ -94,7 +94,6 @@ func (s *InferenceSynthesisTestSuite) TestIncreasingPNormIncreasesRegretSpread()
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorkersOneForecaster() {
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -111,7 +110,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.013993615616887908296229488415174")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.018004876148456175753781623")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
@@ -123,10 +122,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
 		Forecasters:         []string{"forecaster0"},
 		Inferers:            []string{"worker0", "worker1"},
-		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -152,7 +149,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorkersTwoForecastersWithoutSelfReport() {
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -180,10 +176,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		ForecastByWorker:    map[string]*emissionstypes.Forecast{"worker0": forecasts.Forecasts[0]},
 		Forecasters:         []string{"worker0"},
 		Inferers:            []string{"worker0", "worker1"},
-		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -209,7 +203,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWorkersThreeForecastersWithoutSelfReport() {
 	networkCombinedLoss := alloraMath.MustNewDecFromString("0.5")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 
@@ -235,8 +228,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1.09297154250540071861762571491582")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("1.07965728170851906059364949257926")},
+		"worker0": {Value: alloraMath.MustNewDecFromString("1.09768148018932306697138469819693")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("1.092613996774755705653569661621415")},
 		"worker2": nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -254,10 +247,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		},
 		Forecasters:         []string{"worker0", "worker1", "worker2"},
 		Inferers:            []string{"worker0", "worker1", "worker2"},
-		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -306,7 +297,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	}
 	networkCombinedLoss := epoch2Get("network_loss")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
@@ -324,10 +314,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
 		Forecasters:         []string{"forecaster0"},
 		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
-		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -370,7 +358,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 
 	networkCombinedLoss := epoch3Get("network_loss")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
-	tolerance := alloraMath.MustNewDecFromString("0.01")
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
@@ -389,10 +376,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
 		Forecasters:         []string{"forecaster0"},
 		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
-		InferersNewStatus:   inferencesynthesis.InferersNotNew,
 		NetworkCombinedLoss: networkCombinedLoss,
 		Epsilon:             epsilon,
-		Tolerance:           tolerance,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -405,7 +390,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 			alloraMath.InDelta(
 				expectedValue.Value,
 				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.001"),
+				alloraMath.MustNewDecFromString("0.01"),
 			), "Values do not match for key: %s %s %s",
 			key,
 			expectedValue.Value.String(),

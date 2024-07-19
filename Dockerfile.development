@@ -51,7 +51,7 @@ RUN apt update && \
     rm -rf /var/cache/apt/*
 
 #* Install dasel to work with json/yaml/toml configs
-ENV DASEL_VERSION="v2.7.0"
+ENV DASEL_VERSION="v2.8.1"
 ADD https://github.com/TomWright/dasel/releases/download/${DASEL_VERSION}/dasel_linux_amd64 /usr/local/bin/dasel
 RUN chmod a+x /usr/local/bin/dasel
 

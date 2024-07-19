@@ -1,6 +1,8 @@
 package integration_test
 
 import (
+	"context"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -9,8 +11,9 @@ import (
 
 // test that we can create topics and that the resultant topics are what we asked for
 func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
+	ctx := context.Background()
 	topicIdStart, err := m.Client.QueryEmissions().GetNextTopicId(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryNextTopicIdRequest{},
 	)
 	require.NoError(m.T, err)
@@ -29,11 +32,11 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		PNorm:           alloraMath.NewDecFromInt64(3),
 		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:   true,
-		Tolerance:       alloraMath.MustNewDecFromString("0.01"),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, m.AliceAcc, createTopicRequest)
+	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
 	err = txResp.Decode(createTopicResponse)
@@ -41,14 +44,14 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	topicId = createTopicResponse.TopicId
 	require.Equal(m.T, topicIdStart.NextTopicId, topicId)
 	topicIdEnd, err := m.Client.QueryEmissions().GetNextTopicId(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryNextTopicIdRequest{},
 	)
 	require.NoError(m.T, err)
 	require.Equal(m.T, topicIdEnd.NextTopicId, topicId+1)
 
 	storedTopicResponse, err := m.Client.QueryEmissions().GetTopic(
-		m.Ctx,
+		ctx,
 		&emissionstypes.QueryTopicRequest{
 			TopicId: topicId,
 		},

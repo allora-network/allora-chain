@@ -1,6 +1,7 @@
 package stress_test
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"math/rand"
@@ -126,8 +127,9 @@ func generateInsertReputerBulk(
 		if err != nil {
 			if strings.Contains(err.Error(), "nonce already fulfilled") ||
 				strings.Contains(err.Error(), "nonce still unfulfilled") {
+				ctx := context.Background()
 				// realign blockHeights before retrying
-				topic, err = getLastTopic(m.Ctx, m.Client.QueryEmissions(), topic.Id)
+				topic, err = getLastTopic(ctx, m.Client.QueryEmissions(), topic.Id)
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
 					blockHeightEval = blockHeightCurrent - topic.EpochLength
@@ -194,8 +196,7 @@ func generateWithheldWorkerAttributedValueLosses(
 func generateValueBundle(
 	topicId uint64,
 	workerAddresses NameToAccountMap,
-	reputerNonce,
-	workerNonce *emissionstypes.Nonce,
+	reputerNonce *emissionstypes.Nonce,
 ) emissionstypes.ValueBundle {
 	return emissionstypes.ValueBundle{
 		TopicId:                topicId,
@@ -208,7 +209,6 @@ func generateValueBundle(
 		OneInForecasterValues:  generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 	}
 }
@@ -245,14 +245,13 @@ func generateReputerValueBundleMsg(
 	topicId uint64,
 	reputerValueBundles []*emissionstypes.ReputerValueBundle,
 	leaderReputerAddress string,
-	reputerNonce, workerNonce *emissionstypes.Nonce) *emissionstypes.MsgInsertBulkReputerPayload {
+	reputerNonce *emissionstypes.Nonce) *emissionstypes.MsgInsertBulkReputerPayload {
 
 	return &emissionstypes.MsgInsertBulkReputerPayload{
 		Sender:  leaderReputerAddress,
 		TopicId: topicId,
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
-			WorkerNonce:  workerNonce,
 		},
 		ReputerValueBundles: reputerValueBundles,
 	}
@@ -274,11 +273,8 @@ func insertReputerBulk(
 	reputerNonce := &emissionstypes.Nonce{
 		BlockHeight: BlockHeightCurrent,
 	}
-	workerNonce := &emissionstypes.Nonce{
-		BlockHeight: BlockHeightEval,
-	}
 	leaderReputer := reputerAddresses[leaderReputerAccountName]
-	valueBundle := generateValueBundle(topicId, workerAddresses, reputerNonce, workerNonce)
+	valueBundle := generateValueBundle(topicId, workerAddresses, reputerNonce)
 	reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
 	for reputerAddressName := range reputerAddresses {
 		reputer := reputerAddresses[reputerAddressName]
@@ -291,19 +287,19 @@ func insertReputerBulk(
 		reputerValueBundles,
 		leaderReputer.addr,
 		reputerNonce,
-		workerNonce,
 	)
 	LeaderAcc, err := m.Client.AccountRegistryGetByName(leaderReputerAccountName)
 	if err != nil {
 		m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderReputerAccountName, " - ", err))
 		return err
 	}
-	txResp, err := m.Client.BroadcastTx(m.Ctx, LeaderAcc, reputerValueBundleMsg)
+	ctx := context.Background()
+	txResp, err := m.Client.BroadcastTx(ctx, LeaderAcc, reputerValueBundleMsg)
 	if err != nil {
 		m.T.Log(topicLog(topicId, "Error broadcasting reputer value bundle: ", err))
 		return err
 	}
-	_, err = m.Client.WaitForTx(m.Ctx, txResp.TxHash)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 	return nil
 }
@@ -322,8 +318,9 @@ func checkReputersReceivedRewards(
 	for reputerIndex := 0; reputerIndex < countReputers; reputerIndex++ {
 		reputerName := getReputerAccountName(m.Seed, reputerIndex, topicId)
 		reputer := reputers[reputerName]
+		ctx := context.Background()
 		reputerStake, err := getReputerStake(
-			m.Ctx,
+			ctx,
 			m.Client.QueryEmissions(),
 			topicId,
 			reputer.addr,

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -12,41 +13,24 @@ import (
 func (p *SynthPalette) BootstrapRegretData() error {
 	p.Logger.Debug(fmt.Sprintf("Bootstrapping regret data for topic %v", p.TopicId))
 
-	p.InferersNewStatus = InferersAllNew
 	for _, inferer := range p.Inferers {
-		regret, noPriorRegret, err := p.K.GetInfererNetworkRegret(p.Ctx, p.TopicId, inferer)
+		regret, _, err := p.K.GetInfererNetworkRegret(p.Ctx, p.TopicId, inferer)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting inferer regret")
 		}
 
-		if !noPriorRegret {
-			if p.InferersNewStatus == InferersAllNew {
-				p.InferersNewStatus = InferersAllNewExceptOne
-				p.SingleNotNewInferer = inferer
-			} else {
-				p.InferersNewStatus = InferersNotNew
-				p.SingleNotNewInferer = ""
-			}
-		}
-
 		p.Logger.Debug(fmt.Sprintf("Inferer %v has regret %v", inferer, regret.Value))
-		p.InfererRegrets[inferer] = &StatefulRegret{
-			regret:        regret.Value,
-			noPriorRegret: noPriorRegret,
-		}
+		p.InfererRegrets[inferer] = &regret.Value
 	}
 
 	for _, forecaster := range p.Forecasters {
-		regret, noPriorRegret, err := p.K.GetForecasterNetworkRegret(p.Ctx, p.TopicId, forecaster)
+		regret, _, err := p.K.GetForecasterNetworkRegret(p.Ctx, p.TopicId, forecaster)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
 
 		p.Logger.Debug(fmt.Sprintf("Forecaster %v has regret %v", forecaster, regret.Value))
-		p.ForecasterRegrets[forecaster] = &StatefulRegret{
-			regret:        regret.Value,
-			noPriorRegret: noPriorRegret,
-		}
+		p.ForecasterRegrets[forecaster] = &regret.Value
 	}
 
 	return nil
@@ -55,29 +39,54 @@ func (p *SynthPalette) BootstrapRegretData() error {
 // Clone creates a deep copy of the SynthPalette.
 func (p SynthPalette) Clone() SynthPalette {
 	inferenceByWorker := make(map[Worker]*emissionstypes.Inference, len(p.InferenceByWorker))
-	for k, v := range p.InferenceByWorker {
-		inferenceCopy := *v
-		inferenceByWorker[k] = &inferenceCopy
+	for _, worker := range p.Inferers {
+		data, ok := p.InferenceByWorker[worker]
+		if !ok {
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in InferenceByWorker in palette.Clone %v", worker))
+			continue
+		}
+		inferenceCopy := *data
+		inferenceByWorker[worker] = &inferenceCopy
 	}
 	forecastByWorker := make(map[Worker]*emissionstypes.Forecast, len(p.ForecastByWorker))
-	for k, v := range p.ForecastByWorker {
-		forecastCopy := *v
-		forecastByWorker[k] = &forecastCopy
+	for _, worker := range p.Forecasters {
+		data, ok := p.ForecastByWorker[worker]
+		if !ok {
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastByWorker in palette.Clone %v", worker))
+			continue
+		}
+		forecastCopy := *data
+		forecastByWorker[worker] = &forecastCopy
 	}
 	forecastImpliedInferenceByWorker := make(map[Worker]*emissionstypes.Inference, len(p.ForecastImpliedInferenceByWorker))
-	for k, v := range p.ForecastImpliedInferenceByWorker {
-		inferenceCopy := *v
-		forecastImpliedInferenceByWorker[k] = &inferenceCopy
+	for _, worker := range p.Forecasters {
+		data, ok := p.ForecastImpliedInferenceByWorker[worker]
+		if !ok {
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in palette.Clone %v", worker))
+			continue
+		}
+		inferenceCopy := *data
+		forecastImpliedInferenceByWorker[worker] = &inferenceCopy
 	}
-	infererRegrets := make(map[Worker]*StatefulRegret, len(p.InfererRegrets))
-	for k, v := range p.InfererRegrets {
-		regretCopy := *v
-		infererRegrets[k] = &regretCopy
+	infererRegrets := make(map[Worker]*alloraMath.Dec, len(p.InfererRegrets))
+	for _, worker := range p.Inferers {
+		data, ok := p.InfererRegrets[worker]
+		if !ok {
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in InfererRegrets in palette.Clone %v", worker))
+			continue
+		}
+		regretCopy := *data
+		infererRegrets[worker] = &regretCopy
 	}
-	forecasterRegrets := make(map[Worker]*StatefulRegret, len(p.ForecasterRegrets))
-	for k, v := range p.ForecasterRegrets {
-		regretCopy := *v
-		forecasterRegrets[k] = &regretCopy
+	forecasterRegrets := make(map[Worker]*alloraMath.Dec, len(p.ForecasterRegrets))
+	for _, worker := range p.Forecasters {
+		data, ok := p.ForecasterRegrets[worker]
+		if !ok {
+			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in palette.Clone %v", worker))
+			continue
+		}
+		regretCopy := *data
+		forecasterRegrets[worker] = &regretCopy
 	}
 
 	return SynthPalette{
@@ -92,11 +101,8 @@ func (p SynthPalette) Clone() SynthPalette {
 		ForecastByWorker:                 forecastByWorker,
 		ForecastImpliedInferenceByWorker: forecastImpliedInferenceByWorker,
 		ForecasterRegrets:                forecasterRegrets,
-		InferersNewStatus:                p.InferersNewStatus,
-		SingleNotNewInferer:              p.SingleNotNewInferer,
 		NetworkCombinedLoss:              p.NetworkCombinedLoss,
 		Epsilon:                          p.Epsilon,
-		Tolerance:                        p.Tolerance,
 		PNorm:                            p.PNorm,
 		CNorm:                            p.CNorm,
 	}

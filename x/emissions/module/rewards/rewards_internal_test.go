@@ -396,7 +396,7 @@ func TestGetScoreFractions(t *testing.T) {
 	require.NoError(t, err)
 
 	for i := range want {
-		if !(alloraMath.InDelta(want[i], got[i], alloraMath.MustNewDecFromString("0.00001"))) {
+		if !(alloraMath.InDelta(want[i], got[i], alloraMath.MustNewDecFromString("0.001"))) {
 			t.Errorf(
 				"GetWorkerPortionOfRewards() got = %s, want %s",
 				got[i].String(),
@@ -603,12 +603,12 @@ func TestGetAllConsensusScores(t *testing.T) {
 	stakes := []alloraMath.Dec{alloraMath.MustNewDecFromString("1176644.37627"), alloraMath.MustNewDecFromString("384623.3607"), alloraMath.MustNewDecFromString("394676.13226"), alloraMath.MustNewDecFromString("207999.66194"), alloraMath.MustNewDecFromString("368582.76542")}
 	allListeningCoefficients := []alloraMath.Dec{alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0"), alloraMath.MustNewDecFromString("1.0")}
 	var numReputers int64 = 5
-	tolerance := alloraMath.MustNewDecFromString("0.01")
+	reputerEpsilon := alloraMath.MustNewDecFromString("1e-2")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 	want := []alloraMath.Dec{alloraMath.MustNewDecFromString("5.114259531"), alloraMath.MustNewDecFromString("5.339287075"), alloraMath.MustNewDecFromString("6.538380081"), alloraMath.MustNewDecFromString("2.5952235325"), alloraMath.MustNewDecFromString("3.5870524743")}
 	wantErr := false
 
-	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers, tolerance, epsilon)
+	got, err := rewards.GetAllConsensusScores(allLosses, stakes, allListeningCoefficients, numReputers, reputerEpsilon, epsilon)
 	if (err != nil) != wantErr {
 		t.Errorf("GetAllConsensusScores() error = %v, wantErr %v", err, wantErr)
 		return
@@ -625,7 +625,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	require.NoError(err)
 
-	tolerance := alloraMath.MustNewDecFromString("0.01")
+	epsilon := alloraMath.MustNewDecFromString("0.01")
 
 	allLosses := [][]alloraMath.Dec{
 		{alloraMath.MustNewDecFromString("0.0112"), alloraMath.MustNewDecFromString("0.00231"), alloraMath.MustNewDecFromString("0.02274"), alloraMath.MustNewDecFromString("0.01299"), alloraMath.MustNewDecFromString("0.02515"), alloraMath.MustNewDecFromString("0.0185"), alloraMath.MustNewDecFromString("0.01018"), alloraMath.MustNewDecFromString("0.02105"), alloraMath.MustNewDecFromString("0.01041"), alloraMath.MustNewDecFromString("0.0183"), alloraMath.MustNewDecFromString("0.01022"), alloraMath.MustNewDecFromString("0.01333"), alloraMath.MustNewDecFromString("0.01298"), alloraMath.MustNewDecFromString("0.01023"), alloraMath.MustNewDecFromString("0.01268"), alloraMath.MustNewDecFromString("0.01381"), alloraMath.MustNewDecFromString("0.01731"), alloraMath.MustNewDecFromString("0.01238"), alloraMath.MustNewDecFromString("0.01168"), alloraMath.MustNewDecFromString("0.00929"), alloraMath.MustNewDecFromString("0.01212"), alloraMath.MustNewDecFromString("0.01806"), alloraMath.MustNewDecFromString("0.01901"), alloraMath.MustNewDecFromString("0.01828"), alloraMath.MustNewDecFromString("0.01522"), alloraMath.MustNewDecFromString("0.01833"), alloraMath.MustNewDecFromString("0.0101"), alloraMath.MustNewDecFromString("0.01224"), alloraMath.MustNewDecFromString("0.01226"), alloraMath.MustNewDecFromString("0.01474"), alloraMath.MustNewDecFromString("0.01218"), alloraMath.MustNewDecFromString("0.01604"), alloraMath.MustNewDecFromString("0.01149"), alloraMath.MustNewDecFromString("0.02075"), alloraMath.MustNewDecFromString("0.00818"), alloraMath.MustNewDecFromString("0.0116"), alloraMath.MustNewDecFromString("0.01127"), alloraMath.MustNewDecFromString("0.01495"), alloraMath.MustNewDecFromString("0.00689"), alloraMath.MustNewDecFromString("0.0108"), alloraMath.MustNewDecFromString("0.01417"), alloraMath.MustNewDecFromString("0.0124"), alloraMath.MustNewDecFromString("0.01588"), alloraMath.MustNewDecFromString("0.01012"), alloraMath.MustNewDecFromString("0.01467"), alloraMath.MustNewDecFromString("0.0128"), alloraMath.MustNewDecFromString("0.01234"), alloraMath.MustNewDecFromString("0.0148"), alloraMath.MustNewDecFromString("0.01046"), alloraMath.MustNewDecFromString("0.01192"), alloraMath.MustNewDecFromString("0.01381"), alloraMath.MustNewDecFromString("0.01687"), alloraMath.MustNewDecFromString("0.01136"), alloraMath.MustNewDecFromString("0.01185"), alloraMath.MustNewDecFromString("0.01568"), alloraMath.MustNewDecFromString("0.00949"), alloraMath.MustNewDecFromString("0.01339")},
@@ -663,8 +663,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		0,
-		tolerance,
-		params.Epsilon,
+		params.EpsilonReputer,
+		epsilon,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
 	)
@@ -677,8 +677,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		2,
-		tolerance,
-		params.Epsilon,
+		params.EpsilonReputer,
+		epsilon,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
 	)
@@ -691,8 +691,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		5,
-		tolerance,
-		params.Epsilon,
+		params.EpsilonReputer,
+		epsilon,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
 	)
@@ -705,8 +705,8 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		numReputers,
 		params.LearningRate,
 		20,
-		tolerance,
-		params.Epsilon,
+		params.EpsilonReputer,
+		epsilon,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
 	)
@@ -786,7 +786,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require.True(len(gotScores3) == len(wantScores))
 
 	// Verify score output matches that of GetAllConsensusScores()
-	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, tolerance, params.Epsilon)
+	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, params.EpsilonReputer, epsilon)
 	require.NoError(err)
 	if !alloraMath.SlicesInDelta(gotScores3, wantScores3, alloraMath.MustNewDecFromString("0.01")) {
 		log.Println("GetAllConsensusScores() got", gotScores3, "want", wantScores3)

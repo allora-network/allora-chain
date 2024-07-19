@@ -422,8 +422,19 @@ func payoutRewards(
 		if reward.Reward.IsZero() {
 			continue
 		}
+		if reward.Reward.IsNegative() {
+			ret = append(ret, errors.Wrapf(
+				types.ErrInvalidReward,
+				"reward cannot be negative: { address: %s, amount: %s, topicId: %d, type: %s }",
+				reward.Address,
+				reward.Reward.String(),
+				reward.TopicId,
+				reward.Type,
+			))
+			continue
+		}
 
-		rewardInt := reward.Reward.Abs().SdkIntTrim()
+		rewardInt := reward.Reward.SdkIntTrim()
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
 
 		if reward.Type == types.ReputerAndDelegatorRewardType {

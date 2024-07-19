@@ -30,12 +30,38 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "TopicExists",
+					Use:       "topic-exists [topic_id]",
+					Short:     "True if topic exists at given id, else false",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "IsTopicActive",
+					Use:       "is-topic-active [topic_id]",
+					Short:     "True if topic is active, else false",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetActiveTopics",
 					Use:       "active-topics [pagination]",
 					Short:     "Get Active Topics",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "pagination"},
 					},
+				},
+				{
+					RpcMethod: "GetChurnableTopics",
+					Use:       "churnable-topics",
+					Short:     "Get Churnable Topics",
+				},
+				{
+					RpcMethod: "GetRewardableTopics",
+					Use:       "rewardable-topics",
+					Short:     "Get Rewardable Topics",
 				},
 				{
 					RpcMethod: "GetReputerStakeInTopic",
@@ -53,6 +79,334 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "reputer_address"},
 						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetDelegateRewardPerShare",
+					Use:       "delegate-reward-per-share [topic_id] [reputer_address]",
+					Short:     "Get total delegate reward per share stake in a reputer for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+					},
+				},
+				{
+					RpcMethod: "GetDelegateStakePlacement",
+					Use:       "delegate-reward-per-share [topic_id] [delegator] [target]",
+					Short:     "Get amount of token delegated to a target by a delegator in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "delegator"},
+						{ProtoField: "target"},
+					},
+				},
+				{
+					RpcMethod: "GetDelegateStakeRemoval",
+					Use:       "delegate-stake-removal [block_height] [topic_id] [delegator] [reputer]",
+					Short:     "Get current state of a pending delegate stake removal",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "block_height"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "delegator"},
+						{ProtoField: "reputer"},
+					},
+				},
+				{
+					RpcMethod: "GetDelegateStakeUponReputer",
+					Use:       "delegate-stake-on-reputer [topic_id] [target]",
+					Short:     "Get total amount of token delegated to a target reputer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "target"},
+					},
+				},
+				{
+					RpcMethod: "GetForecastScoresUntilBlock",
+					Use:       "forecast-scores-until-block [topic_id] [block_height]",
+					Short:     "Get all saved scores for all forecasters for a topic descending until a given past block height. Number of forecasts is limited by MaxSamplesToScaleScores",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetForecasterNetworkRegret",
+					Use:       "forecaster-regret [topic_id] [worker]",
+					Short:     "Get current network regret for given forecaster",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "worker"},
+					},
+				},
+				{
+					RpcMethod: "GetInferenceScoresUntilBlock",
+					Use:       "inference-scores-until-block [topic_id] [block_height]",
+					Short:     "Get all saved scores for all inferers for a topic descending until a given past block height. Number of forecasts is limited by MaxSamplesToScaleScores",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetInfererNetworkRegret",
+					Use:       "inferer-regret [topic_id] [actor_id]",
+					Short:     "Get current network regret for given inferer",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "actor_id"},
+					},
+				},
+				{
+					RpcMethod: "IsReputerNonceUnfulfilled",
+					Use:       "reputer-nonce-unfulfilled [topic_id] [block_height]",
+					Short:     "True if reputer nonce is unfulfilled (still awaiting a reputer response), else false",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "IsWorkerNonceUnfulfilled",
+					Use:       "worker-nonce-unfulfilled [topic_id] [block_height]",
+					Short:     "True if worker nonce is unfulfilled (still awaiting a worker response), else false",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetLatestAvailableNetworkInference",
+					Use:       "latest-available-network-inference [topic_id]",
+					Short:     "Returns network inference only if all available information to compute the inference is present",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetLatestForecasterScore",
+					Use:       "latest-forecaster-score [topic_id] [forecaster]",
+					Short:     "Returns latest score for a forecaster in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "forecaster"},
+					},
+				},
+				{
+					RpcMethod: "GetLatestInfererScore",
+					Use:       "latest-inferer-score [topic_id] [inferer]",
+					Short:     "Returns latest score for a inferer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetLatestReputerScore",
+					Use:       "latest-reputer-score [topic_id] [reputer]",
+					Short:     "Returns latest score for a reputer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+					},
+				},
+				{
+					RpcMethod: "GetLatestTopicInferences",
+					Use:       "latest-topic-raw-inferences [topic_id]",
+					Short:     "Returns latest round of raw inferences from workers topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetListeningCoefficient",
+					Use:       "listening-coefficient [topic_id] [reputer]",
+					Short:     "Returns current listening coefficient for a given reputer. Default to 1 if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+					},
+				},
+				{
+					RpcMethod: "GetMultiReputerStakeInTopic",
+					Use:       "multi-coefficient [addresses] [topic_id]",
+					Short:     "Returns stakes for each reputer in a given list. List can be up to MaxPageLimit in length. Default to 0 if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "addresses"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetOneInForecasterNetworkRegret",
+					Use:       "one-in-forecaster-regret [topic_id] [forecaster] [inferer]",
+					Short:     "Returns regret born from including [forecaster]'s implied inference in a batch with [inferer]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "forecaster"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneInForecasterSelfNetworkRegret",
+					Use:       "one-in-forecaster-self-regret [topic_id] [forecaster]",
+					Short:     "Returns regret born from including [forecaster]'s implied inference. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "forecaster"},
+					},
+				},
+				{
+					RpcMethod: "GetPreviousForecastRewardFraction",
+					Use:       "previous-forecaster-reward-fraction [topic_id] [worker]",
+					Short:     "Return previous reward fraction for actor",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "worker"},
+					},
+				},
+				{
+					RpcMethod: "GetPreviousInferenceRewardFraction",
+					Use:       "previous-inference-reward-fraction [topic_id] [worker]",
+					Short:     "Return previous reward fraction for actor",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "worker"},
+					},
+				},
+				{
+					RpcMethod: "GetPreviousPercentageRewardToStakedReputers",
+					Use:       "previous-percentage-reputer-reward",
+					Short:     "Return previous percent reward paid to staked reputers",
+				},
+				{
+					RpcMethod: "GetPreviousReputerRewardFraction",
+					Use:       "previous-reputer-reward-fraction [topic_id] [reputer]",
+					Short:     "Return previous reward fraction for actor",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+					},
+				},
+				{
+					RpcMethod: "GetPreviousTopicWeight",
+					Use:       "previous-topic-weight [topic_id]",
+					Short:     "Return previous topic weight. Useful for extrapolating future and previous topic weight and the topic's likelihood for churn",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetReputerLossBundlesAtBlock",
+					Use:       "reputer-loss-bundle [topic_id] [block_height]",
+					Short:     "Return reputer loss bundle at block height. May not exist if it was already pruned",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetReputersScoresAtBlock",
+					Use:       "reputer-scores [topic_id] [block_height]",
+					Short:     "Return reputer scores at block. Note: the chain only stores up to MaxSamplesToScaleScores many scores per actor type per topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetStakeRemovalForReputerAndTopicId",
+					Use:       "reputer-scores [reputer] [topic_id]",
+					Short:     "Return stake removal information for reputer in topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "reputer"},
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetStakeReputerAuthority",
+					Use:       "reputer-authority [topic_id] [reputer]",
+					Short:     "Return total stake on reputer in a topic, including delegate stake and their own",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer"},
+					},
+				},
+				{
+					RpcMethod: "GetTopicFeeRevenue",
+					Use:       "topic-fee-revenue [topic_id]",
+					Short:     "Return effective fee revenue for a topic i.e. the total fees collected by the topic less an exponential decay of the fees over time. This is the impact of topic fees on the topic's weight",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetTopicLastReputerPayload",
+					Use:       "latest-reputer-payload [topic_id]",
+					Short:     "Return latest reputer payload delivered for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetTopicLastWorkerPayload",
+					Use:       "latest-worker-payload [topic_id]",
+					Short:     "Return latest worker payload delivered for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetTopicRewardNonce",
+					Use:       "topic-reward-nonce [topic_id]",
+					Short:     "If a topic is rewardable, then this is the nonce that will be used to calculate topic rewards. The actors that participated in the worker/reputer rounds started at this nonce (block height) will be rewarded",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetTopicStake",
+					Use:       "topic-stake [topic_id]",
+					Short:     "Return total stake in topic including delegate stake",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetTotalRewardToDistribute",
+					Use:       "total-rewards",
+					Short:     "Return total rewards to be distributed among all rewardable topics in the block",
+				},
+				{
+					RpcMethod: "GetUnfulfilledReputerNonces",
+					Use:       "unfulfilled-reputer-nonces [topic_id]",
+					Short:     "Return topic reputer nonces that have yet to be fulfilled",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetUnfulfilledWorkerNonces",
+					Use:       "unfulfilled-worker-nonces [topic_id]",
+					Short:     "Return topic worker nonces that have yet to be fulfilled",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetWorkerForecastScoresAtBlock",
+					Use:       "forecast-scores [topic_id] [block_height]",
+					Short:     "Return scores for topic worker at a block height. Default is empty. May not exist if it was already pruned",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetWorkerInferenceScoresAtBlock",
+					Use:       "inference-scores [topic_id] [block_height]",
+					Short:     "Return scores for topic worker at a block height. Default is empty. May not exist if it was already pruned",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height"},
 					},
 				},
 				{
@@ -178,7 +532,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				{
 					RpcMethod: "GetLatestNetworkInference",
 					Use:       "latest-network-inference [topic_id]",
-					Short:     "Get the latest Network inferences and weights for a topic",
+					Short:     "Get the latest Network inferences and weights for a topic. Will return whatever information it has available.",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},
@@ -235,6 +589,22 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "GetTopicLastWorkerCommitInfo",
+					Use:       "topic-last-worker-commit [topic_id]",
+					Short:     "Get topic last commit by worker",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetTopicLastReputerCommitInfo",
+					Use:       "topic-last-reputer-commit [topic_id]",
+					Short:     "Get topic last commit by reputer",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
@@ -251,7 +621,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [ground_truth_lag] [default_arg] [p_norm] [alpha_regret] [allow_negative] [tolerance]",
+					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [ground_truth_lag] [default_arg] [p_norm] [alpha_regret] [allow_negative] [epsilon]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -266,7 +636,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "p_norm"},
 						{ProtoField: "alpha_regret"},
 						{ProtoField: "allow_negative"},
-						{ProtoField: "tolerance"},
+						{ProtoField: "epsilon"},
 					},
 				},
 				{

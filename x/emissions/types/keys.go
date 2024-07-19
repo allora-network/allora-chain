@@ -68,4 +68,8 @@ var (
 	DelegateStakeRemovalsByBlockKey             = collections.NewPrefix(53)
 	StakeRemovalsByActorKey                     = collections.NewPrefix(54)
 	DelegateStakeRemovalsByActorKey             = collections.NewPrefix(55)
+	TopicLastWorkerCommitKey                    = collections.NewPrefix(56)
+	TopicLastReputerCommitKey                   = collections.NewPrefix(57)
+	TopicLastWorkerPayloadKey                   = collections.NewPrefix(58)
+	TopicLastReputerPayloadKey                  = collections.NewPrefix(59)
 )

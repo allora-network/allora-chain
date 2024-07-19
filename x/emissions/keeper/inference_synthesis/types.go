@@ -18,11 +18,6 @@ type Weight = alloraMath.Dec
 type InferenceValue = alloraMath.Dec
 type Stake = cosmosMath.Int
 
-type StatefulRegret struct {
-	regret        Regret
-	noPriorRegret bool
-}
-
 type StdDevRegrets struct {
 	stdDevInferenceRegrets Regret
 	stdDevCombinedRegrets  Regret
@@ -44,33 +39,25 @@ type SynthRequest struct {
 	Forecasts           *emissions.Forecasts
 	NetworkCombinedLoss Loss
 	Epsilon             alloraMath.Dec
-	Tolerance           alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }
 
-type InferersNewStatus int
-
-const (
-	InferersAllNew InferersNewStatus = iota
-	InferersAllNewExceptOne
-	InferersNotNew
-)
-
 type SynthPaletteFactory struct{}
 
 type SynthPalette struct {
-	Ctx     sdk.Context
-	K       keeper.Keeper
-	Logger  log.Logger
-	TopicId TopicId
+	Ctx               sdk.Context
+	K                 keeper.Keeper
+	Logger            log.Logger
+	TopicId           TopicId
+	AllInferersAreNew bool
 	// Should use this as a source of truth regarding for which inferers to have data calculated
 	// i.e. if an inferer is not present here, calculate a network inference without their data
 	// Must be unique values
 	Inferers          []Worker
 	InferenceByWorker map[Worker]*emissions.Inference
 	// Must respect the order of sister `inferers` property
-	InfererRegrets map[Worker]*StatefulRegret
+	InfererRegrets map[Worker]*alloraMath.Dec
 	// Should use this as a source of truth regarding for which forecasters to have data calculated
 	// i.e. if an forecaster is not present here, calculate a network inference without their data
 	// Must be unique values
@@ -78,12 +65,9 @@ type SynthPalette struct {
 	ForecastByWorker                 map[Worker]*emissions.Forecast
 	ForecastImpliedInferenceByWorker map[Worker]*emissions.Inference
 	// Must respect the order of sister `forecasters` property
-	ForecasterRegrets   map[Worker]*StatefulRegret
-	InferersNewStatus   InferersNewStatus
-	SingleNotNewInferer Worker
+	ForecasterRegrets   map[Worker]*alloraMath.Dec
 	NetworkCombinedLoss Loss
 	Epsilon             alloraMath.Dec
-	Tolerance           alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }

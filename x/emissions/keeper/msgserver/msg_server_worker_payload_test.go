@@ -521,3 +521,30 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
 	require.ErrorIs(err, types.ErrNonceAlreadyFulfilled)
 }
+
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadUpdateTopicCommit() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerMsg, topicId := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+
+	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
+	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
+
+	lastCommit, err := s.emissionsKeeper.GetTopicLastCommit(ctx, topicId, types.ActorType_INFERER)
+	require.NoError(err, "GetTopicLastCommit should not return an error")
+
+	require.Equal(blockHeight, lastCommit.BlockHeight, "BlockHeight should be same")
+	require.Equal(workerMsg.Sender, lastCommit.Actor, "Actor should be same")
+	require.Equal(workerMsg.Nonce, lastCommit.Nonce, "Nonce should be same")
+
+	lastWorkerPayload, err := s.emissionsKeeper.GetTopicLastWorkerPayload(ctx, topicId)
+	require.NoError(err)
+
+	require.Equal(blockHeight, lastWorkerPayload.BlockHeight, "BlockHeight should be same")
+	require.Equal(workerMsg.Sender, lastWorkerPayload.Actor, "Actor should be same")
+	require.Equal(workerMsg.Nonce, lastWorkerPayload.Nonce, "Nonce should be same")
+}
