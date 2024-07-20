@@ -280,7 +280,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 
 func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
-	epoch2Get := epochGet[2]
+	epoch2Get := epochGet[302]
 
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
@@ -340,7 +340,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 
 func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
-	epoch3Get := epochGet[3]
+	epoch3Get := epochGet[303]
 
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{

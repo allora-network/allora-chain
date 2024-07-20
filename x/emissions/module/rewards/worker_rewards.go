@@ -114,7 +114,7 @@ func GetInferenceTaskEntropy(
 	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, betaEntropy, TASK_INFERENCE, workers, workersFractions)
 }
 
-func GetForecastingTaskEntropy(
+func GetForecastTaskEntropy(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,

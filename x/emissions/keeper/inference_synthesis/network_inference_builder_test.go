@@ -323,15 +323,15 @@ func (s *InferenceSynthesisTestSuite) testCorrectCombinedInitialValueForEpoch(ep
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectCombinedValueEpoch2() {
-	s.testCorrectCombinedInitialValueForEpoch(2)
+	s.testCorrectCombinedInitialValueForEpoch(302)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectCombnedValueEpoch3() {
-	s.testCorrectCombinedInitialValueForEpoch(3)
+	s.testCorrectCombinedInitialValueForEpoch(303)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectCombinedValueEpoch4() {
-	s.testCorrectCombinedInitialValueForEpoch(4)
+	s.testCorrectCombinedInitialValueForEpoch(304)
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectNaiveValueForEpoch(epoch int) {
@@ -341,16 +341,12 @@ func (s *InferenceSynthesisTestSuite) testCorrectNaiveValueForEpoch(epoch int) {
 	alloratestutil.InEpsilon5(s.T(), valueBundle.NaiveValue, epochGet[epoch]("network_naive_inference").String())
 }
 
-func (s *InferenceSynthesisTestSuite) TestCorrectInitialNaiveValue() {
-	s.testCorrectNaiveValueForEpoch(0)
-}
-
 func (s *InferenceSynthesisTestSuite) TestCorrectNaiveValueEpoch2() {
-	s.testCorrectNaiveValueForEpoch(2)
+	s.testCorrectNaiveValueForEpoch(302)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectNaiveValueEpoch3() {
-	s.testCorrectNaiveValueForEpoch(3)
+	s.testCorrectNaiveValueForEpoch(303)
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epoch int) {
@@ -379,11 +375,11 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValuesEpoch2() {
-	s.testCorrectOneOutInfererValuesForEpoch(2)
+	s.testCorrectOneOutInfererValuesForEpoch(302)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValuesEpoch3() {
-	s.testCorrectOneOutInfererValuesForEpoch(3)
+	s.testCorrectOneOutInfererValuesForEpoch(303)
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(epoch int) {
@@ -409,15 +405,15 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValuesEpoch2() {
-	s.testCorrectOneOutForecasterValuesForEpoch(2)
+	s.testCorrectOneOutForecasterValuesForEpoch(302)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValuesEpoch3() {
-	s.testCorrectOneOutForecasterValuesForEpoch(3)
+	s.testCorrectOneOutForecasterValuesForEpoch(303)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValuesEpoch4() {
-	s.testCorrectOneOutForecasterValuesForEpoch(4)
+	s.testCorrectOneOutForecasterValuesForEpoch(304)
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(epoch int) {
@@ -443,15 +439,15 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(e
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValuesEpoch2() {
-	s.testCorrectOneInForecasterValuesForEpoch(2)
+	s.testCorrectOneInForecasterValuesForEpoch(302)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValuesEpoch3() {
-	s.testCorrectOneInForecasterValuesForEpoch(3)
+	s.testCorrectOneInForecasterValuesForEpoch(303)
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectOneInForecasterValuesEpoch4() {
-	s.testCorrectOneInForecasterValuesForEpoch(4)
+	s.testCorrectOneInForecasterValuesForEpoch(304)
 }
 
 func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData() {

@@ -417,7 +417,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsvOutputs() {
-	epochGet := testdata.GetRewardsSimulatedValuesGetterForEpochs()
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch301Get := epochGet[301]
 	topicId := uint64(1)
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
