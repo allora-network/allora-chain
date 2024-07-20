@@ -188,8 +188,10 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	}
 
 	// Normalize the running unnormalized network inference to yield output
-	if sumWeights.Lt(p.Epsilon) {
-		sumWeights = p.Epsilon
+	// TODO: Add this in the future as a parameter(?)
+	weightsEpsilon := alloraMath.MustNewDecFromString("0.0000001")
+	if sumWeights.Lt(weightsEpsilon) {
+		sumWeights = weightsEpsilon
 	}
 	ret, err := runningUnnormalizedI_i.Quo(sumWeights)
 	if err != nil {

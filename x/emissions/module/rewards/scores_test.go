@@ -17,7 +17,7 @@ import (
 )
 
 func (s *RewardsTestSuite) TestGetReputersScoresFromCsvOutputs() {
-	epochGet := testdata.GetRewardsSimulatedValuesGetterForEpochs()
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch300Get := epochGet[300]
 	epoch301Get := epochGet[301]
 	block := int64(1003)
@@ -192,7 +192,7 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 }
 
 func (s *RewardsTestSuite) TestGetInferenceScoresFromCsvOutputs() {
-	epochGet := testdata.GetRewardsSimulatedValuesGetterForEpochs()
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
 	topicId := uint64(1)
 	block := int64(1003)
@@ -305,7 +305,7 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 }
 
 func (s *RewardsTestSuite) TestGetForecasterScoresFromCsvOutputs() {
-	epochGet := testdata.GetRewardsSimulatedValuesGetterForEpochs()
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[3]
 	topicId := uint64(1)
 	block := int64(1003)
