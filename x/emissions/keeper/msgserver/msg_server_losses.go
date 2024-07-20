@@ -61,7 +61,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	// Throw if already fulfilled -- can't return a response twice
 	if !reputerNonceUnfulfilled {
 		return nil, errorsmod.Wrapf(
-			types.ErrNonceAlreadyFulfilled,
+			types.ErrUnfulfilledNonceNotFound,
 			"Reputer nonce already fulfilled: %v",
 			msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
 		)
