@@ -1783,10 +1783,10 @@ func (k *Keeper) AddChurnableTopic(ctx context.Context, topicId TopicId) error {
 func (k *Keeper) ResetChurnableTopics(ctx sdk.Context) error {
 	err := k.churnableTopics.Clear(ctx, nil)
 	if err != nil {
-        return errorsmod.Wrap(err, "failed to clear churnable topics")
-    }
+		return errorsmod.Wrap(err, "failed to clear churnable topics")
+	}
 	ctx.Logger().Info("Successfully cleared churnable topics")
-    return nil
+	return nil
 }
 
 // REWARDABLE TOPICS
