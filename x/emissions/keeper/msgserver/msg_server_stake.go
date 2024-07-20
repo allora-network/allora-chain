@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	errorsmod "cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -59,10 +60,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) (*types.MsgRemoveStakeResponse, error) {
-	if msg.Amount.IsZero() {
-		return nil, types.ErrReceivedZeroAmount
-	}
-	if msg.Amount.IsNegative() {
+	if msg.Amount.LTE(cosmosMath.ZeroInt()) {
 		return nil, types.ErrInvalidValue
 	}
 
@@ -175,10 +173,7 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemoveDelegateStake) (*types.MsgRemoveDelegateStakeResponse, error) {
-	if msg.Amount.IsZero() {
-		return nil, types.ErrReceivedZeroAmount
-	}
-	if msg.Amount.IsNegative() {
+	if msg.Amount.LTE(cosmosMath.ZeroInt()) {
 		return nil, types.ErrInvalidValue
 	}
 
