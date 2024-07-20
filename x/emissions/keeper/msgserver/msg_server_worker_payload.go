@@ -40,6 +40,10 @@ func verifyAndInsertInferencesFromTopInferers(
 		/// If we do PoX-like anti-sybil procedure, would go here
 
 		inference := workerDataBundle.InferenceForecastsBundle.Inference
+		if inference == nil {
+			errors[workerDataBundle.Worker] = "Inference not found"
+			continue
+		}
 
 		// Check if the topic and nonce are correct
 		if inference.TopicId != topicId ||
