@@ -153,9 +153,9 @@ With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up
 
 ## Run a validator
 
-You can refer to the Allora documentation for detailled instructions on [running a full node](https://docs.allora.network/docs/running-a-full-node) and [staking a validator](https://docs.allora.network/docs/stake-a-validator).
+You can refer to the Allora documentation for detailled instructions on [running a full node](https://docs.allora.network/devs/validators/run-full-node) and [staking a validator](https://docs.allora.network/devs/validators/stake-a-validator).
 
-1. Run and sync a full Allora node following [the instructions](https://docs.allora.network/docs/running-a-full-node).
+1. Run and sync a full Allora node following [the instructions](https://docs.allora.network/devs/validators/run-full-node).
 
 2. Wait until the node is fully synced
 
@@ -168,7 +168,7 @@ Wait until you see the output: "false"
 
 `l1_node.sh` script generates keys, you can find created account information in `data/*.account_info`. Get the address from the file and fund, on testnets you can use faucet `https://faucet.${NETWORK}.allora.network`.
 
-4. Stake validator (detailled instructions [here](https://docs.allora.network/docs/stake-a-validator))
+4. Stake validator (detailled instructions [here](https://docs.allora.network/devs/validators/stake-a-validator))
 
 Here's an example with Values which starts with a stake of 10000000uallo.
 
