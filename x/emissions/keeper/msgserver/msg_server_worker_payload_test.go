@@ -127,6 +127,22 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayload() {
 	require.Equal(forecastsCount1, 1)
 }
 
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithNilInference() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	workerMsg, _ := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+
+	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+
+	workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Inference = nil
+
+	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
+	require.Error(err)
+}
+
 func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithoutWorkerDataBundle() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
