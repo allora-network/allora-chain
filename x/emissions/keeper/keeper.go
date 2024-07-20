@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
+	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -1720,7 +1721,7 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 }
 
 // Drop the fee revenue by the global Ecosystem bucket drip amount
-func (k *Keeper) DripTopicFeeRevenue(ctx context.Context, topicId TopicId, block BlockHeight) error {
+func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block BlockHeight) error {
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return err
@@ -1746,6 +1747,8 @@ func (k *Keeper) DripTopicFeeRevenue(ctx context.Context, topicId TopicId, block
 		}
 		newTopicFeeRevenue = val.SdkIntTrim()
 	}
+
+	ctx.Logger().Debug(fmt.Sprintf("Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v", ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue))
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 }
 
