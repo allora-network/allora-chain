@@ -49,6 +49,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	fn := func(sdkCtx sdk.Context, topic *types.Topic) error {
 		// Parallelize nonce management and update of topic to be in a churn ready state
 		wg.Add(1)
+		localTopic := *topic
 		go func(topic types.Topic) {
 			defer wg.Done()
 			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
@@ -101,7 +102,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					}
 				}
 			}
-		}(*topic)
+		}(localTopic)
 		return nil
 	}
 	err = rewards.IdentifyChurnableAmongActiveTopicsAndApplyFn(
