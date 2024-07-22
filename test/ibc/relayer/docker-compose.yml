@@ -1,0 +1,69 @@
+version: "3"
+
+services:
+  allora:
+    image: alloranetwork/allora-chain:v0.2.14
+    volumes:
+      - ./scripts/setup_allora.sh:/allora/setup.sh
+      - $HOME/.allora/:/allora/.allorad/
+    entrypoint:
+      - /allora/setup.sh
+    platform: linux/amd64
+    environment:
+      - CHAIN_ID=allora
+      - VALIDATOR_MONIKER=validator
+      - DENOM=uallo
+      - VALIDATOR_MNEMONIC=cinnamon legend sword giant master simple visit action level ancient day rubber pigeon filter garment hockey stay water crawl omit airport venture toilet oppose
+      - FAUCET_MNEMONIC=stamp later develop betray boss ranch abstract puzzle calm right bounce march orchard edge correct canal fault miracle void dutch lottery lucky observe armed
+      - RELAYER_MNEMONIC=black frequent sponsor nice claim rally hunt suit parent size stumble expire forest avocado mistake agree trend witness lounge shiver image smoke stool chicken
+    ports:
+      - 26657:26657
+      - 1317:1317
+      - 9090:9090
+    networks:
+      - localallora
+
+  osmosis:
+    image: local:osmosis
+    volumes:
+      - ./scripts/setup_osmosis.sh:/osmosis/setup.sh
+      - $HOME/.osmosisd/:/osmosis/.osmosisd/
+    entrypoint:
+      - /osmosis/setup.sh
+    environment:
+      - CHAIN_ID=osmosis
+      - VALIDATOR_MONIKER=validator
+      - VALIDATOR_MNEMONIC=family album bird seek tilt color pill danger message abuse manual tent almost ridge boost blast high comic core quantum spoon coconut oyster remove
+      - FAUCET_MNEMONIC=increase bread alpha rigid glide amused approve oblige print asset idea enact lawn proof unfold jeans rabbit audit return chuckle valve rather cactus great
+      - RELAYER_MNEMONIC=black frequent sponsor nice claim rally hunt suit parent size stumble expire forest avocado mistake agree trend witness lounge shiver image smoke stool chicken
+    ports:
+      - 36657:26657
+      - 31317:1317
+      - 39090:9090
+    networks:
+      - localallora
+
+#  hermes:
+#    image: informalsystems/hermes:1.1.0
+#    user: root:root
+#    volumes:
+#      - ./scripts/setup_hermes.sh:/home/hermes/setup.sh
+#      - ./config/hermes/config.toml:/root/.hermes/config.toml
+#    entrypoint:
+#      - /home/hermes/setup.sh
+#    environment:
+#      - CHAIN_A_ID=allora-a
+#      - CHAIN_A_MNEMONIC=black frequent sponsor nice claim rally hunt suit parent size stumble expire forest avocado mistake agree trend witness lounge shiver image smoke stool chicken
+#      - CHAIN_B_ID=allora-b
+#      - CHAIN_B_MNEMONIC=black frequent sponsor nice claim rally hunt suit parent size stumble expire forest avocado mistake agree trend witness lounge shiver image smoke stool chicken
+#    ports:
+#      - 3000:3000
+#    depends_on:
+#      - allora-a
+#      - allora-b
+#    platform: linux/amd64
+#    networks:
+#      - localallora
+
+networks:
+  localallora:
