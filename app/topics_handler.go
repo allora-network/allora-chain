@@ -167,6 +167,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
 		for _, churnableTopicId := range churnableTopics {
 			wg.Add(1)
+			localTopicId := churnableTopicId
 			go func(topicId TopicId) {
 				defer wg.Done()
 				topic, err := th.emissionsKeeper.GetTopic(ctx, topicId)
@@ -176,7 +177,7 @@ func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 				}
 				th.requestTopicWorkers(ctx, topic)
 				th.requestTopicReputers(ctx, topic)
-			}(churnableTopicId)
+			}(localTopicId)
 		}
 		wg.Wait()
 		// Return the transactions as they came
