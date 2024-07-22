@@ -1,9 +1,17 @@
 #!/bin/sh
 rm -r ~/.relayer || true
 
-set -a
-source .env
-set +a
+export_env_vars() {
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ ! "$line" =~ ^# && "$line" =~ = ]]; then
+            var_name=$(echo "$line" | cut -d '=' -f 1)
+            var_value=$(echo "$line" | cut -d '=' -f 2-)
+            export "$var_name"="${var_value//\"/}"
+        fi
+    done < .env
+}
+
+export_env_vars
 
 echo "$ALLORA_RELAYER_MNEMONIC"
 
