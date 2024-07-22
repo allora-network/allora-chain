@@ -2,6 +2,7 @@ package rewards
 
 import (
 	"fmt"
+	"sort"
 
 	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -47,17 +48,15 @@ func GetTopicRewardFraction(
 	return (*topicWeight).Quo(totalWeight)
 }
 
-// Apply a function on all active topics that also have an epoch ending at this block
-// Active topics have more than a globally-set minimum weight, a function of revenue and stake
-// "Safe" because bounded by max number of pages and apply running, online operations.
-func SafeApplyFuncOnAllActiveEpochEndingTopics(
+// Get all active topics that have ended their epoch
+func GetAllActiveEpochEndingTopics(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,
-	fn func(sdkCtx sdk.Context, topic *types.Topic) error,
 	topicPageLimit uint64,
 	maxTopicPages uint64,
-) error {
+) []types.Topic {
+	var epochEndingTopics []types.Topic
 	topicPageKey := make([]byte, 0)
 	pageIterationCounter := uint64(0)
 	for {
@@ -75,23 +74,24 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 			}
 
 			if k.CheckCadence(block, topic) {
-				// All checks passed => Apply function on the topic
-				err = fn(ctx, &topic)
-				if err != nil {
-					Logger(ctx).Warn(fmt.Sprintf("Error applying function on topic: %s", err.Error()))
-					continue
-				}
+				epochEndingTopics = append(epochEndingTopics, topic)
 			}
 		}
 
 		// if pageResponse.NextKey is empty then we have reached the end of the list
-		if topicsActive == nil || len(topicsActive) == 0 || pageIterationCounter > maxTopicPages {
+		if len(topicsActive) == 0 || pageIterationCounter > maxTopicPages {
 			break
 		}
 		topicPageKey = topicPageResponse.NextKey
 		pageIterationCounter++
 	}
-	return nil
+
+	// Sort topics by ID
+	sort.Slice(epochEndingTopics, func(i, j int) bool {
+		return epochEndingTopics[i].Id < epochEndingTopics[j].Id
+	})
+
+	return epochEndingTopics
 }
 
 // "Churn-ready topic" is active, has an epoch that ended, and is in top N by weights, has non-zero weight.
@@ -155,6 +155,11 @@ func GetAndUpdateActiveTopicWeights(
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get alpha")
 	}
 
+	// Retrieve and sort all active topics with epoch ending at this block
+	// default page limit for the max because default is 100 and max is 1000
+	// 1000 is excessive for the topic query
+	sortedEpochEndingTopics := GetAllActiveEpochEndingTopics(ctx, k, block, moduleParams.DefaultPageLimit, moduleParams.DefaultPageLimit)
+
 	totalRevenue = cosmosMath.ZeroInt()
 	sumWeight = alloraMath.ZeroDec()
 	weights = make(map[TopicId]*alloraMath.Dec)
@@ -202,11 +207,12 @@ func GetAndUpdateActiveTopicWeights(
 		return nil
 	}
 
-	// default page limit for the max because default is 100 and max is 1000
-	// 1000 is excessive for the topic query
-	err = SafeApplyFuncOnAllActiveEpochEndingTopics(ctx, k, block, fn, moduleParams.DefaultPageLimit, moduleParams.DefaultPageLimit)
-	if err != nil {
-		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to apply function on all rewardable topics to get weights")
+	// Apply the function on all sorted topics
+	for _, topic := range sortedEpochEndingTopics {
+		err := fn(ctx, &topic)
+		if err != nil {
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, err
+		}
 	}
 
 	// Inactivate now-inactive topics and reset their revenue
