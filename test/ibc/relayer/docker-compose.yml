@@ -9,13 +9,15 @@ services:
     entrypoint:
       - /allora/setup.sh
     platform: linux/amd64
+    env_file:
+      - .env
     environment:
-      - CHAIN_ID=allora
-      - VALIDATOR_MONIKER=validator
-      - DENOM=uallo
-      - VALIDATOR_MNEMONIC=cinnamon legend sword giant master simple visit action level ancient day rubber pigeon filter garment hockey stay water crawl omit airport venture toilet oppose
-      - FAUCET_MNEMONIC=stamp later develop betray boss ranch abstract puzzle calm right bounce march orchard edge correct canal fault miracle void dutch lottery lucky observe armed
-      - RELAYER_MNEMONIC=black frequent sponsor nice claim rally hunt suit parent size stumble expire forest avocado mistake agree trend witness lounge shiver image smoke stool chicken
+      - CHAIN_ID=${ALLORA_CHAIN_ID}
+      - VALIDATOR_MONIKER=${ALLORA_VALIDATOR_MONIKER}
+      - DENOM=${ALLORA_DENOM}
+      - VALIDATOR_MNEMONIC=${ALLORA_VALIDATOR_MNEMONIC}
+      - FAUCET_MNEMONIC=${ALLORA_FAUCET_MNEMONIC}
+      - RELAYER_MNEMONIC=${ALLORA_RELAYER_MNEMONIC}
     ports:
       - 26657:26657
       - 1317:1317
@@ -30,12 +32,14 @@ services:
       - $HOME/.osmosisd/:/osmosis/.osmosisd/
     entrypoint:
       - /osmosis/setup.sh
+    env_file:
+      - .env
     environment:
-      - CHAIN_ID=osmosis
-      - VALIDATOR_MONIKER=validator
-      - VALIDATOR_MNEMONIC=family album bird seek tilt color pill danger message abuse manual tent almost ridge boost blast high comic core quantum spoon coconut oyster remove
-      - FAUCET_MNEMONIC=increase bread alpha rigid glide amused approve oblige print asset idea enact lawn proof unfold jeans rabbit audit return chuckle valve rather cactus great
-      - RELAYER_MNEMONIC=black frequent sponsor nice claim rally hunt suit parent size stumble expire forest avocado mistake agree trend witness lounge shiver image smoke stool chicken
+      - CHAIN_ID=${OSMOSIS_CHAIN_ID}
+      - VALIDATOR_MONIKER=${OSMOSIS_VALIDATOR_MONIKER}
+      - VALIDATOR_MNEMONIC=${OSMOSIS_VALIDATOR_MNEMONIC}
+      - FAUCET_MNEMONIC=${OSMOSIS_FAUCET_MNEMONIC}
+      - RELAYER_MNEMONIC=${OSMOSIS_RELAYER_MNEMONIC}
     ports:
       - 36657:26657
       - 31317:1317
