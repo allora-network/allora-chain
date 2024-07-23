@@ -1,0 +1,23 @@
+{
+  "type": "cosmos",
+  "value": {
+    "key": "relayer",
+    "chain-id": "osmosis",
+    "rpc-addr": "http://localhost:36657",
+    "grpc-addr": "",
+    "account-prefix": "osmo",
+    "keyring-backend": "test",
+    "default-denom": "uosmo",
+    "gas-adjustment": 1.5,
+    "gas-prices": "0.025uosmo",
+    "debug": true,
+    "timeout": "20s",
+    "output-format": "json",
+    "sign-mode": "direct",
+    "trusting-period": "330h",
+    "gas":900000
+  }
+}
+
+
+

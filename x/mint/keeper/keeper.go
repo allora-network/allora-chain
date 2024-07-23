@@ -85,8 +85,8 @@ func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) e
 	if err != nil {
 		return err
 	}
-	new := curr.Add(minted)
-	return k.EcosystemTokensMinted.Set(ctx, new)
+	newTotal := curr.Add(minted)
+	return k.EcosystemTokensMinted.Set(ctx, newTotal)
 }
 
 /// STAKING KEEPER RELATED FUNCTIONS
