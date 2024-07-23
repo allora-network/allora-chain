@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"sync"
 
 	"cosmossdk.io/log"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -156,30 +155,30 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 func (th *TopicsHandler) PrepareProposalHandler() sdk.PrepareProposalHandler {
 	return func(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
 		Logger(ctx).Debug("\n ---------------- TopicsHandler ------------------- \n")
-		churnableTopics, err := th.emissionsKeeper.GetChurnableTopics(ctx)
-		if err != nil {
-			Logger(ctx).Error("Error getting max number of topics per block: " + err.Error())
-			return nil, err
-		}
+		// churnableTopics, err := th.emissionsKeeper.GetChurnableTopics(ctx)
+		// if err != nil {
+		// 	Logger(ctx).Error("Error getting max number of topics per block: " + err.Error())
+		// 	return nil, err
+		// }
 
-		var wg sync.WaitGroup
-		// Loop over and run epochs on topics whose inferences are demanded enough to be served
-		// Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
-		for _, churnableTopicId := range churnableTopics {
-			wg.Add(1)
-			localTopicId := churnableTopicId
-			go func(topicId TopicId) {
-				defer wg.Done()
-				topic, err := th.emissionsKeeper.GetTopic(ctx, topicId)
-				if err != nil {
-					Logger(ctx).Error("Error getting topic: " + err.Error())
-					return
-				}
-				th.requestTopicWorkers(ctx, topic)
-				th.requestTopicReputers(ctx, topic)
-			}(localTopicId)
-		}
-		wg.Wait()
+		// var wg sync.WaitGroup
+		// // Loop over and run epochs on topics whose inferences are demanded enough to be served
+		// // Within each loop, execute the inference and weight cadence checks and trigger the inference and weight generation
+		// for _, churnableTopicId := range churnableTopics {
+		// 	wg.Add(1)
+		// 	localTopicId := churnableTopicId
+		// 	go func(topicId TopicId) {
+		// 		defer wg.Done()
+		// 		topic, err := th.emissionsKeeper.GetTopic(ctx, topicId)
+		// 		if err != nil {
+		// 			Logger(ctx).Error("Error getting topic: " + err.Error())
+		// 			return
+		// 		}
+		// 		th.requestTopicWorkers(ctx, topic)
+		// 		th.requestTopicReputers(ctx, topic)
+		// 	}(localTopicId)
+		// }
+		// wg.Wait()
 		// Return the transactions as they came
 		return &abci.ResponsePrepareProposal{Txs: req.Txs}, nil
 	}

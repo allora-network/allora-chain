@@ -48,8 +48,6 @@ type Keeper struct {
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
 	topics       collections.Map[TopicId, types.Topic]
 	activeTopics collections.KeySet[TopicId]
-	// every topic that is ready to request inferences and possible also losses
-	churnableTopics collections.KeySet[TopicId]
 	// every topic that has been churned and ready to be rewarded i.e. reputer losses have been committed
 	rewardableTopics collections.KeySet[TopicId]
 	// for a topic, what is every worker node that has registered to it?
@@ -201,7 +199,6 @@ func NewKeeper(
 		nextTopicId:                              collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                                   collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
 		activeTopics:                             collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
-		churnableTopics:                          collections.NewKeySet(sb, types.ChurnableTopicsKey, "churnable_topics", collections.Uint64Key),
 		rewardableTopics:                         collections.NewKeySet(sb, types.RewardableTopicsKey, "rewardable_topics", collections.Uint64Key),
 		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
@@ -1750,43 +1747,6 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 
 	ctx.Logger().Debug(fmt.Sprintf("Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v", ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue))
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
-}
-
-/// CHURNABLE TOPICS
-
-// Get the churnable topics
-func (k *Keeper) GetChurnableTopics(ctx context.Context) ([]TopicId, error) {
-	iter, err := k.churnableTopics.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	topics := make([]TopicId, 0)
-	for ; iter.Valid(); iter.Next() {
-		topicId, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		topics = append(topics, topicId)
-	}
-
-	return topics, nil
-}
-
-// Add as topic as churnable
-func (k *Keeper) AddChurnableTopic(ctx context.Context, topicId TopicId) error {
-	return k.churnableTopics.Set(ctx, topicId)
-}
-
-// ResetChurnReadyTopics clears all topics from the churn-ready set and resets related states.
-func (k *Keeper) ResetChurnableTopics(ctx sdk.Context) error {
-	err := k.churnableTopics.Clear(ctx, nil)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to clear churnable topics")
-	}
-	ctx.Logger().Info("Successfully cleared churnable topics")
-	return nil
 }
 
 // REWARDABLE TOPICS

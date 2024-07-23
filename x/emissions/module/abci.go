@@ -36,13 +36,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return errors.Wrapf(err, "Rewards error")
 	}
 
-	// Reset the churn ready topics
-	err = am.keeper.ResetChurnableTopics(sdkCtx)
-	if err != nil {
-		sdkCtx.Logger().Error("Error resetting churn ready topics: ", err)
-		return errors.Wrapf(err, "Resetting churn ready topics error")
-	}
-
 	// NONCE MGMT with Churnable weights
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
@@ -72,12 +65,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					return
 				}
 				sdkCtx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
-				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
-				err = am.keeper.AddChurnableTopic(ctx, topic.Id)
-				if err != nil {
-					sdkCtx.Logger().Warn(fmt.Sprintf("Error setting churn ready topic: %s", err.Error()))
-					return
-				}
 
 				MaxUnfulfilledReputerRequests := types.DefaultParams().MaxUnfulfilledReputerRequests
 				moduleParams, err := am.keeper.GetParams(ctx)

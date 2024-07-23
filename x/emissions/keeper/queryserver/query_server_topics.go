@@ -165,21 +165,6 @@ func (qs queryServer) GetTopicFeeRevenue(
 	return &types.QueryTopicFeeRevenueResponse{FeeRevenue: feeRevenue}, nil
 }
 
-func (qs queryServer) GetChurnableTopics(
-	ctx context.Context,
-	req *types.QueryChurnableTopicsRequest,
-) (
-	*types.QueryChurnableTopicsResponse,
-	error,
-) {
-	churnableTopics, err := qs.k.GetChurnableTopics(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryChurnableTopicsResponse{ChurnableTopicIds: churnableTopics}, nil
-}
-
 func (qs queryServer) GetRewardableTopics(
 	ctx context.Context,
 	req *types.QueryRewardableTopicsRequest,

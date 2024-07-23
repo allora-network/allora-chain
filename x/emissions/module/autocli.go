@@ -54,11 +54,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetChurnableTopics",
-					Use:       "churnable-topics",
-					Short:     "Get Churnable Topics",
-				},
-				{
 					RpcMethod: "GetRewardableTopics",
 					Use:       "rewardable-topics",
 					Short:     "Get Rewardable Topics",
