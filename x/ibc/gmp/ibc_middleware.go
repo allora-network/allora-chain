@@ -3,7 +3,6 @@ package gmp
 import (
 	"encoding/json"
 	"fmt"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -101,53 +100,47 @@ func (im IBCMiddleware) OnRecvPacket(
 	}
 
 	var msg Message
-	var err error
-	err = json.Unmarshal([]byte(data.GetMemo()), &msg)
-	if err != nil || len(msg.Payload) == 0 {
-		// Not a packet that should be handled by the GMP middleware
-		return im.app.OnRecvPacket(ctx, packet, relayer)
-	}
+	_ = json.Unmarshal([]byte(data.GetMemo()), &msg)
 
-	//if !strings.EqualFold(data.Sender, AxelarGMPAcc) {
-	//	// Not a packet that should be handled by the GMP middleware
-	//	return im.app.OnRecvPacket(ctx, packet, relayer)
-	//}
+	if len(msg.Payload) != 0 {
+		logger := ctx.Logger().With("handler", "GMP")
 
-	logger := ctx.Logger().With("handler", "GMP")
-
-	switch msg.Type {
-	case TypeGeneralMessage:
-		logger.Info("Received TypeGeneralMessage",
-			"srcChain", msg.SourceChain,
-			"srcAddress", msg.SourceAddress,
-			"receiver", data.Receiver,
-			"payload", string(msg.Payload),
-			"handler", "GMP",
-		)
-		// let the next layer deal with this
-		// the rest of the data fields should be normal
-		fallthrough
-	case TypeGeneralMessageWithToken:
-		logger.Info("Received TypeGeneralMessageWithToken",
-			"srcChain", msg.SourceChain,
-			"srcAddress", msg.SourceAddress,
-			"receiver", data.Receiver,
-			"payload", string(msg.Payload),
-			"coin", data.Denom,
-			"amount", data.Amount,
-			"handler", "GMP",
-		)
-		// we throw out the rest of the msg.Payload fields here, for better or worse
-		data.Memo = string(msg.Payload)
-		var dataBytes []byte
-		if dataBytes, err = transfertypes.ModuleCdc.MarshalJSON(&data); err != nil {
-			return channeltypes.NewErrorAcknowledgement(fmt.Errorf("cannot marshal ICS-20 post-processed transfer packet data"))
+		switch msg.Type {
+		case TypeGeneralMessage:
+			logger.Info("Received TypeGeneralMessage",
+				"srcChain", msg.SourceChain,
+				"srcAddress", msg.SourceAddress,
+				"receiver", data.Receiver,
+				"payload", string(msg.Payload),
+				"handler", "GMP",
+			)
+			// let the next layer deal with this
+			// the rest of the data fields should be normal
+			fallthrough
+		case TypeGeneralMessageWithToken:
+			logger.Info("Received TypeGeneralMessageWithToken",
+				"srcChain", msg.SourceChain,
+				"srcAddress", msg.SourceAddress,
+				"receiver", data.Receiver,
+				"payload", string(msg.Payload),
+				"coin", data.Denom,
+				"amount", data.Amount,
+				"handler", "GMP",
+			)
+			// we throw out the rest of the msg.Payload fields here, for better or worse
+			data.Memo = string(msg.Payload)
+			var dataBytes []byte
+			if _, err := transfertypes.ModuleCdc.MarshalJSON(&data); err != nil {
+				return channeltypes.NewErrorAcknowledgement(fmt.Errorf("cannot marshal ICS-20 post-processed transfer packet data"))
+			}
+			packet.Data = dataBytes
+			return im.app.OnRecvPacket(ctx, packet, relayer)
+		default:
+			return channeltypes.NewErrorAcknowledgement(fmt.Errorf("unrecognized mesasge type: %d", msg.Type))
 		}
-		packet.Data = dataBytes
-		return im.app.OnRecvPacket(ctx, packet, relayer)
-	default:
-		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("unrecognized mesasge type: %d", msg.Type))
 	}
+
+	return im.appOnRecvPacket(ctx, packet, relayer)
 }
 
 // OnAcknowledgementPacket implements the IBCMiddleware interface
@@ -167,4 +160,12 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	relayer sdk.AccAddress,
 ) error {
 	return im.app.OnTimeoutPacket(ctx, packet, relayer)
+}
+
+func (im IBCMiddleware) appOnRecvPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
+) ibcexported.Acknowledgement {
+	return channeltypes.NewResultAcknowledgement([]byte("success"))
 }
