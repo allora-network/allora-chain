@@ -241,7 +241,8 @@ func GetAndUpdateActiveTopicWeights(
 
 		// If the topic is inactive, inactivate it
 		if weight.Lt(moduleParams.MinTopicWeight) {
-			return k.InactivateTopic(ctx, topic.Id)
+			err := k.InactivateTopic(ctx, topic.Id)
+			return errors.Wrapf(err, "failed to inactivate topic")
 		}
 
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)
