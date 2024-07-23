@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+  allora:
+    image: alloranetwork/allora-chain:v0.2.14
+    volumes:
+      - ./scripts/setup_allora.sh:/allora/setup.sh
+      - $HOME/.allora/:/allora/.allorad/
+    entrypoint:
+      - /allora/setup.sh
+    platform: linux/amd64
+    env_file:
+      - .env
+    environment:
+      - CHAIN_ID=${ALLORA_CHAIN_ID}
+      - VALIDATOR_MONIKER=${ALLORA_VALIDATOR_MONIKER}
+      - DENOM=${ALLORA_DENOM}
+      - VALIDATOR_MNEMONIC=${ALLORA_VALIDATOR_MNEMONIC}
+      - FAUCET_MNEMONIC=${ALLORA_FAUCET_MNEMONIC}
+      - RELAYER_MNEMONIC=${ALLORA_RELAYER_MNEMONIC}
+    ports:
+      - 26657:26657
+      - 1317:1317
+      - 9090:9090
+    networks:
+      - localallora
+
+  osmosis:
+    image: local:osmosis
+    volumes:
+      - ./scripts/setup_osmosis.sh:/osmosis/setup.sh
+      - $HOME/.osmosisd/:/osmosis/.osmosisd/
+    entrypoint:
+      - /osmosis/setup.sh
+    env_file:
+      - .env
+    environment:
+      - CHAIN_ID=${OSMOSIS_CHAIN_ID}
+      - VALIDATOR_MONIKER=${OSMOSIS_VALIDATOR_MONIKER}
+      - VALIDATOR_MNEMONIC=${OSMOSIS_VALIDATOR_MNEMONIC}
+      - FAUCET_MNEMONIC=${OSMOSIS_FAUCET_MNEMONIC}
+      - RELAYER_MNEMONIC=${OSMOSIS_RELAYER_MNEMONIC}
+    ports:
+      - 36657:26657
+      - 31317:1317
+      - 39090:9090
+    networks:
+      - localallora
+
+networks:
+  localallora:
