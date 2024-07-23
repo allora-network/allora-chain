@@ -47,6 +47,31 @@ type LossesPayload struct {
 	Inferences []emissionstypes.ValueBundle `json:"inferences"`
 }
 
+const LOSSES_REQUEST_NODE_COUNT_DEFAULT = -1
+const INFERENCE_REQUEST_NODE_COUNT_DEFAULT = -1
+const LOSSES_REQUEST_TIMEOUT_DEFAULT = 2
+const INFERENCE_REQUEST_TIMEOUT_DEFAULT = 2
+
+var LOSSES_REQUEST_NODE_COUNT = getEnvAsInt("LOSSES_REQUEST_NODE_COUNT", LOSSES_REQUEST_NODE_COUNT_DEFAULT)
+var INFERENCE_REQUEST_NODE_COUNT = getEnvAsInt("INFERENCE_REQUEST_NODE_COUNT", INFERENCE_REQUEST_NODE_COUNT_DEFAULT)
+var LOSSES_REQUEST_TIMEOUT_COUNT = getEnvAsInt("LOSSES_REQUEST_TIMEOUT", LOSSES_REQUEST_TIMEOUT_DEFAULT)
+var INFERENCE_REQUEST_TIMEOUT_COUNT = getEnvAsInt("INFERENCE_REQUEST_TIMEOUT", INFERENCE_REQUEST_TIMEOUT_DEFAULT)
+
+// getEnvAsInt reads an environment variable and converts it to an integer, .
+func getEnvAsInt(envVarName string, defaultValue int) int {
+	envVarValue := os.Getenv(envVarName)
+	if envVarValue == "" {
+		return defaultValue
+	}
+
+	value, err := strconv.Atoi(envVarValue)
+	if err != nil {
+		return defaultValue
+	}
+
+	return value
+}
+
 func generateLossesRequest(
 	ctx sdk.Context,
 	inferences *emissionstypes.ValueBundle,
@@ -94,9 +119,9 @@ func generateLossesRequest(
 					Value: strconv.FormatBool(topicAllowsNegative),
 				},
 			},
-			NodeCount:          -1,     // use all nodes that reported, no minimum / max
-			Timeout:            2,      // seconds to time out before rollcall complete
-			ConsensusAlgorithm: "pbft", // forces worker leader write to chain through pbft
+			NodeCount:          LOSSES_REQUEST_NODE_COUNT,    // use all nodes that reported, no minimum / max
+			Timeout:            LOSSES_REQUEST_TIMEOUT_COUNT, // seconds to time out before rollcall complete
+			ConsensusAlgorithm: "pbft",                       // forces worker leader write to chain through pbft
 		},
 	}
 
@@ -145,9 +170,9 @@ func generateInferencesRequest(
 					Value: strconv.FormatBool(topicAllowsNegative),
 				},
 			},
-			NodeCount:          -1,     // use all nodes that reported, no minimum / max
-			Timeout:            2,      // seconds to time out before rollcall complete
-			ConsensusAlgorithm: "pbft", // forces worker leader write to chain through pbft
+			NodeCount:          INFERENCE_REQUEST_NODE_COUNT,    // use all nodes that reported, no minimum / max
+			Timeout:            INFERENCE_REQUEST_TIMEOUT_COUNT, // seconds to time out before rollcall complete
+			ConsensusAlgorithm: "pbft",                          // forces worker leader write to chain through pbft
 		},
 	}
 	payload, err := json.Marshal(payloadJson)

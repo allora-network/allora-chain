@@ -82,8 +82,66 @@ To run only head: `docker compose up head`
 
 *NOTE:* You also can comment head service in the docker file.
 
+## Run a node with statesync enabled
+
+To speed up nodes syncing, you can enable statesync, so the node will download state snapshot and sync only the rest blocks (last \<1000 blocks).  
+Here is a [guide](https://blog.cosmos.network/cosmos-sdk-state-sync-guide-99e4cf43be2f)  from Cosmos SDK. 
+
+To use statesync, you need:
+
+1. Peers with state snapshots enabled. Allora [peers](https://github.com/allora-network/networks/blob/main/testnet-1/peers.txt) have enabled snapshots for every 1000 blocks.
+2. 2 RPC endpoints, you can use any synced full nodes for this purpose.
+
+**NOTE:** To enable state snapshots, you just need to pass `--state-sync.snapshot-keep-recent=X` and `--state-sync.snapshot-interval=Y` to the `allorad start` command.
+
+### Enable statesync with docker compose
+
+Set in the docker compose file the following environment variables
+```
+      - STATE_SYNC_RPC1=synced_full_node_rpc_1
+      - STATE_SYNC_RPC2=synced_full_node_rpc_2
+```
+
+### Enable statesync with l1_node.sh script
+
+Just add to the script's environment the following variables:
+```
+export STATE_SYNC_RPC1=synced_full_node_rpc_1
+export STATE_SYNC_RPC2=synced_full_node_rpc_2
+scripts/l1_node.sh
+```
+
 ### See logs
 `docker compose logs -f`
+
+## Run a node with statesync enabled
+
+To speed up nodes syncing, you can enable statesync, so the node will download state snapshot and sync only the rest blocks (last \<1000 blocks).  
+Here is a [guide](https://blog.cosmos.network/cosmos-sdk-state-sync-guide-99e4cf43be2f)  from Cosmos SDK. 
+
+To use statesync, you need:
+
+1. Peers with state snapshots enabled. Allora [peers](https://github.com/allora-network/networks/blob/main/testnet-1/peers.txt) have enabled snapshots for every 1000 blocks.
+2. 2 RPC endpoints, you can use any synced full nodes for this purpose.
+
+**NOTE:** To enable state snapshots, you just need to pass `--state-sync.snapshot-keep-recent=X` and `--state-sync.snapshot-interval=Y` to the `allorad start` command.
+
+### Enable statesync with docker compose
+
+Set in the docker compose file the following environment variables
+```
+      - STATE_SYNC_RPC1=synced_full_node_rpc_1
+      - STATE_SYNC_RPC2=synced_full_node_rpc_2
+```
+
+### Enable statesync with l1_node.sh script
+
+Just add to the script's environment the following variables:
+```
+export STATE_SYNC_RPC1=synced_full_node_rpc_1
+export STATE_SYNC_RPC2=synced_full_node_rpc_2
+scripts/l1_node.sh
+```
 
 ## Call the node
 After the node is running you can exec RPC calls to it.
@@ -95,9 +153,9 @@ With `curl -so- http://localhost:26657/status | jq .result.sync_info.catching_up
 
 ## Run a validator
 
-You can refer to the Allora documentation for detailled instructions on [running a full node](https://docs.allora.network/docs/running-a-full-node) and [staking a validator](https://docs.allora.network/docs/stake-a-validator).
+You can refer to the Allora documentation for detailled instructions on [running a full node](https://docs.allora.network/devs/validators/run-full-node) and [staking a validator](https://docs.allora.network/devs/validators/stake-a-validator).
 
-1. Run and sync a full Allora node following [the instructions](https://docs.allora.network/docs/running-a-full-node).
+1. Run and sync a full Allora node following [the instructions](https://docs.allora.network/devs/validators/run-full-node).
 
 2. Wait until the node is fully synced
 
@@ -110,7 +168,7 @@ Wait until you see the output: "false"
 
 `l1_node.sh` script generates keys, you can find created account information in `data/*.account_info`. Get the address from the file and fund, on testnets you can use faucet `https://faucet.${NETWORK}.allora.network`.
 
-4. Stake validator (detailled instructions [here](https://docs.allora.network/docs/stake-a-validator))
+4. Stake validator (detailled instructions [here](https://docs.allora.network/devs/validators/stake-a-validator))
 
 Here's an example with Values which starts with a stake of 10000000uallo.
 
