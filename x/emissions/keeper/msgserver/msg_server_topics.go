@@ -45,22 +45,19 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	topic := types.Topic{
-		Id:              id,
-		Creator:         msg.Creator,
-		Metadata:        msg.Metadata,
-		LossLogic:       msg.LossLogic,
-		LossMethod:      msg.LossMethod,
-		InferenceLogic:  msg.InferenceLogic,
-		InferenceMethod: msg.InferenceMethod,
-		EpochLastEnded:  0,
-		EpochLength:     msg.EpochLength,
-		GroundTruthLag:  msg.GroundTruthLag,
-		DefaultArg:      msg.DefaultArg,
-		PNorm:           msg.PNorm,
-		AlphaRegret:     msg.AlphaRegret,
-		AllowNegative:   msg.AllowNegative,
-		Epsilon:         msg.Epsilon,
-		InitialRegret:   alloraMath.ZeroDec(),
+		Id:                     id,
+		Creator:                msg.Creator,
+		Metadata:               msg.Metadata,
+		LossMethod:             msg.LossMethod,
+		EpochLastEnded:         0,
+		EpochLength:            msg.EpochLength,
+		GroundTruthLag:         msg.GroundTruthLag,
+		WorkerSubmissionWindow: msg.WorkerSubmissionWindow,
+		PNorm:                  msg.PNorm,
+		AlphaRegret:            msg.AlphaRegret,
+		AllowNegative:          msg.AllowNegative,
+		Epsilon:                msg.Epsilon,
+		InitialRegret:          alloraMath.ZeroDec(),
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {

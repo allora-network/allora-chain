@@ -13,26 +13,20 @@ func (msg *MsgCreateNewTopic) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
-	if len(msg.LossLogic) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss logic cannot be empty")
-	}
 	if len(msg.LossMethod) == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method cannot be empty")
-	}
-	if len(msg.InferenceLogic) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference logic cannot be empty")
-	}
-	if len(msg.InferenceMethod) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference method cannot be empty")
-	}
-	if len(msg.DefaultArg) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "default argument cannot be empty")
 	}
 	if msg.EpochLength <= 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epoch length must be greater than zero")
 	}
+	if msg.WorkerSubmissionWindow == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window must be greater than zero")
+	}
 	if msg.GroundTruthLag < msg.EpochLength {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag cannot be lower than epoch length")
+	}
+	if msg.WorkerSubmissionWindow > msg.EpochLength {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window cannot be higher than epoch length")
 	}
 	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) || msg.AlphaRegret.Gt(alloraMath.OneDec()) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")

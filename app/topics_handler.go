@@ -49,8 +49,8 @@ func (th *TopicsHandler) calculatePreviousBlockApproxTime(ctx sdk.Context, infer
 }
 
 func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstypes.Topic) {
-	Logger(ctx).Debug(fmt.Sprintf("Triggering inference generation for topic: %v metadata: %s default arg: %s. \n",
-		topic.Id, topic.Metadata, topic.DefaultArg))
+	Logger(ctx).Debug(fmt.Sprintf("Triggering inference generation for topic: %v metadata: %s. \n",
+		topic.Id, topic.Metadata))
 
 	workerNonces, err := th.emissionsKeeper.GetUnfulfilledWorkerNonces(ctx, topic.Id)
 	if err != nil {
@@ -74,14 +74,14 @@ func (th *TopicsHandler) requestTopicWorkers(ctx sdk.Context, topic emissionstyp
 	for _, nonce := range sortedWorkerNonces {
 		nonceCopy := nonce
 		Logger(ctx).Debug(fmt.Sprintf("Current Worker block height has been found unfulfilled, requesting inferences %v", nonceCopy))
-		go generateInferencesRequest(ctx, topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, topic.AllowNegative, *nonceCopy)
+		// go generateInferencesRequest(ctx, topic.InferenceLogic, topic.InferenceMethod, topic.DefaultArg, topic.Id, topic.AllowNegative, *nonceCopy)
 	}
 }
 
 func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionstypes.Topic) {
 	currentBlockHeight := ctx.BlockHeight()
-	Logger(ctx).Debug(fmt.Sprintf("Triggering Losses cadence met for topic: %v metadata: %s default arg: %s \n",
-		topic.Id, topic.Metadata, topic.DefaultArg))
+	Logger(ctx).Debug(fmt.Sprintf("Triggering Losses cadence met for topic: %v metadata: %s  \n",
+		topic.Id, topic.Metadata))
 	reputerNonces, err := th.emissionsKeeper.GetUnfulfilledReputerNonces(ctx, topic.Id)
 	if err != nil {
 		Logger(ctx).Error("Error getting reputer nonces: " + err.Error())
@@ -149,7 +149,7 @@ func (th *TopicsHandler) requestTopicReputers(ctx sdk.Context, topic emissionsty
 		}
 		Logger(ctx).Info(fmt.Sprintf("Requesting losses for topic: %d reputer nonce: %d worker nonce: %d previous block approx time: %d",
 			topic.Id, nonceCopy.ReputerNonce, previousLossNonce, previousBlockApproxTime))
-		go generateLossesRequest(ctx, reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, topic.AllowNegative, *nonceCopy.ReputerNonce, *previousLossNonce, previousBlockApproxTime)
+		// go generateLossesRequest(ctx, reputerValueBundle, topic.LossLogic, topic.LossMethod, topic.Id, topic.AllowNegative, *nonceCopy.ReputerNonce, *previousLossNonce, previousBlockApproxTime)
 	}
 }
 

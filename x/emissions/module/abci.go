@@ -55,10 +55,9 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 			// to avoid potential situations where the block is missed
 			if am.keeper.CheckCadence(blockHeight, topic) {
-				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s . \n",
 					topic.Id,
-					topic.Metadata,
-					topic.DefaultArg))
+					topic.Metadata))
 
 				// Update the last inference ran
 				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, blockHeight)
