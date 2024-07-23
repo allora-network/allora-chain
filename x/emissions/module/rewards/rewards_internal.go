@@ -48,7 +48,7 @@ func GetScoreFractions(
 }
 
 // Mapping function used by score fraction calculation
-// M(T) = φ_p (abs[ T / σ(T) + ɛ])
+// M(T) = φ_p (T / (σ(T) + ɛ))
 // phi is the phi function
 // sigma is NOT the sigma function but rather represents standard deviation
 func GetMappingFunctionValues(
