@@ -223,13 +223,15 @@ service Query {
   rpc GetOneInForecasterNetworkRegret(QueryOneInForecasterNetworkRegretRequest)
       returns (QueryOneInForecasterNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/one_in_forecaster_network_regret/{topic_id}/{forecaster}/{inferer}";
+    option (google.api.http).get = "/emissions/v1/one_in_forecaster_network_regret/{topic_id}/"
+                                   "{forecaster}/{inferer}";
   }
 
   rpc GetOneInForecasterSelfNetworkRegret(QueryOneInForecasterSelfNetworkRegretRequest)
       returns (QueryOneInForecasterSelfNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/one_in_forecaster_self_network_regret/{topic_id}/{forecaster}";
+    option (google.api.http).get = "/emissions/v1/one_in_forecaster_self_network_regret/{topic_id}/"
+                                   "{forecaster}";
   }
 
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
@@ -264,7 +266,8 @@ service Query {
 
   rpc GetDelegateStakePlacement(QueryDelegateStakePlacementRequest) returns (QueryDelegateStakePlacementResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/delegate_stake_placement/{topic_id}/{delegator}/{target}";
+    option (google.api.http).get = "/emissions/v1/delegate_stake_placement/"
+                                   "{topic_id}/{delegator}/{target}";
   }
 
   rpc GetDelegateStakeUponReputer(QueryDelegateStakeUponReputerRequest)
@@ -286,8 +289,8 @@ service Query {
 
   rpc GetDelegateStakeRemoval(QueryDelegateStakeRemovalRequest) returns (QueryDelegateStakeRemovalResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-        "/emissions/v1/delegate_stake_removal/{block_height}/{topic_id}/{delegator}/{reputer}";
+    option (google.api.http).get = "/emissions/v1/delegate_stake_removal/{block_height}/{topic_id}/"
+                                   "{delegator}/{reputer}";
   }
 
   rpc GetPreviousTopicWeight(QueryPreviousTopicWeightRequest) returns (QueryPreviousTopicWeightResponse) {
@@ -344,7 +347,8 @@ service Query {
   rpc GetWorkerInferenceScoresAtBlock(QueryWorkerInferenceScoresAtBlockRequest)
       returns (QueryWorkerInferenceScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/worker_inference_scores_at_block/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v1/worker_inference_scores_at_block/{topic_id}/"
+                                   "{block_height}";
   }
 
   rpc GetForecastScoresUntilBlock(QueryForecastScoresUntilBlockRequest)
@@ -356,7 +360,8 @@ service Query {
   rpc GetWorkerForecastScoresAtBlock(QueryWorkerForecastScoresAtBlockRequest)
       returns (QueryWorkerForecastScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/worker_forecast_scores_at_block/{topic_id}/{block_height}";
+    option (google.api.http).get = "/emissions/v1/worker_forecast_scores_at_block/{topic_id}/"
+                                   "{block_height}";
   }
 
   rpc GetReputersScoresAtBlock(QueryReputersScoresAtBlockRequest) returns (QueryReputersScoresAtBlockResponse) {

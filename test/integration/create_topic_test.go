@@ -20,19 +20,16 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Greater(m.T, topicIdStart.NextTopicId, uint64(0))
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:         m.AliceAddr,
-		Metadata:        "ETH 24h Prediction",
-		LossLogic:       "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
-		LossMethod:      "loss-calculation-eth.wasm",
-		InferenceLogic:  "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
-		InferenceMethod: "allora-inference-function.wasm",
-		EpochLength:     5,
-		GroundTruthLag:  20,
-		DefaultArg:      "ETH",
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:   true,
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+		Creator:                m.AliceAddr,
+		Metadata:               "ETH 24h Prediction",
+		LossMethod:             "mse",
+		EpochLength:            5,
+		GroundTruthLag:         20,
+		WorkerSubmissionWindow: 5,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          true,
+		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)
@@ -59,13 +56,10 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.NoError(m.T, err)
 	storedTopic := storedTopicResponse.Topic
 	require.Equal(m.T, createTopicRequest.Metadata, storedTopic.Metadata)
-	require.Equal(m.T, createTopicRequest.LossLogic, storedTopic.LossLogic)
 	require.Equal(m.T, createTopicRequest.LossMethod, storedTopic.LossMethod)
-	require.Equal(m.T, createTopicRequest.InferenceLogic, storedTopic.InferenceLogic)
-	require.Equal(m.T, createTopicRequest.InferenceMethod, storedTopic.InferenceMethod)
 	require.Equal(m.T, createTopicRequest.EpochLength, storedTopic.EpochLength)
 	require.Equal(m.T, createTopicRequest.GroundTruthLag, storedTopic.GroundTruthLag)
-	require.Equal(m.T, createTopicRequest.DefaultArg, storedTopic.DefaultArg)
+	require.Equal(m.T, createTopicRequest.WorkerSubmissionWindow, storedTopic.WorkerSubmissionWindow)
 	require.Equal(m.T, createTopicRequest.PNorm, storedTopic.PNorm)
 	require.True(m.T, createTopicRequest.AlphaRegret.Equal(storedTopic.AlphaRegret), "Alpha Regret not equal %s != %s", createTopicRequest.AlphaRegret, storedTopic.AlphaRegret)
 

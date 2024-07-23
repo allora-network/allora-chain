@@ -12,22 +12,19 @@ message Topic {
   uint64 id = 1;
   string creator = 2;
   string metadata = 3;
-  string loss_logic = 4;
-  string loss_method = 5;
-  string inference_logic = 6;
-  string inference_method = 7;
-  int64 epoch_last_ended = 8;
-  int64 epoch_length = 9;
-  int64 ground_truth_lag = 10;
-  string default_arg = 11;
-  string p_norm = 12
+  string loss_method = 4;
+  int64 epoch_last_ended = 5;
+  int64 epoch_length = 6;
+  int64 ground_truth_lag = 7;
+  int64 worker_submission_window = 8;
+  string p_norm = 9
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string alpha_regret = 13
+  string alpha_regret = 10
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  bool allow_negative = 14;
-  string epsilon = 15
+  bool allow_negative = 11;
+  string epsilon = 12
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string initial_regret = 16
+  string initial_regret = 13
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
