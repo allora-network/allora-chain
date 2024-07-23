@@ -35,7 +35,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 
 	// Reset the churn ready topics
-	err = am.keeper.ResetChurnableTopics(ctx)
+	err = am.keeper.ResetChurnableTopics(sdkCtx)
 	if err != nil {
 		sdkCtx.Logger().Error("Error resetting churn ready topics: ", err)
 		return errors.Wrapf(err, "Resetting churn ready topics error")
