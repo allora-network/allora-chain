@@ -184,7 +184,6 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:                creator.String(),
 		Metadata:               metadata,
-		LossLogic:              "logic",
 		LossMethod:             "method",
 		EpochLength:            10800,
 		GroundTruthLag:         10800,
