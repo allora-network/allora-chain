@@ -1780,8 +1780,12 @@ func (k *Keeper) AddChurnableTopic(ctx context.Context, topicId TopicId) error {
 }
 
 // ResetChurnReadyTopics clears all topics from the churn-ready set and resets related states.
-func (k *Keeper) ResetChurnableTopics(ctx context.Context) error {
-	k.churnableTopics.Clear(ctx, nil)
+func (k *Keeper) ResetChurnableTopics(ctx sdk.Context) error {
+	err := k.churnableTopics.Clear(ctx, nil)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to clear churnable topics")
+	}
+	ctx.Logger().Info("Successfully cleared churnable topics")
 	return nil
 }
 
