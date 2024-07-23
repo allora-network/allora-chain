@@ -211,7 +211,6 @@ func GetAndUpdateActiveTopicWeights(
 	totalRevenue = cosmosMath.ZeroInt()
 	sumWeight = alloraMath.ZeroDec()
 	weights = make(map[TopicId]*alloraMath.Dec)
-	nowInactiveTopics := make([]uint64, 0)
 	fn := func(ctx sdk.Context, topic *types.Topic) error {
 		// Calc weight and related data per topic
 		weight, topicFeeRevenue, err := k.GetCurrentTopicWeight(
@@ -240,10 +239,9 @@ func GetAndUpdateActiveTopicWeights(
 			return errors.Wrapf(err, "failed to reset topic fee revenue")
 		}
 
-		// If the topic is inactive, add it to the list of inactive topics
+		// If the topic is inactive, inactivate it
 		if weight.Lt(moduleParams.MinTopicWeight) {
-			nowInactiveTopics = append(nowInactiveTopics, topic.Id)
-			return nil
+			return k.InactivateTopic(ctx, topic.Id)
 		}
 
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)
@@ -260,14 +258,6 @@ func GetAndUpdateActiveTopicWeights(
 		err := fn(ctx, &topic)
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, err
-		}
-	}
-
-	// Inactivate now-inactive topics and reset their revenue
-	for _, topicId := range nowInactiveTopics {
-		err = k.InactivateTopic(ctx, topicId)
-		if err != nil {
-			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 		}
 	}
 
