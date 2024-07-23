@@ -2318,35 +2318,6 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
 }
 
-/// TOPIC CHURN
-
-func (s *KeeperTestSuite) TestChurnableTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(123)
-	topicId2 := uint64(456)
-
-	err := keeper.AddChurnableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	err = keeper.AddChurnableTopic(ctx, topicId2)
-	s.Require().NoError(err)
-
-	// Ensure the first topic is retrieved
-	retrievedIds, err := keeper.GetChurnableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(retrievedIds, 2, "Should retrieve all churn ready topics")
-
-	// Reset the churn ready topics
-	err = keeper.ResetChurnableTopics(ctx)
-	s.Require().NoError(err)
-
-	// Ensure no topics remain
-	remainingIds, err := keeper.GetChurnableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(remainingIds, 0, "Should have no churn ready topics after reset")
-}
-
 /// REWARDABLE TOPICS
 
 func (s *KeeperTestSuite) TestRewardableTopics() {
