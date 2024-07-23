@@ -450,7 +450,7 @@ func GetAllReputersOutput(
 	// finalScores := make([]alloraMath.Dec, numReputers)
 	newScores := make([]alloraMath.Dec, numReputers)
 
-	for maxGradient.Gt(maxGradientThreshold) && i < gradientDescentMaxIters {
+	for maxGradient.Gte(maxGradientThreshold) && i < gradientDescentMaxIters {
 		copy(oldCoefficients, coefficients)
 		gradient := make([]alloraMath.Dec, numReputers)
 
