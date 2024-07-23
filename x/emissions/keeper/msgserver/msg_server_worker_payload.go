@@ -164,9 +164,11 @@ func verifyAndInsertForecastsFromTopForecasters(
 			// We keep what we can, ignoring the forecaster and their contribution (forecast) entirely
 			// if they're left with no valid forecast elements.
 			acceptedForecastElements := make([]*types.ForecastElement, 0)
+			seenInferers := make(map[string]bool)
 			for _, el := range forecast.ForecastElements {
-				if _, ok := acceptedInferersOfBatch[el.Inferer]; ok {
+				if _, ok := acceptedInferersOfBatch[el.Inferer]; ok && !seenInferers[el.Inferer] {
 					acceptedForecastElements = append(acceptedForecastElements, el)
+					seenInferers[el.Inferer] = true
 				}
 			}
 
@@ -176,6 +178,8 @@ func verifyAndInsertForecastsFromTopForecasters(
 			}
 
 			/// Filtering done now, now write what we must for inclusion
+			// Update the forecast with the filtered elements
+			forecast.ForecastElements = acceptedForecastElements
 
 			// Get the latest score for each forecaster => only take top few by score descending
 			latestScore, err := ms.k.GetLatestForecasterScore(ctx, topicId, forecast.Forecaster)
