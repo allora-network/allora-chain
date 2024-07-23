@@ -76,6 +76,7 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 		if err != nil {
 			panic(fmt.Sprintf("failed to get stake removals iterator: %v", err))
 		}
+		defer iterByBlock.Close()
 		valuesByBlock, err := iterByBlock.Values()
 		if err != nil {
 			panic(fmt.Sprintf("failed to get stake removals values: %v", err))
@@ -85,6 +86,7 @@ func StakingInvariantLenStakeRemovalsSame(k Keeper) sdk.Invariant {
 		if err != nil {
 			panic(fmt.Sprintf("failed to get stake removals iterator: %v", err))
 		}
+		defer iterByActor.Close()
 		valuesByActor, err := iterByActor.Keys()
 		if err != nil {
 			panic(fmt.Sprintf("failed to get stake removals values: %v", err))
@@ -165,6 +167,7 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 			if err != nil {
 				panic(fmt.Sprintf("failed to get delegated stakes iterator: %v", err))
 			}
+			defer topicIter.Close()
 			type ExpectedSumToComputedSum struct {
 				expected cosmosMath.Int
 				computed cosmosMath.Int
@@ -273,6 +276,7 @@ func StakingInvariantSumStakeFromStakeReputerAuthorityEqualTotalStakeAndTopicSta
 			if err != nil {
 				panic(fmt.Sprintf("failed to get reputer authorities iterator: %v", err))
 			}
+			defer reputerAuthoritiesForTopicIter.Close()
 			for ; reputerAuthoritiesForTopicIter.Valid(); reputerAuthoritiesForTopicIter.Next() {
 				reputerAuthority, err := reputerAuthoritiesForTopicIter.Value()
 				if err != nil {
@@ -314,6 +318,7 @@ func StakingInvariantPendingRewardForDelegatorsEqualRewardPerShareMinusRewardDeb
 		if err != nil {
 			panic("failed to get delegated stakes iterator")
 		}
+		defer iter.Close()
 		type TopicAndReputer struct {
 			topicId uint64
 			reputer string
@@ -351,6 +356,7 @@ func StakingInvariantPendingRewardForDelegatorsEqualRewardPerShareMinusRewardDeb
 		if err != nil {
 			panic("failed to get delegate reward per share iterator")
 		}
+		defer iter2.Close()
 		accumulatedRewardsBeyondRewardDebt := alloraMath.ZeroDec()
 		for ; iter2.Valid(); iter2.Next() {
 			keyValue, err := iter2.KeyValue()
