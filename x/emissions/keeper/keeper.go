@@ -1297,6 +1297,7 @@ func (k *Keeper) GetStakeRemovalsForBlock(
 	if err != nil {
 		return ret, err
 	}
+	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		val, err := iter.Value()
 		if err != nil {
@@ -1401,6 +1402,7 @@ func (k *Keeper) GetDelegateStakeRemovalsForBlock(
 	if err != nil {
 		return ret, err
 	}
+	defer iter.Close()
 	for ; iter.Valid(); iter.Next() {
 		val, err := iter.Value()
 		if err != nil {
@@ -1931,6 +1933,7 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 	if err != nil {
 		return nil, err
 	}
+	defer iter.Close()
 
 	// Get max number of time steps that should be retrieved
 	moduleParams, err := k.GetParams(ctx)
@@ -2000,6 +2003,7 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 	if err != nil {
 		return nil, err
 	}
+	defer iter.Close()
 
 	// Get max number of time steps that should be retrieved
 	moduleParams, err := k.GetParams(ctx)
