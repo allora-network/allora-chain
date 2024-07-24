@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"cosmossdk.io/errors"
+	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -48,7 +49,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 			// to avoid potential situations where the block is missed
 			if am.keeper.CheckWorkerOpenCadence(blockHeight, topic) {
-				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s . \n",
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker open cadence met for topic: %v metadata: %s . \n",
 					topic.Id,
 					topic.Metadata))
 
@@ -100,9 +101,25 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					return
 				}
 				for _, nonce := range nonces.Nonces {
-					// Check if current blockheight exists as an open nonce
-					if nonce.BlockHeight == blockHeight {
-						am.keeper.CloseWorkerNonce(sdkCtx, topic.Id, *nonce)
+					allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic.Id, *nonce)
+				}
+			}
+			// Check Reputer Close Cadence
+			if am.keeper.CheckReputerCloseCadence(blockHeight, topic) {
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Reputer close cadence met for topic: %v metadata: %s . \n",
+					topic.Id,
+					topic.Metadata))
+				// Check if there is an unfulfilled nonce
+				nonces, err := am.keeper.GetUnfulfilledReputerNonces(sdkCtx, topic.Id)
+				if err != nil {
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+					return
+				}
+				for _, nonce := range nonces.Nonces {
+					// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
+					// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
+					if blockHeight >= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength {
+						allorautils.CloseReputerNonce(&am.keeper, sdkCtx, topic.Id, *nonce.ReputerNonce)
 					}
 				}
 			}

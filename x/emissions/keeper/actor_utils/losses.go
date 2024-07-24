@@ -1,4 +1,4 @@
-package msgserver
+package utils
 
 import (
 	"context"
@@ -9,68 +9,72 @@ import (
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// Called by reputer to submit their assessment of the quality of workers' work compared to ground truth
-func (ms msgServer) InsertBulkReputerPayload(
-	ctx context.Context,
-	msg *types.MsgInsertBulkReputerPayload,
-) (*types.MsgInsertBulkReputerPayloadResponse, error) {
-	err := checkInputLength(ctx, ms, msg)
-	if err != nil {
-		return nil, err
-	}
+// REPUTER NONCES CLOSING
 
-	// Validate top level here. We avoid validating the full message here because that would allow for 1 bundle to fail the whole message.
-	if err := msg.ValidateTopLevel(); err != nil {
-		return nil, err
-	}
+// Closes an open reputer nonce.
+func CloseReputerNonce(
+	k *keeper.Keeper,
+	ctx sdk.Context,
+	topicId keeper.TopicId,
+	nonce types.Nonce) error {
 
 	// Check if the topic exists
-	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
-		return nil, sdkerrors.ErrNotFound
+		return sdkerrors.ErrNotFound
 	}
 
 	/// Do filters upon the leader (the sender) first, then do checks on each reputer in the payload
 	/// All filters should be done in order of increasing computational complexity
 
 	// Check if the worker nonce is unfulfilled
-	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
+	workerNonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topicId, &nonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// Throw if worker nonce is unfulfilled -- can't report losses on something not yet committed
 	if workerNonceUnfulfilled {
-		return nil, errorsmod.Wrapf(
+		return errorsmod.Wrapf(
 			types.ErrNonceStillUnfulfilled,
 			"Reputer's worker nonce not yet fulfilled for reputer block: %v",
-			msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+			&nonce.BlockHeight,
 		)
 	}
 
 	// Check if the reputer nonce is unfulfilled
-	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
+	reputerNonceUnfulfilled, err := k.IsReputerNonceUnfulfilled(ctx, topicId, &nonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// Throw if already fulfilled -- can't return a response twice
 	if !reputerNonceUnfulfilled {
-		return nil, errorsmod.Wrapf(
+		return errorsmod.Wrapf(
 			types.ErrUnfulfilledNonceNotFound,
 			"Reputer nonce already fulfilled: %v",
-			msg.ReputerRequestNonce.ReputerNonce.BlockHeight,
+			&nonce.BlockHeight,
 		)
 	}
+	// Check if the window time has passed: if blockheight > nonce.BlockHeight + topic.WorkerSubmissionWindow
+	blockHeight := ctx.BlockHeight()
+	if blockHeight <= nonce.BlockHeight+topic.GroundTruthLag {
+		return types.ErrWorkerNonceWindowNotAvailable
+	}
 
-	params, err := ms.k.GetParams(ctx)
+	params, err := k.GetParams(ctx)
 	if err != nil {
-		return nil, err
+		return err
+	}
+
+	reputerLossBundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
+	if err != nil {
+		return err
 	}
 
 	/// Do checks on each reputer in the payload
@@ -78,7 +82,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	// and get get score for each reputer => later we can skim only the top few by score descending
 	lossBundlesByReputer := make(map[string]*types.ReputerValueBundle)
 	latestReputerScores := make(map[string]types.Score)
-	for _, bundle := range msg.ReputerValueBundles {
+	for _, bundle := range reputerLossBundles.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
 			continue
 		}
@@ -86,18 +90,18 @@ func (ms msgServer) InsertBulkReputerPayload(
 		reputer := bundle.ValueBundle.Reputer
 
 		// Check that the reputer's value bundle is for a topic matching the leader's given topic
-		if bundle.ValueBundle.TopicId != msg.TopicId {
+		if bundle.ValueBundle.TopicId != topicId {
 			continue
 		}
 		// Check that the reputer's value bundle is for a nonce matching the leader's given nonce
-		if bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != msg.ReputerRequestNonce.ReputerNonce.BlockHeight {
+		if bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != nonce.BlockHeight {
 			continue
 		}
 
 		// Check if we've seen this reputer already in this bulk payload
 		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
 			// Check that the reputer is registered in the topic
-			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
+			isReputerRegistered, err := k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
 			if err != nil {
 				continue
 			}
@@ -107,7 +111,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			}
 
 			// Check that the reputer enough stake in the topic
-			stake, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, reputer)
+			stake, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
 			if err != nil {
 				continue
 			}
@@ -119,7 +123,8 @@ func (ms msgServer) InsertBulkReputerPayload(
 			// A check of their registration and other filters have already been applied when their inferences were inserted.
 			// We keep what we can, ignoring the reputer and their contribution (losses) entirely
 			// if they're left with no valid losses.
-			filteredBundle, err := filterUnacceptedWorkersFromReputerValueBundle(ctx, ms, msg.TopicId, *msg.ReputerRequestNonce, bundle)
+
+			filteredBundle, err := filterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, bundle)
 			if err != nil {
 				continue
 			}
@@ -129,7 +134,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 			/// Filtering done now, now write what we must for inclusion
 
 			// Get the latest score for each reputer
-			latestScore, err := ms.k.GetLatestReputerScore(ctx, bundle.ValueBundle.TopicId, reputer)
+			latestScore, err := k.GetLatestReputerScore(ctx, bundle.ValueBundle.TopicId, reputer)
 			if err != nil {
 				continue
 			}
@@ -139,13 +144,13 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topReputers := allorautils.FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, nonce.BlockHeight)
 
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
 	stakesByReputer := make(map[string]cosmosMath.Int)
 	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
 	for _, reputer := range topReputers {
-		stake, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, reputer)
+		stake, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
 		if err != nil {
 			continue
 		}
@@ -159,91 +164,94 @@ func (ms msgServer) InsertBulkReputerPayload(
 	})
 
 	if len(lossBundlesFromTopReputers) == 0 {
-		return nil, types.ErrNoValidBundles
+		return types.ErrNoValidReputations
 	}
 
 	bundles := types.ReputerValueBundles{
 		ReputerValueBundles: lossBundlesFromTopReputers,
 	}
-	err = ms.k.InsertReputerLossBundlesAtBlock(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, bundles)
+	err = k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, bundles)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, topic.Epsilon)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle))
+	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", &nonce.BlockHeight, networkLossBundle))
 
-	networkLossBundle.ReputerRequestNonce = msg.ReputerRequestNonce
-
-	err = ms.k.InsertNetworkLossBundleAtBlock(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
-	if err != nil {
-		return nil, err
+	networkLossBundle.ReputerRequestNonce = &types.ReputerRequestNonce{
+		ReputerNonce: &nonce,
 	}
 
-	types.EmitNewNetworkLossSetEvent(sdkCtx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle)
+	err = k.InsertNetworkLossBundleAtBlock(ctx, topicId, nonce.BlockHeight, networkLossBundle)
+	if err != nil {
+		return err
+	}
+
+	types.EmitNewNetworkLossSetEvent(sdkCtx, topicId, nonce.BlockHeight, networkLossBundle)
 
 	err = synth.GetCalcSetNetworkRegrets(
 		sdkCtx,
-		ms.k,
-		msg.TopicId,
+		*k,
+		topicId,
 		networkLossBundle,
-		*msg.ReputerRequestNonce.ReputerNonce,
+		*&nonce,
 		topic.AlphaRegret,
 		params.CNorm,
 		topic.PNorm,
 		topic.Epsilon)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Update the unfulfilled nonces
-	_, err = ms.k.FulfillReputerNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce)
+	_, err = k.FulfillReputerNonce(ctx, topicId, &nonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Update topic reward nonce
-	err = ms.k.SetTopicRewardNonce(ctx, msg.TopicId, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	err = k.SetTopicRewardNonce(ctx, topicId, nonce.BlockHeight)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = ms.k.AddRewardableTopic(ctx, msg.TopicId)
+	err = k.AddRewardableTopic(ctx, topicId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	blockHeight := sdkCtx.BlockHeight()
-	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.ReputerRequestNonce.ReputerNonce, msg.Sender, types.ActorType_REPUTER)
+	//
+	sender := "chain"
+	err = k.SetTopicLastCommit(ctx, topic.Id, blockHeight, &nonce, sender, types.ActorType_REPUTER)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = ms.k.SetTopicLastReputerPayload(ctx, topic.Id, blockHeight, msg.ReputerRequestNonce.ReputerNonce, msg.Sender)
+	err = k.SetTopicLastReputerPayload(ctx, topic.Id, blockHeight, &nonce, sender)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &types.MsgInsertBulkReputerPayloadResponse{}, nil
+	return nil
 }
 
 // Filter out values of unaccepted workers.
 // It is assumed that the work of inferers and forecasters stored at the nonce is already filtered for acceptance.
 // This also removes duplicate values of the same worker.
 func filterUnacceptedWorkersFromReputerValueBundle(
+	k *keeper.Keeper,
 	ctx context.Context,
-	ms msgServer,
 	topicId uint64,
 	reputerRequestNonce types.ReputerRequestNonce,
 	reputerValueBundle *types.ReputerValueBundle,
 ) (*types.ReputerValueBundle, error) {
 	// Get the accepted inferers of the associated worker response payload
-	inferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
+	inferences, err := k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "no inferences found at block height")
@@ -257,7 +265,7 @@ func filterUnacceptedWorkersFromReputerValueBundle(
 	}
 
 	// Get the accepted forecasters of the associated worker response payload
-	forecasts, err := ms.k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
+	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
 		// If no forecasts, we'll just assume there are 0 forecasters
 		if errors.Is(err, collections.ErrNotFound) {
