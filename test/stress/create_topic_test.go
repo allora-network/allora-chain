@@ -18,15 +18,16 @@ func createTopic(
 ) (topicId uint64) {
 	ctx := context.Background()
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:        creator.aa.addr,
-		Metadata:       "ETH 24h Prediction",
-		LossMethod:     "mse",
-		EpochLength:    epochLength,
-		GroundTruthLag: epochLength,
-		PNorm:          alloraMath.NewDecFromInt64(3),
-		AlphaRegret:    alloraMath.NewDecFromInt64(1),
-		AllowNegative:  true,
-		Epsilon:        alloraMath.MustNewDecFromString("0.01"),
+		Creator:                creator.aa.addr,
+		Metadata:               "ETH 24h Prediction",
+		LossMethod:             "mse",
+		EpochLength:            epochLength,
+		GroundTruthLag:         epochLength,
+		WorkerSubmissionWindow: epochLength,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		AllowNegative:          true,
+		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	txResp, err := m.Client.BroadcastTx(ctx, creator.aa.acc, createTopicRequest)
