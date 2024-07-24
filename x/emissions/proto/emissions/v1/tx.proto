@@ -166,7 +166,6 @@ message MsgCreateNewTopicResponse {
 
 /// Worker and Reputer Interface
 
-
 ///  Inference Node Registration
 
 message MsgRegister {
