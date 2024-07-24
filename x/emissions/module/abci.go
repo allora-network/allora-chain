@@ -28,7 +28,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
 	}
-	sdkCtx.Logger().Debug(fmt.Sprintf("EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
+	sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
 	// REWARDS (will internally filter any non-RewardReady topics)
 	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
@@ -91,9 +91,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			}
 			// Check Worker Close Cadence
 			if am.keeper.CheckWorkerCloseCadence(blockHeight, topic) {
-				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %v metadata: %s . \n",
-					topic.Id,
-					topic.Metadata))
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %d", topic.Id))
 				// Check if there is an unfulfilled nonce
 				nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topic.Id)
 				if err != nil {
@@ -106,9 +104,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			}
 			// Check Reputer Close Cadence
 			if am.keeper.CheckReputerCloseCadence(blockHeight, topic) {
-				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Reputer close cadence met for topic: %v metadata: %s . \n",
-					topic.Id,
-					topic.Metadata))
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Reputer close cadence met for topic: %d ", topic.Id))
 				// Check if there is an unfulfilled nonce
 				nonces, err := am.keeper.GetUnfulfilledReputerNonces(sdkCtx, topic.Id)
 				if err != nil {
