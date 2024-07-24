@@ -36,6 +36,5 @@ message TimestampedActorNonce {
   option (gogoproto.equal) = true;
 
   int64 block_height = 1;  // height at which value calculated or received
-  string actor = 2;
-  Nonce nonce = 3;
+  Nonce nonce = 2;
 }
