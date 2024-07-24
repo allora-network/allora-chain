@@ -593,7 +593,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetTopicLastReputerCommitInfo",
+					RpcMethod: "GetTopicLastWorkerCommitInfo",
 					Use:       "topic-last-reputer-commit [topic_id]",
 					Short:     "Get topic last commit by reputer",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
@@ -621,13 +621,10 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
 						{ProtoField: "metadata"},
-						{ProtoField: "loss_logic"},
 						{ProtoField: "loss_method"},
-						{ProtoField: "inference_logic"},
-						{ProtoField: "inference_method"},
 						{ProtoField: "epoch_length"},
 						{ProtoField: "ground_truth_lag"},
-						{ProtoField: "default_arg"},
+						{ProtoField: "worker_submission_window"},
 						{ProtoField: "p_norm"},
 						{ProtoField: "alpha_regret"},
 						{ProtoField: "allow_negative"},
