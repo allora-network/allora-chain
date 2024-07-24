@@ -1,4 +1,4 @@
-package msgserver
+package utils
 
 import (
 	"testing"

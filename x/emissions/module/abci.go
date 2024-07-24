@@ -47,7 +47,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			defer wg.Done()
 			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 			// to avoid potential situations where the block is missed
-			if am.keeper.CheckCadence(blockHeight, topic) {
+			if am.keeper.CheckWorkerOpenCadence(blockHeight, topic) {
 				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s . \n",
 					topic.Id,
 					topic.Metadata))
@@ -88,6 +88,25 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					}
 				}
 			}
+			// Check Worker Close Cadence
+			if am.keeper.CheckWorkerCloseCadence(blockHeight, topic) {
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %v metadata: %s . \n",
+					topic.Id,
+					topic.Metadata))
+				// Check if there is an unfulfilled nonce
+				nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topic.Id)
+				if err != nil {
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+					return
+				}
+				for _, nonce := range nonces.Nonces {
+					// Check if current blockheight exists as an open nonce
+					if nonce.BlockHeight == blockHeight {
+						am.keeper.CloseWorkerNonce(sdkCtx, topic.Id, *nonce)
+					}
+				}
+			}
+
 		}(localTopic)
 		return nil
 	}

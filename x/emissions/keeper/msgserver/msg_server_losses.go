@@ -10,6 +10,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -138,7 +139,7 @@ func (ms msgServer) InsertBulkReputerPayload(
 	}
 
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
+	topReputers := allorautils.FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 
 	// Check that the reputer in the payload is a top reputer among those who have submitted losses
 	stakesByReputer := make(map[string]cosmosMath.Int)

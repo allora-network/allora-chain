@@ -4,9 +4,14 @@ import (
 	"context"
 	"sort"
 
+	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+// -----------------------------------------------------
+// TODO REMOVE FILE AND REDO ITS TESTS IF APPROPRIATE
+// -----------------------------------------------------
 
 // Output a new set of inferences where only 1 inference per registerd inferer is kept,
 // ignore the rest. In particular, take the first inference from each registered inferer
@@ -79,7 +84,7 @@ func verifyAndInsertInferencesFromTopInferers(
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topInferers := FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.BlockHeight)
+	topInferers := allorautils.FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.BlockHeight)
 
 	// Build list of inferences that pass all filters
 	// AND are from top performing inferers among those who have submitted inferences in this batch
@@ -188,7 +193,7 @@ func verifyAndInsertForecastsFromTopForecasters(
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topForecasters := FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.BlockHeight)
+	topForecasters := allorautils.FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.BlockHeight)
 
 	// Build list of forecasts that pass all filters
 	// AND are from top performing forecasters among those who have submitted forecasts in this batch
