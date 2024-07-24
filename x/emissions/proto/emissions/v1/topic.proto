@@ -39,12 +39,12 @@ message TimestampedActorNonce {
   Nonce nonce = 2;
 }
 
-message TopicId {
+message Topicid {
   option (gogoproto.equal) = true;
   uint64 topic_id = 1;
 }
 
-message TopicIds {
+message Topicids {
   option (gogoproto.equal) = true;
-  repeated TopicId topic_ids = 1;
+  repeated Topicid topic_ids = 1;
 }

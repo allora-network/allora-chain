@@ -2091,25 +2091,25 @@ func (x *fastReflection_TimestampedActorNonce) ProtoMethods() *protoiface.Method
 }
 
 var (
-	md_TopicId          protoreflect.MessageDescriptor
-	fd_TopicId_topic_id protoreflect.FieldDescriptor
+	md_Topicid          protoreflect.MessageDescriptor
+	fd_Topicid_topic_id protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v1_topic_proto_init()
-	md_TopicId = File_emissions_v1_topic_proto.Messages().ByName("TopicId")
-	fd_TopicId_topic_id = md_TopicId.Fields().ByName("topic_id")
+	md_Topicid = File_emissions_v1_topic_proto.Messages().ByName("Topicid")
+	fd_Topicid_topic_id = md_Topicid.Fields().ByName("topic_id")
 }
 
-var _ protoreflect.Message = (*fastReflection_TopicId)(nil)
+var _ protoreflect.Message = (*fastReflection_Topicid)(nil)
 
-type fastReflection_TopicId TopicId
+type fastReflection_Topicid Topicid
 
-func (x *TopicId) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_TopicId)(x)
+func (x *Topicid) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_Topicid)(x)
 }
 
-func (x *TopicId) slowProtoReflect() protoreflect.Message {
+func (x *Topicid) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v1_topic_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2121,43 +2121,43 @@ func (x *TopicId) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_TopicId_messageType fastReflection_TopicId_messageType
-var _ protoreflect.MessageType = fastReflection_TopicId_messageType{}
+var _fastReflection_Topicid_messageType fastReflection_Topicid_messageType
+var _ protoreflect.MessageType = fastReflection_Topicid_messageType{}
 
-type fastReflection_TopicId_messageType struct{}
+type fastReflection_Topicid_messageType struct{}
 
-func (x fastReflection_TopicId_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_TopicId)(nil)
+func (x fastReflection_Topicid_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_Topicid)(nil)
 }
-func (x fastReflection_TopicId_messageType) New() protoreflect.Message {
-	return new(fastReflection_TopicId)
+func (x fastReflection_Topicid_messageType) New() protoreflect.Message {
+	return new(fastReflection_Topicid)
 }
-func (x fastReflection_TopicId_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_TopicId
+func (x fastReflection_Topicid_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_Topicid
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_TopicId) Descriptor() protoreflect.MessageDescriptor {
-	return md_TopicId
+func (x *fastReflection_Topicid) Descriptor() protoreflect.MessageDescriptor {
+	return md_Topicid
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_TopicId) Type() protoreflect.MessageType {
-	return _fastReflection_TopicId_messageType
+func (x *fastReflection_Topicid) Type() protoreflect.MessageType {
+	return _fastReflection_Topicid_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_TopicId) New() protoreflect.Message {
-	return new(fastReflection_TopicId)
+func (x *fastReflection_Topicid) New() protoreflect.Message {
+	return new(fastReflection_Topicid)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_TopicId) Interface() protoreflect.ProtoMessage {
-	return (*TopicId)(x)
+func (x *fastReflection_Topicid) Interface() protoreflect.ProtoMessage {
+	return (*Topicid)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -2165,10 +2165,10 @@ func (x *fastReflection_TopicId) Interface() protoreflect.ProtoMessage {
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_TopicId) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_Topicid) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if x.TopicId != uint64(0) {
 		value := protoreflect.ValueOfUint64(x.TopicId)
-		if !f(fd_TopicId_topic_id, value) {
+		if !f(fd_Topicid_topic_id, value) {
 			return
 		}
 	}
@@ -2185,15 +2185,15 @@ func (x *fastReflection_TopicId) Range(f func(protoreflect.FieldDescriptor, prot
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_TopicId) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_Topicid) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v1.TopicId.topic_id":
+	case "emissions.v1.Topicid.topic_id":
 		return x.TopicId != uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicId"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicid"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicId does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicid does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2203,15 +2203,15 @@ func (x *fastReflection_TopicId) Has(fd protoreflect.FieldDescriptor) bool {
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TopicId) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_Topicid) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v1.TopicId.topic_id":
+	case "emissions.v1.Topicid.topic_id":
 		x.TopicId = uint64(0)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicId"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicid"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicId does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicid does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2221,16 +2221,16 @@ func (x *fastReflection_TopicId) Clear(fd protoreflect.FieldDescriptor) {
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_TopicId) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_Topicid) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v1.TopicId.topic_id":
+	case "emissions.v1.Topicid.topic_id":
 		value := x.TopicId
 		return protoreflect.ValueOfUint64(value)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicId"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicid"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicId does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicid does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2244,15 +2244,15 @@ func (x *fastReflection_TopicId) Get(descriptor protoreflect.FieldDescriptor) pr
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TopicId) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_Topicid) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v1.TopicId.topic_id":
+	case "emissions.v1.Topicid.topic_id":
 		x.TopicId = value.Uint()
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicId"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicid"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicId does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicid does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2266,40 +2266,40 @@ func (x *fastReflection_TopicId) Set(fd protoreflect.FieldDescriptor, value prot
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TopicId) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_Topicid) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v1.TopicId.topic_id":
-		panic(fmt.Errorf("field topic_id of message emissions.v1.TopicId is not mutable"))
+	case "emissions.v1.Topicid.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v1.Topicid is not mutable"))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicId"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicid"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicId does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicid does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_TopicId) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_Topicid) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v1.TopicId.topic_id":
+	case "emissions.v1.Topicid.topic_id":
 		return protoreflect.ValueOfUint64(uint64(0))
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicId"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicid"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicId does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicid does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_TopicId) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_Topicid) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v1.TopicId", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v1.Topicid", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2307,7 +2307,7 @@ func (x *fastReflection_TopicId) WhichOneof(d protoreflect.OneofDescriptor) prot
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_TopicId) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_Topicid) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -2318,7 +2318,7 @@ func (x *fastReflection_TopicId) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TopicId) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_Topicid) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -2330,7 +2330,7 @@ func (x *fastReflection_TopicId) SetUnknown(fields protoreflect.RawFields) {
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_TopicId) IsValid() bool {
+func (x *fastReflection_Topicid) IsValid() bool {
 	return x != nil
 }
 
@@ -2340,9 +2340,9 @@ func (x *fastReflection_TopicId) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_TopicId) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_Topicid) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*TopicId)
+		x := input.Message.Interface().(*Topicid)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2367,7 +2367,7 @@ func (x *fastReflection_TopicId) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*TopicId)
+		x := input.Message.Interface().(*Topicid)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2402,7 +2402,7 @@ func (x *fastReflection_TopicId) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*TopicId)
+		x := input.Message.Interface().(*Topicid)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2434,10 +2434,10 @@ func (x *fastReflection_TopicId) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TopicId: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: Topicid: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TopicId: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: Topicid: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -2494,77 +2494,77 @@ func (x *fastReflection_TopicId) ProtoMethods() *protoiface.Methods {
 	}
 }
 
-var _ protoreflect.List = (*_TopicIds_1_list)(nil)
+var _ protoreflect.List = (*_Topicids_1_list)(nil)
 
-type _TopicIds_1_list struct {
-	list *[]*TopicId
+type _Topicids_1_list struct {
+	list *[]*Topicid
 }
 
-func (x *_TopicIds_1_list) Len() int {
+func (x *_Topicids_1_list) Len() int {
 	if x.list == nil {
 		return 0
 	}
 	return len(*x.list)
 }
 
-func (x *_TopicIds_1_list) Get(i int) protoreflect.Value {
+func (x *_Topicids_1_list) Get(i int) protoreflect.Value {
 	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
 }
 
-func (x *_TopicIds_1_list) Set(i int, value protoreflect.Value) {
+func (x *_Topicids_1_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*TopicId)
+	concreteValue := valueUnwrapped.Interface().(*Topicid)
 	(*x.list)[i] = concreteValue
 }
 
-func (x *_TopicIds_1_list) Append(value protoreflect.Value) {
+func (x *_Topicids_1_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*TopicId)
+	concreteValue := valueUnwrapped.Interface().(*Topicid)
 	*x.list = append(*x.list, concreteValue)
 }
 
-func (x *_TopicIds_1_list) AppendMutable() protoreflect.Value {
-	v := new(TopicId)
+func (x *_Topicids_1_list) AppendMutable() protoreflect.Value {
+	v := new(Topicid)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_TopicIds_1_list) Truncate(n int) {
+func (x *_Topicids_1_list) Truncate(n int) {
 	for i := n; i < len(*x.list); i++ {
 		(*x.list)[i] = nil
 	}
 	*x.list = (*x.list)[:n]
 }
 
-func (x *_TopicIds_1_list) NewElement() protoreflect.Value {
-	v := new(TopicId)
+func (x *_Topicids_1_list) NewElement() protoreflect.Value {
+	v := new(Topicid)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
-func (x *_TopicIds_1_list) IsValid() bool {
+func (x *_Topicids_1_list) IsValid() bool {
 	return x.list != nil
 }
 
 var (
-	md_TopicIds           protoreflect.MessageDescriptor
-	fd_TopicIds_topic_ids protoreflect.FieldDescriptor
+	md_Topicids           protoreflect.MessageDescriptor
+	fd_Topicids_topic_ids protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v1_topic_proto_init()
-	md_TopicIds = File_emissions_v1_topic_proto.Messages().ByName("TopicIds")
-	fd_TopicIds_topic_ids = md_TopicIds.Fields().ByName("topic_ids")
+	md_Topicids = File_emissions_v1_topic_proto.Messages().ByName("Topicids")
+	fd_Topicids_topic_ids = md_Topicids.Fields().ByName("topic_ids")
 }
 
-var _ protoreflect.Message = (*fastReflection_TopicIds)(nil)
+var _ protoreflect.Message = (*fastReflection_Topicids)(nil)
 
-type fastReflection_TopicIds TopicIds
+type fastReflection_Topicids Topicids
 
-func (x *TopicIds) ProtoReflect() protoreflect.Message {
-	return (*fastReflection_TopicIds)(x)
+func (x *Topicids) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_Topicids)(x)
 }
 
-func (x *TopicIds) slowProtoReflect() protoreflect.Message {
+func (x *Topicids) slowProtoReflect() protoreflect.Message {
 	mi := &file_emissions_v1_topic_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -2576,43 +2576,43 @@ func (x *TopicIds) slowProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-var _fastReflection_TopicIds_messageType fastReflection_TopicIds_messageType
-var _ protoreflect.MessageType = fastReflection_TopicIds_messageType{}
+var _fastReflection_Topicids_messageType fastReflection_Topicids_messageType
+var _ protoreflect.MessageType = fastReflection_Topicids_messageType{}
 
-type fastReflection_TopicIds_messageType struct{}
+type fastReflection_Topicids_messageType struct{}
 
-func (x fastReflection_TopicIds_messageType) Zero() protoreflect.Message {
-	return (*fastReflection_TopicIds)(nil)
+func (x fastReflection_Topicids_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_Topicids)(nil)
 }
-func (x fastReflection_TopicIds_messageType) New() protoreflect.Message {
-	return new(fastReflection_TopicIds)
+func (x fastReflection_Topicids_messageType) New() protoreflect.Message {
+	return new(fastReflection_Topicids)
 }
-func (x fastReflection_TopicIds_messageType) Descriptor() protoreflect.MessageDescriptor {
-	return md_TopicIds
+func (x fastReflection_Topicids_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_Topicids
 }
 
 // Descriptor returns message descriptor, which contains only the protobuf
 // type information for the message.
-func (x *fastReflection_TopicIds) Descriptor() protoreflect.MessageDescriptor {
-	return md_TopicIds
+func (x *fastReflection_Topicids) Descriptor() protoreflect.MessageDescriptor {
+	return md_Topicids
 }
 
 // Type returns the message type, which encapsulates both Go and protobuf
 // type information. If the Go type information is not needed,
 // it is recommended that the message descriptor be used instead.
-func (x *fastReflection_TopicIds) Type() protoreflect.MessageType {
-	return _fastReflection_TopicIds_messageType
+func (x *fastReflection_Topicids) Type() protoreflect.MessageType {
+	return _fastReflection_Topicids_messageType
 }
 
 // New returns a newly allocated and mutable empty message.
-func (x *fastReflection_TopicIds) New() protoreflect.Message {
-	return new(fastReflection_TopicIds)
+func (x *fastReflection_Topicids) New() protoreflect.Message {
+	return new(fastReflection_Topicids)
 }
 
 // Interface unwraps the message reflection interface and
 // returns the underlying ProtoMessage interface.
-func (x *fastReflection_TopicIds) Interface() protoreflect.ProtoMessage {
-	return (*TopicIds)(x)
+func (x *fastReflection_Topicids) Interface() protoreflect.ProtoMessage {
+	return (*Topicids)(x)
 }
 
 // Range iterates over every populated field in an undefined order,
@@ -2620,10 +2620,10 @@ func (x *fastReflection_TopicIds) Interface() protoreflect.ProtoMessage {
 // Range returns immediately if f returns false.
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
-func (x *fastReflection_TopicIds) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+func (x *fastReflection_Topicids) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
 	if len(x.TopicIds) != 0 {
-		value := protoreflect.ValueOfList(&_TopicIds_1_list{list: &x.TopicIds})
-		if !f(fd_TopicIds_topic_ids, value) {
+		value := protoreflect.ValueOfList(&_Topicids_1_list{list: &x.TopicIds})
+		if !f(fd_Topicids_topic_ids, value) {
 			return
 		}
 	}
@@ -2640,15 +2640,15 @@ func (x *fastReflection_TopicIds) Range(f func(protoreflect.FieldDescriptor, pro
 // In other cases (aside from the nullable cases above),
 // a proto3 scalar field is populated if it contains a non-zero value, and
 // a repeated field is populated if it is non-empty.
-func (x *fastReflection_TopicIds) Has(fd protoreflect.FieldDescriptor) bool {
+func (x *fastReflection_Topicids) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v1.TopicIds.topic_ids":
+	case "emissions.v1.Topicids.topic_ids":
 		return len(x.TopicIds) != 0
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicIds"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicids"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicIds does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicids does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2658,15 +2658,15 @@ func (x *fastReflection_TopicIds) Has(fd protoreflect.FieldDescriptor) bool {
 // associated with the given field number.
 //
 // Clear is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TopicIds) Clear(fd protoreflect.FieldDescriptor) {
+func (x *fastReflection_Topicids) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v1.TopicIds.topic_ids":
+	case "emissions.v1.Topicids.topic_ids":
 		x.TopicIds = nil
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicIds"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicids"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicIds does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicids does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2676,19 +2676,19 @@ func (x *fastReflection_TopicIds) Clear(fd protoreflect.FieldDescriptor) {
 // the default value of a bytes scalar is guaranteed to be a copy.
 // For unpopulated composite types, it returns an empty, read-only view
 // of the value; to obtain a mutable reference, use Mutable.
-func (x *fastReflection_TopicIds) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_Topicids) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v1.TopicIds.topic_ids":
+	case "emissions.v1.Topicids.topic_ids":
 		if len(x.TopicIds) == 0 {
-			return protoreflect.ValueOfList(&_TopicIds_1_list{})
+			return protoreflect.ValueOfList(&_Topicids_1_list{})
 		}
-		listValue := &_TopicIds_1_list{list: &x.TopicIds}
+		listValue := &_Topicids_1_list{list: &x.TopicIds}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicIds"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicids"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicIds does not contain field %s", descriptor.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicids does not contain field %s", descriptor.FullName()))
 	}
 }
 
@@ -2702,17 +2702,17 @@ func (x *fastReflection_TopicIds) Get(descriptor protoreflect.FieldDescriptor) p
 // empty, read-only value, then it panics.
 //
 // Set is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TopicIds) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+func (x *fastReflection_Topicids) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v1.TopicIds.topic_ids":
+	case "emissions.v1.Topicids.topic_ids":
 		lv := value.List()
-		clv := lv.(*_TopicIds_1_list)
+		clv := lv.(*_Topicids_1_list)
 		x.TopicIds = *clv.list
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicIds"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicids"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicIds does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicids does not contain field %s", fd.FullName()))
 	}
 }
 
@@ -2726,45 +2726,45 @@ func (x *fastReflection_TopicIds) Set(fd protoreflect.FieldDescriptor, value pro
 // It panics if the field does not contain a composite type.
 //
 // Mutable is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TopicIds) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_Topicids) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v1.TopicIds.topic_ids":
+	case "emissions.v1.Topicids.topic_ids":
 		if x.TopicIds == nil {
-			x.TopicIds = []*TopicId{}
+			x.TopicIds = []*Topicid{}
 		}
-		value := &_TopicIds_1_list{list: &x.TopicIds}
+		value := &_Topicids_1_list{list: &x.TopicIds}
 		return protoreflect.ValueOfList(value)
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicIds"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicids"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicIds does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicids does not contain field %s", fd.FullName()))
 	}
 }
 
 // NewField returns a new value that is assignable to the field
 // for the given descriptor. For scalars, this returns the default value.
 // For lists, maps, and messages, this returns a new, empty, mutable value.
-func (x *fastReflection_TopicIds) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+func (x *fastReflection_Topicids) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v1.TopicIds.topic_ids":
-		list := []*TopicId{}
-		return protoreflect.ValueOfList(&_TopicIds_1_list{list: &list})
+	case "emissions.v1.Topicids.topic_ids":
+		list := []*Topicid{}
+		return protoreflect.ValueOfList(&_Topicids_1_list{list: &list})
 	default:
 		if fd.IsExtension() {
-			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.TopicIds"))
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Topicids"))
 		}
-		panic(fmt.Errorf("message emissions.v1.TopicIds does not contain field %s", fd.FullName()))
+		panic(fmt.Errorf("message emissions.v1.Topicids does not contain field %s", fd.FullName()))
 	}
 }
 
 // WhichOneof reports which field within the oneof is populated,
 // returning nil if none are populated.
 // It panics if the oneof descriptor does not belong to this message.
-func (x *fastReflection_TopicIds) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+func (x *fastReflection_Topicids) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
 	switch d.FullName() {
 	default:
-		panic(fmt.Errorf("%s is not a oneof field in emissions.v1.TopicIds", d.FullName()))
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v1.Topicids", d.FullName()))
 	}
 	panic("unreachable")
 }
@@ -2772,7 +2772,7 @@ func (x *fastReflection_TopicIds) WhichOneof(d protoreflect.OneofDescriptor) pro
 // GetUnknown retrieves the entire list of unknown fields.
 // The caller may only mutate the contents of the RawFields
 // if the mutated bytes are stored back into the message with SetUnknown.
-func (x *fastReflection_TopicIds) GetUnknown() protoreflect.RawFields {
+func (x *fastReflection_Topicids) GetUnknown() protoreflect.RawFields {
 	return x.unknownFields
 }
 
@@ -2783,7 +2783,7 @@ func (x *fastReflection_TopicIds) GetUnknown() protoreflect.RawFields {
 // An empty RawFields may be passed to clear the fields.
 //
 // SetUnknown is a mutating operation and unsafe for concurrent use.
-func (x *fastReflection_TopicIds) SetUnknown(fields protoreflect.RawFields) {
+func (x *fastReflection_Topicids) SetUnknown(fields protoreflect.RawFields) {
 	x.unknownFields = fields
 }
 
@@ -2795,7 +2795,7 @@ func (x *fastReflection_TopicIds) SetUnknown(fields protoreflect.RawFields) {
 // message type, but the details are implementation dependent.
 // Validity is not part of the protobuf data model, and may not
 // be preserved in marshaling or other operations.
-func (x *fastReflection_TopicIds) IsValid() bool {
+func (x *fastReflection_Topicids) IsValid() bool {
 	return x != nil
 }
 
@@ -2805,9 +2805,9 @@ func (x *fastReflection_TopicIds) IsValid() bool {
 // The returned methods type is identical to
 // "google.golang.org/protobuf/runtime/protoiface".Methods.
 // Consult the protoiface package documentation for details.
-func (x *fastReflection_TopicIds) ProtoMethods() *protoiface.Methods {
+func (x *fastReflection_Topicids) ProtoMethods() *protoiface.Methods {
 	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
-		x := input.Message.Interface().(*TopicIds)
+		x := input.Message.Interface().(*Topicids)
 		if x == nil {
 			return protoiface.SizeOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2835,7 +2835,7 @@ func (x *fastReflection_TopicIds) ProtoMethods() *protoiface.Methods {
 	}
 
 	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
-		x := input.Message.Interface().(*TopicIds)
+		x := input.Message.Interface().(*Topicids)
 		if x == nil {
 			return protoiface.MarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2881,7 +2881,7 @@ func (x *fastReflection_TopicIds) ProtoMethods() *protoiface.Methods {
 		}, nil
 	}
 	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
-		x := input.Message.Interface().(*TopicIds)
+		x := input.Message.Interface().(*Topicids)
 		if x == nil {
 			return protoiface.UnmarshalOutput{
 				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2913,10 +2913,10 @@ func (x *fastReflection_TopicIds) ProtoMethods() *protoiface.Methods {
 			fieldNum := int32(wire >> 3)
 			wireType := int(wire & 0x7)
 			if wireType == 4 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TopicIds: wiretype end group for non-group")
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: Topicids: wiretype end group for non-group")
 			}
 			if fieldNum <= 0 {
-				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: TopicIds: illegal tag %d (wire type %d)", fieldNum, wire)
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: Topicids: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
 			case 1:
@@ -2948,7 +2948,7 @@ func (x *fastReflection_TopicIds) ProtoMethods() *protoiface.Methods {
 				if postIndex > l {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
-				x.TopicIds = append(x.TopicIds, &TopicId{})
+				x.TopicIds = append(x.TopicIds, &Topicid{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.TopicIds[len(x.TopicIds)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
@@ -3210,7 +3210,7 @@ func (x *TimestampedActorNonce) GetNonce() *Nonce {
 	return nil
 }
 
-type TopicId struct {
+type Topicid struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -3218,8 +3218,8 @@ type TopicId struct {
 	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
 }
 
-func (x *TopicId) Reset() {
-	*x = TopicId{}
+func (x *Topicid) Reset() {
+	*x = Topicid{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v1_topic_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -3227,34 +3227,34 @@ func (x *TopicId) Reset() {
 	}
 }
 
-func (x *TopicId) String() string {
+func (x *Topicid) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TopicId) ProtoMessage() {}
+func (*Topicid) ProtoMessage() {}
 
-// Deprecated: Use TopicId.ProtoReflect.Descriptor instead.
-func (*TopicId) Descriptor() ([]byte, []int) {
+// Deprecated: Use Topicid.ProtoReflect.Descriptor instead.
+func (*Topicid) Descriptor() ([]byte, []int) {
 	return file_emissions_v1_topic_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *TopicId) GetTopicId() uint64 {
+func (x *Topicid) GetTopicId() uint64 {
 	if x != nil {
 		return x.TopicId
 	}
 	return 0
 }
 
-type TopicIds struct {
+type Topicids struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	TopicIds []*TopicId `protobuf:"bytes,1,rep,name=topic_ids,json=topicIds,proto3" json:"topic_ids,omitempty"`
+	TopicIds []*Topicid `protobuf:"bytes,1,rep,name=topic_ids,json=topicIds,proto3" json:"topic_ids,omitempty"`
 }
 
-func (x *TopicIds) Reset() {
-	*x = TopicIds{}
+func (x *Topicids) Reset() {
+	*x = Topicids{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_emissions_v1_topic_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -3262,18 +3262,18 @@ func (x *TopicIds) Reset() {
 	}
 }
 
-func (x *TopicIds) String() string {
+func (x *Topicids) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TopicIds) ProtoMessage() {}
+func (*Topicids) ProtoMessage() {}
 
-// Deprecated: Use TopicIds.ProtoReflect.Descriptor instead.
-func (*TopicIds) Descriptor() ([]byte, []int) {
+// Deprecated: Use Topicids.ProtoReflect.Descriptor instead.
+func (*Topicids) Descriptor() ([]byte, []int) {
 	return file_emissions_v1_topic_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *TopicIds) GetTopicIds() []*TopicId {
+func (x *Topicids) GetTopicIds() []*Topicid {
 	if x != nil {
 		return x.TopicIds
 	}
@@ -3344,13 +3344,13 @@ var file_emissions_v1_topic_proto_rawDesc = []byte{
 	0x69, 0x67, 0x68, 0x74, 0x12, 0x29, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
 	0x76, 0x31, 0x2e, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x3a,
-	0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x2a, 0x0a, 0x07, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
+	0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x22, 0x2a, 0x0a, 0x07, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x69, 0x64,
 	0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x3a, 0x04, 0xe8, 0xa0, 0x1f,
-	0x01, 0x22, 0x44, 0x0a, 0x08, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x73, 0x12, 0x32, 0x0a,
+	0x01, 0x22, 0x44, 0x0a, 0x08, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x69, 0x64, 0x73, 0x12, 0x32, 0x0a,
 	0x09, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b,
 	0x32, 0x15, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e,
-	0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x52, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
+	0x54, 0x6f, 0x70, 0x69, 0x63, 0x69, 0x64, 0x52, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64,
 	0x73, 0x3a, 0x04, 0xe8, 0xa0, 0x1f, 0x01, 0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e,
 	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x54, 0x6f,
 	0x70, 0x69, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68,
@@ -3384,14 +3384,14 @@ var file_emissions_v1_topic_proto_goTypes = []interface{}{
 	(*Topic)(nil),                 // 0: emissions.v1.Topic
 	(*TopicList)(nil),             // 1: emissions.v1.TopicList
 	(*TimestampedActorNonce)(nil), // 2: emissions.v1.TimestampedActorNonce
-	(*TopicId)(nil),               // 3: emissions.v1.TopicId
-	(*TopicIds)(nil),              // 4: emissions.v1.TopicIds
+	(*Topicid)(nil),               // 3: emissions.v1.Topicid
+	(*Topicids)(nil),              // 4: emissions.v1.Topicids
 	(*Nonce)(nil),                 // 5: emissions.v1.Nonce
 }
 var file_emissions_v1_topic_proto_depIdxs = []int32{
 	0, // 0: emissions.v1.TopicList.topics:type_name -> emissions.v1.Topic
 	5, // 1: emissions.v1.TimestampedActorNonce.nonce:type_name -> emissions.v1.Nonce
-	3, // 2: emissions.v1.TopicIds.topic_ids:type_name -> emissions.v1.TopicId
+	3, // 2: emissions.v1.Topicids.topic_ids:type_name -> emissions.v1.Topicid
 	3, // [3:3] is the sub-list for method output_type
 	3, // [3:3] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
@@ -3443,7 +3443,7 @@ func file_emissions_v1_topic_proto_init() {
 			}
 		}
 		file_emissions_v1_topic_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TopicId); i {
+			switch v := v.(*Topicid); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3455,7 +3455,7 @@ func file_emissions_v1_topic_proto_init() {
 			}
 		}
 		file_emissions_v1_topic_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TopicIds); i {
+			switch v := v.(*Topicids); i {
 			case 0:
 				return &v.state
 			case 1:
