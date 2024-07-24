@@ -95,13 +95,12 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return err
 	}
 
-	// TODO remove sender from lastCommit
-	err = k.SetTopicLastCommit(ctx, topic.Id, blockHeight, &nonce, "internal", types.ActorType_INFERER)
+	err = k.SetTopicLastCommit(ctx, topic.Id, blockHeight, &nonce, types.ActorType_INFERER)
 	if err != nil {
 		return err
 	}
 
-	err = k.SetTopicLastWorkerPayload(ctx, topic.Id, blockHeight, &nonce, "internal")
+	err = k.SetTopicLastWorkerPayload(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		return err
 	}

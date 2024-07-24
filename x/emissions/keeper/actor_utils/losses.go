@@ -225,14 +225,12 @@ func CloseReputerNonce(
 		return err
 	}
 
-	//
-	sender := "chain"
-	err = k.SetTopicLastCommit(ctx, topic.Id, blockHeight, &nonce, sender, types.ActorType_REPUTER)
+	err = k.SetTopicLastCommit(ctx, topic.Id, blockHeight, &nonce, types.ActorType_REPUTER)
 	if err != nil {
 		return err
 	}
 
-	err = k.SetTopicLastReputerPayload(ctx, topic.Id, blockHeight, &nonce, sender)
+	err = k.SetTopicLastReputerPayload(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		return err
 	}
