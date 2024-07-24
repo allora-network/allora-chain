@@ -2362,35 +2362,50 @@ func (k *Keeper) GetTopicLastReputerPayload(ctx context.Context, topic TopicId) 
 	return k.topicLastReputerPayload.Get(ctx, topic)
 }
 
-func (k *Keeper) CloseWorkerNonce(ctx sdk.Context, topicId TopicId, nonce types.Nonce) (*types.MsgInsertBulkWorkerPayloadResponse, error) {
+// WORKER NONCES CLOSING
+
+// Closes an open worker nonce.
+func (k *Keeper) CloseWorkerNonce(ctx sdk.Context, topicId TopicId, nonce types.Nonce) error {
 	// Check if the topic exists
 	topicExists, err := k.TopicExists(ctx, topicId)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if !topicExists {
-		return nil, types.ErrInvalidTopicId
+		return types.ErrInvalidTopicId
 	}
 
 	// Check if the nonce is unfulfilled
 	nonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topicId, &nonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// If the nonce is already fulfilled, return an error
 	if !nonceUnfulfilled {
-		return nil, types.ErrUnfulfilledNonceNotFound
+		return types.ErrUnfulfilledNonceNotFound
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return types.ErrInvalidTopicId
+	}
+
+	// Check if the window time has passed: if blockheight > nonce.BlockHeight + topic.WorkerSubmissionWindow
+	blockHeight := ctx.BlockHeight()
+	if blockHeight <= nonce.BlockHeight+topic.WorkerSubmissionWindow ||
+		blockHeight > nonce.BlockHeight+topic.GroundTruthLag {
+		return types.ErrWorkerNonceWindowNotAvailable
 	}
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Get all inferences from this topic, nonce
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	acceptedInferers, err := k.verifyAndInsertInferencesFromTopInferers(
@@ -2401,13 +2416,13 @@ func (k *Keeper) CloseWorkerNonce(ctx sdk.Context, topicId TopicId, nonce types.
 		moduleParams.MaxTopInferersToReward,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Get all forecasts from this topicId, nonce
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = k.verifyAndInsertForecastsFromTopForecasters(
@@ -2419,39 +2434,32 @@ func (k *Keeper) CloseWorkerNonce(ctx sdk.Context, topicId TopicId, nonce types.
 		moduleParams.MaxTopForecastersToReward,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// Update the unfulfilled worker nonce
 	_, err = k.FulfillWorkerNonce(ctx, topicId, &nonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	topic, err := k.GetTopic(ctx, topicId)
-	if err != nil {
-		return nil, types.ErrInvalidTopicId
-	}
-
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err = k.AddReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// TODO remove sender from lastCommit
-	blockHeight := sdkCtx.BlockHeight()
 	err = k.SetTopicLastCommit(ctx, topic.Id, blockHeight, &nonce, "internal", types.ActorType_INFERER)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = k.SetTopicLastWorkerPayload(ctx, topic.Id, blockHeight, &nonce, "internal")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Return an empty response as the operation was successful
-	return &types.MsgInsertBulkWorkerPayloadResponse{}, nil
+	return nil
 }
 
 // Output a new set of inferences where only 1 inference per registerd inferer is kept,
