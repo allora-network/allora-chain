@@ -72,7 +72,6 @@ const (
 	Query_TopicExists_FullMethodName                                 = "/emissions.v1.Query/TopicExists"
 	Query_IsTopicActive_FullMethodName                               = "/emissions.v1.Query/IsTopicActive"
 	Query_GetTopicFeeRevenue_FullMethodName                          = "/emissions.v1.Query/GetTopicFeeRevenue"
-	Query_GetChurnableTopics_FullMethodName                          = "/emissions.v1.Query/GetChurnableTopics"
 	Query_GetRewardableTopics_FullMethodName                         = "/emissions.v1.Query/GetRewardableTopics"
 	Query_GetLatestInfererScore_FullMethodName                       = "/emissions.v1.Query/GetLatestInfererScore"
 	Query_GetLatestForecasterScore_FullMethodName                    = "/emissions.v1.Query/GetLatestForecasterScore"
@@ -150,7 +149,6 @@ type QueryClient interface {
 	TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error)
 	IsTopicActive(ctx context.Context, in *QueryIsTopicActiveRequest, opts ...grpc.CallOption) (*QueryIsTopicActiveResponse, error)
 	GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error)
-	GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error)
 	GetLatestInfererScore(ctx context.Context, in *QueryLatestInfererScoreRequest, opts ...grpc.CallOption) (*QueryLatestInfererScoreResponse, error)
 	GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error)
@@ -655,15 +653,6 @@ func (c *queryClient) GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeR
 	return out, nil
 }
 
-func (c *queryClient) GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error) {
-	out := new(QueryChurnableTopicsResponse)
-	err := c.cc.Invoke(ctx, Query_GetChurnableTopics_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error) {
 	out := new(QueryRewardableTopicsResponse)
 	err := c.cc.Invoke(ctx, Query_GetRewardableTopics_FullMethodName, in, out, opts...)
@@ -875,7 +864,6 @@ type QueryServer interface {
 	TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error)
 	IsTopicActive(context.Context, *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error)
 	GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error)
-	GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error)
 	GetLatestInfererScore(context.Context, *QueryLatestInfererScoreRequest) (*QueryLatestInfererScoreResponse, error)
 	GetLatestForecasterScore(context.Context, *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error)
@@ -1058,9 +1046,6 @@ func (UnimplementedQueryServer) IsTopicActive(context.Context, *QueryIsTopicActi
 }
 func (UnimplementedQueryServer) GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicFeeRevenue not implemented")
-}
-func (UnimplementedQueryServer) GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetChurnableTopics not implemented")
 }
 func (UnimplementedQueryServer) GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRewardableTopics not implemented")
@@ -2080,24 +2065,6 @@ func _Query_GetTopicFeeRevenue_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetChurnableTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryChurnableTopicsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetChurnableTopics(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetChurnableTopics_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetChurnableTopics(ctx, req.(*QueryChurnableTopicsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_GetRewardableTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryRewardableTopicsRequest)
 	if err := dec(in); err != nil {
@@ -2622,10 +2589,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicFeeRevenue",
 			Handler:    _Query_GetTopicFeeRevenue_Handler,
-		},
-		{
-			MethodName: "GetChurnableTopics",
-			Handler:    _Query_GetChurnableTopics_Handler,
 		},
 		{
 			MethodName: "GetRewardableTopics",

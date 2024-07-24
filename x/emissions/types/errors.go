@@ -67,4 +67,8 @@ var (
 	ErrStakeRemovalNotFound                     = errors.Register(ModuleName, 64, "No stake removal found")
 	ErrInvariantFailure                         = errors.Register(ModuleName, 65, "invariant failure")
 	ErrIntegerUnderflowReputerStakeAuthority    = errors.Register(ModuleName, 66, "integer underflow for reputer stake authority")
+	ErrWorkerNonceWindowNotAvailable            = errors.Register(ModuleName, 67, "worker nonce window not available")
+	ErrReputerNonceWindowNotAvailable           = errors.Register(ModuleName, 68, "reputer nonce window not available")
+	ErrNoValidInferences                        = errors.Register(ModuleName, 69, "no valid inferences found")
+	ErrNoValidReputations                       = errors.Register(ModuleName, 70, "no valid reputations found")
 )

@@ -18,15 +18,11 @@ service Msg {
 
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  rpc InsertBulkWorkerPayload(MsgInsertBulkWorkerPayload) returns (MsgInsertBulkWorkerPayloadResponse);
-
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
-
-  rpc InsertBulkReputerPayload(MsgInsertBulkReputerPayload) returns (MsgInsertBulkReputerPayloadResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
@@ -169,28 +165,6 @@ message MsgCreateNewTopicResponse {
 }
 
 /// Worker and Reputer Interface
-
-message MsgInsertBulkReputerPayload {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  ReputerRequestNonce reputer_request_nonce = 2;
-  uint64 topic_id = 3;
-  repeated ReputerValueBundle reputer_value_bundles = 4;
-}
-
-message MsgInsertBulkReputerPayloadResponse {}
-
-message MsgInsertBulkWorkerPayload {
-  option (cosmos.msg.v1.signer) = "sender";
-
-  string sender = 1;
-  Nonce nonce = 2;
-  uint64 topic_id = 3;
-  repeated WorkerDataBundle worker_data_bundles = 4;
-}
-
-message MsgInsertBulkWorkerPayloadResponse {}
 
 ///  Inference Node Registration
 

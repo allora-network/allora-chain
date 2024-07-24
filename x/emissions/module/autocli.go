@@ -54,11 +54,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetChurnableTopics",
-					Use:       "churnable-topics",
-					Short:     "Get Churnable Topics",
-				},
-				{
 					RpcMethod: "GetRewardableTopics",
 					Use:       "rewardable-topics",
 					Short:     "Get Rewardable Topics",
@@ -598,7 +593,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetTopicLastReputerCommitInfo",
+					RpcMethod: "GetTopicLastWorkerCommitInfo",
 					Use:       "topic-last-reputer-commit [topic_id]",
 					Short:     "Get topic last commit by reputer",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
@@ -621,18 +616,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [ground_truth_lag] [default_arg] [p_norm] [alpha_regret] [allow_negative] [epsilon]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
 						{ProtoField: "metadata"},
-						{ProtoField: "loss_logic"},
 						{ProtoField: "loss_method"},
-						{ProtoField: "inference_logic"},
-						{ProtoField: "inference_method"},
 						{ProtoField: "epoch_length"},
 						{ProtoField: "ground_truth_lag"},
-						{ProtoField: "default_arg"},
+						{ProtoField: "worker_submission_window"},
 						{ProtoField: "p_norm"},
 						{ProtoField: "alpha_regret"},
 						{ProtoField: "allow_negative"},
@@ -759,24 +751,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "address"},
-					},
-				},
-				{
-					RpcMethod: "InsertBulkWorkerPayload",
-					Use:       "insert-bulk-worker-payload [worker_data_bundles]",
-					Short:     "Insert bulk worker payload",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "worker_data_bundles"},
-					},
-				},
-				{
-					RpcMethod: "InsertBulkReputerPayload",
-					Use:       "insert-bulk-reputer-payload [reputer_value_bundles]",
-					Short:     "Insert bulk reputer payload",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "sender"},
-						{ProtoField: "reputer_value_bundles"},
 					},
 				},
 			},

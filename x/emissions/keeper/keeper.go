@@ -8,9 +8,8 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"github.com/allora-network/allora-chain/app/params"
-
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"cosmossdk.io/collections"
@@ -48,8 +47,6 @@ type Keeper struct {
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
 	topics       collections.Map[TopicId, types.Topic]
 	activeTopics collections.KeySet[TopicId]
-	// every topic that is ready to request inferences and possible also losses
-	churnableTopics collections.KeySet[TopicId]
 	// every topic that has been churned and ready to be rewarded i.e. reputer losses have been committed
 	rewardableTopics collections.KeySet[TopicId]
 	// for a topic, what is every worker node that has registered to it?
@@ -201,7 +198,6 @@ func NewKeeper(
 		nextTopicId:                              collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                                   collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
 		activeTopics:                             collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
-		churnableTopics:                          collections.NewKeySet(sb, types.ChurnableTopicsKey, "churnable_topics", collections.Uint64Key),
 		rewardableTopics:                         collections.NewKeySet(sb, types.RewardableTopicsKey, "rewardable_topics", collections.Uint64Key),
 		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
@@ -1752,43 +1748,6 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 }
 
-/// CHURNABLE TOPICS
-
-// Get the churnable topics
-func (k *Keeper) GetChurnableTopics(ctx context.Context) ([]TopicId, error) {
-	iter, err := k.churnableTopics.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	topics := make([]TopicId, 0)
-	for ; iter.Valid(); iter.Next() {
-		topicId, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		topics = append(topics, topicId)
-	}
-
-	return topics, nil
-}
-
-// Add as topic as churnable
-func (k *Keeper) AddChurnableTopic(ctx context.Context, topicId TopicId) error {
-	return k.churnableTopics.Set(ctx, topicId)
-}
-
-// ResetChurnReadyTopics clears all topics from the churn-ready set and resets related states.
-func (k *Keeper) ResetChurnableTopics(ctx sdk.Context) error {
-	err := k.churnableTopics.Clear(ctx, nil)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to clear churnable topics")
-	}
-	ctx.Logger().Info("Successfully cleared churnable topics")
-	return nil
-}
-
 // REWARDABLE TOPICS
 
 // Get the rewardable topics
@@ -2337,9 +2296,17 @@ func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHe
 }
 
 // Return true if the topic has met its cadence or is the first run
-func (k *Keeper) CheckCadence(blockHeight int64, topic types.Topic) bool {
+func (k *Keeper) CheckWorkerOpenCadence(blockHeight int64, topic types.Topic) bool {
 	return (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0 ||
 		topic.EpochLastEnded == 0
+}
+
+func (k *Keeper) CheckWorkerCloseCadence(blockHeight int64, topic types.Topic) bool {
+	return blockHeight-topic.EpochLastEnded == topic.WorkerSubmissionWindow
+}
+
+func (k *Keeper) CheckReputerCloseCadence(blockHeight int64, topic types.Topic) bool {
+	return (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0
 }
 
 func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
@@ -2350,17 +2317,15 @@ func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
 	return nil
 }
 
-func (k *Keeper) SetTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actor ActorId, actorType types.ActorType) error {
+func (k *Keeper) SetTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actorType types.ActorType) error {
 	if actorType == types.ActorType_REPUTER {
 		return k.topicLastReputerCommit.Set(ctx, topic, types.TimestampedActorNonce{
 			BlockHeight: blockHeight,
-			Actor:       actor,
 			Nonce:       nonce,
 		})
 	}
 	return k.topicLastWorkerCommit.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
-		Actor:       actor,
 		Nonce:       nonce,
 	})
 }
@@ -2372,10 +2337,9 @@ func (k *Keeper) GetTopicLastCommit(ctx context.Context, topic TopicId, actorTyp
 	return k.topicLastWorkerCommit.Get(ctx, topic)
 }
 
-func (k *Keeper) SetTopicLastWorkerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actor ActorId) error {
+func (k *Keeper) SetTopicLastWorkerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
 	return k.topicLastWorkerPayload.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
-		Actor:       actor,
 		Nonce:       nonce,
 	})
 }
@@ -2384,10 +2348,9 @@ func (k *Keeper) GetTopicLastWorkerPayload(ctx context.Context, topic TopicId) (
 	return k.topicLastWorkerPayload.Get(ctx, topic)
 }
 
-func (k *Keeper) SetTopicLastReputerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actor ActorId) error {
+func (k *Keeper) SetTopicLastReputerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
 	return k.topicLastReputerPayload.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
-		Actor:       actor,
 		Nonce:       nonce,
 	})
 }

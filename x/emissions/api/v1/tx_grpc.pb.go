@@ -20,11 +20,9 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	Msg_UpdateParams_FullMethodName              = "/emissions.v1.Msg/UpdateParams"
-	Msg_InsertBulkWorkerPayload_FullMethodName   = "/emissions.v1.Msg/InsertBulkWorkerPayload"
 	Msg_CreateNewTopic_FullMethodName            = "/emissions.v1.Msg/CreateNewTopic"
 	Msg_Register_FullMethodName                  = "/emissions.v1.Msg/Register"
 	Msg_RemoveRegistration_FullMethodName        = "/emissions.v1.Msg/RemoveRegistration"
-	Msg_InsertBulkReputerPayload_FullMethodName  = "/emissions.v1.Msg/InsertBulkReputerPayload"
 	Msg_AddStake_FullMethodName                  = "/emissions.v1.Msg/AddStake"
 	Msg_RemoveStake_FullMethodName               = "/emissions.v1.Msg/RemoveStake"
 	Msg_CancelRemoveStake_FullMethodName         = "/emissions.v1.Msg/CancelRemoveStake"
@@ -42,11 +40,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MsgClient interface {
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
-	InsertBulkWorkerPayload(ctx context.Context, in *MsgInsertBulkWorkerPayload, opts ...grpc.CallOption) (*MsgInsertBulkWorkerPayloadResponse, error)
 	CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error)
 	Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error)
 	RemoveRegistration(ctx context.Context, in *MsgRemoveRegistration, opts ...grpc.CallOption) (*MsgRemoveRegistrationResponse, error)
-	InsertBulkReputerPayload(ctx context.Context, in *MsgInsertBulkReputerPayload, opts ...grpc.CallOption) (*MsgInsertBulkReputerPayloadResponse, error)
 	AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.CallOption) (*MsgAddStakeResponse, error)
 	RemoveStake(ctx context.Context, in *MsgRemoveStake, opts ...grpc.CallOption) (*MsgRemoveStakeResponse, error)
 	CancelRemoveStake(ctx context.Context, in *MsgCancelRemoveStake, opts ...grpc.CallOption) (*MsgCancelRemoveStakeResponse, error)
@@ -76,15 +72,6 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
-func (c *msgClient) InsertBulkWorkerPayload(ctx context.Context, in *MsgInsertBulkWorkerPayload, opts ...grpc.CallOption) (*MsgInsertBulkWorkerPayloadResponse, error) {
-	out := new(MsgInsertBulkWorkerPayloadResponse)
-	err := c.cc.Invoke(ctx, Msg_InsertBulkWorkerPayload_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *msgClient) CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error) {
 	out := new(MsgCreateNewTopicResponse)
 	err := c.cc.Invoke(ctx, Msg_CreateNewTopic_FullMethodName, in, out, opts...)
@@ -106,15 +93,6 @@ func (c *msgClient) Register(ctx context.Context, in *MsgRegister, opts ...grpc.
 func (c *msgClient) RemoveRegistration(ctx context.Context, in *MsgRemoveRegistration, opts ...grpc.CallOption) (*MsgRemoveRegistrationResponse, error) {
 	out := new(MsgRemoveRegistrationResponse)
 	err := c.cc.Invoke(ctx, Msg_RemoveRegistration_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *msgClient) InsertBulkReputerPayload(ctx context.Context, in *MsgInsertBulkReputerPayload, opts ...grpc.CallOption) (*MsgInsertBulkReputerPayloadResponse, error) {
-	out := new(MsgInsertBulkReputerPayloadResponse)
-	err := c.cc.Invoke(ctx, Msg_InsertBulkReputerPayload_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -216,11 +194,9 @@ func (c *msgClient) RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveF
 // for forward compatibility
 type MsgServer interface {
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	InsertBulkWorkerPayload(context.Context, *MsgInsertBulkWorkerPayload) (*MsgInsertBulkWorkerPayloadResponse, error)
 	CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error)
 	Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error)
 	RemoveRegistration(context.Context, *MsgRemoveRegistration) (*MsgRemoveRegistrationResponse, error)
-	InsertBulkReputerPayload(context.Context, *MsgInsertBulkReputerPayload) (*MsgInsertBulkReputerPayloadResponse, error)
 	AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error)
 	RemoveStake(context.Context, *MsgRemoveStake) (*MsgRemoveStakeResponse, error)
 	CancelRemoveStake(context.Context, *MsgCancelRemoveStake) (*MsgCancelRemoveStakeResponse, error)
@@ -241,9 +217,6 @@ type UnimplementedMsgServer struct {
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
-func (UnimplementedMsgServer) InsertBulkWorkerPayload(context.Context, *MsgInsertBulkWorkerPayload) (*MsgInsertBulkWorkerPayloadResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InsertBulkWorkerPayload not implemented")
-}
 func (UnimplementedMsgServer) CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewTopic not implemented")
 }
@@ -252,9 +225,6 @@ func (UnimplementedMsgServer) Register(context.Context, *MsgRegister) (*MsgRegis
 }
 func (UnimplementedMsgServer) RemoveRegistration(context.Context, *MsgRemoveRegistration) (*MsgRemoveRegistrationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveRegistration not implemented")
-}
-func (UnimplementedMsgServer) InsertBulkReputerPayload(context.Context, *MsgInsertBulkReputerPayload) (*MsgInsertBulkReputerPayloadResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InsertBulkReputerPayload not implemented")
 }
 func (UnimplementedMsgServer) AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddStake not implemented")
@@ -317,24 +287,6 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_InsertBulkWorkerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgInsertBulkWorkerPayload)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).InsertBulkWorkerPayload(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_InsertBulkWorkerPayload_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).InsertBulkWorkerPayload(ctx, req.(*MsgInsertBulkWorkerPayload))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Msg_CreateNewTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MsgCreateNewTopic)
 	if err := dec(in); err != nil {
@@ -385,24 +337,6 @@ func _Msg_RemoveRegistration_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MsgServer).RemoveRegistration(ctx, req.(*MsgRemoveRegistration))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Msg_InsertBulkReputerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgInsertBulkReputerPayload)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MsgServer).InsertBulkReputerPayload(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Msg_InsertBulkReputerPayload_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).InsertBulkReputerPayload(ctx, req.(*MsgInsertBulkReputerPayload))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -599,10 +533,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Msg_UpdateParams_Handler,
 		},
 		{
-			MethodName: "InsertBulkWorkerPayload",
-			Handler:    _Msg_InsertBulkWorkerPayload_Handler,
-		},
-		{
 			MethodName: "CreateNewTopic",
 			Handler:    _Msg_CreateNewTopic_Handler,
 		},
@@ -613,10 +543,6 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveRegistration",
 			Handler:    _Msg_RemoveRegistration_Handler,
-		},
-		{
-			MethodName: "InsertBulkReputerPayload",
-			Handler:    _Msg_InsertBulkReputerPayload_Handler,
 		},
 		{
 			MethodName: "AddStake",

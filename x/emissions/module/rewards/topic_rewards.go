@@ -74,7 +74,7 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 				continue
 			}
 
-			if k.CheckCadence(block, topic) {
+			if k.CheckWorkerOpenCadence(block, topic) {
 				// All checks passed => Apply function on the topic
 				err = fn(ctx, &topic)
 				if err != nil {

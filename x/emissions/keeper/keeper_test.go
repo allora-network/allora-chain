@@ -2231,10 +2231,9 @@ func (s *KeeperTestSuite) TestSetGetTopicLastWorkerPayload() {
 	topicId := uint64(123)
 	blockHeight := int64(1000)
 	nonce := &types.Nonce{BlockHeight: blockHeight}
-	actor := "allo1j62tlhf5empp365vy39kgvr92uzrmglm7krt6p"
 
 	// Set the worker payload
-	err := keeper.SetTopicLastWorkerPayload(ctx, topicId, blockHeight, nonce, actor)
+	err := keeper.SetTopicLastWorkerPayload(ctx, topicId, blockHeight, nonce)
 	s.Require().NoError(err)
 
 	// Get the worker payload
@@ -2243,7 +2242,6 @@ func (s *KeeperTestSuite) TestSetGetTopicLastWorkerPayload() {
 
 	// Check the retrieved values
 	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
-	s.Require().Equal(actor, payload.Actor, "Actor ID should match")
 	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
 }
 
@@ -2253,10 +2251,9 @@ func (s *KeeperTestSuite) TestSetGetTopicLastReputerPayload() {
 	topicId := uint64(456)
 	blockHeight := int64(2000)
 	nonce := &types.Nonce{BlockHeight: blockHeight}
-	actor := "allo1j62tlhf5empp365vy39kgvr92uzrmglm7krt6p"
 
 	// Set the reputer payload
-	err := keeper.SetTopicLastReputerPayload(ctx, topicId, blockHeight, nonce, actor)
+	err := keeper.SetTopicLastReputerPayload(ctx, topicId, blockHeight, nonce)
 	s.Require().NoError(err)
 
 	// Get the reputer payload
@@ -2265,7 +2262,6 @@ func (s *KeeperTestSuite) TestSetGetTopicLastReputerPayload() {
 
 	// Check the retrieved values
 	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
-	s.Require().Equal(actor, payload.Actor, "Actor ID should match")
 	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
 }
 
@@ -2316,35 +2312,6 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	// Verify initial revenue
 	feeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
-}
-
-/// TOPIC CHURN
-
-func (s *KeeperTestSuite) TestChurnableTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(123)
-	topicId2 := uint64(456)
-
-	err := keeper.AddChurnableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	err = keeper.AddChurnableTopic(ctx, topicId2)
-	s.Require().NoError(err)
-
-	// Ensure the first topic is retrieved
-	retrievedIds, err := keeper.GetChurnableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(retrievedIds, 2, "Should retrieve all churn ready topics")
-
-	// Reset the churn ready topics
-	err = keeper.ResetChurnableTopics(ctx)
-	s.Require().NoError(err)
-
-	// Ensure no topics remain
-	remainingIds, err := keeper.GetChurnableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(remainingIds, 0, "Should have no churn ready topics after reset")
 }
 
 /// REWARDABLE TOPICS

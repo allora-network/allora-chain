@@ -687,9 +687,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	})
 	require.NoError(err)
 
-	reputer0 := "allo1wms0uwwh9dgtnmfend82z82j9q6x62s656fn35"
-
-	err = keeper.SetTopicLastReputerPayload(s.ctx, topicId, lossBlockHeight, &lossNonce, reputer0)
+	err = keeper.SetTopicLastReputerPayload(s.ctx, topicId, lossBlockHeight, &lossNonce)
 	s.Require().NoError(err)
 
 	// Set Inferences
@@ -809,7 +807,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce, getForecastsForBlockHeight(inferenceBlockHeight))
 	require.NoError(err)
 
-	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce, worker0)
+	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce)
 	s.Require().NoError(err)
 
 	// insert inferences and forecasts 2
@@ -819,7 +817,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce2, getForecastsForBlockHeight(inferenceBlockHeight2))
 	require.NoError(err)
 
-	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight2, &inferenceNonce2, worker0)
+	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight2, &inferenceNonce2)
 	s.Require().NoError(err)
 
 	// Update epoch topic epoch last ended

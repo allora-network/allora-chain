@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"cosmossdk.io/errors"
+	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -36,13 +37,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return errors.Wrapf(err, "Rewards error")
 	}
 
-	// Reset the churn ready topics
-	err = am.keeper.ResetChurnableTopics(sdkCtx)
-	if err != nil {
-		sdkCtx.Logger().Error("Error resetting churn ready topics: ", err)
-		return errors.Wrapf(err, "Resetting churn ready topics error")
-	}
-
 	// NONCE MGMT with Churnable weights
 	var wg sync.WaitGroup
 	// Loop over and run epochs on topics whose inferences are demanded enough to be served
@@ -54,8 +48,8 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			defer wg.Done()
 			// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 			// to avoid potential situations where the block is missed
-			if am.keeper.CheckCadence(blockHeight, topic) {
-				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s . \n",
+			if am.keeper.CheckWorkerOpenCadence(blockHeight, topic) {
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker open cadence met for topic: %v metadata: %s . \n",
 					topic.Id,
 					topic.Metadata))
 
@@ -72,12 +66,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					return
 				}
 				sdkCtx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
-				// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
-				err = am.keeper.AddChurnableTopic(ctx, topic.Id)
-				if err != nil {
-					sdkCtx.Logger().Warn(fmt.Sprintf("Error setting churn ready topic: %s", err.Error()))
-					return
-				}
 
 				MaxUnfulfilledReputerRequests := types.DefaultParams().MaxUnfulfilledReputerRequests
 				moduleParams, err := am.keeper.GetParams(ctx)
@@ -101,6 +89,41 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					}
 				}
 			}
+			// Check Worker Close Cadence
+			if am.keeper.CheckWorkerCloseCadence(blockHeight, topic) {
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %v metadata: %s . \n",
+					topic.Id,
+					topic.Metadata))
+				// Check if there is an unfulfilled nonce
+				nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topic.Id)
+				if err != nil {
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+					return
+				}
+				for _, nonce := range nonces.Nonces {
+					allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic.Id, *nonce)
+				}
+			}
+			// Check Reputer Close Cadence
+			if am.keeper.CheckReputerCloseCadence(blockHeight, topic) {
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Reputer close cadence met for topic: %v metadata: %s . \n",
+					topic.Id,
+					topic.Metadata))
+				// Check if there is an unfulfilled nonce
+				nonces, err := am.keeper.GetUnfulfilledReputerNonces(sdkCtx, topic.Id)
+				if err != nil {
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+					return
+				}
+				for _, nonce := range nonces.Nonces {
+					// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
+					// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
+					if blockHeight >= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength {
+						allorautils.CloseReputerNonce(&am.keeper, sdkCtx, topic.Id, *nonce.ReputerNonce)
+					}
+				}
+			}
+
 		}(localTopic)
 		return nil
 	}
