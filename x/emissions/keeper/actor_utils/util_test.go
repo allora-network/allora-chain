@@ -1,4 +1,4 @@
-package utils
+package actor_utils
 
 import (
 	"testing"
