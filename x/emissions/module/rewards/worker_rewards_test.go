@@ -4,7 +4,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -199,6 +201,223 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsShouldOutputSameFraction
 			}
 		}
 	}
+}
+
+func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
+	topicId := createNewTopic(s)
+	blockHeight := int64(4)
+
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epoch2Get := epochGet[302]
+
+	inferer0 := s.addrs[5].String()
+	inferer1 := s.addrs[6].String()
+	inferer2 := s.addrs[7].String()
+	inferer3 := s.addrs[8].String()
+	inferer4 := s.addrs[9].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	forecaster0 := s.addrs[10].String()
+	forecaster1 := s.addrs[11].String()
+	forecaster2 := s.addrs[12].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	// Add scores from previous epochs
+	infererLastScores := make([]types.Score, 0)
+	forecasterLastScores := make([]types.Score, 0)
+	for j := 0; j < 3; j++ {
+		epochGet := epochGet[j]
+		inferersScores := []alloraMath.Dec{
+			epochGet("inferer_score_0"),
+			epochGet("inferer_score_1"),
+			epochGet("inferer_score_2"),
+			epochGet("inferer_score_3"),
+			epochGet("inferer_score_4"),
+		}
+		forecastersScores := []alloraMath.Dec{
+			epochGet("forecaster_score_0"),
+			epochGet("forecaster_score_1"),
+			epochGet("forecaster_score_2"),
+		}
+
+		for i, infererAddr := range infererAddresses {
+			blockHeight := int64(j)
+			scoreToAdd := types.Score{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Address:     infererAddr,
+				Score:       inferersScores[i],
+			}
+
+			// Persist worker inference score
+			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			s.Require().NoError(err)
+
+			if j == 2 {
+				infererLastScores = append(infererLastScores, scoreToAdd)
+			}
+		}
+		for i, forecasterAddr := range forecasterAddresses {
+			blockHeight := int64(j)
+			scoreToAdd := types.Score{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Address:     forecasterAddr,
+				Score:       forecastersScores[i],
+			}
+
+			// Persist worker forecast score
+			err := s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
+			s.Require().NoError(err)
+
+			if j == 2 {
+				forecasterLastScores = append(forecasterLastScores, scoreToAdd)
+			}
+		}
+	}
+
+	// Get worker rewards
+	inferers, inferersRewardFractions, err := rewards.GetInferenceTaskRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		blockHeight,
+		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("0.75"),
+		infererLastScores,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(5, len(inferersRewardFractions))
+	expectedValues := map[string]alloraMath.Dec{
+		inferer0: epoch2Get("inferer_reward_fraction_0"),
+		inferer1: epoch2Get("inferer_reward_fraction_1"),
+		inferer2: epoch2Get("inferer_reward_fraction_2"),
+		inferer3: epoch2Get("inferer_reward_fraction_3"),
+		inferer4: epoch2Get("inferer_reward_fraction_4"),
+	}
+	for i, inferer := range inferers {
+		testutil.InEpsilon5(s.T(), inferersRewardFractions[i], expectedValues[inferer].String())
+	}
+
+	forecasters, forecastersRewardFractions, err := rewards.GetForecastingTaskRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		blockHeight,
+		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("0.75"),
+		forecasterLastScores,
+	)
+	s.Require().NoError(err)
+	s.Require().Equal(3, len(forecastersRewardFractions))
+	expectedValues = map[string]alloraMath.Dec{
+		forecaster0: epoch2Get("forecaster_reward_fraction_0"),
+		forecaster1: epoch2Get("forecaster_reward_fraction_1"),
+		forecaster2: epoch2Get("forecaster_reward_fraction_2"),
+	}
+	for i, forecaster := range forecasters {
+		testutil.InEpsilon5(s.T(), forecastersRewardFractions[i], expectedValues[forecaster].String())
+	}
+}
+
+func (s *RewardsTestSuite) TestGetInferenceTaskEntropyFromCsv() {
+	topicId := createNewTopic(s)
+	taskRewardAlpha := alloraMath.MustNewDecFromString("0.1")
+	betaEntropy := alloraMath.MustNewDecFromString("0.25")
+
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epoch1Get := epochGet[301]
+	epoch2Get := epochGet[302]
+
+	inferer0 := s.addrs[5].String()
+	inferer1 := s.addrs[6].String()
+	inferer2 := s.addrs[7].String()
+	inferer3 := s.addrs[8].String()
+	inferer4 := s.addrs[9].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	infererPreviousFractions := []alloraMath.Dec{
+		epoch1Get("inferer_reward_fraction_0"),
+		epoch1Get("inferer_reward_fraction_1"),
+		epoch1Get("inferer_reward_fraction_2"),
+		epoch1Get("inferer_reward_fraction_3"),
+		epoch1Get("inferer_reward_fraction_4"),
+	}
+
+	// Add previous reward fractions
+	for i, infererAddr := range infererAddresses {
+		err := s.emissionsKeeper.SetPreviousInferenceRewardFraction(s.ctx, topicId, infererAddr, infererPreviousFractions[i])
+		s.Require().NoError(err)
+	}
+
+	infererFractions := []alloraMath.Dec{
+		epoch2Get("inferer_reward_fraction_0"),
+		epoch2Get("inferer_reward_fraction_1"),
+		epoch2Get("inferer_reward_fraction_2"),
+		epoch2Get("inferer_reward_fraction_3"),
+		epoch2Get("inferer_reward_fraction_4"),
+	}
+
+	inferenceEntropy, err := rewards.GetInferenceTaskEntropy(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		taskRewardAlpha,
+		betaEntropy,
+		infererAddresses,
+		infererFractions,
+	)
+	s.Require().NoError(err)
+
+	expectedEntropy := epoch2Get("inferers_entropy")
+	testutil.InEpsilon5(s.T(), inferenceEntropy, expectedEntropy.String())
+}
+
+func (s *RewardsTestSuite) TestGetForecastTaskEntropyFromCsv() {
+	topicId := createNewTopic(s)
+	taskRewardAlpha := alloraMath.MustNewDecFromString("0.1")
+	betaEntropy := alloraMath.MustNewDecFromString("0.25")
+
+	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epoch1Get := epochGet[301]
+	epoch2Get := epochGet[302]
+
+	forecaster0 := s.addrs[10].String()
+	forecaster1 := s.addrs[11].String()
+	forecaster2 := s.addrs[12].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	forecasterPreviousFractions := []alloraMath.Dec{
+		epoch1Get("forecaster_reward_fraction_0"),
+		epoch1Get("forecaster_reward_fraction_1"),
+		epoch1Get("forecaster_reward_fraction_2"),
+	}
+
+	// Add previous reward fractions
+	for i, forecasterAddr := range forecasterAddresses {
+		err := s.emissionsKeeper.SetPreviousForecastRewardFraction(s.ctx, topicId, forecasterAddr, forecasterPreviousFractions[i])
+		s.Require().NoError(err)
+	}
+
+	forecasterFractions := []alloraMath.Dec{
+		epoch2Get("forecaster_reward_fraction_0"),
+		epoch2Get("forecaster_reward_fraction_1"),
+		epoch2Get("forecaster_reward_fraction_2"),
+	}
+
+	forecastEntropy, err := rewards.GetForecastTaskEntropy(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		taskRewardAlpha,
+		betaEntropy,
+		forecasterAddresses,
+		forecasterFractions,
+	)
+	s.Require().NoError(err)
+
+	expectedEntropy := epoch2Get("forecasters_entropy")
+	testutil.InEpsilon5(s.T(), forecastEntropy, expectedEntropy.String())
 }
 
 func (s *RewardsTestSuite) TestGetWorkersRewardsInferenceTask() {

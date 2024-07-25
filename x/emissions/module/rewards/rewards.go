@@ -304,7 +304,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	var forecastingEntropy alloraMath.Dec
 	if len(forecasters) > 0 && len(inferers) > 1 {
 		// Get forecasting entropy
-		forecastingEntropy, err = GetForecastingTaskEntropy(
+		forecastingEntropy, err = GetForecastTaskEntropy(
 			ctx,
 			k,
 			topicId,
