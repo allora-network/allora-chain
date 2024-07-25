@@ -145,6 +145,9 @@ type Keeper struct {
 
 	/// NONCES
 
+	// map of open worker nonce windows for topics on particular block heights
+	openWorkerWindows collections.Map[BlockHeight, types.Topicids]
+
 	// map of (topic) -> unfulfilled nonces
 	unfulfilledWorkerNonces collections.Map[TopicId, types.Nonces]
 
@@ -243,6 +246,7 @@ func NewKeeper(
 		topicLastReputerCommit:                   collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastWorkerPayload:                   collections.NewMap(sb, types.TopicLastWorkerPayloadKey, "topic_last_worker_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerPayload:                  collections.NewMap(sb, types.TopicLastReputerPayloadKey, "topic_last_reputer_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		openWorkerWindows:                        collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.Topicids](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -256,6 +260,33 @@ func NewKeeper(
 }
 
 /// NONCES
+
+// GetTopicIds returns the TopicIds for a given BlockHeight.
+// If no TopicIds are found for the BlockHeight, it returns an empty slice.
+func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) types.Topicids {
+	topicIds, err := k.openWorkerWindows.Get(ctx, height)
+	if err != nil {
+		return types.Topicids{}
+	}
+	return topicIds
+}
+
+// SetTopicId appends a new TopicId to the list of TopicIds for a given BlockHeight.
+// If no entry exists for the BlockHeight, it creates a new entry with the TopicId.
+func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicid types.Topicid) error {
+	var topicIds types.Topicids
+	topicIds, err := k.openWorkerWindows.Get(ctx, height)
+	if err != nil {
+		topicIds = types.Topicids{}
+	}
+	topicIds.TopicIds = append(topicIds.TopicIds, &topicid)
+	k.openWorkerWindows.Set(ctx, height, topicIds)
+	return nil
+}
+
+func (k *Keeper) DeleteWorkerWindowBlockheight(ctx sdk.Context, height BlockHeight) error {
+	return k.openWorkerWindows.Remove(ctx, height)
+}
 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
