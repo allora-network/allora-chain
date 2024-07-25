@@ -1758,11 +1758,8 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    key,
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+		Owner:       "worker-owner-sample",
+		NodeAddress: "worker-node-address-sample",
 	}
 
 	// Attempt to insert the worker for multiple topics
@@ -1772,38 +1769,8 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 	node, err := keeper.GetWorkerInfo(ctx, key)
 
 	s.Require().NoError(err)
-	s.Require().Equal(workerInfo.LibP2PKey, node.LibP2PKey)
-	s.Require().Equal(workerInfo.MultiAddress, node.MultiAddress)
 	s.Require().Equal(workerInfo.Owner, node.Owner)
 	s.Require().Equal(workerInfo.NodeAddress, node.NodeAddress)
-	s.Require().Equal(workerInfo.NodeId, node.NodeId)
-}
-
-func (s *KeeperTestSuite) TestGetWorkerAddressByP2PKey() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	worker := "sampleWorkerAddress"
-	topicId := uint64(401)
-
-	// Define sample OffchainNode information for a worker
-	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
-	}
-
-	// Attempt to insert the worker for multiple topics
-	err := keeper.InsertWorker(ctx, topicId, worker, workerInfo)
-	s.Require().NoError(err)
-
-	// Call the function to get the worker address using the P2P key
-	retrievedAddress, err := keeper.GetWorkerAddressByP2PKey(ctx, workerInfo.LibP2PKey)
-	s.Require().NoError(err)
-	workerAddress, err := sdk.AccAddressFromBech32(workerInfo.Owner)
-	s.Require().NoError(err)
-	s.Require().Equal(workerAddress, retrievedAddress)
 }
 
 func (s *KeeperTestSuite) TestRemoveWorker() {
@@ -1814,11 +1781,8 @@ func (s *KeeperTestSuite) TestRemoveWorker() {
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+		Owner:       "worker-owner-sample",
+		NodeAddress: "worker-node-address-sample",
 	}
 
 	// Insert the worker
@@ -1848,11 +1812,8 @@ func (s *KeeperTestSuite) TestInsertReputer() {
 
 	// Define sample OffchainNode information for a reputer
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	// Attempt to insert the reputer for multiple topics
@@ -1872,11 +1833,8 @@ func (s *KeeperTestSuite) TestGetReputerInfo() {
 	keeper := s.emissionsKeeper
 	reputerKey := "someLibP2PKey123"
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    reputerKey,
-		MultiAddress: "/ip4/127.0.0.1/tcp/4001",
-		Owner:        "cosmos1...",
-		NodeAddress:  "cosmosNodeAddress",
-		NodeId:       "nodeId123",
+		Owner:       "cosmos1...",
+		NodeAddress: "cosmosNodeAddress",
 	}
 
 	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
@@ -1914,33 +1872,6 @@ func (s *KeeperTestSuite) TestRemoveReputer() {
 	isRegisteredPost, postErr := keeper.IsReputerRegisteredInTopic(ctx, topicId, reputer)
 	s.Require().NoError(postErr, "Failed to check reputer registration after removal")
 	s.Require().False(isRegisteredPost, "Reputer should not be registered in the topic after removal")
-}
-
-func (s *KeeperTestSuite) TestGetReputerAddressByP2PKey() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	reputer := "sampleReputerAddress"
-	topicId := uint64(501)
-
-	// Define sample OffchainNode information for a reputer
-	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "allo146fyx5akdrcpn2ypjpg4tra2l7q2wevs05pz2n",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
-	}
-
-	// Insert the reputer for multiple topics
-	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
-	s.Require().NoError(err)
-
-	// Retrieve the reputer address using the P2P key
-	retrievedAddress, err := keeper.GetReputerAddressByP2PKey(ctx, reputerInfo.LibP2PKey)
-	s.Require().NoError(err)
-	expectedAddress, err := sdk.AccAddressFromBech32(reputerInfo.Owner)
-	s.Require().NoError(err)
-	s.Require().Equal(expectedAddress, retrievedAddress, "The retrieved address should match the expected address")
 }
 
 /// TOPICS

@@ -452,34 +452,18 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetWorkerNodeInfo",
-					Use:       "worker-info [libp2p_key]",
-					Short:     "Get node info for worker node libp2p key",
+					Use:       "worker-info [address]",
+					Short:     "Get node info for worker node",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
+						{ProtoField: "address"},
 					},
 				},
 				{
 					RpcMethod: "GetReputerNodeInfo",
-					Use:       "reputer-info [libp2p_key]",
-					Short:     "Get node info for reputer node libp2p key",
+					Use:       "reputer-info [addresss]",
+					Short:     "Get node info for reputer node",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
-					},
-				},
-				{
-					RpcMethod: "GetWorkerAddressByP2PKey",
-					Use:       "worker-address [libp2p_key]",
-					Short:     "Get Worker Address by libp2p key",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
-					},
-				},
-				{
-					RpcMethod: "GetReputerAddressByP2PKey",
-					Use:       "reputer-address [libp2p_key]",
-					Short:     "Get Reputer Address by libp2p key",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
+						{ProtoField: "address"},
 					},
 				},
 				{
@@ -633,12 +617,10 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "Register",
-					Use:       "register [sender] [lib_p2p_key] [multi_address] [topic_ids] [initial_stake] [owner] [is_reputer]",
+					Use:       "register [sender] [topic_ids] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "multi_address"},
 						{ProtoField: "topic_id"},
 						{ProtoField: "owner"},
 						{ProtoField: "is_reputer"},
