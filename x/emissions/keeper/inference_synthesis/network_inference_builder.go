@@ -98,8 +98,24 @@ func (b *NetworkInferenceBuilder) SetNaiveValue() *NetworkInferenceBuilder {
 	b.logger.Debug(fmt.Sprintf("Calculating naive inference for topic %v", b.palette.TopicId))
 	palette := b.palette.Clone()
 
-	palette.Forecasters = nil
-	palette.ForecasterRegrets = make(map[string]*alloraMath.Dec, 0)
+	// Update the forecasters info to exclude all forecasters
+	err := palette.UpdateForecastersInfo(make([]string, 0))
+	if err != nil {
+		b.logger.Warn(fmt.Sprintf("Error updating forecasters info for naive inference: %s", err.Error()))
+		return b
+	}
+
+	// Get inferer naive regrets
+	palette.InfererRegrets = make(map[string]*alloraMath.Dec)
+	for _, inferer := range palette.Inferers {
+		regret, _, err := palette.K.GetNaiveInfererNetworkRegret(palette.Ctx, palette.TopicId, inferer)
+		if err != nil {
+			b.logger.Warn(fmt.Sprintf("Error getting naive regret for inferer %s: %s", inferer, err.Error()))
+			return b
+		}
+		palette.InfererRegrets[inferer] = &regret.Value
+	}
+
 	weights, err := palette.CalcWeightsGivenWorkers()
 	if err != nil {
 		b.logger.Warn(fmt.Sprintf("Error calculating weights for naive inference: %s", err.Error()))
@@ -144,6 +160,26 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 	}
 
 	paletteCopy.ForecastImpliedInferenceByWorker = palette.ForecastImpliedInferenceByWorker
+
+	// Get regrets for the remaining inferers
+	paletteCopy.InfererRegrets = make(map[string]*alloraMath.Dec)
+	for _, inferer := range paletteCopy.Inferers {
+		regret, _, err := paletteCopy.K.GetOneOutInfererInfererNetworkRegret(paletteCopy.Ctx, paletteCopy.TopicId, withheldInferer, inferer)
+		if err != nil {
+			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-out inferer regret")
+		}
+		paletteCopy.InfererRegrets[inferer] = &regret.Value
+	}
+	// Get regrets for the forecasters
+	paletteCopy.ForecasterRegrets = make(map[string]*alloraMath.Dec)
+	for _, forecaster := range paletteCopy.Forecasters {
+		regret, _, err := paletteCopy.K.GetOneOutInfererForecasterNetworkRegret(paletteCopy.Ctx, paletteCopy.TopicId, withheldInferer, forecaster)
+		if err != nil {
+			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-out forecaster regret")
+		}
+		paletteCopy.ForecasterRegrets[forecaster] = &regret.Value
+	}
+
 	weights, err := paletteCopy.CalcWeightsGivenWorkers()
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
@@ -201,6 +237,25 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 	err := palette.UpdateForecastersInfo(remainingForecasters)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error updating forecasters")
+	}
+
+	// Get regrets for the remaining inferers
+	palette.InfererRegrets = make(map[string]*alloraMath.Dec)
+	for _, inferer := range palette.Inferers {
+		regret, _, err := palette.K.GetOneOutForecasterInfererNetworkRegret(palette.Ctx, palette.TopicId, withheldForecaster, inferer)
+		if err != nil {
+			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-out inferer regret")
+		}
+		palette.InfererRegrets[inferer] = &regret.Value
+	}
+	// Get regrets for the forecasters
+	palette.ForecasterRegrets = make(map[string]*alloraMath.Dec)
+	for _, forecaster := range palette.Forecasters {
+		regret, _, err := palette.K.GetOneOutForecasterForecasterNetworkRegret(palette.Ctx, palette.TopicId, withheldForecaster, forecaster)
+		if err != nil {
+			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-out forecaster regret")
+		}
+		palette.ForecasterRegrets[forecaster] = &regret.Value
 	}
 
 	weights, err := palette.CalcWeightsGivenWorkers()
