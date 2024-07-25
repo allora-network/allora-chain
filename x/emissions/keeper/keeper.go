@@ -16,6 +16,7 @@ import (
 	"cosmossdk.io/core/address"
 
 	coreStore "cosmossdk.io/core/store"
+	utils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -641,7 +642,7 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := k.GetLowScoreFromAllInferences(ctx, topicId, inferences)
+	lowScore, lowScoreIndex, err := utils.GetLowScoreFromAllInferences(ctx, k, topicId, inferences)
 	if err != nil {
 		return err
 	}
@@ -651,27 +652,6 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 		return k.allInferences.Set(ctx, key, inferences)
 	}
 	return nil
-}
-
-// Return low score and index among all inferences
-func (k *Keeper) GetLowScoreFromAllInferences(ctx context.Context, topicId TopicId, inferences types.Inferences) (types.Score, int, error) {
-
-	lowScoreIndex := 0
-	lowScore, err := k.GetLatestInfererScore(ctx, topicId, inferences.Inferences[0].Inferer)
-	if err != nil {
-		return types.Score{}, lowScoreIndex, err
-	}
-	for index, extInference := range inferences.Inferences {
-		extScore, err := k.GetLatestInfererScore(ctx, topicId, extInference.Inferer)
-		if err != nil {
-			continue
-		}
-		if lowScore.Score.Lt(extScore.Score) {
-			lowScore = extScore
-			lowScoreIndex = index
-		}
-	}
-	return lowScore, lowScoreIndex, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -713,7 +693,7 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := k.GetLowScoreFromAllForecasts(ctx, topicId, forecasts)
+	lowScore, lowScoreIndex, err := utils.GetLowScoreFromAllForecasts(ctx, k, topicId, forecasts)
 	if err != nil {
 		return err
 	}
@@ -723,27 +703,6 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 		return k.allForecasts.Set(ctx, key, forecasts)
 	}
 	return nil
-}
-
-// Return low score and index among all inferences
-func (k *Keeper) GetLowScoreFromAllForecasts(ctx context.Context, topicId TopicId, forecasts types.Forecasts) (types.Score, int, error) {
-
-	lowScoreIndex := 0
-	lowScore, err := k.GetLatestForecasterScore(ctx, topicId, forecasts.Forecasts[0].Forecaster)
-	if err != nil {
-		return types.Score{}, lowScoreIndex, err
-	}
-	for index, extForecast := range forecasts.Forecasts {
-		extScore, err := k.GetLatestInfererScore(ctx, topicId, extForecast.Forecaster)
-		if err != nil {
-			continue
-		}
-		if lowScore.Score.Lt(extScore.Score) {
-			lowScore = extScore
-			lowScoreIndex = index
-		}
-	}
-	return lowScore, lowScoreIndex, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -816,7 +775,7 @@ func (k *Keeper) AppendReputerLossAtBlock(ctx context.Context, topicId TopicId, 
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := k.GetLowScoreFromAllLossBundles(ctx, topicId, reputerLossBundles)
+	lowScore, lowScoreIndex, err := utils.GetLowScoreFromAllLossBundles(ctx, k, topicId, reputerLossBundles)
 	if err != nil {
 		return err
 	}
@@ -827,27 +786,6 @@ func (k *Keeper) AppendReputerLossAtBlock(ctx context.Context, topicId TopicId, 
 		return k.allLossBundles.Set(ctx, key, reputerLossBundles)
 	}
 	return nil
-}
-
-// Return low score and index among all inferences
-func (k *Keeper) GetLowScoreFromAllLossBundles(ctx context.Context, topicId TopicId, lossBundles types.ReputerValueBundles) (types.Score, int, error) {
-
-	lowScoreIndex := 0
-	lowScore, err := k.GetLatestReputerScore(ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.Reputer)
-	if err != nil {
-		return types.Score{}, lowScoreIndex, err
-	}
-	for index, extLossBundle := range lossBundles.ReputerValueBundles {
-		extScore, err := k.GetLatestReputerScore(ctx, topicId, extLossBundle.ValueBundle.Reputer)
-		if err != nil {
-			continue
-		}
-		if lowScore.Score.Lt(extScore.Score) {
-			lowScore = extScore
-			lowScoreIndex = index
-		}
-	}
-	return lowScore, lowScoreIndex, nil
 }
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.

@@ -40,7 +40,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, types.ErrInvalidTopicId
 	}
 
-	if blockHeight > topic.EpochLastEnded+topic.GroundTruthLag {
+	if blockHeight <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag {
 		return nil, types.ErrWorkerNonceWindowNotAvailable
 	}
 

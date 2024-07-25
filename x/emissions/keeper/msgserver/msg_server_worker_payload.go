@@ -41,7 +41,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, types.ErrInvalidTopicId
 	}
 
-	if blockHeight > topic.EpochLastEnded+topic.WorkerSubmissionWindow {
+	if blockHeight <= nonce.BlockHeight+topic.WorkerSubmissionWindow ||
+		blockHeight > nonce.BlockHeight+topic.GroundTruthLag {
 		return nil, types.ErrWorkerNonceWindowNotAvailable
 	}
 
