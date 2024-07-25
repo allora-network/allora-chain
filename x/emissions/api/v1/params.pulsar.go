@@ -2850,7 +2850,7 @@ type Params struct {
 	// close proximities
 	MinEffectiveTopicRevenue string `protobuf:"bytes,41,opt,name=min_effective_topic_revenue,json=minEffectiveTopicRevenue,proto3" json:"min_effective_topic_revenue,omitempty"` // we no stop dripping from the topic's effective revenue when the topic's
 	// effective revenue is below this
-	DataSendingFee string `protobuf:"bytes,42,opt,name=data_sending_fee,json=dataSendingFee,proto3" json:"data_sending_fee,omitempty"` // registration fee for reputer or worker
+	DataSendingFee string `protobuf:"bytes,42,opt,name=data_sending_fee,json=dataSendingFee,proto3" json:"data_sending_fee,omitempty"` // payload sending fee for reputer or worker
 }
 
 func (x *Params) Reset() {

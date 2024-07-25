@@ -176,7 +176,12 @@ func (p Params) Validate() error {
 	if err := validateMinEffectiveTopicRevenue(p.MinEffectiveTopicRevenue); err != nil {
 		return err
 	}
-
+	if err := validateMinEffectiveTopicRevenue(p.MinEffectiveTopicRevenue); err != nil {
+		return err
+	}
+	if err := validateDataSendingFee(p.DataSendingFee); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -528,4 +533,13 @@ func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
 // Whether an alloraDec is between the value of (0, 1) exclusive
 func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
 	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+}
+
+// How much workers and reputers must pay to send data.
+// Should be non-negative.
+func validateDataSendingFee(i cosmosMath.Int) error {
+	if i.IsNegative() {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
 }

@@ -14,17 +14,27 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, err
 	}
 
+	nonce := msg.ReputerRequestNonce
+	topicId := msg.TopicId
+
 	// Check if the topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil || !topicExists {
 		return nil, types.ErrInvalidTopicId
 	}
 
+	// Check if the nonce is unfulfilled
+	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
+	if err != nil {
+		return nil, err
+	}
+	// If the nonce is already fulfilled, return an error
+	if !nonceUnfulfilled {
+		return nil, types.ErrUnfulfilledNonceNotFound
+	}
+
 	// Check if the window time has passed: if blockheight > nonce.BlockHeight + topic.WorkerSubmissionWindow
 	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
-	nonce := msg.ReputerRequestNonce
-
-	topicId := msg.TopicId
 	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
@@ -34,7 +44,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, types.ErrWorkerNonceWindowNotAvailable
 	}
 
-	if err := msg.ReputerValueBundles.Validate(); err != nil {
+	if err := msg.ReputerValueBundle.Validate(); err != nil {
 		return nil, types.ErrInvalidWorkerData
 	}
 
@@ -52,18 +62,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, err
 	}
 
-	// Get all inferences from this topic, nonce
-	lossBundles, err := ms.k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.ReputerNonce.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-	// Append this individual inference to all inferences
-	lossValue := msg.ReputerValueBundles
-
-	inferencesToInsert := types.ReputerValueBundles{
-		ReputerValueBundles: append(lossBundles.ReputerValueBundles, lossValue),
-	}
-	err = ms.k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.ReputerNonce.BlockHeight, inferencesToInsert)
+	err = ms.k.AppendReputerLossAtBlock(ctx, topicId, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
 	if err != nil {
 		return nil, err
 	}

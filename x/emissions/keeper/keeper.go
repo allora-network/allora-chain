@@ -617,6 +617,20 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 	return &forecasts, nil
 }
 
+// Append individual inference for a topic/block
+func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
+	block := nonce.BlockHeight
+	key := collections.Join(topicId, block)
+	inferences, err := k.allInferences.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+	newInferences := types.Inferences{
+		Inferences: append(inferences.Inferences, inference),
+	}
+	return k.allInferences.Set(ctx, key, newInferences)
+}
+
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
 func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
 	block := nonce.BlockHeight
@@ -631,6 +645,20 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 
 	key := collections.Join(topicId, block)
 	return k.allInferences.Set(ctx, key, inferences)
+}
+
+// Append individual forecast for a topic/block
+func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
+	block := nonce.BlockHeight
+	key := collections.Join(topicId, block)
+	forecasts, err := k.allForecasts.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+	newForecast := types.Forecasts{
+		Forecasts: append(forecasts.Forecasts, forecast),
+	}
+	return k.allForecasts.Set(ctx, key, newForecast)
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -682,6 +710,19 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 }
 
 /// LOSS BUNDLES
+
+// Append loss bundle for a topoic and blockheight
+func (k *Keeper) AppendReputerLossAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
+	key := collections.Join(topicId, block)
+	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+	newReputerLossBundles := append(reputerLossBundles.ReputerValueBundles, reputerLoss)
+	return k.allLossBundles.Set(ctx, key, types.ReputerValueBundles{
+		ReputerValueBundles: newReputerLossBundles,
+	})
+}
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
 func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLossBundles types.ReputerValueBundles) error {

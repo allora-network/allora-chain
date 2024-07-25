@@ -16,16 +16,26 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
+	nonce := msg.Nonce
+	topicId := msg.TopicId
+
 	// Check if the topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil || !topicExists {
 		return nil, types.ErrInvalidTopicId
 	}
-	// Check if the window time has passed: if blockheight > nonce.BlockHeight + topic.WorkerSubmissionWindow
-	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
-	nonce := msg.Nonce
+	// Check if the nonce is unfulfilled
+	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce)
+	if err != nil {
+		return nil, err
+	}
+	// If the nonce is already fulfilled, return an error
+	if !nonceUnfulfilled {
+		return nil, types.ErrUnfulfilledNonceNotFound
+	}
 
-	topicId := msg.TopicId
+	// Check if the window time has passed: if blockheight > topic.EpochLastEnded+topic.WorkerSubmissionWindow
+	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
@@ -35,7 +45,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, types.ErrWorkerNonceWindowNotAvailable
 	}
 
-	if err := msg.WorkerDataBundles.Validate(); err != nil {
+	if err := msg.WorkerDataBundle.Validate(); err != nil {
 		return nil, types.ErrInvalidReputerData
 	}
 
@@ -53,34 +63,17 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
-	// Get all inferences from this topic, nonce
-	inferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
 	// Append this individual inference to all inferences
-	inference := msg.WorkerDataBundles.InferenceForecastsBundle.Inference
+	inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
 
-	inferencesToInsert := types.Inferences{
-		Inferences: append(inferences.Inferences, inference),
-	}
-	err = ms.k.InsertInferences(ctx, topicId, *nonce, inferencesToInsert)
+	err = ms.k.AppendInference(ctx, topicId, *nonce, inference)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get all forecasts from this topic, nonce
-	forecasts, err := ms.k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
 	// Append this individual inference to all inferences
-	forecast := msg.WorkerDataBundles.InferenceForecastsBundle.Forecast
-
-	forecastsToInsert := types.Forecasts{
-		Forecasts: append(forecasts.Forecasts, forecast),
-	}
-	err = ms.k.InsertForecasts(ctx, topicId, *nonce, forecastsToInsert)
+	forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
+	err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
 	if err != nil {
 		return nil, err
 	}

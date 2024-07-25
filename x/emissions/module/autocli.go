@@ -761,7 +761,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "sender"},
 						{ProtoField: "nonce"},
 						{ProtoField: "topic_id"},
-						{ProtoField: "worker_data_bundles"},
+						{ProtoField: "worker_data_bundle"},
 					},
 				},
 				{
@@ -772,7 +772,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "sender"},
 						{ProtoField: "reputer_request_nonce"},
 						{ProtoField: "topic_id"},
-						{ProtoField: "reputer_value_bundles"},
+						{ProtoField: "reputer_value_bundle"},
 					},
 				},
 			},
