@@ -4,9 +4,6 @@ package emissions.v1;
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 message OffchainNode {
-  string lib_p2p_key = 1;    // LibP2P key of the node
-  string multi_address = 2;  // Network address for accessing the node
-  string owner = 3;
-  string node_address = 4;
-  string node_id = 5;
+  string node_address = 1;
+  string owner = 2;
 }

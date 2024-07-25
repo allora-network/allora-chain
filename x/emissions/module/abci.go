@@ -93,7 +93,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 			}
 			// Check Reputer Close Cadence
 			if am.keeper.CheckReputerCloseCadence(blockHeight, topic) {
-				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Reputer close cadence met for topic: %d ", topic.Id))
 				// Check if there is an unfulfilled nonce
 				nonces, err := am.keeper.GetUnfulfilledReputerNonces(sdkCtx, topic.Id)
 				if err != nil {
@@ -104,6 +103,9 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
 					// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
 					if blockHeight >= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength {
+						sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Closing reputer nonce for topic: %v metadata: %s . \n",
+							topic.Id,
+							topic.Metadata))
 						allorautils.CloseReputerNonce(&am.keeper, sdkCtx, topic.Id, *nonce.ReputerNonce)
 					}
 				}

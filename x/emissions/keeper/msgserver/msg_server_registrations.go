@@ -39,11 +39,8 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 	}
 
 	nodeInfo := types.OffchainNode{
-		NodeAddress:  msg.Sender,
-		LibP2PKey:    msg.LibP2PKey,
-		MultiAddress: msg.MultiAddress,
-		Owner:        msg.Owner,
-		NodeId:       msg.Owner + "|" + msg.LibP2PKey,
+		NodeAddress: msg.Sender,
+		Owner:       msg.Owner,
 	}
 
 	if msg.IsReputer {

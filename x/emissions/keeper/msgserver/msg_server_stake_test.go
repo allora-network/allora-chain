@@ -50,12 +50,10 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	// Register Reputer
 	reputerRegMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		Owner:        reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
+		Sender:    reputerAddr.String(),
+		Owner:     reputerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: true,
 	}
 	_, err = msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
@@ -68,11 +66,9 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	// Register Worker
 	workerRegMsg := &types.MsgRegister{
-		Sender:       workerAddr.String(),
-		Owner:        workerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
+		Sender:  workerAddr.String(),
+		Owner:   workerAddr.String(),
+		TopicId: topicId,
 	}
 	_, err = msgServer.Register(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
@@ -443,11 +439,8 @@ func (s *MsgServerTestSuite) TestDelegateStake() {
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -493,11 +486,8 @@ func (s *MsgServerTestSuite) TestReputerCantSelfDelegateStake() {
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -526,11 +516,8 @@ func (s *MsgServerTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -604,11 +591,8 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStake() {
 	removalDelay := moduleParams.RemoveStakeDelayWindow
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -657,11 +641,8 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeError() {
 	stakeAmount := cosmosMath.NewInt(50)
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -913,11 +894,8 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeNegative() {
 	stakeAmount := cosmosMath.NewInt(50)
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
