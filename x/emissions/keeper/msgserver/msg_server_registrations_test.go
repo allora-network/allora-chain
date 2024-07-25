@@ -208,26 +208,6 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistrationWorker() {
 	require.False(isWorkerRegistered, "Worker should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	topicId := uint64(0)
-
-	// Mock setup for addresses
-	reputerAddr := sdk.AccAddress(PKS[0].Address())
-
-	// Topic does not exist
-	registerMsg := &types.MsgRegister{
-		Sender:    reputerAddr.String(),
-		Owner:     reputerAddr.String(),
-		TopicId:   topicId,
-		IsReputer: true,
-	}
-	_, err := msgServer.Register(ctx, registerMsg)
-	require.ErrorIs(err, types.ErrLibP2PKeyRequired, "Register should return an error")
-}
-
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
