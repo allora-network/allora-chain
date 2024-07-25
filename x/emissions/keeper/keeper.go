@@ -1482,7 +1482,7 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker Actor
 	if err != nil {
 		return err
 	}
-	err = k.workers.Set(ctx, workerInfo.GetOwner(), workerInfo)
+	err = k.workers.Set(ctx, worker, workerInfo)
 	if err != nil {
 		return err
 	}

@@ -1753,20 +1753,19 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	worker := "sampleWorkerAddress"
-	key := "worker-libp2p-key-sample"
 	topicId := uint64(401)
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
 		Owner:       "worker-owner-sample",
-		NodeAddress: "worker-node-address-sample",
+		NodeAddress: worker,
 	}
 
 	// Attempt to insert the worker for multiple topics
 	err := keeper.InsertWorker(ctx, topicId, worker, workerInfo)
 	s.Require().NoError(err)
 
-	node, err := keeper.GetWorkerInfo(ctx, key)
+	node, err := keeper.GetWorkerInfo(ctx, worker)
 
 	s.Require().NoError(err)
 	s.Require().Equal(workerInfo.Owner, node.Owner)
@@ -1831,16 +1830,15 @@ func (s *KeeperTestSuite) TestGetReputerInfo() {
 	reputer := "sampleReputerAddress"
 	topicId := uint64(501)
 	keeper := s.emissionsKeeper
-	reputerKey := "someLibP2PKey123"
 	reputerInfo := types.OffchainNode{
 		Owner:       "cosmos1...",
-		NodeAddress: "cosmosNodeAddress",
+		NodeAddress: reputer,
 	}
 
 	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
 	s.Require().NoError(err)
 
-	actualReputer, err := keeper.GetReputerInfo(ctx, reputerKey)
+	actualReputer, err := keeper.GetReputerInfo(ctx, reputer)
 	s.Require().NoError(err)
 	s.Require().Equal(reputerInfo, actualReputer)
 

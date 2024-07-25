@@ -11,24 +11,19 @@ func (s *KeeperTestSuite) TestGetWorkerNodeInfo() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
-
-	libP2PKey := "worker-libp2p-key-sample"
+	worker := "sampleWorkerAddress"
 
 	expectedNode := types.OffchainNode{
-		LibP2PKey:    libP2PKey,
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+		Owner:       "worker-owner-sample",
+		NodeAddress: worker,
 	}
 
-	worker := "sampleWorkerAddress"
 	topicId := uint64(401)
 	err := keeper.InsertWorker(ctx, topicId, worker, expectedNode)
 	s.Require().NoError(err, "InsertWorker should not produce an error")
 
 	req := &types.QueryWorkerNodeInfoRequest{
-		Libp2PKey: libP2PKey,
+		Address: worker,
 	}
 
 	response, err := queryServer.GetWorkerNodeInfo(ctx, req)
@@ -39,30 +34,29 @@ func (s *KeeperTestSuite) TestGetWorkerNodeInfo() {
 	s.Require().Equal(&expectedNode, response.NodeInfo, "The retrieved node information should match the expected node information")
 
 	invalidReq := &types.QueryWorkerNodeInfoRequest{
-		Libp2PKey: "nonexistent-libp2p-key",
+		Address: "nonexistent-key",
 	}
 	_, err = queryServer.GetWorkerNodeInfo(ctx, invalidReq)
-	s.Require().Error(err, "Expected an error for nonexistent LibP2PKey")
+	s.Require().Error(err, "Expected an error for nonexistent key")
 }
 
 func (s *KeeperTestSuite) TestGetReputerNodeInfo() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
-	reputerKey := "someLibP2PKey123"
-
-	expectedReputer := types.OffchainNode{
-		NodeAddress: "cosmosNodeAddress",
-		Owner:       "cosmos1...",
-	}
 
 	reputer := "sampleReputerAddress"
+	expectedReputer := types.OffchainNode{
+		NodeAddress: "cosmosNodeAddress",
+		Owner:       reputer,
+	}
+
 	topicId := uint64(501)
 	err := keeper.InsertReputer(ctx, topicId, reputer, expectedReputer)
 	s.Require().NoError(err, "InsertReputer should not produce an error")
 
 	req := &types.QueryReputerNodeInfoRequest{
-		Libp2PKey: reputerKey,
+		Address: reputer,
 	}
 
 	response, err := queryServer.GetReputerNodeInfo(ctx, req)
@@ -73,10 +67,10 @@ func (s *KeeperTestSuite) TestGetReputerNodeInfo() {
 	s.Require().Equal(&expectedReputer, response.NodeInfo, "The retrieved node information should match the expected node information")
 
 	invalidReq := &types.QueryReputerNodeInfoRequest{
-		Libp2PKey: "nonExistentKey123",
+		Address: "nonExistentKey123",
 	}
 	_, err = queryServer.GetReputerNodeInfo(ctx, invalidReq)
-	s.Require().Error(err, "Expected an error for nonexistent LibP2PKey")
+	s.Require().Error(err, "Expected an error for nonexistent key")
 }
 
 func (s *KeeperTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
@@ -113,12 +107,10 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	// Worker register
 	registerMsg := &types.MsgRegister{
-		Sender:       workerAddrString,
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    false,
-		Owner:        workerAddrString,
+		Sender:    workerAddrString,
+		TopicId:   topicId,
+		IsReputer: false,
+		Owner:     workerAddrString,
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -163,12 +155,10 @@ func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	// Register reputer
 	registerMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
-		Owner:        reputerAddr.String(),
+		Sender:    reputerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: true,
+		Owner:     reputerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))

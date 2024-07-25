@@ -25,11 +25,8 @@ func (s *MsgServerTestSuite) setUpMsgInsertBulkWorkerPayload(
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+		Owner:       "worker-owner-sample",
+		NodeAddress: "worker-node-address-sample",
 	}
 
 	// Mock setup for addresses
@@ -288,11 +285,9 @@ func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+
+		Owner:       "worker-owner-sample",
+		NodeAddress: "worker-node-address-sample",
 	}
 	// Mock setup for addresses
 
@@ -373,11 +368,9 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+
+		Owner:       "worker-owner-sample",
+		NodeAddress: "worker-node-address-sample",
 	}
 	// Mock setup for addresses
 
@@ -455,11 +448,9 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+
+		Owner:       "worker-owner-sample",
+		NodeAddress: "worker-node-address-sample",
 	}
 	// Mock setup for addresses
 

@@ -224,12 +224,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	// Register 5 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -238,12 +236,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -354,12 +350,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Register 5 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -368,12 +362,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -491,12 +483,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Register 5 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId2,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId2,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -505,12 +495,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId2,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId2,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -626,12 +614,10 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 
 	for _, workerAddr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       workerAddr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        workerAddr.String(),
+			Sender:    workerAddr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     workerAddr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		require.NoError(err)
@@ -639,12 +625,10 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 
 	for _, reputerAddr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       reputerAddr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        reputerAddr.String(),
+			Sender:    reputerAddr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     reputerAddr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		require.NoError(err)
@@ -1258,12 +1242,10 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	// Register 5 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -1272,12 +1254,10 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	// Register 3 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -1399,12 +1379,10 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	// Register 5 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -1413,12 +1391,10 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -1547,12 +1523,10 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	// Register 5 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -1561,12 +1535,10 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -1725,12 +1697,10 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	// Register 5 workers, first 3 for topic 1 and last 2 for topic 2
 	for i, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId1,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId1,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		if i > 2 {
 			workerRegMsg.TopicId = topicId2
@@ -1743,12 +1713,10 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	// Register 5 reputers, first 3 for topic 1 and last 2 for topic 2
 	for i, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			Owner:        addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId1,
-			IsReputer:    true,
+			Sender:    addr.String(),
+			Owner:     addr.String(),
+			TopicId:   topicId1,
+			IsReputer: true,
 		}
 		if i > 2 {
 			reputerRegMsg.TopicId = topicId2
@@ -1921,24 +1889,20 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 
 	// Register 1 worker
 	workerRegMsg := &types.MsgRegister{
-		Sender:       worker.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    false,
-		Owner:        worker.String(),
+		Sender:    worker.String(),
+		TopicId:   topicId,
+		IsReputer: false,
+		Owner:     worker.String(),
 	}
 	_, err = s.msgServer.Register(s.ctx, workerRegMsg)
 	s.Require().NoError(err)
 
 	// Register 1 reputer
 	reputerRegMsg := &types.MsgRegister{
-		Sender:       reputer.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
-		Owner:        reputer.String(),
+		Sender:    reputer.String(),
+		TopicId:   topicId,
+		IsReputer: true,
+		Owner:     reputer.String(),
 	}
 	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
 	s.Require().NoError(err)
@@ -2109,12 +2073,10 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	// Register 25 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -2123,12 +2085,10 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	// Register 25 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -2265,12 +2225,10 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Register 5 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -2279,12 +2237,10 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Register 3 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -2404,12 +2360,10 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Register 7 workers with 2 new inferers
 	for _, addr := range newSecondWorkersAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -2418,12 +2372,10 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Register 3 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
@@ -2535,12 +2487,10 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Register 7 workers with 2 new forecasters
 	for _, addr := range newThirdWorkersAddrs {
 		workerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    false,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: false,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
@@ -2549,12 +2499,10 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Register 3 reputers
 	for _, addr := range reputerAddrs {
 		reputerRegMsg := &types.MsgRegister{
-			Sender:       addr.String(),
-			LibP2PKey:    "test",
-			MultiAddress: "test",
-			TopicId:      topicId,
-			IsReputer:    true,
-			Owner:        addr.String(),
+			Sender:    addr.String(),
+			TopicId:   topicId,
+			IsReputer: true,
+			Owner:     addr.String(),
 		}
 		_, err := s.msgServer.Register(s.ctx, reputerRegMsg)
 		s.Require().NoError(err)
