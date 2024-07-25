@@ -1769,7 +1769,7 @@ func (s *KeeperTestSuite) TestInsertWorker() {
 	err := keeper.InsertWorker(ctx, topicId, worker, workerInfo)
 	s.Require().NoError(err)
 
-	node, err := keeper.GetWorkerByLibp2pKey(ctx, key)
+	node, err := keeper.GetWorkerInfo(ctx, key)
 
 	s.Require().NoError(err)
 	s.Require().Equal(workerInfo.LibP2PKey, node.LibP2PKey)
@@ -1865,7 +1865,7 @@ func (s *KeeperTestSuite) TestInsertReputer() {
 	s.Require().True(isRegistered, "Reputer should be registered in each topic")
 }
 
-func (s *KeeperTestSuite) TestGetReputerByLibp2pKey() {
+func (s *KeeperTestSuite) TestGetReputerInfo() {
 	ctx := s.ctx
 	reputer := "sampleReputerAddress"
 	topicId := uint64(501)
@@ -1882,12 +1882,12 @@ func (s *KeeperTestSuite) TestGetReputerByLibp2pKey() {
 	err := keeper.InsertReputer(ctx, topicId, reputer, reputerInfo)
 	s.Require().NoError(err)
 
-	actualReputer, err := keeper.GetReputerByLibp2pKey(ctx, reputerKey)
+	actualReputer, err := keeper.GetReputerInfo(ctx, reputerKey)
 	s.Require().NoError(err)
 	s.Require().Equal(reputerInfo, actualReputer)
 
 	nonExistentKey := "nonExistentKey123"
-	_, err = keeper.GetReputerByLibp2pKey(ctx, nonExistentKey)
+	_, err = keeper.GetReputerInfo(ctx, nonExistentKey)
 	s.Require().Error(err)
 }
 

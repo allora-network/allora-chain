@@ -140,22 +140,12 @@ service Query {
 
   rpc GetWorkerNodeInfo(QueryWorkerNodeInfoRequest) returns (QueryWorkerNodeInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/worker/{libp2p_key}";
+    option (google.api.http).get = "/emissions/v1/worker/{address}";
   }
 
   rpc GetReputerNodeInfo(QueryReputerNodeInfoRequest) returns (QueryReputerNodeInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/reputer/{libp2p_key}";
-  }
-
-  rpc GetWorkerAddressByP2PKey(QueryWorkerAddressByP2PKeyRequest) returns (QueryWorkerAddressByP2PKeyResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/worker_address/{libp2p_key}";
-  }
-
-  rpc GetReputerAddressByP2PKey(QueryReputerAddressByP2PKeyRequest) returns (QueryReputerAddressByP2PKeyResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/reputer_address/{libp2p_key}";
+    option (google.api.http).get = "/emissions/v1/reputer/{address}";
   }
 
   rpc IsWorkerRegisteredInTopicId(QueryIsWorkerRegisteredInTopicIdRequest)
@@ -615,7 +605,7 @@ message QueryWorkerLatestInferenceResponse {
 }
 
 message QueryWorkerNodeInfoRequest {
-  string libp2p_key = 1;
+  string address = 1;
 }
 
 message QueryWorkerNodeInfoResponse {
@@ -623,27 +613,11 @@ message QueryWorkerNodeInfoResponse {
 }
 
 message QueryReputerNodeInfoRequest {
-  string libp2p_key = 1;
+  string address = 1;
 }
 
 message QueryReputerNodeInfoResponse {
   OffchainNode node_info = 1;
-}
-
-message QueryWorkerAddressByP2PKeyRequest {
-  string libp2p_key = 1;
-}
-
-message QueryWorkerAddressByP2PKeyResponse {
-  string address = 1;
-}
-
-message QueryReputerAddressByP2PKeyRequest {
-  string libp2p_key = 1;
-}
-
-message QueryReputerAddressByP2PKeyResponse {
-  string address = 1;
 }
 
 message QueryNetworkInferencesAtBlockRequest {

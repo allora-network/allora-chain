@@ -42,8 +42,6 @@ const (
 	Query_GetDelegateStakeRemovalInfo_FullMethodName                 = "/emissions.v1.Query/GetDelegateStakeRemovalInfo"
 	Query_GetWorkerNodeInfo_FullMethodName                           = "/emissions.v1.Query/GetWorkerNodeInfo"
 	Query_GetReputerNodeInfo_FullMethodName                          = "/emissions.v1.Query/GetReputerNodeInfo"
-	Query_GetWorkerAddressByP2PKey_FullMethodName                    = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
-	Query_GetReputerAddressByP2PKey_FullMethodName                   = "/emissions.v1.Query/GetReputerAddressByP2PKey"
 	Query_IsWorkerRegisteredInTopicId_FullMethodName                 = "/emissions.v1.Query/IsWorkerRegisteredInTopicId"
 	Query_IsReputerRegisteredInTopicId_FullMethodName                = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
 	Query_GetNetworkInferencesAtBlock_FullMethodName                 = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
@@ -119,8 +117,6 @@ type QueryClient interface {
 	GetDelegateStakeRemovalInfo(ctx context.Context, in *QueryDelegateStakeRemovalInfoRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalInfoResponse, error)
 	GetWorkerNodeInfo(ctx context.Context, in *QueryWorkerNodeInfoRequest, opts ...grpc.CallOption) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(ctx context.Context, in *QueryReputerNodeInfoRequest, opts ...grpc.CallOption) (*QueryReputerNodeInfoResponse, error)
-	GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error)
-	GetReputerAddressByP2PKey(ctx context.Context, in *QueryReputerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryReputerAddressByP2PKeyResponse, error)
 	IsWorkerRegisteredInTopicId(ctx context.Context, in *QueryIsWorkerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
@@ -377,24 +373,6 @@ func (c *queryClient) GetWorkerNodeInfo(ctx context.Context, in *QueryWorkerNode
 func (c *queryClient) GetReputerNodeInfo(ctx context.Context, in *QueryReputerNodeInfoRequest, opts ...grpc.CallOption) (*QueryReputerNodeInfoResponse, error) {
 	out := new(QueryReputerNodeInfoResponse)
 	err := c.cc.Invoke(ctx, Query_GetReputerNodeInfo_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error) {
-	out := new(QueryWorkerAddressByP2PKeyResponse)
-	err := c.cc.Invoke(ctx, Query_GetWorkerAddressByP2PKey_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) GetReputerAddressByP2PKey(ctx context.Context, in *QueryReputerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryReputerAddressByP2PKeyResponse, error) {
-	out := new(QueryReputerAddressByP2PKeyResponse)
-	err := c.cc.Invoke(ctx, Query_GetReputerAddressByP2PKey_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -834,8 +812,6 @@ type QueryServer interface {
 	GetDelegateStakeRemovalInfo(context.Context, *QueryDelegateStakeRemovalInfoRequest) (*QueryDelegateStakeRemovalInfoResponse, error)
 	GetWorkerNodeInfo(context.Context, *QueryWorkerNodeInfoRequest) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(context.Context, *QueryReputerNodeInfoRequest) (*QueryReputerNodeInfoResponse, error)
-	GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error)
-	GetReputerAddressByP2PKey(context.Context, *QueryReputerAddressByP2PKeyRequest) (*QueryReputerAddressByP2PKeyResponse, error)
 	IsWorkerRegisteredInTopicId(context.Context, *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(context.Context, *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
@@ -956,12 +932,6 @@ func (UnimplementedQueryServer) GetWorkerNodeInfo(context.Context, *QueryWorkerN
 }
 func (UnimplementedQueryServer) GetReputerNodeInfo(context.Context, *QueryReputerNodeInfoRequest) (*QueryReputerNodeInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReputerNodeInfo not implemented")
-}
-func (UnimplementedQueryServer) GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerAddressByP2PKey not implemented")
-}
-func (UnimplementedQueryServer) GetReputerAddressByP2PKey(context.Context, *QueryReputerAddressByP2PKeyRequest) (*QueryReputerAddressByP2PKeyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetReputerAddressByP2PKey not implemented")
 }
 func (UnimplementedQueryServer) IsWorkerRegisteredInTopicId(context.Context, *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWorkerRegisteredInTopicId not implemented")
@@ -1521,42 +1491,6 @@ func _Query_GetReputerNodeInfo_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).GetReputerNodeInfo(ctx, req.(*QueryReputerNodeInfoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_GetWorkerAddressByP2PKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryWorkerAddressByP2PKeyRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetWorkerAddressByP2PKey(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetWorkerAddressByP2PKey_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetWorkerAddressByP2PKey(ctx, req.(*QueryWorkerAddressByP2PKeyRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_GetReputerAddressByP2PKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryReputerAddressByP2PKeyRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetReputerAddressByP2PKey(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetReputerAddressByP2PKey_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetReputerAddressByP2PKey(ctx, req.(*QueryReputerAddressByP2PKeyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2469,14 +2403,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetReputerNodeInfo",
 			Handler:    _Query_GetReputerNodeInfo_Handler,
-		},
-		{
-			MethodName: "GetWorkerAddressByP2PKey",
-			Handler:    _Query_GetWorkerAddressByP2PKey_Handler,
-		},
-		{
-			MethodName: "GetReputerAddressByP2PKey",
-			Handler:    _Query_GetReputerAddressByP2PKey_Handler,
 		},
 		{
 			MethodName: "IsWorkerRegisteredInTopicId",
