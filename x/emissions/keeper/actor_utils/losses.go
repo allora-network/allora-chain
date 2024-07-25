@@ -64,7 +64,7 @@ func CloseReputerNonce(
 	// Check if the window time has passed: if blockheight > nonce.BlockHeight + topic.WorkerSubmissionWindow
 	blockHeight := ctx.BlockHeight()
 	if blockHeight <= nonce.BlockHeight+topic.GroundTruthLag {
-		return types.ErrWorkerNonceWindowNotAvailable
+		return types.ErrReputerNonceWindowNotAvailable
 	}
 
 	params, err := k.GetParams(ctx)

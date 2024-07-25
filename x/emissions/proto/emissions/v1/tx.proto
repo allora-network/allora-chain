@@ -43,6 +43,10 @@ service Msg {
   rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin) returns (MsgAddToWhitelistAdminResponse);
 
   rpc RemoveFromWhitelistAdmin(MsgRemoveFromWhitelistAdmin) returns (MsgRemoveFromWhitelistAdminResponse);
+
+  rpc InsertWorkerPayload(MsgInsertWorkerPayload) returns(MsgInsertWorkerPayloadResponse);
+
+  rpc InsertReputerPayload(MsgInsertReputerPayload) returns(MsgInsertReputerPayloadResponse);
 }
 
 /// PARAMS
@@ -166,6 +170,27 @@ message MsgCreateNewTopicResponse {
 
 /// Worker and Reputer Interface
 
+message MsgInsertReputerPayload {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  ReputerRequestNonce reputer_request_nonce = 2;
+  uint64 topic_id = 3;
+  ReputerValueBundle reputer_value_bundles = 4;
+}
+
+message MsgInsertReputerPayloadResponse {}
+
+message MsgInsertWorkerPayload {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  Nonce nonce = 2;
+  uint64 topic_id = 3;
+  WorkerDataBundle worker_data_bundles = 4;
+}
+
+message MsgInsertWorkerPayloadResponse {}
 ///  Inference Node Registration
 
 message MsgRegister {

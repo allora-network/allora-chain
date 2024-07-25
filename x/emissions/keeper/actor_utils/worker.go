@@ -54,7 +54,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return err
 	}
 
-	acceptedInferers, err := verifyAndInsertInferencesFromTopInferers(
+	acceptedInferers, err := insertInferencesFromTopInferers(
 		ctx,
 		k,
 		topicId,
@@ -72,7 +72,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return err
 	}
 
-	err = verifyAndInsertForecastsFromTopForecasters(
+	err = insertForecastsFromTopForecasters(
 		ctx,
 		k,
 		topicId,
@@ -114,7 +114,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 // and none from any unregistered inferer.
 // Signatures, anti-synil procedures, and "skimming of only the top few workers by score
 // descending" should be done here.
-func verifyAndInsertInferencesFromTopInferers(
+func insertInferencesFromTopInferers(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
@@ -185,7 +185,7 @@ func verifyAndInsertInferencesFromTopInferers(
 	}
 
 	if len(inferencesFromTopInferers) == 0 {
-		return nil, types.ErrNoValidBundles
+		return nil, types.ErrNoValidInferences
 	}
 
 	// Ensure deterministic ordering of inferences
@@ -210,7 +210,7 @@ func verifyAndInsertInferencesFromTopInferers(
 // and none from any unregistered forecaster.
 // Signatures, anti-synil procedures, and "skimming of only the top few workers by score
 // descending" should be done here.
-func verifyAndInsertForecastsFromTopForecasters(
+func insertForecastsFromTopForecasters(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,

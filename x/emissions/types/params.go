@@ -50,6 +50,7 @@ func DefaultParams() Params {
 		CNorm:                           alloraMath.MustNewDecFromString("0.75"),       // fiducial value for inference synthesis
 		TopicFeeRevenueDecayRate:        alloraMath.MustNewDecFromString("0.0025"),     // rate at which topic fee revenue decays over time
 		MinEffectiveTopicRevenue:        alloraMath.MustNewDecFromString("0.00000001"), // we no stop dripping from the topic's effective revenue when the topic's effective revenue is below this
+		DataSendingFee:                  cosmosMath.NewInt(10),                         // how much workers and reputers must pay to send payload
 	}
 }
 

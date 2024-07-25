@@ -33,6 +33,8 @@ const (
 	Msg_FundTopic_FullMethodName                 = "/emissions.v1.Msg/FundTopic"
 	Msg_AddToWhitelistAdmin_FullMethodName       = "/emissions.v1.Msg/AddToWhitelistAdmin"
 	Msg_RemoveFromWhitelistAdmin_FullMethodName  = "/emissions.v1.Msg/RemoveFromWhitelistAdmin"
+	Msg_InsertWorkerPayload_FullMethodName       = "/emissions.v1.Msg/InsertWorkerPayload"
+	Msg_InsertReputerPayload_FullMethodName      = "/emissions.v1.Msg/InsertReputerPayload"
 )
 
 // MsgClient is the client API for Msg service.
@@ -53,6 +55,8 @@ type MsgClient interface {
 	FundTopic(ctx context.Context, in *MsgFundTopic, opts ...grpc.CallOption) (*MsgFundTopicResponse, error)
 	AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error)
+	InsertWorkerPayload(ctx context.Context, in *MsgInsertWorkerPayload, opts ...grpc.CallOption) (*MsgInsertWorkerPayloadResponse, error)
+	InsertReputerPayload(ctx context.Context, in *MsgInsertReputerPayload, opts ...grpc.CallOption) (*MsgInsertReputerPayloadResponse, error)
 }
 
 type msgClient struct {
@@ -189,6 +193,24 @@ func (c *msgClient) RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveF
 	return out, nil
 }
 
+func (c *msgClient) InsertWorkerPayload(ctx context.Context, in *MsgInsertWorkerPayload, opts ...grpc.CallOption) (*MsgInsertWorkerPayloadResponse, error) {
+	out := new(MsgInsertWorkerPayloadResponse)
+	err := c.cc.Invoke(ctx, Msg_InsertWorkerPayload_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) InsertReputerPayload(ctx context.Context, in *MsgInsertReputerPayload, opts ...grpc.CallOption) (*MsgInsertReputerPayloadResponse, error) {
+	out := new(MsgInsertReputerPayloadResponse)
+	err := c.cc.Invoke(ctx, Msg_InsertReputerPayload_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -207,6 +229,8 @@ type MsgServer interface {
 	FundTopic(context.Context, *MsgFundTopic) (*MsgFundTopicResponse, error)
 	AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error)
 	RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error)
+	InsertWorkerPayload(context.Context, *MsgInsertWorkerPayload) (*MsgInsertWorkerPayloadResponse, error)
+	InsertReputerPayload(context.Context, *MsgInsertReputerPayload) (*MsgInsertReputerPayloadResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -255,6 +279,12 @@ func (UnimplementedMsgServer) AddToWhitelistAdmin(context.Context, *MsgAddToWhit
 }
 func (UnimplementedMsgServer) RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromWhitelistAdmin not implemented")
+}
+func (UnimplementedMsgServer) InsertWorkerPayload(context.Context, *MsgInsertWorkerPayload) (*MsgInsertWorkerPayloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InsertWorkerPayload not implemented")
+}
+func (UnimplementedMsgServer) InsertReputerPayload(context.Context, *MsgInsertReputerPayload) (*MsgInsertReputerPayloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InsertReputerPayload not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -521,6 +551,42 @@ func _Msg_RemoveFromWhitelistAdmin_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_InsertWorkerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgInsertWorkerPayload)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).InsertWorkerPayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_InsertWorkerPayload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).InsertWorkerPayload(ctx, req.(*MsgInsertWorkerPayload))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_InsertReputerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgInsertReputerPayload)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).InsertReputerPayload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_InsertReputerPayload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).InsertReputerPayload(ctx, req.(*MsgInsertReputerPayload))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -583,6 +649,14 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFromWhitelistAdmin",
 			Handler:    _Msg_RemoveFromWhitelistAdmin_Handler,
+		},
+		{
+			MethodName: "InsertWorkerPayload",
+			Handler:    _Msg_InsertWorkerPayload_Handler,
+		},
+		{
+			MethodName: "InsertReputerPayload",
+			Handler:    _Msg_InsertReputerPayload_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -71,4 +71,7 @@ var (
 	ErrReputerNonceWindowNotAvailable           = errors.Register(ModuleName, 68, "reputer nonce window not available")
 	ErrNoValidInferences                        = errors.Register(ModuleName, 69, "no valid inferences found")
 	ErrNoValidReputations                       = errors.Register(ModuleName, 70, "no valid reputations found")
+	ErrInvalidWorkerData                        = errors.Register(ModuleName, 71, "worker data validation is failed")
+	ErrInvalidReputerData                       = errors.Register(ModuleName, 72, "reputer data validation is failed")
+	ErrDataSenderNotEnoughDenom                 = errors.Register(ModuleName, 73, "data sender does not have enough denom")
 )

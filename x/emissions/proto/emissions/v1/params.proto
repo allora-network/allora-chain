@@ -123,4 +123,10 @@ message Params {
     (gogoproto.nullable) = false
   ];  // we no stop dripping from the topic's effective revenue when the topic's
       // effective revenue is below this
+  string data_sending_fee = 42 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];                               // registration fee for reputer or worker
 }
