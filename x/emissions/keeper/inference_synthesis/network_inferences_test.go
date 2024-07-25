@@ -308,33 +308,21 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	setOneInForecasterNetworkRegret(forecaster0, reputer2, epoch2Get("inference_regret_worker_2_onein_0").String())
 	setOneInForecasterNetworkRegret(forecaster0, reputer3, epoch2Get("inference_regret_worker_3_onein_0").String())
 	setOneInForecasterNetworkRegret(forecaster0, reputer4, epoch2Get("inference_regret_worker_4_onein_0").String())
-
-	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster0, emissionstypes.TimestampedValue{
-		BlockHeight: blockHeight,
-		Value:       epoch2Get("inference_regret_worker_5_onein_0"),
-	})
+	setOneInForecasterNetworkRegret(forecaster0, forecaster0, epoch2Get("inference_regret_worker_5_onein_0").String())
 
 	setOneInForecasterNetworkRegret(forecaster1, reputer0, epoch2Get("inference_regret_worker_0_onein_1").String())
 	setOneInForecasterNetworkRegret(forecaster1, reputer1, epoch2Get("inference_regret_worker_1_onein_1").String())
 	setOneInForecasterNetworkRegret(forecaster1, reputer2, epoch2Get("inference_regret_worker_2_onein_1").String())
 	setOneInForecasterNetworkRegret(forecaster1, reputer3, epoch2Get("inference_regret_worker_3_onein_1").String())
 	setOneInForecasterNetworkRegret(forecaster1, reputer4, epoch2Get("inference_regret_worker_4_onein_1").String())
-
-	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster1, emissionstypes.TimestampedValue{
-		BlockHeight: blockHeight,
-		Value:       epoch2Get("inference_regret_worker_5_onein_1"),
-	})
+	setOneInForecasterNetworkRegret(forecaster1, forecaster1, epoch2Get("inference_regret_worker_5_onein_1").String())
 
 	setOneInForecasterNetworkRegret(forecaster2, reputer0, epoch2Get("inference_regret_worker_0_onein_2").String())
 	setOneInForecasterNetworkRegret(forecaster2, reputer1, epoch2Get("inference_regret_worker_1_onein_2").String())
 	setOneInForecasterNetworkRegret(forecaster2, reputer2, epoch2Get("inference_regret_worker_2_onein_2").String())
 	setOneInForecasterNetworkRegret(forecaster2, reputer3, epoch2Get("inference_regret_worker_3_onein_2").String())
 	setOneInForecasterNetworkRegret(forecaster2, reputer4, epoch2Get("inference_regret_worker_4_onein_2").String())
-
-	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster2, emissionstypes.TimestampedValue{
-		BlockHeight: blockHeight,
-		Value:       epoch2Get("inference_regret_worker_5_onein_2"),
-	})
+	setOneInForecasterNetworkRegret(forecaster2, forecaster2, epoch2Get("inference_regret_worker_5_onein_2").String())
 
 	// Calculate
 	valueBundle, _, _, _, err :=
@@ -657,11 +645,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithJustOne
 	setOneInForecasterNetworkRegret(forecaster0, worker2, epoch2Get("inference_regret_worker_2_onein_0").String())
 	setOneInForecasterNetworkRegret(forecaster0, worker3, epoch2Get("inference_regret_worker_3_onein_0").String())
 	setOneInForecasterNetworkRegret(forecaster0, worker4, epoch2Get("inference_regret_worker_4_onein_0").String())
-
-	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster0, emissionstypes.TimestampedValue{
-		BlockHeight: blockHeight,
-		Value:       epoch2Get("inference_regret_worker_5_onein_0"),
-	})
+	setOneInForecasterNetworkRegret(forecaster0, forecaster0, epoch2Get("inference_regret_worker_5_onein_0").String())
 
 	// Update topic initial regret for new participants
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
@@ -1260,33 +1244,21 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInference() {
 	setOneInForecasterNetworkRegret(forecaster0, reputer2, epoch2Get("inference_regret_worker_2_onein_0").String())
 	setOneInForecasterNetworkRegret(forecaster0, reputer3, epoch2Get("inference_regret_worker_3_onein_0").String())
 	setOneInForecasterNetworkRegret(forecaster0, reputer4, epoch2Get("inference_regret_worker_4_onein_0").String())
-
-	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster0, emissionstypes.TimestampedValue{
-		BlockHeight: blockHeightInferences,
-		Value:       epoch2Get("inference_regret_worker_5_onein_0"),
-	})
+	setOneInForecasterNetworkRegret(forecaster0, forecaster0, epoch2Get("inference_regret_worker_5_onein_0").String())
 
 	setOneInForecasterNetworkRegret(forecaster1, reputer0, epoch2Get("inference_regret_worker_0_onein_1").String())
 	setOneInForecasterNetworkRegret(forecaster1, reputer1, epoch2Get("inference_regret_worker_1_onein_1").String())
 	setOneInForecasterNetworkRegret(forecaster1, reputer2, epoch2Get("inference_regret_worker_2_onein_1").String())
 	setOneInForecasterNetworkRegret(forecaster1, reputer3, epoch2Get("inference_regret_worker_3_onein_1").String())
 	setOneInForecasterNetworkRegret(forecaster1, reputer4, epoch2Get("inference_regret_worker_4_onein_1").String())
-
-	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster1, emissionstypes.TimestampedValue{
-		BlockHeight: blockHeightInferences,
-		Value:       epoch2Get("inference_regret_worker_5_onein_1"),
-	})
+	setOneInForecasterNetworkRegret(forecaster1, forecaster1, epoch2Get("inference_regret_worker_5_onein_1").String())
 
 	setOneInForecasterNetworkRegret(forecaster2, reputer0, epoch2Get("inference_regret_worker_0_onein_2").String())
 	setOneInForecasterNetworkRegret(forecaster2, reputer1, epoch2Get("inference_regret_worker_1_onein_2").String())
 	setOneInForecasterNetworkRegret(forecaster2, reputer2, epoch2Get("inference_regret_worker_2_onein_2").String())
 	setOneInForecasterNetworkRegret(forecaster2, reputer3, epoch2Get("inference_regret_worker_3_onein_2").String())
 	setOneInForecasterNetworkRegret(forecaster2, reputer4, epoch2Get("inference_regret_worker_4_onein_2").String())
-
-	keeper.SetOneInForecasterSelfNetworkRegret(s.ctx, topicId, forecaster2, emissionstypes.TimestampedValue{
-		BlockHeight: blockHeightInferences,
-		Value:       epoch2Get("inference_regret_worker_5_onein_2"),
-	})
+	setOneInForecasterNetworkRegret(forecaster2, forecaster2, epoch2Get("inference_regret_worker_5_onein_2").String())
 
 	// Calculate
 	valueBundle, _, _, _, _, _, err :=

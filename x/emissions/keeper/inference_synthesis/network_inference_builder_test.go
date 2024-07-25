@@ -230,9 +230,10 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			forecasterName := "forecaster" + strconv.Itoa(forecaster)
 			headerName := "inference_regret_worker_5_onein_" + strconv.Itoa(forecaster)
 
-			k.SetOneInForecasterSelfNetworkRegret(
+			k.SetOneInForecasterNetworkRegret(
 				s.ctx,
 				topicId,
+				forecasterName,
 				forecasterName,
 				emissionstypes.TimestampedValue{
 					BlockHeight: blockHeight,
@@ -787,9 +788,9 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 	s.Require().NoError(err)
 
 	// Set one-in forecaster network regrets
-	err = k.SetOneInForecasterSelfNetworkRegret(ctx, topicId, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.001")})
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker1, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.001")})
 	s.Require().NoError(err)
-	err = k.SetOneInForecasterSelfNetworkRegret(ctx, topicId, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.001")})
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker2, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.001")})
 	s.Require().NoError(err)
 	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker2, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.008")})
 	s.Require().NoError(err)
