@@ -33,13 +33,13 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	// Check if the window time has passed: if blockheight > nonce.BlockHeight + topic.WorkerSubmissionWindow
 	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
 
+	// Check if the ground truth lag has passed: if blockheight > nonce.BlockHeight + topic.GroundTruthLag
 	if blockHeight <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag {
 		return nil, types.ErrWorkerNonceWindowNotAvailable
 	}

@@ -34,13 +34,13 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	// Check if the window time has passed: if blockheight > topic.EpochLastEnded+topic.WorkerSubmissionWindow
 	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
 
+	// Check if the window time has passed: if blockheight > topic.EpochLastEnded+topic.WorkerSubmissionWindow
 	if blockHeight <= nonce.BlockHeight+topic.WorkerSubmissionWindow ||
 		blockHeight > nonce.BlockHeight+topic.GroundTruthLag {
 		return nil, types.ErrWorkerNonceWindowNotAvailable

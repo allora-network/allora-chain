@@ -44,9 +44,9 @@ service Msg {
 
   rpc RemoveFromWhitelistAdmin(MsgRemoveFromWhitelistAdmin) returns (MsgRemoveFromWhitelistAdminResponse);
 
-  rpc InsertWorkerPayload(MsgInsertWorkerPayload) returns(MsgInsertWorkerPayloadResponse);
+  rpc InsertWorkerPayload(MsgInsertWorkerPayload) returns (MsgInsertWorkerPayloadResponse);
 
-  rpc InsertReputerPayload(MsgInsertReputerPayload) returns(MsgInsertReputerPayloadResponse);
+  rpc InsertReputerPayload(MsgInsertReputerPayload) returns (MsgInsertReputerPayloadResponse);
 }
 
 /// PARAMS
