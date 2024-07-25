@@ -293,6 +293,22 @@ func GetCalcSetNetworkRegrets(
 			}
 			k.SetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker, newOneInForecasterRegret)
 		}
+
+		lastRegret, _, err := k.GetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
+		}
+		newOneInForecasterRegret, err := ComputeAndBuildEMRegret(
+			networkLossesByWorker.OneInForecasterLosses[oneInForecasterLoss.Worker], // L^+_k'i
+			networkLossesByWorker.ForecasterLosses[oneInForecasterLoss.Worker],      // L_ik'
+			lastRegret.Value,
+			alpha,
+			blockHeight,
+		)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Error computing and building one-in forecaster regret")
+		}
+		k.SetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, oneInForecasterLoss.Worker, newOneInForecasterRegret)
 	}
 
 	// Recalculate topic initial regret
