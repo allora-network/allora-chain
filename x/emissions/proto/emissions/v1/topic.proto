@@ -38,3 +38,13 @@ message TimestampedActorNonce {
   int64 block_height = 1;  // height at which value calculated or received
   Nonce nonce = 2;
 }
+
+message Topicid {
+  option (gogoproto.equal) = true;
+  uint64 topic_id = 1;
+}
+
+message Topicids {
+  option (gogoproto.equal) = true;
+  repeated Topicid topic_ids = 1;
+}

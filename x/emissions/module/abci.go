@@ -28,7 +28,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
 	}
-	sdkCtx.Logger().Debug(fmt.Sprintf("EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
+	sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
 	// REWARDS (will internally filter any non-RewardReady topics)
 	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
@@ -67,6 +67,8 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 				sdkCtx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
 
+				am.keeper.AddWorkerWindowTopicId(sdkCtx, blockHeight+topic.WorkerSubmissionWindow, types.Topicid{TopicId: topic.Id})
+
 				MaxUnfulfilledReputerRequests := types.DefaultParams().MaxUnfulfilledReputerRequests
 				moduleParams, err := am.keeper.GetParams(ctx)
 				if err != nil {
@@ -89,26 +91,9 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 					}
 				}
 			}
-			// Check Worker Close Cadence
-			if am.keeper.CheckWorkerCloseCadence(blockHeight, topic) {
-				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %v metadata: %s . \n",
-					topic.Id,
-					topic.Metadata))
-				// Check if there is an unfulfilled nonce
-				nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topic.Id)
-				if err != nil {
-					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
-					return
-				}
-				for _, nonce := range nonces.Nonces {
-					allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic.Id, *nonce)
-				}
-			}
 			// Check Reputer Close Cadence
 			if am.keeper.CheckReputerCloseCadence(blockHeight, topic) {
-				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Reputer close cadence met for topic: %v metadata: %s . \n",
-					topic.Id,
-					topic.Metadata))
+				sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Reputer close cadence met for topic: %d ", topic.Id))
 				// Check if there is an unfulfilled nonce
 				nonces, err := am.keeper.GetUnfulfilledReputerNonces(sdkCtx, topic.Id)
 				if err != nil {
@@ -140,5 +125,32 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 	wg.Wait()
 
+	// Close any open windows due this blockHeight
+	workerWindowsToClose := am.keeper.GetWorkerWindowTopicIds(sdkCtx, blockHeight)
+	if len(workerWindowsToClose.TopicIds) > 0 {
+		for _, topicId := range workerWindowsToClose.TopicIds {
+			sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %d", topicId))
+			// Check if there is an unfulfilled nonce
+			nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId.TopicId)
+			if err != nil {
+				sdkCtx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+				continue
+			} else if len(nonces.Nonces) == 0 {
+				// No nonces to fulfill
+				continue
+			} else {
+				for _, nonce := range nonces.Nonces {
+					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Closing Worker window for topic: %d, nonces: %v", topicId.TopicId, nonce))
+					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topicId.TopicId, *nonce)
+					if err != nil {
+						sdkCtx.Logger().Warn(fmt.Sprintf("Error closing worker nonce: %s", err.Error()))
+						// Proactively close the nonce
+						am.keeper.FulfillWorkerNonce(sdkCtx, topicId.TopicId, nonce)
+					}
+				}
+			}
+		}
+		am.keeper.DeleteWorkerWindowBlockheight(sdkCtx, blockHeight)
+	}
 	return nil
 }

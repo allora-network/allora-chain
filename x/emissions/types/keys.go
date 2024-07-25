@@ -71,4 +71,5 @@ var (
 	TopicLastReputerCommitKey                   = collections.NewPrefix(56)
 	TopicLastWorkerPayloadKey                   = collections.NewPrefix(57)
 	TopicLastReputerPayloadKey                  = collections.NewPrefix(58)
+	OpenWorkerWindowsKey                        = collections.NewPrefix(59)
 )

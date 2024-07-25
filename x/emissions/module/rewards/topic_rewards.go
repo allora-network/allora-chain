@@ -118,19 +118,19 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 	for _, topicId := range sortedTopActiveTopics {
 		weight := weightsOfTopActiveTopics[topicId]
 		if weight.Equal(alloraMath.ZeroDec()) {
-			Logger(ctx).Debug("Skipping Topic ID: ", topicId, " Weight: ", weight)
+			Logger(ctx).Debug(fmt.Sprintf("Skipping Topic ID: %d, Weight: %s", topicId, weight))
 			continue
 		}
 		// Get the topic
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			Logger(ctx).Debug("Error getting topic: ", err)
+			Logger(ctx).Debug(fmt.Sprintf("Error getting topic: %v", err))
 			continue
 		}
 		// Execute the function
 		err = fn(ctx, &topic)
 		if err != nil {
-			Logger(ctx).Debug("Error applying function on topic: ", err)
+			Logger(ctx).Debug(fmt.Sprintf("Error applying function on topic: %v", err))
 			continue
 		}
 	}
