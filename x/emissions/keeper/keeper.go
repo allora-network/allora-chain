@@ -620,15 +620,58 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 // Append individual inference for a topic/block
 func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
 	block := nonce.BlockHeight
+	moduleParams, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if err != nil {
 		return err
 	}
-	newInferences := types.Inferences{
-		Inferences: append(inferences.Inferences, inference),
+	// append inference if not reached out topN
+	if len(inferences.Inferences) < int(moduleParams.MaxTopInferersToReward) {
+		newInferences := types.Inferences{
+			Inferences: append(inferences.Inferences, inference),
+		}
+		return k.allInferences.Set(ctx, key, newInferences)
 	}
-	return k.allInferences.Set(ctx, key, newInferences)
+	// get score of current inference and check with
+	score, err := k.GetLatestInfererScore(ctx, topicId, inference.Inferer)
+	if err != nil {
+		return err
+	}
+	lowScore, lowScoreIndex, err := k.GetLowScoreFromAllInferences(ctx, topicId, inferences)
+	if err != nil {
+		return err
+	}
+	if score.Score.Gt(lowScore.Score) {
+		inferences.Inferences = append(inferences.Inferences[:lowScoreIndex], inferences.Inferences[lowScoreIndex+1:]...)
+		inferences.Inferences = append(inferences.Inferences, inference)
+		return k.allInferences.Set(ctx, key, inferences)
+	}
+	return nil
+}
+
+// Return low score and index among all inferences
+func (k *Keeper) GetLowScoreFromAllInferences(ctx context.Context, topicId TopicId, inferences types.Inferences) (types.Score, int, error) {
+
+	lowScoreIndex := 0
+	lowScore, err := k.GetLatestInfererScore(ctx, topicId, inferences.Inferences[0].Inferer)
+	if err != nil {
+		return types.Score{}, lowScoreIndex, err
+	}
+	for index, extInference := range inferences.Inferences {
+		extScore, err := k.GetLatestInfererScore(ctx, topicId, extInference.Inferer)
+		if err != nil {
+			continue
+		}
+		if lowScore.Score.Lt(extScore.Score) {
+			lowScore = extScore
+			lowScoreIndex = index
+		}
+	}
+	return lowScore, lowScoreIndex, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -650,15 +693,57 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 // Append individual forecast for a topic/block
 func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
 	block := nonce.BlockHeight
+	moduleParams, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)
 	if err != nil {
 		return err
 	}
-	newForecast := types.Forecasts{
-		Forecasts: append(forecasts.Forecasts, forecast),
+	if len(forecasts.Forecasts) < int(moduleParams.MaxTopForecastersToReward) {
+		newForecast := types.Forecasts{
+			Forecasts: append(forecasts.Forecasts, forecast),
+		}
+		return k.allForecasts.Set(ctx, key, newForecast)
 	}
-	return k.allForecasts.Set(ctx, key, newForecast)
+	// get score of current inference and check with
+	score, err := k.GetLatestInfererScore(ctx, topicId, forecast.Forecaster)
+	if err != nil {
+		return err
+	}
+	lowScore, lowScoreIndex, err := k.GetLowScoreFromAllForecasts(ctx, topicId, forecasts)
+	if err != nil {
+		return err
+	}
+	if score.Score.Gt(lowScore.Score) {
+		forecasts.Forecasts = append(forecasts.Forecasts[:lowScoreIndex], forecasts.Forecasts[lowScoreIndex+1:]...)
+		forecasts.Forecasts = append(forecasts.Forecasts, forecast)
+		return k.allForecasts.Set(ctx, key, forecasts)
+	}
+	return nil
+}
+
+// Return low score and index among all inferences
+func (k *Keeper) GetLowScoreFromAllForecasts(ctx context.Context, topicId TopicId, forecasts types.Forecasts) (types.Score, int, error) {
+
+	lowScoreIndex := 0
+	lowScore, err := k.GetLatestForecasterScore(ctx, topicId, forecasts.Forecasts[0].Forecaster)
+	if err != nil {
+		return types.Score{}, lowScoreIndex, err
+	}
+	for index, extForecast := range forecasts.Forecasts {
+		extScore, err := k.GetLatestInfererScore(ctx, topicId, extForecast.Forecaster)
+		if err != nil {
+			continue
+		}
+		if lowScore.Score.Lt(extScore.Score) {
+			lowScore = extScore
+			lowScoreIndex = index
+		}
+	}
+	return lowScore, lowScoreIndex, nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -714,14 +799,55 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 // Append loss bundle for a topoic and blockheight
 func (k *Keeper) AppendReputerLossAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
 	key := collections.Join(topicId, block)
+	moduleParams, err := k.GetParams(ctx)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
 	if err != nil {
 		return err
 	}
-	newReputerLossBundles := append(reputerLossBundles.ReputerValueBundles, reputerLoss)
-	return k.allLossBundles.Set(ctx, key, types.ReputerValueBundles{
-		ReputerValueBundles: newReputerLossBundles,
-	})
+	if len(reputerLossBundles.ReputerValueBundles) < int(moduleParams.MaxTopReputersToReward) {
+		newReputerLossBundles := append(reputerLossBundles.ReputerValueBundles, reputerLoss)
+		return k.allLossBundles.Set(ctx, key, types.ReputerValueBundles{
+			ReputerValueBundles: newReputerLossBundles,
+		})
+	}
+
+	// get score of current inference and check with
+	score, err := k.GetLatestReputerScore(ctx, topicId, reputerLoss.ValueBundle.Reputer)
+	if err != nil {
+		return err
+	}
+	lowScore, lowScoreIndex, err := k.GetLowScoreFromAllLossBundles(ctx, topicId, reputerLossBundles)
+	if err != nil {
+		return err
+	}
+	if score.Score.Gt(lowScore.Score) {
+		reputerLossBundles.ReputerValueBundles = append(reputerLossBundles.ReputerValueBundles[:lowScoreIndex],
+			reputerLossBundles.ReputerValueBundles[lowScoreIndex+1:]...)
+		reputerLossBundles.ReputerValueBundles = append(reputerLossBundles.ReputerValueBundles, reputerLoss)
+		return k.allLossBundles.Set(ctx, key, reputerLossBundles)
+	}
+	return nil
+}
+
+// Return low score and index among all inferences
+func (k *Keeper) GetLowScoreFromAllLossBundles(ctx context.Context, topicId TopicId, lossBundles types.ReputerValueBundles) (types.Score, int, error) {
+
+	lowScoreIndex := 0
+	lowScore, err := k.GetLatestReputerScore(ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.Reputer)
+	if err != nil {
+		return types.Score{}, lowScoreIndex, err
+	}
+	for index, extLossBundle := range lossBundles.ReputerValueBundles {
+		extScore, err := k.GetLatestReputerScore(ctx, topicId, extLossBundle.ValueBundle.Reputer)
+		if err != nil {
+			continue
+		}
+		if lowScore.Score.Lt(extScore.Score) {
+			lowScore = extScore
+			lowScoreIndex = index
+		}
+	}
+	return lowScore, lowScoreIndex, nil
 }
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
