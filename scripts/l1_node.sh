@@ -74,8 +74,6 @@ if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
     dasel put statesync.trust_hash -t string -v $TRUST_HEIGHT_HASH -f ${APP_HOME}/config/config.toml
 fi
 
-export BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-$(curl -Ls ${HEADS_URL})}"
-
 echo "Starting validator node"
 allorad \
     --home=${APP_HOME} \

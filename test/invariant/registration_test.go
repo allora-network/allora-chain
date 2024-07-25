@@ -33,12 +33,10 @@ func registerWorker(
 	iterLog(m.T, iteration, "registering ", actor, "as worker in topic id", topicId)
 	ctx := context.Background()
 	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.MsgRegister{
-		Sender:       actor.addr,
-		Owner:        actor.addr, // todo pick random other actor
-		LibP2PKey:    getLibP2pKeyName(actor),
-		MultiAddress: getMultiAddressName(actor),
-		IsReputer:    false,
-		TopicId:      topicId,
+		Sender:    actor.addr,
+		Owner:     actor.addr, // todo pick random other actor
+		IsReputer: false,
+		TopicId:   topicId,
 	})
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -128,12 +126,10 @@ func registerReputer(
 	iterLog(m.T, iteration, "registering ", actor, "as reputer in topic id", topicId)
 	ctx := context.Background()
 	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.MsgRegister{
-		Sender:       actor.addr,
-		Owner:        actor.addr, // todo pick random other actor
-		LibP2PKey:    getLibP2pKeyName(actor),
-		MultiAddress: getMultiAddressName(actor),
-		IsReputer:    true,
-		TopicId:      topicId,
+		Sender:    actor.addr,
+		Owner:     actor.addr, // todo pick random other actor
+		IsReputer: true,
+		TopicId:   topicId,
 	})
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)

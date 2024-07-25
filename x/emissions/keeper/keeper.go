@@ -118,10 +118,10 @@ type Keeper struct {
 	forecasts collections.Map[collections.Pair[TopicId, ActorId], types.Forecast]
 
 	// map of worker id to node data about that worker
-	workers collections.Map[LibP2pKey, types.OffchainNode]
+	workers collections.Map[ActorId, types.OffchainNode]
 
 	// map of reputer id to node data about that reputer
-	reputers collections.Map[LibP2pKey, types.OffchainNode]
+	reputers collections.Map[ActorId, types.OffchainNode]
 
 	// fee revenue collected by a topic over the course of the last reward cadence
 	topicFeeRevenue collections.Map[TopicId, cosmosMath.Int]
@@ -145,6 +145,9 @@ type Keeper struct {
 	previousPercentageRewardToStakedReputers collections.Item[alloraMath.Dec]
 
 	/// NONCES
+
+	// map of open worker nonce windows for topics on particular block heights
+	openWorkerWindows collections.Map[BlockHeight, types.Topicids]
 
 	// map of (topic) -> unfulfilled nonces
 	unfulfilledWorkerNonces collections.Map[TopicId, types.Nonces]
@@ -244,6 +247,7 @@ func NewKeeper(
 		topicLastReputerCommit:                   collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastWorkerPayload:                   collections.NewMap(sb, types.TopicLastWorkerPayloadKey, "topic_last_worker_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerPayload:                  collections.NewMap(sb, types.TopicLastReputerPayloadKey, "topic_last_reputer_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		openWorkerWindows:                        collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.Topicids](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -257,6 +261,33 @@ func NewKeeper(
 }
 
 /// NONCES
+
+// GetTopicIds returns the TopicIds for a given BlockHeight.
+// If no TopicIds are found for the BlockHeight, it returns an empty slice.
+func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) types.Topicids {
+	topicIds, err := k.openWorkerWindows.Get(ctx, height)
+	if err != nil {
+		return types.Topicids{}
+	}
+	return topicIds
+}
+
+// SetTopicId appends a new TopicId to the list of TopicIds for a given BlockHeight.
+// If no entry exists for the BlockHeight, it creates a new entry with the TopicId.
+func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicid types.Topicid) error {
+	var topicIds types.Topicids
+	topicIds, err := k.openWorkerWindows.Get(ctx, height)
+	if err != nil {
+		topicIds = types.Topicids{}
+	}
+	topicIds.TopicIds = append(topicIds.TopicIds, &topicid)
+	k.openWorkerWindows.Set(ctx, height, topicIds)
+	return nil
+}
+
+func (k *Keeper) DeleteWorkerWindowBlockheight(ctx sdk.Context, height BlockHeight) error {
+	return k.openWorkerWindows.Remove(ctx, height)
+}
 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
@@ -1557,7 +1588,7 @@ func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer Act
 	if err != nil {
 		return err
 	}
-	err = k.reputers.Set(ctx, reputerInfo.LibP2PKey, reputerInfo)
+	err = k.reputers.Set(ctx, reputer, reputerInfo)
 	if err != nil {
 		return err
 	}
@@ -1574,7 +1605,7 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputer Act
 	return nil
 }
 
-func (k *Keeper) GetReputerByLibp2pKey(ctx sdk.Context, reputerKey string) (types.OffchainNode, error) {
+func (k *Keeper) GetReputerInfo(ctx sdk.Context, reputerKey ActorId) (types.OffchainNode, error) {
 	return k.reputers.Get(ctx, reputerKey)
 }
 
@@ -1587,7 +1618,7 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker Actor
 	if err != nil {
 		return err
 	}
-	err = k.workers.Set(ctx, workerInfo.LibP2PKey, workerInfo)
+	err = k.workers.Set(ctx, worker, workerInfo)
 	if err != nil {
 		return err
 	}
@@ -1604,36 +1635,8 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, worker Actor
 	return nil
 }
 
-func (k *Keeper) GetWorkerByLibp2pKey(ctx sdk.Context, workerKey string) (types.OffchainNode, error) {
+func (k *Keeper) GetWorkerInfo(ctx sdk.Context, workerKey ActorId) (types.OffchainNode, error) {
 	return k.workers.Get(ctx, workerKey)
-}
-
-func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
-	worker, err := k.workers.Get(ctx, p2pKey)
-	if err != nil {
-		return nil, err
-	}
-
-	workerAddress, err := sdk.AccAddressFromBech32(worker.GetOwner())
-	if err != nil {
-		return nil, err
-	}
-
-	return workerAddress, nil
-}
-
-func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
-	reputer, err := k.reputers.Get(ctx, p2pKey)
-	if err != nil {
-		return nil, err
-	}
-
-	address, err := sdk.AccAddressFromBech32(reputer.GetOwner())
-	if err != nil {
-		return nil, err
-	}
-
-	return address, nil
 }
 
 /// TOPICS

@@ -203,11 +203,9 @@ message MsgRegister {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  string lib_p2p_key = 2;
-  string multi_address = 3;
-  uint64 topic_id = 4;
-  string owner = 5;
-  bool is_reputer = 6;
+  uint64 topic_id = 2;
+  string owner = 3;
+  bool is_reputer = 4;
 }
 
 message MsgRegisterResponse {
