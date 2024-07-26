@@ -735,6 +735,28 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "address"},
 					},
 				},
+				{
+					RpcMethod: "InsertWorkerPayload",
+					Use:       "insert-worker-payload [sender] [nonce] [topic_id] [worker_data]",
+					Short:     "Insert worker payload",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "nonce"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "worker_data_bundle"},
+					},
+				},
+				{
+					RpcMethod: "InsertReputerPayload",
+					Use:       "insert-reputer-payload [sender] [reputer_data]",
+					Short:     "Insert reputer payload",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "reputer_request_nonce"},
+						{ProtoField: "topic_id"},
+						{ProtoField: "reputer_value_bundle"},
+					},
+				},
 			},
 		},
 	}

@@ -21,6 +21,7 @@ type SortableItem struct {
 type Actor = string
 type BlockHeight = int64
 type Score = types.Score
+type TopicId = uint64
 
 type PriorityQueue []*SortableItem
 

@@ -43,6 +43,10 @@ service Msg {
   rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin) returns (MsgAddToWhitelistAdminResponse);
 
   rpc RemoveFromWhitelistAdmin(MsgRemoveFromWhitelistAdmin) returns (MsgRemoveFromWhitelistAdminResponse);
+
+  rpc InsertWorkerPayload(MsgInsertWorkerPayload) returns (MsgInsertWorkerPayloadResponse);
+
+  rpc InsertReputerPayload(MsgInsertReputerPayload) returns (MsgInsertReputerPayloadResponse);
 }
 
 /// PARAMS
@@ -128,6 +132,12 @@ message OptionalParams {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated string min_effective_topic_revenue = 41
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string data_sending_fee = 42 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message MsgUpdateParams {
@@ -166,6 +176,27 @@ message MsgCreateNewTopicResponse {
 
 /// Worker and Reputer Interface
 
+message MsgInsertReputerPayload {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  ReputerRequestNonce reputer_request_nonce = 2;
+  uint64 topic_id = 3;
+  ReputerValueBundle reputer_value_bundle = 4;
+}
+
+message MsgInsertReputerPayloadResponse {}
+
+message MsgInsertWorkerPayload {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  Nonce nonce = 2;
+  uint64 topic_id = 3;
+  WorkerDataBundle worker_data_bundle = 4;
+}
+
+message MsgInsertWorkerPayloadResponse {}
 ///  Inference Node Registration
 
 message MsgRegister {
