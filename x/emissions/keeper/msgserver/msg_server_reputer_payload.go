@@ -2,6 +2,7 @@ package msgserver
 
 import (
 	"context"
+
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -40,8 +41,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	}
 
 	// Check if the ground truth lag has passed: if blockheight > nonce.BlockHeight + topic.GroundTruthLag
-	if blockHeight <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag {
-		return nil, types.ErrWorkerNonceWindowNotAvailable
+	if blockHeight < nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag {
+		return nil, types.ErrReputerNonceWindowNotAvailable
 	}
 
 	if err := msg.ReputerValueBundle.Validate(); err != nil {
