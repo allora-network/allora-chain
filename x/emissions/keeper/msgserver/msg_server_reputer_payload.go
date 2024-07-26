@@ -56,7 +56,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	}
 
 	if err := msg.ReputerValueBundle.Validate(); err != nil {
-		return nil, types.ErrInvalidWorkerData
+		return nil, types.ErrInvalidReputerData
 	}
 
 	hasEnoughBal, fee, err := ms.CheckBalanceForSendingDataFee(ctx, msg.Sender)

@@ -18,16 +18,6 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
-	if msg.WorkerDataBundle == nil {
-		return nil, errorsmod.Wrapf(types.ErrNoValidBundles,
-			"Worker data bundle cannot be nil")
-	}
-
-	if msg.WorkerDataBundle.InferenceForecastsBundle == nil {
-		return nil, errorsmod.Wrapf(types.ErrNoValidBundles,
-			"Inference-Forecast bundle data bundle cannot be nil")
-	}
-
 	nonce := msg.Nonce
 	topicId := msg.TopicId
 
@@ -64,7 +54,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 
 	if err := msg.WorkerDataBundle.Validate(); err != nil {
 		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
-			"Worker invalid data for block: %v", &nonce.BlockHeight)
+			"Worker invalid data for block: %d, topic: %d, nonce: %d",
+			blockHeight, topicId, nonce)
 	}
 
 	hasEnoughBal, fee, err := ms.CheckBalanceForSendingDataFee(ctx, msg.Sender)
