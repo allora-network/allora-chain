@@ -24,13 +24,23 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, types.ErrInvalidTopicId
 	}
 
-	// Check if the nonce is unfulfilled
-	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
+	// Check if the worker nonce is fulfilled
+	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
+	if err != nil {
+		return nil, err
+	}
+	// Returns an error if unfulfilled nonce exists
+	if workerNonceUnfulfilled {
+		return nil, types.ErrNonceStillUnfulfilled
+	}
+
+	// Check if the reputer nonce is unfulfilled
+	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
 	if err != nil {
 		return nil, err
 	}
 	// If the nonce is already fulfilled, return an error
-	if !nonceUnfulfilled {
+	if !reputerNonceUnfulfilled {
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
