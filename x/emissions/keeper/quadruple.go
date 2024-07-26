@@ -98,6 +98,9 @@ type quadrupleKeyCodec[K1, K2, K3, K4 any] struct {
 type jsonQuadrupleKey [4]json.RawMessage
 
 func (t quadrupleKeyCodec[K1, K2, K3, K4]) EncodeJSON(value Quadruple[K1, K2, K3, K4]) ([]byte, error) {
+	if value.k1 == nil || value.k2 == nil || value.k3 == nil || value.k4 == nil {
+		return nil, fmt.Errorf("cannot json encode nil value")
+	}
 	json1, err := t.keyCodec1.EncodeJSON(*value.k1)
 	if err != nil {
 		return nil, err
@@ -204,6 +207,9 @@ func (t quadrupleKeyCodec[K1, K2, K3, K4]) KeyType() string {
 }
 
 func (t quadrupleKeyCodec[K1, K2, K3, K4]) Encode(buffer []byte, key Quadruple[K1, K2, K3, K4]) (int, error) {
+	if key.k1 == nil || key.k2 == nil || key.k3 == nil || key.k4 == nil {
+		return 0, fmt.Errorf("cannot encode nil value")
+	}
 	writtenTotal := 0
 	if key.k1 != nil {
 		written, err := t.keyCodec1.EncodeNonTerminal(buffer, *key.k1)
@@ -279,6 +285,9 @@ func (t quadrupleKeyCodec[K1, K2, K3, K4]) Size(key Quadruple[K1, K2, K3, K4]) i
 }
 
 func (t quadrupleKeyCodec[K1, K2, K3, K4]) EncodeNonTerminal(buffer []byte, key Quadruple[K1, K2, K3, K4]) (int, error) {
+	if key.k1 == nil || key.k2 == nil || key.k3 == nil || key.k4 == nil {
+		return 0, fmt.Errorf("cannot non terminal encode nil value")
+	}
 	writtenTotal := 0
 	if key.k1 != nil {
 		written, err := t.keyCodec1.EncodeNonTerminal(buffer, *key.k1)
