@@ -16,7 +16,6 @@ import (
 	"cosmossdk.io/core/address"
 
 	coreStore "cosmossdk.io/core/store"
-	utils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -673,7 +672,7 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := utils.GetLowScoreFromAllInferences(ctx, k, topicId, inferences)
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllInferences(ctx, k, topicId, inferences)
 	if err != nil {
 		return err
 	}
@@ -724,7 +723,7 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := utils.GetLowScoreFromAllForecasts(ctx, k, topicId, forecasts)
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllForecasts(ctx, k, topicId, forecasts)
 	if err != nil {
 		return err
 	}
@@ -806,7 +805,7 @@ func (k *Keeper) AppendReputerLossAtBlock(ctx context.Context, topicId TopicId, 
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := utils.GetLowScoreFromAllLossBundles(ctx, k, topicId, reputerLossBundles)
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllLossBundles(ctx, k, topicId, reputerLossBundles)
 	if err != nil {
 		return err
 	}
