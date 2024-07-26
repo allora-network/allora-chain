@@ -150,10 +150,11 @@ func (s *MsgServerTestSuite) TestStartRemoveStake() {
 	require.NoError(err)
 	expectedUnstake := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
 
-	retrievedInfo, err := keeper.GetStakeRemovalsForBlock(ctx, expectedUnstake)
+	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, expectedUnstake, 100)
 	require.NoError(err)
 	require.NotNil(retrievedInfo)
 	require.Len(retrievedInfo, 1)
+	require.False(limitHit)
 
 	expected := types.StakeRemovalInfo{
 		TopicId:               topicId,
@@ -185,9 +186,10 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeInsufficientStake() {
 	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
 	require.NoError(err)
 	expectedUnstake := ctx.BlockHeight() + moduleParams.RemoveStakeDelayWindow
-	retrievedInfo, err := s.emissionsKeeper.GetStakeRemovalsForBlock(ctx, expectedUnstake)
+	retrievedInfo, limitHit, err := s.emissionsKeeper.GetStakeRemovalsUpUntilBlock(ctx, expectedUnstake, 100)
 	require.NoError(err)
 	require.Len(retrievedInfo, 0)
+	require.False(limitHit)
 }
 
 func (s *MsgServerTestSuite) TestConfirmRemoveStake() {
@@ -233,9 +235,10 @@ func (s *MsgServerTestSuite) TestConfirmRemoveStake() {
 	require.True(finalStake.IsZero(), "Stake amount should be zero after removal is confirmed")
 
 	// Check that the stake removal has been removed from the state
-	removals, err := keeper.GetStakeRemovalsForBlock(ctx, blockEnd)
+	removals, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, blockEnd, 100)
 	require.NoError(err)
 	require.Len(removals, 0)
+	require.False(limitHit)
 }
 
 func (s *MsgServerTestSuite) TestStartRemoveStakeTwiceInSameBlock() {
@@ -265,9 +268,10 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeTwiceInSameBlock() {
 	})
 	s.Require().NoError(err)
 
-	stakePlacements, err := keeper.GetStakeRemovalsForBlock(ctx, removeBlock)
+	stakePlacements, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removeBlock, 100)
 	require.NoError(err)
 	require.Len(stakePlacements, 1)
+	require.False(limitHit)
 
 	expected := types.StakeRemovalInfo{
 		TopicId:               topicId,
@@ -286,9 +290,10 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeTwiceInSameBlock() {
 	})
 	s.Require().NoError(err)
 
-	stakePlacements2, err := keeper.GetStakeRemovalsForBlock(ctx, removeBlock)
+	stakePlacements2, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removeBlock, 100)
 	require.NoError(err)
 	require.Len(stakePlacements2, 1)
+	require.False(limitHit)
 	expected2 := types.StakeRemovalInfo{
 		TopicId:               expected.TopicId,
 		Reputer:               expected.Reputer,
@@ -326,9 +331,10 @@ func (s *MsgServerTestSuite) TestRemoveStakeTwiceInDifferentBlocks() {
 	})
 	s.Require().NoError(err)
 
-	stakePlacements, err := keeper.GetStakeRemovalsForBlock(ctx, removeBlock)
+	stakePlacements, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removeBlock, 100)
 	require.NoError(err)
 	require.Len(stakePlacements, 1)
+	require.False(limitHit)
 
 	expected := types.StakeRemovalInfo{
 		TopicId:               topicId,
@@ -350,12 +356,14 @@ func (s *MsgServerTestSuite) TestRemoveStakeTwiceInDifferentBlocks() {
 	})
 	s.Require().NoError(err)
 
-	stakePlacements, err = keeper.GetStakeRemovalsForBlock(ctx, removeBlock)
+	stakePlacements, limitHit, err = keeper.GetStakeRemovalsUpUntilBlock(ctx, removeBlock, 100)
 	require.NoError(err)
 	require.Len(stakePlacements, 0)
-	stakePlacements, err = keeper.GetStakeRemovalsForBlock(ctx, newRemoveBlock)
+	require.False(limitHit)
+	stakePlacements, limitHit, err = keeper.GetStakeRemovalsUpUntilBlock(ctx, newRemoveBlock, 100)
 	require.NoError(err)
 	require.Len(stakePlacements, 1)
+	require.False(limitHit)
 	expected.BlockRemovalStarted = newStartBlock
 	expected.BlockRemovalCompleted = newRemoveBlock
 	expected.Amount = newStake
@@ -386,9 +394,10 @@ func (s *MsgServerTestSuite) TestRemoveMultipleReputersSameBlock() {
 		Amount:  stakeAmount1,
 	})
 	s.Require().NoError(err)
-	stakePlacements1, err := keeper.GetStakeRemovalsForBlock(ctx, removeBlock)
+	stakePlacements1, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removeBlock, 100)
 	require.NoError(err)
 	require.Len(stakePlacements1, 1)
+	require.False(limitHit)
 	expected1 := types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               senderAddr1.String(),
@@ -405,9 +414,10 @@ func (s *MsgServerTestSuite) TestRemoveMultipleReputersSameBlock() {
 		Amount:  stakeAmount2,
 	})
 	s.Require().NoError(err)
-	stakePlacements2, err := keeper.GetStakeRemovalsForBlock(ctx, removeBlock)
+	stakePlacements2, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removeBlock, 100)
 	require.NoError(err)
 	require.Len(stakePlacements2, 2)
+	require.False(limitHit)
 	expected2 := types.StakeRemovalInfo{
 		TopicId:               topicId,
 		Reputer:               senderAddr2.String(),

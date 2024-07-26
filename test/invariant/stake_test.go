@@ -158,10 +158,10 @@ func findFirstValidStakeRemovalFromChain(m *testcommon.TestConfig) (emissionstyp
 	}
 	blockHeightEnd := blockHeightNow + moduleParams.Params.RemoveStakeDelayWindow
 	for i := blockHeightNow; i < blockHeightEnd; i++ {
-		query := &emissionstypes.QueryStakeRemovalsForBlockRequest{
+		query := &emissionstypes.QueryStakeRemovalsUpUntilBlockRequest{
 			BlockHeight: i,
 		}
-		resp, err := m.Client.QueryEmissions().GetStakeRemovalsForBlock(ctx, query)
+		resp, err := m.Client.QueryEmissions().GetStakeRemovalsUpUntilBlock(ctx, query)
 		if err != nil || resp == nil {
 			continue
 		}
@@ -372,10 +372,10 @@ func findFirstValidDelegateStakeRemovalFromChain(m *testcommon.TestConfig) (emis
 	}
 	blockHeightEnd := blockHeightNow + moduleParams.Params.RemoveStakeDelayWindow
 	for i := blockHeightNow; i < blockHeightEnd; i++ {
-		query := &emissionstypes.QueryDelegateStakeRemovalsForBlockRequest{
+		query := &emissionstypes.QueryDelegateStakeRemovalsUpUntilBlockRequest{
 			BlockHeight: i,
 		}
-		resp, err := m.Client.QueryEmissions().GetDelegateStakeRemovalsForBlock(ctx, query)
+		resp, err := m.Client.QueryEmissions().GetDelegateStakeRemovalsUpUntilBlock(ctx, query)
 		if err != nil || resp == nil {
 			continue
 		}

@@ -48,10 +48,9 @@ type ChainKey struct {
 }
 
 var (
-	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
-	PKS              = simtestutil.CreateTestPubKeys(10)
-	Addr             = sdk.AccAddress(PKS[0].Address())
-	ValAddr          = GeneratePrivateKeys(10)
+	PKS     = simtestutil.CreateTestPubKeys(10)
+	Addr    = sdk.AccAddress(PKS[0].Address())
+	ValAddr = GeneratePrivateKeys(10)
 )
 
 type KeeperTestSuite struct {
@@ -1519,9 +1518,10 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	// Topic 101
 
 	// Retrieve the stake removal information
-	retrievedInfo, err := keeper.GetStakeRemovalsForBlock(ctx, removalInfo0.BlockRemovalCompleted)
+	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 1)
 	s.Require().NoError(err)
 	s.Require().Len(retrievedInfo, 1, "There should be only one delegate stake removal information for the block")
+	s.Require().False(limitHit, "The limit should not be hit")
 	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
 	s.Require().Equal(removalInfo0.BlockRemovalCompleted, retrievedInfo[0].BlockRemovalCompleted, "Block removal completed should match")
 	s.Require().Equal(removalInfo0.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
@@ -1531,9 +1531,10 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	// Topic 102
 
 	// Retrieve the stake removal information
-	retrievedInfo, err = keeper.GetStakeRemovalsForBlock(ctx, removalInfo1.BlockRemovalCompleted)
+	retrievedInfo, limitHit, err = keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 1)
 	s.Require().NoError(err)
 	s.Require().Len(retrievedInfo, 1, "There should be only one delegate stake removal information for the block")
+	s.Require().False(limitHit, "The limit should not be hit")
 	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
 	s.Require().Equal(removalInfo1.BlockRemovalCompleted, retrievedInfo[0].BlockRemovalCompleted, "Block removal started should match")
 	s.Require().Equal(removalInfo1.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
@@ -1543,26 +1544,29 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	// delete 101
 	err = keeper.DeleteStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer)
 	s.Require().NoError(err)
-	removals, err := keeper.GetStakeRemovalsForBlock(ctx, removalInfo0.BlockRemovalCompleted)
+	removals, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Len(removals, 0)
+	s.Require().False(limitHit, "The limit should not be hit")
 
 	// delete 102
 	err = keeper.DeleteStakeRemoval(ctx, removalInfo1.BlockRemovalCompleted, removalInfo1.TopicId, removalInfo1.Reputer)
 	s.Require().NoError(err)
-	removals, err = keeper.GetStakeRemovalsForBlock(ctx, removalInfo1.BlockRemovalCompleted)
+	removals, limitHit, err = keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Len(removals, 0)
+	s.Require().False(limitHit, "The limit should not be hit")
 }
 
-func (s *KeeperTestSuite) TestGetStakeRemovalsForBlockNotFound() {
+func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockNotFound() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
 	// Attempt to retrieve stake removal info for an address with no set info
-	removals, err := keeper.GetStakeRemovalsForBlock(ctx, 202)
+	removals, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, 202, 100)
 	s.Require().NoError(err)
 	s.Require().Len(removals, 0)
+	s.Require().False(limitHit, "The limit should not be hit")
 }
 
 func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
@@ -1604,9 +1608,10 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	// Topic 201
 
 	// Retrieve the delegate stake removal information
-	retrievedInfo, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, removalInfo0.BlockRemovalCompleted)
+	retrievedInfo, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Len(retrievedInfo, 1, "There should be only one delegate stake removal information for the block")
+	s.Require().False(limitHit)
 	s.Require().Equal(removalInfo0.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
 	s.Require().Equal(removalInfo0.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
 	s.Require().Equal(removalInfo0.Reputer, retrievedInfo[0].Reputer, "Reputer addresses should match for all placements")
@@ -1616,9 +1621,10 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	// Topic 202
 
 	// Retrieve the delegate stake removal information
-	retrievedInfo, err = keeper.GetDelegateStakeRemovalsForBlock(ctx, removalInfo1.BlockRemovalCompleted)
+	retrievedInfo, limitHit, err = keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Len(retrievedInfo, 1)
+	s.Require().False(limitHit)
 	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
 	s.Require().Equal(removalInfo1.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
 	s.Require().Equal(removalInfo1.Reputer, retrievedInfo[0].Reputer, "Reputer addresses should match for all placements")
@@ -1628,16 +1634,18 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	// delete 101
 	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer, removalInfo0.Delegator)
 	s.Require().NoError(err)
-	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, removalInfo0.BlockRemovalCompleted)
+	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Len(removals, 0)
+	s.Require().False(limitHit)
 
 	// delete 102
 	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo1.BlockRemovalCompleted, removalInfo1.TopicId, removalInfo1.Reputer, removalInfo1.Delegator)
 	s.Require().NoError(err)
-	removals, err = keeper.GetDelegateStakeRemovalsForBlock(ctx, removalInfo1.BlockRemovalCompleted)
+	removals, limitHit, err = keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
 	s.Require().Len(removals, 0)
+	s.Require().False(limitHit)
 }
 
 func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
@@ -1687,9 +1695,10 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
 	keeper := s.emissionsKeeper
 
 	// Attempt to retrieve delegate stake removal info for an address with no set info
-	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, 201)
+	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, 201, 100)
 	s.Require().NoError(err)
 	s.Require().Len(removals, 0)
+	s.Require().False(limitHit, "The limit should not be hit")
 }
 
 func (s *KeeperTestSuite) TestSetParams() {

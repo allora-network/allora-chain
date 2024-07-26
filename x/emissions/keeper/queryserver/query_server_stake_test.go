@@ -282,11 +282,11 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsForBlock() {
 		require.NoError(err, "SetStakeRemoval should not produce an error")
 	}
 
-	req := &types.QueryStakeRemovalsForBlockRequest{
+	req := &types.QueryStakeRemovalsUpUntilBlockRequest{
 		BlockHeight: blockHeight,
 	}
 
-	response, err := qs.GetStakeRemovalsForBlock(ctx, req)
+	response, err := qs.GetStakeRemovalsUpUntilBlock(ctx, req)
 	require.NoError(err, "GetStakeRemovalsForBlock should not return an error")
 	require.NotNil(response, "The response should not be nil")
 	require.Len(response.Removals, len(expecteds), "The number of stake removals should match the number of expected stake removals")
@@ -323,11 +323,11 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 		require.NoError(err, "SetStakeRemoval should not produce an error")
 	}
 
-	req := &types.QueryDelegateStakeRemovalsForBlockRequest{
+	req := &types.QueryDelegateStakeRemovalsUpUntilBlockRequest{
 		BlockHeight: blockHeight,
 	}
 
-	response, err := qs.GetDelegateStakeRemovalsForBlock(ctx, req)
+	response, err := qs.GetDelegateStakeRemovalsUpUntilBlock(ctx, req)
 	require.NoError(err, "GetStakeRemovalsForBlock should not return an error")
 	require.NotNil(response, "The response should not be nil")
 	require.Len(response.Removals, len(expecteds), "The number of stake removals should match the number of expected stake removals")

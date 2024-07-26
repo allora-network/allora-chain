@@ -1287,25 +1287,31 @@ func (k Keeper) GetStakeRemoval(
 }
 
 // get a list of stake removals for this block
-func (k *Keeper) GetStakeRemovalsForBlock(
+func (k *Keeper) GetStakeRemovalsUpUntilBlock(
 	ctx context.Context,
 	blockHeight BlockHeight,
-) ([]types.StakeRemovalInfo, error) {
-	ret := make([]types.StakeRemovalInfo, 0)
-	rng := collections.NewPrefixedTripleRange[BlockHeight, TopicId, ActorId](blockHeight)
+	limit uint64,
+) (ret []types.StakeRemovalInfo, anyLeft bool, err error) {
+	ret = make([]types.StakeRemovalInfo, 0)
+	rng := collections.NewPrefixUntilTripleRange[BlockHeight, TopicId, ActorId](blockHeight)
 	iter, err := k.stakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
-		return ret, err
+		return ret, false, err
 	}
 	defer iter.Close()
+	count := uint64(0)
 	for ; iter.Valid(); iter.Next() {
+		if count >= limit {
+			return ret, true, nil
+		}
 		val, err := iter.Value()
 		if err != nil {
-			return ret, err
+			return ret, true, err
 		}
 		ret = append(ret, val)
+		count += 1
 	}
-	return ret, nil
+	return ret, false, nil
 }
 
 // get the first found stake removal for a reputer and topicId or err not found if not found
@@ -1392,25 +1398,31 @@ func (k Keeper) GetDelegateStakeRemoval(
 }
 
 // get a list of stake removals for this block
-func (k *Keeper) GetDelegateStakeRemovalsForBlock(
+func (k *Keeper) GetDelegateStakeRemovalsUpUntilBlock(
 	ctx context.Context,
 	blockHeight BlockHeight,
-) ([]types.DelegateStakeRemovalInfo, error) {
+	limit uint64,
+) ([]types.DelegateStakeRemovalInfo, bool, error) {
 	ret := make([]types.DelegateStakeRemovalInfo, 0)
-	rng := NewSinglePrefixedQuadrupleRange[BlockHeight, TopicId, ActorId, ActorId](blockHeight)
+	rng := NewSinglePrefixUntilQuadrupleRange[BlockHeight, TopicId, ActorId, ActorId](blockHeight)
 	iter, err := k.delegateStakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
-		return ret, err
+		return ret, false, err
 	}
 	defer iter.Close()
+	count := uint64(0)
 	for ; iter.Valid(); iter.Next() {
+		if count >= limit {
+			return ret, true, nil
+		}
 		val, err := iter.Value()
 		if err != nil {
-			return ret, err
+			return ret, true, err
 		}
 		ret = append(ret, val)
+		count += 1
 	}
-	return ret, nil
+	return ret, false, nil
 }
 
 // return the first found stake removal object for a delegator, reputer, and topicId
