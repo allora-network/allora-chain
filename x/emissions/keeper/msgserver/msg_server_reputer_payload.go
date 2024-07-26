@@ -29,7 +29,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	if err != nil {
 		return nil, err
 	}
-	// Returns an error if unfulfilled nonce exists
+	// Returns an error if unfulfilled worker nonce exists
 	if workerNonceUnfulfilled {
 		return nil, types.ErrNonceStillUnfulfilled
 	}
@@ -39,7 +39,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	if err != nil {
 		return nil, err
 	}
-	// If the nonce is already fulfilled, return an error
+	// If the reputer nonce is already fulfilled, return an error
 	if !reputerNonceUnfulfilled {
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
