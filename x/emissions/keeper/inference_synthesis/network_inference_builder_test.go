@@ -11,7 +11,6 @@ import (
 	clog "cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 
-	// cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -21,7 +20,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/testdata"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -52,7 +50,7 @@ type InferenceSynthesisTestSuite struct {
 	bankKeeper      keeper.BankKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
-	msgServer       types.MsgServer
+	msgServer       emissionstypes.MsgServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
@@ -67,15 +65,15 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
 	maccPerms := map[string][]string{
-		"fee_collector":                {"minter"},
-		"mint":                         {"minter"},
-		types.AlloraStakingAccountName: {"burner", "minter", "staking"},
-		types.AlloraRewardsAccountName: {"minter"},
-		types.AlloraPendingRewardForDelegatorAccountName: {"minter"},
-		"bonded_tokens_pool":                             {"burner", "staking"},
-		"not_bonded_tokens_pool":                         {"burner", "staking"},
-		multiPerm:                                        {"burner", "minter", "staking"},
-		randomPerm:                                       {"random"},
+		"fee_collector":                         {"minter"},
+		"mint":                                  {"minter"},
+		emissionstypes.AlloraStakingAccountName: {"burner", "minter", "staking"},
+		emissionstypes.AlloraRewardsAccountName: {"minter"},
+		emissionstypes.AlloraPendingRewardForDelegatorAccountName: {"minter"},
+		"bonded_tokens_pool":     {"burner", "staking"},
+		"not_bonded_tokens_pool": {"burner", "staking"},
+		multiPerm:                {"burner", "minter", "staking"},
+		randomPerm:               {"random"},
 	}
 
 	accountKeeper := authkeeper.NewAccountKeeper(
@@ -173,6 +171,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		networkLossPrevious = epochPrevGet("network_loss")
 
 		// SET EPOCH 2 VALUES IN THE SYSTEM
+		// Set inferer network regrets
 		infererNetworkRegrets :=
 			map[string]inferencesynthesis.Regret{
 				"worker0": epochPrevGet("inference_regret_worker_0"),
@@ -181,8 +180,6 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 				"worker3": epochPrevGet("inference_regret_worker_3"),
 				"worker4": epochPrevGet("inference_regret_worker_4"),
 			}
-
-		// Set inferer network regrets
 		for inferer, regret := range infererNetworkRegrets {
 			s.emissionsKeeper.SetInfererNetworkRegret(
 				s.ctx,
@@ -192,13 +189,12 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			)
 		}
 
+		// Set forecaster network regrets
 		forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
 			"forecaster0": epochPrevGet("inference_regret_worker_5"),
 			"forecaster1": epochPrevGet("inference_regret_worker_6"),
 			"forecaster2": epochPrevGet("inference_regret_worker_7"),
 		}
-
-		// Set forecaster network regrets
 		for forecaster, regret := range forecasterNetworkRegrets {
 			s.emissionsKeeper.SetForecasterNetworkRegret(
 				s.ctx,
@@ -208,12 +204,117 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			)
 		}
 
+		// Set naive inferer network regrets
+		infererNaiveNetworkRegrets :=
+			map[string]inferencesynthesis.Regret{
+				"worker0": epochPrevGet("naive_inference_regret_worker_0"),
+				"worker1": epochPrevGet("naive_inference_regret_worker_1"),
+				"worker2": epochPrevGet("naive_inference_regret_worker_2"),
+				"worker3": epochPrevGet("naive_inference_regret_worker_3"),
+				"worker4": epochPrevGet("naive_inference_regret_worker_4"),
+			}
+		for inferer, regret := range infererNaiveNetworkRegrets {
+			s.emissionsKeeper.SetNaiveInfererNetworkRegret(
+				s.ctx,
+				topicId,
+				inferer,
+				emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
+			)
+		}
+
+		// Set one-out inferer inferer network regrets
+		setOneOutInfererInfererNetworkRegret := func(infererIndex int, infererIndex2 int, epochGetter func(string) alloraMath.Dec) {
+			infererName := "worker" + strconv.Itoa(infererIndex)
+			infererName2 := "worker" + strconv.Itoa(infererIndex2)
+			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_oneout_" + strconv.Itoa(infererIndex2)
+			k.SetOneOutInfererInfererNetworkRegret(
+				s.ctx,
+				topicId,
+				infererName2,
+				infererName,
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochGetter(headerName),
+				},
+			)
+		}
+		for inferer := 0; inferer < 5; inferer++ {
+			for inferer2 := 0; inferer2 < 5; inferer2++ {
+				setOneOutInfererInfererNetworkRegret(inferer, inferer2, epochPrevGet)
+			}
+		}
+
+		// Set one-out inferer forecaster network regrets
+		setOneOutInfererForecasterNetworkRegret := func(infererIndex int, forecasterIndex int, epochGetter func(string) alloraMath.Dec) {
+			infererName := "worker" + strconv.Itoa(infererIndex)
+			forecasterName := "forecaster" + strconv.Itoa(forecasterIndex-5)
+			headerName := "inference_regret_worker_" + strconv.Itoa(forecasterIndex) + "_oneout_" + strconv.Itoa(infererIndex)
+			k.SetOneOutInfererForecasterNetworkRegret(
+				s.ctx,
+				topicId,
+				infererName,
+				forecasterName,
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochGetter(headerName),
+				},
+			)
+		}
+		for forecaster := 5; forecaster < 8; forecaster++ {
+			for inferer := 0; inferer < 5; inferer++ {
+				setOneOutInfererForecasterNetworkRegret(inferer, forecaster, epochPrevGet)
+			}
+		}
+
+		// Set one-out forecaster inferer network regrets
+		setOneOutForecasterInfererNetworkRegret := func(infererIndex int, forecasterIndex int, epochGetter func(string) alloraMath.Dec) {
+			infererName := "worker" + strconv.Itoa(infererIndex)
+			forecasterName := "forecaster" + strconv.Itoa(forecasterIndex-5)
+			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_oneout_" + strconv.Itoa(forecasterIndex)
+			k.SetOneOutForecasterInfererNetworkRegret(
+				s.ctx,
+				topicId,
+				forecasterName,
+				infererName,
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochGetter(headerName),
+				},
+			)
+		}
+		for inferer := 0; inferer < 5; inferer++ {
+			for forecaster := 5; forecaster < 8; forecaster++ {
+				setOneOutForecasterInfererNetworkRegret(inferer, forecaster, epochPrevGet)
+			}
+		}
+
+		// Set one-out forecaster forecaster network regrets
+		setOneOutForecasterForecasterNetworkRegret := func(forecasterIndex int, forecasterIndex2 int, epochGetter func(string) alloraMath.Dec) {
+			forecasterName := "forecaster" + strconv.Itoa(forecasterIndex-5)
+			forecasterName2 := "forecaster" + strconv.Itoa(forecasterIndex2-5)
+			headerName := "inference_regret_worker_" + strconv.Itoa(forecasterIndex) + "_oneout_" + strconv.Itoa(forecasterIndex2)
+			k.SetOneOutForecasterForecasterNetworkRegret(
+				s.ctx,
+				topicId,
+				forecasterName2,
+				forecasterName,
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochGetter(headerName),
+				},
+			)
+		}
+		for forecaster := 5; forecaster < 8; forecaster++ {
+			for forecaster2 := 5; forecaster2 < 8; forecaster2++ {
+				setOneOutForecasterForecasterNetworkRegret(forecaster, forecaster2, epochPrevGet)
+			}
+		}
+
 		// Set one-in network regrets
 		setOneInForecasterNetworkRegret := func(forecasterIndex int, infererIndex int, epochGetter func(string) alloraMath.Dec) {
 			forecasterName := "forecaster" + strconv.Itoa(forecasterIndex)
 			infererName := "worker" + strconv.Itoa(infererIndex)
 			headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_onein_" + strconv.Itoa(forecasterIndex)
-
 			k.SetOneInForecasterNetworkRegret(
 				s.ctx,
 				topicId,
@@ -225,12 +326,9 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 				},
 			)
 		}
-
-		// Set one-in self network regrets
 		setOneInForecasterSelfRegret := func(forecaster int, epochGet func(string) alloraMath.Dec) {
 			forecasterName := "forecaster" + strconv.Itoa(forecaster)
 			headerName := "inference_regret_worker_5_onein_" + strconv.Itoa(forecaster)
-
 			k.SetOneInForecasterNetworkRegret(
 				s.ctx,
 				topicId,
@@ -244,6 +342,7 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		}
 
 		for forecaster := 0; forecaster < 3; forecaster++ {
+			// Set self one-in network regrets
 			setOneInForecasterSelfRegret(forecaster, epochPrevGet)
 			for inferer := 0; inferer < 5; inferer++ {
 				setOneInForecasterNetworkRegret(forecaster, inferer, epochPrevGet)

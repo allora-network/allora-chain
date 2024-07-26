@@ -137,6 +137,7 @@ func (b *NetworkInferenceBuilder) SetNaiveValue() *NetworkInferenceBuilder {
 func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Worker) (alloraMath.Dec, error) {
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld inferer %s", b.palette.TopicId, withheldInferer))
 	palette := b.palette.Clone()
+	totalInferers := palette.Inferers
 
 	// Remove the inferer from the palette's inferers
 	remainingInferers := make([]Worker, 0)
@@ -150,6 +151,7 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error updating inferers")
 	}
+
 	paletteCopy := palette.Clone()
 
 	// Recalculate the forecast-implied inferences without the worker's inference
@@ -163,7 +165,7 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 
 	// Get regrets for the remaining inferers
 	paletteCopy.InfererRegrets = make(map[string]*alloraMath.Dec)
-	for _, inferer := range paletteCopy.Inferers {
+	for _, inferer := range totalInferers {
 		regret, _, err := paletteCopy.K.GetOneOutInfererInfererNetworkRegret(paletteCopy.Ctx, paletteCopy.TopicId, withheldInferer, inferer)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-out inferer regret")
@@ -224,8 +226,9 @@ func (b *NetworkInferenceBuilder) SetOneOutInfererValues() *NetworkInferenceBuil
 // Calculate the one-out inference given a withheld forecaster
 func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecaster Worker) (alloraMath.Dec, error) {
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld forecaster %s", b.palette.TopicId, withheldForecaster))
-
 	palette := b.palette.Clone()
+	totalForecasters := palette.Forecasters
+
 	// Remove the withheldForecaster from the palette's forecasters
 	remainingForecasters := make([]Worker, 0)
 	for _, forecaster := range palette.Forecasters {
@@ -250,7 +253,7 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 	}
 	// Get regrets for the forecasters
 	palette.ForecasterRegrets = make(map[string]*alloraMath.Dec)
-	for _, forecaster := range palette.Forecasters {
+	for _, forecaster := range totalForecasters {
 		regret, _, err := palette.K.GetOneOutForecasterForecasterNetworkRegret(palette.Ctx, palette.TopicId, withheldForecaster, forecaster)
 		if err != nil {
 			return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error getting one-out forecaster regret")

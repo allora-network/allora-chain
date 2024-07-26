@@ -211,7 +211,7 @@ func GetCalcSetNetworkRegrets(
 			}
 			newOneOutInfererForecasterRegret, err := ComputeAndBuildEMRegret(
 				networkLossesByWorker.OneOutInfererLosses[oneOutInfererLoss.Worker],                     // L^-_j'i
-				networkLossesByWorker.OneOutInfererForecasterLosses[oneOutInfererForecasterLoss.Worker], // L^-_j'k
+				networkLossesByWorker.OneOutInfererForecasterLosses[oneOutInfererForecasterLoss.Worker], // L^-_j'ik
 				lastRegret.Value,
 				alpha,
 				blockHeight,
