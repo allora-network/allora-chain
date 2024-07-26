@@ -658,7 +658,7 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if err != nil {
-		return err
+		inferences = types.Inferences{}
 	}
 	// append inference if not reached out topN
 	if len(inferences.Inferences) < int(moduleParams.MaxTopInferersToReward) {
@@ -710,7 +710,7 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)
 	if err != nil {
-		return err
+		forecasts = types.Forecasts{}
 	}
 	if len(forecasts.Forecasts) < int(moduleParams.MaxTopForecastersToReward) {
 		newForecast := types.Forecasts{
