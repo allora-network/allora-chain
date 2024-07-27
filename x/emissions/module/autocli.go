@@ -748,7 +748,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "InsertReputerPayload",
-					Use:       "insert-reputer-payload [sender] [reputer_data]",
+					Use:       "insert-reputer-payload [sender] [nonce] [topic_id] [reputer_data]",
 					Short:     "Insert reputer payload",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},

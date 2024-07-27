@@ -76,6 +76,13 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
 		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
+		isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "Error address is not registered in this topic")
+		}
+		if !isInfererRegistered {
+			return nil, errorsmod.Wrapf(err, "Error address is not registered in this topic")
+		}
 		err = ms.k.AppendInference(ctx, topicId, *nonce, inference)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
@@ -85,6 +92,13 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 	// Append this individual inference to all inferences
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Forecast != nil {
 		forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
+		isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "Error address is not registered in this topic")
+		}
+		if !isForecasterRegistered {
+			return nil, errorsmod.Wrapf(err, "Error address is not registered in this topic")
+		}
 		err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending forecast")
