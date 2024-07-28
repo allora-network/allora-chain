@@ -660,11 +660,16 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 	if err != nil {
 		inferences = types.Inferences{}
 	}
-	// append inference if not reached out topN
-	if len(inferences.Inferences) < int(moduleParams.MaxTopInferersToReward) {
-		newInferences := types.Inferences{
-			Inferences: append(inferences.Inferences, inference),
+	var newInferences types.Inferences
+	// remove inference if this inferer already submitted
+	for _, exInference := range inferences.Inferences {
+		if exInference.Inferer != inference.Inferer {
+			newInferences.Inferences = append(newInferences.Inferences, exInference)
 		}
+	}
+	// append inference if not reached out topN
+	if len(newInferences.Inferences) < int(moduleParams.MaxTopInferersToReward) {
+		newInferences.Inferences = append(newInferences.Inferences, inference)
 		return k.allInferences.Set(ctx, key, newInferences)
 	}
 	// get score of current inference and check with
@@ -672,14 +677,14 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := GetLowScoreFromAllInferences(ctx, k, topicId, inferences)
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllInferences(ctx, k, topicId, newInferences)
 	if err != nil {
 		return err
 	}
 	if score.Score.Gt(lowScore.Score) {
-		inferences.Inferences = append(inferences.Inferences[:lowScoreIndex], inferences.Inferences[lowScoreIndex+1:]...)
-		inferences.Inferences = append(inferences.Inferences, inference)
-		return k.allInferences.Set(ctx, key, inferences)
+		newInferences.Inferences = append(newInferences.Inferences[:lowScoreIndex], newInferences.Inferences[lowScoreIndex+1:]...)
+		newInferences.Inferences = append(newInferences.Inferences, inference)
+		return k.allInferences.Set(ctx, key, newInferences)
 	}
 	return nil
 }
@@ -712,25 +717,30 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 	if err != nil {
 		forecasts = types.Forecasts{}
 	}
-	if len(forecasts.Forecasts) < int(moduleParams.MaxTopForecastersToReward) {
-		newForecast := types.Forecasts{
-			Forecasts: append(forecasts.Forecasts, forecast),
+	var newForecasts types.Forecasts
+	// remove forecast if this forecaster already submitted
+	for _, exForecast := range forecasts.Forecasts {
+		if exForecast.Forecaster != forecast.Forecaster {
+			newForecasts.Forecasts = append(newForecasts.Forecasts, exForecast)
 		}
-		return k.allForecasts.Set(ctx, key, newForecast)
+	}
+	if len(newForecasts.Forecasts) < int(moduleParams.MaxTopForecastersToReward) {
+		newForecasts.Forecasts = append(newForecasts.Forecasts, forecast)
+		return k.allForecasts.Set(ctx, key, newForecasts)
 	}
 	// get score of current inference and check with
 	score, err := k.GetLatestInfererScore(ctx, topicId, forecast.Forecaster)
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := GetLowScoreFromAllForecasts(ctx, k, topicId, forecasts)
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllForecasts(ctx, k, topicId, newForecasts)
 	if err != nil {
 		return err
 	}
 	if score.Score.Gt(lowScore.Score) {
-		forecasts.Forecasts = append(forecasts.Forecasts[:lowScoreIndex], forecasts.Forecasts[lowScoreIndex+1:]...)
-		forecasts.Forecasts = append(forecasts.Forecasts, forecast)
-		return k.allForecasts.Set(ctx, key, forecasts)
+		newForecasts.Forecasts = append(newForecasts.Forecasts[:lowScoreIndex], newForecasts.Forecasts[lowScoreIndex+1:]...)
+		newForecasts.Forecasts = append(newForecasts.Forecasts, forecast)
+		return k.allForecasts.Set(ctx, key, newForecasts)
 	}
 	return nil
 }
@@ -793,11 +803,16 @@ func (k *Keeper) AppendReputerLossAtBlock(ctx context.Context, topicId TopicId, 
 	if err != nil {
 		return err
 	}
-	if len(reputerLossBundles.ReputerValueBundles) < int(moduleParams.MaxTopReputersToReward) {
-		newReputerLossBundles := append(reputerLossBundles.ReputerValueBundles, reputerLoss)
-		return k.allLossBundles.Set(ctx, key, types.ReputerValueBundles{
-			ReputerValueBundles: newReputerLossBundles,
-		})
+	var newReputerLossBundles types.ReputerValueBundles
+	// remove reputation if this reputer already submitted
+	for _, exReputation := range reputerLossBundles.ReputerValueBundles {
+		if exReputation.ValueBundle.Reputer != reputerLoss.ValueBundle.Reputer {
+			newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, exReputation)
+		}
+	}
+	if len(newReputerLossBundles.ReputerValueBundles) < int(moduleParams.MaxTopReputersToReward) {
+		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerLoss)
+		return k.allLossBundles.Set(ctx, key, newReputerLossBundles)
 	}
 
 	// get score of current inference and check with
@@ -805,15 +820,15 @@ func (k *Keeper) AppendReputerLossAtBlock(ctx context.Context, topicId TopicId, 
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := GetLowScoreFromAllLossBundles(ctx, k, topicId, reputerLossBundles)
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllLossBundles(ctx, k, topicId, newReputerLossBundles)
 	if err != nil {
 		return err
 	}
 	if score.Score.Gt(lowScore.Score) {
-		reputerLossBundles.ReputerValueBundles = append(reputerLossBundles.ReputerValueBundles[:lowScoreIndex],
-			reputerLossBundles.ReputerValueBundles[lowScoreIndex+1:]...)
-		reputerLossBundles.ReputerValueBundles = append(reputerLossBundles.ReputerValueBundles, reputerLoss)
-		return k.allLossBundles.Set(ctx, key, reputerLossBundles)
+		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles[:lowScoreIndex],
+			newReputerLossBundles.ReputerValueBundles[lowScoreIndex+1:]...)
+		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerLoss)
+		return k.allLossBundles.Set(ctx, key, newReputerLossBundles)
 	}
 	return nil
 }

@@ -18,11 +18,18 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
-	nonce := msg.Nonce
-	topicId := msg.TopicId
+	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
+
+	if err := msg.WorkerDataBundle.Validate(); err != nil {
+		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
+			"Worker invalid data for block: %d", blockHeight)
+	}
+
+	nonce := msg.WorkerDataBundle.Nonce
+	topicId := msg.WorkerDataBundle.TopicId
 
 	// Check if the topic exists
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.k.TopicExists(ctx, topicId)
 	if err != nil || !topicExists {
 		return nil, types.ErrInvalidTopicId
 	}
@@ -36,8 +43,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
-	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	topic, err := ms.k.GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
@@ -50,12 +56,6 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 			"Worker window not open for topic: %d, current block %d , nonce block height: %d , start window: %d, end window: %d",
 			topicId, blockHeight, nonce.BlockHeight, nonce.BlockHeight+topic.WorkerSubmissionWindow, nonce.BlockHeight+topic.GroundTruthLag,
 		)
-	}
-
-	if err := msg.WorkerDataBundle.Validate(); err != nil {
-		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
-			"Worker invalid data for block: %d, topic: %d, nonce: %d",
-			blockHeight, topicId, nonce)
 	}
 
 	hasEnoughBal, fee, err := ms.CheckBalanceForSendingDataFee(ctx, msg.Sender)
@@ -78,10 +78,12 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
 		isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
 		if err != nil {
-			return nil, errorsmod.Wrapf(err, "Error address is not registered in this topic")
+			return nil, errorsmod.Wrapf(err,
+				"Error inferer address is not registered in this topic")
 		}
 		if !isInfererRegistered {
-			return nil, errorsmod.Wrapf(err, "Error address is not registered in this topic")
+			return nil, errorsmod.Wrapf(err,
+				"Error inferer address is not registered in this topic")
 		}
 		err = ms.k.AppendInference(ctx, topicId, *nonce, inference)
 		if err != nil {
@@ -94,14 +96,17 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
 		isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
 		if err != nil {
-			return nil, errorsmod.Wrapf(err, "Error address is not registered in this topic")
+			return nil, errorsmod.Wrapf(err,
+				"Error forecaster address is not registered in this topic")
 		}
 		if !isForecasterRegistered {
-			return nil, errorsmod.Wrapf(err, "Error address is not registered in this topic")
+			return nil, errorsmod.Wrapf(err,
+				"Error forecaster address is not registered in this topic")
 		}
 		err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
 		if err != nil {
-			return nil, errorsmod.Wrapf(err, "Error appending forecast")
+			return nil, errorsmod.Wrapf(err,
+				"Error appending forecast")
 		}
 	}
 	return &types.MsgInsertWorkerPayloadResponse{}, nil
