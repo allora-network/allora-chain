@@ -122,80 +122,23 @@ func insertInferencesFromTopInferers(
 	inferences []*types.Inference,
 	maxTopWorkersToReward uint64,
 ) (map[string]bool, error) {
-	inferencesByInferer := make(map[string]*types.Inference)
-	latestInfererScores := make(map[string]types.Score)
+	acceptedInferers := make(map[string]bool, 0)
 	if len(inferences) == 0 {
 		ctx.Logger().Warn("No inferences to process for topic: ", topicId, ", nonce: ", nonce)
 		return nil, types.ErrNoValidBundles // TODO Change err name - No inferences to process
 	}
 	for _, inference := range inferences {
-		if inference == nil {
-			ctx.Logger().Warn("Inference was added that is nil, ignoring")
-			continue
-		}
-
-		if inference.Inferer == "" {
-			ctx.Logger().Warn("Inference was added that has no inferer, ignoring")
-			continue
-		}
-
-		// Check if the topic and nonce are correct
-		if inference.TopicId != topicId ||
-			inference.BlockHeight != nonce.BlockHeight {
-			ctx.Logger().Warn("Inference does not match topic: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
-			continue
-		}
-
-		/// Now do filters on each inferer
-		// Ensure that we only have one inference per inferer. If not, we just take the first one
-		if _, ok := inferencesByInferer[inference.Inferer]; !ok {
-			// Check if the inferer is registered
-			isInfererRegistered, err := k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
-			if err != nil {
-				ctx.Logger().Warn("Err checking inferer registration, topic: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
-				continue
-			}
-			if !isInfererRegistered {
-				ctx.Logger().Warn("Inferer not registered, topic: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
-				continue
-			}
-
-			// Get the latest score for each inferer => only take top few by score descending
-			latestScore, err := k.GetLatestInfererScore(ctx, topicId, inference.Inferer)
-			if err != nil {
-				ctx.Logger().Warn("Latest score not found, topic: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
-				continue
-			}
-			/// Filtering done now, now write what we must for inclusion
-			latestInfererScores[inference.Inferer] = latestScore
-			inferencesByInferer[inference.Inferer] = inference
-		}
-	}
-
-	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topInferers := FindTopNByScoreDesc(maxTopWorkersToReward, latestInfererScores, nonce.BlockHeight)
-
-	// Build list of inferences that pass all filters
-	// AND are from top performing inferers among those who have submitted inferences in this batch
-	inferencesFromTopInferers := make([]*types.Inference, 0)
-	acceptedInferers := make(map[string]bool, 0)
-	for _, worker := range topInferers {
-		acceptedInferers[worker] = true
-		inferencesFromTopInferers = append(inferencesFromTopInferers, inferencesByInferer[worker])
-	}
-
-	if len(inferencesFromTopInferers) == 0 {
-		return nil, types.ErrNoValidInferences
+		acceptedInferers[inference.Inferer] = true
 	}
 
 	// Ensure deterministic ordering of inferences
-	sort.Slice(inferencesFromTopInferers, func(i, j int) bool {
-		return inferencesFromTopInferers[i].Inferer < inferencesFromTopInferers[j].Inferer
+	sort.Slice(inferences, func(i, j int) bool {
+		return inferences[i].Inferer < inferences[j].Inferer
 	})
 
 	// Store the final list of inferences
 	inferencesToInsert := types.Inferences{
-		Inferences: inferencesFromTopInferers,
+		Inferences: inferences,
 	}
 	err := k.InsertInferences(ctx, topicId, nonce, inferencesToInsert)
 	if err != nil {
@@ -220,8 +163,24 @@ func insertForecastsFromTopForecasters(
 	maxTopWorkersToReward uint64,
 ) error {
 	forecastsByForecaster := make(map[string]*types.Forecast)
-	latestForecasterScores := make(map[string]types.Score)
+	latestForecaster := make([]*types.Forecast, 0)
 	for _, forecast := range forecasts {
+		// Examine forecast elements to verify that they're for inferers in the current set.
+		// We assume that set of inferers has been verified above.
+		// We keep what we can, ignoring the forecaster and their contribution (forecast) entirely
+		// if they're left with no valid forecast elements.
+		acceptedForecastElements := make([]*types.ForecastElement, 0)
+		for _, el := range forecast.ForecastElements {
+			if _, ok := acceptedInferersOfBatch[el.Inferer]; ok {
+				acceptedForecastElements = append(acceptedForecastElements, el)
+			}
+		}
+
+		// Discard if empty
+		if len(acceptedForecastElements) == 0 {
+			continue
+		}
+
 		if forecast == nil {
 			ctx.Logger().Warn("Forecast was added that is nil, ignoring")
 			continue
@@ -241,53 +200,9 @@ func insertForecastsFromTopForecasters(
 		/// Now do filters on each forecaster
 		// Ensure that we only have one forecast per forecaster. If not, we just take the first one
 		if _, ok := forecastsByForecaster[forecast.Forecaster]; !ok {
-			// Check if the forecaster is registered
-			isForecasterRegistered, err := k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
-			if err != nil {
-				ctx.Logger().Warn("Error checking forecaster registration: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
-				continue
-			}
-			if !isForecasterRegistered {
-				ctx.Logger().Warn("Forecaster not registered, topic: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
-				continue
-			}
-
-			// Examine forecast elements to verify that they're for inferers in the current set.
-			// We assume that set of inferers has been verified above.
-			// We keep what we can, ignoring the forecaster and their contribution (forecast) entirely
-			// if they're left with no valid forecast elements.
-			acceptedForecastElements := make([]*types.ForecastElement, 0)
-			for _, el := range forecast.ForecastElements {
-				if _, ok := acceptedInferersOfBatch[el.Inferer]; ok {
-					acceptedForecastElements = append(acceptedForecastElements, el)
-				}
-			}
-
-			// Discard if empty
-			if len(acceptedForecastElements) == 0 {
-				continue
-			}
-
-			/// Filtering done now, now write what we must for inclusion
-
-			// Get the latest score for each forecaster => only take top few by score descending
-			latestScore, err := k.GetLatestForecasterScore(ctx, topicId, forecast.Forecaster)
-			if err != nil {
-				continue
-			}
-			latestForecasterScores[forecast.Forecaster] = latestScore
+			latestForecaster = append(latestForecaster, forecast)
 			forecastsByForecaster[forecast.Forecaster] = forecast
 		}
-	}
-
-	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topForecasters := FindTopNByScoreDesc(maxTopWorkersToReward, latestForecasterScores, nonce.BlockHeight)
-
-	// Build list of forecasts that pass all filters
-	// AND are from top performing forecasters among those who have submitted forecasts in this batch
-	forecastsFromTopForecasters := make([]*types.Forecast, 0)
-	for _, worker := range topForecasters {
-		forecastsFromTopForecasters = append(forecastsFromTopForecasters, forecastsByForecaster[worker])
 	}
 
 	// Though less than ideal because it produces less-acurate network inferences,
@@ -295,12 +210,12 @@ func insertForecastsFromTopForecasters(
 	// => no need to check len(forecastsFromTopForecasters) == 0
 
 	// Ensure deterministic ordering
-	sort.Slice(forecastsFromTopForecasters, func(i, j int) bool {
-		return forecastsFromTopForecasters[i].Forecaster < forecastsFromTopForecasters[j].Forecaster
+	sort.Slice(latestForecaster, func(i, j int) bool {
+		return latestForecaster[i].Forecaster < latestForecaster[j].Forecaster
 	})
 	// Store the final list of forecasts
 	forecastsToInsert := types.Forecasts{
-		Forecasts: forecastsFromTopForecasters,
+		Forecasts: latestForecaster,
 	}
 	err := k.InsertForecasts(ctx, topicId, nonce, forecastsToInsert)
 	if err != nil {

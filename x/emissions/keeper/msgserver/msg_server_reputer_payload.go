@@ -2,6 +2,7 @@ package msgserver
 
 import (
 	"context"
+	errorsmod "cosmossdk.io/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
@@ -15,11 +16,18 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, err
 	}
 
-	nonce := msg.ReputerRequestNonce
-	topicId := msg.TopicId
+	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
+
+	if err := msg.ReputerValueBundle.Validate(); err != nil {
+		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
+			"Worker invalid data for block: %d", blockHeight)
+	}
+
+	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
+	topicId := msg.ReputerValueBundle.ValueBundle.TopicId
 
 	// Check if the topic exists
-	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	topicExists, err := ms.k.TopicExists(ctx, topicId)
 	if err != nil || !topicExists {
 		return nil, types.ErrInvalidTopicId
 	}
@@ -44,8 +52,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
-	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	topic, err := ms.k.GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
@@ -53,10 +60,6 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	// Check if the ground truth lag has passed: if blockheight > nonce.BlockHeight + topic.GroundTruthLag
 	if blockHeight < nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag {
 		return nil, types.ErrReputerNonceWindowNotAvailable
-	}
-
-	if err := msg.ReputerValueBundle.Validate(); err != nil {
-		return nil, types.ErrInvalidReputerData
 	}
 
 	hasEnoughBal, fee, err := ms.CheckBalanceForSendingDataFee(ctx, msg.Sender)

@@ -83,3 +83,19 @@ func GetLowScoreFromAllForecasts(
 	}
 	return lowScore, lowScoreIndex, nil
 }
+
+func EliminateInference(allData interface{}, newData interface{}) (interface{}, error) {
+	switch v := allData.(type) {
+	case types.Inferences:
+		for _, element := range v.Inferences {
+			if element.Inferer == newData.(types.Inference).Inferer {
+
+			}
+		}
+	case types.Forecasts:
+	case types.ReputerValueBundles:
+	default:
+
+	}
+	return nil, nil
+}

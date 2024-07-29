@@ -180,9 +180,7 @@ message MsgInsertReputerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  ReputerRequestNonce reputer_request_nonce = 2;
-  uint64 topic_id = 3;
-  ReputerValueBundle reputer_value_bundle = 4;
+  ReputerValueBundle reputer_value_bundle = 2;
 }
 
 message MsgInsertReputerPayloadResponse {}
@@ -191,9 +189,7 @@ message MsgInsertWorkerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  Nonce nonce = 2;
-  uint64 topic_id = 3;
-  WorkerDataBundle worker_data_bundle = 4;
+  WorkerDataBundle worker_data_bundle = 2;
 }
 
 message MsgInsertWorkerPayloadResponse {}

@@ -80,8 +80,8 @@ func CloseReputerNonce(
 	/// Do checks on each reputer in the payload
 	// Iterate through the array to ensure each reputer is in the whitelist
 	// and get get score for each reputer => later we can skim only the top few by score descending
-	lossBundlesByReputer := make(map[string]*types.ReputerValueBundle)
-	latestReputerScores := make(map[string]types.Score)
+	lossBundlesByReputer := make([]*types.ReputerValueBundle, 0)
+	stakesByReputer := make(map[string]cosmosMath.Int)
 	for _, bundle := range reputerLossBundles.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
 			continue
@@ -98,77 +98,58 @@ func CloseReputerNonce(
 			continue
 		}
 
-		// Check if we've seen this reputer already in this bulk payload
-		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
-			// Check that the reputer is registered in the topic
-			isReputerRegistered, err := k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
-			if err != nil {
-				continue
-			}
-			// We'll keep what we can get from the payload, but we'll ignore the rest
-			if !isReputerRegistered {
-				continue
-			}
-
-			// Check that the reputer enough stake in the topic
-			stake, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
-			if err != nil {
-				continue
-			}
-			if stake.LT(params.RequiredMinimumStake) {
-				continue
-			}
-
-			// Examine forecast elements to verify that they're for registered inferers in the current set.
-			// A check of their registration and other filters have already been applied when their inferences were inserted.
-			// We keep what we can, ignoring the reputer and their contribution (losses) entirely
-			// if they're left with no valid losses.
-
-			filteredBundle, err := filterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, bundle)
-			if err != nil {
-				continue
-			}
-
-			/// If we do PoX-like anti-sybil procedure, would go here
-
-			/// Filtering done now, now write what we must for inclusion
-
-			// Get the latest score for each reputer
-			latestScore, err := k.GetLatestReputerScore(ctx, bundle.ValueBundle.TopicId, reputer)
-			if err != nil {
-				continue
-			}
-			latestReputerScores[bundle.ValueBundle.Reputer] = latestScore
-			lossBundlesByReputer[bundle.ValueBundle.Reputer] = filteredBundle
+		// Check that the reputer is registered in the topic
+		isReputerRegistered, err := k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
+		if err != nil {
+			continue
 		}
-	}
+		// We'll keep what we can get from the payload, but we'll ignore the rest
+		if !isReputerRegistered {
+			continue
+		}
 
-	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topReputers := FindTopNByScoreDesc(params.MaxTopReputersToReward, latestReputerScores, nonce.BlockHeight)
-
-	// Check that the reputer in the payload is a top reputer among those who have submitted losses
-	stakesByReputer := make(map[string]cosmosMath.Int)
-	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
-	for _, reputer := range topReputers {
+		// Check that the reputer enough stake in the topic
 		stake, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
 		if err != nil {
 			continue
 		}
+		if stake.LT(params.RequiredMinimumStake) {
+			continue
+		}
 
-		lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, lossBundlesByReputer[reputer])
-		stakesByReputer[reputer] = stake
+		// Examine forecast elements to verify that they're for registered inferers in the current set.
+		// A check of their registration and other filters have already been applied when their inferences were inserted.
+		// We keep what we can, ignoring the reputer and their contribution (losses) entirely
+		// if they're left with no valid losses.
+
+		filteredBundle, err := filterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, bundle)
+		if err != nil {
+			continue
+		}
+
+		/// If we do PoX-like anti-sybil procedure, would go here
+
+		/// Filtering done now, now write what we must for inclusion
+
+		if err != nil {
+			continue
+		}
+		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
+
+		stake, err = k.GetStakeReputerAuthority(ctx, topicId, reputer)
+		if err != nil {
+			continue
+		}
+		stakesByReputer[bundle.ValueBundle.Reputer] = stake
 	}
+
 	// sort by reputer score descending
-	sort.Slice(lossBundlesFromTopReputers, func(i, j int) bool {
-		return lossBundlesFromTopReputers[i].ValueBundle.Reputer < lossBundlesFromTopReputers[j].ValueBundle.Reputer
+	sort.Slice(lossBundlesByReputer, func(i, j int) bool {
+		return lossBundlesByReputer[i].ValueBundle.Reputer < lossBundlesByReputer[j].ValueBundle.Reputer
 	})
 
-	if len(lossBundlesFromTopReputers) == 0 {
-		return types.ErrNoValidReputations
-	}
-
 	bundles := types.ReputerValueBundles{
-		ReputerValueBundles: lossBundlesFromTopReputers,
+		ReputerValueBundles: lossBundlesByReputer,
 	}
 	err = k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, bundles)
 	if err != nil {
