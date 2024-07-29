@@ -74,7 +74,7 @@ func CloseReputerNonce(
 
 	reputerLossBundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	if err != nil {
-		return err
+		return types.ErrNoValidBundles
 	}
 
 	/// Do checks on each reputer in the payload

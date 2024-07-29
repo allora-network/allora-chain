@@ -57,6 +57,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				err = am.keeper.UpdateTopicEpochLastEnded(sdkCtx, topic.Id, blockHeight)
 				if err != nil {
 					sdkCtx.Logger().Warn(fmt.Sprintf("Error updating last inference ran: %s", err.Error()))
+					return
 				}
 				// Add Worker Nonces
 				nextNonce := types.Nonce{BlockHeight: blockHeight}
@@ -67,7 +68,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 				sdkCtx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
 
-				am.keeper.AddWorkerWindowTopicId(sdkCtx, blockHeight+topic.WorkerSubmissionWindow, types.Topicid{TopicId: topic.Id})
+				err = am.keeper.AddWorkerWindowTopicId(sdkCtx, blockHeight+topic.WorkerSubmissionWindow, types.Topicid{TopicId: topic.Id})
+				if err != nil {
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error adding worker window topic id: %s", err.Error()))
+					return
+				}
 
 				MaxUnfulfilledReputerRequests := types.DefaultParams().MaxUnfulfilledReputerRequests
 				moduleParams, err := am.keeper.GetParams(ctx)
@@ -80,14 +85,20 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				reputerPruningBlock := blockHeight - (int64(MaxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag)
 				if reputerPruningBlock > 0 {
 					sdkCtx.Logger().Warn(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, blockHeight))
-					am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
+					err = am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
+					if err != nil {
+						sdkCtx.Logger().Warn(fmt.Sprintf("Error pruning reputer nonces: %s", err.Error()))
+					}
 
 					// Reputer nonces need to check worker nonces from one epoch before
 					workerPruningBlock := reputerPruningBlock - topic.EpochLength
 					if workerPruningBlock > 0 {
 						sdkCtx.Logger().Debug("Pruning worker nonces before block: ", workerPruningBlock, " for topic: ", topic.Id)
 						// Prune old worker nonces previous to current blockHeight to avoid inserting inferences after its time has passed
-						am.keeper.PruneWorkerNonces(sdkCtx, topic.Id, workerPruningBlock)
+						err = am.keeper.PruneWorkerNonces(sdkCtx, topic.Id, workerPruningBlock)
+						if err != nil {
+							sdkCtx.Logger().Warn(fmt.Sprintf("Error pruning worker nonces: %s", err.Error()))
+						}
 					}
 				}
 			}
@@ -102,11 +113,16 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				for _, nonce := range nonces.Nonces {
 					// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
 					// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
-					if blockHeight >= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength {
-						sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Closing reputer nonce for topic: %v metadata: %s . \n",
-							topic.Id,
-							topic.Metadata))
-						allorautils.CloseReputerNonce(&am.keeper, sdkCtx, topic.Id, *nonce.ReputerNonce)
+					closingReputerNonceMinBlockHeight := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
+					if blockHeight >= closingReputerNonceMinBlockHeight {
+						sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Closing reputer nonce for topic: %v nonce: %v, min: %d. \n",
+							topic.Id, nonce, closingReputerNonceMinBlockHeight))
+						err = allorautils.CloseReputerNonce(&am.keeper, sdkCtx, topic.Id, *nonce.ReputerNonce)
+						if err != nil {
+							sdkCtx.Logger().Warn(fmt.Sprintf("Error closing reputer nonce: %s", err.Error()))
+							// Proactively close the nonce to avoid
+							am.keeper.FulfillReputerNonce(sdkCtx, topic.Id, nonce.ReputerNonce)
+						}
 					}
 				}
 			}
