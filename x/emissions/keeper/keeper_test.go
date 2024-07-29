@@ -1569,6 +1569,100 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockNotFound() {
 	s.Require().False(limitHit, "The limit should not be hit")
 }
 
+func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitPreviousBlocks() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicIdStart := uint64(100)
+	blockRemovalsStart := int64(12)
+	blockRemovalsEnd := int64(13)
+
+	topicId := topicIdStart
+	reputer := "reputer" + strconv.Itoa(int(topicId))
+	removalInfo := types.StakeRemovalInfo{
+		BlockRemovalStarted:   blockRemovalsStart,
+		BlockRemovalCompleted: blockRemovalsEnd,
+		TopicId:               topicId,
+		Reputer:               reputer,
+		Amount:                cosmosMath.NewInt(100),
+	}
+	err := keeper.SetStakeRemoval(ctx, removalInfo)
+	s.Require().NoError(err)
+
+	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(
+		ctx,
+		blockRemovalsEnd+1, // note how we are getting a block AFTER blockRemovalsEnd
+		1000,
+	)
+	s.Require().NoError(err)
+	s.Require().False(limitHit)
+	s.Require().Len(retrievedInfo, 1)
+}
+
+func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitGreaterThanNumRemovals() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	numRemovals := int64(5)
+	topicIdStart := uint64(100)
+	blockRemovalsStart := int64(12)
+	blockRemovalsEnd := types.DefaultParams().RemoveStakeDelayWindow + blockRemovalsStart
+
+	for i := int64(0); i < numRemovals; i++ {
+		topicId := topicIdStart + uint64(i)
+		reputer := "reputer" + strconv.Itoa(int(topicId))
+		// Create a sample stake removal information
+		removalInfo := types.StakeRemovalInfo{
+			BlockRemovalStarted:   blockRemovalsStart + i,
+			BlockRemovalCompleted: blockRemovalsEnd + i,
+			TopicId:               topicId,
+			Reputer:               reputer,
+			Amount:                cosmosMath.NewInt(100),
+		}
+		err := keeper.SetStakeRemoval(ctx, removalInfo)
+		s.Require().NoError(err)
+	}
+	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(
+		ctx,
+		blockRemovalsEnd+numRemovals,
+		uint64(numRemovals),
+	)
+	s.Require().NoError(err)
+	s.Require().False(limitHit)
+	s.Require().Len(retrievedInfo, int(numRemovals))
+}
+
+func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitLessThanNumRemovals() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	numRemovals := int64(5)
+	limitRemovals := numRemovals - 2
+	topicIdStart := uint64(100)
+	blockRemovalsStart := int64(12)
+	blockRemovalsEnd := types.DefaultParams().RemoveStakeDelayWindow + blockRemovalsStart
+
+	for i := int64(0); i < numRemovals; i++ {
+		topicId := topicIdStart + uint64(i)
+		reputer := "reputer" + strconv.Itoa(int(topicId))
+		// Create a sample stake removal information
+		removalInfo := types.StakeRemovalInfo{
+			BlockRemovalStarted:   blockRemovalsStart + i,
+			BlockRemovalCompleted: blockRemovalsEnd + i,
+			TopicId:               topicId,
+			Reputer:               reputer,
+			Amount:                cosmosMath.NewInt(100),
+		}
+		err := keeper.SetStakeRemoval(ctx, removalInfo)
+		s.Require().NoError(err)
+	}
+	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(
+		ctx,
+		blockRemovalsEnd+numRemovals,
+		uint64(limitRemovals),
+	)
+	s.Require().NoError(err)
+	s.Require().True(limitHit)
+	s.Require().Len(retrievedInfo, int(limitRemovals))
+}
+
 func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper

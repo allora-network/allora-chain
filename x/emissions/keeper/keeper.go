@@ -1286,7 +1286,8 @@ func (k Keeper) GetStakeRemoval(
 	return k.stakeRemovalsByBlock.Get(ctx, collections.Join3(BlockHeight, topicId, reputer))
 }
 
-// get a list of stake removals for this block
+// get a list of stake removals that are valid for removal
+// before and including this block.
 func (k *Keeper) GetStakeRemovalsUpUntilBlock(
 	ctx context.Context,
 	blockHeight BlockHeight,
@@ -1294,9 +1295,11 @@ func (k *Keeper) GetStakeRemovalsUpUntilBlock(
 ) (ret []types.StakeRemovalInfo, anyLeft bool, err error) {
 	ret = make([]types.StakeRemovalInfo, 0)
 	// make a range that has everything less than the block height, inclusive
-	key := collections.TriplePrefix[BlockHeight, TopicId, ActorId](blockHeight)
+	startKey := collections.TriplePrefix[BlockHeight, TopicId, ActorId](0)
 	rng := &collections.Range[collections.Triple[BlockHeight, TopicId, ActorId]]{}
-	rng = rng.Prefix(key)
+	rng = rng.Prefix(startKey)
+	endKey := collections.TriplePrefix[BlockHeight, TopicId, ActorId](blockHeight)
+	rng = rng.EndInclusive(endKey)
 
 	iter, err := k.stakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
@@ -1401,7 +1404,8 @@ func (k Keeper) GetDelegateStakeRemoval(
 	return k.delegateStakeRemovalsByBlock.Get(ctx, Join4(blockHeight, topicId, delegator, reputer))
 }
 
-// get a list of stake removals for this block
+// get a list of stake removals that are valid for removal
+// before and including this block.
 func (k *Keeper) GetDelegateStakeRemovalsUpUntilBlock(
 	ctx context.Context,
 	blockHeight BlockHeight,
@@ -1410,9 +1414,11 @@ func (k *Keeper) GetDelegateStakeRemovalsUpUntilBlock(
 	ret := make([]types.DelegateStakeRemovalInfo, 0)
 
 	// make a range that has everything less than the block height, inclusive
-	key := QuadrupleSinglePrefix[BlockHeight, TopicId, ActorId, ActorId](blockHeight)
+	startKey := QuadrupleSinglePrefix[BlockHeight, TopicId, ActorId, ActorId](0)
 	rng := &collections.Range[Quadruple[BlockHeight, TopicId, ActorId, ActorId]]{}
-	rng = rng.Prefix(key)
+	rng = rng.Prefix(startKey)
+	endKey := QuadrupleSinglePrefix[BlockHeight, TopicId, ActorId, ActorId](blockHeight)
+	rng = rng.EndInclusive(endKey)
 
 	iter, err := k.delegateStakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
