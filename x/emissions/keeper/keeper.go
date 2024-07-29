@@ -1293,7 +1293,11 @@ func (k *Keeper) GetStakeRemovalsUpUntilBlock(
 	limit uint64,
 ) (ret []types.StakeRemovalInfo, anyLeft bool, err error) {
 	ret = make([]types.StakeRemovalInfo, 0)
-	rng := collections.NewPrefixUntilTripleRange[BlockHeight, TopicId, ActorId](blockHeight)
+	// make a range that has everything less than the block height, inclusive
+	key := collections.TriplePrefix[BlockHeight, TopicId, ActorId](blockHeight)
+	rng := &collections.Range[collections.Triple[BlockHeight, TopicId, ActorId]]{}
+	rng = rng.Prefix(key)
+
 	iter, err := k.stakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
 		return ret, false, err
@@ -1404,7 +1408,12 @@ func (k *Keeper) GetDelegateStakeRemovalsUpUntilBlock(
 	limit uint64,
 ) ([]types.DelegateStakeRemovalInfo, bool, error) {
 	ret := make([]types.DelegateStakeRemovalInfo, 0)
-	rng := NewSinglePrefixUntilQuadrupleRange[BlockHeight, TopicId, ActorId, ActorId](blockHeight)
+
+	// make a range that has everything less than the block height, inclusive
+	key := QuadrupleSinglePrefix[BlockHeight, TopicId, ActorId, ActorId](blockHeight)
+	rng := &collections.Range[Quadruple[BlockHeight, TopicId, ActorId, ActorId]]{}
+	rng = rng.Prefix(key)
+
 	iter, err := k.delegateStakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
 		return ret, false, err

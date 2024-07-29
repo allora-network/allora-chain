@@ -653,8 +653,9 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStake() {
 
 	// Verification: Check if the removal has been queued
 	removeBlock := ctx.BlockHeight() + removalDelay
-	removalInfo, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, removeBlock)
+	removalInfo, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removeBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(removalInfo, 1)
 	require.NotNil(removalInfo[0])
 }
@@ -757,8 +758,9 @@ func (s *MsgServerTestSuite) TestConfirmRemoveDelegateStake() {
 	require.True(delegateStakePlaced.Amount.IsZero(), "Delegate stake should be zero after successful removal")
 
 	// Check that the stake removal has been removed from the state
-	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(removals, 0)
 }
 
@@ -812,8 +814,9 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwiceSameBlock() {
 		BlockRemovalCompleted: endBlock,
 	}
 
-	stakePlacements, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	stakePlacements, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(stakePlacements, 1)
 	require.Equal(expected, stakePlacements[0])
 
@@ -827,8 +830,9 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwiceSameBlock() {
 	})
 	require.NoError(err)
 
-	stakePlacements, err = keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	stakePlacements, limitHit, err = keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(stakePlacements, 1)
 	expected.Amount = newStakeAmount
 	require.Equal(expected, stakePlacements[0])
@@ -882,8 +886,9 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
 		BlockRemovalCompleted: endBlock,
 	}
 
-	stakePlacements, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	stakePlacements, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(stakePlacements, 1)
 	require.Equal(expected, stakePlacements[0])
 
@@ -901,12 +906,14 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
 	})
 	require.NoError(err)
 
-	stakePlacements, err = keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	stakePlacements, limitHit, err = keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(stakePlacements, 0)
 
-	stakePlacements, err = keeper.GetDelegateStakeRemovalsForBlock(ctx, newEndBlock)
+	stakePlacements, limitHit, err = keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, newEndBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(stakePlacements, 1)
 
 	expected.Amount = newStakeAmount
@@ -1013,8 +1020,9 @@ func (s *MsgServerTestSuite) TestRemoveDelegateStakeMultipleReputersSameDelegato
 		require.True(delegateStakePlaced.Amount.IsZero(), "Delegate stake should be zero after successful removal")
 	}
 	// Check that the stake removals have been removed from the state
-	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(removals, 0)
 }
 
@@ -1062,8 +1070,9 @@ func (s *MsgServerTestSuite) TestRemoveOneDelegateMultipleTargetsDifferentBlocks
 
 	// verify the removals are put in correctly
 	for i := 0; i < len(reputers); i++ {
-		removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock+int64(i))
+		removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock+int64(i), 100)
 		require.NoError(err)
+		require.False(limitHit)
 		require.Len(removals, 1)
 	}
 
@@ -1075,8 +1084,9 @@ func (s *MsgServerTestSuite) TestRemoveOneDelegateMultipleTargetsDifferentBlocks
 		require.NoError(err)
 
 		// Check that the stake removals have been removed from the state
-		removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+		removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 		require.NoError(err)
+		require.False(limitHit)
 		require.Len(removals, 0)
 		ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 	}
@@ -1142,8 +1152,9 @@ func (s *MsgServerTestSuite) TestRemoveMultipleDelegatesSameTargetSameBlock() {
 	}
 
 	// verify the removals are put in correctly
-	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(removals, len(delegators))
 
 	// Call ctx.WithBlockHeight to simulate passing time
@@ -1154,8 +1165,9 @@ func (s *MsgServerTestSuite) TestRemoveMultipleDelegatesSameTargetSameBlock() {
 		require.NoError(err)
 
 		// Check that the stake removals have been removed from the state
-		removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+		removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 		require.NoError(err)
+		require.False(limitHit)
 		require.Len(removals, 0)
 	}
 	// Check that the stake was actually removed for each reputer
@@ -1221,8 +1233,9 @@ func (s *MsgServerTestSuite) TestRemoveMultipleDelegatesDifferentTargetsSameBloc
 	}
 
 	// verify the removals are put in correctly
-	removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 	require.NoError(err)
+	require.False(limitHit)
 	require.Len(removals, len(delegators))
 
 	// Call ctx.WithBlockHeight to simulate passing time
@@ -1233,8 +1246,9 @@ func (s *MsgServerTestSuite) TestRemoveMultipleDelegatesDifferentTargetsSameBloc
 		require.NoError(err)
 
 		// Check that the stake removals have been removed from the state
-		removals, err := keeper.GetDelegateStakeRemovalsForBlock(ctx, endBlock)
+		removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock, 100)
 		require.NoError(err)
+		require.False(limitHit)
 		require.Len(removals, 0)
 	}
 	// Check that the stake was actually removed for each reputer

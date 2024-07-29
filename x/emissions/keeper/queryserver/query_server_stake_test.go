@@ -454,10 +454,13 @@ func (s *KeeperTestSuite) TestGetDelegateStakeUponReputer() {
 	// Check remaining stake for delegator
 	remainingStake, err := keeper.GetStakeFromDelegatorInTopic(ctx, topicId, delegatorAddr)
 	s.Require().NoError(err)
-	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), remainingStake, "Remaining delegator stake should be initial minus removed amount")
+	expected := initialStakeAmount.Sub(removeStakeAmount)
+	s.Require().Equal(expected, remainingStake, "Remaining delegator stake should be initial minus removed amount")
 
 	// Check remaining stake for delegator
 	stakeUponReputer, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
+	s.Require().NoError(err)
+	s.Require().Equal(expected, stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
 	req := &types.QueryDelegateStakeUponReputerRequest{
 		TopicId: topicId,
 		Target:  reputerAddr,
@@ -465,7 +468,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakeUponReputer() {
 	queryResponse, err := s.queryServer.GetDelegateStakeUponReputer(ctx, req)
 	stakeUponReputer = queryResponse.Stake
 	s.Require().NoError(err)
-	s.Require().Equal(initialStakeAmount.Sub(removeStakeAmount), stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
+	s.Require().Equal(expected, stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
 }
 
 func (s *KeeperTestSuite) TestGetStakeRemovalForReputerAndTopicId() {
