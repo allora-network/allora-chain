@@ -121,7 +121,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	// Set Previous Loss
 	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
-		CombinedValue:       epoch2Get("network_loss_reputers"),
+		CombinedValue:       epoch2Get("network_loss"),
 		ReputerRequestNonce: reputerRequestNonce,
 		TopicId:             topicId,
 	})

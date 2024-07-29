@@ -519,15 +519,15 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
-	key := collections.Join3(topicId, forecaster, inferer)
+func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneInForecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneInForecaster, inferer)
 	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
 // Returns the regret of a forecaster from comparing loss of forecaster relative to loss of other forecasters
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
-	key := collections.Join3(topicId, forecaster, inferer)
+func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneInForecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneInForecaster, inferer)
 	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -545,13 +545,13 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 	return regret, false, nil
 }
 
-func (k *Keeper) SetNaiveInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
-	key := collections.Join(topicId, worker)
+func (k *Keeper) SetNaiveInfererNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId, regret types.TimestampedValue) error {
+	key := collections.Join(topicId, inferer)
 	return k.latestNaiveInfererNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) GetNaiveInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
-	key := collections.Join(topicId, worker)
+func (k *Keeper) GetNaiveInfererNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join(topicId, inferer)
 	regret, err := k.latestNaiveInfererNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -569,13 +569,13 @@ func (k *Keeper) GetNaiveInfererNetworkRegret(ctx context.Context, topicId Topic
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneOutInfererInfererNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId, targetInferer ActorId, regret types.TimestampedValue) error {
-	key := collections.Join3(topicId, inferer, targetInferer)
+func (k *Keeper) SetOneOutInfererInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, inferer ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneOutInferer, inferer)
 	return k.latestOneOutInfererInfererNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) GetOneOutInfererInfererNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId, targetInferer ActorId) (types.TimestampedValue, bool, error) {
-	key := collections.Join3(topicId, inferer, targetInferer)
+func (k *Keeper) GetOneOutInfererInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneOutInferer, inferer)
 	regret, err := k.latestOneOutInfererInfererNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -593,13 +593,13 @@ func (k *Keeper) GetOneOutInfererInfererNetworkRegret(ctx context.Context, topic
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneOutInfererForecasterNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId, forecaster ActorId, regret types.TimestampedValue) error {
-	key := collections.Join3(topicId, inferer, forecaster)
+func (k *Keeper) SetOneOutInfererForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, forecaster ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneOutInferer, forecaster)
 	return k.latestOneOutInfererForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) GetOneOutInfererForecasterNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId, forecaster ActorId) (types.TimestampedValue, bool, error) {
-	key := collections.Join3(topicId, inferer, forecaster)
+func (k *Keeper) GetOneOutInfererForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, forecaster ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneOutInferer, forecaster)
 	regret, err := k.latestOneOutInfererForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -617,13 +617,13 @@ func (k *Keeper) GetOneOutInfererForecasterNetworkRegret(ctx context.Context, to
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneOutForecasterInfererNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
-	key := collections.Join3(topicId, forecaster, inferer)
+func (k *Keeper) SetOneOutForecasterInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneOutForecaster, inferer)
 	return k.latestOneOutForecasterInfererNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) GetOneOutForecasterInfererNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
-	key := collections.Join3(topicId, forecaster, inferer)
+func (k *Keeper) GetOneOutForecasterInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneOutForecaster, inferer)
 	regret, err := k.latestOneOutForecasterInfererNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -641,13 +641,13 @@ func (k *Keeper) GetOneOutForecasterInfererNetworkRegret(ctx context.Context, to
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneOutForecasterForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, targetForecaster ActorId, regret types.TimestampedValue) error {
-	key := collections.Join3(topicId, forecaster, targetForecaster)
+func (k *Keeper) SetOneOutForecasterForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, forecaster ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneOutForecaster, forecaster)
 	return k.latestOneOutForecasterForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, targetForecaster ActorId) (types.TimestampedValue, bool, error) {
-	key := collections.Join3(topicId, forecaster, targetForecaster)
+func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, forecaster ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneOutForecaster, forecaster)
 	regret, err := k.latestOneOutForecasterForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {

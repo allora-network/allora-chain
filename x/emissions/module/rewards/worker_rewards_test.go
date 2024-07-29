@@ -207,8 +207,10 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	topicId := createNewTopic(s)
 	blockHeight := int64(4)
 
+	finalEpoch := 304
+	initialEpoch := 301
 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
-	epoch2Get := epochGet[302]
+	epoch4Get := epochGet[finalEpoch]
 
 	inferer0 := s.addrs[5].String()
 	inferer1 := s.addrs[6].String()
@@ -226,7 +228,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	infererLastScores := make([]types.Score, 0)
 	forecasterLastScores := make([]types.Score, 0)
 	for j := 0; j < 3; j++ {
-		epochGet := epochGet[j]
+		epochGet := epochGet[initialEpoch + j]
 		inferersScores := []alloraMath.Dec{
 			epochGet("inferer_score_0"),
 			epochGet("inferer_score_1"),
@@ -289,11 +291,11 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	s.Require().NoError(err)
 	s.Require().Equal(5, len(inferersRewardFractions))
 	expectedValues := map[string]alloraMath.Dec{
-		inferer0: epoch2Get("inferer_reward_fraction_0"),
-		inferer1: epoch2Get("inferer_reward_fraction_1"),
-		inferer2: epoch2Get("inferer_reward_fraction_2"),
-		inferer3: epoch2Get("inferer_reward_fraction_3"),
-		inferer4: epoch2Get("inferer_reward_fraction_4"),
+		inferer0: epoch4Get("inferer_reward_fraction_0"),
+		inferer1: epoch4Get("inferer_reward_fraction_1"),
+		inferer2: epoch4Get("inferer_reward_fraction_2"),
+		inferer3: epoch4Get("inferer_reward_fraction_3"),
+		inferer4: epoch4Get("inferer_reward_fraction_4"),
 	}
 	for i, inferer := range inferers {
 		testutil.InEpsilon5(s.T(), inferersRewardFractions[i], expectedValues[inferer].String())
@@ -311,9 +313,9 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	s.Require().NoError(err)
 	s.Require().Equal(3, len(forecastersRewardFractions))
 	expectedValues = map[string]alloraMath.Dec{
-		forecaster0: epoch2Get("forecaster_reward_fraction_0"),
-		forecaster1: epoch2Get("forecaster_reward_fraction_1"),
-		forecaster2: epoch2Get("forecaster_reward_fraction_2"),
+		forecaster0: epoch4Get("forecaster_reward_fraction_0"),
+		forecaster1: epoch4Get("forecaster_reward_fraction_1"),
+		forecaster2: epoch4Get("forecaster_reward_fraction_2"),
 	}
 	for i, forecaster := range forecasters {
 		testutil.InEpsilon5(s.T(), forecastersRewardFractions[i], expectedValues[forecaster].String())

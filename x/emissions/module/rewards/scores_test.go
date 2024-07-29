@@ -2,7 +2,6 @@ package rewards_test
 
 import (
 	"encoding/hex"
-	"fmt"
 	"math/rand"
 	"strconv"
 
@@ -116,14 +115,7 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsvOutputs() {
 		)
 		s.Require().NoError(err)
 	}
-	var expectedCoefficients = []alloraMath.Dec{
-		epoch301Get("reputer_listening_coefficient_0"),
-		epoch301Get("reputer_listening_coefficient_1"),
-		epoch301Get("reputer_listening_coefficient_2"),
-		epoch301Get("reputer_listening_coefficient_3"),
-		epoch301Get("reputer_listening_coefficient_4"),
-	}
-	fmt.Println("expectedCoefficients :::", expectedCoefficients)
+
 	reportedLosses, err := testdata.GetReputersDataFromCsv(
 		topicId,
 		infererAddresses,

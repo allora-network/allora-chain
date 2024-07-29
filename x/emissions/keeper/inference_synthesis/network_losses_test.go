@@ -415,7 +415,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 	}
 }
 
-func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsvOutputs() {
+func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch301Get := epochGet[301]
 	topicId := uint64(1)
@@ -513,6 +513,27 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsvOutputs() {
 			if workerAttributedValue.Worker == expectedValue.Worker {
 				found = true
 				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
+			}
+		}
+		s.Require().True(found)
+	}
+	s.Require().Len(networkLosses.OneOutInfererForecasterValues, len(expectedNetworkLosses.OneOutInfererForecasterValues))
+	for _, expectedValue := range expectedNetworkLosses.OneOutInfererForecasterValues {
+		found := false
+		for _, workerAttributedValue := range networkLosses.OneOutInfererForecasterValues {
+			if workerAttributedValue.Forecaster == expectedValue.Forecaster {
+				found = true
+				s.Require().Len(workerAttributedValue.OneOutInfererValues, len(expectedValue.OneOutInfererValues))
+				for _, expectedOneOutInfererValue := range expectedValue.OneOutInfererValues {
+					foundOneOutInferer := false
+					for _, oneOutInfererValue := range workerAttributedValue.OneOutInfererValues {
+						if oneOutInfererValue.Worker == expectedOneOutInfererValue.Worker {
+							foundOneOutInferer = true
+							testutil.InEpsilon5(s.T(), expectedOneOutInfererValue.Value, oneOutInfererValue.Value.String())
+						}
+					}
+					s.Require().True(foundOneOutInferer)
+				}
 			}
 		}
 		s.Require().True(found)
