@@ -73,4 +73,5 @@ var (
 	ErrInvalidWorkerData                        = errors.Register(ModuleName, 71, "worker data validation is failed")
 	ErrInvalidReputerData                       = errors.Register(ModuleName, 72, "reputer data validation is failed")
 	ErrDataSenderNotEnoughDenom                 = errors.Register(ModuleName, 73, "data sender does not have enough denom")
+	ErrGroundTruthLagTooBig                     = errors.Register(ModuleName, 74, "ground truth lag too big for epoch length")
 )
