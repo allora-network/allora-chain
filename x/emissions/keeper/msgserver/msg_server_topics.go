@@ -37,6 +37,9 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	if msg.EpochLength < params.MinEpochLength {
 		return nil, types.ErrTopicCadenceBelowMinimum
 	}
+	if msg.GroundTruthLag > int64(params.MaxUnfulfilledReputerRequests)*msg.EpochLength {
+		return nil, types.ErrGroundTruthLagTooBig
+	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
 	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Creator, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
