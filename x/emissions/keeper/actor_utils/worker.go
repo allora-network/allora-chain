@@ -1,6 +1,7 @@
 package actor_utils
 
 import (
+	"fmt"
 	"sort"
 
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -43,15 +44,13 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
 
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return err
-	}
-
 	// Get all inferences from this topic, nonce
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	if err != nil {
 		return err
+	}
+	if len(inferences.Inferences) == 0 {
+		return types.ErrNoValidInferences
 	}
 
 	acceptedInferers, err := insertInferencesFromTopInferers(
@@ -60,7 +59,6 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		topicId,
 		nonce,
 		inferences.Inferences,
-		moduleParams.MaxTopInferersToReward,
 	)
 	if err != nil {
 		return err
@@ -79,7 +77,6 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		nonce,
 		forecasts.Forecasts,
 		acceptedInferers,
-		moduleParams.MaxTopForecastersToReward,
 	)
 	if err != nil {
 		return err
@@ -120,14 +117,22 @@ func insertInferencesFromTopInferers(
 	topicId uint64,
 	nonce types.Nonce,
 	inferences []*types.Inference,
-	maxTopWorkersToReward uint64,
 ) (map[string]bool, error) {
 	acceptedInferers := make(map[string]bool, 0)
 	if len(inferences) == 0 {
-		ctx.Logger().Warn("No inferences to process for topic: ", topicId, ", nonce: ", nonce)
-		return nil, types.ErrNoValidBundles // TODO Change err name - No inferences to process
+		ctx.Logger().Warn(fmt.Sprintf("No inferences to process for topic: %d, nonce: %v", topicId, nonce))
+		return nil, types.ErrNoValidInferences // TODO Change err name - No inferences to process
 	}
 	for _, inference := range inferences {
+		// Check that the forecast exist, is for the correct topic, and is for the correct nonce
+		if inference.TopicId != topicId {
+			ctx.Logger().Warn("Inference does not match topic: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
+			continue
+		}
+		if inference.BlockHeight != nonce.BlockHeight {
+			ctx.Logger().Warn("Inference does not match blockHeight: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
+			continue
+		}
 		acceptedInferers[inference.Inferer] = true
 	}
 
@@ -160,7 +165,6 @@ func insertForecastsFromTopForecasters(
 	nonce types.Nonce,
 	forecasts []*types.Forecast,
 	acceptedInferersOfBatch map[string]bool,
-	maxTopWorkersToReward uint64,
 ) error {
 	forecastsByForecaster := make(map[string]*types.Forecast)
 	latestForecaster := make([]*types.Forecast, 0)
@@ -191,9 +195,12 @@ func insertForecastsFromTopForecasters(
 			continue
 		}
 		// Check that the forecast exist, is for the correct topic, and is for the correct nonce
-		if forecast.TopicId != topicId ||
-			forecast.BlockHeight != nonce.BlockHeight {
+		if forecast.TopicId != topicId {
 			ctx.Logger().Warn("Forecast does not match topic: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
+			continue
+		}
+		if forecast.BlockHeight != nonce.BlockHeight {
+			ctx.Logger().Warn("Forecast does not match blockHeight: ", topicId, ", nonce: ", nonce, "for forecaster: ", forecast.Forecaster)
 			continue
 		}
 
