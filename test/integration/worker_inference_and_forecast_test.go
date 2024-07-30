@@ -44,38 +44,33 @@ func getNonZeroTopicEpochLastRan(m testCommon.TestConfig, topicID uint64, maxRet
 	return nil, errors.New("topicEpochLastRan is still 0 after retrying")
 }
 
-func InsertSingleWorkerBulk(m testCommon.TestConfig, topic *types.Topic, blockHeight int64) {
+func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, blockHeight int64) {
 	ctx := context.Background()
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
-	nonce := types.Nonce{BlockHeight: blockHeight}
 	// Define inferer address as Bob's address
 	InfererAddress1 := m.BobAddr
 
-	// Create a MsgInsertBulkReputerPayload message
-	workerMsg := &types.MsgInsertBulkWorkerPayload{
-		Sender:  InfererAddress1,
-		Nonce:   &nonce,
-		TopicId: topicId,
-		WorkerDataBundles: []*types.WorkerDataBundle{
-			{
-				Worker: InfererAddress1,
-				InferenceForecastsBundle: &types.InferenceForecastBundle{
-					Inference: &types.Inference{
-						TopicId:     topicId,
-						BlockHeight: blockHeight,
-						Inferer:     InfererAddress1,
-						Value:       alloraMath.NewDecFromInt64(100),
-					},
-					Forecast: &types.Forecast{
-						TopicId:     0,
-						BlockHeight: blockHeight,
-						Forecaster:  InfererAddress1,
-						ForecastElements: []*types.ForecastElement{
-							{
-								Inferer: InfererAddress1,
-								Value:   alloraMath.NewDecFromInt64(100),
-							},
+	// Create a MsgInsertReputerPayload message
+	workerMsg := &types.MsgInsertWorkerPayload{
+		Sender: InfererAddress1,
+		WorkerDataBundle: &types.WorkerDataBundle{
+			Worker: InfererAddress1,
+			InferenceForecastsBundle: &types.InferenceForecastBundle{
+				Inference: &types.Inference{
+					TopicId:     topicId,
+					BlockHeight: blockHeight,
+					Inferer:     InfererAddress1,
+					Value:       alloraMath.NewDecFromInt64(100),
+				},
+				Forecast: &types.Forecast{
+					TopicId:     0,
+					BlockHeight: blockHeight,
+					Forecaster:  InfererAddress1,
+					ForecastElements: []*types.ForecastElement{
+						{
+							Inferer: InfererAddress1,
+							Value:   alloraMath.NewDecFromInt64(100),
 						},
 					},
 				},
@@ -84,14 +79,14 @@ func InsertSingleWorkerBulk(m testCommon.TestConfig, topic *types.Topic, blockHe
 	}
 	// Sign
 	src := make([]byte, 0)
-	src, err := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.XXX_Marshal(src, true)
+	src, err := workerMsg.WorkerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
 	require.NoError(m.T, err, "Marshall reputer value bundle should not return an error")
 
 	sig, pubKey, err := m.Client.Context().Keyring.Sign(m.BobAcc.Name, src, signing.SignMode_SIGN_MODE_DIRECT)
 	require.NoError(m.T, err, "Sign should not return an error")
 	workerPublicKeyBytes := pubKey.Bytes()
-	workerMsg.WorkerDataBundles[0].InferencesForecastsBundleSignature = sig
-	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
+	workerMsg.WorkerDataBundle.InferencesForecastsBundleSignature = sig
+	workerMsg.WorkerDataBundle.Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
 	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, workerMsg)
 	require.NoError(m.T, err)
@@ -124,11 +119,11 @@ func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, int64
 	// Insert and fulfill nonces for the last two epochs
 	blockHeightEval := freshTopic.EpochLastEnded - freshTopic.EpochLength
 	m.T.Log("Inserting worker bulk for blockHeightEval: ", blockHeightEval)
-	InsertSingleWorkerBulk(m, freshTopic, blockHeightEval)
+	InsertSingleWorkerPayload(m, freshTopic, blockHeightEval)
 
 	blockHeightCurrent := freshTopic.EpochLastEnded
 	m.T.Log("Inserting worker bulk for blockHeightCurrent: ", blockHeightCurrent)
-	InsertSingleWorkerBulk(m, freshTopic, blockHeightCurrent)
+	InsertSingleWorkerPayload(m, freshTopic, blockHeightCurrent)
 	return blockHeightCurrent, blockHeightEval
 }
 
@@ -198,19 +193,13 @@ func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightC
 	require.NoError(m.T, err, "Sign should not return an error")
 	reputerPublicKeyBytes := pubKey.Bytes()
 
-	// Create a MsgInsertBulkReputerPayload message
-	lossesMsg := &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddr,
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: reputerNonce,
-		},
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: reputerValueBundle,
-				Signature:   valueBundleSignature,
-				Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
-			},
+	// Create a MsgInsertReputerPayload message
+	lossesMsg := &types.MsgInsertReputerPayload{
+		Sender: reputerAddr,
+		ReputerValueBundle: &types.ReputerValueBundle{
+			ValueBundle: reputerValueBundle,
+			Signature:   valueBundleSignature,
+			Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
 		},
 	}
 
@@ -239,8 +228,8 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 		m.T.Log("--- Failed getting a topic that was ran ---")
 		require.NoError(m.T, err)
 	}
-	m.T.Log("--- Insert Worker Bulk ---")
+	m.T.Log("--- Insert Worker Payload ---")
 	blockHeightCurrent, blockHeightEval := InsertWorkerBulk(m, topic)
-	m.T.Log("--- Insert Reputer Bulk ---")
+	m.T.Log("--- Insert Reputer Payload ---")
 	InsertReputerBulk(m, topic, blockHeightCurrent, blockHeightEval)
 }

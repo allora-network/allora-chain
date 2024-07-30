@@ -46,7 +46,7 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
-	// Create a MsgInsertBulkWorkerPayload message
+	// Create a MsgInsertWorkerPayload message
 	workerMsg := types.MsgInsertWorkerPayload{
 		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
@@ -80,7 +80,7 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	return workerMsg, topicId
 }
 
-func (s *MsgServerTestSuite) signMsgInsertBulkWorkerPayload(workerMsg types.MsgInsertWorkerPayload, workerPrivateKey secp256k1.PrivKey) types.MsgInsertWorkerPayload {
+func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(workerMsg types.MsgInsertWorkerPayload, workerPrivateKey secp256k1.PrivKey) types.MsgInsertWorkerPayload {
 	require := s.Require()
 
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
@@ -97,7 +97,7 @@ func (s *MsgServerTestSuite) signMsgInsertBulkWorkerPayload(workerMsg types.MsgI
 	return workerMsg
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayload() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -105,7 +105,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayload() {
 
 	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 
@@ -120,7 +120,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayload() {
 	require.Equal(forecastsCount1, 1)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithNilInference() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithNilInference() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -128,7 +128,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithNilInference
 
 	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference = nil
 
@@ -136,7 +136,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithNilInference
 	require.Error(err)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithoutWorkerDataBundle() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithoutWorkerDataBundle() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -145,14 +145,14 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithoutWorkerDat
 	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
 	// BEGIN MODIFICATION
-	// workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	// workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	// END MODIFICATION
 
 	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.Error(err)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedTopicId() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -164,13 +164,13 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedTo
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = 1
 	// END MODIFICATION
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.Error(err, types.ErrNoValidBundles)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredInferer() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredInferer() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -192,7 +192,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregistered
 
 	// END MODIFICATION
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.Error(err, types.ErrNoValidBundles)
@@ -209,7 +209,7 @@ func (s *MsgServerTestSuite) getCountForecastsAtBlock(topicId uint64, blockHeigh
 
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedForecastTopicId() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedForecastTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -222,7 +222,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedFo
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = 123
 	// END MODIFICATION
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 
@@ -237,7 +237,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedFo
 	require.Equal(forecastsCount1, 0)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredForecaster() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredForecaster() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -263,7 +263,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregistered
 
 	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	forecastsCount1 := s.getCountForecastsAtBlock(topicId, blockHeight)
 
@@ -316,7 +316,7 @@ func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 		})
 	}
 
-	// Create a MsgInsertBulkWorkerPayload message
+	// Create a MsgInsertWorkerPayload message
 	workerMsg := &types.MsgInsertWorkerPayload{
 		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
@@ -350,7 +350,7 @@ func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 	require.Error(err, types.ErrQueryTooLarge)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -389,7 +389,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
-	// Create a MsgInsertBulkWorkerPayload message
+	// Create a MsgInsertWorkerPayload message
 	workerMsg := &types.MsgInsertWorkerPayload{
 		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
@@ -424,7 +424,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	require.ErrorIs(err, types.ErrNoValidBundles)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerAlreadyFullfilledNonce() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -464,7 +464,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
-	// Create a MsgInsertBulkWorkerPayload message
+	// Create a MsgInsertWorkerPayload message
 	workerMsg := &types.MsgInsertWorkerPayload{
 		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
@@ -510,13 +510,13 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 	require.ErrorIs(err, types.ErrUnfulfilledNonceNotFound)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadUpdateTopicCommit() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadUpdateTopicCommit() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)

@@ -761,6 +761,8 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	s.Require().NoError(err)
 	worker1Bundle := &types.WorkerDataBundle{
 		Worker:                             worker1Addr.String(),
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker1InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker1Sig,
 		Pubkey:                             GetAccPubKey(s, worker1Addr),
@@ -794,6 +796,8 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	s.Require().NoError(err)
 	worker2Bundle := &types.WorkerDataBundle{
 		Worker:                             worker2Addr.String(),
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker2InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker2Sig,
 		Pubkey:                             GetAccPubKey(s, worker2Addr),
@@ -827,6 +831,8 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	s.Require().NoError(err)
 	worker3Bundle := &types.WorkerDataBundle{
 		Worker:                             worker3Addr.String(),
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker3InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker3Sig,
 		Pubkey:                             GetAccPubKey(s, worker3Addr),
@@ -860,6 +866,8 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	s.Require().NoError(err)
 	worker4Bundle := &types.WorkerDataBundle{
 		Worker:                             worker4Addr.String(),
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker4InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker4Sig,
 		Pubkey:                             GetAccPubKey(s, worker4Addr),
@@ -893,6 +901,8 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	s.Require().NoError(err)
 	worker5Bundle := &types.WorkerDataBundle{
 		Worker:                             worker5Addr.String(),
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker5InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker5Sig,
 		Pubkey:                             GetAccPubKey(s, worker5Addr),
@@ -935,6 +945,8 @@ func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 	s.Require().NoError(err)
 	worker1Bundle := &types.WorkerDataBundle{
 		Worker:                             worker1Addr.String(),
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker1InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker1Sig,
 		Pubkey:                             GetAccPubKey(s, worker1Addr),
@@ -968,6 +980,8 @@ func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 	s.Require().NoError(err)
 	worker2Bundle := &types.WorkerDataBundle{
 		Worker:                             worker2Addr.String(),
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker2InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker2Sig,
 		Pubkey:                             GetAccPubKey(s, worker2Addr),
@@ -1011,6 +1025,8 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 	s.Require().NoError(err)
 	worker1Bundle := &types.WorkerDataBundle{
 		Worker:                             oldInferencer1.String(),
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker1InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker1Sig,
 		Pubkey:                             GetAccPubKey(s, oldInferencer1),
@@ -1044,6 +1060,8 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 	s.Require().NoError(err)
 	worker2Bundle := &types.WorkerDataBundle{
 		Worker:                             oldInferencer2.String(),
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker2InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker2Sig,
 		Pubkey:                             GetAccPubKey(s, oldInferencer2),
@@ -1114,6 +1132,8 @@ func GenerateSimpleWorkerDataBundles(
 		s.Require().NoError(err)
 		workerBundle := &types.WorkerDataBundle{
 			Worker:                             workerValue.Address.String(),
+			Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+			TopicId:                            topicId,
 			InferenceForecastsBundle:           newWorkerInferenceForecastBundle,
 			InferencesForecastsBundleSignature: workerSig,
 			Pubkey:                             GetAccPubKey(s, workerValue.Address),

@@ -49,7 +49,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 	}
 
 	// Check if the window time is open
-	if blockHeight <= nonce.BlockHeight ||
+	if blockHeight < nonce.BlockHeight ||
 		blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
 		return nil, errorsmod.Wrapf(
 			types.ErrWorkerNonceWindowNotAvailable,

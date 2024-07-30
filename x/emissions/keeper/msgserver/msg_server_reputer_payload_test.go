@@ -134,7 +134,7 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	ctx, msgServer := s.ctx, s.msgServer
 	valueBundleSignature := s.signValueBundle(reputerValueBundle, reputerPrivateKey)
 
-	// Create a MsgInsertBulkReputerPayload message
+	// Create a MsgInsertReputerPayload message
 	lossesMsg := &types.MsgInsertReputerPayload{
 		Sender: reputerAddr.String(),
 		ReputerValueBundle: &types.ReputerValueBundle{
@@ -148,7 +148,7 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	return err
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayload() {
+func (s *MsgServerTestSuite) TestMsgInsertReputerPayload() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
