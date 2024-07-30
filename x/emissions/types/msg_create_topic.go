@@ -13,20 +13,23 @@ func (msg *MsgCreateNewTopic) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
-	if len(msg.LossLogic) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss logic cannot be empty")
+	if len(msg.LossLogic) == 0 || len(msg.LossLogic) > 1024 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss logic invalid size")
 	}
-	if len(msg.LossMethod) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method cannot be empty")
+	if len(msg.LossMethod) == 0 || len(msg.LossMethod) > 1024 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method invalid size")
 	}
-	if len(msg.InferenceLogic) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference logic cannot be empty")
+	if len(msg.InferenceLogic) == 0 || len(msg.InferenceLogic) > 1024 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference logic invalid size")
 	}
-	if len(msg.InferenceMethod) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference method cannot be empty")
+	if len(msg.InferenceMethod) == 0 || len(msg.InferenceMethod) > 1024 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference method invalid size")
 	}
-	if len(msg.DefaultArg) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "default argument cannot be empty")
+	if len(msg.DefaultArg) == 0 || len(msg.DefaultArg) > 1024 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "default argument invalid size")
+	}
+	if len(msg.Metadata) > 1024 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata cannot be longer than 1024 characters")
 	}
 	if msg.EpochLength <= 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epoch length must be greater than zero")

@@ -304,7 +304,10 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 		if err != nil {
 			return nil, err
 		}
-		ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer, delegateInfo)
+		err = ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer, delegateInfo)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &types.MsgRewardDelegateStakeResponse{}, nil
 }

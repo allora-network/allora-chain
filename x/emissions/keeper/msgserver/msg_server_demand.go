@@ -37,5 +37,9 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 
 	// Activate topic if it exhibits minimum weight
 	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, msg.TopicId, msg.Amount)
-	return &types.MsgFundTopicResponse{}, err
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgFundTopicResponse{}, nil
 }
