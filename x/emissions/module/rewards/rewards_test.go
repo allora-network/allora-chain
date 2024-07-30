@@ -1314,13 +1314,23 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.Require().NoError(err)
 	}
 
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
+		s.Require().NoError(err)
+		err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, *payload.ValueBundle)
 		s.Require().NoError(err)
 	}
 
@@ -1447,13 +1457,20 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.Require().NoError(err)
 	}
 
+	newBlockheight = block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
 	// Insert loss bundle from reputers
 	lossBundles = GenerateLossBundles(s, block, topicId, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
+		s.Require().NoError(err)
+		err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, *payload.ValueBundle)
 		s.Require().NoError(err)
 	}
 
@@ -1611,9 +1628,17 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		s.Require().NoError(err)
 	}
 
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
@@ -1824,17 +1849,34 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		s.Require().NoError(err)
 	}
 
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId1)
+	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId1, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
 		s.Require().NoError(err)
 	}
+
+	topic2, err := s.emissionsKeeper.GetTopic(s.ctx, topicId2)
+	s.Require().NoError(err)
+
+	newBlockheight = block + topic2.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
 	lossBundles2 := GenerateLossBundles(s, block, topicId2, reputerAddrs)
 	for _, payload := range lossBundles2.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
@@ -1945,6 +1987,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 	worker1Bundle := &types.WorkerDataBundle{
 		Worker:                             worker.String(),
+		TopicId:                            topicId,
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
 		InferenceForecastsBundle:           worker1InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker1Sig,
 		Pubkey:                             GetAccPubKey(s, worker),
@@ -1979,6 +2023,16 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		Signature:   sig,
 		ValueBundle: valueBundle,
 	}
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	newBlockheight := blockHeight + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
+	_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, reputerBundle.ValueBundle.ReputerRequestNonce.ReputerNonce)
+	_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, reputerBundle.ValueBundle.ReputerRequestNonce.ReputerNonce)
+
 	_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
 		Sender:             reputer.String(),
 		ReputerValueBundle: reputerBundle,
@@ -2120,13 +2174,22 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		s.Require().NoError(err)
 	}
 
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
 	// Insert loss bundle from reputers
 	lossBundles := GenerateHugeLossBundles(s, block, topicId, reputerAddrs, workerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
 			Sender:             reputerAddrs[0].String(),
 			ReputerValueBundle: payload,
 		})
+		s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, *payload.ValueBundle)
 		s.Require().NoError(err)
 	}
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
