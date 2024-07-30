@@ -48,9 +48,7 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 
 	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := types.MsgInsertWorkerPayload{
-		Sender:  workerAddr,
-		Nonce:   &nonce,
-		TopicId: topicId,
+		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker: InfererAddr,
 			InferenceForecastsBundle: &types.InferenceForecastBundle{
@@ -320,9 +318,7 @@ func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 
 	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertWorkerPayload{
-		Sender:  workerAddr,
-		Nonce:   &nonce,
-		TopicId: topicId,
+		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker: InfererAddr,
 			InferenceForecastsBundle: &types.InferenceForecastBundle{
@@ -395,9 +391,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 
 	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertWorkerPayload{
-		Sender:  workerAddr,
-		Nonce:   &nonce,
-		TopicId: topicId,
+		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker: InfererAddr,
 			InferenceForecastsBundle: &types.InferenceForecastBundle{
@@ -472,9 +466,7 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 
 	// Create a MsgInsertBulkWorkerPayload message
 	workerMsg := &types.MsgInsertWorkerPayload{
-		Sender:  workerAddr,
-		Nonce:   &nonce,
-		TopicId: topicId,
+		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker: InfererAddr,
 			InferenceForecastsBundle: &types.InferenceForecastBundle{
@@ -534,11 +526,11 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadUpdateTopicCommit() {
 	require.NoError(err, "GetTopicLastCommit should not return an error")
 
 	require.Equal(blockHeight, lastCommit.BlockHeight, "BlockHeight should be same")
-	require.Equal(workerMsg.Nonce, lastCommit.Nonce, "Nonce should be same")
+	require.Equal(workerMsg.WorkerDataBundle.Nonce, lastCommit.Nonce, "Nonce should be same")
 
 	lastWorkerPayload, err := s.emissionsKeeper.GetTopicLastWorkerPayload(ctx, topicId)
 	require.NoError(err)
 
 	require.Equal(blockHeight, lastWorkerPayload.BlockHeight, "BlockHeight should be same")
-	require.Equal(workerMsg.Nonce, lastWorkerPayload.Nonce, "Nonce should be same")
+	require.Equal(workerMsg.WorkerDataBundle.Nonce, lastWorkerPayload.Nonce, "Nonce should be same")
 }
