@@ -3,12 +3,10 @@ package inference_synthesis_test
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -356,182 +354,8 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 	forecaster2 := s.addrs[7].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	// Set previous regrets
-	infererNetworkRegrets :=
-		map[string]inferencesynthesis.Regret{
-			inferer0: epochPrevGet("inference_regret_worker_0"),
-			inferer1: epochPrevGet("inference_regret_worker_1"),
-			inferer2: epochPrevGet("inference_regret_worker_2"),
-			inferer3: epochPrevGet("inference_regret_worker_3"),
-			inferer4: epochPrevGet("inference_regret_worker_4"),
-		}
-	for inferer, regret := range infererNetworkRegrets {
-		s.emissionsKeeper.SetInfererNetworkRegret(
-			s.ctx,
-			topicId,
-			inferer,
-			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
-		)
-	}
-
-	// Set forecaster network regrets
-	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{
-		forecaster0: epochPrevGet("inference_regret_worker_5"),
-		forecaster1: epochPrevGet("inference_regret_worker_6"),
-		forecaster2: epochPrevGet("inference_regret_worker_7"),
-	}
-	for forecaster, regret := range forecasterNetworkRegrets {
-		s.emissionsKeeper.SetForecasterNetworkRegret(
-			s.ctx,
-			topicId,
-			forecaster,
-			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
-		)
-	}
-
-	// Set naive inferer network regrets
-	infererNaiveNetworkRegrets :=
-		map[string]inferencesynthesis.Regret{
-			inferer0: epochPrevGet("naive_inference_regret_worker_0"),
-			inferer1: epochPrevGet("naive_inference_regret_worker_1"),
-			inferer2: epochPrevGet("naive_inference_regret_worker_2"),
-			inferer3: epochPrevGet("naive_inference_regret_worker_3"),
-			inferer4: epochPrevGet("naive_inference_regret_worker_4"),
-		}
-	for inferer, regret := range infererNaiveNetworkRegrets {
-		s.emissionsKeeper.SetNaiveInfererNetworkRegret(
-			s.ctx,
-			topicId,
-			inferer,
-			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
-		)
-	}
-
-	// Set one-out inferer inferer network regrets
-	setOneOutInfererInfererNetworkRegret := func(infererIndex int, infererIndex2 int, epochGetter func(string) alloraMath.Dec) {
-		infererName := infererAddresses[infererIndex]
-		infererName2 := infererAddresses[infererIndex2]
-		headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_oneout_" + strconv.Itoa(infererIndex2)
-		k.SetOneOutInfererInfererNetworkRegret(
-			s.ctx,
-			topicId,
-			infererName2,
-			infererName,
-			emissionstypes.TimestampedValue{
-				BlockHeight: blockHeight,
-				Value:       epochGetter(headerName),
-			},
-		)
-	}
-	for infererIndex := 0; infererIndex < 5; infererIndex++ {
-		for infererIndex2 := 0; infererIndex2 < 5; infererIndex2++ {
-			setOneOutInfererInfererNetworkRegret(infererIndex, infererIndex2, epochPrevGet)
-		}
-	}
-
-	// Set one-out inferer forecaster network regrets
-	setOneOutInfererForecasterNetworkRegret := func(infererIndex int, forecasterIndex int, epochGetter func(string) alloraMath.Dec) {
-		infererName := infererAddresses[infererIndex]
-		forecasterName := forecasterAddresses[forecasterIndex-5]
-		headerName := "inference_regret_worker_" + strconv.Itoa(forecasterIndex) + "_oneout_" + strconv.Itoa(infererIndex)
-		k.SetOneOutInfererForecasterNetworkRegret(
-			s.ctx,
-			topicId,
-			infererName,
-			forecasterName,
-			emissionstypes.TimestampedValue{
-				BlockHeight: blockHeight,
-				Value:       epochGetter(headerName),
-			},
-		)
-	}
-	for forecaster := 5; forecaster < 8; forecaster++ {
-		for inferer := 0; inferer < 5; inferer++ {
-			setOneOutInfererForecasterNetworkRegret(inferer, forecaster, epochPrevGet)
-		}
-	}
-
-	// Set one-out forecaster inferer network regrets
-	setOneOutForecasterInfererNetworkRegret := func(infererIndex int, forecasterIndex int, epochGetter func(string) alloraMath.Dec) {
-		infererName := infererAddresses[infererIndex]
-		forecasterName := forecasterAddresses[forecasterIndex-5]
-		headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_oneout_" + strconv.Itoa(forecasterIndex)
-		k.SetOneOutForecasterInfererNetworkRegret(
-			s.ctx,
-			topicId,
-			forecasterName,
-			infererName,
-			emissionstypes.TimestampedValue{
-				BlockHeight: blockHeight,
-				Value:       epochGetter(headerName),
-			},
-		)
-	}
-	for inferer := 0; inferer < 5; inferer++ {
-		for forecaster := 5; forecaster < 8; forecaster++ {
-			setOneOutForecasterInfererNetworkRegret(inferer, forecaster, epochPrevGet)
-		}
-	}
-
-	// Set one-out forecaster forecaster network regrets
-	setOneOutForecasterForecasterNetworkRegret := func(forecasterIndex int, forecasterIndex2 int, epochGetter func(string) alloraMath.Dec) {
-		forecasterName := forecasterAddresses[forecasterIndex-5]
-		forecasterName2 := forecasterAddresses[forecasterIndex2-5]
-		headerName := "inference_regret_worker_" + strconv.Itoa(forecasterIndex) + "_oneout_" + strconv.Itoa(forecasterIndex2)
-		k.SetOneOutForecasterForecasterNetworkRegret(
-			s.ctx,
-			topicId,
-			forecasterName2,
-			forecasterName,
-			emissionstypes.TimestampedValue{
-				BlockHeight: blockHeight,
-				Value:       epochGetter(headerName),
-			},
-		)
-	}
-	for forecaster := 5; forecaster < 8; forecaster++ {
-		for forecaster2 := 5; forecaster2 < 8; forecaster2++ {
-			setOneOutForecasterForecasterNetworkRegret(forecaster, forecaster2, epochPrevGet)
-		}
-	}
-
-	// Set one-in network regrets
-	setOneInForecasterNetworkRegret := func(forecasterIndex int, infererIndex int, epochGetter func(string) alloraMath.Dec) {
-		forecasterName := forecasterAddresses[forecasterIndex]
-		infererName := infererAddresses[infererIndex]
-		headerName := "inference_regret_worker_" + strconv.Itoa(infererIndex) + "_onein_" + strconv.Itoa(forecasterIndex)
-		k.SetOneInForecasterNetworkRegret(
-			s.ctx,
-			topicId,
-			forecasterName,
-			infererName,
-			emissionstypes.TimestampedValue{
-				BlockHeight: blockHeight,
-				Value:       epochGetter(headerName),
-			},
-		)
-	}
-	setOneInForecasterSelfRegret := func(forecasterIndex int, epochGet func(string) alloraMath.Dec) {
-		forecasterName := forecasterAddresses[forecasterIndex]
-		headerName := "inference_regret_worker_5_onein_" + strconv.Itoa(forecasterIndex)
-		k.SetOneInForecasterNetworkRegret(
-			s.ctx,
-			topicId,
-			forecasterName,
-			forecasterName,
-			emissionstypes.TimestampedValue{
-				BlockHeight: blockHeight,
-				Value:       epochGet(headerName),
-			},
-		)
-	}
-	for forecasterIndex := 0; forecasterIndex < 3; forecasterIndex++ {
-		// Set self one-in network regrets
-		setOneInForecasterSelfRegret(forecasterIndex, epochPrevGet)
-		for inferer := 0; inferer < 5; inferer++ {
-			setOneInForecasterNetworkRegret(forecasterIndex, inferer, epochPrevGet)
-		}
-	}
+	err := testdata.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epochPrevGet)
+	require.NoError(err)
 
 	networkLosses, err := testdata.GetNetworkLossFromCsv(
 		topicId,
@@ -606,7 +430,6 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 			checkOneOutRegret(forecaster, forecasterInner, expectedRegret, k.GetOneOutForecasterForecasterNetworkRegret)
 		}
 
-		// Last address in the first value (5th address) is the same as second value (self regret)
 		expectedOneInRegret := epoch301Get(fmt.Sprintf("inference_regret_worker_%v_onein_%v", 5, i))
 		checkOneOutRegret(forecaster, forecaster, expectedOneInRegret, k.GetOneInForecasterNetworkRegret)
 

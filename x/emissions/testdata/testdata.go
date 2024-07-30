@@ -6,7 +6,10 @@ import (
 	"strings"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const simulatorHeaders = "target,inference_0,inference_1,inference_2,inference_3,inference_4,forecasted_loss_0_for_0,forecasted_loss_0_for_1,forecasted_loss_0_for_2,forecasted_loss_0_for_3,forecasted_loss_0_for_4,forecasted_loss_1_for_0,forecasted_loss_1_for_1,forecasted_loss_1_for_2,forecasted_loss_1_for_3,forecasted_loss_1_for_4,forecasted_loss_2_for_0,forecasted_loss_2_for_1,forecasted_loss_2_for_2,forecasted_loss_2_for_3,forecasted_loss_2_for_4,forecast_implied_inference_0,forecast_implied_inference_1,forecast_implied_inference_2,forecast_implied_inference_0_oneout_0,forecast_implied_inference_0_oneout_1,forecast_implied_inference_0_oneout_2,forecast_implied_inference_0_oneout_3,forecast_implied_inference_0_oneout_4,forecast_implied_inference_1_oneout_0,forecast_implied_inference_1_oneout_1,forecast_implied_inference_1_oneout_2,forecast_implied_inference_1_oneout_3,forecast_implied_inference_1_oneout_4,forecast_implied_inference_2_oneout_0,forecast_implied_inference_2_oneout_1,forecast_implied_inference_2_oneout_2,forecast_implied_inference_2_oneout_3,forecast_implied_inference_2_oneout_4,network_inference,network_inference_errorbar_0,network_inference_errorbar_1,network_inference_errorbar_2,network_inference_errorbar_3,network_inference_errorbar_4,network_naive_inference,network_inference_oneout_0,network_inference_oneout_1,network_inference_oneout_2,network_inference_oneout_3,network_inference_oneout_4,network_inference_oneout_5,network_inference_oneout_6,network_inference_oneout_7,network_naive_inference_onein_0,network_naive_inference_onein_1,network_naive_inference_onein_2,network_loss,reputer_stake_0,reputer_stake_1,reputer_stake_2,reputer_stake_3,reputer_stake_4,reputer_0_loss_inference_0,reputer_0_loss_inference_1,reputer_0_loss_inference_2,reputer_0_loss_inference_3,reputer_0_loss_inference_4,reputer_1_loss_inference_0,reputer_1_loss_inference_1,reputer_1_loss_inference_2,reputer_1_loss_inference_3,reputer_1_loss_inference_4,reputer_2_loss_inference_0,reputer_2_loss_inference_1,reputer_2_loss_inference_2,reputer_2_loss_inference_3,reputer_2_loss_inference_4,reputer_3_loss_inference_0,reputer_3_loss_inference_1,reputer_3_loss_inference_2,reputer_3_loss_inference_3,reputer_3_loss_inference_4,reputer_4_loss_inference_0,reputer_4_loss_inference_1,reputer_4_loss_inference_2,reputer_4_loss_inference_3,reputer_4_loss_inference_4,reputer_0_loss_forecast_implied_inference_0,reputer_0_loss_forecast_implied_inference_1,reputer_0_loss_forecast_implied_inference_2,reputer_1_loss_forecast_implied_inference_0,reputer_1_loss_forecast_implied_inference_1,reputer_1_loss_forecast_implied_inference_2,reputer_2_loss_forecast_implied_inference_0,reputer_2_loss_forecast_implied_inference_1,reputer_2_loss_forecast_implied_inference_2,reputer_3_loss_forecast_implied_inference_0,reputer_3_loss_forecast_implied_inference_1,reputer_3_loss_forecast_implied_inference_2,reputer_4_loss_forecast_implied_inference_0,reputer_4_loss_forecast_implied_inference_1,reputer_4_loss_forecast_implied_inference_2,reputer_0_loss_forecast_implied_inference_0_oneout_0,reputer_0_loss_forecast_implied_inference_0_oneout_1,reputer_0_loss_forecast_implied_inference_0_oneout_2,reputer_0_loss_forecast_implied_inference_0_oneout_3,reputer_0_loss_forecast_implied_inference_0_oneout_4,reputer_0_loss_forecast_implied_inference_1_oneout_0,reputer_0_loss_forecast_implied_inference_1_oneout_1,reputer_0_loss_forecast_implied_inference_1_oneout_2,reputer_0_loss_forecast_implied_inference_1_oneout_3,reputer_0_loss_forecast_implied_inference_1_oneout_4,reputer_0_loss_forecast_implied_inference_2_oneout_0,reputer_0_loss_forecast_implied_inference_2_oneout_1,reputer_0_loss_forecast_implied_inference_2_oneout_2,reputer_0_loss_forecast_implied_inference_2_oneout_3,reputer_0_loss_forecast_implied_inference_2_oneout_4,reputer_1_loss_forecast_implied_inference_0_oneout_0,reputer_1_loss_forecast_implied_inference_0_oneout_1,reputer_1_loss_forecast_implied_inference_0_oneout_2,reputer_1_loss_forecast_implied_inference_0_oneout_3,reputer_1_loss_forecast_implied_inference_0_oneout_4,reputer_1_loss_forecast_implied_inference_1_oneout_0,reputer_1_loss_forecast_implied_inference_1_oneout_1,reputer_1_loss_forecast_implied_inference_1_oneout_2,reputer_1_loss_forecast_implied_inference_1_oneout_3,reputer_1_loss_forecast_implied_inference_1_oneout_4,reputer_1_loss_forecast_implied_inference_2_oneout_0,reputer_1_loss_forecast_implied_inference_2_oneout_1,reputer_1_loss_forecast_implied_inference_2_oneout_2,reputer_1_loss_forecast_implied_inference_2_oneout_3,reputer_1_loss_forecast_implied_inference_2_oneout_4,reputer_2_loss_forecast_implied_inference_0_oneout_0,reputer_2_loss_forecast_implied_inference_0_oneout_1,reputer_2_loss_forecast_implied_inference_0_oneout_2,reputer_2_loss_forecast_implied_inference_0_oneout_3,reputer_2_loss_forecast_implied_inference_0_oneout_4,reputer_2_loss_forecast_implied_inference_1_oneout_0,reputer_2_loss_forecast_implied_inference_1_oneout_1,reputer_2_loss_forecast_implied_inference_1_oneout_2,reputer_2_loss_forecast_implied_inference_1_oneout_3,reputer_2_loss_forecast_implied_inference_1_oneout_4,reputer_2_loss_forecast_implied_inference_2_oneout_0,reputer_2_loss_forecast_implied_inference_2_oneout_1,reputer_2_loss_forecast_implied_inference_2_oneout_2,reputer_2_loss_forecast_implied_inference_2_oneout_3,reputer_2_loss_forecast_implied_inference_2_oneout_4,reputer_3_loss_forecast_implied_inference_0_oneout_0,reputer_3_loss_forecast_implied_inference_0_oneout_1,reputer_3_loss_forecast_implied_inference_0_oneout_2,reputer_3_loss_forecast_implied_inference_0_oneout_3,reputer_3_loss_forecast_implied_inference_0_oneout_4,reputer_3_loss_forecast_implied_inference_1_oneout_0,reputer_3_loss_forecast_implied_inference_1_oneout_1,reputer_3_loss_forecast_implied_inference_1_oneout_2,reputer_3_loss_forecast_implied_inference_1_oneout_3,reputer_3_loss_forecast_implied_inference_1_oneout_4,reputer_3_loss_forecast_implied_inference_2_oneout_0,reputer_3_loss_forecast_implied_inference_2_oneout_1,reputer_3_loss_forecast_implied_inference_2_oneout_2,reputer_3_loss_forecast_implied_inference_2_oneout_3,reputer_3_loss_forecast_implied_inference_2_oneout_4,reputer_4_loss_forecast_implied_inference_0_oneout_0,reputer_4_loss_forecast_implied_inference_0_oneout_1,reputer_4_loss_forecast_implied_inference_0_oneout_2,reputer_4_loss_forecast_implied_inference_0_oneout_3,reputer_4_loss_forecast_implied_inference_0_oneout_4,reputer_4_loss_forecast_implied_inference_1_oneout_0,reputer_4_loss_forecast_implied_inference_1_oneout_1,reputer_4_loss_forecast_implied_inference_1_oneout_2,reputer_4_loss_forecast_implied_inference_1_oneout_3,reputer_4_loss_forecast_implied_inference_1_oneout_4,reputer_4_loss_forecast_implied_inference_2_oneout_0,reputer_4_loss_forecast_implied_inference_2_oneout_1,reputer_4_loss_forecast_implied_inference_2_oneout_2,reputer_4_loss_forecast_implied_inference_2_oneout_3,reputer_4_loss_forecast_implied_inference_2_oneout_4,reputer_0_loss_network_inference,reputer_1_loss_network_inference,reputer_2_loss_network_inference,reputer_3_loss_network_inference,reputer_4_loss_network_inference,reputer_0_loss_naive_network_inference,reputer_1_loss_naive_network_inference,reputer_2_loss_naive_network_inference,reputer_3_loss_naive_network_inference,reputer_4_loss_naive_network_inference,reputer_0_loss_network_inference_oneout_0,reputer_0_loss_network_inference_oneout_1,reputer_0_loss_network_inference_oneout_2,reputer_0_loss_network_inference_oneout_3,reputer_0_loss_network_inference_oneout_4,reputer_0_loss_network_inference_oneout_5,reputer_0_loss_network_inference_oneout_6,reputer_0_loss_network_inference_oneout_7,reputer_1_loss_network_inference_oneout_0,reputer_1_loss_network_inference_oneout_1,reputer_1_loss_network_inference_oneout_2,reputer_1_loss_network_inference_oneout_3,reputer_1_loss_network_inference_oneout_4,reputer_1_loss_network_inference_oneout_5,reputer_1_loss_network_inference_oneout_6,reputer_1_loss_network_inference_oneout_7,reputer_2_loss_network_inference_oneout_0,reputer_2_loss_network_inference_oneout_1,reputer_2_loss_network_inference_oneout_2,reputer_2_loss_network_inference_oneout_3,reputer_2_loss_network_inference_oneout_4,reputer_2_loss_network_inference_oneout_5,reputer_2_loss_network_inference_oneout_6,reputer_2_loss_network_inference_oneout_7,reputer_3_loss_network_inference_oneout_0,reputer_3_loss_network_inference_oneout_1,reputer_3_loss_network_inference_oneout_2,reputer_3_loss_network_inference_oneout_3,reputer_3_loss_network_inference_oneout_4,reputer_3_loss_network_inference_oneout_5,reputer_3_loss_network_inference_oneout_6,reputer_3_loss_network_inference_oneout_7,reputer_4_loss_network_inference_oneout_0,reputer_4_loss_network_inference_oneout_1,reputer_4_loss_network_inference_oneout_2,reputer_4_loss_network_inference_oneout_3,reputer_4_loss_network_inference_oneout_4,reputer_4_loss_network_inference_oneout_5,reputer_4_loss_network_inference_oneout_6,reputer_4_loss_network_inference_oneout_7,reputer_0_loss_naive_network_inference_onein_0,reputer_0_loss_naive_network_inference_onein_1,reputer_0_loss_naive_network_inference_onein_2,reputer_1_loss_naive_network_inference_onein_0,reputer_1_loss_naive_network_inference_onein_1,reputer_1_loss_naive_network_inference_onein_2,reputer_2_loss_naive_network_inference_onein_0,reputer_2_loss_naive_network_inference_onein_1,reputer_2_loss_naive_network_inference_onein_2,reputer_3_loss_naive_network_inference_onein_0,reputer_3_loss_naive_network_inference_onein_1,reputer_3_loss_naive_network_inference_onein_2,reputer_4_loss_naive_network_inference_onein_0,reputer_4_loss_naive_network_inference_onein_1,reputer_4_loss_naive_network_inference_onein_2,inference_loss_0,inference_loss_1,inference_loss_2,inference_loss_3,inference_loss_4,forecast_implied_inference_loss_0,forecast_implied_inference_loss_1,forecast_implied_inference_loss_2,forecast_implied_inference_loss_0_oneout_0,forecast_implied_inference_loss_0_oneout_1,forecast_implied_inference_loss_0_oneout_2,forecast_implied_inference_loss_0_oneout_3,forecast_implied_inference_loss_0_oneout_4,forecast_implied_inference_loss_1_oneout_0,forecast_implied_inference_loss_1_oneout_1,forecast_implied_inference_loss_1_oneout_2,forecast_implied_inference_loss_1_oneout_3,forecast_implied_inference_loss_1_oneout_4,forecast_implied_inference_loss_2_oneout_0,forecast_implied_inference_loss_2_oneout_1,forecast_implied_inference_loss_2_oneout_2,forecast_implied_inference_loss_2_oneout_3,forecast_implied_inference_loss_2_oneout_4,network_naive_loss,network_loss_oneout_0,network_loss_oneout_1,network_loss_oneout_2,network_loss_oneout_3,network_loss_oneout_4,network_loss_oneout_5,network_loss_oneout_6,network_loss_oneout_7,network_naive_loss_onein_0,network_naive_loss_onein_1,network_naive_loss_onein_2,forecasted_regret_0_inferer_0,forecasted_regret_0_inferer_1,forecasted_regret_0_inferer_2,forecasted_regret_0_inferer_3,forecasted_regret_0_inferer_4,forecasted_regret_1_inferer_0,forecasted_regret_1_inferer_1,forecasted_regret_1_inferer_2,forecasted_regret_1_inferer_3,forecasted_regret_1_inferer_4,forecasted_regret_2_inferer_0,forecasted_regret_2_inferer_1,forecasted_regret_2_inferer_2,forecasted_regret_2_inferer_3,forecasted_regret_2_inferer_4,inference_regret_worker_0,inference_regret_worker_1,inference_regret_worker_2,inference_regret_worker_3,inference_regret_worker_4,inference_regret_worker_5,inference_regret_worker_6,inference_regret_worker_7,naive_inference_regret_worker_0,naive_inference_regret_worker_1,naive_inference_regret_worker_2,naive_inference_regret_worker_3,naive_inference_regret_worker_4,inference_regret_worker_0_oneout_0,inference_regret_worker_1_oneout_0,inference_regret_worker_2_oneout_0,inference_regret_worker_3_oneout_0,inference_regret_worker_4_oneout_0,inference_regret_worker_5_oneout_0,inference_regret_worker_6_oneout_0,inference_regret_worker_7_oneout_0,inference_regret_worker_0_oneout_1,inference_regret_worker_1_oneout_1,inference_regret_worker_2_oneout_1,inference_regret_worker_3_oneout_1,inference_regret_worker_4_oneout_1,inference_regret_worker_5_oneout_1,inference_regret_worker_6_oneout_1,inference_regret_worker_7_oneout_1,inference_regret_worker_0_oneout_2,inference_regret_worker_1_oneout_2,inference_regret_worker_2_oneout_2,inference_regret_worker_3_oneout_2,inference_regret_worker_4_oneout_2,inference_regret_worker_5_oneout_2,inference_regret_worker_6_oneout_2,inference_regret_worker_7_oneout_2,inference_regret_worker_0_oneout_3,inference_regret_worker_1_oneout_3,inference_regret_worker_2_oneout_3,inference_regret_worker_3_oneout_3,inference_regret_worker_4_oneout_3,inference_regret_worker_5_oneout_3,inference_regret_worker_6_oneout_3,inference_regret_worker_7_oneout_3,inference_regret_worker_0_oneout_4,inference_regret_worker_1_oneout_4,inference_regret_worker_2_oneout_4,inference_regret_worker_3_oneout_4,inference_regret_worker_4_oneout_4,inference_regret_worker_5_oneout_4,inference_regret_worker_6_oneout_4,inference_regret_worker_7_oneout_4,inference_regret_worker_0_oneout_5,inference_regret_worker_1_oneout_5,inference_regret_worker_2_oneout_5,inference_regret_worker_3_oneout_5,inference_regret_worker_4_oneout_5,inference_regret_worker_5_oneout_5,inference_regret_worker_6_oneout_5,inference_regret_worker_7_oneout_5,inference_regret_worker_0_oneout_6,inference_regret_worker_1_oneout_6,inference_regret_worker_2_oneout_6,inference_regret_worker_3_oneout_6,inference_regret_worker_4_oneout_6,inference_regret_worker_5_oneout_6,inference_regret_worker_6_oneout_6,inference_regret_worker_7_oneout_6,inference_regret_worker_0_oneout_7,inference_regret_worker_1_oneout_7,inference_regret_worker_2_oneout_7,inference_regret_worker_3_oneout_7,inference_regret_worker_4_oneout_7,inference_regret_worker_5_oneout_7,inference_regret_worker_6_oneout_7,inference_regret_worker_7_oneout_7,inference_regret_worker_0_onein_0,inference_regret_worker_1_onein_0,inference_regret_worker_2_onein_0,inference_regret_worker_3_onein_0,inference_regret_worker_4_onein_0,inference_regret_worker_5_onein_0,inference_regret_worker_0_onein_1,inference_regret_worker_1_onein_1,inference_regret_worker_2_onein_1,inference_regret_worker_3_onein_1,inference_regret_worker_4_onein_1,inference_regret_worker_5_onein_1,inference_regret_worker_0_onein_2,inference_regret_worker_1_onein_2,inference_regret_worker_2_onein_2,inference_regret_worker_3_onein_2,inference_regret_worker_4_onein_2,inference_regret_worker_5_onein_2,inferer_score_0,inferer_score_1,inferer_score_2,inferer_score_3,inferer_score_4,forecaster_score_0,forecaster_score_1,forecaster_score_2,inferer_reward_fraction_0,inferer_reward_fraction_1,inferer_reward_fraction_2,inferer_reward_fraction_3,inferer_reward_fraction_4,forecaster_reward_fraction_0,forecaster_reward_fraction_1,forecaster_reward_fraction_2,reputer_listening_coefficient_0,reputer_listening_coefficient_1,reputer_listening_coefficient_2,reputer_listening_coefficient_3,reputer_listening_coefficient_4,reputer_adjusted_stake_0,reputer_adjusted_stake_1,reputer_adjusted_stake_2,reputer_adjusted_stake_3,reputer_adjusted_stake_4,reputer_score_0,reputer_score_1,reputer_score_2,reputer_score_3,reputer_score_4,reputer_reward_fraction_0,reputer_reward_fraction_1,reputer_reward_fraction_2,reputer_reward_fraction_3,reputer_reward_fraction_4,inferer_reward_fraction_smooth_0,inferer_reward_fraction_smooth_1,inferer_reward_fraction_smooth_2,inferer_reward_fraction_smooth_3,inferer_reward_fraction_smooth_4,forecaster_reward_fraction_smooth_0,forecaster_reward_fraction_smooth_1,forecaster_reward_fraction_smooth_2,reputer_reward_fraction_smooth_0,reputer_reward_fraction_smooth_1,reputer_reward_fraction_smooth_2,reputer_reward_fraction_smooth_3,reputer_reward_fraction_smooth_4,inferers_entropy,forecasters_entropy,reputers_entropy,forecaster_task_score,forecasters_utility,inferers_reward_fraction,forecasters_reward_fraction,reputers_reward_fraction,topic_rewards,inferer_reward_0,inferer_reward_1,inferer_reward_2,inferer_reward_3,inferer_reward_4,forecaster_reward_0,forecaster_reward_1,forecaster_reward_2,reputer_reward_0,reputer_reward_1,reputer_reward_2,reputer_reward_3,reputer_reward_4"
@@ -56,6 +59,151 @@ func GetSimulatedValuesGetterForEpochs() map[int]func(header string) alloraMath.
 		gettersMap[epochNumber] = GetSimulatedValuesGetterForEpoch(epoch, simulatorHeaders)
 	}
 	return gettersMap
+}
+
+func GetInferencesFromCsv(
+	topicId uint64,
+	blockHeight int64,
+	inferers []string,
+	epochGet func(header string) alloraMath.Dec,
+) (emissionstypes.Inferences, error) {
+	if len(inferers) != 5 {
+		return emissionstypes.Inferences{}, fmt.Errorf("expected 5 inferers, got %d", len(inferers))
+	}
+	return emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{
+				Inferer:     inferers[0],
+				Value:       epochGet("inference_0"),
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+			},
+			{
+				Inferer:     inferers[1],
+				Value:       epochGet("inference_1"),
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+			},
+			{
+				Inferer:     inferers[2],
+				Value:       epochGet("inference_2"),
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+			},
+			{
+				Inferer:     inferers[3],
+				Value:       epochGet("inference_3"),
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+			},
+			{
+				Inferer:     inferers[4],
+				Value:       epochGet("inference_4"),
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+			},
+		},
+	}, nil
+}
+
+func GetForecastsFromCsv(
+	topicId uint64,
+	blockHeight int64,
+	inferers []string,
+	forecasters []string,
+	epochGet func(header string) alloraMath.Dec,
+) (emissionstypes.Forecasts, error) {
+	if len(inferers) != 5 {
+		return emissionstypes.Forecasts{}, fmt.Errorf("expected 5 inferers, got %d", len(inferers))
+	}
+	if len(forecasters) != 3 {
+		return emissionstypes.Forecasts{}, fmt.Errorf("expected 3 forecasters, got %d", len(forecasters))
+	}
+	return emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				Forecaster: forecasters[0],
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{
+						Inferer: inferers[0],
+						Value:   epochGet("forecasted_loss_0_for_0"),
+					},
+					{
+						Inferer: inferers[1],
+						Value:   epochGet("forecasted_loss_0_for_1"),
+					},
+					{
+						Inferer: inferers[2],
+						Value:   epochGet("forecasted_loss_0_for_2"),
+					},
+					{
+						Inferer: inferers[3],
+						Value:   epochGet("forecasted_loss_0_for_3"),
+					},
+					{
+						Inferer: inferers[4],
+						Value:   epochGet("forecasted_loss_0_for_4"),
+					},
+				},
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+			},
+			{
+				Forecaster: forecasters[1],
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{
+						Inferer: inferers[0],
+						Value:   epochGet("forecasted_loss_1_for_0"),
+					},
+					{
+						Inferer: inferers[1],
+						Value:   epochGet("forecasted_loss_1_for_1"),
+					},
+					{
+						Inferer: inferers[2],
+						Value:   epochGet("forecasted_loss_1_for_2"),
+					},
+					{
+						Inferer: inferers[3],
+						Value:   epochGet("forecasted_loss_1_for_3"),
+					},
+					{
+						Inferer: inferers[4],
+						Value:   epochGet("forecasted_loss_1_for_4"),
+					},
+				},
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+			},
+			{
+				Forecaster: forecasters[2],
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{
+						Inferer: inferers[0],
+						Value:   epochGet("forecasted_loss_2_for_0"),
+					},
+					{
+						Inferer: inferers[1],
+						Value:   epochGet("forecasted_loss_2_for_1"),
+					},
+					{
+						Inferer: inferers[2],
+						Value:   epochGet("forecasted_loss_2_for_2"),
+					},
+					{
+						Inferer: inferers[3],
+						Value:   epochGet("forecasted_loss_2_for_3"),
+					},
+					{
+						Inferer: inferers[4],
+						Value:   epochGet("forecasted_loss_2_for_4"),
+					},
+				},
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+			},
+		},
+	}, nil
 }
 
 func GetNetworkLossFromCsv(
@@ -1115,4 +1263,157 @@ func GetReputersDataFromCsv(
 			},
 		},
 	}, nil
+}
+
+func SetRegretsFromPreviousEpoch(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	topicId uint64,
+	blockHeight int64,
+	inferers []string,
+	forecasters []string,
+	epochPrevGet func(header string) alloraMath.Dec,
+) error {
+	// Set inferer network regrets
+	infererNetworkRegrets := map[string]inferencesynthesis.Regret{}
+	for i, inferer := range inferers {
+		infererNetworkRegrets[inferer] = epochPrevGet(fmt.Sprintf("inference_regret_worker_%v", i))
+	}
+
+	for inferer, regret := range infererNetworkRegrets {
+		k.SetInfererNetworkRegret(
+			ctx,
+			topicId,
+			inferer,
+			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
+		)
+	}
+
+	// Set forecaster network regrets
+	forecasterNetworkRegrets := map[string]inferencesynthesis.Regret{}
+	for i, forecaster := range forecasters {
+		forecasterNetworkRegrets[forecaster] = epochPrevGet(fmt.Sprintf("inference_regret_worker_%v", i+5))
+	}
+
+	for forecaster, regret := range forecasterNetworkRegrets {
+		k.SetForecasterNetworkRegret(
+			ctx,
+			topicId,
+			forecaster,
+			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
+		)
+	}
+
+	// Set naive inferer network regrets
+	infererNaiveNetworkRegrets := map[string]inferencesynthesis.Regret{}
+	for i, inferer := range inferers {
+		infererNaiveNetworkRegrets[inferer] = epochPrevGet(fmt.Sprintf("naive_inference_regret_worker_%v", i))
+	}
+
+	for inferer, regret := range infererNaiveNetworkRegrets {
+		k.SetNaiveInfererNetworkRegret(
+			ctx,
+			topicId,
+			inferer,
+			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
+		)
+	}
+
+	// Set one-out inferer-inferer network regrets
+	for i := range inferers {
+		for j := range inferers {
+			headerName := fmt.Sprintf("inference_regret_worker_%v_oneout_%v", i, j)
+			k.SetOneOutInfererInfererNetworkRegret(
+				ctx,
+				topicId,
+				inferers[j],
+				inferers[i],
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochPrevGet(headerName),
+				},
+			)
+		}
+	}
+
+	// Set one-out inferer-forecaster network regrets
+	for i := range inferers {
+		for j := range forecasters {
+			headerName := fmt.Sprintf("inference_regret_worker_%v_oneout_%v", j+5, i)
+			k.SetOneOutInfererForecasterNetworkRegret(
+				ctx,
+				topicId,
+				inferers[i],
+				forecasters[j],
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochPrevGet(headerName),
+				},
+			)
+		}
+	}
+
+	// Set one-out forecaster-inferer network regrets
+	for i := range inferers {
+		for j := range forecasters {
+			headerName := fmt.Sprintf("inference_regret_worker_%v_oneout_%v", i, j+5)
+			k.SetOneOutForecasterInfererNetworkRegret(
+				ctx,
+				topicId,
+				forecasters[j],
+				inferers[i],
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochPrevGet(headerName),
+				},
+			)
+		}
+	}
+
+	// Set one-out forecaster-forecaster network regrets
+	for i := range forecasters {
+		for j := range forecasters {
+			headerName := fmt.Sprintf("inference_regret_worker_%v_oneout_%v", i+5, j+5)
+			k.SetOneOutForecasterForecasterNetworkRegret(
+				ctx,
+				topicId,
+				forecasters[j],
+				forecasters[i],
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochPrevGet(headerName),
+				},
+			)
+		}
+	}
+
+	// Set one-in forecaster network regrets
+	for i := range forecasters {
+		headerName := fmt.Sprintf("inference_regret_worker_5_onein_%v", i)
+		k.SetOneInForecasterNetworkRegret(
+			ctx,
+			topicId,
+			forecasters[i],
+			forecasters[i],
+			emissionstypes.TimestampedValue{
+				BlockHeight: blockHeight,
+				Value:       epochPrevGet(headerName),
+			},
+		)
+		for j := range inferers {
+			headerName := fmt.Sprintf("inference_regret_worker_%v_onein_%v", j, i)
+			k.SetOneInForecasterNetworkRegret(
+				ctx,
+				topicId,
+				forecasters[i],
+				inferers[j],
+				emissionstypes.TimestampedValue{
+					BlockHeight: blockHeight,
+					Value:       epochPrevGet(headerName),
+				},
+			)
+		}
+	}
+
+	return nil
 }

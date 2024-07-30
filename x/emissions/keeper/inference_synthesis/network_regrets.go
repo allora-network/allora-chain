@@ -1,7 +1,6 @@
 package inference_synthesis
 
 import (
-	"fmt"
 	"sort"
 
 	errorsmod "cosmossdk.io/errors"
