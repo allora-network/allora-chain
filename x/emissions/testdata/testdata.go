@@ -1265,6 +1265,96 @@ func GetReputersDataFromCsv(
 	}, nil
 }
 
+func GetTotalInfererRewardForTopicInEpoch(
+	epochGet func(header string) alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	infererRewards := []alloraMath.Dec{
+		epochGet("inferer_reward_0"),
+		epochGet("inferer_reward_1"),
+		epochGet("inferer_reward_2"),
+		epochGet("inferer_reward_3"),
+		epochGet("inferer_reward_4"),
+	}
+	totalInferersReward := alloraMath.ZeroDec() 
+	var err error
+	for _, reward := range infererRewards {
+		totalInferersReward, err = totalInferersReward.Add(reward)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+	}
+	return totalInferersReward, nil
+}
+
+func GetTotalForecasterRewardForTopicInEpoch(
+	epochGet func(header string) alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	forecasterRewards :=[]alloraMath.Dec{
+		epochGet("forecaster_reward_0"),
+		epochGet("forecaster_reward_1"),
+		epochGet("forecaster_reward_2"),
+	}
+	totalForecastersReward := alloraMath.ZeroDec()
+	var err error
+	for _, reward := range forecasterRewards {
+		totalForecastersReward, err = totalForecastersReward.Add(reward)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
+	}
+	return totalForecastersReward, nil
+}
+
+func GetTotalReputerRewardForTopicInEpoch(
+	epochGet func(header string) alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	reputerRewards := []alloraMath.Dec{
+		epochGet("reputer_reward_0"),
+		epochGet("reputer_reward_1"),
+		epochGet("reputer_reward_2"),
+		epochGet("reputer_reward_3"),
+		epochGet("reputer_reward_4"),
+	}
+	// Reputer rewards
+	totalReputersReward := alloraMath.ZeroDec()
+	for _, reward := range reputerRewards {
+		totalReputersReward, _ = totalReputersReward.Add(reward)
+	}
+	return totalReputersReward, nil
+}
+
+func GetTotalRewardForTopicInEpoch(
+	epochGet func(header string) alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	totalRewardForTopic := alloraMath.ZeroDec()
+	totalInferersReward, err := GetTotalInfererRewardForTopicInEpoch(epochGet)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	totalForecastersReward, err := GetTotalForecasterRewardForTopicInEpoch(epochGet)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	totalReputersReward, err := GetTotalReputerRewardForTopicInEpoch(epochGet)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	totalRewardForTopic, err = totalRewardForTopic.Add(totalInferersReward)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	totalRewardForTopic, err = totalRewardForTopic.Add(totalForecastersReward)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	totalRewardForTopic, err = totalRewardForTopic.Add(totalReputersReward)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	return totalRewardForTopic, nil
+}
+
 func SetRegretsFromPreviousEpoch(
 	ctx sdk.Context,
 	k keeper.Keeper,

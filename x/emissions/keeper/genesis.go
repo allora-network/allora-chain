@@ -558,16 +558,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//LatestOneInForecasterSelfNetworkRegrets []*TopicIdActorIdTimeStampedValue
-	if len(data.LatestOneInForecasterSelfNetworkRegrets) != 0 {
-		for _, topicIdActorIdTimeStampedValue := range data.LatestOneInForecasterSelfNetworkRegrets {
-			if err := k.latestOneInForecasterSelfNetworkRegrets.Set(ctx,
-				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
-				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
-				return errors.Wrap(err, "error setting latestOneInForecasterSelfNetworkRegrets")
-			}
-		}
-	}
 	//CoreTeamAddresses []string
 	if len(data.CoreTeamAddresses) != 0 {
 		// make sure what we are storage isn't garbage
@@ -1410,24 +1400,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		latestOneInForecasterNetworkRegrets = append(latestOneInForecasterNetworkRegrets, &topicIdActorIdActorIdTimeStampedValue)
 	}
 
-	latestOneInForecasterSelfNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
-	latestOneInForecasterSelfNetworkRegretsIter, err := k.latestOneInForecasterSelfNetworkRegrets.Iterate(ctx, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to iterate latest one in forecaster self network regrets")
-	}
-	for ; latestOneInForecasterSelfNetworkRegretsIter.Valid(); latestOneInForecasterSelfNetworkRegretsIter.Next() {
-		keyValue, err := latestOneInForecasterSelfNetworkRegretsIter.KeyValue()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get key value: latestOneInForecasterSelfNetworkRegretsIter")
-		}
-		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
-			TopicId:          keyValue.Key.K1(),
-			ActorId:          keyValue.Key.K2(),
-			TimestampedValue: &keyValue.Value,
-		}
-		latestOneInForecasterSelfNetworkRegrets = append(latestOneInForecasterSelfNetworkRegrets, &topicIdActorIdTimeStampedValue)
-	}
-
 	coreTeamAddresses := make([]string, 0)
 	coreTeamAddressesIter, err := k.whitelistAdmins.Iterate(ctx, nil)
 	if err != nil {
@@ -1556,7 +1528,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		LatestInfererNetworkRegrets:              latestInfererNetworkRegrets,
 		LatestForecasterNetworkRegrets:           latestForecasterNetworkRegrets,
 		LatestOneInForecasterNetworkRegrets:      latestOneInForecasterNetworkRegrets,
-		LatestOneInForecasterSelfNetworkRegrets:  latestOneInForecasterSelfNetworkRegrets,
 		CoreTeamAddresses:                        coreTeamAddresses,
 		TopicLastWorkerCommit:                    topicLastWorkerCommit,
 		TopicLastReputerCommit:                   topicLastReputerCommit,

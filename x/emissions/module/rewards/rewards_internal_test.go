@@ -185,7 +185,8 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 func (s *MathTestSuite) TestInferenceRewardsFromCsv() {
 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	totalReward := epoch3Get("total_reward")
+	totalReward, err := testdata.GetTotalRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
 	infererScores := []emissionstypes.Score{
 		{Score: epoch3Get("inferer_score_0")},
 		{Score: epoch3Get("inferer_score_1")},
@@ -194,7 +195,7 @@ func (s *MathTestSuite) TestInferenceRewardsFromCsv() {
 		{Score: epoch3Get("inferer_score_4")},
 	}
 	result, err := rewards.GetRewardForInferenceTaskInTopic(
-		epoch3Get("network_naive_loss_reputers"),
+		epoch3Get("network_naive_loss"),
 		epoch3Get("network_loss"),
 		epoch3Get("inferers_entropy"),
 		epoch3Get("forecasters_entropy"),
@@ -203,9 +204,9 @@ func (s *MathTestSuite) TestInferenceRewardsFromCsv() {
 		infererScores,
 	)
 	s.Require().NoError(err)
-	expectedTotalReward, err := epoch3Get("inferers_reward_fraction").Mul(totalReward)
+	expectedTotalInfererReward, err := testdata.GetTotalInfererRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
-	testutil.InEpsilon5(s.T(), result, expectedTotalReward.String())
+	testutil.InEpsilon5(s.T(), result, expectedTotalInfererReward.String())
 }
 
 func (s *MathTestSuite) TestForecastRewardsSimple() {
@@ -315,7 +316,8 @@ func (s *MathTestSuite) TestForecastRewardsZero() {
 func (s *MathTestSuite) TestForecastRewardsFromCsv() {
 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	totalReward := epoch3Get("total_reward")
+	totalReward, err := testdata.GetTotalRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
 	infererScores := []emissionstypes.Score{
 		{Score: epoch3Get("inferer_score_0")},
 		{Score: epoch3Get("inferer_score_1")},
@@ -324,7 +326,7 @@ func (s *MathTestSuite) TestForecastRewardsFromCsv() {
 		{Score: epoch3Get("inferer_score_4")},
 	}
 	result, err := rewards.GetRewardForForecastingTaskInTopic(
-		epoch3Get("network_naive_loss_reputers"),
+		epoch3Get("network_naive_loss"),
 		epoch3Get("network_loss"),
 		epoch3Get("inferers_entropy"),
 		epoch3Get("forecasters_entropy"),
@@ -333,9 +335,9 @@ func (s *MathTestSuite) TestForecastRewardsFromCsv() {
 		infererScores,
 	)
 	s.Require().NoError(err)
-	expectedTotalReward, err := epoch3Get("forecaster_reward_fraction").Mul(totalReward)
+	expectedTotalForecasterReward, err := testdata.GetTotalForecasterRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
-	testutil.InEpsilon5(s.T(), result, expectedTotalReward.String())
+	testutil.InEpsilon5(s.T(), result, expectedTotalForecasterReward.String())
 }
 
 func (s *MathTestSuite) TestReputerRewardSimple() {
@@ -368,7 +370,8 @@ func (s *MathTestSuite) TestReputerRewardZero() {
 func (s *MathTestSuite) TestReputerRewardFromCsv() {
 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	totalReward := epoch3Get("total_reward")
+	totalReward, err := testdata.GetTotalRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
 	result, err := rewards.GetRewardForReputerTaskInTopic(
 		epoch3Get("inferers_entropy"),
 		epoch3Get("forecasters_entropy"),
@@ -376,9 +379,9 @@ func (s *MathTestSuite) TestReputerRewardFromCsv() {
 		&totalReward,
 	)
 	s.Require().NoError(err)
-	expectedTotalReward, err := epoch3Get("reputers_reward_fraction").Mul(totalReward)
+	expectedTotalReputerReward, err := testdata.GetTotalReputerRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
-	testutil.InEpsilon5(s.T(), result, expectedTotalReward.String())
+	testutil.InEpsilon5(s.T(), result, expectedTotalReputerReward.String())
 }
 
 func (s *MathTestSuite) TestForecastingPerformanceScoreSimple() {
