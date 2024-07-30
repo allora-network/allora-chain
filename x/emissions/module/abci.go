@@ -84,7 +84,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				// Adding one to cover for one extra epochLength
 				reputerPruningBlock := blockHeight - (int64(MaxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag)
 				if reputerPruningBlock > 0 {
-					sdkCtx.Logger().Warn(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, blockHeight))
+					sdkCtx.Logger().Debug(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, blockHeight))
 					err = am.keeper.PruneReputerNonces(sdkCtx, topic.Id, reputerPruningBlock)
 					if err != nil {
 						sdkCtx.Logger().Warn(fmt.Sprintf("Error pruning reputer nonces: %s", err.Error()))
@@ -147,7 +147,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	workerWindowsToClose := am.keeper.GetWorkerWindowTopicIds(sdkCtx, blockHeight)
 	if len(workerWindowsToClose.TopicIds) > 0 {
 		for _, topicId := range workerWindowsToClose.TopicIds {
-			sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %d", topicId))
+			sdkCtx.Logger().Info(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %d", topicId))
 			// Check if there is an unfulfilled nonce
 			nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId.TopicId)
 			if err != nil {
@@ -158,17 +158,25 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				continue
 			} else {
 				for _, nonce := range nonces.Nonces {
-					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Closing Worker window for topic: %d, nonces: %v", topicId.TopicId, nonce))
+					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId.TopicId, nonce))
 					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topicId.TopicId, *nonce)
 					if err != nil {
-						sdkCtx.Logger().Warn(fmt.Sprintf("Error closing worker nonce: %s", err.Error()))
+						sdkCtx.Logger().Info(fmt.Sprintf("Error closing worker nonce, proactively fulfilling: %s", err.Error()))
 						// Proactively close the nonce
-						am.keeper.FulfillWorkerNonce(sdkCtx, topicId.TopicId, nonce)
+						fulfilledNonce, err := am.keeper.FulfillWorkerNonce(sdkCtx, topicId.TopicId, nonce)
+						if err != nil {
+							sdkCtx.Logger().Warn(fmt.Sprintf("Error fulfilling worker nonce: %s", err.Error()))
+						} else {
+							sdkCtx.Logger().Debug(fmt.Sprintf("Fulfilled: %t, worker nonce: %v", fulfilledNonce, nonce))
+						}
 					}
 				}
 			}
 		}
-		am.keeper.DeleteWorkerWindowBlockheight(sdkCtx, blockHeight)
+		err = am.keeper.DeleteWorkerWindowBlockheight(sdkCtx, blockHeight)
+		if err != nil {
+			sdkCtx.Logger().Warn(fmt.Sprintf("Error deleting worker window blockheight: %s", err.Error()))
+		}
 	}
 	return nil
 }

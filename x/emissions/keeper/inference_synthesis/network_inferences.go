@@ -42,7 +42,7 @@ func GetNetworkInferencesAtBlock(
 	var forecasterWeights map[string]alloraMath.Dec
 
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferencesNonce)
-	if err != nil {
+	if err != nil || len(inferences.Inferences) == 0 {
 		return nil, nil, infererWeights, forecasterWeights, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, inferencesNonce)
 	}
 	// Add inferences in the bundle -> this bundle will be used as a fallback in case of error
