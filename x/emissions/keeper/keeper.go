@@ -796,7 +796,7 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 /// LOSS BUNDLES
 
 // Append loss bundle for a topoic and blockheight
-func (k *Keeper) AppendReputerLossAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
+func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err

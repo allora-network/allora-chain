@@ -24,7 +24,7 @@ func GetLowScoreFromAllLossBundles(
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Lt(extScore.Score) {
+		if lowScore.Score.Gt(extScore.Score) {
 			lowScore = extScore
 			lowScoreIndex = index
 		}
@@ -50,7 +50,7 @@ func GetLowScoreFromAllInferences(
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Lt(extScore.Score) {
+		if lowScore.Score.Gt(extScore.Score) {
 			lowScore = extScore
 			lowScoreIndex = index
 		}
@@ -72,30 +72,14 @@ func GetLowScoreFromAllForecasts(
 		return types.Score{}, lowScoreIndex, err
 	}
 	for index, extForecast := range forecasts.Forecasts {
-		extScore, err := k.GetLatestInfererScore(ctx, topicId, extForecast.Forecaster)
+		extScore, err := k.GetLatestForecasterScore(ctx, topicId, extForecast.Forecaster)
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Lt(extScore.Score) {
+		if lowScore.Score.Gt(extScore.Score) {
 			lowScore = extScore
 			lowScoreIndex = index
 		}
 	}
 	return lowScore, lowScoreIndex, nil
-}
-
-func EliminateInference(allData interface{}, newData interface{}) (interface{}, error) {
-	switch v := allData.(type) {
-	case types.Inferences:
-		for _, element := range v.Inferences {
-			if element.Inferer == newData.(types.Inference).Inferer {
-
-			}
-		}
-	case types.Forecasts:
-	case types.ReputerValueBundles:
-	default:
-
-	}
-	return nil, nil
 }

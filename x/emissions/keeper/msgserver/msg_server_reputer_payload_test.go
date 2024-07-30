@@ -136,12 +136,8 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 
 	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertReputerPayload{
-		Sender:  reputerAddr.String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: reputerNonce,
-		},
-		ReputerValueBundles: &types.ReputerValueBundle{
+		Sender: reputerAddr.String(),
+		ReputerValueBundle: &types.ReputerValueBundle{
 			ValueBundle: reputerValueBundle,
 			Signature:   valueBundleSignature,
 			Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
