@@ -2,13 +2,13 @@ package rewards_test
 
 import (
 	"context"
+
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -451,7 +451,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 }
 
 func (s *RewardsTestSuite) TestGetReputersRewardFractionsFromCsv() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
 
 	topicId := uint64(1)
@@ -544,7 +544,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetReputerTaskEntropyFromCsv() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch1Get := epochGet[301]
 	epoch2Get := epochGet[302]
 	topicId := uint64(1)

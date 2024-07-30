@@ -6,7 +6,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -209,7 +208,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 
 	finalEpoch := 304
 	initialEpoch := 301
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch4Get := epochGet[finalEpoch]
 
 	inferer0 := s.addrs[5].String()
@@ -323,7 +322,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetInferenceTaskEntropyFromCsv() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch1Get := epochGet[301]
 	epoch2Get := epochGet[302]
 	topicId := uint64(1)
@@ -380,7 +379,7 @@ func (s *RewardsTestSuite) TestGetForecastTaskEntropyFromCsv() {
 	taskRewardAlpha := alloraMath.MustNewDecFromString("0.1")
 	betaEntropy := alloraMath.MustNewDecFromString("0.25")
 
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch1Get := epochGet[301]
 	epoch2Get := epochGet[302]
 

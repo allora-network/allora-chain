@@ -7,7 +7,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -331,7 +330,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 	require := s.Require()
 	k := s.emissionsKeeper
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epochPrevGet := epochGet[300]
 	epoch301Get := epochGet[301]
 	topicId := uint64(1)
@@ -354,10 +353,10 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 	forecaster2 := s.addrs[7].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	err := testdata.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epochPrevGet)
+	err := testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epochPrevGet)
 	require.NoError(err)
 
-	networkLosses, err := testdata.GetNetworkLossFromCsv(
+	networkLosses, err := testutil.GetNetworkLossFromCsv(
 		topicId,
 		infererAddresses,
 		forecasterAddresses,

@@ -4,7 +4,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -279,7 +278,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[302]
 
 	forecasts := &emissionstypes.Forecasts{
@@ -339,7 +338,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[303]
 
 	forecasts := &emissionstypes.Forecasts{

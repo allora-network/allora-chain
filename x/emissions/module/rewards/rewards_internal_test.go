@@ -8,7 +8,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -183,9 +182,9 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 }
 
 func (s *MathTestSuite) TestInferenceRewardsFromCsv() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	totalReward, err := testdata.GetTotalRewardForTopicInEpoch(epoch3Get)
+	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	infererScores := []emissionstypes.Score{
 		{Score: epoch3Get("inferer_score_0")},
@@ -204,7 +203,7 @@ func (s *MathTestSuite) TestInferenceRewardsFromCsv() {
 		infererScores,
 	)
 	s.Require().NoError(err)
-	expectedTotalInfererReward, err := testdata.GetTotalInfererRewardForTopicInEpoch(epoch3Get)
+	expectedTotalInfererReward, err := testutil.GetTotalInfererRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	testutil.InEpsilon5(s.T(), result, expectedTotalInfererReward.String())
 }
@@ -314,9 +313,9 @@ func (s *MathTestSuite) TestForecastRewardsZero() {
 }
 
 func (s *MathTestSuite) TestForecastRewardsFromCsv() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	totalReward, err := testdata.GetTotalRewardForTopicInEpoch(epoch3Get)
+	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	infererScores := []emissionstypes.Score{
 		{Score: epoch3Get("inferer_score_0")},
@@ -335,7 +334,7 @@ func (s *MathTestSuite) TestForecastRewardsFromCsv() {
 		infererScores,
 	)
 	s.Require().NoError(err)
-	expectedTotalForecasterReward, err := testdata.GetTotalForecasterRewardForTopicInEpoch(epoch3Get)
+	expectedTotalForecasterReward, err := testutil.GetTotalForecasterRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	testutil.InEpsilon5(s.T(), result, expectedTotalForecasterReward.String())
 }
@@ -368,9 +367,9 @@ func (s *MathTestSuite) TestReputerRewardZero() {
 }
 
 func (s *MathTestSuite) TestReputerRewardFromCsv() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	totalReward, err := testdata.GetTotalRewardForTopicInEpoch(epoch3Get)
+	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	result, err := rewards.GetRewardForReputerTaskInTopic(
 		epoch3Get("inferers_entropy"),
@@ -379,7 +378,7 @@ func (s *MathTestSuite) TestReputerRewardFromCsv() {
 		&totalReward,
 	)
 	s.Require().NoError(err)
-	expectedTotalReputerReward, err := testdata.GetTotalReputerRewardForTopicInEpoch(epoch3Get)
+	expectedTotalReputerReward, err := testutil.GetTotalReputerRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	testutil.InEpsilon5(s.T(), result, expectedTotalReputerReward.String())
 }

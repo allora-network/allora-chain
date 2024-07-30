@@ -5,7 +5,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -416,7 +415,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch301Get := epochGet[301]
 	topicId := uint64(1)
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
@@ -473,7 +472,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 		reputer4: cosmosMath.NewIntFromBigInt(reputer4StakeInt),
 	}
 
-	reportedLosses, err := testdata.GetReputersDataFromCsv(
+	reportedLosses, err := testutil.GetReputersDataFromCsv(
 		topicId,
 		infererAddresses,
 		forecasterAddresses,
@@ -485,7 +484,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 	networkLosses, err := inference_synthesis.CalcNetworkLosses(stakesByReputer, reportedLosses, epsilon)
 	s.Require().NoError(err)
 
-	expectedNetworkLosses, err := testdata.GetNetworkLossFromCsv(
+	expectedNetworkLosses, err := testutil.GetNetworkLossFromCsv(
 		topicId,
 		infererAddresses,
 		forecasterAddresses,

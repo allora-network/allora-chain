@@ -4,7 +4,7 @@ import (
 	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -17,8 +17,8 @@ func CosmosIntOneE18() cosmosMath.Int {
 }
 
 // Create a map from worker address to their inference or forecast-implied inference
-func MakeMapFromInfererToTheirInference(inferences []*emissions.Inference) map[Worker]*emissions.Inference {
-	inferencesByWorker := make(map[Worker]*emissions.Inference)
+func MakeMapFromInfererToTheirInference(inferences []*emissionstypes.Inference) map[Worker]*emissionstypes.Inference {
+	inferencesByWorker := make(map[Worker]*emissionstypes.Inference)
 	for _, inference := range inferences {
 		inferencesByWorker[inference.Inferer] = inference
 	}
@@ -26,8 +26,8 @@ func MakeMapFromInfererToTheirInference(inferences []*emissions.Inference) map[W
 }
 
 // Create a map from worker address to their inference or forecast-implied inference
-func MakeMapFromForecasterToTheirForecast(forecasts []*emissions.Forecast) map[Worker]*emissions.Forecast {
-	forecastsByWorker := make(map[Worker]*emissions.Forecast)
+func MakeMapFromForecasterToTheirForecast(forecasts []*emissionstypes.Forecast) map[Worker]*emissionstypes.Forecast {
+	forecastsByWorker := make(map[Worker]*emissionstypes.Forecast)
 	for _, forecast := range forecasts {
 		forecastsByWorker[forecast.Forecaster] = forecast
 	}
@@ -36,9 +36,9 @@ func MakeMapFromForecasterToTheirForecast(forecasts []*emissions.Forecast) map[W
 
 // It is assumed every key of `weights` is contained within the `workers` slice
 func ConvertWeightsToArrays(workers []Worker, weights map[Worker]Weight) []*types.RegretInformedWeight {
-	weightsArray := make([]*types.RegretInformedWeight, 0)
+	weightsArray := make([]*emissionstypes.RegretInformedWeight, 0)
 	for _, worker := range workers {
-		weightsArray = append(weightsArray, &types.RegretInformedWeight{Worker: worker, Weight: weights[worker]})
+		weightsArray = append(weightsArray, &emissionstypes.RegretInformedWeight{Worker: worker, Weight: weights[worker]})
 	}
 	return weightsArray
 }
@@ -46,13 +46,13 @@ func ConvertWeightsToArrays(workers []Worker, weights map[Worker]Weight) []*type
 // It is assumed every key of `forecastImpliedInferenceByWorker` is contained within the `workers` slice
 func ConvertForecastImpliedInferencesToArrays(
 	workers []Worker,
-	forecastImpliedInferenceByWorker map[string]*types.Inference,
-) []*types.WorkerAttributedValue {
-	forecastImpliedInferences := make([]*types.WorkerAttributedValue, 0)
+	forecastImpliedInferenceByWorker map[string]*emissionstypes.Inference,
+) []*emissionstypes.WorkerAttributedValue {
+	forecastImpliedInferences := make([]*emissionstypes.WorkerAttributedValue, 0)
 	for _, worker := range workers {
 		forecastImpliedInferences = append(
 			forecastImpliedInferences,
-			&types.WorkerAttributedValue{Worker: worker, Value: forecastImpliedInferenceByWorker[worker].Value},
+			&emissionstypes.WorkerAttributedValue{Worker: worker, Value: forecastImpliedInferenceByWorker[worker].Value},
 		)
 	}
 	return forecastImpliedInferences

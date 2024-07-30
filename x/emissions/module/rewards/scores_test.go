@@ -10,13 +10,12 @@ import (
 	"github.com/allora-network/allora-chain/test/testutil"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *RewardsTestSuite) TestGetReputersScoresFromCsvOutputs() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch300Get := epochGet[300]
 	epoch301Get := epochGet[301]
 	block := int64(1003)
@@ -116,7 +115,7 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsvOutputs() {
 		s.Require().NoError(err)
 	}
 
-	reportedLosses, err := testdata.GetReputersDataFromCsv(
+	reportedLosses, err := testutil.GetReputersDataFromCsv(
 		topicId,
 		infererAddresses,
 		forecasterAddresses,
@@ -184,7 +183,7 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 }
 
 func (s *RewardsTestSuite) TestGetInferenceScoresFromCsvOutputs() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
 	topicId := uint64(1)
 	block := int64(1003)
@@ -201,7 +200,7 @@ func (s *RewardsTestSuite) TestGetInferenceScoresFromCsvOutputs() {
 	forecaster2 := s.addrs[12].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	reportedLosses, err := testdata.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
+	reportedLosses, err := testutil.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
 	s.Require().NoError(err)
 
 	scores, err := rewards.GenerateInferenceScores(
@@ -297,7 +296,7 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 }
 
 func (s *RewardsTestSuite) TestGetForecasterScoresFromCsvOutputs() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[3]
 	topicId := uint64(1)
 	block := int64(1003)
@@ -314,7 +313,7 @@ func (s *RewardsTestSuite) TestGetForecasterScoresFromCsvOutputs() {
 	forecaster2 := s.addrs[12].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	reportedLosses, err := testdata.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
+	reportedLosses, err := testutil.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
 	s.Require().NoError(err)
 
 	scores, err := rewards.GenerateForecastScores(
