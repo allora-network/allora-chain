@@ -228,7 +228,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	infererLastScores := make([]types.Score, 0)
 	forecasterLastScores := make([]types.Score, 0)
 	for j := 0; j < 3; j++ {
-		epochGet := epochGet[initialEpoch + j]
+		epochGet := epochGet[initialEpoch+j]
 		inferersScores := []alloraMath.Dec{
 			epochGet("inferer_score_0"),
 			epochGet("inferer_score_1"),
@@ -323,13 +323,13 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetInferenceTaskEntropyFromCsv() {
-	topicId := createNewTopic(s)
-	taskRewardAlpha := alloraMath.MustNewDecFromString("0.1")
-	betaEntropy := alloraMath.MustNewDecFromString("0.25")
-
 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
 	epoch1Get := epochGet[301]
 	epoch2Get := epochGet[302]
+	topicId := uint64(1)
+
+	taskRewardAlpha := alloraMath.MustNewDecFromString("0.1")
+	betaEntropy := alloraMath.MustNewDecFromString("0.25")
 
 	inferer0 := s.addrs[5].String()
 	inferer1 := s.addrs[6].String()
@@ -339,11 +339,11 @@ func (s *RewardsTestSuite) TestGetInferenceTaskEntropyFromCsv() {
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
 	infererPreviousFractions := []alloraMath.Dec{
-		epoch1Get("inferer_reward_fraction_0"),
-		epoch1Get("inferer_reward_fraction_1"),
-		epoch1Get("inferer_reward_fraction_2"),
-		epoch1Get("inferer_reward_fraction_3"),
-		epoch1Get("inferer_reward_fraction_4"),
+		epoch1Get("inferer_reward_fraction_smooth_0"),
+		epoch1Get("inferer_reward_fraction_smooth_1"),
+		epoch1Get("inferer_reward_fraction_smooth_2"),
+		epoch1Get("inferer_reward_fraction_smooth_3"),
+		epoch1Get("inferer_reward_fraction_smooth_4"),
 	}
 
 	// Add previous reward fractions
@@ -390,9 +390,9 @@ func (s *RewardsTestSuite) TestGetForecastTaskEntropyFromCsv() {
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	forecasterPreviousFractions := []alloraMath.Dec{
-		epoch1Get("forecaster_reward_fraction_0"),
-		epoch1Get("forecaster_reward_fraction_1"),
-		epoch1Get("forecaster_reward_fraction_2"),
+		epoch1Get("forecaster_reward_fraction_smooth_0"),
+		epoch1Get("forecaster_reward_fraction_smooth_1"),
+		epoch1Get("forecaster_reward_fraction_smooth_2"),
 	}
 
 	// Add previous reward fractions

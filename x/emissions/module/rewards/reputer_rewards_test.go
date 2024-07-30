@@ -2,7 +2,6 @@ package rewards_test
 
 import (
 	"context"
-
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -562,11 +561,11 @@ func (s *RewardsTestSuite) TestGetReputerTaskEntropyFromCsv() {
 
 	// Add previous epoch reward fractions
 	reputerFractionsEpoch1 := []alloraMath.Dec{
-		epoch1Get("reputer_reward_fraction_0"),
-		epoch1Get("reputer_reward_fraction_1"),
-		epoch1Get("reputer_reward_fraction_2"),
-		epoch1Get("reputer_reward_fraction_3"),
-		epoch1Get("reputer_reward_fraction_4"),
+		epoch1Get("reputer_reward_fraction_smooth_0"),
+		epoch1Get("reputer_reward_fraction_smooth_1"),
+		epoch1Get("reputer_reward_fraction_smooth_2"),
+		epoch1Get("reputer_reward_fraction_smooth_3"),
+		epoch1Get("reputer_reward_fraction_smooth_4"),
 	}
 	for i, reputerAddr := range reputerAddresses {
 		err := s.emissionsKeeper.SetPreviousReputerRewardFraction(s.ctx, topicId, reputerAddr, reputerFractionsEpoch1[i])
