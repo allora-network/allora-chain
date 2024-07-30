@@ -1531,15 +1531,15 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	// Topic 102
 
 	// Retrieve the stake removal information
-	retrievedInfo, limitHit, err = keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 1)
+	retrievedInfo, limitHit, err = keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 2)
 	s.Require().NoError(err)
-	s.Require().Len(retrievedInfo, 1, "There should be only one delegate stake removal information for the block")
+	s.Require().Len(retrievedInfo, 2, "There should be only one delegate stake removal information for the block")
 	s.Require().False(limitHit, "The limit should not be hit")
-	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
-	s.Require().Equal(removalInfo1.BlockRemovalCompleted, retrievedInfo[0].BlockRemovalCompleted, "Block removal started should match")
-	s.Require().Equal(removalInfo1.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo1.Reputer, retrievedInfo[0].Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo1.Amount, retrievedInfo[0].Amount, "Amounts should match for all placements")
+	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo[1].BlockRemovalStarted, "Block removal started should match")
+	s.Require().Equal(removalInfo1.BlockRemovalCompleted, retrievedInfo[1].BlockRemovalCompleted, "Block removal started should match")
+	s.Require().Equal(removalInfo1.TopicId, retrievedInfo[1].TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo1.Reputer, retrievedInfo[1].Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo1.Amount, retrievedInfo[1].Amount, "Amounts should match for all placements")
 
 	// delete 101
 	err = keeper.DeleteStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer)
@@ -1591,6 +1591,35 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitPreviousBlocks() 
 	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(
 		ctx,
 		blockRemovalsEnd+1, // note how we are getting a block AFTER blockRemovalsEnd
+		1000,
+	)
+	s.Require().NoError(err)
+	s.Require().False(limitHit)
+	s.Require().Len(retrievedInfo, 1)
+}
+
+func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitExactBlock() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicIdStart := uint64(100)
+	blockRemovalsStart := int64(12)
+	blockRemovalsEnd := int64(13)
+
+	topicId := topicIdStart
+	reputer := "reputer" + strconv.Itoa(int(topicId))
+	removalInfo := types.StakeRemovalInfo{
+		BlockRemovalStarted:   blockRemovalsStart,
+		BlockRemovalCompleted: blockRemovalsEnd,
+		TopicId:               topicId,
+		Reputer:               reputer,
+		Amount:                cosmosMath.NewInt(100),
+	}
+	err := keeper.SetStakeRemoval(ctx, removalInfo)
+	s.Require().NoError(err)
+
+	retrievedInfo, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(
+		ctx,
+		blockRemovalsEnd,
 		1000,
 	)
 	s.Require().NoError(err)
@@ -1717,13 +1746,13 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	// Retrieve the delegate stake removal information
 	retrievedInfo, limitHit, err = keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
-	s.Require().Len(retrievedInfo, 1)
+	s.Require().Len(retrievedInfo, 2)
 	s.Require().False(limitHit)
-	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo[0].BlockRemovalStarted, "Block removal started should match")
-	s.Require().Equal(removalInfo1.TopicId, retrievedInfo[0].TopicId, "Topic IDs should match for all placements")
-	s.Require().Equal(removalInfo1.Reputer, retrievedInfo[0].Reputer, "Reputer addresses should match for all placements")
-	s.Require().Equal(removalInfo1.Delegator, retrievedInfo[0].Delegator, "Delegator addresses should match for all placements")
-	s.Require().Equal(removalInfo1.Amount, retrievedInfo[0].Amount, "Amounts should match for all placements")
+	s.Require().Equal(removalInfo1.BlockRemovalStarted, retrievedInfo[1].BlockRemovalStarted, "Block removal started should match")
+	s.Require().Equal(removalInfo1.TopicId, retrievedInfo[1].TopicId, "Topic IDs should match for all placements")
+	s.Require().Equal(removalInfo1.Reputer, retrievedInfo[1].Reputer, "Reputer addresses should match for all placements")
+	s.Require().Equal(removalInfo1.Delegator, retrievedInfo[1].Delegator, "Delegator addresses should match for all placements")
+	s.Require().Equal(removalInfo1.Amount, retrievedInfo[1].Amount, "Amounts should match for all placements")
 
 	// delete 101
 	err = keeper.DeleteDelegateStakeRemoval(ctx, removalInfo0.BlockRemovalCompleted, removalInfo0.TopicId, removalInfo0.Reputer, removalInfo0.Delegator)

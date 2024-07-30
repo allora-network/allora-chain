@@ -113,18 +113,19 @@ func RemoveDelegateStakes(
 		// Update the stake data structures
 		err = k.RemoveDelegateStake(
 			cacheSdkCtx,
-			currentBlock,
+			stakeRemoval.BlockRemovalCompleted,
 			stakeRemoval.TopicId,
 			stakeRemoval.Delegator,
 			stakeRemoval.Reputer,
 			stakeRemoval.Amount,
 		)
 		if err != nil {
-			sdkCtx.Logger().Error(fmt.Sprintf(
+			msg := fmt.Sprintf(
 				"Error removing delegate stake state: %v | %v",
 				stakeRemoval,
 				err,
-			))
+			)
+			sdkCtx.Logger().Error(msg)
 			continue
 		}
 

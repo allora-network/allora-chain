@@ -951,7 +951,7 @@ func (k *Keeper) RemoveReputerStake(
 //	stakeSumFromDelegator, delegatedStakes, stakeFromDelegatorsUponReputer
 func (k *Keeper) RemoveDelegateStake(
 	ctx context.Context,
-	blockHeight BlockHeight,
+	stakeRemovalHeight BlockHeight,
 	topicId TopicId,
 	delegator ActorId,
 	reputer ActorId,
@@ -1085,7 +1085,7 @@ func (k *Keeper) RemoveDelegateStake(
 	if err := k.SetTotalStake(ctx, totalStakeNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
-	if err := k.DeleteDelegateStakeRemoval(ctx, blockHeight, topicId, reputer, delegator); err != nil {
+	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalHeight, topicId, reputer, delegator); err != nil {
 		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
 
@@ -1298,8 +1298,9 @@ func (k *Keeper) GetStakeRemovalsUpUntilBlock(
 	startKey := collections.TriplePrefix[BlockHeight, TopicId, ActorId](0)
 	rng := &collections.Range[collections.Triple[BlockHeight, TopicId, ActorId]]{}
 	rng = rng.Prefix(startKey)
-	endKey := collections.TriplePrefix[BlockHeight, TopicId, ActorId](blockHeight)
-	rng = rng.EndInclusive(endKey)
+	// +1 for end exclusive. Don't know why end inclusive is being buggy but it is
+	endKey := collections.TriplePrefix[BlockHeight, TopicId, ActorId](blockHeight + 1)
+	rng = rng.EndExclusive(endKey)
 
 	iter, err := k.stakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
@@ -1417,8 +1418,8 @@ func (k *Keeper) GetDelegateStakeRemovalsUpUntilBlock(
 	startKey := QuadrupleSinglePrefix[BlockHeight, TopicId, ActorId, ActorId](0)
 	rng := &collections.Range[Quadruple[BlockHeight, TopicId, ActorId, ActorId]]{}
 	rng = rng.Prefix(startKey)
-	endKey := QuadrupleSinglePrefix[BlockHeight, TopicId, ActorId, ActorId](blockHeight)
-	rng = rng.EndInclusive(endKey)
+	endKey := QuadrupleSinglePrefix[BlockHeight, TopicId, ActorId, ActorId](blockHeight + 1)
+	rng = rng.EndExclusive(endKey)
 
 	iter, err := k.delegateStakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {

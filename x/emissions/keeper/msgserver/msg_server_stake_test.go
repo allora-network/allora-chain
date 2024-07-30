@@ -1069,12 +1069,10 @@ func (s *MsgServerTestSuite) TestRemoveOneDelegateMultipleTargetsDifferentBlocks
 	}
 
 	// verify the removals are put in correctly
-	for i := 0; i < len(reputers); i++ {
-		removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock+int64(i), 100)
-		require.NoError(err)
-		require.False(limitHit)
-		require.Len(removals, 1)
-	}
+	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, endBlock+int64(len(reputers)), 100)
+	require.NoError(err)
+	require.False(limitHit)
+	require.Len(removals, len(reputers))
 
 	// Call ctx.WithBlockHeight to simulate passing time
 	ctx = ctx.WithBlockHeight(endBlock)
