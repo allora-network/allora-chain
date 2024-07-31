@@ -170,6 +170,12 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayload() {
 	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
 	require.NoError(err)
 
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle, topicId, &reputerNonce)
 	require.NoError(err)
 }
