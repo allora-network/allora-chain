@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/testdata"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -73,7 +72,7 @@ func TestMakeMapFromWorkerToTheirWork(t *testing.T) {
 }
 
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[302]
 	epoch3Get := epochGet[303]
 
@@ -128,20 +127,20 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	})
 	require.NoError(err)
 
-	inferences, err := testdata.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch3Get)
+	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch3Get)
 	s.Require().NoError(err)
 
 	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce, inferences)
 	s.Require().NoError(err)
 
-	forecasts, err := testdata.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch3Get)
+	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch3Get)
 	s.Require().NoError(err)
 
 	err = keeper.InsertForecasts(s.ctx, topicId, simpleNonce, forecasts)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
-	err = testdata.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
+	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
 	s.Require().NoError(err)
 
 	// Calculate
@@ -232,7 +231,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 // TODO: Need to revisit these tests after finshing non-edge case tests
 // func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithJustOneNotNewForecaster() {
-// 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+// 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 // 	epoch2Get := epochGet[302]
 // 	epoch3Get := epochGet[303]
 
@@ -288,13 +287,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 // 	})
 // 	require.NoError(err)
 
-// 	inferences, err := testdata.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch3Get)
+// 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch3Get)
 // 	s.Require().NoError(err)
 
 // 	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce, inferences)
 // 	s.Require().NoError(err)
 
-// 	forecasts, err := testdata.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch3Get)
+// 	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch3Get)
 // 	s.Require().NoError(err)
 
 // 	err = keeper.InsertForecasts(s.ctx, topicId, simpleNonce, forecasts)
@@ -455,7 +454,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 // func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithAllInferersForecastersNew() {
 // 	s.SetupTest()
-// 	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+// 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 // 	epoch2Get := epochGet[302]
 // 	epoch3Get := epochGet[303]
 
@@ -510,13 +509,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 // 	})
 // 	require.NoError(err)
 
-// 	inferences, err := testdata.GetInferencesFromCsv(topicId, blockHeightInferences, infererAddresses, epoch3Get)
+// 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeightInferences, infererAddresses, epoch3Get)
 // 	s.Require().NoError(err)
 
 // 	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce, inferences)
 // 	s.Require().NoError(err)
 
-// 	forecasts, err := testdata.GetForecastsFromCsv(topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch3Get)
+// 	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch3Get)
 // 	s.Require().NoError(err)
 
 // 	err = keeper.InsertForecasts(s.ctx, topicId, simpleNonce, forecasts)
@@ -606,7 +605,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	s.SetupTest()
-	epochGet := testdata.GetSimulatedValuesGetterForEpochs()
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[302]
 	epoch3Get := epochGet[303]
 
@@ -661,20 +660,20 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	})
 	require.NoError(err)
 
-	inferences, err := testdata.GetInferencesFromCsv(topicId, blockHeightInferences, infererAddresses, epoch3Get)
+	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeightInferences, infererAddresses, epoch3Get)
 	s.Require().NoError(err)
 
 	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce, inferences)
 	s.Require().NoError(err)
 
-	forecasts, err := testdata.GetForecastsFromCsv(topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch3Get)
+	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch3Get)
 	s.Require().NoError(err)
 
 	err = keeper.InsertForecasts(s.ctx, topicId, simpleNonce, forecasts)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
-	err = testdata.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch2Get)
+	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch2Get)
 	s.Require().NoError(err)
 
 	// Calculate
