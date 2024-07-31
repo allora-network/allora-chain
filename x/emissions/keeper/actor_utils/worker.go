@@ -1,9 +1,11 @@
 package actor_utils
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 
+	"cosmossdk.io/collections"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -67,7 +69,13 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	// Get all forecasts from this topicId, nonce
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
 	if err != nil {
-		return err
+		if errors.Is(err, collections.ErrNotFound) {
+			forecasts = &types.Forecasts{
+				Forecasts: make([]*types.Forecast, 0),
+			}
+		} else {
+			return err
+		}
 	}
 
 	err = insertForecastsFromTopForecasters(
@@ -101,7 +109,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	if err != nil {
 		return err
 	}
-
+	ctx.Logger().Info(fmt.Sprintf("Closed worker nonce for topic: %d, nonce: %v", topicId, nonce))
 	// Return an empty response as the operation was successful
 	return nil
 }
