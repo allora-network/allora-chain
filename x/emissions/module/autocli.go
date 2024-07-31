@@ -555,16 +555,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetStakeRemovalsForBlock",
-					Use:       "stake-removals-for-block [block_height]",
+					RpcMethod: "GetStakeRemovalsUpUntilBlock",
+					Use:       "stake-removals-up-until-block [block_height]",
 					Short:     "Get all pending stake removal requests going to happen at a given block height",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "block_height"},
 					},
 				},
 				{
-					RpcMethod: "GetDelegateStakeRemovalsForBlock",
-					Use:       "delegate-stake-removals-for-block [block_height]",
+					RpcMethod: "GetDelegateStakeRemovalsUpUntilBlock",
+					Use:       "delegate-stake-removals-up-until-block [block_height]",
 					Short:     "Get all pending delegate stake removal requests going to happen at a given block height",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "block_height"},

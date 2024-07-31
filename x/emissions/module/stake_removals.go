@@ -14,8 +14,9 @@ func RemoveStakes(
 	sdkCtx sdk.Context,
 	currentBlock int64,
 	k emissionskeeper.Keeper,
+	limitToProcess uint64,
 ) {
-	removals, err := k.GetStakeRemovalsForBlock(sdkCtx, currentBlock)
+	removals, limitHit, err := k.GetStakeRemovalsUpUntilBlock(sdkCtx, currentBlock, limitToProcess)
 	if err != nil {
 		sdkCtx.Logger().Error(fmt.Sprintf(
 			"Unable to get stake removals for block %d, skipping removing stakes: %v",
@@ -23,6 +24,13 @@ func RemoveStakes(
 			err,
 		))
 		return
+	}
+	if limitHit {
+		sdkCtx.Logger().Info(fmt.Sprintf(
+			"Hit limit of number of stake removals we can process up until block %d, only removing %d",
+			currentBlock,
+			limitToProcess,
+		))
 	}
 	for _, stakeRemoval := range removals {
 		// attempt writes in a cache context, only write finally if there are no errors
@@ -79,8 +87,9 @@ func RemoveDelegateStakes(
 	sdkCtx sdk.Context,
 	currentBlock int64,
 	k emissionskeeper.Keeper,
+	limitToProcess uint64,
 ) {
-	removals, err := k.GetDelegateStakeRemovalsForBlock(sdkCtx, currentBlock)
+	removals, limitHit, err := k.GetDelegateStakeRemovalsUpUntilBlock(sdkCtx, currentBlock, limitToProcess)
 	if err != nil {
 		sdkCtx.Logger().Error(
 			fmt.Sprintf(
@@ -90,6 +99,13 @@ func RemoveDelegateStakes(
 			))
 		return
 	}
+	if limitHit {
+		sdkCtx.Logger().Info(fmt.Sprintf(
+			"Hit limit of number of stake removals we can process up until block %d, only removing %d",
+			currentBlock,
+			limitToProcess,
+		))
+	}
 	for _, stakeRemoval := range removals {
 		// attempt writes in a cache context, only write finally if there are no errors
 		cacheSdkCtx, write := sdkCtx.CacheContext()
@@ -97,18 +113,19 @@ func RemoveDelegateStakes(
 		// Update the stake data structures
 		err = k.RemoveDelegateStake(
 			cacheSdkCtx,
-			currentBlock,
+			stakeRemoval.BlockRemovalCompleted,
 			stakeRemoval.TopicId,
 			stakeRemoval.Delegator,
 			stakeRemoval.Reputer,
 			stakeRemoval.Amount,
 		)
 		if err != nil {
-			sdkCtx.Logger().Error(fmt.Sprintf(
+			msg := fmt.Sprintf(
 				"Error removing delegate stake state: %v | %v",
 				stakeRemoval,
 				err,
-			))
+			)
+			sdkCtx.Logger().Error(msg)
 			continue
 		}
 
