@@ -116,13 +116,14 @@ service Query {
     option (google.api.http).get = "/emissions/v1/stake/{topic_id}";
   }
 
-  rpc GetStakeRemovalsForBlock(QueryStakeRemovalsForBlockRequest) returns (QueryStakeRemovalsForBlockResponse) {
+  rpc GetStakeRemovalsUpUntilBlock(QueryStakeRemovalsUpUntilBlockRequest)
+      returns (QueryStakeRemovalsUpUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/stake_removals/{block_height}";
   }
 
-  rpc GetDelegateStakeRemovalsForBlock(QueryDelegateStakeRemovalsForBlockRequest)
-      returns (QueryDelegateStakeRemovalsForBlockResponse) {
+  rpc GetDelegateStakeRemovalsUpUntilBlock(QueryDelegateStakeRemovalsUpUntilBlockRequest)
+      returns (QueryDelegateStakeRemovalsUpUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/delegate_stake_removals/{block_height}";
   }
@@ -770,19 +771,19 @@ message QueryIsWhitelistAdminResponse {
   bool is_admin = 1;
 }
 
-message QueryStakeRemovalsForBlockRequest {
+message QueryStakeRemovalsUpUntilBlockRequest {
   int64 block_height = 1;
 }
 
-message QueryStakeRemovalsForBlockResponse {
+message QueryStakeRemovalsUpUntilBlockResponse {
   repeated StakeRemovalInfo removals = 1;
 }
 
-message QueryDelegateStakeRemovalsForBlockRequest {
+message QueryDelegateStakeRemovalsUpUntilBlockRequest {
   int64 block_height = 1;
 }
 
-message QueryDelegateStakeRemovalsForBlockResponse {
+message QueryDelegateStakeRemovalsUpUntilBlockResponse {
   repeated DelegateStakeRemovalInfo removals = 1;
 }
 

@@ -194,54 +194,52 @@ func (qs queryServer) GetTopicStake(ctx context.Context, req *types.QueryTopicSt
 	return &types.QueryTopicStakeResponse{Amount: stake}, nil
 }
 
-func (qs queryServer) GetStakeRemovalsForBlock(
+func (qs queryServer) GetStakeRemovalsUpUntilBlock(
 	ctx context.Context,
-	req *types.QueryStakeRemovalsForBlockRequest,
-) (*types.QueryStakeRemovalsForBlockResponse, error) {
-	removals, err := qs.k.GetStakeRemovalsForBlock(ctx, req.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
+	req *types.QueryStakeRemovalsUpUntilBlockRequest,
+) (*types.QueryStakeRemovalsUpUntilBlockResponse, error) {
 	moduleParams, err := qs.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 	maxLimit := moduleParams.MaxPageLimit
-	removalPointers := make([]*types.StakeRemovalInfo, 0)
-	outputLen := uint64(len(removals))
-	if uint64(len(removals)) > maxLimit {
-		err = status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
-		outputLen = maxLimit
+	removals, left, err := qs.k.GetStakeRemovalsUpUntilBlock(ctx, req.BlockHeight, maxLimit)
+	if err != nil {
+		return nil, err
 	}
-	for i := uint64(0); i < outputLen; i++ {
+	if left {
+		err = status.Error(codes.InvalidArgument,
+			fmt.Sprintf("more stake removals available, cannot query more than %d removals at once", maxLimit))
+	}
+	removalPointers := make([]*types.StakeRemovalInfo, 0)
+	for i := 0; i < len(removals); i++ {
 		removalPointers = append(removalPointers, &removals[i])
 	}
-	return &types.QueryStakeRemovalsForBlockResponse{Removals: removalPointers}, err
+	return &types.QueryStakeRemovalsUpUntilBlockResponse{Removals: removalPointers}, err
 }
 
-func (qs queryServer) GetDelegateStakeRemovalsForBlock(
+func (qs queryServer) GetDelegateStakeRemovalsUpUntilBlock(
 	ctx context.Context,
-	req *types.QueryDelegateStakeRemovalsForBlockRequest,
-) (*types.QueryDelegateStakeRemovalsForBlockResponse, error) {
-	removals, err := qs.k.GetDelegateStakeRemovalsForBlock(ctx, req.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
+	req *types.QueryDelegateStakeRemovalsUpUntilBlockRequest,
+) (*types.QueryDelegateStakeRemovalsUpUntilBlockResponse, error) {
 	moduleParams, err := qs.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 	maxLimit := moduleParams.MaxPageLimit
-	removalPointers := make([]*types.DelegateStakeRemovalInfo, 0)
-	outputLen := uint64(len(removals))
-	if uint64(len(removals)) > maxLimit {
-		err = status.Error(codes.InvalidArgument, fmt.Sprintf("cannot query more than %d removals at once", maxLimit))
-		outputLen = maxLimit
+	removals, limitHit, err := qs.k.GetDelegateStakeRemovalsUpUntilBlock(ctx, req.BlockHeight, maxLimit)
+	if err != nil {
+		return nil, err
 	}
-	for i := uint64(0); i < outputLen; i++ {
+	if limitHit {
+		err = status.Error(codes.InvalidArgument,
+			fmt.Sprintf("more delegate stake removals available, cannot query more than %d removals at once", maxLimit))
+	}
+	removalPointers := make([]*types.DelegateStakeRemovalInfo, 0)
+	for i := 0; i < len(removals); i++ {
 		removalPointers = append(removalPointers, &removals[i])
 	}
-	return &types.QueryDelegateStakeRemovalsForBlockResponse{Removals: removalPointers}, err
+	return &types.QueryDelegateStakeRemovalsUpUntilBlockResponse{Removals: removalPointers}, err
 }
 
 func (qs queryServer) GetStakeRemovalInfo(
