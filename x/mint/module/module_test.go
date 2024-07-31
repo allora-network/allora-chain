@@ -18,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 
+	testdata "github.com/allora-network/allora-chain/test/testutil"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -143,12 +144,21 @@ func (s *MintModuleTestSuite) SetupTest() {
 	s.mintKeeper = mintKeeper
 
 	emissionsModule := emissions.NewAppModule(encCfg.Codec, s.emissionsKeeper)
-	emissionsDefaultGenesis := emissionsModule.DefaultGenesis(encCfg.Codec)
-	emissionsModule.InitGenesis(ctx, encCfg.Codec, emissionsDefaultGenesis)
+	emissionsGenesis := testdata.EmissionsGenesis()
+	emissionsModule.InitGenesis(ctx, encCfg.Codec, emissionsGenesis)
+
+	// authModule := auth.NewAppModule(encCfg.Codec, accountKeeper, simulation.RandomGenesisAccounts, nil)
+	// authGenesis := testdata.AuthGenesis()
+	// authModule.InitGenesis(ctx, encCfg.Codec, authGenesis)
+
+	bankModule := bank.NewAppModule(encCfg.Codec, bankKeeper, accountKeeper, nil)
+	bankGenesis := testdata.BankGenesis()
+	bankModule.InitGenesis(ctx, encCfg.Codec, bankGenesis)
 
 	mintAppModule := mint.NewAppModule(encCfg.Codec, s.mintKeeper, s.accountKeeper)
-	defaultGenesis := mintAppModule.DefaultGenesis(encCfg.Codec)
-	mintAppModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
+	mintGenesis := testdata.MintGenesis()
+	mintAppModule.InitGenesis(ctx, encCfg.Codec, mintGenesis)
+
 	s.appModule = mintAppModule
 }
 

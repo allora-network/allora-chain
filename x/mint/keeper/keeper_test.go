@@ -9,6 +9,8 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
@@ -17,7 +19,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
+	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
@@ -33,6 +35,8 @@ type IntegrationTestSuite struct {
 	emissionsKeeper *minttestutil.MockEmissionsKeeper
 	adminPrivateKey secp256k1.PrivKey
 	adminAddr       string
+	epochGet        map[int]func(string) alloraMath.Dec
+	epoch61Get      func(string) alloraMath.Dec
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -43,7 +47,7 @@ func (s *IntegrationTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(mint.AppModuleBasic{})
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	s.ctx = testCtx.Ctx
 
 	// gomock initializations
@@ -79,6 +83,8 @@ func (s *IntegrationTestSuite) SetupTest() {
 	s.Require().NoError(err)
 
 	s.msgServer = keeper.NewMsgServerImpl(s.mintKeeper)
+	s.epochGet = alloratestutil.GetTokenomicsSimulatorValuesGetterForEpochs()
+	s.epoch61Get = s.epochGet[61]
 }
 
 func (s *IntegrationTestSuite) TestAliasFunctions() {
