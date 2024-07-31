@@ -297,7 +297,7 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 
 func (s *RewardsTestSuite) TestGetForecasterScoresFromCsvOutputs() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
-	epoch3Get := epochGet[3]
+	epoch3Get := epochGet[300]
 	topicId := uint64(1)
 	block := int64(1003)
 

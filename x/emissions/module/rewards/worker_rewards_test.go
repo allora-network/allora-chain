@@ -211,22 +211,22 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch4Get := epochGet[finalEpoch]
 
-	inferer0 := s.addrs[5].String()
-	inferer1 := s.addrs[6].String()
-	inferer2 := s.addrs[7].String()
-	inferer3 := s.addrs[8].String()
-	inferer4 := s.addrs[9].String()
+	inferer0 := "inferer0"
+	inferer1 := "inferer1"
+	inferer2 := "inferer2"
+	inferer3 := "inferer3"
+	inferer4 := "inferer4"
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := s.addrs[10].String()
-	forecaster1 := s.addrs[11].String()
-	forecaster2 := s.addrs[12].String()
+	forecaster0 := "forecaster0"
+	forecaster1 := "forecaster1"
+	forecaster2 := "forecaster2"
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	// Add scores from previous epochs
 	infererLastScores := make([]types.Score, 0)
 	forecasterLastScores := make([]types.Score, 0)
-	for j := 0; j < 3; j++ {
+	for j := 0; j < 4; j++ {
 		epochGet := epochGet[initialEpoch+j]
 		inferersScores := []alloraMath.Dec{
 			epochGet("inferer_score_0"),
@@ -245,7 +245,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			blockHeight := int64(j)
 			scoreToAdd := types.Score{
 				TopicId:     topicId,
-				BlockHeight: blockHeight,
+				BlockHeight: int64(initialEpoch + j),
 				Address:     infererAddr,
 				Score:       inferersScores[i],
 			}
@@ -254,7 +254,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
-			if j == 2 {
+			if j == 3 {
 				infererLastScores = append(infererLastScores, scoreToAdd)
 			}
 		}
@@ -262,7 +262,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			blockHeight := int64(j)
 			scoreToAdd := types.Score{
 				TopicId:     topicId,
-				BlockHeight: blockHeight,
+				BlockHeight: int64(initialEpoch + j),
 				Address:     forecasterAddr,
 				Score:       forecastersScores[i],
 			}
@@ -271,7 +271,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			err := s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
-			if j == 2 {
+			if j == 3 {
 				forecasterLastScores = append(forecasterLastScores, scoreToAdd)
 			}
 		}
@@ -283,7 +283,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 		s.emissionsKeeper,
 		topicId,
 		blockHeight,
-		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("3"),
 		alloraMath.MustNewDecFromString("0.75"),
 		infererLastScores,
 	)
@@ -305,7 +305,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 		s.emissionsKeeper,
 		topicId,
 		blockHeight,
-		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("3"),
 		alloraMath.MustNewDecFromString("0.75"),
 		forecasterLastScores,
 	)
