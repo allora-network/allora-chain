@@ -169,8 +169,8 @@ func GetExponentialMovingAverage(
 	alphaEmission math.LegacyDec,
 	previousRewardEmissionPerUnitStakedToken math.LegacyDec,
 ) math.LegacyDec {
-	firstTerm := targetRewardEmissionPerUnitStakedToken.Mul(alphaEmission)
-	secondTerm := math.OneInt().ToLegacyDec().Sub(alphaEmission).
-		Mul(previousRewardEmissionPerUnitStakedToken)
+	firstTerm := alphaEmission.Mul(targetRewardEmissionPerUnitStakedToken)
+	inverseAlpha := math.OneInt().ToLegacyDec().Sub(alphaEmission)
+	secondTerm := inverseAlpha.Mul(previousRewardEmissionPerUnitStakedToken)
 	return firstTerm.Add(secondTerm)
 }

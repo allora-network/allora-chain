@@ -141,7 +141,7 @@ func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
 	s.Require().NoError(err)
 	resultD, err := alloraMath.NewDecFromSdkLegacyDec(result)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), expectedResult, resultD)
+	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
 }
 
 /**
@@ -261,5 +261,54 @@ func (s *IntegrationTestSuite) TestEHatMaxAtGenesisFromCsv() {
 	)
 	resultD, err := alloraMath.NewDecFromSdkLegacyDec(result)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), expectedResult, resultD)
+	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
+}
+
+func (s *IntegrationTestSuite) TestEhatIFromCsv() {
+	expectedResult := s.epoch61Get("ehat_i")
+	ehatMaxI := s.epoch61Get("ehat_max_i").SdkLegacyDec()
+	ehatTargetI := s.epoch61Get("ehat_target_i").SdkLegacyDec()
+
+	result := keeper.GetCappedTargetEmissionPerUnitStakedToken(
+		ehatTargetI,
+		ehatMaxI,
+	)
+	resultD, err := alloraMath.NewDecFromSdkLegacyDec(result)
+	s.Require().NoError(err)
+	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
+}
+
+func (s *IntegrationTestSuite) TestESubIFromPrintfDebuggingPythonNotebook() {
+	// from printf debugging the python notebook:
+	//    if i == 61:
+	//        e_i = (alpha_emission_per_token*target_emission_per_token+(1-alpha_emission_per_token)*old_emission_per_token)
+	//        print(target_emission_per_token)
+	//        print(old_emission_per_token)
+	//        print(e_i)
+	//
+	// Values in the CSV are wrong!! not equal to the actual values used in the simulator!!
+	expectedResultPrintf := alloraMath.MustNewDecFromString("0.0066204043241312")
+	//expectedResult := s.epoch61Get("e_i")
+	//fmt.Printf("%v | %v\n", expectedResult, expectedResultPrintf)
+	// 0.006596912577740069 | 0.0066204043241312
+	targetE_iPrintf := alloraMath.MustNewDecFromString("0.00545700205370986")
+	//targetE_i := s.epoch61Get("ehat_target_i")
+	//fmt.Printf("%v | %v\n", targetE_i, targetE_iPrintf)
+	// 0.005316238669484353 | 0.00545700205370986
+	previousE_iPrintf := alloraMath.MustNewDecFromString("0.006749671243066904")
+	//previousE_i := s.epochGet[60]("e_i")
+	//fmt.Printf("%v | %v\n", previousE_i, previousE_iPrintf)
+	// 0.006749671243066904 | 0.006749671243066904
+
+	// this is taken directly from the python notebook
+	alpha_Emission := cosmosMath.LegacyMustNewDecFromStr("0.1")
+
+	result := keeper.GetExponentialMovingAverage(
+		targetE_iPrintf.SdkLegacyDec(),
+		alpha_Emission,
+		previousE_iPrintf.SdkLegacyDec(),
+	)
+	resultD, err := alloraMath.NewDecFromSdkLegacyDec(result)
+	s.Require().NoError(err)
+	testutil.InEpsilon5D(s.T(), resultD, expectedResultPrintf)
 }
