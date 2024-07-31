@@ -239,22 +239,22 @@ func ForecastingPerformanceScore(
 func ForecastingUtility(
 	forecastingTaskUtilityScore alloraMath.Dec,
 	infererScores []types.Score,
+	previousForecasterScoreRatio alloraMath.Dec,
+	alpha alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
 	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
 	zeroPointFive := alloraMath.MustNewDecFromString("0.5")
 
-	// Calculate the sum of predictorsScores
-	var sumInfererScores alloraMath.Dec
-	var err error
+	// Calculate the maximum of infererScores
+	var maxInfererScore alloraMath.Dec
 	for _, score := range infererScores {
-		sumInfererScores, err = sumInfererScores.Add(score.Score)
-		if err != nil {
-			return alloraMath.Dec{}, err
+		if score.Score.Gt(maxInfererScore) {
+			maxInfererScore = score.Score
 		}
 	}
-	scoreDenominator := sumInfererScores.Abs()
-	if sumInfererScores.IsZero() {
+	scoreDenominator := maxInfererScore.Abs()
+	if maxInfererScore.IsZero() {
 		if forecastingTaskUtilityScore.IsZero() {
 			return zeroPointFive, nil
 		} else {
@@ -262,7 +262,7 @@ func ForecastingUtility(
 		}
 	}
 
-	scoreNumerator, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(alloraMath.ZeroDec(), sumInfererScores))
+	scoreNumerator, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(alloraMath.ZeroDec(), maxInfererScore))
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -271,23 +271,44 @@ func ForecastingUtility(
 		return alloraMath.Dec{}, err
 	}
 
-	// If score < 0, return 0.1
-	if scoreRatio.Lt(alloraMath.ZeroDec()) {
-		return zeroPointOne, nil
-	}
-
-	// If 1 <= score, return 0.5
-	if scoreRatio.Gte(alloraMath.OneDec()) {
-		return zeroPointFive, nil
-	}
-
-	// For 0 <= score < 1, return 0.4 * score + 0.1
-	scoreRatioTimesZeroPointFour, err := scoreRatio.Mul(zeroPointFour)
+	// Calculate alpha * (scoreRatio)
+	alphaTimesScoreRatio, err := alpha.Mul(scoreRatio)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
 
-	chiReturnValue, err := scoreRatioTimesZeroPointFour.Add(zeroPointOne)
+	// Calculate (1 - alpha) * previousForecasterScoreRatio
+	oneMinusAlpha, err := alloraMath.OneDec().Sub(alpha)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	oneMinusAlphaTimesPreviousForecasterScoreRatio, err := oneMinusAlpha.Mul(previousForecasterScoreRatio)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+
+	// Calculate the final tau value
+	forecasterScoreRatio, err := alphaTimesScoreRatio.Add(oneMinusAlphaTimesPreviousForecasterScoreRatio)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+
+	// Apply the final tau value based on conditions
+	if forecasterScoreRatio.Lt(alloraMath.ZeroDec()) {
+		return zeroPointOne, nil
+	}
+
+	if forecasterScoreRatio.Gte(alloraMath.OneDec()) {
+		return zeroPointFive, nil
+	}
+
+	// For 0 <= finalTau < 1, return 0.4 * finalTau + 0.1
+	finalTauTimesZeroPointFour, err := forecasterScoreRatio.Mul(zeroPointFour)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+
+	chiReturnValue, err := finalTauTimesZeroPointFour.Add(zeroPointOne)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -338,6 +359,8 @@ func getChiAndGamma(
 	entropyInference,
 	entropyForecasting alloraMath.Dec,
 	infererScores []types.Score,
+	previousForecasterScoreRatio alloraMath.Dec,
+	alpha alloraMath.Dec,
 ) (chi alloraMath.Dec, gamma alloraMath.Dec, err error) {
 	forecastingTaskUtilityScore, err := ForecastingPerformanceScore(
 		naiveNetworkInferenceLoss,
@@ -349,6 +372,8 @@ func getChiAndGamma(
 	chi, err = ForecastingUtility(
 		forecastingTaskUtilityScore,
 		infererScores,
+		previousForecasterScoreRatio,
+		alpha,
 	)
 	if err != nil {
 		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
@@ -374,6 +399,8 @@ func GetRewardForInferenceTaskInTopic(
 	entropyReputer alloraMath.Dec, // H_i
 	totalReward *alloraMath.Dec, // E_i
 	infererScores []types.Score,
+	previousForecasterScoreRatio alloraMath.Dec,
+	alpha alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	chi, gamma, err := getChiAndGamma(
 		naiveNetworkInferenceLoss,
@@ -381,6 +408,8 @@ func GetRewardForInferenceTaskInTopic(
 		entropyInference,
 		entropyForecasting,
 		infererScores,
+		previousForecasterScoreRatio,
+		alpha,
 	)
 	if err != nil {
 		return alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
@@ -426,6 +455,8 @@ func GetRewardForForecastingTaskInTopic(
 	entropyReputer alloraMath.Dec, // H_i
 	totalReward *alloraMath.Dec, // E_i
 	infererScores []types.Score,
+	previousForecasterScoreRatio alloraMath.Dec,
+	alpha alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	chi, gamma, err := getChiAndGamma(
 		naiveNetworkInferenceLoss,
@@ -433,6 +464,8 @@ func GetRewardForForecastingTaskInTopic(
 		entropyInference,
 		entropyForecasting,
 		infererScores,
+		previousForecasterScoreRatio,
+		alpha,
 	)
 	if err != nil {
 		return alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")

@@ -128,10 +128,18 @@ func StdDev(data []Dec) (Dec, error) {
 			return Dec{}, err
 		}
 	}
-	sdOverLen, err := sd.Quo(lenData)
+
+	// Apply Bessel's correction by dividing by (N - 1) instead of N
+    lenDataMinusOne, err := lenData.Sub(OneDec())
+    if err != nil {
+        return Dec{}, err
+    }
+
+	sdOverLen, err := sd.Quo(lenDataMinusOne)
 	if err != nil {
 		return Dec{}, err
 	}
+
 	sqrtSdOverLen, err := sdOverLen.Sqrt()
 	if err != nil {
 		return Dec{}, err

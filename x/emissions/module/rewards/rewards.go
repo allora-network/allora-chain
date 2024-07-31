@@ -332,6 +332,12 @@ func GenerateRewardsDistributionByTopicParticipant(
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for reputer task in topic")
 	}
 
+	// Get previous forecaster score ratio for topic
+	previousForecasterScoreRatio, err := k.GetPreviousForecasterScoreRatio(ctx, topicId)
+	if err != nil {
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast tau")
+	}
+
 	// Get Total Rewards for Inference task
 	taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
 		lossBundles.NaiveValue,
@@ -341,6 +347,8 @@ func GenerateRewardsDistributionByTopicParticipant(
 		reputerEntropy,
 		topicReward,
 		infererScores,
+		previousForecasterScoreRatio,
+		moduleParams.TaskRewardAlpha,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
@@ -355,6 +363,8 @@ func GenerateRewardsDistributionByTopicParticipant(
 		reputerEntropy,
 		topicReward,
 		infererScores,
+		previousForecasterScoreRatio,
+		moduleParams.TaskRewardAlpha,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")
