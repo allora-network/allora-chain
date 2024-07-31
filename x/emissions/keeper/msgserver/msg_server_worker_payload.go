@@ -4,9 +4,7 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
-	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -58,20 +56,14 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		)
 	}
 
-	hasEnoughBal, fee, err := ms.CheckBalanceForSendingDataFee(ctx, msg.Sender)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err,
-			"Error checking balance for sender: %v", &msg.Sender)
-	}
-	if !hasEnoughBal {
-		return nil, types.ErrDataSenderNotEnoughDenom
-	}
-
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
+	params, err := ms.k.GetParams(ctx)
 	if err != nil {
-		return nil, errorsmod.Wrapf(err,
-			"Error sending coins for sender: %v", &msg.Sender)
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+	}
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee, "insert worker payload")
+	if err != nil {
+		return nil, err
 	}
 
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
@@ -110,18 +102,4 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		}
 	}
 	return &types.MsgInsertWorkerPayloadResponse{}, nil
-}
-
-func (ms msgServer) CheckBalanceForSendingDataFee(ctx context.Context, address string) (bool, sdk.Coin, error) {
-	moduleParams, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return false, sdk.Coin{}, err
-	}
-	fee := sdk.NewCoin(params.DefaultBondDenom, moduleParams.DataSendingFee)
-	accAddress, err := sdk.AccAddressFromBech32(address)
-	if err != nil {
-		return false, fee, err
-	}
-	balance := ms.k.GetBankBalance(ctx, accAddress, fee.Denom)
-	return balance.IsGTE(fee), fee, nil
 }
