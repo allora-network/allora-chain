@@ -1,10 +1,8 @@
 package inference_synthesis
 
 import (
-	"errors"
 	"fmt"
 
-	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -55,13 +53,7 @@ func GetNetworkInferencesAtBlock(
 
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferencesNonce)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			forecasts = &emissions.Forecasts{
-				Forecasts: make([]*emissions.Forecast, 0),
-			}
-		} else {
-			return nil, nil, infererWeights, forecasterWeights, err
-		}
+		return nil, nil, infererWeights, forecasterWeights, err
 	}
 
 	if len(inferences.Inferences) > 1 {
@@ -172,13 +164,7 @@ func GetLatestNetworkInference(
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferenceBlockHeight)
 	if err != nil {
 		Logger(ctx).Warn(fmt.Sprintf("Error getting forecasts: %s", err.Error()))
-		if errors.Is(err, collections.ErrNotFound) {
-			forecasts = &emissions.Forecasts{
-				Forecasts: make([]*emissions.Forecast, 0),
-			}
-		} else {
-			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
-		}
+		return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
 	}
 
 	if len(inferences.Inferences) > 1 {
