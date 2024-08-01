@@ -335,7 +335,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	// Get previous forecaster score ratio for topic
 	previousForecasterScoreRatio, err := k.GetPreviousForecasterScoreRatio(ctx, topicId)
 	if err != nil {
-		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast tau")
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast score ratio")
 	}
 
 	// Get chi (Forecasting Utility) and gamma (Normalization Factor)
