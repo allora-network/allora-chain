@@ -1,15 +1,26 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
+<<<<<<< HEAD
 index 4470c8a4..808e3ca9 100644
+=======
+index 4470c8a..e080e25 100644
+>>>>>>> 256ea4c5fdb0ee98cb2920d7fba26a4eac528800
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
-@@ -6,6 +6,7 @@ import (
+@@ -3,6 +3,7 @@ package module
+ import (
+ 	"context"
+ 	"fmt"
++	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
  	"sync"
  
  	"cosmossdk.io/errors"
+<<<<<<< HEAD
 +	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
  	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
  	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
  	"github.com/allora-network/allora-chain/x/emissions/types"
+=======
+>>>>>>> 256ea4c5fdb0ee98cb2920d7fba26a4eac528800
 @@ -14,6 +15,10 @@ import (
  
  func EndBlocker(ctx context.Context, am AppModule) error {
@@ -22,7 +33,7 @@ index 4470c8a4..808e3ca9 100644
  	sdkCtx.Logger().Debug(
  		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index 2cda57ab..3f619551 100644
+index 2cda57a..3f61955 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
 @@ -18,6 +18,15 @@ import (

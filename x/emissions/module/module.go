@@ -19,6 +19,15 @@ import (
 )
 
 var (
+	_ module.HasInvariants = AppModule{}
+)
+
+// RegisterInvariants registers the emissions module invariants.
+func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
+	keeper.RegisterInvariants(ir, &am.keeper)
+}
+
+var (
 	_ module.AppModuleBasic   = AppModule{}
 	_ module.HasGenesis       = AppModule{}
 	_ appmodule.AppModule     = AppModule{}
