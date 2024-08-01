@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	"github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"testing"
 	"time"
 
@@ -277,27 +278,31 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
-	s.Require().NoError(err)
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
 
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -421,27 +426,30 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
-	s.Require().NoError(err)
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
 
 	// Create topic 2
 	// Reputer Addresses
@@ -693,18 +701,23 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	}
 
 	workerAddrs := getAddrsFromValues(workerValues)
-	reputerAddrs := getAddrsFromValues(reputerValues)
 
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight)
 	// Insert inference from workers
-	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, blockHeight, workerValues, reputerAddrs)
+	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, blockHeight, workerValues, workerAddrs)
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		require.NoError(err)
+	}
 
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: blockHeight},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
-	require.NoError(err)
+	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateSimpleLossBundles(
@@ -718,15 +731,17 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 		workerZeroInfererValue,
 	)
 
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerValues[0].Address.String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
-	require.NoError(err)
+	newBlockheight := blockHeight + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		require.NoError(err)
+	}
+	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
+	s.Require().NoError(err)
 
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
 
@@ -751,15 +766,12 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []types.TaskRewar
 	for _, taskRewardA := range A {
 		found := false
 		for _, taskRewardB := range B {
-			if taskRewardA.Address == taskRewardB.Address {
+			if taskRewardA.Address == taskRewardB.Address && taskRewardA.Type == taskRewardB.Type {
 				if found {
 					s.Fail("Worker %v found twice", taskRewardA.Address)
 				}
 				found = true
 				if !alloraMath.InDelta(taskRewardA.Reward, taskRewardB.Reward, alloraMath.MustNewDecFromString("0.00001")) {
-					return false
-				}
-				if taskRewardA.Type != taskRewardB.Type {
 					return false
 				}
 			}
@@ -1004,7 +1016,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	var workerReward_0_0_1_Reward alloraMath.Dec
 	found := false
 	for _, reward := range rewardsDistribution0_1 {
-		if reward.Address == workerAddrs[0].String() {
+		if reward.Address == workerAddrs[0].String() && reward.Type == types.WorkerInferenceRewardType {
 			found = true
 			workerReward_0_0_1_Reward = reward.Reward
 		}
@@ -1016,7 +1028,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	var workerReward_0_1_1_Reward alloraMath.Dec
 	found = false
 	for _, reward := range rewardsDistribution1_1 {
-		if reward.Address == workerAddrs[0].String() {
+		if reward.Address == workerAddrs[0].String() && reward.Type == types.WorkerInferenceRewardType {
 			found = true
 			workerReward_0_1_1_Reward = reward.Reward
 		}
@@ -1294,27 +1306,33 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
-	s.Require().NoError(err)
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+		err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, *payload.ValueBundle)
+		s.Require().NoError(err)
+	}
 
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -1431,27 +1449,30 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Insert inference from workers
 	inferenceBundles = GenerateWorkerDataBundles(s, block, topicId)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
-	s.Require().NoError(err)
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	newBlockheight = block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Insert loss bundle from reputers
 	lossBundles = GenerateLossBundles(s, block, topicId, reputerAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
-	s.Require().NoError(err)
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+		err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, *payload.ValueBundle)
+		s.Require().NoError(err)
+	}
 
 	secondRewardsDistribution, secondTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)
@@ -1599,30 +1620,38 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
-	block += epochLength * 3
-	s.ctx = s.ctx.WithBlockHeight(block)
+	newBlockheight += epochLength * 3
+	s.ctx = s.ctx.WithBlockHeight(newBlockheight)
 
 	// mint some rewards to give out
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
@@ -1641,9 +1670,6 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 			reputerStakeCurrent.String(),
 			reputerStake[i].String(),
 		)
-		s.Require().True(
-			s.bankKeeper.GetBalance(
-				s.ctx, addr, params.DefaultBondDenom).Amount.Equal(reputerBalances[i].Amount))
 	}
 
 	for i, addr := range workerAddrs {
@@ -1807,47 +1833,57 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId1)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId1,
-		WorkerDataBundles: inferenceBundles,
-	})
-	s.Require().NoError(err)
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
 	inferenceBundles2 := GenerateWorkerDataBundles(s, block, topicId2)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId2,
-		WorkerDataBundles: inferenceBundles2,
-	})
+	for _, payload := range inferenceBundles2 {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId1)
 	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId1, reputerAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId1,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	topic2, err := s.emissionsKeeper.GetTopic(s.ctx, topicId2)
 	s.Require().NoError(err)
+
+	newBlockheight = block + topic2.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
 	lossBundles2 := GenerateLossBundles(s, block, topicId2, reputerAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId2,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles2.ReputerValueBundles,
-	})
-	s.Require().NoError(err)
+	for _, payload := range lossBundles2.ReputerValueBundles {
+		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
 
 	block += epochLength * 3
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -1952,15 +1988,15 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 	worker1Bundle := &types.WorkerDataBundle{
 		Worker:                             worker.String(),
+		TopicId:                            topicId,
+		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
 		InferenceForecastsBundle:           worker1InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker1Sig,
 		Pubkey:                             GetAccPubKey(s, worker),
 	}
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            worker.String(),
-		Nonce:             &types.Nonce{BlockHeight: blockHeight},
-		TopicId:           topicId,
-		WorkerDataBundles: []*types.WorkerDataBundle{worker1Bundle},
+	_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		Sender:           worker.String(),
+		WorkerDataBundle: worker1Bundle,
 	})
 	s.Require().NoError(err)
 
@@ -1988,15 +2024,19 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		Signature:   sig,
 		ValueBundle: valueBundle,
 	}
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputer.String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: blockHeight,
-			},
-		},
-		ReputerValueBundles: []*types.ReputerValueBundle{reputerBundle},
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	newBlockheight := blockHeight + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
+	_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, reputerBundle.ValueBundle.ReputerRequestNonce.ReputerNonce)
+	_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, reputerBundle.ValueBundle.ReputerRequestNonce.ReputerNonce)
+
+	_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		Sender:             reputer.String(),
+		ReputerValueBundle: reputerBundle,
 	})
 	s.Require().NoError(err)
 
@@ -2127,26 +2167,33 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 
 	// Insert inference from workers
 	inferenceBundles := GenerateHugeWorkerDataBundles(s, block, topicId, workerAddrs)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateHugeLossBundles(s, block, topicId, reputerAddrs, workerAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             reputerAddrs[0].String(),
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -2222,6 +2269,9 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Get Topic Id
 	topicId := res.TopicId
 
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+
 	// Register 5 workers
 	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
@@ -2277,26 +2327,36 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Insert inference from workers
 	inferenceBundles := GenerateHugeWorkerDataBundles(s, block, topicId, workerAddrs)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            workerAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+
+	}
+
+	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	s.Require().NoError(err)
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateHugeLossBundles(s, block, topicId, reputerAddrs, workerAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
+
+	block = block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
+		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
@@ -2304,7 +2364,9 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.Require().NoError(err)
 
 	firstRewardsDistribution, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
-		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards,
+		lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		params)
 	s.Require().NoError(err)
 
 	totalInferersReward := alloraMath.ZeroDec()
@@ -2401,6 +2463,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
 
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
 	})
@@ -2410,36 +2474,53 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	})
 	s.Require().NoError(err)
 
+	block += 1
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	err = s.emissionsKeeper.AddWorkerNonce(
+		s.ctx,
+		topicId,
+		&types.Nonce{BlockHeight: block},
+	)
+	s.Require().NoError(err)
 	// Insert inference from workers
 	inferenceBundles = GenerateHugeWorkerDataBundles(s, block, topicId, newSecondWorkersAddrs)
 	// Add more inferer
 	newInferenceBundles := GenerateMoreInferencesDataBundles(s, block, topicId)
 	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            newSecondWorkersAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
+
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
-	// Insert loss bundle from reputers
 	lossBundles = GenerateHugeLossBundles(s, block, topicId, reputerAddrs, newSecondWorkersAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
+
+	block = block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+	// Insert loss bundle from reputers
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
+		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
 	topicTotalRewards = alloraMath.NewDecFromInt64(1000000)
 	secondRewardsDistribution, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
-		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards,
+		lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		params)
 	s.Require().NoError(err)
 
 	totalInferersReward = alloraMath.ZeroDec()
@@ -2528,6 +2609,12 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
 
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+
+	block++
+	s.ctx = s.ctx.WithBlockHeight(block)
+
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
 		BlockHeight: block,
 	})
@@ -2542,31 +2629,37 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Add more inferer
 	newInferenceBundles = GenerateMoreForecastersDataBundles(s, block, topicId)
 	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
-	_, err = s.msgServer.InsertBulkWorkerPayload(s.ctx, &types.MsgInsertBulkWorkerPayload{
-		Sender:            newThirdWorkersAddrs[0].String(),
-		Nonce:             &types.Nonce{BlockHeight: block},
-		TopicId:           topicId,
-		WorkerDataBundles: inferenceBundles,
-	})
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+
+	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
-	// Insert loss bundle from reputers
 	lossBundles = GenerateHugeLossBundles(s, block, topicId, reputerAddrs, newThirdWorkersAddrs)
-	_, err = s.msgServer.InsertBulkReputerPayload(s.ctx, &types.MsgInsertBulkReputerPayload{
-		Sender:  reputerAddrs[0].String(),
-		TopicId: topicId,
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &types.Nonce{
-				BlockHeight: block,
-			},
-		},
-		ReputerValueBundles: lossBundles.ReputerValueBundles,
-	})
+	block = block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+	// Insert loss bundle from reputers
+	for _, payload := range lossBundles.ReputerValueBundles {
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			Sender:             payload.ValueBundle.Reputer,
+			ReputerValueBundle: payload,
+		})
+		s.Require().NoError(err)
+	}
+	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
+		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
 	topicTotalRewards = alloraMath.NewDecFromInt64(1000000)
 	thirdRewardsDistribution, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
-		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards,
+		lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+		params)
 	s.Require().NoError(err)
 
 	totalForecastersReward = alloraMath.ZeroDec()
@@ -2588,7 +2681,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 
-	block := int64(100)
+	block := int64(1)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	s.SetParamsForTest(24)
@@ -2721,6 +2814,11 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	reputer3_Stake1, err = s.emissionsKeeper.GetStakeReputerAuthority(s.ctx, topicId1, s.addrs[3].String())
 	require.NoError(err)
 
+	// force rewards to be distributed
+	block = s.ctx.BlockHeight()
+	block++
+	s.ctx = s.ctx.WithBlockHeight(block)
+
 	// do work on the topics to earn rewards
 	s.getRewardsDistribution(
 		topicId0,
@@ -2741,10 +2839,6 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 		"0.1",
 		"0.1",
 	)
-
-	// force rewards to be distributed
-	block++
-	s.ctx = s.ctx.WithBlockHeight(block)
 
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
@@ -2792,7 +2886,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 	require := s.Require()
 
-	block := int64(100)
+	block := int64(1)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
@@ -2891,7 +2985,7 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 	require := s.Require()
 
-	block := int64(100)
+	block := int64(1)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
@@ -2991,7 +3085,7 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	// SETUP
 	require := s.Require()
 
-	block := int64(100)
+	block := int64(1)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
@@ -3059,6 +3153,8 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId0)
+	s.Require().NoError(err)
 	// record the updated stakes after rewards
 	reputer0_Stake1, err := s.emissionsKeeper.GetStakeReputerAuthority(s.ctx, topicId0, s.addrs[0].String())
 	require.NoError(err)
@@ -3088,9 +3184,13 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 
 	fundTopic(topicId0, s.addrs[0], topicFundAmount)
 
+	// increase the block height
+	block = s.ctx.BlockHeight()
+	block++
+	s.ctx = s.ctx.WithBlockHeight(block)
 	// do work on the current block, but with one less reputer
 	s.getRewardsDistribution(
-		topicId0,
+		topic.Id,
 		block,
 		workerValues,
 		reputer1Values,
@@ -3098,10 +3198,6 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 		"0.1",
 		"0.1",
 	)
-
-	// increase the block height
-	block++
-	s.ctx = s.ctx.WithBlockHeight(block)
 
 	// create tokens to reward with
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))

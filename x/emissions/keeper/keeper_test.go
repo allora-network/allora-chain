@@ -1168,8 +1168,8 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 
 	// Test getting data before any insert, should return error or nil
 	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
-	require.Error(err, "Should return error for non-existent data")
-	require.Nil(result, "Result should be nil for non-existent data")
+	require.NoError(err)
+	require.Nil(result.ReputerValueBundles, "Result should be nil for non-existent data")
 }
 
 func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
@@ -2910,14 +2910,14 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().NoError(err, "Pruning records after rewards should not fail")
 
 	// Check if the records are pruned
-	_, err = s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
-	s.Require().Error(err, "Should return error for non-existent data")
-	_, err = s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
-	s.Require().Error(err, "Should return error for non-existent data")
-	_, err = s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
-	s.Require().Error(err, "Should return error for non-existent data")
-	_, err = s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
-	s.Require().Error(err, "Should return error for non-existent data")
+	inferences, err := s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
+	s.Require().Equal(len(inferences.Inferences), 0, "Must be pruned")
+	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
+	s.Require().Equal(len(forecasts.Forecasts), 0, "Must be pruned")
+	lossbundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
+	s.Require().Equal(len(lossbundles.ReputerValueBundles), 0, "Must be pruned")
+	networkBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
+	s.Require().Equal(networkBundles, (*types.ValueBundle)(nil), "Must be pruned")
 }
 
 func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {
