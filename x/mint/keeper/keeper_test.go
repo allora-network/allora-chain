@@ -30,6 +30,7 @@ type IntegrationTestSuite struct {
 	mintKeeper      keeper.Keeper
 	ctx             sdk.Context
 	msgServer       types.MsgServer
+	ctrl            *gomock.Controller
 	stakingKeeper   *minttestutil.MockStakingKeeper
 	bankKeeper      *minttestutil.MockBankKeeper
 	emissionsKeeper *minttestutil.MockEmissionsKeeper
@@ -51,11 +52,11 @@ func (s *IntegrationTestSuite) SetupTest() {
 	s.ctx = testCtx.Ctx
 
 	// gomock initializations
-	ctrl := gomock.NewController(s.T())
-	accountKeeper := minttestutil.NewMockAccountKeeper(ctrl)
-	bankKeeper := minttestutil.NewMockBankKeeper(ctrl)
-	stakingKeeper := minttestutil.NewMockStakingKeeper(ctrl)
-	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(ctrl)
+	s.ctrl = gomock.NewController(s.T())
+	accountKeeper := minttestutil.NewMockAccountKeeper(s.ctrl)
+	bankKeeper := minttestutil.NewMockBankKeeper(s.ctrl)
+	stakingKeeper := minttestutil.NewMockStakingKeeper(s.ctrl)
+	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(s.ctrl)
 
 	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.AccAddress{})
 
@@ -84,7 +85,6 @@ func (s *IntegrationTestSuite) SetupTest() {
 
 	s.msgServer = keeper.NewMsgServerImpl(s.mintKeeper)
 	s.epochGet = alloratestutil.GetTokenomicsSimulatorValuesGetterForEpochs()
-	s.epoch61Get = s.epochGet[61]
 }
 
 func (s *IntegrationTestSuite) TestAliasFunctions() {

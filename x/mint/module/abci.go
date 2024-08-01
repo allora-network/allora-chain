@@ -11,7 +11,7 @@ import (
 
 func GetEmissionPerMonth(
 	ctx sdk.Context,
-	k keeper.Keeper,
+	k types.MintKeeper,
 	blocksPerMonth uint64,
 	params types.Params,
 	ecosystemMintSupplyRemaining math.Int,
@@ -72,7 +72,7 @@ func GetEmissionPerMonth(
 		targetRewardEmissionPerUnitStakedToken,
 		maximumMonthlyEmissionPerUnitStakedToken,
 	)
-	previousRewardEmissionPerUnitStakedToken, err := k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
+	previousRewardEmissionPerUnitStakedToken, err := k.GetPreviousRewardEmissionPerUnitStakedToken(ctx)
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}

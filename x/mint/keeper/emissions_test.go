@@ -5,6 +5,8 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
+	mint "github.com/allora-network/allora-chain/x/mint/module"
+	minttestutil "github.com/allora-network/allora-chain/x/mint/testutil"
 	"github.com/allora-network/allora-chain/x/mint/types"
 )
 
@@ -124,13 +126,14 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 
 // match ^e_i from row 61
 func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
-	expectedResult := s.epoch61Get("ehat_target_i")
+	epoch := s.epochGet[61]
+	expectedResult := epoch("ehat_target_i")
 
 	simulatorFEmission := cosmosMath.LegacyMustNewDecFromStr("0.025")
-	networkTokensTotal := s.epoch61Get("network_tokens_total").SdkIntTrim()
-	ecosystemTokensTotal := s.epoch61Get("ecosystem_tokens_total").SdkIntTrim()
-	networkTokensCirculating := s.epoch61Get("network_tokens_circulating").SdkIntTrim()
-	networkTokensStaked := s.epoch61Get("network_tokens_staked").SdkIntTrim()
+	networkTokensTotal := epoch("network_tokens_total").SdkIntTrim()
+	ecosystemTokensTotal := epoch("ecosystem_tokens_total").SdkIntTrim()
+	networkTokensCirculating := epoch("network_tokens_circulating").SdkIntTrim()
+	networkTokensStaked := epoch("network_tokens_staked").SdkIntTrim()
 	result, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		simulatorFEmission,
 		ecosystemTokensTotal,
@@ -143,97 +146,6 @@ func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
 	s.Require().NoError(err)
 	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
 }
-
-/**
-epoch,
-time,
-network_tokens_total,
-network_tokens_emission,
-network_tokens_circulating,
-network_tokens_staked,
-investors_preseed_tokens_total,
-investors_preseed_tokens_emission,
-investors_preseed_tokens_circulating,
-investors_preseed_tokens_staked,
-investors_seed_tokens_total,
-investors_seed_tokens_emission,
-investors_seed_tokens_circulating,
-investors_seed_tokens_staked,
-team_tokens_total,
-team_tokens_emission,
-team_tokens_circulating,
-team_tokens_staked,
-ecosystem_tokens_total,
-ecosystem_tokens_emission,
-ecosystem_tokens_circulating,
-ecosystem_tokens_staked,
-foundation_tokens_total,
-foundation_tokens_emission,
-foundation_tokens_circulating,
-foundation_tokens_staked,
-participants_tokens_total,
-participants_tokens_emission,
-participants_tokens_circulating,
-participants_tokens_staked,
-ehat_target_i,
-ehat_max_i,
-ehat_i,
-e_i,
-validator_rewards,
-topics_rewards,
-n_active_topics,
-all_topic_weight_sum,
-topic_id_0,
-topic_months_live_0,
-topic_n_workers_0,
-topic_n_reputers_0,
-topic_total_stake_0,
-topic_total_fee_revenue_0,
-topic_weights_0,
-topic_rewards_0,
-topic_id_1,
-topic_months_live_1,
-topic_n_workers_1,
-topic_n_reputers_1,
-topic_total_stake_1,
-topic_total_fee_revenue_1,
-topic_weights_1,
-topic_rewards_1,
-topic_id_2,
-topic_months_live_2,
-topic_n_workers_2,
-topic_n_reputers_2,
-topic_total_stake_2,
-topic_total_fee_revenue_2,
-topic_weights_2,
-topic_rewards_2,
-n_active_validators,
-all_validator_stake_sum,
-validator_id_0,
-validator_months_live_0,
-validator_stake_0,
-validator_rewards_0,
-validator_id_1,
-validator_months_live_1,
-validator_stake_1,
-validator_rewards_1,
-validator_id_2,
-validator_months_live_2,
-validator_stake_2,
-validator_rewards_2
-*/
-
-/*
-func (s *IntegrationTestSuite) TestEHatMaxIFromCsv() {
-	expectedResult := s.epoch61Get("ehat_max_i")
-	ehatTargetI := s.epoch61Get("ehat_target_i")
-
-
-	keeper.GetMaximumMonthlyEmissionPerUnitStakedToken(
-
-	)
-}
-*/
 
 func (s *IntegrationTestSuite) TestEHatMaxAtGenesisFromCsv() {
 	epoch0Get := s.epochGet[0]
@@ -265,9 +177,10 @@ func (s *IntegrationTestSuite) TestEHatMaxAtGenesisFromCsv() {
 }
 
 func (s *IntegrationTestSuite) TestEhatIFromCsv() {
-	expectedResult := s.epoch61Get("ehat_i")
-	ehatMaxI := s.epoch61Get("ehat_max_i").SdkLegacyDec()
-	ehatTargetI := s.epoch61Get("ehat_target_i").SdkLegacyDec()
+	epoch := s.epochGet[61]
+	expectedResult := epoch("ehat_i")
+	ehatMaxI := epoch("ehat_max_i").SdkLegacyDec()
+	ehatTargetI := epoch("ehat_target_i").SdkLegacyDec()
 
 	result := keeper.GetCappedTargetEmissionPerUnitStakedToken(
 		ehatTargetI,
@@ -280,8 +193,8 @@ func (s *IntegrationTestSuite) TestEhatIFromCsv() {
 
 // calculate e_i for the 61st epoch
 func (s *IntegrationTestSuite) TestESubIFromCsv() {
-	expectedResult := s.epoch61Get("e_i")
-	targetE_i := s.epoch61Get("ehat_target_i").SdkLegacyDec()
+	expectedResult := s.epochGet[61]("e_i")
+	targetE_i := s.epochGet[61]("ehat_target_i").SdkLegacyDec()
 	previousE_i := s.epochGet[60]("e_i").SdkLegacyDec()
 
 	// this is taken directly from the python notebook
@@ -300,8 +213,8 @@ func (s *IntegrationTestSuite) TestESubIFromCsv() {
 // calculate \cal E for the 61st epoch
 // GetTotalEmissionPerMonth
 func (s *IntegrationTestSuite) TestCalEFromCsv() {
-	expectedResult := s.epoch61Get("ecosystem_tokens_emission")
-	rewardEmissionPerUnitStakedToken := s.epoch61Get("e_i").SdkLegacyDec()
+	expectedResult := s.epochGet[61]("ecosystem_tokens_emission")
+	rewardEmissionPerUnitStakedToken := s.epochGet[61]("e_i").SdkLegacyDec()
 	// use the value from epoch 60 rather than 61 because the python notebook
 	// updates the value AFTER calculating the total emission and handing out rewards
 	numStakedTokens := s.epochGet[60]("network_tokens_staked").SdkIntTrim()
@@ -312,4 +225,44 @@ func (s *IntegrationTestSuite) TestCalEFromCsv() {
 	resultD, err := alloraMath.NewDecFromSdkInt(totalEmission)
 	s.Require().NoError(err)
 	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
+}
+
+/* todo: think about how to get a grip on this
+func (s *IntegrationTestSuite) TestGetLockedTokenSupply() {
+	for i := 0; i < 20; i++ {
+		epoch := s.epochGet[i]
+		total := epoch("investors_preseed_tokens_total")
+		emission := epoch("investors_preseed_tokens_emission")
+		circulating := epoch("investors_preseed_tokens_circulating")
+		staked := epoch("investors_preseed_tokens_staked")
+		fmt.Println("epoch ", i, total, emission, circulating, staked)
+	}
+}
+*/
+
+// test the ABCI function that calculates \cal E
+func (s *IntegrationTestSuite) TestGetEmissionPerMonth() {
+	//prevEpoch := s.epochGet[60]
+	epoch := s.epochGet[61]
+	// we're mocking EVERYTHING
+	mockMintKeeper := minttestutil.NewMockMintKeeper(s.ctrl)
+	blocksPerMonth := uint64(525960)
+	params := types.Params{}
+	ecosystemMintSupplyRemaining := cosmosMath.NewInt(1000000000000000000)
+	validatorsPercent := cosmosMath.LegacyMustNewDecFromStr("0.25")
+	calE, ehat_i, err := mint.GetEmissionPerMonth(
+		s.ctx,
+		mockMintKeeper,
+		blocksPerMonth,
+		params,
+		ecosystemMintSupplyRemaining,
+		validatorsPercent,
+	)
+	s.Require().NoError(err)
+	calED, err := alloraMath.NewDecFromSdkInt(calE)
+	s.Require().NoError(err)
+	testutil.InEpsilon5D(s.T(), epoch("ecosystem_tokens_emission"), calED)
+	ehat_iD, err := alloraMath.NewDecFromSdkLegacyDec(ehat_i)
+	s.Require().NoError(err)
+	testutil.InEpsilon5D(s.T(), epoch("ehat_i"), ehat_iD)
 }
