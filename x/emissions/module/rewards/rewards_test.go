@@ -766,15 +766,12 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []types.TaskRewar
 	for _, taskRewardA := range A {
 		found := false
 		for _, taskRewardB := range B {
-			if taskRewardA.Address == taskRewardB.Address {
+			if taskRewardA.Address == taskRewardB.Address && taskRewardA.Type == taskRewardB.Type {
 				if found {
 					s.Fail("Worker %v found twice", taskRewardA.Address)
 				}
 				found = true
 				if !alloraMath.InDelta(taskRewardA.Reward, taskRewardB.Reward, alloraMath.MustNewDecFromString("0.00001")) {
-					return false
-				}
-				if taskRewardA.Type != taskRewardB.Type {
 					return false
 				}
 			}

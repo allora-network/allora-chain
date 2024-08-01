@@ -1168,8 +1168,8 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 
 	// Test getting data before any insert, should return error or nil
 	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
-	require.Error(err, "Should return error for non-existent data")
-	require.Nil(result, "Result should be nil for non-existent data")
+	require.NoError(err)
+	require.Nil(result.ReputerValueBundles, "Result should be nil for non-existent data")
 }
 
 func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
