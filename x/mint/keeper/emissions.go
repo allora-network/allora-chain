@@ -63,7 +63,7 @@ func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
 }
 
 // The total amount of tokens emitted for a full month
-// E_i = e_i*N_{staked,i}
+// \cal E_i = e_i*N_{staked,i}
 // where e_i is the emission per unit staked token
 // and N_{staked,i} is the total amount of tokens staked at timestep i
 // THIS FUNCTION TRUNCATES THE RESULT DIVISION TO AN INTEGER
