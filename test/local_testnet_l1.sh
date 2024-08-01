@@ -4,6 +4,22 @@ set -eu  #e
 # Ensure we're in integration folder
 cd "$(dirname "$0")"
 
+# Function to check if a command exists
+check_command() {
+  if ! command -v "$1" &> /dev/null; then
+    echo "Error: $1 is not installed."
+    exit 1
+  fi
+}
+
+# List of required commands
+commands=("docker" "docker-compose" "jq" "envsubst" "curl")
+
+# Check each command
+for cmd in "${commands[@]}"; do
+  check_command "$cmd"
+done
+
 DOCKER_IMAGE=allorad
 VALIDATOR_NUMBER="${VALIDATOR_NUMBER:-3}"
 VALIDATOR_PREFIX=validator
@@ -14,6 +30,7 @@ VALIDATORS_API_PORT_START=1317
 HEADS_IP_START=20
 CHAIN_ID="${CHAIN_ID:-devnet}"
 LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
+UPGRADE_VERSION="v1.0.0"
 
 ACCOUNTS_TOKENS=1000000
 
@@ -109,20 +126,20 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
         $DOCKER_IMAGE \
             init /usr/local/bin/allorad
 
-    echo "Setting vintegration upgrade for $valName"
+    echo "Setting $UPGRADE_VERSION upgrade for $valName"
     docker run -t \
         -u $(id -u):$(id -g) \
         -v ${LOCALNET_DATADIR}:/data \
         --entrypoint=mkdir \
         $DOCKER_IMAGE \
-            -p /data/${valName}/cosmovisor/upgrades/vintegration/bin
+            -p /data/${valName}/cosmovisor/upgrades/${UPGRADE_VERSION}/bin
 
     docker run -t \
         -u $(id -u):$(id -g) \
         -v ${LOCALNET_DATADIR}:/data \
         --entrypoint=cp \
         $DOCKER_IMAGE \
-            /usr/local/bin/allorad-integration /data/${valName}/cosmovisor/upgrades/vintegration/bin/allorad
+            /usr/local/bin/allorad-${UPGRADE_VERSION} /data/${valName}/cosmovisor/upgrades/${UPGRADE_VERSION}/bin/allorad
 done
 
 echo "Generate L1 peers, put them in persisent-peers and in genesis.json"

@@ -9,7 +9,7 @@ import (
 // An example MigrateStore function that might be run in the migration
 // handler.
 func MigrateStore(ctx sdk.Context) error {
-	ctx.Logger().Error(fmt.Sprintf(
+	ctx.Logger().Info(fmt.Sprintf(
 		"###################################################" +
 			"### MIGRATING STORE FROM VERSION 1 TO VERSION 2 ###" +
 			"###################################################",
