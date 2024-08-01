@@ -50,12 +50,12 @@ func GetLockedTokenSupply(
 // helper function to get the number of staked tokens on the network
 // includes both tokens staked by cosmos validators (cosmos staking)
 // and tokens staked by reputers (allora staking)
-func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
+func GetNumStakedTokens(ctx context.Context, k types.MintKeeper) (math.Int, error) {
 	cosmosValidatorsStaked, err := k.CosmosValidatorStakedSupply(ctx)
 	if err != nil {
 		return math.Int{}, err
 	}
-	reputersStaked, err := k.emissionsKeeper.GetTotalStake(ctx)
+	reputersStaked, err := k.GetEmissionsKeeperTotalStake(ctx)
 	if err != nil {
 		return math.Int{}, err
 	}

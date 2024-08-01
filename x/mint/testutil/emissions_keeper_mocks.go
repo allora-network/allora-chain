@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockEmissionsKeeper is a mock of BankKeeper interface.
+// MockEmissionsKeeper is a mock of EmissionsKeeper interface.
 type MockEmissionsKeeper struct {
 	ctrl     *gomock.Controller
 	recorder *MockEmissionsKeeperMockRecorder
@@ -21,7 +21,7 @@ type MockEmissionsKeeperMockRecorder struct {
 	mock *MockEmissionsKeeper
 }
 
-// NewEmissionsBankKeeper creates a new mock instance.
+// NewEmissionsEmissionsKeeper creates a new mock instance.
 func NewMockEmissionsKeeper(ctrl *gomock.Controller) *MockEmissionsKeeper {
 	mock := &MockEmissionsKeeper{ctrl: ctrl}
 	mock.recorder = &MockEmissionsKeeperMockRecorder{mock}
