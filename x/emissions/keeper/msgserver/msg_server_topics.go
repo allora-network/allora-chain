@@ -3,13 +3,9 @@ package msgserver
 import (
 	"context"
 
-	"cosmossdk.io/errors"
-	"github.com/allora-network/allora-chain/app/params"
+	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
@@ -17,22 +13,14 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 
-	hasEnoughBal, fee, err := checkAddressHasBalanceForTopicCreationFee(ctx, ms, msg.Creator)
-	if err != nil {
-		return nil, err
-	}
-	if !hasEnoughBal {
-		return nil, errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover topic creation fee")
-	}
-
-	id, err := ms.k.GetNextTopicId(ctx)
+	topicId, err := ms.k.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
 	}
 	if msg.EpochLength < params.MinEpochLength {
 		return nil, types.ErrTopicCadenceBelowMinimum
@@ -42,13 +30,13 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Creator, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
+	err = checkBalanceAndSendFee(ctx, ms, msg.Creator, topicId, params.CreateTopicFee, "create topic")
 	if err != nil {
 		return nil, err
 	}
 
 	topic := types.Topic{
-		Id:                     id,
+		Id:                     topicId,
 		Creator:                msg.Creator,
 		Metadata:               msg.Metadata,
 		LossMethod:             msg.LossMethod,
@@ -66,25 +54,12 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	if err != nil {
 		return nil, err
 	}
-	if err := ms.k.SetTopic(ctx, id, topic); err != nil {
+	if err := ms.k.SetTopic(ctx, topicId, topic); err != nil {
 		return nil, err
 	}
 	// Rather than set latest weight-adjustment timestamp of a topic to 0
 	// we do nothing, since no value in the map means zero
 
-	return &types.MsgCreateNewTopicResponse{TopicId: id}, nil
-}
-
-func checkAddressHasBalanceForTopicCreationFee(ctx context.Context, ms msgServer, address string) (bool, sdk.Coin, error) {
-	moduleParams, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return false, sdk.Coin{}, err
-	}
-	fee := sdk.NewCoin(params.DefaultBondDenom, moduleParams.CreateTopicFee)
-	accAddress, err := sdk.AccAddressFromBech32(address)
-	if err != nil {
-		return false, sdk.Coin{}, err
-	}
-	balance := ms.k.GetBankBalance(ctx, accAddress, fee.Denom)
-	return balance.IsGTE(fee), fee, nil
+	err = ms.k.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
+	return &types.MsgCreateNewTopicResponse{TopicId: topicId}, err
 }

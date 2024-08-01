@@ -2,10 +2,10 @@ package msgserver
 
 import (
 	"context"
+
 	errorsmod "cosmossdk.io/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -62,16 +62,12 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, types.ErrReputerNonceWindowNotAvailable
 	}
 
-	hasEnoughBal, fee, err := ms.CheckBalanceForSendingDataFee(ctx, msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	if !hasEnoughBal {
-		return nil, types.ErrDataSenderNotEnoughDenom
-	}
-
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
+	params, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+	}
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee, "insert reputer payload")
 	if err != nil {
 		return nil, err
 	}

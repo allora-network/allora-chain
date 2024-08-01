@@ -52,7 +52,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 		return nil, err
 	}
 
-	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, msg.TopicId, msg.Amount)
+	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, msg.TopicId, cosmosMath.ZeroInt(), msg.Amount)
 	return &types.MsgAddStakeResponse{}, err
 }
 
@@ -166,7 +166,8 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 		return nil, err
 	}
 
-	return &types.MsgDelegateStakeResponse{}, nil
+	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, msg.TopicId, cosmosMath.ZeroInt(), msg.Amount)
+	return &types.MsgDelegateStakeResponse{}, err
 }
 
 // RemoveDelegateStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
