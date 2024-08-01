@@ -278,37 +278,38 @@ func (s *IntegrationTestSuite) TestEhatIFromCsv() {
 	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
 }
 
-func (s *IntegrationTestSuite) TestESubIFromPrintfDebuggingPythonNotebook() {
-	// from printf debugging the python notebook:
-	//    if i == 61:
-	//        e_i = (alpha_emission_per_token*target_emission_per_token+(1-alpha_emission_per_token)*old_emission_per_token)
-	//        print(target_emission_per_token)
-	//        print(old_emission_per_token)
-	//        print(e_i)
-	//
-	// Values in the CSV are wrong!! not equal to the actual values used in the simulator!!
-	expectedResultPrintf := alloraMath.MustNewDecFromString("0.0066204043241312")
-	//expectedResult := s.epoch61Get("e_i")
-	//fmt.Printf("%v | %v\n", expectedResult, expectedResultPrintf)
-	// 0.006596912577740069 | 0.0066204043241312
-	targetE_iPrintf := alloraMath.MustNewDecFromString("0.00545700205370986")
-	//targetE_i := s.epoch61Get("ehat_target_i")
-	//fmt.Printf("%v | %v\n", targetE_i, targetE_iPrintf)
-	// 0.005316238669484353 | 0.00545700205370986
-	previousE_iPrintf := alloraMath.MustNewDecFromString("0.006749671243066904")
-	//previousE_i := s.epochGet[60]("e_i")
-	//fmt.Printf("%v | %v\n", previousE_i, previousE_iPrintf)
-	// 0.006749671243066904 | 0.006749671243066904
+// calculate e_i for the 61st epoch
+func (s *IntegrationTestSuite) TestESubIFromCsv() {
+	expectedResult := s.epoch61Get("e_i")
+	targetE_i := s.epoch61Get("ehat_target_i").SdkLegacyDec()
+	previousE_i := s.epochGet[60]("e_i").SdkLegacyDec()
 
 	// this is taken directly from the python notebook
 	alpha_Emission := cosmosMath.LegacyMustNewDecFromStr("0.1")
 
 	result := keeper.GetExponentialMovingAverage(
-		targetE_iPrintf.SdkLegacyDec(),
+		targetE_i,
 		alpha_Emission,
-		previousE_iPrintf.SdkLegacyDec(),
+		previousE_i,
 	)
 	resultD, err := alloraMath.NewDecFromSdkLegacyDec(result)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), resultD, expectedResultPrintf)
+	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
 }
+
+// calculate \cal E for the 61st epoch
+// GetTotalEmissionPerMonth
+/*func (s *IntegrationTestSuite) TestCalEFromCsv() {
+	expectedResult := s.epoch61Get("e_i")
+	// taken directly from python notebook
+	rewardEmissionPerUnitStakedToken := cosmosMath.LegacyMustNewDecFromStr("0.025")
+	numStakedTokens := s.epoch61Get("network_tokens_staked").SdkIntTrim()
+	totalEmission := keeper.GetTotalEmissionPerMonth(
+		rewardEmissionPerUnitStakedToken,
+		numStakedTokens,
+	)
+	resultD, err := alloraMath.NewDecFromSdkLegacyDec(totalEmission)
+	s.Require().NoError(err)
+	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
+}
+*/
