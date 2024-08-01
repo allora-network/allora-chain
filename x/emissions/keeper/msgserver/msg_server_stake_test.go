@@ -809,7 +809,7 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
