@@ -481,6 +481,82 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 	s.Require().Equal(5, len(forecastRewards))
 }
 
+func (s *RewardsTestSuite) TestInferenceRewardsFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch3Get := epochGet[300]
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
+	infererScores := []types.Score{
+		{Score: epoch3Get("inferer_score_0")},
+		{Score: epoch3Get("inferer_score_1")},
+		{Score: epoch3Get("inferer_score_2")},
+		{Score: epoch3Get("inferer_score_3")},
+		{Score: epoch3Get("inferer_score_4")},
+	}
+	chi, gamma, err := rewards.GetChiAndGamma(
+		epoch3Get("network_naive_loss"),
+		epoch3Get("network_loss"),
+		epoch3Get("inferers_entropy"),
+		epoch3Get("forecasters_entropy"),
+		infererScores,
+		epoch3Get("forecaster_score_ratio"),
+		alpha,
+	)
+	s.Require().NoError(err)
+
+	result, err := rewards.GetRewardForInferenceTaskInTopic(
+		epoch3Get("inferers_entropy"),
+		epoch3Get("forecasters_entropy"),
+		epoch3Get("reputers_entropy"),
+		&totalReward,
+		chi,
+		gamma,
+	)
+	s.Require().NoError(err)
+	expectedTotalInfererReward, err := testutil.GetTotalInfererRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
+	testutil.InEpsilon5(s.T(), result, expectedTotalInfererReward.String())
+}
+
+func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch3Get := epochGet[300]
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
+	infererScores := []types.Score{
+		{Score: epoch3Get("inferer_score_0")},
+		{Score: epoch3Get("inferer_score_1")},
+		{Score: epoch3Get("inferer_score_2")},
+		{Score: epoch3Get("inferer_score_3")},
+		{Score: epoch3Get("inferer_score_4")},
+	}
+	chi, gamma, err := rewards.GetChiAndGamma(
+		epoch3Get("network_naive_loss"),
+		epoch3Get("network_loss"),
+		epoch3Get("inferers_entropy"),
+		epoch3Get("forecasters_entropy"),
+		infererScores,
+		epoch3Get("forecaster_score_ratio"),
+		alpha,
+	)
+	s.Require().NoError(err)
+
+	result, err := rewards.GetRewardForForecastingTaskInTopic(
+		epoch3Get("inferers_entropy"),
+		epoch3Get("forecasters_entropy"),
+		epoch3Get("reputers_entropy"),
+		&totalReward,
+		chi,
+		gamma,
+	)
+	s.Require().NoError(err)
+	expectedTotalForecasterReward, err := testutil.GetTotalForecasterRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
+	testutil.InEpsilon5(s.T(), result, expectedTotalForecasterReward.String())
+}
+
 func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {
 	oneOutInfererLosses := []*types.WithheldWorkerAttributedValue{
 		{

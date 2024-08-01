@@ -338,17 +338,28 @@ func GenerateRewardsDistributionByTopicParticipant(
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast tau")
 	}
 
-	// Get Total Rewards for Inference task
-	taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
+	// Get chi (Forecasting Utility) and gamma (Normalization Factor)
+	chi, gamma, err := GetChiAndGamma(
 		lossBundles.NaiveValue,
 		lossBundles.CombinedValue,
 		inferenceEntropy,
 		forecastingEntropy,
-		reputerEntropy,
-		topicReward,
 		infererScores,
 		previousForecasterScoreRatio,
 		moduleParams.TaskRewardAlpha,
+	)
+	if err != nil {
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
+	}
+
+	// Get Total Rewards for Inference task
+	taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
+		inferenceEntropy,
+		forecastingEntropy,
+		reputerEntropy,
+		topicReward,
+		chi,
+		gamma,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
@@ -356,15 +367,12 @@ func GenerateRewardsDistributionByTopicParticipant(
 
 	// Get Total Rewards for Forecasting task
 	taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
-		lossBundles.NaiveValue,
-		lossBundles.CombinedValue,
 		inferenceEntropy,
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
-		infererScores,
-		previousForecasterScoreRatio,
-		moduleParams.TaskRewardAlpha,
+		chi,
+		gamma,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")

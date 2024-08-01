@@ -140,16 +140,23 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
 	totalReward := alloraMath.MustNewDecFromString("2.0")
+	chi, gamma, err := rewards.GetChiAndGamma(
+		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"),
+		alloraMath.MustNewDecFromString("2.0"),
+		infererScores,
+		previousForecasterScoreRatio,
+		alpha,
+	)
+	s.Require().NoError(err)
 	infRewards, err := rewards.GetRewardForInferenceTaskInTopic(
-		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
-		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"), // F_i
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
-		infererScores,
-		previousForecasterScoreRatio,
-		alpha,
+		chi,
+		gamma,
 	)
 	s.Require().NoError(err)
 	expected := alloraMath.MustNewDecFromString("0.5")
@@ -174,49 +181,26 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
-	result, err := rewards.GetRewardForInferenceTaskInTopic(
-		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
-		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
-		alloraMath.MustNewDecFromString("2.0"), // F_i
-		alloraMath.MustNewDecFromString("2.0"), // G_i
-		alloraMath.MustNewDecFromString("4.0"), // H_i
-		&totalReward,                           // E_i
+	chi, gamma, err := rewards.GetChiAndGamma(
+		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"),
+		alloraMath.MustNewDecFromString("2.0"),
 		infererScores,
 		previousForecasterScoreRatio,
 		alpha,
 	)
 	s.Require().NoError(err)
-	s.Require().True(alloraMath.InDelta(alloraMath.ZeroDec(), result, alloraMath.MustNewDecFromString("0.0001")))
-}
-
-func (s *MathTestSuite) TestInferenceRewardsFromCsv() {
-	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
-	epoch3Get := epochGet[300]
-	alpha := alloraMath.MustNewDecFromString("0.1")
-	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
-	s.Require().NoError(err)
-	infererScores := []emissionstypes.Score{
-		{Score: epoch3Get("inferer_score_0")},
-		{Score: epoch3Get("inferer_score_1")},
-		{Score: epoch3Get("inferer_score_2")},
-		{Score: epoch3Get("inferer_score_3")},
-		{Score: epoch3Get("inferer_score_4")},
-	}
 	result, err := rewards.GetRewardForInferenceTaskInTopic(
-		epoch3Get("network_naive_loss"),
-		epoch3Get("network_loss"),
-		epoch3Get("inferers_entropy"),
-		epoch3Get("forecasters_entropy"),
-		epoch3Get("reputers_entropy"),
-		&totalReward,
-		infererScores,
-		epoch3Get("forecaster_score_ratio"),
-		alpha,
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		&totalReward,                           // E_i
+		chi,
+		gamma,
 	)
 	s.Require().NoError(err)
-	expectedTotalInfererReward, err := testutil.GetTotalInfererRewardForTopicInEpoch(epoch3Get)
-	s.Require().NoError(err)
-	testutil.InEpsilon5(s.T(), result, expectedTotalInfererReward.String())
+	s.Require().True(alloraMath.InDelta(alloraMath.ZeroDec(), result, alloraMath.MustNewDecFromString("0.0001")))
 }
 
 func (s *MathTestSuite) TestForecastRewardsSimple() {
@@ -233,16 +217,23 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
 	totalReward := alloraMath.MustNewDecFromString("2.0")
-	result, err := rewards.GetRewardForForecastingTaskInTopic(
-		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
-		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
+	chi, gamma, err := rewards.GetChiAndGamma(
+		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"),
+		alloraMath.MustNewDecFromString("2.0"),
+		infererScores,
+		previousForecasterScoreRatio,
+		alpha,
+	)
+	s.Require().NoError(err)
+	result, err := rewards.GetRewardForInferenceTaskInTopic(
 		alloraMath.MustNewDecFromString("2.0"), // F_i
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
-		infererScores,
-		previousForecasterScoreRatio,
-		alpha,
+		chi,
+		gamma,
 	)
 	expected := alloraMath.MustNewDecFromString("0.5")
 	s.Require().NoError(err)
@@ -272,29 +263,33 @@ func (s *MathTestSuite) TestU_iOverV_i() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
 	totalReward := alloraMath.MustNewDecFromString("2.0")
-	U_i, err := rewards.GetRewardForInferenceTaskInTopic(
-		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
-		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
-		alloraMath.MustNewDecFromString("2.0"), // F_i
-		alloraMath.MustNewDecFromString("2.0"), // G_i
-		alloraMath.MustNewDecFromString("4.0"), // H_i
-		&totalReward,                           // E_i
+	chi, gamma, err := rewards.GetChiAndGamma(
+		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"),
+		alloraMath.MustNewDecFromString("2.0"),
 		infererScores,
 		previousForecasterScoreRatio,
 		alpha,
 	)
 	s.Require().NoError(err)
-
-	V_i, err := rewards.GetRewardForForecastingTaskInTopic(
-		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
-		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
+	U_i, err := rewards.GetRewardForInferenceTaskInTopic(
 		alloraMath.MustNewDecFromString("2.0"), // F_i
 		alloraMath.MustNewDecFromString("2.0"), // G_i
 		alloraMath.MustNewDecFromString("4.0"), // H_i
 		&totalReward,                           // E_i
-		infererScores,
-		previousForecasterScoreRatio,
-		alpha,
+		chi,
+		gamma,
+	)
+	s.Require().NoError(err)
+
+	V_i, err := rewards.GetRewardForForecastingTaskInTopic(
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		&totalReward,                           // E_i
+		chi,
+		gamma,
 	)
 	s.Require().NoError(err)
 
@@ -321,50 +316,27 @@ func (s *MathTestSuite) TestForecastRewardsZero() {
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
-	result, err := rewards.GetRewardForForecastingTaskInTopic(
-		alloraMath.MustNewDecFromString("2"),   // log10(L_i- (naive))
-		alloraMath.MustNewDecFromString("1"),   // log10(L_i (network))
-		alloraMath.MustNewDecFromString("2.0"), // F_i
-		alloraMath.MustNewDecFromString("2.0"), // G_i
-		alloraMath.MustNewDecFromString("4.0"), // H_i
-		&totalReward,                           // E_i
+	chi, gamma, err := rewards.GetChiAndGamma(
+		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
+		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
+		alloraMath.MustNewDecFromString("2.0"),
+		alloraMath.MustNewDecFromString("2.0"),
 		infererScores,
 		previousForecasterScoreRatio,
 		alpha,
 	)
+	s.Require().NoError(err)
+	result, err := rewards.GetRewardForForecastingTaskInTopic(
+		alloraMath.MustNewDecFromString("2.0"), // F_i
+		alloraMath.MustNewDecFromString("2.0"), // G_i
+		alloraMath.MustNewDecFromString("4.0"), // H_i
+		&totalReward,                           // E_i
+		chi,
+		gamma,
+	)
 
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.ZeroDec(), result, alloraMath.ZeroDec()))
-}
-
-func (s *MathTestSuite) TestForecastRewardsFromCsv() {
-	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
-	epoch3Get := epochGet[300]
-	alpha := alloraMath.MustNewDecFromString("0.1")
-	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
-	s.Require().NoError(err)
-	infererScores := []emissionstypes.Score{
-		{Score: epoch3Get("inferer_score_0")},
-		{Score: epoch3Get("inferer_score_1")},
-		{Score: epoch3Get("inferer_score_2")},
-		{Score: epoch3Get("inferer_score_3")},
-		{Score: epoch3Get("inferer_score_4")},
-	}
-	result, err := rewards.GetRewardForForecastingTaskInTopic(
-		epoch3Get("network_naive_loss"),
-		epoch3Get("network_loss"),
-		epoch3Get("inferers_entropy"),
-		epoch3Get("forecasters_entropy"),
-		epoch3Get("reputers_entropy"),
-		&totalReward,
-		infererScores,
-		epoch3Get("forecaster_score_ratio"),
-		alpha,
-	)
-	s.Require().NoError(err)
-	expectedTotalForecasterReward, err := testutil.GetTotalForecasterRewardForTopicInEpoch(epoch3Get)
-	s.Require().NoError(err)
-	testutil.InEpsilon5(s.T(), result, expectedTotalForecasterReward.String())
 }
 
 func (s *MathTestSuite) TestReputerRewardSimple() {

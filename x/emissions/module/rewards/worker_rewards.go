@@ -353,7 +353,7 @@ func NormalizationFactor(
 }
 
 // helper function to get chi and gamma
-func getChiAndGamma(
+func GetChiAndGamma(
 	naiveNetworkInferenceLoss,
 	networkInferenceLoss,
 	entropyInference,
@@ -392,28 +392,13 @@ func getChiAndGamma(
 // inference rewards calculation
 // U_i = ((1 - χ) * γ * F_i * E_i ) / (F_i + G_i + H_i)
 func GetRewardForInferenceTaskInTopic(
-	naiveNetworkInferenceLoss alloraMath.Dec,
-	networkInferenceLoss alloraMath.Dec,
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
 	totalReward *alloraMath.Dec, // E_i
-	infererScores []types.Score,
-	previousForecasterScoreRatio alloraMath.Dec,
-	alpha alloraMath.Dec,
+	chi alloraMath.Dec, // χ
+	gamma alloraMath.Dec, // γ
 ) (alloraMath.Dec, error) {
-	chi, gamma, err := getChiAndGamma(
-		naiveNetworkInferenceLoss,
-		networkInferenceLoss,
-		entropyInference,
-		entropyForecasting,
-		infererScores,
-		previousForecasterScoreRatio,
-		alpha,
-	)
-	if err != nil {
-		return alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
-	}
 	oneMinusChi, err := alloraMath.OneDec().Sub(chi)
 	if err != nil {
 		return alloraMath.Dec{}, err
@@ -448,28 +433,13 @@ func GetRewardForInferenceTaskInTopic(
 // forecaster rewards calculation
 // V_i = (χ * γ * G_i * E_i) / (F_i + G_i + H_i)
 func GetRewardForForecastingTaskInTopic(
-	naiveNetworkInferenceLoss alloraMath.Dec,
-	networkInferenceLoss alloraMath.Dec,
 	entropyInference alloraMath.Dec, // F_i
 	entropyForecasting alloraMath.Dec, // G_i
 	entropyReputer alloraMath.Dec, // H_i
 	totalReward *alloraMath.Dec, // E_i
-	infererScores []types.Score,
-	previousForecasterScoreRatio alloraMath.Dec,
-	alpha alloraMath.Dec,
+	chi alloraMath.Dec, // χ
+	gamma alloraMath.Dec, // γ
 ) (alloraMath.Dec, error) {
-	chi, gamma, err := getChiAndGamma(
-		naiveNetworkInferenceLoss,
-		networkInferenceLoss,
-		entropyInference,
-		entropyForecasting,
-		infererScores,
-		previousForecasterScoreRatio,
-		alpha,
-	)
-	if err != nil {
-		return alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
-	}
 	chiGamma, err := chi.Mul(gamma)
 	if err != nil {
 		return alloraMath.Dec{}, err
