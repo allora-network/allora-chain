@@ -299,17 +299,17 @@ func (s *IntegrationTestSuite) TestESubIFromCsv() {
 
 // calculate \cal E for the 61st epoch
 // GetTotalEmissionPerMonth
-/*func (s *IntegrationTestSuite) TestCalEFromCsv() {
-	expectedResult := s.epoch61Get("e_i")
-	// taken directly from python notebook
-	rewardEmissionPerUnitStakedToken := cosmosMath.LegacyMustNewDecFromStr("0.025")
-	numStakedTokens := s.epoch61Get("network_tokens_staked").SdkIntTrim()
+func (s *IntegrationTestSuite) TestCalEFromCsv() {
+	expectedResult := s.epoch61Get("ecosystem_tokens_emission")
+	rewardEmissionPerUnitStakedToken := s.epoch61Get("e_i").SdkLegacyDec()
+	// use the value from epoch 60 rather than 61 because the python notebook
+	// updates the value AFTER calculating the total emission and handing out rewards
+	numStakedTokens := s.epochGet[60]("network_tokens_staked").SdkIntTrim()
 	totalEmission := keeper.GetTotalEmissionPerMonth(
 		rewardEmissionPerUnitStakedToken,
 		numStakedTokens,
 	)
-	resultD, err := alloraMath.NewDecFromSdkLegacyDec(totalEmission)
+	resultD, err := alloraMath.NewDecFromSdkInt(totalEmission)
 	s.Require().NoError(err)
 	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
 }
-*/
