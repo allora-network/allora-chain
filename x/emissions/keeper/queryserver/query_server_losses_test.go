@@ -105,8 +105,8 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 		BlockHeight: int64(block),
 	}
 	response, err := s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
-	require.Error(err)
-	require.Nil(response)
+	require.NoError(err)
+	require.Nil(response.LossBundles.ReputerValueBundles)
 
 	// Test inserting data
 	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)

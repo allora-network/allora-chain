@@ -1016,7 +1016,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	var workerReward_0_0_1_Reward alloraMath.Dec
 	found := false
 	for _, reward := range rewardsDistribution0_1 {
-		if reward.Address == workerAddrs[0].String() {
+		if reward.Address == workerAddrs[0].String() && reward.Type == types.WorkerInferenceRewardType {
 			found = true
 			workerReward_0_0_1_Reward = reward.Reward
 		}
@@ -1028,7 +1028,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	var workerReward_0_1_1_Reward alloraMath.Dec
 	found = false
 	for _, reward := range rewardsDistribution1_1 {
-		if reward.Address == workerAddrs[0].String() {
+		if reward.Address == workerAddrs[0].String() && reward.Type == types.WorkerInferenceRewardType {
 			found = true
 			workerReward_0_1_1_Reward = reward.Reward
 		}
