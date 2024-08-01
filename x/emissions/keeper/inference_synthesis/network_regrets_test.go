@@ -628,5 +628,5 @@ func (s *InferenceSynthesisTestSuite) TestCalcTopicInitialRegret() {
 
 	calculatedInitialRegret, err := inference_synthesis.CalcTopicInitialRegret(regrets, epsilon, pNorm, cNorm)
 	require.NoError(err)
-	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.3150416097077003")
+	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.2869843501503934597325669544281814")
 }

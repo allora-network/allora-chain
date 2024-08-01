@@ -100,6 +100,10 @@ func GetSortedElementsByDecWeightDesc[K cmp.Ordered](l []K, m map[K]*Dec) []K {
 // stdDev = sqrt((Σ(x - μ))^2/ N)
 // where μ is mean and N is number of elements
 func StdDev(data []Dec) (Dec, error) {
+	if len(data) == 1 {
+		return ZeroDec(), nil
+	}
+
 	mean := ZeroDec()
 	var err error = nil
 	for _, v := range data {
@@ -128,10 +132,18 @@ func StdDev(data []Dec) (Dec, error) {
 			return Dec{}, err
 		}
 	}
-	sdOverLen, err := sd.Quo(lenData)
+
+	// Apply Bessel's correction by dividing by (N - 1) instead of N
+	lenDataMinusOne, err := lenData.Sub(OneDec())
 	if err != nil {
 		return Dec{}, err
 	}
+
+	sdOverLen, err := sd.Quo(lenDataMinusOne)
+	if err != nil {
+		return Dec{}, err
+	}
+
 	sqrtSdOverLen, err := sdOverLen.Sqrt()
 	if err != nil {
 		return Dec{}, err

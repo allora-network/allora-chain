@@ -211,22 +211,22 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch4Get := epochGet[finalEpoch]
 
-	inferer0 := s.addrs[5].String()
-	inferer1 := s.addrs[6].String()
-	inferer2 := s.addrs[7].String()
-	inferer3 := s.addrs[8].String()
-	inferer4 := s.addrs[9].String()
+	inferer0 := "inferer0"
+	inferer1 := "inferer1"
+	inferer2 := "inferer2"
+	inferer3 := "inferer3"
+	inferer4 := "inferer4"
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := s.addrs[10].String()
-	forecaster1 := s.addrs[11].String()
-	forecaster2 := s.addrs[12].String()
+	forecaster0 := "forecaster0"
+	forecaster1 := "forecaster1"
+	forecaster2 := "forecaster2"
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	// Add scores from previous epochs
 	infererLastScores := make([]types.Score, 0)
 	forecasterLastScores := make([]types.Score, 0)
-	for j := 0; j < 3; j++ {
+	for j := 0; j < 4; j++ {
 		epochGet := epochGet[initialEpoch+j]
 		inferersScores := []alloraMath.Dec{
 			epochGet("inferer_score_0"),
@@ -245,7 +245,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			blockHeight := int64(j)
 			scoreToAdd := types.Score{
 				TopicId:     topicId,
-				BlockHeight: blockHeight,
+				BlockHeight: int64(initialEpoch + j),
 				Address:     infererAddr,
 				Score:       inferersScores[i],
 			}
@@ -254,7 +254,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			err := s.emissionsKeeper.InsertWorkerInferenceScore(s.ctx, topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
-			if j == 2 {
+			if j == 3 {
 				infererLastScores = append(infererLastScores, scoreToAdd)
 			}
 		}
@@ -262,7 +262,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			blockHeight := int64(j)
 			scoreToAdd := types.Score{
 				TopicId:     topicId,
-				BlockHeight: blockHeight,
+				BlockHeight: int64(initialEpoch + j),
 				Address:     forecasterAddr,
 				Score:       forecastersScores[i],
 			}
@@ -271,7 +271,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 			err := s.emissionsKeeper.InsertWorkerForecastScore(s.ctx, topicId, blockHeight, scoreToAdd)
 			s.Require().NoError(err)
 
-			if j == 2 {
+			if j == 3 {
 				forecasterLastScores = append(forecasterLastScores, scoreToAdd)
 			}
 		}
@@ -283,7 +283,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 		s.emissionsKeeper,
 		topicId,
 		blockHeight,
-		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("3"),
 		alloraMath.MustNewDecFromString("0.75"),
 		infererLastScores,
 	)
@@ -305,7 +305,7 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 		s.emissionsKeeper,
 		topicId,
 		blockHeight,
-		alloraMath.MustNewDecFromString("1.5"),
+		alloraMath.MustNewDecFromString("3"),
 		alloraMath.MustNewDecFromString("0.75"),
 		forecasterLastScores,
 	)
@@ -479,6 +479,82 @@ func (s *RewardsTestSuite) TestGetWorkersRewardsForecastTask() {
 	)
 	s.Require().NoError(err)
 	s.Require().Equal(5, len(forecastRewards))
+}
+
+func (s *RewardsTestSuite) TestInferenceRewardsFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch3Get := epochGet[300]
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
+	infererScores := []types.Score{
+		{Score: epoch3Get("inferer_score_0")},
+		{Score: epoch3Get("inferer_score_1")},
+		{Score: epoch3Get("inferer_score_2")},
+		{Score: epoch3Get("inferer_score_3")},
+		{Score: epoch3Get("inferer_score_4")},
+	}
+	chi, gamma, err := rewards.GetChiAndGamma(
+		epoch3Get("network_naive_loss"),
+		epoch3Get("network_loss"),
+		epoch3Get("inferers_entropy"),
+		epoch3Get("forecasters_entropy"),
+		infererScores,
+		epoch3Get("forecaster_score_ratio"),
+		alpha,
+	)
+	s.Require().NoError(err)
+
+	result, err := rewards.GetRewardForInferenceTaskInTopic(
+		epoch3Get("inferers_entropy"),
+		epoch3Get("forecasters_entropy"),
+		epoch3Get("reputers_entropy"),
+		&totalReward,
+		chi,
+		gamma,
+	)
+	s.Require().NoError(err)
+	expectedTotalInfererReward, err := testutil.GetTotalInfererRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
+	testutil.InEpsilon5(s.T(), result, expectedTotalInfererReward.String())
+}
+
+func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch3Get := epochGet[300]
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
+	infererScores := []types.Score{
+		{Score: epoch3Get("inferer_score_0")},
+		{Score: epoch3Get("inferer_score_1")},
+		{Score: epoch3Get("inferer_score_2")},
+		{Score: epoch3Get("inferer_score_3")},
+		{Score: epoch3Get("inferer_score_4")},
+	}
+	chi, gamma, err := rewards.GetChiAndGamma(
+		epoch3Get("network_naive_loss"),
+		epoch3Get("network_loss"),
+		epoch3Get("inferers_entropy"),
+		epoch3Get("forecasters_entropy"),
+		infererScores,
+		epoch3Get("forecaster_score_ratio"),
+		alpha,
+	)
+	s.Require().NoError(err)
+
+	result, err := rewards.GetRewardForForecastingTaskInTopic(
+		epoch3Get("inferers_entropy"),
+		epoch3Get("forecasters_entropy"),
+		epoch3Get("reputers_entropy"),
+		&totalReward,
+		chi,
+		gamma,
+	)
+	s.Require().NoError(err)
+	expectedTotalForecasterReward, err := testutil.GetTotalForecasterRewardForTopicInEpoch(epoch3Get)
+	s.Require().NoError(err)
+	testutil.InEpsilon5(s.T(), result, expectedTotalForecasterReward.String())
 }
 
 func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {

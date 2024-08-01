@@ -76,4 +76,5 @@ var (
 	LatestOneOutInfererForecasterNetworkRegretsKey    = collections.NewPrefix(61)
 	LatestOneOutForecasterInfererNetworkRegretsKey    = collections.NewPrefix(62)
 	LatestOneOutForecasterForecasterNetworkRegretsKey = collections.NewPrefix(63)
+	PreviousForecasterScoreRatioKey                   = collections.NewPrefix(64)
 )

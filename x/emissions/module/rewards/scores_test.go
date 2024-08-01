@@ -14,7 +14,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *RewardsTestSuite) TestGetReputersScoresFromCsvOutputs() {
+func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch300Get := epochGet[300]
 	epoch301Get := epochGet[301]
@@ -182,7 +182,7 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	}
 }
 
-func (s *RewardsTestSuite) TestGetInferenceScoresFromCsvOutputs() {
+func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
 	topicId := uint64(1)
@@ -295,9 +295,9 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	}
 }
 
-func (s *RewardsTestSuite) TestGetForecasterScoresFromCsvOutputs() {
+func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
-	epoch3Get := epochGet[3]
+	epoch3Get := epochGet[300]
 	topicId := uint64(1)
 	block := int64(1003)
 

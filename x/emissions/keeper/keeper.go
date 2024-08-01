@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"sort"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -81,6 +82,7 @@ type Keeper struct {
 	previousInferenceRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 	// map of (topic, worker) -> previous reward for forecast (used for EMA)
 	previousForecastRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
+	previousForecasterScoreRatio   collections.Map[TopicId, alloraMath.Dec]
 
 	/// STAKING
 
@@ -246,6 +248,7 @@ func NewKeeper(
 		previousReputerRewardFraction:   collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		previousInferenceRewardFraction: collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		previousForecastRewardFraction:  collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousForecasterScoreRatio:    collections.NewMap(sb, types.PreviousForecasterScoreRatioKey, "previous_forecaster_score_ratio", collections.Uint64Key, alloraMath.DecValue),
 		reputerScoresByBlock:            collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		reputerListeningCoefficient:     collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ListeningCoefficient](cdc)),
 		unfulfilledWorkerNonces:         collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
@@ -2060,33 +2063,42 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 		EndInclusive(blockHeight).
 		Descending()
 
-	scores := make([]*types.Score, 0)
 	iter, err := k.infererScoresByBlock.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
 	defer iter.Close()
 
-	// Get max number of time steps that should be retrieved
+	scores := make([]*types.Score, 0)
+	for ; iter.Valid(); iter.Next() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		scores = append(scores, existingScores.Value.Scores...)
+	}
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
-	count := 0
-	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
-		existingScores, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
+	// Sort blockScores first by BlockHeight in descending order, then by Address
+	sort.SliceStable(scores, func(i, j int) bool {
+		if scores[i].BlockHeight == scores[j].BlockHeight {
+			return scores[i].Address < scores[j].Address
 		}
-		for _, score := range existingScores.Value.Scores {
-			scores = append(scores, score)
-			count++
-		}
+		return scores[i].BlockHeight > scores[j].BlockHeight
+	})
+
+	// Collect the sorted scores up to the maximum number of time steps
+	sortedScores := make([]*types.Score, 0, len(scores))
+	for i := 0; i < len(scores) && i < int(maxNumTimeSteps); i++ {
+		sortedScores = append(sortedScores, scores[i])
 	}
 
-	return scores, nil
+	return sortedScores, nil
 }
 
 func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
@@ -2130,33 +2142,42 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 		EndInclusive(blockHeight).
 		Descending()
 
-	scores := make([]*types.Score, 0)
 	iter, err := k.forecasterScoresByBlock.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
 	defer iter.Close()
 
-	// Get max number of time steps that should be retrieved
+	scores := make([]*types.Score, 0)
+	for ; iter.Valid(); iter.Next() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		scores = append(scores, existingScores.Value.Scores...)
+	}
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
-	count := 0
-	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
-		existingScores, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
+	// Sort blockScores first by BlockHeight in descending order, then by Address
+	sort.SliceStable(scores, func(i, j int) bool {
+		if scores[i].BlockHeight == scores[j].BlockHeight {
+			return scores[i].Address < scores[j].Address
 		}
-		for _, score := range existingScores.Value.Scores {
-			scores = append(scores, score)
-			count++
-		}
+		return scores[i].BlockHeight > scores[j].BlockHeight
+	})
+
+	// Collect the sorted scores up to the maximum number of time steps
+	sortedScores := make([]*types.Score, 0)
+	for i := 0; i < len(scores) && i < int(maxNumTimeSteps); i++ {
+		sortedScores = append(sortedScores, scores[i])
 	}
 
-	return scores, nil
+	return sortedScores, nil
 }
 
 func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
@@ -2530,4 +2551,19 @@ func (k *Keeper) SetTopicLastReputerPayload(ctx context.Context, topic types.Top
 
 func (k *Keeper) GetTopicLastReputerPayload(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
 	return k.topicLastReputerPayload.Get(ctx, topic)
+}
+
+func (k *Keeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId, tau alloraMath.Dec) error {
+	return k.previousForecasterScoreRatio.Set(ctx, topicId, tau)
+}
+
+func (k *Keeper) GetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	forecastTau, err := k.previousForecasterScoreRatio.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return forecastTau, nil
 }
