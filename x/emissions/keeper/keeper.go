@@ -735,7 +735,7 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 		return k.allForecasts.Set(ctx, key, newForecasts)
 	}
 	// get score of current inference and check with
-	score, err := k.GetLatestInfererScore(ctx, topicId, forecast.Forecaster)
+	score, err := k.GetLatestForecasterScore(ctx, topicId, forecast.Forecaster)
 	if err != nil {
 		return err
 	}
@@ -854,6 +854,9 @@ func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId Topic
 	key := collections.Join(topicId, block)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &types.ReputerValueBundles{}, nil
+		}
 		return nil, err
 	}
 	return &reputerLossBundles, nil

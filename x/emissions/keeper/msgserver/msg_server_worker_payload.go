@@ -76,6 +76,10 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
 		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
+		if inference.TopicId != msg.WorkerDataBundle.TopicId {
+			return nil, errorsmod.Wrapf(err,
+				"Error inferer not use same topic")
+		}
 		isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err,
@@ -94,6 +98,10 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 	// Append this individual inference to all inferences
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Forecast != nil {
 		forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
+		if forecast.TopicId != msg.WorkerDataBundle.TopicId {
+			return nil, errorsmod.Wrapf(err,
+				"Error forecaster not use same topic")
+		}
 		isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err,

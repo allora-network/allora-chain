@@ -134,7 +134,7 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	ctx, msgServer := s.ctx, s.msgServer
 	valueBundleSignature := s.signValueBundle(reputerValueBundle, reputerPrivateKey)
 
-	// Create a MsgInsertBulkReputerPayload message
+	// Create a MsgInsertReputerPayload message
 	lossesMsg := &types.MsgInsertReputerPayload{
 		Sender: reputerAddr.String(),
 		ReputerValueBundle: &types.ReputerValueBundle{
@@ -148,7 +148,7 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	return err
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayload() {
+func (s *MsgServerTestSuite) TestMsgInsertReputerPayload() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -169,6 +169,12 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkReputerPayload() {
 
 	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
 	require.NoError(err)
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	newBlockheight := block + topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle, topicId, &reputerNonce)
 	require.NoError(err)
