@@ -2,28 +2,34 @@ FROM golang:1.22-bookworm AS builder
 
 ENV GO111MODULE=on
 ENV GOMODCACHE=/gocache
+ENV BASELINE_VERSION=v0.2.8
+ENV GIT_STASH_MESSAGE="Docker build"
+
 ADD . /src
 WORKDIR /src
 
-COPY go.mod .
-COPY go.sum .
+# Save the uncommited changes
+RUN git stash -u -m "$GIT_STASH_MESSAGE"
+# Switch to the version we want to build
+RUN git checkout $BASELINE_VERSION
+
 RUN mkdir -p $GOMODCACHE
-RUN --mount=type=cache,target=/gocache go mod download
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
     go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@latest
-
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
     make install
 
-RUN git apply test/integration/upgrade.patch
+# Restore the new version
+RUN git switch -
+RUN git stash list | grep "$GIT_STASH_MESSAGE" && git stash pop
 
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
     make build-local-edits
 
-RUN cp build/allorad /go/bin/allorad-integration
+RUN cp build/allorad /go/bin/allorad-v1.0.0
 
 #==============================================================
 

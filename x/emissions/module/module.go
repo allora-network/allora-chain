@@ -26,7 +26,7 @@ var (
 )
 
 // ConsensusVersion defines the current module consensus version.
-const ConsensusVersion = 1
+const ConsensusVersion = 2
 
 type AppModule struct {
 	cdc    codec.Codec
