@@ -3,6 +3,7 @@ package module
 import (
 	"context"
 	"fmt"
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"sync"
 
 	"cosmossdk.io/errors"
@@ -14,6 +15,10 @@ import (
 
 func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
+	if invariantFailed {
+		panic(fmt.Sprintf("Invariants broken: %s", invariantMessage))
+	}
 	blockHeight := sdkCtx.BlockHeight()
 	sdkCtx.Logger().Debug(
 		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
