@@ -646,6 +646,9 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &types.Forecasts{}, nil
+		}
 		return nil, err
 	}
 	return &forecasts, nil
