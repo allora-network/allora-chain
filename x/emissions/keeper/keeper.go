@@ -178,7 +178,6 @@ type Keeper struct {
 
 	/// RECORD COMMITS
 
-	//
 	topicLastWorkerCommit   collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastReputerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastWorkerPayload  collections.Map[TopicId, types.TimestampedActorNonce]
@@ -2553,8 +2552,8 @@ func (k *Keeper) GetTopicLastReputerPayload(ctx context.Context, topic TopicId) 
 	return k.topicLastReputerPayload.Get(ctx, topic)
 }
 
-func (k *Keeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId, tau alloraMath.Dec) error {
-	return k.previousForecasterScoreRatio.Set(ctx, topicId, tau)
+func (k *Keeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId, forecasterScoreRatio alloraMath.Dec) error {
+	return k.previousForecasterScoreRatio.Set(ctx, topicId, forecasterScoreRatio)
 }
 
 func (k *Keeper) GetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {

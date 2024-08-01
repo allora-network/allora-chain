@@ -59,6 +59,8 @@ message GenesisState {
   repeated TopicIdActorIdDec previousInferenceRewardFraction = 19;
   // map of (topic, worker) -> previous reward for forecast (used for EMA)
   repeated TopicIdActorIdDec previousForecastRewardFraction = 20;
+    // map of (topic, forecaster) -> ratio of forecaster score
+  repeated TopicIdActorIdDec previousForecasterScoreRatio = 58;
 
   /// STAKING
 
@@ -135,16 +137,21 @@ message GenesisState {
   // all network inferer (3rd index) regrets L_ij made under the regime of the one-in forecaster (2nd index)
   repeated TopicIdActorIdActorIdTimeStampedValue latestOneInForecasterNetworkRegrets = 47;
   // the forecaster (2nd index) regrets made under the regime of the same forecaster as a one-in forecaster
-  repeated TopicIdActorIdTimeStampedValue latestOneInForecasterSelfNetworkRegrets = 48;
+  repeated TopicIdActorIdTimeStampedValue latestNaiveInfererNetworkRegrets = 48;
+  repeated TopicIdActorIdTimeStampedValue latestOneInForecasterSelfNetworkRegrets = 49;
+  repeated TopicIdActorIdActorIdTimeStampedValue latestOneOutInfererInfererNetworkRegrets = 50;
+  repeated TopicIdActorIdActorIdTimeStampedValue latestOneOutInfererForecasterNetworkRegrets = 51;
+  repeated TopicIdActorIdActorIdTimeStampedValue latestOneOutForecasterInfererNetworkRegrets = 52;
+  repeated TopicIdActorIdActorIdTimeStampedValue latestOneOutForecasterForecasterNetworkRegrets = 53;
 
   /// WHITELISTS
   repeated string core_team_addresses = 2;
 
   /// RECORD COMMITS
-  repeated TopicIdTimestampedActorNonce topicLastWorkerCommit = 49;
-  repeated TopicIdTimestampedActorNonce topicLastReputerCommit = 50;
-  repeated TopicIdTimestampedActorNonce topicLastWorkerPayload = 51;
-  repeated TopicIdTimestampedActorNonce topicLastReputerPayload = 52;
+  repeated TopicIdTimestampedActorNonce topicLastWorkerCommit = 54;
+  repeated TopicIdTimestampedActorNonce topicLastReputerCommit = 55;
+  repeated TopicIdTimestampedActorNonce topicLastWorkerPayload = 56;
+  repeated TopicIdTimestampedActorNonce topicLastReputerPayload = 57;
 }
 
 message TopicIdAndTopic {
