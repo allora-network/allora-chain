@@ -8,6 +8,7 @@ import (
 	mint "github.com/allora-network/allora-chain/x/mint/module"
 	minttestutil "github.com/allora-network/allora-chain/x/mint/testutil"
 	"github.com/allora-network/allora-chain/x/mint/types"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *IntegrationTestSuite) TestTotalEmissionPerMonthSimple() {
@@ -247,11 +248,29 @@ func (s *IntegrationTestSuite) TestGetEmissionPerMonth() {
 	// we're mocking EVERYTHING
 	mockMintKeeper := minttestutil.NewMockMintKeeper(s.ctrl)
 	blocksPerMonth := uint64(525960)
-	params := types.Params{}
+	params := types.Params{
+		MaxSupply:                     cosmosMath.NewInt(10),
+		InvestorsPercentOfTotalSupply: cosmosMath.LegacyMustNewDecFromStr("0.015"),
+		TeamPercentOfTotalSupply:      cosmosMath.LegacyMustNewDecFromStr("0.01"),
+		FEmission:                     cosmosMath.LegacyMustNewDecFromStr("0.025"),
+		MaximumMonthlyPercentageYield: cosmosMath.LegacyMustNewDecFromStr("0.12"),
+		OneMonthSmoothingDegree:       cosmosMath.LegacyMustNewDecFromStr("0.1"),
+	}
 	ecosystemMintSupplyRemaining := cosmosMath.NewInt(1000000000000000000)
 	validatorsPercent := cosmosMath.LegacyMustNewDecFromStr("0.25")
+	stakedSupplyFromSimulation, ok := cosmosMath.NewIntFromString("11")
+	ctx := s.ctx.WithBlockHeight(61)
+	s.Require().True(ok)
+	reputerPercent := cosmosMath.LegacyMustNewDecFromStr("0.33")
+	someAmount := sdktypes.NewCoin("uallo", stakedSupplyFromSimulation)
+
+	mockMintKeeper.EXPECT().CosmosValidatorStakedSupply(ctx).Return(stakedSupplyFromSimulation, nil)
+	mockMintKeeper.EXPECT().GetEmissionsKeeperTotalStake(ctx).Return(stakedSupplyFromSimulation, nil)
+	mockMintKeeper.EXPECT().GetTotalCurrTokenSupply(ctx).Return(someAmount)
+	mockMintKeeper.EXPECT().GetPreviousPercentageRewardToStakedReputers(ctx).Return(reputerPercent, nil)
+	mockMintKeeper.EXPECT().GetPreviousRewardEmissionPerUnitStakedToken(ctx).Return(reputerPercent, nil)
 	calE, ehat_i, err := mint.GetEmissionPerMonth(
-		s.ctx,
+		ctx,
 		mockMintKeeper,
 		blocksPerMonth,
 		params,
@@ -261,8 +280,8 @@ func (s *IntegrationTestSuite) TestGetEmissionPerMonth() {
 	s.Require().NoError(err)
 	calED, err := alloraMath.NewDecFromSdkInt(calE)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), epoch("ecosystem_tokens_emission"), calED)
+	testutil.InEpsilon5D(s.T(), calED, epoch("ecosystem_tokens_emission"))
 	ehat_iD, err := alloraMath.NewDecFromSdkLegacyDec(ehat_i)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), epoch("ehat_i"), ehat_iD)
+	testutil.InEpsilon5D(s.T(), ehat_iD, epoch("ehat_i"))
 }

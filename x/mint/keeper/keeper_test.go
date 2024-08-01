@@ -37,7 +37,6 @@ type IntegrationTestSuite struct {
 	adminPrivateKey secp256k1.PrivKey
 	adminAddr       string
 	epochGet        map[int]func(string) alloraMath.Dec
-	epoch61Get      func(string) alloraMath.Dec
 }
 
 func TestKeeperTestSuite(t *testing.T) {
