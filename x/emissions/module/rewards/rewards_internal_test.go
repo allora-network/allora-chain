@@ -192,8 +192,7 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 func (s *MathTestSuite) TestInferenceRewardsFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	previousForecasterScoreRatio := alloraMath.ZeroDec()
-	alpha := alloraMath.OneDec()
+	alpha := alloraMath.MustNewDecFromString("0.1")
 	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	infererScores := []emissionstypes.Score{
@@ -211,7 +210,7 @@ func (s *MathTestSuite) TestInferenceRewardsFromCsv() {
 		epoch3Get("reputers_entropy"),
 		&totalReward,
 		infererScores,
-		previousForecasterScoreRatio,
+		epoch3Get("forecaster_score_ratio"),
 		alpha,
 	)
 	s.Require().NoError(err)
@@ -341,7 +340,7 @@ func (s *MathTestSuite) TestForecastRewardsZero() {
 func (s *MathTestSuite) TestForecastRewardsFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	alpha := alloraMath.OneDec()
+	alpha := alloraMath.MustNewDecFromString("0.1")
 	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	infererScores := []emissionstypes.Score{
