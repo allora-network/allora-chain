@@ -22,7 +22,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run clang-format style check for C/C++/Protobuf programs.
-      uses: jidicula/clang-format-action@v4.11.0
+      uses: jidicula/clang-format-action@v4.13.0
       with:
         clang-format-version: '17'
         include-regex: '^.*\.proto$'
@@ -38,7 +38,7 @@ jobs:
         go-version: 1.22.x
 
     - name: Test
-      uses: robherley/go-test-action@v0.1.0
+      uses: robherley/go-test-action@v0.4.1
 
   integration-test:
     runs-on: ubuntu-latest

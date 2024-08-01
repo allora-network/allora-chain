@@ -27,7 +27,31 @@ jobs:
 
       - name: Prepare Release Variables
         id: vars
-        uses: ignite/cli/actions/release/vars@main
+        run: |
+          repo_name=${GITHUB_REPOSITORY##*/}
+          ref_name=${GITHUB_REF##*/}
+          main_branch=main
+
+          should_release=true
+          is_release_type_latest=false
+          tag_name=""
+
+          if [[ $GITHUB_REF == refs/tags/* ]]
+          then
+            tag_name=$ref_name
+          elif [[ $GITHUB_REF == refs/heads/* && $ref_name == $main_branch ]]
+          then
+            tag_name=latest
+            is_release_type_latest=true
+          else
+            should_release=false
+          fi
+
+          echo "should_release=$should_release" >> $GITHUB_OUTPUT
+          echo "is_release_type_latest=$is_release_type_latest" >> $GITHUB_OUTPUT
+          echo "tag_name=$tag_name" >> $GITHUB_OUTPUT
+          echo "tarball_prefix='$repo_name'_$tag_name" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Issue Release Assets
         if: ${{ steps.vars.outputs.should_release == 'true' }}
@@ -40,13 +64,12 @@ jobs:
           GOOS=windows GOARCH=amd64 go build -o release/allorad_windows_amd64.exe cmd/allorad/main.go
 
       - name: Delete the "latest" Release
-        uses: dev-drprasad/delete-tag-and-release@v0.2.1
-        if: ${{ steps.vars.outputs.is_release_type_latest == 'true' }}
-        with:
-          tag_name: ${{ steps.vars.outputs.tag_name }}
-          delete_release: true
+        if: ${{ steps.vars.outputs.is_release_type_latest == 'true' }} && ${{ steps.vars.outputs.should_release == 'true' }}
+        run: |
+          gh release delete $TAG_NAME --yes --cleanup-tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.vars.outputs.tag_name }}
 
       - name: Publish the Release
         uses: softprops/action-gh-release@v1

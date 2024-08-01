@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -21,5 +23,6 @@ func NewMigrator(k Keeper) Migrator {
 // and managed by the x/params modules and stores them directly into the x/mint
 // module state.
 func (m Migrator) Migrate1to2(ctx sdk.Context) error {
+	fmt.Println("Migrating x/mint state from version 1 to version 2")
 	return nil
 }
