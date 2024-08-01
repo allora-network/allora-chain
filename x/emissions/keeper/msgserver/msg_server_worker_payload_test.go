@@ -21,7 +21,7 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	nonce := types.Nonce{BlockHeight: 1}
-	topicId := uint64(0)
+	topicId := s.CreateOneTopic()
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
@@ -45,7 +45,9 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
 	keeper.InsertWorker(ctx, topicId, Inferer2Addr, workerInfo)
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
-	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
+
+	topic, _ := s.emissionsKeeper.GetTopic(ctx, topicId)
+	s.emissionsKeeper.SetTopic(ctx, topicId, topic)
 
 	// Create a MsgInsertWorkerPayload message
 	workerMsg := types.MsgInsertWorkerPayload{

@@ -2,14 +2,12 @@ package msgserver
 
 import (
 	"context"
-	"strconv"
-
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	appParams "github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type TopicId = uint64
@@ -79,8 +77,8 @@ func checkBalanceAndSendFee(
 	fee := sdk.NewCoin(balance.Denom, amount)
 
 	if balance.IsLT(fee) {
-		errMsg := insufficientBalanceErrorMsg + " " + strconv.FormatUint(topicId, 10) + " sender " + sender
-		return errors.Wrapf(sdkerrors.ErrInsufficientFunds, errMsg)
+		//errMsg := insufficientBalanceErrorMsg + " " + strconv.FormatUint(topicId, 10) + " sender " + sender
+		return types.ErrTopicRegistrantNotEnoughDenom
 	}
 
 	err = ms.k.SendCoinsFromAccountToModule(ctx, sender, minttypes.EcosystemModuleName, sdk.NewCoins(fee))

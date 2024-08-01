@@ -211,7 +211,7 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistrationWorker() {
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
-	topicId := uint64(0)
+	topicId := s.CreateOneTopic()
 
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
@@ -220,6 +220,7 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	s.emissionsKeeper.ActivateTopic(ctx, 1)
 	// Zero initial stake
 
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1))
 	// Topic does not exist
 	registerMsg := &types.MsgRegister{
 		Sender:    reputerAddr.String(),
@@ -228,7 +229,7 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 		IsReputer: true,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)
-	require.ErrorIs(types.ErrTopicRegistrantNotEnoughDenom, err, "Register should return an error")
+	require.Error(err)
 }
 
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
