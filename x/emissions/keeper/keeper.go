@@ -31,6 +31,7 @@ type Delegator = string
 
 type Keeper struct {
 	cdc              codec.BinaryCodec
+	storeService     coreStore.KVStoreService
 	addressCodec     address.Codec
 	feeCollectorName string
 
@@ -196,6 +197,7 @@ func NewKeeper(
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
 		cdc:                                      cdc,
+		storeService:                             storeService,
 		addressCodec:                             addressCodec,
 		feeCollectorName:                         feeCollectorName,
 		params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),

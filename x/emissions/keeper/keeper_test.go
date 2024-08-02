@@ -3127,12 +3127,16 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 
 	// Check if the records are pruned
 	inferences, err := s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
+	s.Require().NoError(err, "Getting inferences should not fail")
 	s.Require().Equal(len(inferences.Inferences), 0, "Must be pruned")
 	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
+	s.Require().NoError(err, "Getting forecasts should not fail")
 	s.Require().Equal(len(forecasts.Forecasts), 0, "Must be pruned")
 	lossbundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
+	s.Require().NoError(err, "Getting reputer loss bundles should not fail")
 	s.Require().Equal(len(lossbundles.ReputerValueBundles), 0, "Must be pruned")
 	networkBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
+	s.Require().NoError(err, "Getting network loss bundle should not fail")
 	s.Require().Equal(networkBundles, (*types.ValueBundle)(nil), "Must be pruned")
 }
 
