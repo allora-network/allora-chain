@@ -266,7 +266,6 @@ func NewAlloraApp(
 
 	app.SetInitChainer(func(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 		app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
-		// app.scheduleUpgrades(ctx)
 		return app.App.InitChainer(ctx, req)
 	})
 

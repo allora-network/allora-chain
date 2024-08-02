@@ -267,6 +267,15 @@ bash test/local_testnet_l1.sh
 INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
 ```
 
+## Run Upgrade Tests
+
+To run upgrade tests, execute the following commands:
+
+```bash
+bash test/local_testnet_upgrade_l1.sh
+UPGRADE=TRUE go test -timeout 10m ./test/integration/ -v
+```
+
 ## Run Stress Tests
 
 To run stress tests, execute the following commands:

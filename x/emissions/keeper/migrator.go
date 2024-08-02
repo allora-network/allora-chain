@@ -17,10 +17,6 @@ func NewMigrator(k Keeper) Migrator {
 	}
 }
 
-// Migrate1to2 migrates the emissions module state from the consensus version 1 to
-// version 2. For now this is a no-op since we don't actually have any state to
-// upgrade, but in the future this function or a 2to3 would be used to handle
-// state migrations between versions of the emissions module.
 func (m Migrator) Migrate1to2(ctx sdk.Context) error {
-	return v2.MigrateStore(ctx)
+	return v2.MigrateStore(ctx, m.keeper.storeService, m.keeper.cdc)
 }
