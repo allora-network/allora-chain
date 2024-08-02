@@ -20,20 +20,17 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 	epoch301Get := epochGet[301]
 	block := int64(1003)
 
-	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         s.addrs[0].String(),
-		Metadata:        "test",
-		LossLogic:       "logic",
-		LossMethod:      "method",
-		EpochLength:     10800,
-		GroundTruthLag:  10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(1),
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+		Creator:                s.addrs[0].String(),
+		Metadata:               "test",
+		LossMethod:             "mse",
+		EpochLength:            10800,
+		GroundTruthLag:         10800,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          true,
+		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
