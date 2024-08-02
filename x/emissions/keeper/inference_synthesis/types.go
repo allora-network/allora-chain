@@ -38,7 +38,8 @@ type SynthRequest struct {
 	Inferences          *emissions.Inferences
 	Forecasts           *emissions.Forecasts
 	NetworkCombinedLoss Loss
-	Epsilon             alloraMath.Dec
+	EpsilonTopic        alloraMath.Dec
+	EpsilonSafeDiv      alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }
@@ -67,7 +68,8 @@ type SynthPalette struct {
 	// Must respect the order of sister `forecasters` property
 	ForecasterRegrets   map[Worker]*alloraMath.Dec
 	NetworkCombinedLoss Loss
-	Epsilon             alloraMath.Dec
+	EpsilonTopic        alloraMath.Dec
+	EpsilonSafeDiv      alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }
