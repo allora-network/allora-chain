@@ -606,7 +606,9 @@ message QueryWorkerLatestInferenceResponse {
 }
 
 message QueryWorkerNodeInfoRequest {
-  string libp2p_key = 1;
+  reserved 1;
+  reserved "libp2p_key";
+
   string address = 2;
 }
 
@@ -615,7 +617,9 @@ message QueryWorkerNodeInfoResponse {
 }
 
 message QueryReputerNodeInfoRequest {
-  string libp2p_key = 1;
+  reserved 1;
+  reserved "libp2p_key";
+
   string address = 2;
 }
 
@@ -912,12 +916,6 @@ message QueryTopicFeeRevenueResponse {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-}
-
-message QueryChurnableTopicsRequest {}
-
-message QueryChurnableTopicsResponse {
-  repeated uint64 churnable_topic_ids = 1;
 }
 
 message QueryRewardableTopicsRequest {}
