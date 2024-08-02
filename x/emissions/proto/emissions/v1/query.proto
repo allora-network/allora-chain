@@ -606,7 +606,8 @@ message QueryWorkerLatestInferenceResponse {
 }
 
 message QueryWorkerNodeInfoRequest {
-  string address = 1;
+  string libp2p_key = 1;
+  string address = 2;
 }
 
 message QueryWorkerNodeInfoResponse {
@@ -614,7 +615,8 @@ message QueryWorkerNodeInfoResponse {
 }
 
 message QueryReputerNodeInfoRequest {
-  string address = 1;
+  string libp2p_key = 1;
+  string address = 2;
 }
 
 message QueryReputerNodeInfoResponse {
@@ -910,6 +912,12 @@ message QueryTopicFeeRevenueResponse {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+message QueryChurnableTopicsRequest {}
+
+message QueryChurnableTopicsResponse {
+  repeated uint64 churnable_topic_ids = 1;
 }
 
 message QueryRewardableTopicsRequest {}

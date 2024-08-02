@@ -60,11 +60,11 @@ message InferenceForecastBundle {
 message WorkerDataBundle {
   option (gogoproto.equal) = true;
   string worker = 1;
-  Nonce nonce = 2;
-  uint64 topic_id = 3;
-  InferenceForecastBundle inference_forecasts_bundle = 4;
-  bytes inferences_forecasts_bundle_signature = 5;
-  string pubkey = 6;
+  InferenceForecastBundle inference_forecasts_bundle = 2;
+  bytes inferences_forecasts_bundle_signature = 3;
+  string pubkey = 4;
+  Nonce nonce = 5;
+  uint64 topic_id = 6;
 }
 
 message WorkerDataBundles {  // This will be in the incoming message, sent by leader
