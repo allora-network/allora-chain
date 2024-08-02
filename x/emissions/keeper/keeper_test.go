@@ -1910,7 +1910,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 	keeper := s.emissionsKeeper
 
 	params := types.Params{
-		Version:                         "v1.0.0",
+		Version:                         "v0.3.0",
 		MinTopicWeight:                  alloraMath.NewDecFromInt64(100),
 		MaxTopicsPerBlock:               1000,
 		RequiredMinimumStake:            cosmosMath.NewInt(1),

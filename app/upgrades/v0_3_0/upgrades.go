@@ -1,4 +1,4 @@
-package v1_0_0
+package v0_3_0
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	UpgradeName = "v1.0.0"
+	UpgradeName = "v0.3.0"
 )
 
 var Upgrade = upgrades.Upgrade{
@@ -23,7 +23,7 @@ func CreateUpgradeHandler(
 	configurator module.Configurator,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx context.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
-		fmt.Println(">>>>>>>>>>>>>>>>>>> v1.0.0 upgrade handler")
+		fmt.Printf("Running upgrade handler for %s\n", UpgradeName)
 		return moduleManager.RunMigrations(ctx, configurator, vm)
 	}
 }
