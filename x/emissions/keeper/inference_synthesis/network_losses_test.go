@@ -3,7 +3,7 @@ package inference_synthesis_test
 import (
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
-
+	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -411,6 +411,164 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 				}
 			}
 		})
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch301Get := epochGet[301]
+	topicId := uint64(1)
+	epsilon := alloraMath.MustNewDecFromString("1e-4")
+
+	reputer0 := s.addrs[0].String()
+	reputer1 := s.addrs[1].String()
+	reputer2 := s.addrs[2].String()
+	reputer3 := s.addrs[3].String()
+	reputer4 := s.addrs[4].String()
+	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
+
+	inferer0 := s.addrs[5].String()
+	inferer1 := s.addrs[6].String()
+	inferer2 := s.addrs[7].String()
+	inferer3 := s.addrs[8].String()
+	inferer4 := s.addrs[9].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	forecaster0 := s.addrs[10].String()
+	forecaster1 := s.addrs[11].String()
+	forecaster2 := s.addrs[12].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18Dec, err := alloraMath.NewDecFromSdkInt(cosmosOneE18)
+	s.Require().NoError(err)
+
+	reputer0Stake, err := epoch301Get("reputer_stake_0").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer0StakeInt, err := reputer0Stake.BigInt()
+	s.Require().NoError(err)
+	reputer1Stake, err := epoch301Get("reputer_stake_1").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer1StakeInt, err := reputer1Stake.BigInt()
+	s.Require().NoError(err)
+	reputer2Stake, err := epoch301Get("reputer_stake_2").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer2StakeInt, err := reputer2Stake.BigInt()
+	s.Require().NoError(err)
+	reputer3Stake, err := epoch301Get("reputer_stake_3").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer3StakeInt, err := reputer3Stake.BigInt()
+	s.Require().NoError(err)
+	reputer4Stake, err := epoch301Get("reputer_stake_4").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer4StakeInt, err := reputer4Stake.BigInt()
+	s.Require().NoError(err)
+
+	var stakesByReputer = map[string]cosmosMath.Int{
+		reputer0: cosmosMath.NewIntFromBigInt(reputer0StakeInt),
+		reputer1: cosmosMath.NewIntFromBigInt(reputer1StakeInt),
+		reputer2: cosmosMath.NewIntFromBigInt(reputer2StakeInt),
+		reputer3: cosmosMath.NewIntFromBigInt(reputer3StakeInt),
+		reputer4: cosmosMath.NewIntFromBigInt(reputer4StakeInt),
+	}
+
+	reportedLosses, err := testutil.GetReputersDataFromCsv(
+		topicId,
+		infererAddresses,
+		forecasterAddresses,
+		reputerAddresses,
+		epoch301Get,
+	)
+	s.Require().NoError(err)
+
+	networkLosses, err := inference_synthesis.CalcNetworkLosses(stakesByReputer, reportedLosses, epsilon)
+	s.Require().NoError(err)
+
+	expectedNetworkLosses, err := testutil.GetNetworkLossFromCsv(
+		topicId,
+		infererAddresses,
+		forecasterAddresses,
+		epoch301Get,
+	)
+	s.Require().NoError(err)
+
+	testutil.InEpsilon5(s.T(), expectedNetworkLosses.CombinedValue, networkLosses.CombinedValue.String())
+	testutil.InEpsilon5(s.T(), expectedNetworkLosses.NaiveValue, networkLosses.NaiveValue.String())
+	s.Require().Len(networkLosses.InfererValues, len(expectedNetworkLosses.InfererValues))
+	for _, expectedValue := range expectedNetworkLosses.InfererValues {
+		found := false
+		for _, workerAttributedValue := range networkLosses.InfererValues {
+			if workerAttributedValue.Worker == expectedValue.Worker {
+				found = true
+				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
+			}
+		}
+		s.Require().True(found)
+	}
+	s.Require().Len(networkLosses.ForecasterValues, len(expectedNetworkLosses.ForecasterValues))
+	for _, expectedValue := range expectedNetworkLosses.ForecasterValues {
+		found := false
+		for _, workerAttributedValue := range networkLosses.ForecasterValues {
+			if workerAttributedValue.Worker == expectedValue.Worker {
+				found = true
+				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
+			}
+		}
+		s.Require().True(found)
+	}
+	s.Require().Len(networkLosses.OneOutInfererForecasterValues, len(expectedNetworkLosses.OneOutInfererForecasterValues))
+	for _, expectedValue := range expectedNetworkLosses.OneOutInfererForecasterValues {
+		found := false
+		for _, workerAttributedValue := range networkLosses.OneOutInfererForecasterValues {
+			if workerAttributedValue.Forecaster == expectedValue.Forecaster {
+				found = true
+				s.Require().Len(workerAttributedValue.OneOutInfererValues, len(expectedValue.OneOutInfererValues))
+				for _, expectedOneOutInfererValue := range expectedValue.OneOutInfererValues {
+					foundOneOutInferer := false
+					for _, oneOutInfererValue := range workerAttributedValue.OneOutInfererValues {
+						if oneOutInfererValue.Worker == expectedOneOutInfererValue.Worker {
+							foundOneOutInferer = true
+							testutil.InEpsilon5(s.T(), expectedOneOutInfererValue.Value, oneOutInfererValue.Value.String())
+						}
+					}
+					s.Require().True(foundOneOutInferer)
+				}
+			}
+		}
+		s.Require().True(found)
+	}
+	s.Require().Len(networkLosses.OneOutInfererValues, len(expectedNetworkLosses.OneOutInfererValues))
+	for _, expectedValue := range expectedNetworkLosses.OneOutInfererValues {
+		found := false
+		for _, workerAttributedValue := range networkLosses.OneOutInfererValues {
+			if workerAttributedValue.Worker == expectedValue.Worker {
+				found = true
+				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
+			}
+		}
+		s.Require().True(found)
+	}
+	s.Require().Len(networkLosses.OneOutForecasterValues, len(expectedNetworkLosses.OneOutForecasterValues))
+	for _, expectedValue := range expectedNetworkLosses.OneOutForecasterValues {
+		found := false
+		for _, workerAttributedValue := range networkLosses.OneOutForecasterValues {
+			if workerAttributedValue.Worker == expectedValue.Worker {
+				found = true
+				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
+			}
+		}
+		s.Require().True(found)
+	}
+	s.Require().Len(networkLosses.OneInForecasterValues, len(expectedNetworkLosses.OneInForecasterValues))
+	for _, expectedValue := range expectedNetworkLosses.OneInForecasterValues {
+		found := false
+		for _, workerAttributedValue := range networkLosses.OneInForecasterValues {
+			if workerAttributedValue.Worker == expectedValue.Worker {
+				found = true
+				testutil.InEpsilon5(s.T(), expectedValue.Value, workerAttributedValue.Value.String())
+			}
+		}
+		s.Require().True(found)
 	}
 }
 

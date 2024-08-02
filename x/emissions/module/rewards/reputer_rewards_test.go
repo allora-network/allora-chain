@@ -6,6 +6,8 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/test/testutil"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -445,6 +447,156 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	// Check that the first reputer has zero rewards
 	s.Require().True(
 		reputersRewardFractions[0].IsZero(),
+	)
+}
+
+func (s *RewardsTestSuite) TestGetReputersRewardFractionsFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch3Get := epochGet[300]
+
+	topicId := uint64(1)
+	block := int64(1003)
+
+	reputer0 := s.addrs[0].String()
+	reputer1 := s.addrs[1].String()
+	reputer2 := s.addrs[2].String()
+	reputer3 := s.addrs[3].String()
+	reputer4 := s.addrs[4].String()
+	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
+
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
+	cosmosOneE18Dec, err := alloraMath.NewDecFromSdkInt(cosmosOneE18)
+	s.Require().NoError(err)
+
+	reputer0Stake, err := epoch3Get("reputer_stake_0").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer0StakeInt, err := reputer0Stake.BigInt()
+	s.Require().NoError(err)
+	reputer1Stake, err := epoch3Get("reputer_stake_1").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer1StakeInt, err := reputer1Stake.BigInt()
+	s.Require().NoError(err)
+	reputer2Stake, err := epoch3Get("reputer_stake_2").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer2StakeInt, err := reputer2Stake.BigInt()
+	s.Require().NoError(err)
+	reputer3Stake, err := epoch3Get("reputer_stake_3").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer3StakeInt, err := reputer3Stake.BigInt()
+	s.Require().NoError(err)
+	reputer4Stake, err := epoch3Get("reputer_stake_4").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer4StakeInt, err := reputer4Stake.BigInt()
+	s.Require().NoError(err)
+
+	var stakes = []cosmosMath.Int{
+		cosmosMath.NewIntFromBigInt(reputer0StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer1StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer2StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer3StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer4StakeInt),
+	}
+	var scores = []alloraMath.Dec{
+		epoch3Get("reputer_score_0"),
+		epoch3Get("reputer_score_1"),
+		epoch3Get("reputer_score_2"),
+		epoch3Get("reputer_score_3"),
+		epoch3Get("reputer_score_4"),
+	}
+	scoreStructs := make([]types.Score, 0)
+	for i, reputerAddr := range reputerAddresses {
+		err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, reputerAddr, stakes[i])
+		s.Require().NoError(err)
+
+		scoreToAdd := types.Score{
+			TopicId:     topicId,
+			BlockHeight: block,
+			Address:     reputerAddr,
+			Score:       scores[i],
+		}
+		scoreStructs = append(scoreStructs, scoreToAdd)
+	}
+
+	// Get reputer rewards
+	_, reputersRewardFractions, err := rewards.GetReputersRewardFractions(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		alloraMath.OneDec(),
+		scoreStructs,
+	)
+	s.Require().NoError(err)
+
+	expectedFractions := []alloraMath.Dec{
+		epoch3Get("reputer_reward_fraction_0"),
+		epoch3Get("reputer_reward_fraction_1"),
+		epoch3Get("reputer_reward_fraction_2"),
+		epoch3Get("reputer_reward_fraction_3"),
+		epoch3Get("reputer_reward_fraction_4"),
+	}
+	for i, reputerRewardFraction := range reputersRewardFractions {
+		testutil.InEpsilon5(
+			s.T(),
+			expectedFractions[i],
+			reputerRewardFraction.String(),
+		)
+	}
+}
+
+func (s *RewardsTestSuite) TestGetReputerTaskEntropyFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch1Get := epochGet[301]
+	epoch2Get := epochGet[302]
+	topicId := uint64(1)
+
+	taskRewardAlpha := alloraMath.MustNewDecFromString("0.1")
+	betaEntropy := alloraMath.MustNewDecFromString("0.25")
+
+	reputer0 := s.addrs[0].String()
+	reputer1 := s.addrs[1].String()
+	reputer2 := s.addrs[2].String()
+	reputer3 := s.addrs[3].String()
+	reputer4 := s.addrs[4].String()
+	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
+
+	// Add previous epoch reward fractions
+	reputerFractionsEpoch1 := []alloraMath.Dec{
+		epoch1Get("reputer_reward_fraction_smooth_0"),
+		epoch1Get("reputer_reward_fraction_smooth_1"),
+		epoch1Get("reputer_reward_fraction_smooth_2"),
+		epoch1Get("reputer_reward_fraction_smooth_3"),
+		epoch1Get("reputer_reward_fraction_smooth_4"),
+	}
+	for i, reputerAddr := range reputerAddresses {
+		err := s.emissionsKeeper.SetPreviousReputerRewardFraction(s.ctx, topicId, reputerAddr, reputerFractionsEpoch1[i])
+		s.Require().NoError(err)
+	}
+
+	reputerFractionsEpoch2 := []alloraMath.Dec{
+		epoch2Get("reputer_reward_fraction_0"),
+		epoch2Get("reputer_reward_fraction_1"),
+		epoch2Get("reputer_reward_fraction_2"),
+		epoch2Get("reputer_reward_fraction_3"),
+		epoch2Get("reputer_reward_fraction_4"),
+	}
+
+	// Get reputer task entropy
+	reputerEntropy, err := rewards.GetReputerTaskEntropy(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		taskRewardAlpha,
+		betaEntropy,
+		reputerAddresses,
+		reputerFractionsEpoch2,
+	)
+	s.Require().NoError(err)
+
+	expectedEntropy := epoch2Get("reputers_entropy")
+	testutil.InEpsilon5(
+		s.T(),
+		expectedEntropy,
+		reputerEntropy.String(),
 	)
 }
 

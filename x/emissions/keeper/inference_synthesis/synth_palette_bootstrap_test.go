@@ -38,7 +38,8 @@ func TestSynthPalette_Clone(t *testing.T) {
 		ForecastImpliedInferenceByWorker: make(map[synth.Worker]*emissionstypes.Inference),
 		ForecasterRegrets:                make(map[synth.Worker]*alloraMath.Dec),
 		NetworkCombinedLoss:              alloraMath.MustNewDecFromString("0.0"),
-		Epsilon:                          alloraMath.MustNewDecFromString("0.01"),
+		EpsilonTopic:                     alloraMath.MustNewDecFromString("0.01"),
+		EpsilonSafeDiv:                   alloraMath.MustNewDecFromString("0.0000001"),
 		PNorm:                            alloraMath.MustNewDecFromString("2"),
 		CNorm:                            alloraMath.MustNewDecFromString("1"),
 	}
@@ -63,8 +64,10 @@ func TestSynthPalette_Clone(t *testing.T) {
 	paletteCNorm := fmt.Sprintf("%v", palette.CNorm)
 	clonePNorm := fmt.Sprintf("%v", clone.PNorm)
 	palettePNorm := fmt.Sprintf("%v", palette.PNorm)
-	cloneEpsilon := fmt.Sprintf("%v", clone.Epsilon)
-	paletteEpsilon := fmt.Sprintf("%v", palette.Epsilon)
+	cloneEpsilonTopic := fmt.Sprintf("%v", clone.EpsilonTopic)
+	paletteEpsilonTopic := fmt.Sprintf("%v", palette.EpsilonTopic)
+	closeEpsilonSafeDiv := fmt.Sprintf("%v", clone.EpsilonSafeDiv)
+	paletteEpsilonSafeDiv := fmt.Sprintf("%v", palette.EpsilonSafeDiv)
 	paletteForecasterRegrets := fmt.Sprintf("%v", palette.ForecasterRegrets)
 	cloneForecasterRegrets := fmt.Sprintf("%v", clone.ForecasterRegrets)
 	if &clone.Ctx == &palette.Ctx || cloneK != paletteK || &clone.Logger == &palette.Logger ||
@@ -74,8 +77,8 @@ func TestSynthPalette_Clone(t *testing.T) {
 		&clone.InfererRegrets == &palette.InfererRegrets || &clone.Forecasters == &palette.Forecasters ||
 		&clone.ForecastByWorker == &palette.ForecastByWorker || &clone.ForecastImpliedInferenceByWorker == &palette.ForecastImpliedInferenceByWorker ||
 		&clone.ForecasterRegrets == &palette.ForecasterRegrets || cloneForecasterRegrets != paletteForecasterRegrets ||
-		&clone.CNorm == &palette.CNorm || &clone.PNorm == &palette.PNorm || &clone.Epsilon == &palette.Epsilon ||
-		cloneCNorm != paletteCNorm || clonePNorm != palettePNorm || cloneEpsilon != paletteEpsilon {
+		&clone.CNorm == &palette.CNorm || &clone.PNorm == &palette.PNorm || &clone.EpsilonTopic == &palette.EpsilonTopic ||
+		cloneCNorm != paletteCNorm || clonePNorm != palettePNorm || cloneEpsilonTopic != paletteEpsilonTopic || closeEpsilonSafeDiv != paletteEpsilonSafeDiv {
 		t.Errorf("Clone() failed: cloned palette is not a deep copy")
 	}
 }

@@ -5,48 +5,146 @@ import (
 	"math/rand"
 	"strconv"
 
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/test/testutil"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// this test is timing out more than 30 seconds
-// need to figure out why later
-// func (s *RewardsTestSuite) TestGetReputersScores() {
-// 	topidId := uint64(1)
-// 	block := int64(1003)
+func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch300Get := epochGet[300]
+	epoch301Get := epochGet[301]
+	block := int64(1003)
 
-// 	// Generate reputers data for tests
-// 	reportedLosses, err := mockReputersScoresTestData(s, topidId, block)
-// 	s.Require().NoError(err)
+	// Create topic
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:         s.addrs[0].String(),
+		Metadata:        "test",
+		LossLogic:       "logic",
+		LossMethod:      "method",
+		EpochLength:     10800,
+		GroundTruthLag:  10800,
+		InferenceLogic:  "Ilogic",
+		InferenceMethod: "Imethod",
+		DefaultArg:      "ETH",
+		AlphaRegret:     alloraMath.NewDecFromInt64(1),
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 
-// 	// Generate new reputer scores
-// 	scores, err := rewards.GenerateReputerScores(
-// 		s.ctx,
-// 		s.emissionsKeeper,
-// 		topidId,
-// 		block,
-// 		reportedLosses,
-// 	)
-// 	s.Require().NoError(err)
+	reputer0 := s.addrs[0].String()
+	reputer1 := s.addrs[1].String()
+	reputer2 := s.addrs[2].String()
+	reputer3 := s.addrs[3].String()
+	reputer4 := s.addrs[4].String()
+	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
 
-// 	expectedScores := []alloraMath.Dec{
-// 		alloraMath.MustNewDecFromString("17.98648"),
-// 		alloraMath.MustNewDecFromString("20.32339"),
-// 		alloraMath.MustNewDecFromString("26.44637"),
-// 		alloraMath.MustNewDecFromString("11.17804"),
-// 		alloraMath.MustNewDecFromString("14.93222"),
-// 	}
-// 	for i, reputerScore := range scores {
-// 		scoreDelta, err := reputerScore.Score.Sub(expectedScores[i])
-// 		s.Require().NoError(err)
-// 		deltaTightness := scoreDelta.Abs().Cmp(alloraMath.MustNewDecFromString("0.001"))
-// 		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
-// 			s.Fail("Expected reward is not equal to the actual reward")
-// 		}
-// 	}
-// }
+	inferer0 := s.addrs[5].String()
+	inferer1 := s.addrs[6].String()
+	inferer2 := s.addrs[7].String()
+	inferer3 := s.addrs[8].String()
+	inferer4 := s.addrs[9].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	forecaster0 := s.addrs[10].String()
+	forecaster1 := s.addrs[11].String()
+	forecaster2 := s.addrs[12].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
+	cosmosOneE18Dec, err := alloraMath.NewDecFromSdkInt(cosmosOneE18)
+	s.Require().NoError(err)
+
+	reputer0Stake, err := epoch301Get("reputer_stake_0").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer0StakeInt, err := reputer0Stake.BigInt()
+	s.Require().NoError(err)
+	reputer1Stake, err := epoch301Get("reputer_stake_1").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer1StakeInt, err := reputer1Stake.BigInt()
+	s.Require().NoError(err)
+	reputer2Stake, err := epoch301Get("reputer_stake_2").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer2StakeInt, err := reputer2Stake.BigInt()
+	s.Require().NoError(err)
+	reputer3Stake, err := epoch301Get("reputer_stake_3").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer3StakeInt, err := reputer3Stake.BigInt()
+	s.Require().NoError(err)
+	reputer4Stake, err := epoch301Get("reputer_stake_4").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer4StakeInt, err := reputer4Stake.BigInt()
+	s.Require().NoError(err)
+
+	var stakes = []cosmosMath.Int{
+		cosmosMath.NewIntFromBigInt(reputer0StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer1StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer2StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer3StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer4StakeInt),
+	}
+	var coefficients = []alloraMath.Dec{
+		epoch300Get("reputer_listening_coefficient_0"),
+		epoch300Get("reputer_listening_coefficient_1"),
+		epoch300Get("reputer_listening_coefficient_2"),
+		epoch300Get("reputer_listening_coefficient_3"),
+		epoch300Get("reputer_listening_coefficient_4"),
+	}
+	for i, addr := range reputerAddresses {
+		addrBech, err := sdk.AccAddressFromBech32(addr)
+		s.Require().NoError(err)
+
+		s.MintTokensToAddress(addrBech, stakes[i])
+
+		err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId, addr, stakes[i])
+		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId,
+			addr,
+			types.ListeningCoefficient{Coefficient: coefficients[i]},
+		)
+		s.Require().NoError(err)
+	}
+
+	reportedLosses, err := testutil.GetReputersDataFromCsv(
+		topicId,
+		infererAddresses,
+		forecasterAddresses,
+		reputerAddresses,
+		epoch301Get,
+	)
+	s.Require().NoError(err)
+
+	// Generate new reputer scores
+	scores, err := rewards.GenerateReputerScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		reportedLosses,
+	)
+	s.Require().NoError(err)
+
+	expectedScores := []alloraMath.Dec{
+		epoch301Get("reputer_score_0"),
+		epoch301Get("reputer_score_1"),
+		epoch301Get("reputer_score_2"),
+		epoch301Get("reputer_score_3"),
+		epoch301Get("reputer_score_4"),
+	}
+	for i, reputerScore := range scores {
+		testutil.InEpsilon5(s.T(), reputerScore.Score, expectedScores[i].String())
+	}
+}
 
 func (s *RewardsTestSuite) TestGetInferenceScores() {
 	topicId := uint64(1)
@@ -81,6 +179,48 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
 			s.Fail("Expected reward is not equal to the actual reward")
 		}
+	}
+}
+
+func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch3Get := epochGet[300]
+	topicId := uint64(1)
+	block := int64(1003)
+
+	inferer0 := s.addrs[5].String()
+	inferer1 := s.addrs[6].String()
+	inferer2 := s.addrs[7].String()
+	inferer3 := s.addrs[8].String()
+	inferer4 := s.addrs[9].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	forecaster0 := s.addrs[10].String()
+	forecaster1 := s.addrs[11].String()
+	forecaster2 := s.addrs[12].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	reportedLosses, err := testutil.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
+	s.Require().NoError(err)
+
+	scores, err := rewards.GenerateInferenceScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		reportedLosses,
+	)
+	s.Require().NoError(err)
+
+	expectedScores := []alloraMath.Dec{
+		epoch3Get("inferer_score_0"),
+		epoch3Get("inferer_score_1"),
+		epoch3Get("inferer_score_2"),
+		epoch3Get("inferer_score_3"),
+		epoch3Get("inferer_score_4"),
+	}
+	for i, infererScore := range scores {
+		testutil.InEpsilon5(s.T(), infererScore.Score, expectedScores[i].String())
 	}
 }
 
@@ -129,7 +269,6 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	reportedLosses, err := mockNetworkLosses(s, topicId, block)
 	s.Require().NoError(err)
 
-	// Get inference scores
 	scores, err := rewards.GenerateForecastScores(
 		s.ctx,
 		s.emissionsKeeper,
@@ -153,6 +292,46 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
 			s.Fail("Expected reward is not equal to the actual reward")
 		}
+	}
+}
+
+func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch3Get := epochGet[300]
+	topicId := uint64(1)
+	block := int64(1003)
+
+	inferer0 := s.addrs[5].String()
+	inferer1 := s.addrs[6].String()
+	inferer2 := s.addrs[7].String()
+	inferer3 := s.addrs[8].String()
+	inferer4 := s.addrs[9].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	forecaster0 := s.addrs[10].String()
+	forecaster1 := s.addrs[11].String()
+	forecaster2 := s.addrs[12].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	reportedLosses, err := testutil.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
+	s.Require().NoError(err)
+
+	scores, err := rewards.GenerateForecastScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		reportedLosses,
+	)
+	s.Require().NoError(err)
+
+	expectedScores := []alloraMath.Dec{
+		epoch3Get("forecaster_score_0"),
+		epoch3Get("forecaster_score_1"),
+		epoch3Get("forecaster_score_2"),
+	}
+	for i, forecasterScore := range scores {
+		testutil.InEpsilon5(s.T(), forecasterScore.Score, expectedScores[i].String())
 	}
 }
 

@@ -22,6 +22,7 @@ func DefaultParams() Params {
 		MaxGradientThreshold:                alloraMath.MustNewDecFromString("0.001"),      // gradient descent stops when gradient falls below this
 		MinStakeFraction:                    alloraMath.MustNewDecFromString("0.5"),        // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		EpsilonReputer:                      alloraMath.MustNewDecFromString("0.01"),       // a small tolerance quantity used to cap reputer scores at infinitesimally close proximities
+		EpsilonSafeDiv:                      alloraMath.MustNewDecFromString("0.0000001"),  // a small tolerance quantity used to cap division by zero
 		MaxUnfulfilledWorkerRequests:        uint64(100),                                   // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		MaxUnfulfilledReputerRequests:       uint64(100),                                   // maximum number of outstanding nonces for reputer requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		TopicRewardStakeImportance:          alloraMath.MustNewDecFromString("0.5"),        // importance of stake in determining rewards for a topic
@@ -91,6 +92,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateEpsilonReputer(p.EpsilonReputer); err != nil {
+		return err
+	}
+	if err := validateEpsilonSafeDiv(p.EpsilonSafeDiv); err != nil {
 		return err
 	}
 	if err := validateMaxUnfulfilledWorkerRequests(p.MaxUnfulfilledWorkerRequests); err != nil {
@@ -293,6 +297,14 @@ func validateMinStakeFraction(i alloraMath.Dec) error {
 // Small tolerance quantity used to cap reputer scores at infinitesimally close proximities.
 // Should be close to zero, but not zero. i > 0
 func validateEpsilonReputer(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// Small tolerance quantity used to cap division by zero.
+func validateEpsilonSafeDiv(i alloraMath.Dec) error {
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
