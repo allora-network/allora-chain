@@ -8,7 +8,6 @@ import (
 	"cosmossdk.io/errors"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -18,10 +17,14 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	sdkCtx.Logger().Debug(
 		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
 			blockHeight))
-
+	moduleParams, err := am.keeper.GetParams(sdkCtx)
+	if err != nil {
+		sdkCtx.Logger().Error("Error Getting module params", err)
+		return err
+	}
 	// Remove Stakers that have been wanting to unstake this block. They no longer get paid rewards
-	RemoveStakes(sdkCtx, blockHeight, am.keeper)
-	RemoveDelegateStakes(sdkCtx, blockHeight, am.keeper)
+	RemoveStakes(sdkCtx, blockHeight, am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
+	RemoveDelegateStakes(sdkCtx, blockHeight, am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
 
 	// Get unnormalized weights of active topics and the sum weight and revenue they have generated
 	weights, sumWeight, totalRevenue, err := rewards.GetAndUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight)
@@ -134,7 +137,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		sdkCtx,
 		am.keeper,
 		blockHeight,
-		fn,
 		weights,
 	)
 	if err != nil {

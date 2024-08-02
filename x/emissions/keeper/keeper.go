@@ -1110,7 +1110,7 @@ func (k *Keeper) RemoveReputerStake(
 //	stakeSumFromDelegator, delegatedStakes, stakeFromDelegatorsUponReputer
 func (k *Keeper) RemoveDelegateStake(
 	ctx context.Context,
-	blockHeight BlockHeight,
+	stakeRemovalHeight BlockHeight,
 	topicId TopicId,
 	delegator ActorId,
 	reputer ActorId,
@@ -1244,7 +1244,7 @@ func (k *Keeper) RemoveDelegateStake(
 	if err := k.SetTotalStake(ctx, totalStakeNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
-	if err := k.DeleteDelegateStakeRemoval(ctx, blockHeight, topicId, reputer, delegator); err != nil {
+	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalHeight, topicId, reputer, delegator); err != nil {
 		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
 
@@ -1445,25 +1445,40 @@ func (k Keeper) GetStakeRemoval(
 	return k.stakeRemovalsByBlock.Get(ctx, collections.Join3(BlockHeight, topicId, reputer))
 }
 
-// get a list of stake removals for this block
-func (k *Keeper) GetStakeRemovalsForBlock(
+// get a list of stake removals that are valid for removal
+// before and including this block.
+func (k *Keeper) GetStakeRemovalsUpUntilBlock(
 	ctx context.Context,
 	blockHeight BlockHeight,
-) ([]types.StakeRemovalInfo, error) {
-	ret := make([]types.StakeRemovalInfo, 0)
-	rng := collections.NewPrefixedTripleRange[BlockHeight, TopicId, ActorId](blockHeight)
+	limit uint64,
+) (ret []types.StakeRemovalInfo, anyLeft bool, err error) {
+	ret = make([]types.StakeRemovalInfo, 0)
+	// make a range that has everything less than the block height, inclusive
+	startKey := collections.TriplePrefix[BlockHeight, TopicId, ActorId](0)
+	rng := &collections.Range[collections.Triple[BlockHeight, TopicId, ActorId]]{}
+	rng = rng.Prefix(startKey)
+	// +1 for end exclusive. Don't know why end inclusive is being buggy but it is
+	endKey := collections.TriplePrefix[BlockHeight, TopicId, ActorId](blockHeight + 1)
+	rng = rng.EndExclusive(endKey)
+
 	iter, err := k.stakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
-		return ret, err
+		return ret, false, err
 	}
+	defer iter.Close()
+	count := uint64(0)
 	for ; iter.Valid(); iter.Next() {
+		if count >= limit {
+			return ret, true, nil
+		}
 		val, err := iter.Value()
 		if err != nil {
-			return ret, err
+			return ret, true, err
 		}
 		ret = append(ret, val)
+		count += 1
 	}
-	return ret, nil
+	return ret, false, nil
 }
 
 // get the first found stake removal for a reputer and topicId or err not found if not found
@@ -1549,25 +1564,40 @@ func (k Keeper) GetDelegateStakeRemoval(
 	return k.delegateStakeRemovalsByBlock.Get(ctx, Join4(blockHeight, topicId, delegator, reputer))
 }
 
-// get a list of stake removals for this block
-func (k *Keeper) GetDelegateStakeRemovalsForBlock(
+// get a list of stake removals that are valid for removal
+// before and including this block.
+func (k *Keeper) GetDelegateStakeRemovalsUpUntilBlock(
 	ctx context.Context,
 	blockHeight BlockHeight,
-) ([]types.DelegateStakeRemovalInfo, error) {
+	limit uint64,
+) ([]types.DelegateStakeRemovalInfo, bool, error) {
 	ret := make([]types.DelegateStakeRemovalInfo, 0)
-	rng := NewSinglePrefixedQuadrupleRange[BlockHeight, TopicId, ActorId, ActorId](blockHeight)
+
+	// make a range that has everything less than the block height, inclusive
+	startKey := QuadrupleSinglePrefix[BlockHeight, TopicId, ActorId, ActorId](0)
+	rng := &collections.Range[Quadruple[BlockHeight, TopicId, ActorId, ActorId]]{}
+	rng = rng.Prefix(startKey)
+	endKey := QuadrupleSinglePrefix[BlockHeight, TopicId, ActorId, ActorId](blockHeight + 1)
+	rng = rng.EndExclusive(endKey)
+
 	iter, err := k.delegateStakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
-		return ret, err
+		return ret, false, err
 	}
+	defer iter.Close()
+	count := uint64(0)
 	for ; iter.Valid(); iter.Next() {
+		if count >= limit {
+			return ret, true, nil
+		}
 		val, err := iter.Value()
 		if err != nil {
-			return ret, err
+			return ret, true, err
 		}
 		ret = append(ret, val)
+		count += 1
 	}
-	return ret, nil
+	return ret, false, nil
 }
 
 // return the first found stake removal object for a delegator, reputer, and topicId
@@ -2025,6 +2055,7 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 	if err != nil {
 		return nil, err
 	}
+	defer iter.Close()
 
 	// Get max number of time steps that should be retrieved
 	moduleParams, err := k.GetParams(ctx)
@@ -2094,6 +2125,7 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 	if err != nil {
 		return nil, err
 	}
+	defer iter.Close()
 
 	// Get max number of time steps that should be retrieved
 	moduleParams, err := k.GetParams(ctx)

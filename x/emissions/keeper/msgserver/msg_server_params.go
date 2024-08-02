@@ -143,6 +143,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MinEffectiveTopicRevenue) == 1 {
 		existingParams.MinEffectiveTopicRevenue = newParams.MinEffectiveTopicRevenue[0]
 	}
+	if len(newParams.HalfMaxProcessStakeRemovalsEndBlock) == 1 {
+		existingParams.HalfMaxProcessStakeRemovalsEndBlock = newParams.HalfMaxProcessStakeRemovalsEndBlock[0]
+	}
 	if len(newParams.DataSendingFee) == 1 {
 		existingParams.DataSendingFee = newParams.DataSendingFee[0]
 	}

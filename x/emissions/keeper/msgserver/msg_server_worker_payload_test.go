@@ -278,6 +278,48 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredFore
 	require.Equal(forecastsCount1, 0)
 }
 
+func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFiltersDuplicateForecastElements() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerMsg, topicId := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+
+	// BEGIN MODIFICATION
+	forecast := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast
+	originalElement := forecast.ForecastElements[0]
+	duplicateElement := &types.ForecastElement{
+		Inferer: originalElement.Inferer,
+		Value:   originalElement.Value,
+	}
+	forecast.ForecastElements = append(forecast.ForecastElements, duplicateElement)
+	// END MODIFICATION
+
+	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+
+	blockHeight := forecast.BlockHeight
+	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
+
+	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
+
+	// Check the forecast count to ensure duplicates were filtered out
+	forecastsCount1 := s.getCountForecastsAtBlock(topicId, blockHeight)
+	require.Equal(forecastsCount0+1, forecastsCount1, "Forecast count should increase by one")
+
+	storedForecasts, err := s.emissionsKeeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
+	require.NoError(err, "GetForecastsAtBlock should not return an error")
+
+	for _, forecast := range storedForecasts.Forecasts {
+		infererMap := make(map[string]bool)
+		for _, el := range forecast.ForecastElements {
+			_, exists := infererMap[el.Inferer]
+			require.False(exists, "Each inferer should appear only once in ForecastElements")
+			infererMap[el.Inferer] = true
+		}
+	}
+}
+
 func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
