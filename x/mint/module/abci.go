@@ -48,16 +48,19 @@ func GetEmissionPerMonth(
 		"totalSupply", totalSupply.String(),
 		"lockedSupply", lockedSupply.String(),
 	)
-	targetRewardEmissionPerUnitStakedToken,
-		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
-		params.FEmission,
-		ecosystemMintSupplyRemaining,
-		networkStaked,
-		circulatingSupply,
-		params.MaxSupply,
-	)
-	if err != nil {
-		return math.Int{}, math.LegacyDec{}, err
+	targetRewardEmissionPerUnitStakedToken := math.LegacyZeroDec()
+	if ctx.BlockHeight() > 0 {
+		targetRewardEmissionPerUnitStakedToken,
+			err = keeper.GetTargetRewardEmissionPerUnitStakedToken(
+			params.FEmission,
+			ecosystemMintSupplyRemaining,
+			networkStaked,
+			circulatingSupply,
+			params.MaxSupply,
+		)
+		if err != nil {
+			return math.Int{}, math.LegacyDec{}, err
+		}
 	}
 	reputersPercent, err := k.GetPreviousPercentageRewardToStakedReputers(ctx)
 	if err != nil {

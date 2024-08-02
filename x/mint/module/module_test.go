@@ -157,15 +157,16 @@ func TestMintModuleTestSuite(t *testing.T) {
 }
 
 func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown() {
-	params, err := s.mintKeeper.GetParams(s.ctx)
+	ctx := s.ctx.WithBlockHeight(10)
+	params, err := s.mintKeeper.GetParams(ctx)
 	s.Require().NoError(err)
-	ecosystemMintSupplyRemaining, err := mint.GetEcosystemMintSupplyRemaining(s.ctx, s.mintKeeper, params)
+	ecosystemMintSupplyRemaining, err := mint.GetEcosystemMintSupplyRemaining(ctx, s.mintKeeper, params)
 	s.Require().NoError(err)
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
 	s.Require().True(ok)
 	err = s.emissionsKeeper.AddReputerStake(
-		s.ctx,
+			ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
 		stake,
@@ -176,7 +177,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	spareCoins, ok := cosmosMath.NewIntFromString("1000000000000000000000000000")
 	s.Require().True(ok)
 	err = s.bankKeeper.MintCoins(
-		s.ctx,
+			ctx,
 		thirdParty,
 		sdk.NewCoins(
 			sdk.NewCoin(
@@ -187,12 +188,12 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	)
 	s.Require().NoError(err)
 
-	emissionsParams, err := s.emissionsKeeper.GetParams(s.ctx)
+	emissionsParams, err := s.emissionsKeeper.GetParams(ctx)
 	s.Require().NoError(err)
 	blocksPerMonth := emissionsParams.BlocksPerMonth
 
 	_, emissionPerUnitStakedTokenBefore, err := mint.GetEmissionPerMonth(
-		s.ctx,
+		ctx,
 		s.mintKeeper,
 		blocksPerMonth,
 		params,
@@ -205,7 +206,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	s.Require().True(ok)
 	// ok now add some stake
 	err = s.emissionsKeeper.AddReputerStake(
-		s.ctx,
+		ctx,
 		0,
 		sdk.AccAddress(s.PKS[0].Address()).String(),
 		stake,
@@ -213,7 +214,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	s.Require().NoError(err)
 
 	_, emissionPerUnitStakedTokenAfter, err := mint.GetEmissionPerMonth(
-		s.ctx,
+		ctx,
 		s.mintKeeper,
 		blocksPerMonth,
 		params,
