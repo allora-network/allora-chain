@@ -278,15 +278,15 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredFore
 	require.Equal(forecastsCount1, 0)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFiltersDuplicateForecastElements() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastElements() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
-	workerMsg, topicId := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
 	// BEGIN MODIFICATION
-	forecast := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast
+	forecast := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast
 	originalElement := forecast.ForecastElements[0]
 	duplicateElement := &types.ForecastElement{
 		Inferer: originalElement.Inferer,
@@ -295,12 +295,13 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFiltersDuplicateForec
 	forecast.ForecastElements = append(forecast.ForecastElements, duplicateElement)
 	// END MODIFICATION
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	blockHeight := forecast.BlockHeight
 	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
 
-	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
+	ctx = ctx.WithBlockHeight(blockHeight)
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
 
 	// Check the forecast count to ensure duplicates were filtered out

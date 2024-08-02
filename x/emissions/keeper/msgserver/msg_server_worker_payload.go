@@ -103,6 +103,17 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 			return nil, errorsmod.Wrapf(err,
 				"Error forecaster address is not registered in this topic")
 		}
+
+		// Remove duplicate forecast element
+		acceptedForecastElements := make([]*types.ForecastElement, 0)
+		seenInferers := make(map[string]bool)
+		for _, el := range forecast.ForecastElements {
+			if !seenInferers[el.Inferer] {
+				acceptedForecastElements = append(acceptedForecastElements, el)
+				seenInferers[el.Inferer] = true
+			}
+		}
+		forecast.ForecastElements = acceptedForecastElements
 		err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err,

@@ -123,10 +123,10 @@ message Params {
     (gogoproto.nullable) = false
   ];  // we no stop dripping from the topic's effective revenue when the topic's
       // effective revenue is below this
-    uint64 half_max_process_stake_removals_end_block =
-      42;  // max amount of stake removals to process in an ABCI end block. Applied twice once for stakeRemovals and
-           // once for DelegateStakeRemovals, so actual max is this number times two
-    string data_sending_fee = 43 [
+  uint64 half_max_process_stake_removals_end_block = 42;
+  // max amount of stake removals to process in an ABCI end block. Applied twice once for stakeRemovals and
+  // once for DelegateStakeRemovals, so actual max is this number times two
+  string data_sending_fee = 43 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,

@@ -138,7 +138,7 @@ message OptionalParams {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];  
+  ];
 }
 
 message MsgUpdateParams {
