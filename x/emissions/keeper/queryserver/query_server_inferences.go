@@ -344,7 +344,7 @@ func (qs queryServer) GetOneInForecasterSelfNetworkRegret(
 	*types.QueryOneInForecasterSelfNetworkRegretResponse,
 	error,
 ) {
-	oneInForecasterSelfNetworkRegret, _, err := qs.k.GetOneInForecasterSelfNetworkRegret(ctx, req.TopicId, req.Forecaster)
+	oneInForecasterSelfNetworkRegret, _, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Forecaster)
 	if err != nil {
 		return nil, err
 	}

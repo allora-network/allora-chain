@@ -808,6 +808,17 @@ func ExtractValues(bundle *types.ValueBundle) []alloraMath.Dec {
 	for _, v := range bundle.ForecasterValues {
 		values = append(values, v.Value)
 	}
+	sort.Slice(bundle.OneOutInfererForecasterValues, func(i, j int) bool {
+		return bundle.OneOutInfererForecasterValues[i].Forecaster < bundle.OneOutInfererForecasterValues[j].Forecaster
+	})
+	for _, v := range bundle.OneOutInfererForecasterValues {
+		sort.Slice(v.OneOutInfererValues, func(i, j int) bool {
+			return v.OneOutInfererValues[i].Worker < v.OneOutInfererValues[j].Worker
+		})
+		for _, v2 := range v.OneOutInfererValues {
+			values = append(values, v2.Value)
+		}
+	}
 	sort.Slice(bundle.OneOutInfererValues, func(i, j int) bool {
 		return bundle.OneOutInfererValues[i].Worker < bundle.OneOutInfererValues[j].Worker
 	})

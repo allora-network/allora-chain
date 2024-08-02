@@ -304,7 +304,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	var forecastingEntropy alloraMath.Dec
 	if len(forecasters) > 0 && len(inferers) > 1 {
 		// Get forecasting entropy
-		forecastingEntropy, err = GetForecastingTaskEntropy(
+		forecastingEntropy, err = GetForecastTaskEntropy(
 			ctx,
 			k,
 			topicId,
@@ -332,15 +332,34 @@ func GenerateRewardsDistributionByTopicParticipant(
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for reputer task in topic")
 	}
 
-	// Get Total Rewards for Inference task
-	taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
+	// Get previous forecaster score ratio for topic
+	previousForecasterScoreRatio, err := k.GetPreviousForecasterScoreRatio(ctx, topicId)
+	if err != nil {
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast score ratio")
+	}
+
+	// Get chi (Forecasting Utility) and gamma (Normalization Factor)
+	chi, gamma, err := GetChiAndGamma(
 		lossBundles.NaiveValue,
 		lossBundles.CombinedValue,
 		inferenceEntropy,
 		forecastingEntropy,
+		infererScores,
+		previousForecasterScoreRatio,
+		moduleParams.TaskRewardAlpha,
+	)
+	if err != nil {
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
+	}
+
+	// Get Total Rewards for Inference task
+	taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
+		inferenceEntropy,
+		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
-		infererScores,
+		chi,
+		gamma,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
@@ -348,13 +367,12 @@ func GenerateRewardsDistributionByTopicParticipant(
 
 	// Get Total Rewards for Forecasting task
 	taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
-		lossBundles.NaiveValue,
-		lossBundles.CombinedValue,
 		inferenceEntropy,
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
-		infererScores,
+		chi,
+		gamma,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")

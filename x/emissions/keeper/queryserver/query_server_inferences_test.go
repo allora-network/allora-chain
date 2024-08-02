@@ -583,7 +583,7 @@ func (s *KeeperTestSuite) TestGetOneInForecasterSelfNetworkRegret() {
 	s.Require().Equal(response.Regret, &emptyRegret)
 
 	// Set One In Forecaster Self Network Regret
-	err = keeper.SetOneInForecasterSelfNetworkRegret(ctx, topicId, forecaster, regret)
+	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster, forecaster, regret)
 	s.Require().NoError(err)
 
 	// Get One In Forecaster Self Network Regret

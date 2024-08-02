@@ -126,4 +126,7 @@ message Params {
   uint64 half_max_process_stake_removals_end_block =
       42;  // max amount of stake removals to process in an ABCI end block. Applied twice once for stakeRemovals and
            // once for DelegateStakeRemovals, so actual max is this number times two
+  string epsilon_safe_div = 43
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  /// a small tolerance quantity used to cap division by zero
 }

@@ -535,6 +535,16 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
+	// LatestNaiveInfererNetworkRegrets
+	if len(data.LatestNaiveInfererNetworkRegrets) != 0 {
+		for _, topicIdActorIdTimeStampedValue := range data.LatestNaiveInfererNetworkRegrets {
+			if err := k.latestNaiveInfererNetworkRegrets.Set(ctx,
+				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
+				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
+				return errors.Wrap(err, "error setting latestNaiveInfererNetworkRegrets")
+			}
+		}
+	}
 	//LatestForecasterNetworkRegrets []*TopicIdActorIdTimeStampedValue
 	if len(data.LatestForecasterNetworkRegrets) != 0 {
 		for _, topicIdActorIdTimeStampedValue := range data.LatestForecasterNetworkRegrets {
@@ -542,6 +552,62 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
 				return errors.Wrap(err, "error setting latestForecasterNetworkRegrets")
+			}
+		}
+	}
+	// LatestOneOutInfererInfererNetworkRegrets
+	if len(data.LatestOneOutInfererInfererNetworkRegrets) != 0 {
+		for _, topicIdActorIdTimeStampedValue := range data.LatestOneOutInfererInfererNetworkRegrets {
+			if err := k.latestOneOutInfererInfererNetworkRegrets.Set(ctx,
+				collections.Join3(
+					topicIdActorIdTimeStampedValue.TopicId,
+					topicIdActorIdTimeStampedValue.ActorId1,
+					topicIdActorIdTimeStampedValue.ActorId2,
+				),
+				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
+				return errors.Wrap(err, "error setting latestOneOutInfererInfererNetworkRegrets")
+			}
+		}
+	}
+	// LatestOneOutInfererForecasterNetworkRegrets
+	if len(data.LatestOneOutInfererForecasterNetworkRegrets) != 0 {
+		for _, topicIdActorIdTimeStampedValue := range data.LatestOneOutInfererForecasterNetworkRegrets {
+			if err := k.latestOneOutInfererForecasterNetworkRegrets.Set(ctx,
+				collections.Join3(
+					topicIdActorIdTimeStampedValue.TopicId,
+					topicIdActorIdTimeStampedValue.ActorId1,
+					topicIdActorIdTimeStampedValue.ActorId2,
+				),
+				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
+				return errors.Wrap(err, "error setting latestOneOutInfererForecasterNetworkRegrets")
+			}
+		}
+	}
+	// LatestOneOutForecasterInfererNetworkRegrets
+	if len(data.LatestOneOutForecasterInfererNetworkRegrets) != 0 {
+		for _, topicIdActorIdTimeStampedValue := range data.LatestOneOutForecasterInfererNetworkRegrets {
+			if err := k.latestOneOutForecasterInfererNetworkRegrets.Set(ctx,
+				collections.Join3(
+					topicIdActorIdTimeStampedValue.TopicId,
+					topicIdActorIdTimeStampedValue.ActorId1,
+					topicIdActorIdTimeStampedValue.ActorId2,
+				),
+				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
+				return errors.Wrap(err, "error setting latestOneOutForecasterInfererNetworkRegrets")
+			}
+		}
+	}
+	// LatestOneOutForecasterForecasterNetworkRegrets
+	if len(data.LatestOneOutForecasterForecasterNetworkRegrets) != 0 {
+		for _, topicIdActorIdTimeStampedValue := range data.LatestOneOutForecasterForecasterNetworkRegrets {
+			if err := k.latestOneOutForecasterForecasterNetworkRegrets.Set(ctx,
+				collections.Join3(
+					topicIdActorIdTimeStampedValue.TopicId,
+					topicIdActorIdTimeStampedValue.ActorId1,
+					topicIdActorIdTimeStampedValue.ActorId2,
+				),
+				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
+				return errors.Wrap(err, "error setting latestOneOutForecasterForecasterNetworkRegrets")
 			}
 		}
 	}
@@ -558,13 +624,11 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//LatestOneInForecasterSelfNetworkRegrets []*TopicIdActorIdTimeStampedValue
-	if len(data.LatestOneInForecasterSelfNetworkRegrets) != 0 {
-		for _, topicIdActorIdTimeStampedValue := range data.LatestOneInForecasterSelfNetworkRegrets {
-			if err := k.latestOneInForecasterSelfNetworkRegrets.Set(ctx,
-				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
-				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
-				return errors.Wrap(err, "error setting latestOneInForecasterSelfNetworkRegrets")
+	// PreviousForecasterScoreRatio
+	if len(data.PreviousForecasterScoreRatio) != 0 {
+		for _, topicIdDec := range data.PreviousForecasterScoreRatio {
+			if err := k.previousForecasterScoreRatio.Set(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
+				return errors.Wrap(err, "error setting previousForecasterScoreRatio")
 			}
 		}
 	}
@@ -1373,6 +1437,24 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		latestInfererNetworkRegrets = append(latestInfererNetworkRegrets, &topicIdActorIdTimeStampedValue)
 	}
 
+	latestNaiveInfererNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
+	latestNaiveInfererNetworkRegretsIter, err := k.latestNaiveInfererNetworkRegrets.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate latest naive inferer network regrets")
+	}
+	for ; latestNaiveInfererNetworkRegretsIter.Valid(); latestNaiveInfererNetworkRegretsIter.Next() {
+		keyValue, err := latestNaiveInfererNetworkRegretsIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: latestNaiveInfererNetworkRegretsIter")
+		}
+		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
+			TopicId:          keyValue.Key.K1(),
+			ActorId:          keyValue.Key.K2(),
+			TimestampedValue: &keyValue.Value,
+		}
+		latestNaiveInfererNetworkRegrets = append(latestNaiveInfererNetworkRegrets, &topicIdActorIdTimeStampedValue)
+	}
+
 	latestForecasterNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
 	latestForecasterNetworkRegretsIter, err := k.latestForecasterNetworkRegrets.Iterate(ctx, nil)
 	if err != nil {
@@ -1389,6 +1471,78 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			TimestampedValue: &keyValue.Value,
 		}
 		latestForecasterNetworkRegrets = append(latestForecasterNetworkRegrets, &topicIdActorIdTimeStampedValue)
+	}
+
+	latestOneOutInfererInfererNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
+	latestOneOutInfererInfererNetworkRegretsIter, err := k.latestOneOutInfererInfererNetworkRegrets.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate latest one out inferer inferer network regrets")
+	}
+	for ; latestOneOutInfererInfererNetworkRegretsIter.Valid(); latestOneOutInfererInfererNetworkRegretsIter.Next() {
+		keyValue, err := latestOneOutInfererInfererNetworkRegretsIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: latestOneOutInfererInfererNetworkRegretsIter")
+		}
+		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
+			TopicId:          keyValue.Key.K1(),
+			ActorId:          keyValue.Key.K2(),
+			TimestampedValue: &keyValue.Value,
+		}
+		latestOneOutInfererInfererNetworkRegrets = append(latestOneOutInfererInfererNetworkRegrets, &topicIdActorIdTimeStampedValue)
+	}
+
+	latestOneOutInfererForecasterNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
+	latestOneOutInfererForecasterNetworkRegretsIter, err := k.latestOneOutInfererForecasterNetworkRegrets.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate latest one out inferer forecaster network regrets")
+	}
+	for ; latestOneOutInfererForecasterNetworkRegretsIter.Valid(); latestOneOutInfererForecasterNetworkRegretsIter.Next() {
+		keyValue, err := latestOneOutInfererForecasterNetworkRegretsIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: latestOneOutInfererForecasterNetworkRegretsIter")
+		}
+		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
+			TopicId:          keyValue.Key.K1(),
+			ActorId:          keyValue.Key.K2(),
+			TimestampedValue: &keyValue.Value,
+		}
+		latestOneOutInfererForecasterNetworkRegrets = append(latestOneOutInfererForecasterNetworkRegrets, &topicIdActorIdTimeStampedValue)
+	}
+
+	latestOneOutForecasterInfererNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
+	latestOneOutForecasterInfererNetworkRegretsIter, err := k.latestOneOutForecasterInfererNetworkRegrets.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate latest one out forecaster inferer network regrets")
+	}
+	for ; latestOneOutForecasterInfererNetworkRegretsIter.Valid(); latestOneOutForecasterInfererNetworkRegretsIter.Next() {
+		keyValue, err := latestOneOutForecasterInfererNetworkRegretsIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: latestOneOutForecasterInfererNetworkRegretsIter")
+		}
+		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
+			TopicId:          keyValue.Key.K1(),
+			ActorId:          keyValue.Key.K2(),
+			TimestampedValue: &keyValue.Value,
+		}
+		latestOneOutForecasterInfererNetworkRegrets = append(latestOneOutForecasterInfererNetworkRegrets, &topicIdActorIdTimeStampedValue)
+	}
+
+	latestOneOutForecasterForecasterNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
+	latestOneOutForecasterForecasterNetworkRegretsIter, err := k.latestOneOutForecasterForecasterNetworkRegrets.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate latest one out forecaster forecaster network regrets")
+	}
+	for ; latestOneOutForecasterForecasterNetworkRegretsIter.Valid(); latestOneOutForecasterForecasterNetworkRegretsIter.Next() {
+		keyValue, err := latestOneOutForecasterForecasterNetworkRegretsIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: latestOneOutForecasterForecasterNetworkRegretsIter")
+		}
+		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
+			TopicId:          keyValue.Key.K1(),
+			ActorId:          keyValue.Key.K2(),
+			TimestampedValue: &keyValue.Value,
+		}
+		latestOneOutForecasterForecasterNetworkRegrets = append(latestOneOutForecasterForecasterNetworkRegrets, &topicIdActorIdTimeStampedValue)
 	}
 
 	latestOneInForecasterNetworkRegrets := make([]*types.TopicIdActorIdActorIdTimeStampedValue, 0)
@@ -1408,24 +1562,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			TimestampedValue: &keyValue.Value,
 		}
 		latestOneInForecasterNetworkRegrets = append(latestOneInForecasterNetworkRegrets, &topicIdActorIdActorIdTimeStampedValue)
-	}
-
-	latestOneInForecasterSelfNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
-	latestOneInForecasterSelfNetworkRegretsIter, err := k.latestOneInForecasterSelfNetworkRegrets.Iterate(ctx, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to iterate latest one in forecaster self network regrets")
-	}
-	for ; latestOneInForecasterSelfNetworkRegretsIter.Valid(); latestOneInForecasterSelfNetworkRegretsIter.Next() {
-		keyValue, err := latestOneInForecasterSelfNetworkRegretsIter.KeyValue()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get key value: latestOneInForecasterSelfNetworkRegretsIter")
-		}
-		topicIdActorIdTimeStampedValue := types.TopicIdActorIdTimeStampedValue{
-			TopicId:          keyValue.Key.K1(),
-			ActorId:          keyValue.Key.K2(),
-			TimestampedValue: &keyValue.Value,
-		}
-		latestOneInForecasterSelfNetworkRegrets = append(latestOneInForecasterSelfNetworkRegrets, &topicIdActorIdTimeStampedValue)
 	}
 
 	coreTeamAddresses := make([]string, 0)
@@ -1556,7 +1692,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		LatestInfererNetworkRegrets:              latestInfererNetworkRegrets,
 		LatestForecasterNetworkRegrets:           latestForecasterNetworkRegrets,
 		LatestOneInForecasterNetworkRegrets:      latestOneInForecasterNetworkRegrets,
-		LatestOneInForecasterSelfNetworkRegrets:  latestOneInForecasterSelfNetworkRegrets,
 		CoreTeamAddresses:                        coreTeamAddresses,
 		TopicLastWorkerCommit:                    topicLastWorkerCommit,
 		TopicLastReputerCommit:                   topicLastReputerCommit,

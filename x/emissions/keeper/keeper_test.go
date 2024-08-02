@@ -709,6 +709,90 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetw
 	s.Require().NotEqual(gotRegret1, gotRegret2, "Regrets from different topics should not be equal")
 }
 
+func (s *KeeperTestSuite) TestSetAndGetNaiveInfererNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	inferer := "inferer-address"
+
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
+
+	err := keeper.SetNaiveInfererNetworkRegret(ctx, topicId, inferer, regret)
+	s.Require().NoError(err)
+
+	gotRegret, _, err := keeper.GetNaiveInfererNetworkRegret(ctx, topicId, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(regret, gotRegret)
+}
+
+func (s *KeeperTestSuite) TestSetAndGetLatestOneOutInfererInfererNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	inferer1 := "inferer1-address"
+	inferer2 := "inferer2-address"
+
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(15)}
+
+	err := keeper.SetOneOutInfererInfererNetworkRegret(ctx, topicId, inferer1, inferer2, regret)
+	s.Require().NoError(err)
+
+	gotRegret, _, err := keeper.GetOneOutInfererInfererNetworkRegret(ctx, topicId, inferer1, inferer2)
+	s.Require().NoError(err)
+	s.Require().Equal(regret, gotRegret)
+}
+
+func (s *KeeperTestSuite) TestSetAndGetLatestOneOutInfererForecasterNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	inferer := "inferer-address"
+	forecaster := "forecaster-address"
+
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(20)}
+
+	err := keeper.SetOneOutInfererForecasterNetworkRegret(ctx, topicId, inferer, forecaster, regret)
+	s.Require().NoError(err)
+
+	gotRegret, _, err := keeper.GetOneOutInfererForecasterNetworkRegret(ctx, topicId, inferer, forecaster)
+	s.Require().NoError(err)
+	s.Require().Equal(regret, gotRegret)
+}
+
+func (s *KeeperTestSuite) TestSetAndGetLatestOneOutForecasterInfererNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	forecaster := "forecaster-address"
+	inferer := "inferer-address"
+
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(25)}
+
+	err := keeper.SetOneOutForecasterInfererNetworkRegret(ctx, topicId, forecaster, inferer, regret)
+	s.Require().NoError(err)
+
+	gotRegret, _, err := keeper.GetOneOutForecasterInfererNetworkRegret(ctx, topicId, forecaster, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(regret, gotRegret)
+}
+
+func (s *KeeperTestSuite) TestSetAndGetLatestOneOutForecasterForecasterNetworkRegret() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	forecaster1 := "forecaster1-address"
+	forecaster2 := "forecaster2-address"
+
+	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(30)}
+
+	err := keeper.SetOneOutForecasterForecasterNetworkRegret(ctx, topicId, forecaster1, forecaster2, regret)
+	s.Require().NoError(err)
+
+	gotRegret, _, err := keeper.GetOneOutForecasterForecasterNetworkRegret(ctx, topicId, forecaster1, forecaster2)
+	s.Require().NoError(err)
+	s.Require().Equal(regret, gotRegret)
+}
+
 // / PARAMS TESTS
 func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
 	ctx := s.ctx

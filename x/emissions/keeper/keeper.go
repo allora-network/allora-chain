@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"sort"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -81,6 +82,7 @@ type Keeper struct {
 	previousInferenceRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 	// map of (topic, worker) -> previous reward for forecast (used for EMA)
 	previousForecastRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
+	previousForecasterScoreRatio   collections.Map[TopicId, alloraMath.Dec]
 
 	/// STAKING
 
@@ -163,8 +165,12 @@ type Keeper struct {
 	// map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
 	// all network inferer (3rd index) regrets L_ij made under the regime of the one-in forecaster (2nd index)
 	latestOneInForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
-	// the forecaster (2nd index) regrets made under the regime of the same forecaster as a one-in forecaster
-	latestOneInForecasterSelfNetworkRegrets collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
+
+	latestNaiveInfererNetworkRegrets               collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
+	latestOneOutInfererInfererNetworkRegrets       collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	latestOneOutInfererForecasterNetworkRegrets    collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	latestOneOutForecasterInfererNetworkRegrets    collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	latestOneOutForecasterForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
 
 	/// WHITELISTS
 
@@ -172,7 +178,6 @@ type Keeper struct {
 
 	/// RECORD COMMITS
 
-	//
 	topicLastWorkerCommit   collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastReputerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastWorkerPayload  collections.Map[TopicId, types.TimestampedActorNonce]
@@ -228,25 +233,30 @@ func NewKeeper(
 		latestInfererNetworkRegrets:              collections.NewMap(sb, types.InfererNetworkRegretsKey, "inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestForecasterNetworkRegrets:           collections.NewMap(sb, types.ForecasterNetworkRegretsKey, "forecaster_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneInForecasterNetworkRegrets:      collections.NewMap(sb, types.OneInForecasterNetworkRegretsKey, "one_in_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
-		latestOneInForecasterSelfNetworkRegrets:  collections.NewMap(sb, types.OneInForecasterSelfNetworkRegretsKey, "one_in_forecaster_self_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
-		whitelistAdmins:                          collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
-		infererScoresByBlock:                     collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		forecasterScoresByBlock:                  collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		latestInfererScoresByWorker:              collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		latestForecasterScoresByWorker:           collections.NewMap(sb, types.LatestForecasterScoresByWorkerKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		latestReputerScoresByReputer:             collections.NewMap(sb, types.LatestReputerScoresByReputerKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		previousReputerRewardFraction:            collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		previousInferenceRewardFraction:          collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		previousForecastRewardFraction:           collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		reputerScoresByBlock:                     collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		reputerListeningCoefficient:              collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ListeningCoefficient](cdc)),
-		unfulfilledWorkerNonces:                  collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
-		unfulfilledReputerNonces:                 collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
-		topicRewardNonce:                         collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
-		topicLastWorkerCommit:                    collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		topicLastReputerCommit:                   collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		topicLastWorkerPayload:                   collections.NewMap(sb, types.TopicLastWorkerPayloadKey, "topic_last_worker_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		topicLastReputerPayload:                  collections.NewMap(sb, types.TopicLastReputerPayloadKey, "topic_last_reputer_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		latestNaiveInfererNetworkRegrets:         collections.NewMap(sb, types.LatestNaiveInfererNetworkRegretsKey, "latest_naive_inferer_network_regrets", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestOneOutInfererInfererNetworkRegrets: collections.NewMap(sb, types.LatestOneOutInfererInfererNetworkRegretsKey, "latest_one_out_inferer_inferer_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestOneOutInfererForecasterNetworkRegrets:    collections.NewMap(sb, types.LatestOneOutInfererForecasterNetworkRegretsKey, "latest_one_out_inferer_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestOneOutForecasterInfererNetworkRegrets:    collections.NewMap(sb, types.LatestOneOutForecasterInfererNetworkRegretsKey, "latest_one_out_forecaster_inferer_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
+		latestOneOutForecasterForecasterNetworkRegrets: collections.NewMap(sb, types.LatestOneOutForecasterForecasterNetworkRegretsKey, "latest_one_out_forecaster_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
+		whitelistAdmins:                 collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
+		infererScoresByBlock:            collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		forecasterScoresByBlock:         collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		latestInfererScoresByWorker:     collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		latestForecasterScoresByWorker:  collections.NewMap(sb, types.LatestForecasterScoresByWorkerKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		latestReputerScoresByReputer:    collections.NewMap(sb, types.LatestReputerScoresByReputerKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		previousReputerRewardFraction:   collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousInferenceRewardFraction: collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousForecastRewardFraction:  collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousForecasterScoreRatio:    collections.NewMap(sb, types.PreviousForecasterScoreRatioKey, "previous_forecaster_score_ratio", collections.Uint64Key, alloraMath.DecValue),
+		reputerScoresByBlock:            collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		reputerListeningCoefficient:     collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ListeningCoefficient](cdc)),
+		unfulfilledWorkerNonces:         collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
+		unfulfilledReputerNonces:        collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
+		topicRewardNonce:                collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
+		topicLastWorkerCommit:           collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		topicLastReputerCommit:          collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		topicLastWorkerPayload:          collections.NewMap(sb, types.TopicLastWorkerPayloadKey, "topic_last_worker_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		topicLastReputerPayload:         collections.NewMap(sb, types.TopicLastReputerPayloadKey, "topic_last_reputer_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -464,21 +474,6 @@ func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
-	key := collections.Join(topicId, worker)
-	return k.latestForecasterNetworkRegrets.Set(ctx, key, regret)
-}
-
-func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
-	key := collections.Join3(topicId, forecaster, inferer)
-	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
-}
-
-func (k *Keeper) SetOneInForecasterSelfNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, regret types.TimestampedValue) error {
-	key := collections.Join(topicId, forecaster)
-	return k.latestOneInForecasterSelfNetworkRegrets.Set(ctx, key, regret)
-}
-
 // Returns the regret of a inferer from comparing loss of inferer relative to loss of other inferers
 // Returns (0, true) if no regret is found
 func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId) (types.TimestampedValue, bool, error) {
@@ -498,6 +493,11 @@ func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 		return types.TimestampedValue{}, false, err
 	}
 	return regret, false, nil
+}
+
+func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
+	key := collections.Join(topicId, worker)
+	return k.latestForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
 // Returns the regret of a forecaster from comparing loss of forecaster relative to loss of other forecasters
@@ -521,10 +521,15 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 	return regret, false, nil
 }
 
+func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneInForecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneInForecaster, inferer)
+	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
+}
+
 // Returns the regret of a forecaster from comparing loss of forecaster relative to loss of other forecasters
 // Returns (0, true) if no regret is found
-func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
-	key := collections.Join3(topicId, forecaster, inferer)
+func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneInForecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneInForecaster, inferer)
 	regret, err := k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -542,9 +547,110 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 	return regret, false, nil
 }
 
-func (k *Keeper) GetOneInForecasterSelfNetworkRegret(ctx context.Context, topicId TopicId, forecaster ActorId) (types.TimestampedValue, bool, error) {
-	key := collections.Join(topicId, forecaster)
-	regret, err := k.latestOneInForecasterSelfNetworkRegrets.Get(ctx, key)
+func (k *Keeper) SetNaiveInfererNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId, regret types.TimestampedValue) error {
+	key := collections.Join(topicId, inferer)
+	return k.latestNaiveInfererNetworkRegrets.Set(ctx, key, regret)
+}
+
+func (k *Keeper) GetNaiveInfererNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join(topicId, inferer)
+	regret, err := k.latestNaiveInfererNetworkRegrets.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, false, err
+			}
+			return types.TimestampedValue{
+				BlockHeight: 0,
+				Value:       topic.InitialRegret,
+			}, true, nil
+		}
+		return types.TimestampedValue{}, false, err
+	}
+	return regret, false, nil
+}
+
+func (k *Keeper) SetOneOutInfererInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, inferer ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneOutInferer, inferer)
+	return k.latestOneOutInfererInfererNetworkRegrets.Set(ctx, key, regret)
+}
+
+func (k *Keeper) GetOneOutInfererInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneOutInferer, inferer)
+	regret, err := k.latestOneOutInfererInfererNetworkRegrets.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, false, err
+			}
+			return types.TimestampedValue{
+				BlockHeight: 0,
+				Value:       topic.InitialRegret,
+			}, true, nil
+		}
+		return types.TimestampedValue{}, false, err
+	}
+	return regret, false, nil
+}
+
+func (k *Keeper) SetOneOutInfererForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, forecaster ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneOutInferer, forecaster)
+	return k.latestOneOutInfererForecasterNetworkRegrets.Set(ctx, key, regret)
+}
+
+func (k *Keeper) GetOneOutInfererForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, forecaster ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneOutInferer, forecaster)
+	regret, err := k.latestOneOutInfererForecasterNetworkRegrets.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, false, err
+			}
+			return types.TimestampedValue{
+				BlockHeight: 0,
+				Value:       topic.InitialRegret,
+			}, true, nil
+		}
+		return types.TimestampedValue{}, false, err
+	}
+	return regret, false, nil
+}
+
+func (k *Keeper) SetOneOutForecasterInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneOutForecaster, inferer)
+	return k.latestOneOutForecasterInfererNetworkRegrets.Set(ctx, key, regret)
+}
+
+func (k *Keeper) GetOneOutForecasterInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, inferer ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneOutForecaster, inferer)
+	regret, err := k.latestOneOutForecasterInfererNetworkRegrets.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			topic, err := k.GetTopic(ctx, topicId)
+			if err != nil {
+				return types.TimestampedValue{}, false, err
+			}
+			return types.TimestampedValue{
+				BlockHeight: 0,
+				Value:       topic.InitialRegret,
+			}, true, nil
+		}
+		return types.TimestampedValue{}, false, err
+	}
+	return regret, false, nil
+}
+
+func (k *Keeper) SetOneOutForecasterForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, forecaster ActorId, regret types.TimestampedValue) error {
+	key := collections.Join3(topicId, oneOutForecaster, forecaster)
+	return k.latestOneOutForecasterForecasterNetworkRegrets.Set(ctx, key, regret)
+}
+
+func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, forecaster ActorId) (types.TimestampedValue, bool, error) {
+	key := collections.Join3(topicId, oneOutForecaster, forecaster)
+	regret, err := k.latestOneOutForecasterForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
@@ -1956,33 +2062,42 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 		EndInclusive(blockHeight).
 		Descending()
 
-	scores := make([]*types.Score, 0)
 	iter, err := k.infererScoresByBlock.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
 	defer iter.Close()
 
-	// Get max number of time steps that should be retrieved
+	scores := make([]*types.Score, 0)
+	for ; iter.Valid(); iter.Next() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		scores = append(scores, existingScores.Value.Scores...)
+	}
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
-	count := 0
-	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
-		existingScores, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
+	// Sort blockScores first by BlockHeight in descending order, then by Address
+	sort.SliceStable(scores, func(i, j int) bool {
+		if scores[i].BlockHeight == scores[j].BlockHeight {
+			return scores[i].Address < scores[j].Address
 		}
-		for _, score := range existingScores.Value.Scores {
-			scores = append(scores, score)
-			count++
-		}
+		return scores[i].BlockHeight > scores[j].BlockHeight
+	})
+
+	// Collect the sorted scores up to the maximum number of time steps
+	sortedScores := make([]*types.Score, 0, len(scores))
+	for i := 0; i < len(scores) && i < int(maxNumTimeSteps); i++ {
+		sortedScores = append(sortedScores, scores[i])
 	}
 
-	return scores, nil
+	return sortedScores, nil
 }
 
 func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
@@ -2026,33 +2141,42 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 		EndInclusive(blockHeight).
 		Descending()
 
-	scores := make([]*types.Score, 0)
 	iter, err := k.forecasterScoresByBlock.Iterate(ctx, rng)
 	if err != nil {
 		return nil, err
 	}
 	defer iter.Close()
 
-	// Get max number of time steps that should be retrieved
+	scores := make([]*types.Score, 0)
+	for ; iter.Valid(); iter.Next() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		scores = append(scores, existingScores.Value.Scores...)
+	}
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
 	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
-	count := 0
-	for ; iter.Valid() && count < int(maxNumTimeSteps); iter.Next() {
-		existingScores, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
+	// Sort blockScores first by BlockHeight in descending order, then by Address
+	sort.SliceStable(scores, func(i, j int) bool {
+		if scores[i].BlockHeight == scores[j].BlockHeight {
+			return scores[i].Address < scores[j].Address
 		}
-		for _, score := range existingScores.Value.Scores {
-			scores = append(scores, score)
-			count++
-		}
+		return scores[i].BlockHeight > scores[j].BlockHeight
+	})
+
+	// Collect the sorted scores up to the maximum number of time steps
+	sortedScores := make([]*types.Score, 0)
+	for i := 0; i < len(scores) && i < int(maxNumTimeSteps); i++ {
+		sortedScores = append(sortedScores, scores[i])
 	}
 
-	return scores, nil
+	return sortedScores, nil
 }
 
 func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
@@ -2426,4 +2550,19 @@ func (k *Keeper) SetTopicLastReputerPayload(ctx context.Context, topic types.Top
 
 func (k *Keeper) GetTopicLastReputerPayload(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
 	return k.topicLastReputerPayload.Get(ctx, topic)
+}
+
+func (k *Keeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId, forecasterScoreRatio alloraMath.Dec) error {
+	return k.previousForecasterScoreRatio.Set(ctx, topicId, forecasterScoreRatio)
+}
+
+func (k *Keeper) GetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	forecastTau, err := k.previousForecasterScoreRatio.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return forecastTau, nil
 }

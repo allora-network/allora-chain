@@ -22,6 +22,12 @@ message WithheldWorkerAttributedValue {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
+message OneOutInfererForecasterValues {
+  option (gogoproto.equal) = true;
+  string forecaster = 3;
+  repeated WithheldWorkerAttributedValue one_out_inferer_values = 4;
+}
+
 // These losses and inferences are calculated per reputer or by the network
 // The `m`s in the comments below exist for when they're made by reputers,
 // but they may be absent implying that they were made by the network
@@ -43,15 +49,17 @@ message ValueBundle {
   string naive_value = 8
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   // R^-_ilm || log10 L^-_ilm || I^-_il where l = any j
+  // log10 L^-_j'ikm || I^-_j'ik
+  repeated OneOutInfererForecasterValues one_out_inferer_forecaster_values = 9;
   // Note: forecast-implied inferences are recomputed for each left-out
   // inference
-  repeated WithheldWorkerAttributedValue one_out_inferer_values = 9;
+  repeated WithheldWorkerAttributedValue one_out_inferer_values = 10;
   // R^-_ilm || log10 L^-_ilm || I^-_il where l = any k
-  repeated WithheldWorkerAttributedValue one_out_forecaster_values = 10;
+  repeated WithheldWorkerAttributedValue one_out_forecaster_values = 11;
   // R^+_ikm || log10 L^+_ikm || I^+_ik
   // aka one_in_forecaster_values because equivalent to using only one
   // forecast-implied inference
-  repeated WorkerAttributedValue one_in_forecaster_values = 11;
+  repeated WorkerAttributedValue one_in_forecaster_values = 12;
 }
 
 // For when the bundle is computed on a per-reputer basis (ie.. if there is an

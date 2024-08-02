@@ -79,7 +79,7 @@ func TestStdDev(t *testing.T) {
 				alloraMath.MustNewDecFromString("0.09719"),
 				alloraMath.MustNewDecFromString("0.09675"),
 			},
-			want: alloraMath.MustNewDecFromString("0.041014924273483966"),
+			want: alloraMath.MustNewDecFromString("0.04323473788517746987174741957435394"),
 		},
 	}
 

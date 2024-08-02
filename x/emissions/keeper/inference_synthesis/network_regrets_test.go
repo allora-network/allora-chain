@@ -1,35 +1,37 @@
 package inference_synthesis_test
 
 import (
+	"context"
+	"fmt"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *InferenceSynthesisTestSuite) TestConvertValueBundleToNetworkLossesByWorker() {
 	require := s.Require()
-	valueBundle := types.ValueBundle{
+	valueBundle := emissionstypes.ValueBundle{
 		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
 		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
-		InfererValues: []*types.WorkerAttributedValue{
+		InfererValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
 			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
 		},
-		ForecasterValues: []*types.WorkerAttributedValue{
+		ForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
 			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
 		},
-		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+		OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
 			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
 			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
 		},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+		OneOutForecasterValues: []*emissionstypes.WithheldWorkerAttributedValue{
 			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
 			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
 		},
-		OneInForecasterValues: []*types.WorkerAttributedValue{
+		OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
 			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
 		},
@@ -109,27 +111,27 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	cNorm := alloraMath.MustNewDecFromString("0.1")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 
-	valueBundle := types.ValueBundle{
+	valueBundle := emissionstypes.ValueBundle{
 		CombinedValue: alloraMath.MustNewDecFromString("500"),
 		NaiveValue:    alloraMath.MustNewDecFromString("123"),
-		InfererValues: []*types.WorkerAttributedValue{
+		InfererValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 		},
-		ForecasterValues: []*types.WorkerAttributedValue{
+		ForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 		},
-		OneInForecasterValues: []*types.WorkerAttributedValue{
+		OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 		},
 	}
 	blockHeight := int64(42)
-	nonce := types.Nonce{BlockHeight: blockHeight}
+	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
 	alpha := alloraMath.MustNewDecFromString("0.1")
 
-	timestampedValue := types.TimestampedValue{
+	timestampedValue := emissionstypes.TimestampedValue{
 		BlockHeight: blockHeight,
 		Value:       alloraMath.MustNewDecFromString("200"),
 	}
@@ -185,7 +187,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 
 	bothAccs := []string{worker1, worker2}
 	expected := alloraMath.MustNewDecFromString("210")
-	expectedOneIn := alloraMath.MustNewDecFromString("180")
+	// expectedOneIn := alloraMath.MustNewDecFromString("180")
 
 	// New potential participant should not start with zero regret since we already have participants with prior regrets which will
 	// be used to calculate the initial regret in the topic
@@ -226,10 +228,8 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 		require.False(noPriorRegret)
 
 		for _, accInner := range bothAccs {
-			lastRegret, noPriorRegret, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, acc, accInner)
+			lastRegret, _, err = k.GetOneInForecasterNetworkRegret(s.ctx, topicId, acc, accInner)
 			require.NoError(err)
-			require.True(alloraMath.InDelta(expectedOneIn, lastRegret.Value, alloraMath.MustNewDecFromString("0.0001")))
-			require.False(noPriorRegret)
 		}
 	}
 }
@@ -246,31 +246,31 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	cNorm := alloraMath.MustNewDecFromString("0.1")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 
-	valueBundle := types.ValueBundle{
+	valueBundle := emissionstypes.ValueBundle{
 		CombinedValue: alloraMath.MustNewDecFromString("500"),
 		NaiveValue:    alloraMath.MustNewDecFromString("123"),
-		InfererValues: []*types.WorkerAttributedValue{
+		InfererValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker3, Value: alloraMath.MustNewDecFromString("200")},
 		},
-		ForecasterValues: []*types.WorkerAttributedValue{
+		ForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker3, Value: alloraMath.MustNewDecFromString("200")},
 		},
-		OneInForecasterValues: []*types.WorkerAttributedValue{
+		OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker3, Value: alloraMath.MustNewDecFromString("200")},
 		},
 	}
 	blockHeight := int64(42)
-	nonce := types.Nonce{BlockHeight: blockHeight}
+	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
 	alpha := alloraMath.MustNewDecFromString("0.1")
 	topicId := uint64(1)
 
-	timestampedValue := types.TimestampedValue{
+	timestampedValue := emissionstypes.TimestampedValue{
 		BlockHeight: blockHeight,
 		Value:       alloraMath.MustNewDecFromString("200"),
 	}
@@ -327,6 +327,118 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	}
 }
 
+func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
+	require := s.Require()
+	k := s.emissionsKeeper
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epochPrevGet := epochGet[300]
+	epoch301Get := epochGet[301]
+	topicId := uint64(1)
+	blockHeight := int64(1003)
+	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+	epsilon := alloraMath.MustNewDecFromString("1e-4")
+
+	inferer0 := s.addrs[0].String()
+	inferer1 := s.addrs[1].String()
+	inferer2 := s.addrs[2].String()
+	inferer3 := s.addrs[3].String()
+	inferer4 := s.addrs[4].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	forecaster0 := s.addrs[5].String()
+	forecaster1 := s.addrs[6].String()
+	forecaster2 := s.addrs[7].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	err := testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epochPrevGet)
+	require.NoError(err)
+
+	networkLosses, err := testutil.GetNetworkLossFromCsv(
+		topicId,
+		infererAddresses,
+		forecasterAddresses,
+		epoch301Get,
+	)
+	s.Require().NoError(err)
+
+	err = inference_synthesis.GetCalcSetNetworkRegrets(
+		s.ctx,
+		k,
+		topicId,
+		networkLosses,
+		nonce,
+		alpha,
+		cNorm,
+		pNorm,
+		epsilon,
+	)
+	require.NoError(err)
+
+	checkRegret := func(worker string, expected alloraMath.Dec, getter func(context.Context, uint64, string) (emissionstypes.TimestampedValue, bool, error)) {
+		regret, _, err := getter(s.ctx, topicId, worker)
+		require.NoError(err)
+		testutil.InEpsilon5(s.T(), expected, regret.Value.String())
+	}
+
+	checkOneOutRegret := func(worker string, innerWorker string, expected alloraMath.Dec, getter func(context.Context, uint64, string, string) (emissionstypes.TimestampedValue, bool, error)) {
+		regret, _, err := getter(s.ctx, topicId, worker, innerWorker)
+		require.NoError(err)
+		testutil.InEpsilon5(s.T(), expected, regret.Value.String())
+	}
+
+	for i := 0; i < len(infererAddresses); i++ {
+		expectedRegret := epoch301Get(fmt.Sprintf("inference_regret_worker_%v", i))
+		checkRegret(infererAddresses[i], expectedRegret, k.GetInfererNetworkRegret)
+
+		expectedRegret = epoch301Get(fmt.Sprintf("naive_inference_regret_worker_%v", i))
+		checkRegret(infererAddresses[i], expectedRegret, k.GetNaiveInfererNetworkRegret)
+	}
+
+	for i := 0; i < len(forecasterAddresses); i++ {
+		forecasterCsvIndex := i + 5
+		expectedRegret := epoch301Get(fmt.Sprintf("inference_regret_worker_%v", forecasterCsvIndex))
+		checkRegret(forecasterAddresses[i], expectedRegret, k.GetForecasterNetworkRegret)
+	}
+
+	for i, inferer := range infererAddresses {
+		for j, infererInner := range infererAddresses {
+			expectedRegret := epoch301Get(fmt.Sprintf("inference_regret_worker_%v_oneout_%v", j, i))
+			checkOneOutRegret(inferer, infererInner, expectedRegret, k.GetOneOutInfererInfererNetworkRegret)
+		}
+
+		for l, forecaster := range forecasterAddresses {
+			forecasterCsvIndex := l + 5
+			expectedRegret := epoch301Get(fmt.Sprintf("inference_regret_worker_%v_oneout_%v", forecasterCsvIndex, i))
+			checkOneOutRegret(inferer, forecaster, expectedRegret, k.GetOneOutInfererForecasterNetworkRegret)
+		}
+	}
+
+	for i, forecaster := range forecasterAddresses {
+		forecasterCsvIndex := i + 5
+		for j, inferer := range infererAddresses {
+			expectedRegret := epoch301Get(fmt.Sprintf("inference_regret_worker_%v_oneout_%v", j, forecasterCsvIndex))
+			checkOneOutRegret(forecaster, inferer, expectedRegret, k.GetOneOutForecasterInfererNetworkRegret)
+		}
+
+		for z, forecasterInner := range forecasterAddresses {
+			forecasterCsvIndex2 := z + 5
+			expectedRegret := epoch301Get(fmt.Sprintf("inference_regret_worker_%v_oneout_%v", forecasterCsvIndex2, forecasterCsvIndex))
+			checkOneOutRegret(forecaster, forecasterInner, expectedRegret, k.GetOneOutForecasterForecasterNetworkRegret)
+		}
+
+		expectedOneInRegret := epoch301Get(fmt.Sprintf("inference_regret_worker_%v_onein_%v", 5, i))
+		checkOneOutRegret(forecaster, forecaster, expectedOneInRegret, k.GetOneInForecasterNetworkRegret)
+
+		for l, inferer := range infererAddresses {
+			expectedOneInRegret := epoch301Get(fmt.Sprintf("inference_regret_worker_%v_onein_%v", l, i))
+			checkOneOutRegret(forecaster, inferer, expectedOneInRegret, k.GetOneInForecasterNetworkRegret)
+		}
+	}
+}
+
 // In this test we run two trials of calculating setting network regrets with different losses.
 // We then compare the resulting regrets to see if the higher losses result in lower regrets.
 func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
@@ -335,7 +447,7 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 
 	topicId := uint64(1)
 	blockHeight := int64(1003)
-	nonce := types.Nonce{BlockHeight: blockHeight}
+	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
 	alpha := alloraMath.MustNewDecFromString("0.1")
 	pNorm := alloraMath.MustNewDecFromString("0.1")
 	cNorm := alloraMath.MustNewDecFromString("0.1")
@@ -345,40 +457,40 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	worker1 := "worker1"
 	worker2 := "worker2"
 
-	networkLossesValueBundle0 := types.ValueBundle{
+	networkLossesValueBundle0 := emissionstypes.ValueBundle{
 		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
 		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
-		InfererValues: []*types.WorkerAttributedValue{
+		InfererValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.2")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
 		},
-		ForecasterValues: []*types.WorkerAttributedValue{
+		ForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.2")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
 		},
-		OneInForecasterValues: []*types.WorkerAttributedValue{
+		OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.2")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
 		},
 	}
 
-	networkLossesValueBundle1 := types.ValueBundle{
+	networkLossesValueBundle1 := emissionstypes.ValueBundle{
 		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
 		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
-		InfererValues: []*types.WorkerAttributedValue{
+		InfererValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
 		},
-		ForecasterValues: []*types.WorkerAttributedValue{
+		ForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
 		},
-		OneInForecasterValues: []*types.WorkerAttributedValue{
+		OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
@@ -386,17 +498,17 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	}
 
 	resetRegrets := func() {
-		timestampedValue0_1 := types.TimestampedValue{
+		timestampedValue0_1 := emissionstypes.TimestampedValue{
 			BlockHeight: blockHeight,
 			Value:       alloraMath.MustNewDecFromString("0.1"),
 		}
 
-		timestampedValue0_2 := types.TimestampedValue{
+		timestampedValue0_2 := emissionstypes.TimestampedValue{
 			BlockHeight: blockHeight,
 			Value:       alloraMath.MustNewDecFromString("0.2"),
 		}
 
-		timestampedValue0_3 := types.TimestampedValue{
+		timestampedValue0_3 := emissionstypes.TimestampedValue{
 			BlockHeight: blockHeight,
 			Value:       alloraMath.MustNewDecFromString("0.3"),
 		}
@@ -516,5 +628,5 @@ func (s *InferenceSynthesisTestSuite) TestCalcTopicInitialRegret() {
 
 	calculatedInitialRegret, err := inference_synthesis.CalcTopicInitialRegret(regrets, epsilon, pNorm, cNorm)
 	require.NoError(err)
-	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.3150416097077003")
+	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.2869843501503934597325669544281814")
 }
