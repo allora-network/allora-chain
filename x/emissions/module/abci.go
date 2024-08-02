@@ -8,6 +8,7 @@ import (
 	"cosmossdk.io/errors"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -137,6 +138,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		sdkCtx,
 		am.keeper,
 		blockHeight,
+		fn,
 		weights,
 	)
 	if err != nil {
