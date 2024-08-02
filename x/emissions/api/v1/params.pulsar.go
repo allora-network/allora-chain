@@ -2902,7 +2902,7 @@ type Params struct {
 	// effective revenue is below this
 	HalfMaxProcessStakeRemovalsEndBlock uint64 `protobuf:"varint,42,opt,name=half_max_process_stake_removals_end_block,json=halfMaxProcessStakeRemovalsEndBlock,proto3" json:"half_max_process_stake_removals_end_block,omitempty"` // max amount of stake removals to process in an ABCI end block. Applied twice once for stakeRemovals and
 	// once for DelegateStakeRemovals, so actual max is this number times two
-	EpsilonSafeDiv string `protobuf:"bytes,43,opt,name=epsilon_safe_div,json=epsilonSafeDiv,proto3" json:"epsilon_safe_div,omitempty"`
+	EpsilonSafeDiv string `protobuf:"bytes,43,opt,name=epsilon_safe_div,json=epsilonSafeDiv,proto3" json:"epsilon_safe_div,omitempty"` /// a small tolerance quantity used to cap division by zero
 }
 
 func (x *Params) Reset() {
