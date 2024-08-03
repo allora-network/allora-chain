@@ -14,6 +14,7 @@ func GetEmissionPerMonth(
 	k types.MintKeeper,
 	blocksPerMonth uint64,
 	params types.Params,
+	ecosystemBalance math.Int,
 	ecosystemMintSupplyRemaining math.Int,
 	validatorsPercent math.LegacyDec,
 ) (
@@ -26,32 +27,44 @@ func GetEmissionPerMonth(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	totalSupply := k.GetTotalCurrTokenSupply(ctx).Amount
-	lockedSupply := keeper.GetLockedTokenSupply(
+	totalSupply := params.MaxSupply
+	lockedVestingTokens, _, _, _ := keeper.GetLockedVestingTokens(
 		blocksPerMonth,
 		math.NewIntFromUint64(uint64(ctx.BlockHeight())),
 		params,
 	)
-	circulatingSupply := totalSupply.Sub(lockedSupply)
+	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
+	circulatingSupply := totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
 	if circulatingSupply.IsNegative() {
-		circulatingSupply = math.ZeroInt()
+		return math.Int{}, math.LegacyDec{}, types.ErrNegativeCirculatingSupply
 	}
-	// T_{total,i} = ecosystemMintableRemaining
+	// T_{total,i} = ecosystemLocked
 	// N_{staked,i} = networkStaked
 	// N_{circ,i} = circulatingSupply
 	// N_{total,i} = totalSupply
-	ctx.Logger().Info("Emission Per Unit Staked Token Calculation",
-		"FEmission", params.FEmission.String(),
-		"ecosystemMintSupplyRemaining", ecosystemMintSupplyRemaining.String(),
-		"networkStaked", networkStaked.String(),
-		"circulatingSupply", circulatingSupply.String(),
-		"totalSupply", totalSupply.String(),
-		"lockedSupply", lockedSupply.String(),
+	ctx.Logger().Info(
+		"Emission Per Unit Staked Token Calculation\n"+
+			"FEmission %s\n"+
+			"ecosystemLocked %s\n"+
+			"networkStaked %s\n"+
+			"circulatingSupply %s\n"+
+			"totalSupply %s\n"+
+			"lockedVestingTokens %s\n",
+		"ecosystemBalance%s\n",
+		"ecosystemMintSupplyRemaining %s\n"+
+			params.FEmission.String(),
+		ecosystemLocked.String(),
+		networkStaked.String(),
+		circulatingSupply.String(),
+		totalSupply.String(),
+		lockedVestingTokens.String(),
+		ecosystemBalance.String(),
+		ecosystemMintSupplyRemaining.String(),
 	)
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmission,
-		ecosystemMintSupplyRemaining,
+		ecosystemLocked,
 		networkStaked,
 		circulatingSupply,
 		params.MaxSupply,
@@ -143,6 +156,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 			k,
 			blocksPerMonth,
 			params,
+			ecosystemBalance,
 			ecosystemMintSupplyRemaining,
 			vPercent,
 		)

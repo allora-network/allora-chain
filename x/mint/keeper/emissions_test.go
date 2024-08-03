@@ -5,10 +5,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
-	mint "github.com/allora-network/allora-chain/x/mint/module"
-	minttestutil "github.com/allora-network/allora-chain/x/mint/testutil"
 	"github.com/allora-network/allora-chain/x/mint/types"
-	sdktypes "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *IntegrationTestSuite) TestTotalEmissionPerMonthSimple() {
@@ -66,7 +63,7 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensBeforeVest() {
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
-	result := keeper.GetLockedTokenSupply(
+	result, _, _, _ := keeper.GetLockedVestingTokens(
 		bpm,
 		cosmosMath.NewInt(int64(bpm*2)),
 		defaultParams,
@@ -89,7 +86,7 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
-	result := keeper.GetLockedTokenSupply(
+	result, _, _, _ := keeper.GetLockedVestingTokens(
 		bpm,
 		cosmosMath.NewInt(int64(bpm*13+1)),
 		defaultParams,
@@ -102,7 +99,7 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensAfterVest() {
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
-	result := keeper.GetLockedTokenSupply(
+	result, _, _, _ := keeper.GetLockedVestingTokens(
 		bpm,
 		cosmosMath.NewInt(int64(bpm*40)),
 		defaultParams,
@@ -145,7 +142,7 @@ func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
 	s.Require().NoError(err)
 	resultD, err := alloraMath.NewDecFromSdkLegacyDec(result)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
+	testutil.InEpsilon5Dec(s.T(), resultD, expectedResult)
 }
 
 func (s *IntegrationTestSuite) TestEHatMaxAtGenesisFromCsv() {
@@ -174,7 +171,7 @@ func (s *IntegrationTestSuite) TestEHatMaxAtGenesisFromCsv() {
 	)
 	resultD, err := alloraMath.NewDecFromSdkLegacyDec(result)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
+	testutil.InEpsilon5Dec(s.T(), resultD, expectedResult)
 }
 
 func (s *IntegrationTestSuite) TestEhatIFromCsv() {
@@ -189,7 +186,7 @@ func (s *IntegrationTestSuite) TestEhatIFromCsv() {
 	)
 	resultD, err := alloraMath.NewDecFromSdkLegacyDec(result)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
+	testutil.InEpsilon5Dec(s.T(), resultD, expectedResult)
 }
 
 // calculate e_i for the 61st epoch
@@ -208,7 +205,7 @@ func (s *IntegrationTestSuite) TestESubIFromCsv() {
 	)
 	resultD, err := alloraMath.NewDecFromSdkLegacyDec(result)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
+	testutil.InEpsilon5Dec(s.T(), resultD, expectedResult)
 }
 
 // calculate \cal E for the 61st epoch
@@ -225,63 +222,91 @@ func (s *IntegrationTestSuite) TestCalEFromCsv() {
 	)
 	resultD, err := alloraMath.NewDecFromSdkInt(totalEmission)
 	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), resultD, expectedResult)
+	testutil.InEpsilon5Dec(s.T(), resultD, expectedResult)
 }
 
-/* todo: think about how to get a grip on this
-func (s *IntegrationTestSuite) TestGetLockedTokenSupply() {
-	for i := 0; i < 20; i++ {
-		epoch := s.epochGet[i]
-		total := epoch("investors_preseed_tokens_total")
-		emission := epoch("investors_preseed_tokens_emission")
-		circulating := epoch("investors_preseed_tokens_circulating")
-		staked := epoch("investors_preseed_tokens_staked")
-		fmt.Println("epoch ", i, total, emission, circulating, staked)
-	}
-}
-*/
-
-// test the ABCI function that calculates \cal E
-func (s *IntegrationTestSuite) TestGetEmissionPerMonth() {
-	//prevEpoch := s.epochGet[60]
-	epoch := s.epochGet[61]
-	// we're mocking EVERYTHING
-	mockMintKeeper := minttestutil.NewMockMintKeeper(s.ctrl)
+func (s *IntegrationTestSuite) TestGetLockedVestingTokens() {
+	_1e18 := alloraMath.NewDecFinite(1, 18)
 	blocksPerMonth := uint64(525960)
-	params := types.Params{
-		MaxSupply:                     cosmosMath.NewInt(10),
-		InvestorsPercentOfTotalSupply: cosmosMath.LegacyMustNewDecFromStr("0.015"),
-		TeamPercentOfTotalSupply:      cosmosMath.LegacyMustNewDecFromStr("0.01"),
-		FEmission:                     cosmosMath.LegacyMustNewDecFromStr("0.025"),
-		MaximumMonthlyPercentageYield: cosmosMath.LegacyMustNewDecFromStr("0.12"),
-		OneMonthSmoothingDegree:       cosmosMath.LegacyMustNewDecFromStr("0.1"),
-	}
-	ecosystemMintSupplyRemaining := cosmosMath.NewInt(1000000000000000000)
-	validatorsPercent := cosmosMath.LegacyMustNewDecFromStr("0.25")
-	stakedSupplyFromSimulation, ok := cosmosMath.NewIntFromString("11")
-	ctx := s.ctx.WithBlockHeight(61)
-	s.Require().True(ok)
-	reputerPercent := cosmosMath.LegacyMustNewDecFromStr("0.33")
-	someAmount := sdktypes.NewCoin("uallo", stakedSupplyFromSimulation)
+	epoch0 := s.epochGet[0]
+	preseedFullyVested := epoch0("investors_preseed_tokens_total")
+	seedFullyVested := epoch0("investors_seed_tokens_total")
+	teamFullyVested := epoch0("team_tokens_total")
 
-	mockMintKeeper.EXPECT().CosmosValidatorStakedSupply(ctx).Return(stakedSupplyFromSimulation, nil)
-	mockMintKeeper.EXPECT().GetEmissionsKeeperTotalStake(ctx).Return(stakedSupplyFromSimulation, nil)
-	mockMintKeeper.EXPECT().GetTotalCurrTokenSupply(ctx).Return(someAmount)
-	mockMintKeeper.EXPECT().GetPreviousPercentageRewardToStakedReputers(ctx).Return(reputerPercent, nil)
-	mockMintKeeper.EXPECT().GetPreviousRewardEmissionPerUnitStakedToken(ctx).Return(reputerPercent, nil)
-	calE, ehat_i, err := mint.GetEmissionPerMonth(
-		ctx,
-		mockMintKeeper,
-		blocksPerMonth,
-		params,
-		ecosystemMintSupplyRemaining,
-		validatorsPercent,
-	)
-	s.Require().NoError(err)
-	calED, err := alloraMath.NewDecFromSdkInt(calE)
-	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), calED, epoch("ecosystem_tokens_emission"))
-	ehat_iD, err := alloraMath.NewDecFromSdkLegacyDec(ehat_i)
-	s.Require().NoError(err)
-	testutil.InEpsilon5D(s.T(), ehat_iD, epoch("ehat_i"))
+	preseedAccumulated := alloraMath.ZeroDec()
+	seedAccumulated := alloraMath.ZeroDec()
+	teamAccumulated := alloraMath.ZeroDec()
+	for i := uint64(0); i < 96; i++ {
+		epoch := s.epochGet[int(i)]
+		result, resultPreseed, resultSeed, resultTeam := keeper.GetLockedVestingTokens(
+			blocksPerMonth,
+			cosmosMath.NewIntFromUint64(blocksPerMonth*i),
+			types.DefaultParams(),
+		)
+		resultPreseedDec, err := alloraMath.NewDecFromSdkInt(resultPreseed)
+		s.Require().NoError(err)
+		resultSeedDec, err := alloraMath.NewDecFromSdkInt(resultSeed)
+		s.Require().NoError(err)
+		resultTeamDec, err := alloraMath.NewDecFromSdkInt(resultTeam)
+		s.Require().NoError(err)
+		resultD, err := alloraMath.NewDecFromSdkInt(result)
+		s.Require().NoError(err)
+		resultPreseedAllo, err := resultPreseedDec.Quo(_1e18)
+		s.Require().NoError(err)
+		resultSeedAllo, err := resultSeedDec.Quo(_1e18)
+		s.Require().NoError(err)
+		resultTeamAllo, err := resultTeamDec.Quo(_1e18)
+		s.Require().NoError(err)
+		resultDAllo, err := resultD.Quo(_1e18)
+		s.Require().NoError(err)
+
+		preseedTokensEmission := epoch("investors_preseed_tokens_emission")
+		s.Require().NoError(err)
+		preseedAccumulated, err = preseedAccumulated.Add(preseedTokensEmission)
+		s.Require().NoError(err)
+		seedTokensEmission := epoch("investors_seed_tokens_emission")
+		seedAccumulated, err = seedAccumulated.Add(seedTokensEmission)
+		s.Require().NoError(err)
+		teamTokensEmission := epoch("team_tokens_emission")
+		teamAccumulated, err = teamAccumulated.Add(teamTokensEmission)
+		s.Require().NoError(err)
+
+		preseedLocked, err := preseedFullyVested.Sub(preseedAccumulated)
+		s.Require().NoError(err)
+		// rounding precision error
+		if preseedLocked.Lt(alloraMath.OneDec()) {
+			preseedLocked = alloraMath.ZeroDec()
+		}
+		seedLocked, err := seedFullyVested.Sub(seedAccumulated)
+		s.Require().NoError(err)
+		if seedLocked.Lt(alloraMath.OneDec()) {
+			seedLocked = alloraMath.ZeroDec()
+		}
+		teamLocked, err := teamFullyVested.Sub(teamAccumulated)
+		s.Require().NoError(err)
+		if teamLocked.Lt(alloraMath.OneDec()) {
+			teamLocked = alloraMath.ZeroDec()
+		}
+
+		expected, err := preseedLocked.Add(seedLocked)
+		s.Require().NoError(err)
+		expected, err = expected.Add(teamLocked)
+		s.Require().NoError(err)
+
+		// s.ctx.Logger().Info("Epoch %d ## total %s | %s ## preseed %s | %s ## seed %s | %s ## team %s | %s\n",
+		// 	i,
+		// 	resultDAllo.String(),
+		// 	expected.String(),
+		// 	resultPreseedAllo.String(),
+		// 	preseedLocked.String(),
+		// 	resultSeedAllo.String(),
+		// 	seedLocked.String(),
+		// 	resultTeamAllo.String(),
+		// 	teamLocked.String(),
+		// )
+		testutil.InEpsilon5Dec(s.T(), resultPreseedAllo, preseedLocked)
+		testutil.InEpsilon5Dec(s.T(), resultSeedAllo, seedLocked)
+		testutil.InEpsilon5Dec(s.T(), resultTeamAllo, teamLocked)
+		testutil.InEpsilon5Dec(s.T(), resultDAllo, expected)
+	}
 }

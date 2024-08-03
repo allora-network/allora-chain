@@ -20,6 +20,7 @@ func NewParams(
 	foundationPercentOfTotalSupply math.LegacyDec,
 	participantsPercentOfTotalSupply math.LegacyDec,
 	investorsPercentOfTotalSupply math.LegacyDec,
+	investorsPreseedPercentOfTotalSupply math.LegacyDec,
 	teamPercentOfTotalSupply math.LegacyDec,
 	maxMonthlyPercentageYield math.LegacyDec,
 ) Params {
@@ -32,6 +33,7 @@ func NewParams(
 		FoundationTreasuryPercentOfTotalSupply: foundationPercentOfTotalSupply,
 		ParticipantsPercentOfTotalSupply:       participantsPercentOfTotalSupply,
 		InvestorsPercentOfTotalSupply:          investorsPercentOfTotalSupply,
+		InvestorsPreseedPercentOfTotalSupply:   investorsPreseedPercentOfTotalSupply,
 		TeamPercentOfTotalSupply:               teamPercentOfTotalSupply,
 		MaximumMonthlyPercentageYield:          maxMonthlyPercentageYield,
 	}
@@ -51,7 +53,8 @@ func DefaultParams() Params {
 		EcosystemTreasuryPercentOfTotalSupply:  math.LegacyMustNewDecFromStr("0.3595"), // 35.95%
 		FoundationTreasuryPercentOfTotalSupply: math.LegacyMustNewDecFromStr("0.1"),    // 10%
 		ParticipantsPercentOfTotalSupply:       math.LegacyMustNewDecFromStr("0.055"),  // 5.5%
-		InvestorsPercentOfTotalSupply:          math.LegacyMustNewDecFromStr("0.3105"), // 31.05%
+		InvestorsPercentOfTotalSupply:          math.LegacyMustNewDecFromStr("0.2605"), // 26.05%
+		InvestorsPreseedPercentOfTotalSupply:   math.LegacyMustNewDecFromStr("0.05"),   // 5%
 		TeamPercentOfTotalSupply:               math.LegacyMustNewDecFromStr("0.175"),  // 17.5%
 		MaximumMonthlyPercentageYield:          math.LegacyMustNewDecFromStr("0.0095"), // .95% per month
 	}
@@ -96,6 +99,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateAFractionValue(p.InvestorsPercentOfTotalSupply); err != nil {
+		return err
+	}
+	if err := validateAFractionValue(p.InvestorsPreseedPercentOfTotalSupply); err != nil {
 		return err
 	}
 	if err := validateAFractionValue(p.TeamPercentOfTotalSupply); err != nil {

@@ -12,11 +12,11 @@ import (
 // these tokens will be custodied by a centralized actor off chain.
 // this function returns the circulating supply based off of what
 // the agreements off chain say were supposed to happen for token lockup
-func GetLockedTokenSupply(
+func GetLockedVestingTokens(
 	blocksPerMonth uint64,
 	blockHeight math.Int,
 	params types.Params,
-) math.Int {
+) (total, preseedInvestors, investors, team math.Int) {
 	// foundation is unlocked from genesis
 	// participants are unlocked from genesis
 	// investors and team tokens are locked on a 1 year cliff three year vesting schedule
@@ -24,13 +24,15 @@ func GetLockedTokenSupply(
 	blocksInThreeYears := blocksInAYear.Mul(math.NewInt(3))
 	maxSupply := params.MaxSupply.ToLegacyDec()
 	percentInvestors := params.InvestorsPercentOfTotalSupply
+	percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
 	percentTeam := params.TeamPercentOfTotalSupply
 	fullInvestors := percentInvestors.Mul(maxSupply).TruncateInt()
+	fullPreseedInvestors := percentPreseedInvestors.Mul(maxSupply).TruncateInt()
 	fullTeam := percentTeam.Mul(maxSupply).TruncateInt()
-	var investors, team math.Int
 	if blockHeight.LT(blocksInAYear) {
 		// less than a year, completely locked
 		investors = fullInvestors
+		preseedInvestors = fullPreseedInvestors
 		team = fullTeam
 	} else if blockHeight.GTE(blocksInAYear) && blockHeight.LT(blocksInThreeYears) {
 		// between 1 and 3 years, investors and team tokens are vesting and partially unlocked
@@ -38,13 +40,15 @@ func GetLockedTokenSupply(
 		monthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(blocksPerMonth)).ToLegacyDec()
 		monthsLocked := thirtySix.Sub(monthsUnlocked)
 		investors = monthsLocked.Quo(thirtySix).Mul(fullInvestors.ToLegacyDec()).TruncateInt()
+		preseedInvestors = monthsLocked.Quo(thirtySix).Mul(fullPreseedInvestors.ToLegacyDec()).TruncateInt()
 		team = monthsLocked.Quo(thirtySix).Mul(fullTeam.ToLegacyDec()).TruncateInt()
 	} else {
 		// greater than 3 years, all investor, team tokens are unlocked
 		investors = math.ZeroInt()
+		preseedInvestors = math.ZeroInt()
 		team = math.ZeroInt()
 	}
-	return investors.Add(team)
+	return preseedInvestors.Add(investors).Add(team), preseedInvestors, investors, team
 }
 
 // helper function to get the number of staked tokens on the network
