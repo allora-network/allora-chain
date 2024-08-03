@@ -36,6 +36,14 @@ func GetEmissionPerMonth(
 	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
 	circulatingSupply := totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
 	if circulatingSupply.IsNegative() {
+		ctx.Logger().Error(
+			"Negative circulating supply",
+			"totalSupply", totalSupply.String(),
+			"lockedVestingTokens", lockedVestingTokens.String(),
+			"ecosystemLocked", ecosystemLocked.String(),
+			"circulatingSupply", circulatingSupply.String(),
+		)
+
 		return math.Int{}, math.LegacyDec{}, types.ErrNegativeCirculatingSupply
 	}
 	// T_{total,i} = ecosystemLocked
