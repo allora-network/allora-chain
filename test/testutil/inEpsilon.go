@@ -68,6 +68,6 @@ func InEpsilon5(t *testing.T, value alloraMath.Dec, target string) {
 	InEpsilon(t, value, targetDec, epsilonDec)
 }
 
-func InEpsilon5D(t *testing.T, value alloraMath.Dec, target alloraMath.Dec) {
+func InEpsilon5Dec(t *testing.T, value alloraMath.Dec, target alloraMath.Dec) {
 	InEpsilon(t, value, target, alloraMath.MustNewDecFromString("0.00001"))
 }
