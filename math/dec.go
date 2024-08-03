@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"math/big"
 
-	"strings"
-
 	"cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	"github.com/cockroachdb/apd/v3"
@@ -420,22 +418,13 @@ func (x Dec) SdkIntTrim() sdkmath.Int {
 // SdkLegacyDec converts Dec to `sdkmath.LegacyDec`
 // can return nil if the value is not representable in a LegacyDec
 func (x Dec) SdkLegacyDec() sdkmath.LegacyDec {
-	stringRep := x.dec.Text('G')
-	y, err := sdkmath.LegacyNewDecFromStr(stringRep)
-	if err != nil {
-		if strings.Contains(err.Error(), "exceeds max precision") {
-			// truncate to 9 digits after the decimal.
-			splittedString := strings.Split(stringRep, ".")
-			truncatedString := splittedString[0] + "." + splittedString[1][:9]
-			z, _ := sdkmath.LegacyNewDecFromStr(truncatedString)
-			return z
-		}
-	}
+	stringRep := x.dec.Text('f')
+	y, _ := sdkmath.LegacyNewDecFromStr(stringRep)
 	return y
 }
 
 func (x Dec) String() string {
-	return x.dec.Text('G')
+	return x.dec.Text('f')
 }
 
 // Marshal implements the gogo proto custom type interface.

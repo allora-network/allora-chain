@@ -54,11 +54,13 @@ func (s *IntegrationTestSuite) TestGetExponentialMovingAverageSimple() {
 
 func (s *IntegrationTestSuite) TestNumberLockedTokensBeforeVest() {
 	defaultParams := types.DefaultParams()
-	fullInvestors := defaultParams.InvestorsPercentOfTotalSupply.
+	fullPreseedInvestors := defaultParams.InvestorsPreseedPercentOfTotalSupply.
+		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
+	fullSeedInvestors := defaultParams.InvestorsPercentOfTotalSupply.
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
 	fullTeam := defaultParams.TeamPercentOfTotalSupply.
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
-	expectedLocked := fullInvestors.Add(fullTeam)
+	expectedLocked := fullPreseedInvestors.Add(fullSeedInvestors).Add(fullTeam)
 
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
@@ -76,13 +78,16 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
 	// after 13 months investors and team should get 1/3 + 1/36 = 13/36
 	fractionUnlocked := cosmosMath.LegacyNewDec(13).Quo(cosmosMath.LegacyNewDec(36))
 	fractionLocked := cosmosMath.LegacyNewDec(1).Sub(fractionUnlocked)
-	investors := defaultParams.InvestorsPercentOfTotalSupply.
+	investorsPreseed := defaultParams.InvestorsPreseedPercentOfTotalSupply.
+		Mul(defaultParams.MaxSupply.ToLegacyDec()).
+		Mul(fractionLocked).TruncateInt()
+	investorsSeed := defaultParams.InvestorsPercentOfTotalSupply.
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).
 		Mul(fractionLocked).TruncateInt()
 	team := defaultParams.TeamPercentOfTotalSupply.
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).
 		Mul(fractionLocked).TruncateInt()
-	expectedLocked := investors.Add(team)
+	expectedLocked := investorsPreseed.Add(investorsSeed).Add(team)
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)

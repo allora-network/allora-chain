@@ -121,7 +121,8 @@ func GetCappedTargetEmissionPerUnitStakedToken(
 // f_e is a global tuning constant, by default f_e = 0.015 month^{−1}
 // represents the fraction of the ecosystem treasury that would ideally
 // be emitted per unit time.
-// T_{total,i} = number of tokens that the ecosystem bucket can still mint.
+// T_{total,i} = number of tokens that the ecosystem bucket can still mint PLUS
+// the current balance of the bucket.
 // The ecosystem bucket is capped to be able to mint by default 36.75% of the max supply,
 // but as more tokens are minted the amount the ecosystem is permitted to mint decreases.
 // N_{staked,i} is the total number of tokens staked on the network at timestep i
@@ -129,7 +130,7 @@ func GetCappedTargetEmissionPerUnitStakedToken(
 // N_{total,i} is the total number of tokens ever allowed to exist
 func GetTargetRewardEmissionPerUnitStakedToken(
 	fEmission math.LegacyDec,
-	ecosystemMintableRemaining math.Int,
+	ecosystemLocked math.Int,
 	networkStaked math.Int,
 	circulatingSupply math.Int,
 	maxSupply math.Int,
@@ -143,12 +144,12 @@ func GetTargetRewardEmissionPerUnitStakedToken(
 			maxSupply.String(),
 		)
 	}
-	// T_{total,i} = ecosystemMintableRemaining
+	// T_{total,i} = ecosystemLocked
 	// N_{staked,i} = networkStaked
 	// N_{circ,i} = circulatingSupply
 	// N_{total,i} = totalSupply
 	ratioCirculating := circulatingSupply.ToLegacyDec().Quo(maxSupply.ToLegacyDec())
-	ratioEcosystemToStaked := ecosystemMintableRemaining.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
+	ratioEcosystemToStaked := ecosystemLocked.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
 	ret := fEmission.
 		Mul(ratioEcosystemToStaked).
 		Mul(ratioCirculating)

@@ -112,6 +112,7 @@ func (p Params) Validate() error {
 		p.FoundationTreasuryPercentOfTotalSupply,
 		p.ParticipantsPercentOfTotalSupply,
 		p.InvestorsPercentOfTotalSupply,
+		p.InvestorsPreseedPercentOfTotalSupply,
 		p.TeamPercentOfTotalSupply,
 	); err != nil {
 		return err
@@ -176,6 +177,7 @@ func validateTokenSupplyAddsTo100Percent(
 	foundation math.LegacyDec,
 	participants math.LegacyDec,
 	investors math.LegacyDec,
+	investorsPreesed math.LegacyDec,
 	team math.LegacyDec,
 ) error {
 	one := math.OneInt().ToLegacyDec()
@@ -184,15 +186,17 @@ func validateTokenSupplyAddsTo100Percent(
 			Add(foundation).
 			Add(participants).
 			Add(investors).
+			Add(investorsPreesed).
 			Add(team),
 	)
 	if !equal100Percent {
 		return fmt.Errorf(
-			"total supply percentages do not add up to 100 percent: %s %s %s %s %s",
+			"total supply percentages do not add up to 100 percent: %s %s %s %s %s %s",
 			ecosystem,
 			foundation,
 			participants,
 			investors,
+			investorsPreesed,
 			team,
 		)
 	}
