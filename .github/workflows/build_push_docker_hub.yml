@@ -55,3 +55,4 @@ jobs:
             docker tag $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$tag
             docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$tag
           done
+          

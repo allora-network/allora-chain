@@ -18,15 +18,11 @@ service Msg {
 
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  rpc InsertBulkWorkerPayload(MsgInsertBulkWorkerPayload) returns (MsgInsertBulkWorkerPayloadResponse);
-
   rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
 
   rpc Register(MsgRegister) returns (MsgRegisterResponse);
 
   rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
-
-  rpc InsertBulkReputerPayload(MsgInsertBulkReputerPayload) returns (MsgInsertBulkReputerPayloadResponse);
 
   rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
 
@@ -47,6 +43,10 @@ service Msg {
   rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin) returns (MsgAddToWhitelistAdminResponse);
 
   rpc RemoveFromWhitelistAdmin(MsgRemoveFromWhitelistAdmin) returns (MsgRemoveFromWhitelistAdminResponse);
+
+  rpc InsertWorkerPayload(MsgInsertWorkerPayload) returns (MsgInsertWorkerPayloadResponse);
+
+  rpc InsertReputerPayload(MsgInsertReputerPayload) returns (MsgInsertReputerPayloadResponse);
 }
 
 /// PARAMS
@@ -133,6 +133,12 @@ message OptionalParams {
   repeated string min_effective_topic_revenue = 41
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated uint64 half_max_process_stake_removals_end_block = 42;
+  repeated string data_sending_fee = 43 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message MsgUpdateParams {
@@ -152,19 +158,16 @@ message MsgCreateNewTopic {
   string creator = 1;
 
   string metadata = 2;
-  string loss_logic = 3;
-  string loss_method = 4;
-  string inference_logic = 5;
-  string inference_method = 6;
-  int64 epoch_length = 7;
-  int64 ground_truth_lag = 8;
-  string default_arg = 9;
-  string p_norm = 10
+  string loss_method = 3;
+  int64 epoch_length = 4;
+  int64 ground_truth_lag = 5;
+  int64 worker_submission_window = 6;
+  string p_norm = 7
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string alpha_regret = 11
+  string alpha_regret = 8
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  bool allow_negative = 12;
-  string epsilon = 13
+  bool allow_negative = 9;
+  string epsilon = 10
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
@@ -174,39 +177,32 @@ message MsgCreateNewTopicResponse {
 
 /// Worker and Reputer Interface
 
-message MsgInsertBulkReputerPayload {
+message MsgInsertReputerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  ReputerRequestNonce reputer_request_nonce = 2;
-  uint64 topic_id = 3;
-  repeated ReputerValueBundle reputer_value_bundles = 4;
+  ReputerValueBundle reputer_value_bundle = 2;
 }
 
-message MsgInsertBulkReputerPayloadResponse {}
+message MsgInsertReputerPayloadResponse {}
 
-message MsgInsertBulkWorkerPayload {
+message MsgInsertWorkerPayload {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  Nonce nonce = 2;
-  uint64 topic_id = 3;
-  repeated WorkerDataBundle worker_data_bundles = 4;
+  WorkerDataBundle worker_data_bundle = 2;
 }
 
-message MsgInsertBulkWorkerPayloadResponse {}
-
+message MsgInsertWorkerPayloadResponse {}
 ///  Inference Node Registration
 
 message MsgRegister {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  string lib_p2p_key = 2;
-  string multi_address = 3;
-  uint64 topic_id = 4;
-  string owner = 5;
-  bool is_reputer = 6;
+  uint64 topic_id = 2;
+  string owner = 3;
+  bool is_reputer = 4;
 }
 
 message MsgRegisterResponse {

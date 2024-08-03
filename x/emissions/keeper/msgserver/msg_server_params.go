@@ -146,6 +146,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.HalfMaxProcessStakeRemovalsEndBlock) == 1 {
 		existingParams.HalfMaxProcessStakeRemovalsEndBlock = newParams.HalfMaxProcessStakeRemovalsEndBlock[0]
 	}
+	if len(newParams.DataSendingFee) == 1 {
+		existingParams.DataSendingFee = newParams.DataSendingFee[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err

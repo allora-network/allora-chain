@@ -9,9 +9,8 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"github.com/allora-network/allora-chain/app/params"
-
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	"cosmossdk.io/collections"
@@ -49,8 +48,6 @@ type Keeper struct {
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
 	topics       collections.Map[TopicId, types.Topic]
 	activeTopics collections.KeySet[TopicId]
-	// every topic that is ready to request inferences and possible also losses
-	churnableTopics collections.KeySet[TopicId]
 	// every topic that has been churned and ready to be rewarded i.e. reputer losses have been committed
 	rewardableTopics collections.KeySet[TopicId]
 	// for a topic, what is every worker node that has registered to it?
@@ -122,10 +119,10 @@ type Keeper struct {
 	forecasts collections.Map[collections.Pair[TopicId, ActorId], types.Forecast]
 
 	// map of worker id to node data about that worker
-	workers collections.Map[LibP2pKey, types.OffchainNode]
+	workers collections.Map[ActorId, types.OffchainNode]
 
 	// map of reputer id to node data about that reputer
-	reputers collections.Map[LibP2pKey, types.OffchainNode]
+	reputers collections.Map[ActorId, types.OffchainNode]
 
 	// fee revenue collected by a topic over the course of the last reward cadence
 	topicFeeRevenue collections.Map[TopicId, cosmosMath.Int]
@@ -149,6 +146,9 @@ type Keeper struct {
 	previousPercentageRewardToStakedReputers collections.Item[alloraMath.Dec]
 
 	/// NONCES
+
+	// map of open worker nonce windows for topics on particular block heights
+	openWorkerWindows collections.Map[BlockHeight, types.Topicids]
 
 	// map of (topic) -> unfulfilled nonces
 	unfulfilledWorkerNonces collections.Map[TopicId, types.Nonces]
@@ -206,7 +206,6 @@ func NewKeeper(
 		nextTopicId:                              collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                                   collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
 		activeTopics:                             collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
-		churnableTopics:                          collections.NewKeySet(sb, types.ChurnableTopicsKey, "churnable_topics", collections.Uint64Key),
 		rewardableTopics:                         collections.NewKeySet(sb, types.RewardableTopicsKey, "rewardable_topics", collections.Uint64Key),
 		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
@@ -257,6 +256,7 @@ func NewKeeper(
 		topicLastReputerCommit:          collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastWorkerPayload:          collections.NewMap(sb, types.TopicLastWorkerPayloadKey, "topic_last_worker_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerPayload:         collections.NewMap(sb, types.TopicLastReputerPayloadKey, "topic_last_reputer_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		openWorkerWindows:               collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.Topicids](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -270,6 +270,33 @@ func NewKeeper(
 }
 
 /// NONCES
+
+// GetTopicIds returns the TopicIds for a given BlockHeight.
+// If no TopicIds are found for the BlockHeight, it returns an empty slice.
+func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) types.Topicids {
+	topicIds, err := k.openWorkerWindows.Get(ctx, height)
+	if err != nil {
+		return types.Topicids{}
+	}
+	return topicIds
+}
+
+// SetTopicId appends a new TopicId to the list of TopicIds for a given BlockHeight.
+// If no entry exists for the BlockHeight, it creates a new entry with the TopicId.
+func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicid types.Topicid) error {
+	var topicIds types.Topicids
+	topicIds, err := k.openWorkerWindows.Get(ctx, height)
+	if err != nil {
+		topicIds = types.Topicids{}
+	}
+	topicIds.TopicIds = append(topicIds.TopicIds, &topicid)
+	k.openWorkerWindows.Set(ctx, height, topicIds)
+	return nil
+}
+
+func (k *Keeper) DeleteWorkerWindowBlockheight(ctx sdk.Context, height BlockHeight) error {
+	return k.openWorkerWindows.Remove(ctx, height)
+}
 
 // Attempts to fulfill an unfulfilled nonce.
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
@@ -690,6 +717,9 @@ func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, bloc
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &types.Inferences{}, nil
+		}
 		return nil, err
 	}
 	return &inferences, nil
@@ -722,9 +752,53 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &types.Forecasts{}, nil
+		}
 		return nil, err
 	}
 	return &forecasts, nil
+}
+
+// Append individual inference for a topic/block
+func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
+	block := nonce.BlockHeight
+	moduleParams, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	key := collections.Join(topicId, block)
+	inferences, err := k.allInferences.Get(ctx, key)
+	if err != nil {
+		inferences = types.Inferences{}
+	}
+	var newInferences types.Inferences
+	// remove inference if this inferer already submitted
+	for _, exInference := range inferences.Inferences {
+		if exInference.Inferer != inference.Inferer {
+			newInferences.Inferences = append(newInferences.Inferences, exInference)
+		}
+	}
+	// append inference if not reached out topN
+	if len(newInferences.Inferences) < int(moduleParams.MaxTopInferersToReward) {
+		newInferences.Inferences = append(newInferences.Inferences, inference)
+		return k.allInferences.Set(ctx, key, newInferences)
+	}
+	// get score of current inference and check with
+	score, err := k.GetLatestInfererScore(ctx, topicId, inference.Inferer)
+	if err != nil {
+		return err
+	}
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllInferences(ctx, k, topicId, newInferences)
+	if err != nil {
+		return err
+	}
+	if score.Score.Gt(lowScore.Score) {
+		newInferences.Inferences = append(newInferences.Inferences[:lowScoreIndex], newInferences.Inferences[lowScoreIndex+1:]...)
+		newInferences.Inferences = append(newInferences.Inferences, inference)
+		return k.allInferences.Set(ctx, key, newInferences)
+	}
+	return nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -741,6 +815,46 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 
 	key := collections.Join(topicId, block)
 	return k.allInferences.Set(ctx, key, inferences)
+}
+
+// Append individual forecast for a topic/block
+func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
+	block := nonce.BlockHeight
+	moduleParams, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	key := collections.Join(topicId, block)
+	forecasts, err := k.allForecasts.Get(ctx, key)
+	if err != nil {
+		forecasts = types.Forecasts{}
+	}
+	var newForecasts types.Forecasts
+	// remove forecast if this forecaster already submitted
+	for _, exForecast := range forecasts.Forecasts {
+		if exForecast.Forecaster != forecast.Forecaster {
+			newForecasts.Forecasts = append(newForecasts.Forecasts, exForecast)
+		}
+	}
+	if len(newForecasts.Forecasts) < int(moduleParams.MaxTopForecastersToReward) {
+		newForecasts.Forecasts = append(newForecasts.Forecasts, forecast)
+		return k.allForecasts.Set(ctx, key, newForecasts)
+	}
+	// get score of current inference and check with
+	score, err := k.GetLatestForecasterScore(ctx, topicId, forecast.Forecaster)
+	if err != nil {
+		return err
+	}
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllForecasts(ctx, k, topicId, newForecasts)
+	if err != nil {
+		return err
+	}
+	if score.Score.Gt(lowScore.Score) {
+		newForecasts.Forecasts = append(newForecasts.Forecasts[:lowScoreIndex], newForecasts.Forecasts[lowScoreIndex+1:]...)
+		newForecasts.Forecasts = append(newForecasts.Forecasts, forecast)
+		return k.allForecasts.Set(ctx, key, newForecasts)
+	}
+	return nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
@@ -793,6 +907,48 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 
 /// LOSS BUNDLES
 
+// Append loss bundle for a topoic and blockheight
+func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
+	moduleParams, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+	key := collections.Join(topicId, block)
+	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
+	if err != nil {
+		reputerLossBundles = types.ReputerValueBundles{}
+	}
+
+	var newReputerLossBundles types.ReputerValueBundles
+	// remove reputation if this reputer already submitted
+	for _, exReputation := range reputerLossBundles.ReputerValueBundles {
+		if exReputation.ValueBundle.Reputer != reputerLoss.ValueBundle.Reputer {
+			newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, exReputation)
+		}
+	}
+	if len(newReputerLossBundles.ReputerValueBundles) < int(moduleParams.MaxTopReputersToReward) {
+		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerLoss)
+		return k.allLossBundles.Set(ctx, key, newReputerLossBundles)
+	}
+
+	// get score of current inference and check with
+	score, err := k.GetLatestReputerScore(ctx, topicId, reputerLoss.ValueBundle.Reputer)
+	if err != nil {
+		return err
+	}
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllLossBundles(ctx, k, topicId, newReputerLossBundles)
+	if err != nil {
+		return err
+	}
+	if score.Score.Gt(lowScore.Score) {
+		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles[:lowScoreIndex],
+			newReputerLossBundles.ReputerValueBundles[lowScoreIndex+1:]...)
+		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerLoss)
+		return k.allLossBundles.Set(ctx, key, newReputerLossBundles)
+	}
+	return nil
+}
+
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
 func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLossBundles types.ReputerValueBundles) error {
 	key := collections.Join(topicId, block)
@@ -804,6 +960,9 @@ func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId Topic
 	key := collections.Join(topicId, block)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &types.ReputerValueBundles{}, nil
+		}
 		return nil, err
 	}
 	return &reputerLossBundles, nil
@@ -1592,7 +1751,7 @@ func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer Act
 	if err != nil {
 		return err
 	}
-	err = k.reputers.Set(ctx, reputerInfo.LibP2PKey, reputerInfo)
+	err = k.reputers.Set(ctx, reputer, reputerInfo)
 	if err != nil {
 		return err
 	}
@@ -1609,7 +1768,7 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputer Act
 	return nil
 }
 
-func (k *Keeper) GetReputerByLibp2pKey(ctx sdk.Context, reputerKey string) (types.OffchainNode, error) {
+func (k *Keeper) GetReputerInfo(ctx sdk.Context, reputerKey ActorId) (types.OffchainNode, error) {
 	return k.reputers.Get(ctx, reputerKey)
 }
 
@@ -1622,7 +1781,7 @@ func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker Actor
 	if err != nil {
 		return err
 	}
-	err = k.workers.Set(ctx, workerInfo.LibP2PKey, workerInfo)
+	err = k.workers.Set(ctx, worker, workerInfo)
 	if err != nil {
 		return err
 	}
@@ -1639,36 +1798,8 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, worker Actor
 	return nil
 }
 
-func (k *Keeper) GetWorkerByLibp2pKey(ctx sdk.Context, workerKey string) (types.OffchainNode, error) {
+func (k *Keeper) GetWorkerInfo(ctx sdk.Context, workerKey ActorId) (types.OffchainNode, error) {
 	return k.workers.Get(ctx, workerKey)
-}
-
-func (k *Keeper) GetWorkerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
-	worker, err := k.workers.Get(ctx, p2pKey)
-	if err != nil {
-		return nil, err
-	}
-
-	workerAddress, err := sdk.AccAddressFromBech32(worker.GetOwner())
-	if err != nil {
-		return nil, err
-	}
-
-	return workerAddress, nil
-}
-
-func (k *Keeper) GetReputerAddressByP2PKey(ctx context.Context, p2pKey string) (sdk.AccAddress, error) {
-	reputer, err := k.reputers.Get(ctx, p2pKey)
-	if err != nil {
-		return nil, err
-	}
-
-	address, err := sdk.AccAddressFromBech32(reputer.GetOwner())
-	if err != nil {
-		return nil, err
-	}
-
-	return address, nil
 }
 
 /// TOPICS
@@ -1886,43 +2017,6 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 
 	ctx.Logger().Debug(fmt.Sprintf("Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v", ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue))
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
-}
-
-/// CHURNABLE TOPICS
-
-// Get the churnable topics
-func (k *Keeper) GetChurnableTopics(ctx context.Context) ([]TopicId, error) {
-	iter, err := k.churnableTopics.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	topics := make([]TopicId, 0)
-	for ; iter.Valid(); iter.Next() {
-		topicId, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		topics = append(topics, topicId)
-	}
-
-	return topics, nil
-}
-
-// Add as topic as churnable
-func (k *Keeper) AddChurnableTopic(ctx context.Context, topicId TopicId) error {
-	return k.churnableTopics.Set(ctx, topicId)
-}
-
-// ResetChurnReadyTopics clears all topics from the churn-ready set and resets related states.
-func (k *Keeper) ResetChurnableTopics(ctx sdk.Context) error {
-	err := k.churnableTopics.Clear(ctx, nil)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to clear churnable topics")
-	}
-	ctx.Logger().Info("Successfully cleared churnable topics")
-	return nil
 }
 
 // REWARDABLE TOPICS
@@ -2493,9 +2587,17 @@ func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHe
 }
 
 // Return true if the topic has met its cadence or is the first run
-func (k *Keeper) CheckCadence(blockHeight int64, topic types.Topic) bool {
+func (k *Keeper) CheckWorkerOpenCadence(blockHeight int64, topic types.Topic) bool {
 	return (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0 ||
 		topic.EpochLastEnded == 0
+}
+
+func (k *Keeper) CheckWorkerCloseCadence(blockHeight int64, topic types.Topic) bool {
+	return blockHeight-topic.EpochLastEnded == topic.WorkerSubmissionWindow
+}
+
+func (k *Keeper) CheckReputerCloseCadence(blockHeight int64, topic types.Topic) bool {
+	return (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0
 }
 
 func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
@@ -2506,17 +2608,15 @@ func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
 	return nil
 }
 
-func (k *Keeper) SetTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actor ActorId, actorType types.ActorType) error {
+func (k *Keeper) SetTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actorType types.ActorType) error {
 	if actorType == types.ActorType_REPUTER {
 		return k.topicLastReputerCommit.Set(ctx, topic, types.TimestampedActorNonce{
 			BlockHeight: blockHeight,
-			Actor:       actor,
 			Nonce:       nonce,
 		})
 	}
 	return k.topicLastWorkerCommit.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
-		Actor:       actor,
 		Nonce:       nonce,
 	})
 }
@@ -2528,10 +2628,9 @@ func (k *Keeper) GetTopicLastCommit(ctx context.Context, topic TopicId, actorTyp
 	return k.topicLastWorkerCommit.Get(ctx, topic)
 }
 
-func (k *Keeper) SetTopicLastWorkerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actor ActorId) error {
+func (k *Keeper) SetTopicLastWorkerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
 	return k.topicLastWorkerPayload.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
-		Actor:       actor,
 		Nonce:       nonce,
 	})
 }
@@ -2540,10 +2639,9 @@ func (k *Keeper) GetTopicLastWorkerPayload(ctx context.Context, topic TopicId) (
 	return k.topicLastWorkerPayload.Get(ctx, topic)
 }
 
-func (k *Keeper) SetTopicLastReputerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actor ActorId) error {
+func (k *Keeper) SetTopicLastReputerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
 	return k.topicLastReputerPayload.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
-		Actor:       actor,
 		Nonce:       nonce,
 	})
 }

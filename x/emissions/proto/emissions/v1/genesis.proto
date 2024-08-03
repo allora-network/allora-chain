@@ -27,40 +27,38 @@ message GenesisState {
   // every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
   repeated TopicIdAndTopic topics = 4;
   repeated uint64 activeTopics = 5;
-  // every topic that is ready to request inferences and possible also losses
-  repeated uint64 churnableTopics = 6;
   // every topic that has been churned and ready to be rewarded i.e. reputer losses have been committed
-  repeated uint64 rewardableTopics = 7;
+  repeated uint64 rewardableTopics = 6;
   // for a topic, what is every worker node that has registered to it?
-  repeated TopicAndActorId topicWorkers = 8;
+  repeated TopicAndActorId topicWorkers = 7;
   // for a topic, what is every reputer node that has registered to it?
-  repeated TopicAndActorId topicReputers = 9;
+  repeated TopicAndActorId topicReputers = 8;
   // map of (topic) -> nonce/block height
-  repeated TopicIdAndBlockHeight topicRewardNonce = 10;
+  repeated TopicIdAndBlockHeight topicRewardNonce = 9;
 
   /// SCORES
   // map of (topic, block_height, worker) -> score
-  repeated TopicIdBlockHeightScores infererScoresByBlock = 11;
+  repeated TopicIdBlockHeightScores infererScoresByBlock = 10;
   // map of (topic, block_height, worker) -> score
-  repeated TopicIdBlockHeightScores forecasterScoresByBlock = 12;
+  repeated TopicIdBlockHeightScores forecasterScoresByBlock = 11;
   // map of (topic, block_height, reputer) -> score
-  repeated TopicIdBlockHeightScores reputerScoresByBlock = 13;
+  repeated TopicIdBlockHeightScores reputerScoresByBlock = 12;
   // map of (topic, block_height, worker) -> score
-  repeated TopicIdActorIdScore latestInfererScoresByWorker = 14;
+  repeated TopicIdActorIdScore latestInfererScoresByWorker = 13;
   // map of (topic, block_height, worker) -> score
-  repeated TopicIdActorIdScore latestForecasterScoresByWorker = 15;
+  repeated TopicIdActorIdScore latestForecasterScoresByWorker = 14;
   // map of (topic, block_height, reputer) -> score
-  repeated TopicIdActorIdScore latestReputerScoresByReputer = 16;
+  repeated TopicIdActorIdScore latestReputerScoresByReputer = 15;
   // map of (topic, reputer) -> listening coefficient
-  repeated TopicIdActorIdListeningCoefficient reputerListeningCoefficient = 17;
+  repeated TopicIdActorIdListeningCoefficient reputerListeningCoefficient = 16;
   // map of (topic, reputer) -> previous reward (used for EMA)
-  repeated TopicIdActorIdDec previousReputerRewardFraction = 18;
+  repeated TopicIdActorIdDec previousReputerRewardFraction = 17;
   // map of (topic, worker) -> previous reward for inference (used for EMA)
-  repeated TopicIdActorIdDec previousInferenceRewardFraction = 19;
+  repeated TopicIdActorIdDec previousInferenceRewardFraction = 18;
   // map of (topic, worker) -> previous reward for forecast (used for EMA)
-  repeated TopicIdActorIdDec previousForecastRewardFraction = 20;
+  repeated TopicIdActorIdDec previousForecastRewardFraction = 19;
   // map of (topic, forecaster) -> ratio of forecaster score
-  repeated TopicIdActorIdDec previousForecasterScoreRatio = 58;
+  repeated TopicIdActorIdDec previousForecasterScoreRatio = 20;
 
   /// STAKING
 

@@ -364,16 +364,13 @@ func (s *KeeperTestSuite) TestGetDelegateStakePlacement() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)

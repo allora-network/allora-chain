@@ -52,6 +52,7 @@ func DefaultParams() Params {
 		TopicFeeRevenueDecayRate:            alloraMath.MustNewDecFromString("0.0025"),     // rate at which topic fee revenue decays over time
 		MinEffectiveTopicRevenue:            alloraMath.MustNewDecFromString("0.00000001"), // we no stop dripping from the topic's effective revenue when the topic's effective revenue is below this
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                    // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
+		DataSendingFee:                      cosmosMath.NewInt(10),                         // how much workers and reputers must pay to send payload
 	}
 }
 
@@ -181,6 +182,12 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateHalfMaxProcessStakeRemovalsEndBlock(p.HalfMaxProcessStakeRemovalsEndBlock); err != nil {
+		return err
+	}
+	if err := validateMinEffectiveTopicRevenue(p.MinEffectiveTopicRevenue); err != nil {
+		return err
+	}
+	if err := validateDataSendingFee(p.DataSendingFee); err != nil {
 		return err
 	}
 
@@ -551,4 +558,13 @@ func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
 // Whether an alloraDec is between the value of (0, 1) exclusive
 func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
 	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+}
+
+// How much workers and reputers must pay to send data.
+// Should be non-negative.
+func validateDataSendingFee(i cosmosMath.Int) error {
+	if i.IsNegative() {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
 }

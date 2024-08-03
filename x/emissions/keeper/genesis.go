@@ -57,14 +57,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//ChurnableTopics []uint64
-	if len(data.ChurnableTopics) != 0 {
-		for _, topicId := range data.ChurnableTopics {
-			if err := k.churnableTopics.Set(ctx, topicId); err != nil {
-				return errors.Wrap(err, "error setting churnableTopics")
-			}
-		}
-	}
 	//RewardableTopics []uint64
 	if len(data.RewardableTopics) != 0 {
 		for _, topicId := range data.RewardableTopics {
@@ -720,19 +712,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			return nil, errors.Wrap(err, "failed to get key: activeTopicsIter")
 		}
 		activeTopics = append(activeTopics, key)
-	}
-
-	churnableTopics := make([]uint64, 0)
-	churnableTopicsIter, err := k.churnableTopics.Iterate(ctx, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to iterate churnable topics")
-	}
-	for ; churnableTopicsIter.Valid(); churnableTopicsIter.Next() {
-		key, err := churnableTopicsIter.Key()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get key: churnableTopicsIter")
-		}
-		churnableTopics = append(churnableTopics, key)
 	}
 
 	rewardableTopics := make([]uint64, 0)
@@ -1650,7 +1629,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		NextTopicId:                              nextTopicId,
 		Topics:                                   topics,
 		ActiveTopics:                             activeTopics,
-		ChurnableTopics:                          churnableTopics,
 		RewardableTopics:                         rewardableTopics,
 		TopicWorkers:                             topicWorkers,
 		TopicReputers:                            topicReputers,

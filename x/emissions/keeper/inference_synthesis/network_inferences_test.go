@@ -89,21 +89,18 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	}
 
 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:              topicId,
-		Creator:         "creator",
-		Metadata:        "metadata",
-		LossLogic:       "losslogic",
-		LossMethod:      "lossmethod",
-		InferenceLogic:  "inferencelogic",
-		InferenceMethod: "inferencemethod",
-		EpochLastEnded:  0,
-		EpochLength:     100,
-		GroundTruthLag:  10,
-		DefaultArg:      "defaultarg",
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:   false,
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+		Id:                     topicId,
+		Creator:                "creator",
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		EpochLastEnded:         0,
+		EpochLength:            100,
+		GroundTruthLag:         10,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          false,
+		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
 	})
 	s.Require().NoError(err)
 
@@ -247,25 +244,21 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 // 		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
 // 	}
 
-// 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-// 		Id:              topicId,
-// 		Creator:         "creator",
-// 		Metadata:        "metadata",
-// 		LossLogic:       "losslogic",
-// 		LossMethod:      "lossmethod",
-// 		InferenceLogic:  "inferencelogic",
-// 		InferenceMethod: "inferencemethod",
-// 		EpochLastEnded:  0,
-// 		EpochLength:     100,
-// 		GroundTruthLag:  10,
-// 		DefaultArg:      "defaultarg",
-// 		PNorm:           alloraMath.NewDecFromInt64(3),
-// 		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
-// 		AllowNegative:   false,
-// 		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
-// 		InitialRegret:  alloraMath.MustNewDecFromString("0"),
-// 	})
-// 	s.Require().NoError(err)
+//err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
+//	Id:                     topicId,
+//	Creator:                "creator",
+//	Metadata:               "metadata",
+//	LossMethod:             "mse",
+//	EpochLastEnded:         0,
+//	EpochLength:            100,
+//	GroundTruthLag:         10,
+//	WorkerSubmissionWindow: 10,
+//	PNorm:                  alloraMath.NewDecFromInt64(3),
+//	AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+//	AllowNegative:          false,
+//	Epsilon:                alloraMath.MustNewDecFromString("0.0001"),
+//})
+//s.Require().NoError(err)
 
 // 	inferer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
 // 	inferer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
@@ -470,24 +463,21 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 // 		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
 // 	}
 
-// 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-// 		Id:              topicId,
-// 		Creator:         "creator",
-// 		Metadata:        "metadata",
-// 		LossLogic:       "losslogic",
-// 		LossMethod:      "lossmethod",
-// 		InferenceLogic:  "inferencelogic",
-// 		InferenceMethod: "inferencemethod",
-// 		EpochLastEnded:  0,
-// 		EpochLength:     100,
-// 		GroundTruthLag:  10,
-// 		DefaultArg:      "defaultarg",
-// 		PNorm:           alloraMath.NewDecFromInt64(3),
-// 		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
-// 		AllowNegative:   false,
-// 		Epsilon:         alloraMath.MustNewDecFromString("0.0001"),
-// 	})
-// 	s.Require().NoError(err)
+//err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
+//	Id:                     topicId,
+//	Creator:                "creator",
+//	Metadata:               "metadata",
+//	LossMethod:             "mse",
+//	EpochLastEnded:         0,
+//	EpochLength:            100,
+//	GroundTruthLag:         10,
+//	WorkerSubmissionWindow: 10,
+//	PNorm:                  alloraMath.NewDecFromInt64(3),
+//	AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+//	AllowNegative:          false,
+//	Epsilon:                alloraMath.MustNewDecFromString("0.0001"),
+//})
+//s.Require().NoError(err)
 
 // 	inferer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
 // 	inferer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
@@ -622,21 +612,18 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	}
 
 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:              topicId,
-		Creator:         "creator",
-		Metadata:        "metadata",
-		LossLogic:       "losslogic",
-		LossMethod:      "lossmethod",
-		InferenceLogic:  "inferencelogic",
-		InferenceMethod: "inferencemethod",
-		EpochLastEnded:  0,
-		EpochLength:     100,
-		GroundTruthLag:  10,
-		DefaultArg:      "defaultarg",
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:   false,
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+		Id:                     topicId,
+		Creator:                "creator",
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		EpochLastEnded:         0,
+		EpochLength:            100,
+		GroundTruthLag:         10,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          false,
+		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
 	})
 	s.Require().NoError(err)
 

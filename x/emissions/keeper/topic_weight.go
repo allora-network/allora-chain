@@ -46,13 +46,15 @@ func (k *Keeper) GetCurrentTopicWeight(
 	stakeImportance alloraMath.Dec,
 	feeImportance alloraMath.Dec,
 	additionalRevenue cosmosMath.Int,
+	additionalStake cosmosMath.Int,
 ) (weight alloraMath.Dec, topicRevenue cosmosMath.Int, err error) {
 	topicStake, err := k.GetTopicStake(ctx, topicId)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get topic stake")
 	}
 
-	topicStakeDec, err := alloraMath.NewDecFromSdkInt(topicStake)
+	newTopicStake := topicStake.Add(additionalStake)
+	topicStakeDec, err := alloraMath.NewDecFromSdkInt(newTopicStake)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic stake to dec")
 	}

@@ -110,16 +110,13 @@ func insertWorkerBulk(
 	workers []Actor,
 	workerNonce int64,
 ) bool {
+	wasErr := true
 	// Get Bundles
-	workerDataBundles := make([]*emissionstypes.WorkerDataBundle, 0)
 	for _, worker := range workers {
-		workerDataBundles = append(workerDataBundles,
-			generateSingleWorkerBundle(m, topic.Id, workerNonce, worker, workers))
+		workerData := generateSingleWorkerBundle(m, topic.Id, workerNonce, worker, workers)
+		wasErr = insertLeaderWorkerBulk(m, data, topic.Id, workerNonce, leaderWorker, workerData)
 	}
-	if len(workerDataBundles) == 0 {
-		return true
-	}
-	return insertLeaderWorkerBulk(m, data, topic.Id, workerNonce, leaderWorker, workerDataBundles)
+	return wasErr
 }
 
 // create inferences and forecasts for a worker
@@ -141,7 +138,7 @@ func generateSingleWorkerBundle(
 	infererAddress := inferer.addr
 	infererValue := alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(300) + 3000))
 
-	// Create a MsgInsertBulkReputerPayload message
+	// Create a MsgInsertReputerPayload message
 	workerDataBundle := &emissionstypes.WorkerDataBundle{
 		Worker: infererAddress,
 		InferenceForecastsBundle: &emissionstypes.InferenceForecastBundle{
@@ -181,16 +178,14 @@ func insertLeaderWorkerBulk(
 	topicId uint64,
 	workerNonce int64,
 	leaderWorker Actor,
-	WorkerDataBundles []*emissionstypes.WorkerDataBundle) bool {
+	WorkerDataBundles *emissionstypes.WorkerDataBundle,
+) bool {
 	wasErr := false
-	nonce := emissionstypes.Nonce{BlockHeight: workerNonce}
 
-	// Create a MsgInsertBulkReputerPayload message
-	workerMsg := &emissionstypes.MsgInsertBulkWorkerPayload{
-		Sender:            leaderWorker.addr,
-		Nonce:             &nonce,
-		TopicId:           topicId,
-		WorkerDataBundles: WorkerDataBundles,
+	// Create a MsgInsertReputerPayload message
+	workerMsg := &emissionstypes.MsgInsertWorkerPayload{
+		Sender:           leaderWorker.addr,
+		WorkerDataBundle: WorkerDataBundles,
 	}
 	// serialize workerMsg to json and print
 	LeaderAcc, err := m.Client.AccountRegistryGetByName(leaderWorker.name)
@@ -226,31 +221,20 @@ func insertReputerBulk(
 		BlockHeight: workerNonce,
 	}
 	valueBundle := generateValueBundle(m, topicId, workers, reputerNonce)
-	reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
+	ctx := context.Background()
 	for _, reputer := range reputers {
 		reputerValueBundle := generateSingleReputerValueBundle(m, reputer, valueBundle)
-		reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
-	}
-	if len(reputerValueBundles) == 0 {
-		return true
-	}
 
-	reputerValueBundleMsg := generateReputerValueBundleMsg(
-		topicId,
-		reputerValueBundles,
-		leaderReputer.addr,
-		reputerNonce,
-	)
-	ctx := context.Background()
-	txResp, err := m.Client.BroadcastTx(ctx, leaderReputer.acc, reputerValueBundleMsg)
-	requireNoError(m.T, data.failOnErr, err)
-	wasErr = orErr(wasErr, err)
-	if wasErr {
-		return wasErr
+		txResp, err := m.Client.BroadcastTx(ctx, leaderReputer.acc, reputerValueBundle)
+		requireNoError(m.T, data.failOnErr, err)
+		wasErr = orErr(wasErr, err)
+		if wasErr {
+			return wasErr
+		}
+		_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
+		requireNoError(m.T, data.failOnErr, err)
+		wasErr = orErr(wasErr, err)
 	}
-	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-	requireNoError(m.T, data.failOnErr, err)
-	wasErr = orErr(wasErr, err)
 	return wasErr
 }
 
@@ -292,7 +276,7 @@ func generateSingleReputerValueBundle(
 	require.NoError(m.T, err, "Sign should not return an error")
 	reputerPublicKeyBytes := pubKey.Bytes()
 
-	// Create a MsgInsertBulkReputerPayload message
+	// Create a MsgInsertReputerPayload message
 	reputerValueBundle := &emissionstypes.ReputerValueBundle{
 		ValueBundle: &valueBundle,
 		Signature:   valueBundleSignature,
@@ -300,23 +284,6 @@ func generateSingleReputerValueBundle(
 	}
 
 	return reputerValueBundle
-}
-
-// create a MsgInsertBulkReputerPayload message of scores
-func generateReputerValueBundleMsg(
-	topicId uint64,
-	reputerValueBundles []*emissionstypes.ReputerValueBundle,
-	leaderReputerAddress string,
-	reputerNonce *emissionstypes.Nonce) *emissionstypes.MsgInsertBulkReputerPayload {
-
-	return &emissionstypes.MsgInsertBulkReputerPayload{
-		Sender:  leaderReputerAddress,
-		TopicId: topicId,
-		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
-			ReputerNonce: reputerNonce,
-		},
-		ReputerValueBundles: reputerValueBundles,
-	}
 }
 
 // for every worker, generate a worker attributed value

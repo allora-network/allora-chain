@@ -16,12 +16,5 @@ func (msg *MsgRegister) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid owner address (%s)", err)
 	}
 
-	if len(msg.LibP2PKey) == 0 {
-		return errors.Wrap(ErrLibP2PKeyRequired, "libP2PKey cannot be empty")
-	}
-	if len(msg.MultiAddress) == 0 {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "multiAddress cannot be empty")
-	}
-
 	return nil
 }
