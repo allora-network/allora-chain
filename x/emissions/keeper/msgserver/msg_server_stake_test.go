@@ -26,18 +26,15 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	// Create Topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         reputerAddr.String(),
-		Metadata:        "Some metadata for the new topic",
-		LossLogic:       "logic",
-		LossMethod:      "method",
-		EpochLength:     10800,
-		GroundTruthLag:  10800,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(1),
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+		Creator:                reputerAddr.String(),
+		Metadata:               "Some metadata for the new topic",
+		LossMethod:             "mse",
+		EpochLength:            10800,
+		GroundTruthLag:         10800,
+		WorkerSubmissionWindow: 10,
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	reputerInitialBalance := types.DefaultParams().CreateTopicFee.Add(cosmosMath.Int(reputerInitialBalanceUint))
@@ -53,12 +50,10 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	// Register Reputer
 	reputerRegMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		Owner:        reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
+		Sender:    reputerAddr.String(),
+		Owner:     reputerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: true,
 	}
 	_, err = msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
@@ -71,11 +66,9 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	// Register Worker
 	workerRegMsg := &types.MsgRegister{
-		Sender:       workerAddr.String(),
-		Owner:        workerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
+		Sender:  workerAddr.String(),
+		Owner:   workerAddr.String(),
+		TopicId: topicId,
 	}
 	_, err = msgServer.Register(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
@@ -451,16 +444,13 @@ func (s *MsgServerTestSuite) TestDelegateStake() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -506,11 +496,8 @@ func (s *MsgServerTestSuite) TestReputerCantSelfDelegateStake() {
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -534,16 +521,13 @@ func (s *MsgServerTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -610,18 +594,15 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStake() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 	moduleParams, err := keeper.GetParams(ctx)
 	require.NoError(err)
 	removalDelay := moduleParams.RemoveStakeDelayWindow
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -667,15 +648,12 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeError() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -713,7 +691,7 @@ func (s *MsgServerTestSuite) TestConfirmRemoveDelegateStake() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -773,7 +751,7 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwiceSameBlock() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -845,7 +823,7 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeTwice() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -929,15 +907,12 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeNegative() {
 
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
 	reputerAddr := sdk.AccAddress(PKS[1].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 
 	reputerInfo := types.OffchainNode{
-		LibP2PKey:    "reputer-libp2p-key-sample",
-		MultiAddress: "reputer-multi-address-sample",
-		Owner:        "reputer-owner-sample",
-		NodeAddress:  "reputer-node-address-sample",
-		NodeId:       "reputer-node-id-sample",
+		Owner:       "reputer-owner-sample",
+		NodeAddress: "reputer-node-address-sample",
 	}
 
 	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
@@ -973,7 +948,7 @@ func (s *MsgServerTestSuite) TestRemoveDelegateStakeMultipleReputersSameDelegato
 	require := s.Require()
 	keeper := s.emissionsKeeper
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	startBlock := sdkCtx.BlockHeight()
@@ -1031,7 +1006,7 @@ func (s *MsgServerTestSuite) TestRemoveOneDelegateMultipleTargetsDifferentBlocks
 	require := s.Require()
 	keeper := s.emissionsKeeper
 	delegatorAddr := sdk.AccAddress(PKS[0].Address())
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params, err := keeper.GetParams(ctx)
@@ -1115,7 +1090,7 @@ func (s *MsgServerTestSuite) TestRemoveMultipleDelegatesSameTargetSameBlock() {
 		sdk.AccAddress(PKS[1].Address()),
 		sdk.AccAddress(PKS[2].Address()),
 	}
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params, err := keeper.GetParams(ctx)
@@ -1194,7 +1169,7 @@ func (s *MsgServerTestSuite) TestRemoveMultipleDelegatesDifferentTargetsSameBloc
 		sdk.AccAddress(PKS[0].Address()),
 		sdk.AccAddress(PKS[1].Address()),
 	}
-	topicId := uint64(123)
+	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	params, err := keeper.GetParams(ctx)

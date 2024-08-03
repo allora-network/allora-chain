@@ -128,21 +128,18 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 	}
 
 	err := s.emissionsKeeper.SetTopic(s.ctx, 1, emissionstypes.Topic{
-		Id:              1,
-		Creator:         "creator",
-		Metadata:        "metadata",
-		LossLogic:       "losslogic",
-		LossMethod:      "lossmethod",
-		InferenceLogic:  "inferencelogic",
-		InferenceMethod: "inferencemethod",
-		EpochLastEnded:  0,
-		EpochLength:     100,
-		GroundTruthLag:  10,
-		DefaultArg:      "defaultarg",
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:   false,
-		InitialRegret:   alloraMath.MustNewDecFromString("0.0001"),
+		Id:                     1,
+		Creator:                "creator",
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		EpochLastEnded:         0,
+		EpochLength:            100,
+		GroundTruthLag:         10,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          false,
+		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
 	})
 	s.Require().NoError(err)
 }
@@ -404,7 +401,8 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 			Inferences:          &inferences,
 			Forecasts:           forecasts,
 			NetworkCombinedLoss: networkLossPrevious,
-			Epsilon:             alloraMath.MustNewDecFromString("0.01"),
+			EpsilonTopic:        alloraMath.MustNewDecFromString("0.01"),
+			EpsilonSafeDiv:      alloraMath.MustNewDecFromString("0.0000001"),
 			PNorm:               alloraMath.MustNewDecFromString("3.0"),
 			CNorm:               alloraMath.MustNewDecFromString("0.75"),
 		},
@@ -590,11 +588,6 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 		},
 	}
 
-	networkCombinedLoss := alloraMath.MustNewDecFromString("1")
-	epsilon := alloraMath.MustNewDecFromString("0.0001")
-	pNorm := alloraMath.MustNewDecFromString("2")
-	cNorm := alloraMath.MustNewDecFromString("0.75")
-
 	// Call the function without setting regrets
 	networkInferenceBuilder, err := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
 		inferencesynthesis.SynthRequest{
@@ -603,10 +596,11 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 			TopicId:             topicId,
 			Inferences:          inferences,
 			Forecasts:           forecasts,
-			NetworkCombinedLoss: networkCombinedLoss,
-			Epsilon:             epsilon,
-			PNorm:               pNorm,
-			CNorm:               cNorm,
+			NetworkCombinedLoss: alloraMath.MustNewDecFromString("1"),
+			EpsilonTopic:        alloraMath.MustNewDecFromString("0.0001"),
+			EpsilonSafeDiv:      alloraMath.MustNewDecFromString("0.0000001"),
+			PNorm:               alloraMath.MustNewDecFromString("2"),
+			CNorm:               alloraMath.MustNewDecFromString("0.75"),
 		},
 	)
 	s.Require().NoError(err)
@@ -659,11 +653,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 		},
 	}
 
-	networkCombinedLoss := alloraMath.MustNewDecFromString("0.2")
-	epsilon := alloraMath.MustNewDecFromString("0.0001")
-	pNorm := alloraMath.MustNewDecFromString("2")
-	cNorm := alloraMath.MustNewDecFromString("0.75")
-
 	// Set inferer network regrets
 	err := k.SetInfererNetworkRegret(ctx, topicId, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.2")})
 	s.Require().NoError(err)
@@ -693,10 +682,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 			TopicId:             topicId,
 			Inferences:          inferences,
 			Forecasts:           forecasts,
-			NetworkCombinedLoss: networkCombinedLoss,
-			Epsilon:             epsilon,
-			PNorm:               pNorm,
-			CNorm:               cNorm,
+			NetworkCombinedLoss: alloraMath.MustNewDecFromString("0.2"),
+			EpsilonTopic:        alloraMath.MustNewDecFromString("0.0001"),
+			EpsilonSafeDiv:      alloraMath.MustNewDecFromString("0.0000001"),
+			PNorm:               alloraMath.MustNewDecFromString("2"),
+			CNorm:               alloraMath.MustNewDecFromString("0.75"),
 		},
 	)
 	s.Require().NoError(err)
@@ -763,11 +753,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 		},
 	}
 
-	networkCombinedLoss := alloraMath.MustNewDecFromString("10000")
-	epsilon := alloraMath.MustNewDecFromString("0.001")
-	pNorm := alloraMath.MustNewDecFromString("2")
-	cNorm := alloraMath.MustNewDecFromString("0.75")
-
 	// Set inferer network regrets
 	err := k.SetInfererNetworkRegret(ctx, topicId, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.001")})
 	s.Require().NoError(err)
@@ -813,10 +798,11 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 			TopicId:             topicId,
 			Inferences:          inferences,
 			Forecasts:           forecasts,
-			NetworkCombinedLoss: networkCombinedLoss,
-			Epsilon:             epsilon,
-			PNorm:               pNorm,
-			CNorm:               cNorm,
+			NetworkCombinedLoss: alloraMath.MustNewDecFromString("10000"),
+			EpsilonTopic:        alloraMath.MustNewDecFromString("0.001"),
+			EpsilonSafeDiv:      alloraMath.MustNewDecFromString("0.0000001"),
+			PNorm:               alloraMath.MustNewDecFromString("2"),
+			CNorm:               alloraMath.MustNewDecFromString("0.75"),
 		},
 	)
 	s.Require().NoError(err)
@@ -867,11 +853,6 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 		},
 	}
 
-	networkCombinedLoss := alloraMath.MustNewDecFromString("10000")
-	epsilon := alloraMath.MustNewDecFromString("0.001")
-	pNorm := alloraMath.MustNewDecFromString("2")
-	cNorm := alloraMath.MustNewDecFromString("0.75")
-
 	// Set inferer network regrets - Just for worker1
 	err := k.SetInfererNetworkRegret(ctx, topicId, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.001")})
 	s.Require().NoError(err)
@@ -897,10 +878,11 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 			TopicId:             topicId,
 			Inferences:          inferences,
 			Forecasts:           forecasts,
-			NetworkCombinedLoss: networkCombinedLoss,
-			Epsilon:             epsilon,
-			PNorm:               pNorm,
-			CNorm:               cNorm,
+			NetworkCombinedLoss: alloraMath.MustNewDecFromString("10000"),
+			EpsilonTopic:        alloraMath.MustNewDecFromString("0.001"),
+			EpsilonSafeDiv:      alloraMath.MustNewDecFromString("0.0000001"),
+			PNorm:               alloraMath.MustNewDecFromString("2"),
+			CNorm:               alloraMath.MustNewDecFromString("0.75"),
 		},
 	)
 	s.Require().NoError(err)

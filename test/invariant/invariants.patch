@@ -1,17 +1,17 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
-index 8d778144..523ac83f 100644
+index 4470c8a4..01ccaa19 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
-@@ -4,6 +4,8 @@ import (
- 	"context"
+@@ -5,6 +5,8 @@ import (
  	"fmt"
+ 	"sync"
  
 +	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 +
  	"cosmossdk.io/errors"
+ 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
  	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
- 	sdk "github.com/cosmos/cosmos-sdk/types"
-@@ -11,6 +13,10 @@ import (
+@@ -14,6 +16,10 @@ import (
  
  func EndBlocker(ctx context.Context, am AppModule) error {
  	sdkCtx := sdk.UnwrapSDKContext(ctx)

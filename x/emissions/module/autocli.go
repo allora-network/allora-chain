@@ -54,11 +54,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetChurnableTopics",
-					Use:       "churnable-topics",
-					Short:     "Get Churnable Topics",
-				},
-				{
 					RpcMethod: "GetRewardableTopics",
 					Use:       "rewardable-topics",
 					Short:     "Get Rewardable Topics",
@@ -457,34 +452,18 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetWorkerNodeInfo",
-					Use:       "worker-info [libp2p_key]",
-					Short:     "Get node info for worker node libp2p key",
+					Use:       "worker-info [address]",
+					Short:     "Get node info for worker node",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
+						{ProtoField: "address"},
 					},
 				},
 				{
 					RpcMethod: "GetReputerNodeInfo",
-					Use:       "reputer-info [libp2p_key]",
-					Short:     "Get node info for reputer node libp2p key",
+					Use:       "reputer-info [addresss]",
+					Short:     "Get node info for reputer node",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
-					},
-				},
-				{
-					RpcMethod: "GetWorkerAddressByP2PKey",
-					Use:       "worker-address [libp2p_key]",
-					Short:     "Get Worker Address by libp2p key",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
-					},
-				},
-				{
-					RpcMethod: "GetReputerAddressByP2PKey",
-					Use:       "reputer-address [libp2p_key]",
-					Short:     "Get Reputer Address by libp2p key",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
+						{ProtoField: "address"},
 					},
 				},
 				{
@@ -621,18 +600,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [ground_truth_lag] [default_arg] [p_norm] [alpha_regret] [allow_negative] [epsilon]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
 						{ProtoField: "metadata"},
-						{ProtoField: "loss_logic"},
 						{ProtoField: "loss_method"},
-						{ProtoField: "inference_logic"},
-						{ProtoField: "inference_method"},
 						{ProtoField: "epoch_length"},
 						{ProtoField: "ground_truth_lag"},
-						{ProtoField: "default_arg"},
+						{ProtoField: "worker_submission_window"},
 						{ProtoField: "p_norm"},
 						{ProtoField: "alpha_regret"},
 						{ProtoField: "allow_negative"},
@@ -641,12 +617,10 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "Register",
-					Use:       "register [sender] [lib_p2p_key] [multi_address] [topic_ids] [initial_stake] [owner] [is_reputer]",
+					Use:       "register [sender] [topic_ids] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "multi_address"},
 						{ProtoField: "topic_id"},
 						{ProtoField: "owner"},
 						{ProtoField: "is_reputer"},
@@ -762,21 +736,21 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "InsertBulkWorkerPayload",
-					Use:       "insert-bulk-worker-payload [worker_data_bundles]",
-					Short:     "Insert bulk worker payload",
+					RpcMethod: "InsertWorkerPayload",
+					Use:       "insert-worker-payload [sender] [worker_data]",
+					Short:     "Insert worker payload",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "worker_data_bundles"},
+						{ProtoField: "worker_data_bundle"},
 					},
 				},
 				{
-					RpcMethod: "InsertBulkReputerPayload",
-					Use:       "insert-bulk-reputer-payload [reputer_value_bundles]",
-					Short:     "Insert bulk reputer payload",
+					RpcMethod: "InsertReputerPayload",
+					Use:       "insert-reputer-payload [sender] [reputer_data]",
+					Short:     "Insert reputer payload",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "reputer_value_bundles"},
+						{ProtoField: "reputer_value_bundle"},
 					},
 				},
 			},

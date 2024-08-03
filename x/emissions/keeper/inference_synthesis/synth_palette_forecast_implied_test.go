@@ -123,7 +123,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		Forecasters:         []string{"forecaster0"},
 		Inferers:            []string{"worker0", "worker1"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -177,7 +177,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		Forecasters:         []string{"worker0"},
 		Inferers:            []string{"worker0", "worker1"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -248,7 +248,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		Forecasters:         []string{"worker0", "worker1", "worker2"},
 		Inferers:            []string{"worker0", "worker1", "worker2"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -315,7 +315,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 		Forecasters:         []string{"forecaster0"},
 		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -377,7 +377,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 		Forecasters:         []string{"forecaster0"},
 		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}

@@ -42,8 +42,6 @@ const (
 	Query_GetDelegateStakeRemovalInfo_FullMethodName                 = "/emissions.v1.Query/GetDelegateStakeRemovalInfo"
 	Query_GetWorkerNodeInfo_FullMethodName                           = "/emissions.v1.Query/GetWorkerNodeInfo"
 	Query_GetReputerNodeInfo_FullMethodName                          = "/emissions.v1.Query/GetReputerNodeInfo"
-	Query_GetWorkerAddressByP2PKey_FullMethodName                    = "/emissions.v1.Query/GetWorkerAddressByP2PKey"
-	Query_GetReputerAddressByP2PKey_FullMethodName                   = "/emissions.v1.Query/GetReputerAddressByP2PKey"
 	Query_IsWorkerRegisteredInTopicId_FullMethodName                 = "/emissions.v1.Query/IsWorkerRegisteredInTopicId"
 	Query_IsReputerRegisteredInTopicId_FullMethodName                = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
 	Query_GetNetworkInferencesAtBlock_FullMethodName                 = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
@@ -72,7 +70,6 @@ const (
 	Query_TopicExists_FullMethodName                                 = "/emissions.v1.Query/TopicExists"
 	Query_IsTopicActive_FullMethodName                               = "/emissions.v1.Query/IsTopicActive"
 	Query_GetTopicFeeRevenue_FullMethodName                          = "/emissions.v1.Query/GetTopicFeeRevenue"
-	Query_GetChurnableTopics_FullMethodName                          = "/emissions.v1.Query/GetChurnableTopics"
 	Query_GetRewardableTopics_FullMethodName                         = "/emissions.v1.Query/GetRewardableTopics"
 	Query_GetLatestInfererScore_FullMethodName                       = "/emissions.v1.Query/GetLatestInfererScore"
 	Query_GetLatestForecasterScore_FullMethodName                    = "/emissions.v1.Query/GetLatestForecasterScore"
@@ -120,8 +117,6 @@ type QueryClient interface {
 	GetDelegateStakeRemovalInfo(ctx context.Context, in *QueryDelegateStakeRemovalInfoRequest, opts ...grpc.CallOption) (*QueryDelegateStakeRemovalInfoResponse, error)
 	GetWorkerNodeInfo(ctx context.Context, in *QueryWorkerNodeInfoRequest, opts ...grpc.CallOption) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(ctx context.Context, in *QueryReputerNodeInfoRequest, opts ...grpc.CallOption) (*QueryReputerNodeInfoResponse, error)
-	GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error)
-	GetReputerAddressByP2PKey(ctx context.Context, in *QueryReputerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryReputerAddressByP2PKeyResponse, error)
 	IsWorkerRegisteredInTopicId(ctx context.Context, in *QueryIsWorkerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
@@ -150,7 +145,6 @@ type QueryClient interface {
 	TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error)
 	IsTopicActive(ctx context.Context, in *QueryIsTopicActiveRequest, opts ...grpc.CallOption) (*QueryIsTopicActiveResponse, error)
 	GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error)
-	GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error)
 	GetLatestInfererScore(ctx context.Context, in *QueryLatestInfererScoreRequest, opts ...grpc.CallOption) (*QueryLatestInfererScoreResponse, error)
 	GetLatestForecasterScore(ctx context.Context, in *QueryLatestForecasterScoreRequest, opts ...grpc.CallOption) (*QueryLatestForecasterScoreResponse, error)
@@ -379,24 +373,6 @@ func (c *queryClient) GetWorkerNodeInfo(ctx context.Context, in *QueryWorkerNode
 func (c *queryClient) GetReputerNodeInfo(ctx context.Context, in *QueryReputerNodeInfoRequest, opts ...grpc.CallOption) (*QueryReputerNodeInfoResponse, error) {
 	out := new(QueryReputerNodeInfoResponse)
 	err := c.cc.Invoke(ctx, Query_GetReputerNodeInfo_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) GetWorkerAddressByP2PKey(ctx context.Context, in *QueryWorkerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryWorkerAddressByP2PKeyResponse, error) {
-	out := new(QueryWorkerAddressByP2PKeyResponse)
-	err := c.cc.Invoke(ctx, Query_GetWorkerAddressByP2PKey_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryClient) GetReputerAddressByP2PKey(ctx context.Context, in *QueryReputerAddressByP2PKeyRequest, opts ...grpc.CallOption) (*QueryReputerAddressByP2PKeyResponse, error) {
-	out := new(QueryReputerAddressByP2PKeyResponse)
-	err := c.cc.Invoke(ctx, Query_GetReputerAddressByP2PKey_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -655,15 +631,6 @@ func (c *queryClient) GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeR
 	return out, nil
 }
 
-func (c *queryClient) GetChurnableTopics(ctx context.Context, in *QueryChurnableTopicsRequest, opts ...grpc.CallOption) (*QueryChurnableTopicsResponse, error) {
-	out := new(QueryChurnableTopicsResponse)
-	err := c.cc.Invoke(ctx, Query_GetChurnableTopics_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error) {
 	out := new(QueryRewardableTopicsResponse)
 	err := c.cc.Invoke(ctx, Query_GetRewardableTopics_FullMethodName, in, out, opts...)
@@ -845,8 +812,6 @@ type QueryServer interface {
 	GetDelegateStakeRemovalInfo(context.Context, *QueryDelegateStakeRemovalInfoRequest) (*QueryDelegateStakeRemovalInfoResponse, error)
 	GetWorkerNodeInfo(context.Context, *QueryWorkerNodeInfoRequest) (*QueryWorkerNodeInfoResponse, error)
 	GetReputerNodeInfo(context.Context, *QueryReputerNodeInfoRequest) (*QueryReputerNodeInfoResponse, error)
-	GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error)
-	GetReputerAddressByP2PKey(context.Context, *QueryReputerAddressByP2PKeyRequest) (*QueryReputerAddressByP2PKeyResponse, error)
 	IsWorkerRegisteredInTopicId(context.Context, *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(context.Context, *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
@@ -875,7 +840,6 @@ type QueryServer interface {
 	TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error)
 	IsTopicActive(context.Context, *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error)
 	GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error)
-	GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error)
 	GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error)
 	GetLatestInfererScore(context.Context, *QueryLatestInfererScoreRequest) (*QueryLatestInfererScoreResponse, error)
 	GetLatestForecasterScore(context.Context, *QueryLatestForecasterScoreRequest) (*QueryLatestForecasterScoreResponse, error)
@@ -969,12 +933,6 @@ func (UnimplementedQueryServer) GetWorkerNodeInfo(context.Context, *QueryWorkerN
 func (UnimplementedQueryServer) GetReputerNodeInfo(context.Context, *QueryReputerNodeInfoRequest) (*QueryReputerNodeInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReputerNodeInfo not implemented")
 }
-func (UnimplementedQueryServer) GetWorkerAddressByP2PKey(context.Context, *QueryWorkerAddressByP2PKeyRequest) (*QueryWorkerAddressByP2PKeyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerAddressByP2PKey not implemented")
-}
-func (UnimplementedQueryServer) GetReputerAddressByP2PKey(context.Context, *QueryReputerAddressByP2PKeyRequest) (*QueryReputerAddressByP2PKeyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetReputerAddressByP2PKey not implemented")
-}
 func (UnimplementedQueryServer) IsWorkerRegisteredInTopicId(context.Context, *QueryIsWorkerRegisteredInTopicIdRequest) (*QueryIsWorkerRegisteredInTopicIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWorkerRegisteredInTopicId not implemented")
 }
@@ -1058,9 +1016,6 @@ func (UnimplementedQueryServer) IsTopicActive(context.Context, *QueryIsTopicActi
 }
 func (UnimplementedQueryServer) GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicFeeRevenue not implemented")
-}
-func (UnimplementedQueryServer) GetChurnableTopics(context.Context, *QueryChurnableTopicsRequest) (*QueryChurnableTopicsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetChurnableTopics not implemented")
 }
 func (UnimplementedQueryServer) GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRewardableTopics not implemented")
@@ -1536,42 +1491,6 @@ func _Query_GetReputerNodeInfo_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServer).GetReputerNodeInfo(ctx, req.(*QueryReputerNodeInfoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_GetWorkerAddressByP2PKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryWorkerAddressByP2PKeyRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetWorkerAddressByP2PKey(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetWorkerAddressByP2PKey_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetWorkerAddressByP2PKey(ctx, req.(*QueryWorkerAddressByP2PKeyRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Query_GetReputerAddressByP2PKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryReputerAddressByP2PKeyRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetReputerAddressByP2PKey(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetReputerAddressByP2PKey_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetReputerAddressByP2PKey(ctx, req.(*QueryReputerAddressByP2PKeyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2080,24 +1999,6 @@ func _Query_GetTopicFeeRevenue_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetChurnableTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryChurnableTopicsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetChurnableTopics(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetChurnableTopics_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetChurnableTopics(ctx, req.(*QueryChurnableTopicsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_GetRewardableTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryRewardableTopicsRequest)
 	if err := dec(in); err != nil {
@@ -2504,14 +2405,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetReputerNodeInfo_Handler,
 		},
 		{
-			MethodName: "GetWorkerAddressByP2PKey",
-			Handler:    _Query_GetWorkerAddressByP2PKey_Handler,
-		},
-		{
-			MethodName: "GetReputerAddressByP2PKey",
-			Handler:    _Query_GetReputerAddressByP2PKey_Handler,
-		},
-		{
 			MethodName: "IsWorkerRegisteredInTopicId",
 			Handler:    _Query_IsWorkerRegisteredInTopicId_Handler,
 		},
@@ -2622,10 +2515,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicFeeRevenue",
 			Handler:    _Query_GetTopicFeeRevenue_Handler,
-		},
-		{
-			MethodName: "GetChurnableTopics",
-			Handler:    _Query_GetChurnableTopics_Handler,
 		},
 		{
 			MethodName: "GetRewardableTopics",
