@@ -194,6 +194,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	_, emissionPerUnitStakedTokenBefore, err := mint.GetEmissionPerMonth(
 		s.ctx,
 		s.mintKeeper,
+		uint64(s.ctx.BlockHeight()),
 		blocksPerMonth,
 		params,
 		cosmosMath.ZeroInt(),
@@ -216,6 +217,7 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	_, emissionPerUnitStakedTokenAfter, err := mint.GetEmissionPerMonth(
 		s.ctx,
 		s.mintKeeper,
+		uint64(s.ctx.BlockHeight()),
 		blocksPerMonth,
 		params,
 		cosmosMath.ZeroInt(),

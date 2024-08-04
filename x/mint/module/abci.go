@@ -12,6 +12,7 @@ import (
 func GetEmissionPerMonth(
 	ctx sdk.Context,
 	k types.MintKeeper,
+	blockHeight uint64,
 	blocksPerMonth uint64,
 	params types.Params,
 	ecosystemBalance math.Int,
@@ -30,7 +31,7 @@ func GetEmissionPerMonth(
 	totalSupply := params.MaxSupply
 	lockedVestingTokens, _, _, _ := keeper.GetLockedVestingTokens(
 		blocksPerMonth,
-		math.NewIntFromUint64(uint64(ctx.BlockHeight())),
+		math.NewIntFromUint64(blockHeight),
 		params,
 	)
 	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
@@ -93,9 +94,15 @@ func GetEmissionPerMonth(
 		targetRewardEmissionPerUnitStakedToken,
 		maximumMonthlyEmissionPerUnitStakedToken,
 	)
-	previousRewardEmissionPerUnitStakedToken, err := k.GetPreviousRewardEmissionPerUnitStakedToken(ctx)
-	if err != nil {
-		return math.Int{}, math.LegacyDec{}, err
+	var previousRewardEmissionPerUnitStakedToken math.LegacyDec
+	// if this is the first month/time we're calculating the target emission...
+	if blockHeight < blocksPerMonth {
+		previousRewardEmissionPerUnitStakedToken = targetRewardEmissionPerUnitStakedToken
+	} else {
+		previousRewardEmissionPerUnitStakedToken, err = k.GetPreviousRewardEmissionPerUnitStakedToken(ctx)
+		if err != nil {
+			return math.Int{}, math.LegacyDec{}, err
+		}
 	}
 	emissionPerUnitStakedToken = keeper.GetExponentialMovingAverage(
 		targetRewardEmissionPerUnitStakedToken,
@@ -136,7 +143,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return err
 	}
 
-	blockHeight := sdkCtx.BlockHeight()
+	blockHeight := uint64(sdkCtx.BlockHeight())
 
 	blockEmission, err := k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
@@ -158,10 +165,11 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	vPercent := vPercentADec.SdkLegacyDec()
 	// every month on the first block of the month, update the emissions rate
-	if uint64(blockHeight)%blocksPerMonth == 1 { // easier to test when genesis starts at 1
+	if blockHeight%blocksPerMonth == 1 { // easier to test when genesis starts at 1
 		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
 			sdkCtx,
 			k,
+			blockHeight,
 			blocksPerMonth,
 			params,
 			ecosystemBalance,
