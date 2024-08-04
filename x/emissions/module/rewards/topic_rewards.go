@@ -85,7 +85,7 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 		}
 
 		// if pageResponse.NextKey is empty then we have reached the end of the list
-		if topicsActive == nil || len(topicsActive) == 0 || pageIterationCounter > maxTopicPages {
+		if len(topicsActive) == 0 || pageIterationCounter > maxTopicPages {
 			break
 		}
 		topicPageKey = topicPageResponse.NextKey

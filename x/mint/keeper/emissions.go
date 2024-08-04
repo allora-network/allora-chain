@@ -12,11 +12,11 @@ import (
 // these tokens will be custodied by a centralized actor off chain.
 // this function returns the circulating supply based off of what
 // the agreements off chain say were supposed to happen for token lockup
-func GetLockedTokenSupply(
+func GetLockedVestingTokens(
 	blocksPerMonth uint64,
 	blockHeight math.Int,
 	params types.Params,
-) math.Int {
+) (total, preseedInvestors, investors, team math.Int) {
 	// foundation is unlocked from genesis
 	// participants are unlocked from genesis
 	// investors and team tokens are locked on a 1 year cliff three year vesting schedule
@@ -24,13 +24,15 @@ func GetLockedTokenSupply(
 	blocksInThreeYears := blocksInAYear.Mul(math.NewInt(3))
 	maxSupply := params.MaxSupply.ToLegacyDec()
 	percentInvestors := params.InvestorsPercentOfTotalSupply
+	percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
 	percentTeam := params.TeamPercentOfTotalSupply
 	fullInvestors := percentInvestors.Mul(maxSupply).TruncateInt()
+	fullPreseedInvestors := percentPreseedInvestors.Mul(maxSupply).TruncateInt()
 	fullTeam := percentTeam.Mul(maxSupply).TruncateInt()
-	var investors, team math.Int
 	if blockHeight.LT(blocksInAYear) {
 		// less than a year, completely locked
 		investors = fullInvestors
+		preseedInvestors = fullPreseedInvestors
 		team = fullTeam
 	} else if blockHeight.GTE(blocksInAYear) && blockHeight.LT(blocksInThreeYears) {
 		// between 1 and 3 years, investors and team tokens are vesting and partially unlocked
@@ -38,24 +40,26 @@ func GetLockedTokenSupply(
 		monthsUnlocked := blockHeight.Quo(math.NewIntFromUint64(blocksPerMonth)).ToLegacyDec()
 		monthsLocked := thirtySix.Sub(monthsUnlocked)
 		investors = monthsLocked.Quo(thirtySix).Mul(fullInvestors.ToLegacyDec()).TruncateInt()
+		preseedInvestors = monthsLocked.Quo(thirtySix).Mul(fullPreseedInvestors.ToLegacyDec()).TruncateInt()
 		team = monthsLocked.Quo(thirtySix).Mul(fullTeam.ToLegacyDec()).TruncateInt()
 	} else {
 		// greater than 3 years, all investor, team tokens are unlocked
 		investors = math.ZeroInt()
+		preseedInvestors = math.ZeroInt()
 		team = math.ZeroInt()
 	}
-	return investors.Add(team)
+	return preseedInvestors.Add(investors).Add(team), preseedInvestors, investors, team
 }
 
 // helper function to get the number of staked tokens on the network
 // includes both tokens staked by cosmos validators (cosmos staking)
 // and tokens staked by reputers (allora staking)
-func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
+func GetNumStakedTokens(ctx context.Context, k types.MintKeeper) (math.Int, error) {
 	cosmosValidatorsStaked, err := k.CosmosValidatorStakedSupply(ctx)
 	if err != nil {
 		return math.Int{}, err
 	}
-	reputersStaked, err := k.emissionsKeeper.GetTotalStake(ctx)
+	reputersStaked, err := k.GetEmissionsKeeperTotalStake(ctx)
 	if err != nil {
 		return math.Int{}, err
 	}
@@ -63,7 +67,7 @@ func GetNumStakedTokens(ctx context.Context, k Keeper) (math.Int, error) {
 }
 
 // The total amount of tokens emitted for a full month
-// E_i = e_i*N_{staked,i}
+// \cal E_i = e_i*N_{staked,i}
 // where e_i is the emission per unit staked token
 // and N_{staked,i} is the total amount of tokens staked at timestep i
 // THIS FUNCTION TRUNCATES THE RESULT DIVISION TO AN INTEGER
@@ -117,7 +121,8 @@ func GetCappedTargetEmissionPerUnitStakedToken(
 // f_e is a global tuning constant, by default f_e = 0.015 month^{−1}
 // represents the fraction of the ecosystem treasury that would ideally
 // be emitted per unit time.
-// T_{total,i} = number of tokens that the ecosystem bucket can still mint.
+// T_{total,i} = number of tokens that the ecosystem bucket can still mint PLUS
+// the current balance of the bucket.
 // The ecosystem bucket is capped to be able to mint by default 36.75% of the max supply,
 // but as more tokens are minted the amount the ecosystem is permitted to mint decreases.
 // N_{staked,i} is the total number of tokens staked on the network at timestep i
@@ -125,7 +130,7 @@ func GetCappedTargetEmissionPerUnitStakedToken(
 // N_{total,i} is the total number of tokens ever allowed to exist
 func GetTargetRewardEmissionPerUnitStakedToken(
 	fEmission math.LegacyDec,
-	ecosystemMintableRemaining math.Int,
+	ecosystemLocked math.Int,
 	networkStaked math.Int,
 	circulatingSupply math.Int,
 	maxSupply math.Int,
@@ -139,12 +144,12 @@ func GetTargetRewardEmissionPerUnitStakedToken(
 			maxSupply.String(),
 		)
 	}
-	// T_{total,i} = ecosystemMintableRemaining
+	// T_{total,i} = ecosystemLocked
 	// N_{staked,i} = networkStaked
 	// N_{circ,i} = circulatingSupply
 	// N_{total,i} = totalSupply
 	ratioCirculating := circulatingSupply.ToLegacyDec().Quo(maxSupply.ToLegacyDec())
-	ratioEcosystemToStaked := ecosystemMintableRemaining.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
+	ratioEcosystemToStaked := ecosystemLocked.ToLegacyDec().Quo(networkStaked.ToLegacyDec())
 	ret := fEmission.
 		Mul(ratioEcosystemToStaked).
 		Mul(ratioCirculating)
@@ -169,8 +174,8 @@ func GetExponentialMovingAverage(
 	alphaEmission math.LegacyDec,
 	previousRewardEmissionPerUnitStakedToken math.LegacyDec,
 ) math.LegacyDec {
-	firstTerm := targetRewardEmissionPerUnitStakedToken.Mul(alphaEmission)
-	secondTerm := math.OneInt().ToLegacyDec().Sub(alphaEmission).
-		Mul(previousRewardEmissionPerUnitStakedToken)
+	firstTerm := alphaEmission.Mul(targetRewardEmissionPerUnitStakedToken)
+	inverseAlpha := math.OneInt().ToLegacyDec().Sub(alphaEmission)
+	secondTerm := inverseAlpha.Mul(previousRewardEmissionPerUnitStakedToken)
 	return firstTerm.Add(secondTerm)
 }
