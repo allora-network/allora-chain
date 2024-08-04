@@ -13,6 +13,7 @@ MONIKER="${MONIKER:-$(hostname)}"
 KEYRING_BACKEND=test                              #! Use test for simplicity, you should decide which backend to use !!!
 GENESIS_FILE="${APP_HOME}/config/genesis.json"
 DENOM="uallo"
+export HOME=${APP_HOME}
 
 # uncomment this block if you want to restore from a snapshot
 # SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
