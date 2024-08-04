@@ -149,6 +149,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.DataSendingFee) == 1 {
 		existingParams.DataSendingFee = newParams.DataSendingFee[0]
 	}
+	if len(newParams.EpsilonSafeDiv) == 1 {
+		existingParams.EpsilonSafeDiv = newParams.EpsilonSafeDiv[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err
