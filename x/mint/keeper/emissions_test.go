@@ -1,6 +1,8 @@
 package keeper_test
 
 import (
+	"fmt"
+
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
@@ -129,14 +131,22 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 
 // match ^e_i from row 61
 func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
-	epoch := s.epochGet[61]
-	expectedResult := epoch("ehat_target_i")
+	epoch := s.epochGet[60]
+	epoch61 := s.epochGet[61]
+	// because of how the simulator is written, the target is
+	// calculated based on the previous epoch's data
+	expectedResult := epoch61("ehat_target_i")
 
 	simulatorFEmission := cosmosMath.LegacyMustNewDecFromStr("0.025")
 	networkTokensTotal := epoch("network_tokens_total").SdkIntTrim()
 	ecosystemTokensTotal := epoch("ecosystem_tokens_total").SdkIntTrim()
 	networkTokensCirculating := epoch("network_tokens_circulating").SdkIntTrim()
 	networkTokensStaked := epoch("network_tokens_staked").SdkIntTrim()
+	fmt.Println("f_emission", simulatorFEmission)
+	fmt.Println("ecosystem_tokens_total", ecosystemTokensTotal)
+	fmt.Println("network_tokens_circulating", networkTokensCirculating)
+	fmt.Println("network_tokens_staked", networkTokensStaked)
+	fmt.Println("network_tokens_total", networkTokensTotal)
 	result, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		simulatorFEmission,
 		ecosystemTokensTotal,
