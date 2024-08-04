@@ -149,7 +149,7 @@ type Keeper struct {
 	/// NONCES
 
 	// map of open worker nonce windows for topics on particular block heights
-	openWorkerWindows collections.Map[BlockHeight, types.Topicids]
+	openWorkerWindows collections.Map[BlockHeight, types.TopicIds]
 
 	// map of (topic) -> unfulfilled nonces
 	unfulfilledWorkerNonces collections.Map[TopicId, types.Nonces]
@@ -258,7 +258,7 @@ func NewKeeper(
 		topicLastReputerCommit:          collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastWorkerPayload:          collections.NewMap(sb, types.TopicLastWorkerPayloadKey, "topic_last_worker_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerPayload:         collections.NewMap(sb, types.TopicLastReputerPayloadKey, "topic_last_reputer_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		openWorkerWindows:               collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.Topicids](cdc)),
+		openWorkerWindows:               collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.TopicIds](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -275,23 +275,23 @@ func NewKeeper(
 
 // GetTopicIds returns the TopicIds for a given BlockHeight.
 // If no TopicIds are found for the BlockHeight, it returns an empty slice.
-func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) types.Topicids {
+func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) types.TopicIds {
 	topicIds, err := k.openWorkerWindows.Get(ctx, height)
 	if err != nil {
-		return types.Topicids{}
+		return types.TopicIds{}
 	}
 	return topicIds
 }
 
 // SetTopicId appends a new TopicId to the list of TopicIds for a given BlockHeight.
 // If no entry exists for the BlockHeight, it creates a new entry with the TopicId.
-func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicid types.Topicid) error {
-	var topicIds types.Topicids
+func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicId TopicId) error {
+	var topicIds types.TopicIds
 	topicIds, err := k.openWorkerWindows.Get(ctx, height)
 	if err != nil {
-		topicIds = types.Topicids{}
+		topicIds = types.TopicIds{}
 	}
-	topicIds.TopicIds = append(topicIds.TopicIds, &topicid)
+	topicIds.TopicIds = append(topicIds.TopicIds, topicId)
 	k.openWorkerWindows.Set(ctx, height, topicIds)
 	return nil
 }
@@ -981,6 +981,9 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 	key := collections.Join(topicId, block)
 	lossBundle, err := k.networkLossBundles.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &types.ValueBundle{}, nil
+		}
 		return nil, err
 	}
 	return &lossBundle, nil

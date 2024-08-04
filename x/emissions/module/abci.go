@@ -72,7 +72,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 				sdkCtx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
 
-				err = am.keeper.AddWorkerWindowTopicId(sdkCtx, blockHeight+topic.WorkerSubmissionWindow, types.Topicid{TopicId: topic.Id})
+				err = am.keeper.AddWorkerWindowTopicId(sdkCtx, blockHeight+topic.WorkerSubmissionWindow, topic.Id)
 				if err != nil {
 					sdkCtx.Logger().Warn(fmt.Sprintf("Error adding worker window topic id: %s", err.Error()))
 					return
@@ -153,7 +153,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		for _, topicId := range workerWindowsToClose.TopicIds {
 			sdkCtx.Logger().Info(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %d", topicId))
 			// Check if there is an unfulfilled nonce
-			nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId.TopicId)
+			nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId)
 			if err != nil {
 				sdkCtx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
 				continue
@@ -162,12 +162,12 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				continue
 			} else {
 				for _, nonce := range nonces.Nonces {
-					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId.TopicId, nonce))
-					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topicId.TopicId, *nonce)
+					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId, nonce))
+					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topicId, *nonce)
 					if err != nil {
 						sdkCtx.Logger().Info(fmt.Sprintf("Error closing worker nonce, proactively fulfilling: %s", err.Error()))
 						// Proactively close the nonce
-						fulfilledNonce, err := am.keeper.FulfillWorkerNonce(sdkCtx, topicId.TopicId, nonce)
+						fulfilledNonce, err := am.keeper.FulfillWorkerNonce(sdkCtx, topicId, nonce)
 						if err != nil {
 							sdkCtx.Logger().Warn(fmt.Sprintf("Error fulfilling worker nonce: %s", err.Error()))
 						} else {

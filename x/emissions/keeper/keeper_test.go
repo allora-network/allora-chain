@@ -1282,8 +1282,8 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 
 	// Attempt to retrieve before insertion
 	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
-	require.Error(err, "Should return error for non-existent data")
-	require.Nil(result, "Result should be nil for non-existent data")
+	require.NoError(err, "Should return error for non-existent data")
+	require.Equal(uint64(0), result.TopicId, "Result should be nil for non-existent data")
 }
 
 // ########################################
@@ -3136,8 +3136,9 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().NoError(err, "Getting reputer loss bundles should not fail")
 	s.Require().Equal(len(lossbundles.ReputerValueBundles), 0, "Must be pruned")
 	networkBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
-	s.Require().NoError(err, "Getting network loss bundle should not fail")
-	s.Require().Equal(networkBundles, (*types.ValueBundle)(nil), "Must be pruned")
+	s.Require().NoError(err, "Getting network loss bundle should not fail but be empty")
+	s.Require().Equal(uint64(0), networkBundles.TopicId, "Must be pruned as evidenced by nil topic id")
+	s.Require().Equal("0", networkBundles.CombinedValue.String(), "Must be pruned as evidenced by nil combined value")
 }
 
 func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {
