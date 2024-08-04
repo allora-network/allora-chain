@@ -989,6 +989,9 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 	key := collections.Join(topicId, block)
 	lossBundle, err := k.networkLossBundles.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &types.ValueBundle{}, nil
+		}
 		return nil, err
 	}
 	return &lossBundle, nil
@@ -1226,7 +1229,7 @@ func (k *Keeper) RemoveReputerStake(
 //	stakeSumFromDelegator, delegatedStakes, stakeFromDelegatorsUponReputer
 func (k *Keeper) RemoveDelegateStake(
 	ctx context.Context,
-	stakeRemovalHeight BlockHeight,
+	stakeRemovalBlockHeight BlockHeight,
 	topicId TopicId,
 	delegator ActorId,
 	reputer ActorId,
@@ -1360,7 +1363,7 @@ func (k *Keeper) RemoveDelegateStake(
 	if err := k.SetTotalStake(ctx, totalStakeNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
-	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalHeight, topicId, reputer, delegator); err != nil {
+	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalBlockHeight, topicId, reputer, delegator); err != nil {
 		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
 

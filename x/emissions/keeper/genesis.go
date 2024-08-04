@@ -49,14 +49,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//ActiveTopics []uint64
-	if len(data.ActiveTopics) != 0 {
-		for _, topicId := range data.ActiveTopics {
-			if err := k.activeTopics.Set(ctx, topicId); err != nil {
-				return errors.Wrap(err, "error setting activeTopics")
-			}
-		}
-	}
 	//RewardableTopics []uint64
 	if len(data.RewardableTopics) != 0 {
 		for _, topicId := range data.RewardableTopics {
@@ -699,19 +691,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			Topic:   &value,
 		}
 		topics = append(topics, &topic)
-	}
-
-	activeTopics := make([]uint64, 0)
-	activeTopicsIter, err := k.activeTopics.Iterate(ctx, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to iterate active topics")
-	}
-	for ; activeTopicsIter.Valid(); activeTopicsIter.Next() {
-		key, err := activeTopicsIter.Key()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get key: activeTopicsIter")
-		}
-		activeTopics = append(activeTopics, key)
 	}
 
 	rewardableTopics := make([]uint64, 0)
@@ -1628,7 +1607,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		Params:                                   moduleParams,
 		NextTopicId:                              nextTopicId,
 		Topics:                                   topics,
-		ActiveTopics:                             activeTopics,
 		RewardableTopics:                         rewardableTopics,
 		TopicWorkers:                             topicWorkers,
 		TopicReputers:                            topicReputers,

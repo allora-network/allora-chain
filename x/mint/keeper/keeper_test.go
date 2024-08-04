@@ -9,6 +9,8 @@ import (
 
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	alloraMath "github.com/allora-network/allora-chain/math"
+	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	mint "github.com/allora-network/allora-chain/x/mint/module"
@@ -17,7 +19,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
+	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
@@ -28,11 +30,13 @@ type IntegrationTestSuite struct {
 	mintKeeper      keeper.Keeper
 	ctx             sdk.Context
 	msgServer       types.MsgServer
+	ctrl            *gomock.Controller
 	stakingKeeper   *minttestutil.MockStakingKeeper
 	bankKeeper      *minttestutil.MockBankKeeper
 	emissionsKeeper *minttestutil.MockEmissionsKeeper
 	adminPrivateKey secp256k1.PrivKey
 	adminAddr       string
+	epochGet        map[int]func(string) alloraMath.Dec
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -43,15 +47,15 @@ func (s *IntegrationTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(mint.AppModuleBasic{})
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	s.ctx = testCtx.Ctx
 
 	// gomock initializations
-	ctrl := gomock.NewController(s.T())
-	accountKeeper := minttestutil.NewMockAccountKeeper(ctrl)
-	bankKeeper := minttestutil.NewMockBankKeeper(ctrl)
-	stakingKeeper := minttestutil.NewMockStakingKeeper(ctrl)
-	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(ctrl)
+	s.ctrl = gomock.NewController(s.T())
+	accountKeeper := minttestutil.NewMockAccountKeeper(s.ctrl)
+	bankKeeper := minttestutil.NewMockBankKeeper(s.ctrl)
+	stakingKeeper := minttestutil.NewMockStakingKeeper(s.ctrl)
+	emissionsKeeper := minttestutil.NewMockEmissionsKeeper(s.ctrl)
 
 	accountKeeper.EXPECT().GetModuleAddress(types.ModuleName).Return(sdk.AccAddress{})
 
@@ -79,6 +83,7 @@ func (s *IntegrationTestSuite) SetupTest() {
 	s.Require().NoError(err)
 
 	s.msgServer = keeper.NewMsgServerImpl(s.mintKeeper)
+	s.epochGet = alloratestutil.GetTokenomicsSimulatorValuesGetterForEpochs()
 }
 
 func (s *IntegrationTestSuite) TestAliasFunctions() {

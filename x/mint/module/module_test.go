@@ -194,8 +194,10 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	_, emissionPerUnitStakedTokenBefore, err := mint.GetEmissionPerMonth(
 		s.ctx,
 		s.mintKeeper,
+		uint64(s.ctx.BlockHeight()),
 		blocksPerMonth,
 		params,
+		cosmosMath.ZeroInt(),
 		ecosystemMintSupplyRemaining,
 		cosmosMath.LegacyMustNewDecFromStr("0.25"),
 	)
@@ -215,8 +217,10 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	_, emissionPerUnitStakedTokenAfter, err := mint.GetEmissionPerMonth(
 		s.ctx,
 		s.mintKeeper,
+		uint64(s.ctx.BlockHeight()),
 		blocksPerMonth,
 		params,
+		cosmosMath.ZeroInt(),
 		ecosystemMintSupplyRemaining,
 		cosmosMath.LegacyMustNewDecFromStr("0.25"),
 	)
@@ -286,9 +290,9 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	)
 	s.Require().NoError(err)
 
-	// mint enough tokens so that the circulating supply is non zero
-	// mint them to the ecosystem account to simulate paying for inference requests
-	spareCoins, ok := cosmosMath.NewIntFromString("500000000000000000000000000")
+	//mint enough tokens so that the circulating supply is non zero
+	//mint them to the ecosystem account to simulate paying for inference requests
+	spareCoins, ok := cosmosMath.NewIntFromString("100000000000000000000000")
 	s.Require().True(ok)
 	err = s.bankKeeper.MintCoins(
 		s.ctx,
@@ -318,7 +322,11 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	// the ecosystem account balance went DOWN (ecosystem paid to the rewards account)
 	// the fee collector account balance went UP (fee collector received the fees)
 	// the allora rewards account balance went UP (allora rewards account received the rewards)
-	s.Require().Equal(tokenSupplyBefore, tokenSupplyAfter)
+	s.Require().True(tokenSupplyBefore.Amount.Equal(tokenSupplyAfter.Amount),
+		"Token supply should not change when minting tokens as inflationary rewards: %s == %s",
+		tokenSupplyBefore.Amount.String(),
+		tokenSupplyAfter.Amount.String(),
+	)
 	s.Require().True(
 		ecosystemBalBefore.Amount.GT(ecosystemBalAfter.Amount),
 		"Ecosystem balance should go down when minting tokens to pay for inference requests: %s > %s",

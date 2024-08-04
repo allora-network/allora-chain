@@ -86,6 +86,13 @@ docker run \
     --entrypoint=/data/generate_genesis.sh \
     $DOCKER_IMAGE > /dev/null 2>&1
 
+echo "Ensure permissions on data folder after genesis generation"
+docker run \
+    -u 0:0 \
+    -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=chmod \
+    $DOCKER_IMAGE -R 777 /data
+
 echo "Updating expedited_voting_period in genesis.json"
 genesis_file="${LOCALNET_DATADIR}/genesis/config/genesis.json"
 tmp_file=$(mktemp)
