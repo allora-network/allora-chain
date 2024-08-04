@@ -17,7 +17,7 @@ message Params {
     (gogoproto.nullable) = false
   ];                                // total unmet demand for a topic < this => don't run inference
                                     // solicatation or weight-adjustment
-  uint64 max_topics_per_block = 4;  // max number of topics to run cadence for per block
+  uint64 max_topics_per_block = 4;  // max number of topics to churn per block
   string required_minimum_stake = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
@@ -134,5 +134,6 @@ message Params {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
-  ];  // payload sending fee for reputer or worker
+  ];                                        // payload sending fee for reputer or worker
+  uint64 max_active_topics_per_block = 45;  // max number of active topics to consider to churn per block
 }
