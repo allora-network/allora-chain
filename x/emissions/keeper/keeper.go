@@ -981,6 +981,9 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 	key := collections.Join(topicId, block)
 	lossBundle, err := k.networkLossBundles.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &types.ValueBundle{}, nil
+		}
 		return nil, err
 	}
 	return &lossBundle, nil
