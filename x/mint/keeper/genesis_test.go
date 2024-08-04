@@ -76,6 +76,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 		defaultParams.FoundationTreasuryPercentOfTotalSupply,
 		defaultParams.ParticipantsPercentOfTotalSupply,
 		defaultParams.InvestorsPercentOfTotalSupply,
+		defaultParams.InvestorsPreseedPercentOfTotalSupply,
 		defaultParams.TeamPercentOfTotalSupply,
 		defaultParams.MaximumMonthlyPercentageYield,
 	)

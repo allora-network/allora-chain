@@ -38,3 +38,5 @@ coverage_raw.lcov
 coverage.lcov
 
 build/
+
+tokenomics_output.csv
