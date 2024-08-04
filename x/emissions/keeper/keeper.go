@@ -1216,7 +1216,7 @@ func (k *Keeper) RemoveReputerStake(
 //	stakeSumFromDelegator, delegatedStakes, stakeFromDelegatorsUponReputer
 func (k *Keeper) RemoveDelegateStake(
 	ctx context.Context,
-	stakeRemovalHeight BlockHeight,
+	stakeRemovalBlockHeight BlockHeight,
 	topicId TopicId,
 	delegator ActorId,
 	reputer ActorId,
@@ -1350,7 +1350,7 @@ func (k *Keeper) RemoveDelegateStake(
 	if err := k.SetTotalStake(ctx, totalStakeNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting total stake failed")
 	}
-	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalHeight, topicId, reputer, delegator); err != nil {
+	if err := k.DeleteDelegateStakeRemoval(ctx, stakeRemovalBlockHeight, topicId, reputer, delegator); err != nil {
 		return errorsmod.Wrapf(err, "Deleting delegate stake removal from queue failed")
 	}
 

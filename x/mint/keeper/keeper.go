@@ -207,3 +207,13 @@ func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
 func (k Keeper) IsWhitelistAdmin(ctx context.Context, admin string) (bool, error) {
 	return k.emissionsKeeper.IsWhitelistAdmin(ctx, admin)
 }
+
+// wrapper for interface compatibility for unit testing
+func (k Keeper) GetPreviousRewardEmissionPerUnitStakedToken(ctx context.Context) (math.LegacyDec, error) {
+	return k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
+}
+
+// wrapper for interface compatibility for unit testing
+func (k Keeper) GetEmissionsKeeperTotalStake(ctx context.Context) (math.Int, error) {
+	return k.emissionsKeeper.GetTotalStake(ctx)
+}
