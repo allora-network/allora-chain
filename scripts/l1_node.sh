@@ -21,6 +21,7 @@ export HOME=${APP_HOME}
 
 echo "To re-initiate the node, remove the file: ${INIT_FLAG}"
 if [ ! -f $INIT_FLAG ]; then
+    #* Remove if existing config
     rm -rf ${APP_HOME}/config
 
     #* Create symlink for allorad config - workaround
