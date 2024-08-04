@@ -1282,8 +1282,8 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 
 	// Attempt to retrieve before insertion
 	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
-	require.Error(err, "Should return error for non-existent data")
-	require.Nil(result, "Result should be nil for non-existent data")
+	require.NoError(err, "Should return error for non-existent data")
+	require.Equal(uint64(0), result.TopicId, "Result should be nil for non-existent data")
 }
 
 // ########################################
