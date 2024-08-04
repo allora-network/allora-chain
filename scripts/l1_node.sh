@@ -23,6 +23,9 @@ echo "To re-initiate the node, remove the file: ${INIT_FLAG}"
 if [ ! -f $INIT_FLAG ]; then
     rm -rf ${APP_HOME}/config
 
+    #* Create symlink for allorad config - workaround
+    ln -sf /data ${HOME}/.allorad
+
     #* Init node
     allorad --home=${APP_HOME} init ${MONIKER} --chain-id=${NETWORK} --default-denom $DENOM
 
@@ -45,9 +48,6 @@ if [ ! -f $INIT_FLAG ]; then
     #* Mitigate mempool spamming attacks
     dasel put mempool.max_txs_bytes -t int -v 2097152 -f ${APP_HOME}/config/config.toml
     dasel put mempool.size -t int -v 1000 -f ${APP_HOME}/config/config.toml
-
-    #* Create symlink for allorad config
-    ln -sf . ${APP_HOME}/.allorad
 
     touch $INIT_FLAG
 fi
