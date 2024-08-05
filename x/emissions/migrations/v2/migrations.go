@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"cosmossdk.io/collections"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -31,7 +32,10 @@ func MigrateStore(ctx sdk.Context, storeService store.KVStoreService, cdc codec.
 	if err != nil {
 		return err
 	}
-
+	err = MigrateAllRecordCommits(store, cdc)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -175,6 +179,48 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 					Signature: valueBundle.Signature,
 				},
 			)
+		}
+
+		store.Delete(iterator.Key())
+		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+	}
+	return nil
+}
+
+func MigrateAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+	err := restoreAllRecordCommits(store, cdc, emissionsv1.TopicLastWorkerCommitKey)
+	if err != nil {
+		return err
+	}
+	err = restoreAllRecordCommits(store, cdc, emissionsv1.TopicLastReputerCommitKey)
+	if err != nil {
+		return err
+	}
+	err = restoreAllRecordCommits(store, cdc, emissionsv1.TopicLastWorkerPayloadKey)
+	if err != nil {
+		return err
+	}
+	err = restoreAllRecordCommits(store, cdc, emissionsv1.TopicLastReputerPayloadKey)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, commitKey collections.Prefix) error {
+	topicLastWorkerCommitStore := prefix.NewStore(store, commitKey)
+	iterator := topicLastWorkerCommitStore.Iterator(nil, nil)
+
+	for ; iterator.Valid(); iterator.Next() {
+		var oldMsg emissionsv1.TimestampedActorNonce
+		err := proto.Unmarshal(iterator.Value(), &oldMsg)
+		if err != nil {
+			return err
+		}
+
+		newMsg := emissionsv1.TimestampedActorNonce{
+			BlockHeight: oldMsg.BlockHeight,
+			Nonce:       oldMsg.Nonce,
 		}
 
 		store.Delete(iterator.Key())
