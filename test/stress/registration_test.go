@@ -2,8 +2,6 @@ package stress_test
 
 import (
 	"context"
-	"math/rand"
-	"strconv"
 
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -18,12 +16,10 @@ func RegisterReputerForTopic(
 	ctx := context.Background()
 
 	registerReputerRequest := &emissionstypes.MsgRegister{
-		Sender:       reputer.aa.addr,
-		Owner:        reputer.aa.addr,
-		LibP2PKey:    "reputerkey" + strconv.Itoa(rand.Intn(10000000000)),
-		MultiAddress: "reputermultiaddress",
-		TopicId:      topicId,
-		IsReputer:    true,
+		Sender:    reputer.aa.addr,
+		Owner:     reputer.aa.addr,
+		TopicId:   topicId,
+		IsReputer: true,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, reputer.aa.acc, registerReputerRequest)
 	if err != nil {
@@ -50,12 +46,10 @@ func RegisterWorkerForTopic(
 ) error {
 	ctx := context.Background()
 	registerWorkerRequest := &emissionstypes.MsgRegister{
-		Sender:       worker.aa.addr,
-		Owner:        worker.aa.addr,
-		LibP2PKey:    "workerkey" + strconv.Itoa(rand.Intn(10000000000)),
-		MultiAddress: "workermultiaddress",
-		TopicId:      topicId,
-		IsReputer:    false,
+		Sender:    worker.aa.addr,
+		Owner:     worker.aa.addr,
+		TopicId:   topicId,
+		IsReputer: false,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, worker.aa.acc, registerWorkerRequest)
 	if err != nil {

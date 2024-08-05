@@ -66,16 +66,6 @@ func getActorName(seed int, actorIndex int) string {
 	return "run" + strconv.Itoa(seed) + "_actor" + strconv.Itoa(actorIndex)
 }
 
-// generate a libp2p key name for the actor
-func getLibP2pKeyName(actor Actor) string {
-	return "libp2p_key" + actor.name
-}
-
-// generate a multiaddress for an actor
-func getMultiAddressName(actor Actor) string {
-	return "multiaddress" + actor.name
-}
-
 // pick a random topic id that is between 1 and the number of topics
 func pickRandomTopicId(m *testcommon.TestConfig) (uint64, error) {
 	ctx := context.Background()

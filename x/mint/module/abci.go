@@ -11,9 +11,11 @@ import (
 
 func GetEmissionPerMonth(
 	ctx sdk.Context,
-	k keeper.Keeper,
+	k types.MintKeeper,
+	blockHeight uint64,
 	blocksPerMonth uint64,
 	params types.Params,
+	ecosystemBalance math.Int,
 	ecosystemMintSupplyRemaining math.Int,
 	validatorsPercent math.LegacyDec,
 ) (
@@ -26,32 +28,52 @@ func GetEmissionPerMonth(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	totalSupply := k.GetTotalCurrTokenSupply(ctx).Amount
-	lockedSupply := keeper.GetLockedTokenSupply(
+	totalSupply := params.MaxSupply
+	lockedVestingTokens, _, _, _ := keeper.GetLockedVestingTokens(
 		blocksPerMonth,
-		math.NewIntFromUint64(uint64(ctx.BlockHeight())),
+		math.NewIntFromUint64(blockHeight),
 		params,
 	)
-	circulatingSupply := totalSupply.Sub(lockedSupply)
+	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
+	circulatingSupply := totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
 	if circulatingSupply.IsNegative() {
-		circulatingSupply = math.ZeroInt()
+		ctx.Logger().Error(
+			"Negative circulating supply",
+			"totalSupply", totalSupply.String(),
+			"lockedVestingTokens", lockedVestingTokens.String(),
+			"ecosystemLocked", ecosystemLocked.String(),
+			"circulatingSupply", circulatingSupply.String(),
+		)
+
+		return math.Int{}, math.LegacyDec{}, types.ErrNegativeCirculatingSupply
 	}
-	// T_{total,i} = ecosystemMintableRemaining
+	// T_{total,i} = ecosystemLocked
 	// N_{staked,i} = networkStaked
 	// N_{circ,i} = circulatingSupply
 	// N_{total,i} = totalSupply
-	ctx.Logger().Info("Emission Per Unit Staked Token Calculation",
-		"FEmission", params.FEmission.String(),
-		"ecosystemMintSupplyRemaining", ecosystemMintSupplyRemaining.String(),
-		"networkStaked", networkStaked.String(),
-		"circulatingSupply", circulatingSupply.String(),
-		"totalSupply", totalSupply.String(),
-		"lockedSupply", lockedSupply.String(),
+	ctx.Logger().Info(
+		"Emission Per Unit Staked Token Calculation\n"+
+			"FEmission %s\n"+
+			"ecosystemLocked %s\n"+
+			"networkStaked %s\n"+
+			"circulatingSupply %s\n"+
+			"totalSupply %s\n"+
+			"lockedVestingTokens %s\n",
+		"ecosystemBalance%s\n",
+		"ecosystemMintSupplyRemaining %s\n"+
+			params.FEmission.String(),
+		ecosystemLocked.String(),
+		networkStaked.String(),
+		circulatingSupply.String(),
+		totalSupply.String(),
+		lockedVestingTokens.String(),
+		ecosystemBalance.String(),
+		ecosystemMintSupplyRemaining.String(),
 	)
 	targetRewardEmissionPerUnitStakedToken,
 		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmission,
-		ecosystemMintSupplyRemaining,
+		ecosystemLocked,
 		networkStaked,
 		circulatingSupply,
 		params.MaxSupply,
@@ -72,9 +94,15 @@ func GetEmissionPerMonth(
 		targetRewardEmissionPerUnitStakedToken,
 		maximumMonthlyEmissionPerUnitStakedToken,
 	)
-	previousRewardEmissionPerUnitStakedToken, err := k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
-	if err != nil {
-		return math.Int{}, math.LegacyDec{}, err
+	var previousRewardEmissionPerUnitStakedToken math.LegacyDec
+	// if this is the first month/time we're calculating the target emission...
+	if blockHeight < blocksPerMonth {
+		previousRewardEmissionPerUnitStakedToken = targetRewardEmissionPerUnitStakedToken
+	} else {
+		previousRewardEmissionPerUnitStakedToken, err = k.GetPreviousRewardEmissionPerUnitStakedToken(ctx)
+		if err != nil {
+			return math.Int{}, math.LegacyDec{}, err
+		}
 	}
 	emissionPerUnitStakedToken = keeper.GetExponentialMovingAverage(
 		targetRewardEmissionPerUnitStakedToken,
@@ -115,7 +143,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return err
 	}
 
-	blockHeight := sdkCtx.BlockHeight()
+	blockHeight := uint64(sdkCtx.BlockHeight())
 
 	blockEmission, err := k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
@@ -137,12 +165,14 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	vPercent := vPercentADec.SdkLegacyDec()
 	// every month on the first block of the month, update the emissions rate
-	if uint64(blockHeight)%blocksPerMonth == 1 { // easier to test when genesis starts at 1
+	if blockHeight%blocksPerMonth == 1 { // easier to test when genesis starts at 1
 		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
 			sdkCtx,
 			k,
+			blockHeight,
 			blocksPerMonth,
 			params,
+			ecosystemBalance,
 			ecosystemMintSupplyRemaining,
 			vPercent,
 		)
@@ -165,6 +195,9 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if blockEmission.GT(ecosystemBalance) {
 		// mint the amount of tokens required to pay out the emissions
 		tokensToMint := blockEmission.Sub(ecosystemBalance)
+		if tokensToMint.GT(ecosystemMintSupplyRemaining) {
+			tokensToMint = ecosystemMintSupplyRemaining
+		}
 		coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, tokensToMint))
 		err = k.MintCoins(sdkCtx, coins)
 		if err != nil {

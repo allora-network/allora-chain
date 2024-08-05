@@ -85,8 +85,8 @@ func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) e
 	if err != nil {
 		return err
 	}
-	new := curr.Add(minted)
-	return k.EcosystemTokensMinted.Set(ctx, new)
+	newTotal := curr.Add(minted)
+	return k.EcosystemTokensMinted.Set(ctx, newTotal)
 }
 
 /// STAKING KEEPER RELATED FUNCTIONS
@@ -206,4 +206,14 @@ func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
 // wrapper around emissions keeper call to get if whitelist admin
 func (k Keeper) IsWhitelistAdmin(ctx context.Context, admin string) (bool, error) {
 	return k.emissionsKeeper.IsWhitelistAdmin(ctx, admin)
+}
+
+// wrapper for interface compatibility for unit testing
+func (k Keeper) GetPreviousRewardEmissionPerUnitStakedToken(ctx context.Context) (math.LegacyDec, error) {
+	return k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
+}
+
+// wrapper for interface compatibility for unit testing
+func (k Keeper) GetEmissionsKeeperTotalStake(ctx context.Context) (math.Int, error) {
+	return k.emissionsKeeper.GetTotalStake(ctx)
 }

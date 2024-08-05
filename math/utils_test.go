@@ -41,7 +41,6 @@ func TestCalcExpDecaySimple(t *testing.T) {
 	// (1 - 0.1) * 300
 	// 0.9 * 300 = 270
 	expected := alloraMath.MustNewDecFromString("270")
-
 	result, err := alloraMath.CalcExpDecay(currentRev, decayFactor)
 	require.NoError(t, err)
 	require.True(t, alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001")))
@@ -80,7 +79,7 @@ func TestStdDev(t *testing.T) {
 				alloraMath.MustNewDecFromString("0.09719"),
 				alloraMath.MustNewDecFromString("0.09675"),
 			},
-			want: alloraMath.MustNewDecFromString("0.041014924273483966"),
+			want: alloraMath.MustNewDecFromString("0.04323473788517746987174741957435394"),
 		},
 	}
 

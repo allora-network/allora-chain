@@ -16,47 +16,50 @@ import (
 )
 
 var (
-	md_Params                                      protoreflect.MessageDescriptor
-	fd_Params_version                              protoreflect.FieldDescriptor
-	fd_Params_max_serialized_msg_length            protoreflect.FieldDescriptor
-	fd_Params_min_topic_weight                     protoreflect.FieldDescriptor
-	fd_Params_max_topics_per_block                 protoreflect.FieldDescriptor
-	fd_Params_required_minimum_stake               protoreflect.FieldDescriptor
-	fd_Params_remove_stake_delay_window            protoreflect.FieldDescriptor
-	fd_Params_min_epoch_length                     protoreflect.FieldDescriptor
-	fd_Params_beta_entropy                         protoreflect.FieldDescriptor
-	fd_Params_learning_rate                        protoreflect.FieldDescriptor
-	fd_Params_max_gradient_threshold               protoreflect.FieldDescriptor
-	fd_Params_min_stake_fraction                   protoreflect.FieldDescriptor
-	fd_Params_max_unfulfilled_worker_requests      protoreflect.FieldDescriptor
-	fd_Params_max_unfulfilled_reputer_requests     protoreflect.FieldDescriptor
-	fd_Params_topic_reward_stake_importance        protoreflect.FieldDescriptor
-	fd_Params_topic_reward_fee_revenue_importance  protoreflect.FieldDescriptor
-	fd_Params_topic_reward_alpha                   protoreflect.FieldDescriptor
-	fd_Params_task_reward_alpha                    protoreflect.FieldDescriptor
-	fd_Params_validators_vs_allora_percent_reward  protoreflect.FieldDescriptor
-	fd_Params_max_samples_to_scale_scores          protoreflect.FieldDescriptor
-	fd_Params_max_top_inferers_to_reward           protoreflect.FieldDescriptor
-	fd_Params_max_top_forecasters_to_reward        protoreflect.FieldDescriptor
-	fd_Params_max_top_reputers_to_reward           protoreflect.FieldDescriptor
-	fd_Params_create_topic_fee                     protoreflect.FieldDescriptor
-	fd_Params_gradient_descent_max_iters           protoreflect.FieldDescriptor
-	fd_Params_max_retries_to_fulfil_nonces_worker  protoreflect.FieldDescriptor
-	fd_Params_max_retries_to_fulfil_nonces_reputer protoreflect.FieldDescriptor
-	fd_Params_registration_fee                     protoreflect.FieldDescriptor
-	fd_Params_default_page_limit                   protoreflect.FieldDescriptor
-	fd_Params_max_page_limit                       protoreflect.FieldDescriptor
-	fd_Params_min_epoch_length_record_limit        protoreflect.FieldDescriptor
-	fd_Params_blocks_per_month                     protoreflect.FieldDescriptor
-	fd_Params_p_reward_inference                   protoreflect.FieldDescriptor
-	fd_Params_p_reward_forecast                    protoreflect.FieldDescriptor
-	fd_Params_p_reward_reputer                     protoreflect.FieldDescriptor
-	fd_Params_c_reward_inference                   protoreflect.FieldDescriptor
-	fd_Params_c_reward_forecast                    protoreflect.FieldDescriptor
-	fd_Params_c_norm                               protoreflect.FieldDescriptor
-	fd_Params_topic_fee_revenue_decay_rate         protoreflect.FieldDescriptor
-	fd_Params_epsilon_reputer                      protoreflect.FieldDescriptor
-	fd_Params_min_effective_topic_revenue          protoreflect.FieldDescriptor
+	md_Params                                           protoreflect.MessageDescriptor
+	fd_Params_version                                   protoreflect.FieldDescriptor
+	fd_Params_max_serialized_msg_length                 protoreflect.FieldDescriptor
+	fd_Params_min_topic_weight                          protoreflect.FieldDescriptor
+	fd_Params_max_topics_per_block                      protoreflect.FieldDescriptor
+	fd_Params_required_minimum_stake                    protoreflect.FieldDescriptor
+	fd_Params_remove_stake_delay_window                 protoreflect.FieldDescriptor
+	fd_Params_min_epoch_length                          protoreflect.FieldDescriptor
+	fd_Params_beta_entropy                              protoreflect.FieldDescriptor
+	fd_Params_learning_rate                             protoreflect.FieldDescriptor
+	fd_Params_max_gradient_threshold                    protoreflect.FieldDescriptor
+	fd_Params_min_stake_fraction                        protoreflect.FieldDescriptor
+	fd_Params_max_unfulfilled_worker_requests           protoreflect.FieldDescriptor
+	fd_Params_max_unfulfilled_reputer_requests          protoreflect.FieldDescriptor
+	fd_Params_topic_reward_stake_importance             protoreflect.FieldDescriptor
+	fd_Params_topic_reward_fee_revenue_importance       protoreflect.FieldDescriptor
+	fd_Params_topic_reward_alpha                        protoreflect.FieldDescriptor
+	fd_Params_task_reward_alpha                         protoreflect.FieldDescriptor
+	fd_Params_validators_vs_allora_percent_reward       protoreflect.FieldDescriptor
+	fd_Params_max_samples_to_scale_scores               protoreflect.FieldDescriptor
+	fd_Params_max_top_inferers_to_reward                protoreflect.FieldDescriptor
+	fd_Params_max_top_forecasters_to_reward             protoreflect.FieldDescriptor
+	fd_Params_max_top_reputers_to_reward                protoreflect.FieldDescriptor
+	fd_Params_create_topic_fee                          protoreflect.FieldDescriptor
+	fd_Params_gradient_descent_max_iters                protoreflect.FieldDescriptor
+	fd_Params_max_retries_to_fulfil_nonces_worker       protoreflect.FieldDescriptor
+	fd_Params_max_retries_to_fulfil_nonces_reputer      protoreflect.FieldDescriptor
+	fd_Params_registration_fee                          protoreflect.FieldDescriptor
+	fd_Params_default_page_limit                        protoreflect.FieldDescriptor
+	fd_Params_max_page_limit                            protoreflect.FieldDescriptor
+	fd_Params_min_epoch_length_record_limit             protoreflect.FieldDescriptor
+	fd_Params_blocks_per_month                          protoreflect.FieldDescriptor
+	fd_Params_p_reward_inference                        protoreflect.FieldDescriptor
+	fd_Params_p_reward_forecast                         protoreflect.FieldDescriptor
+	fd_Params_p_reward_reputer                          protoreflect.FieldDescriptor
+	fd_Params_c_reward_inference                        protoreflect.FieldDescriptor
+	fd_Params_c_reward_forecast                         protoreflect.FieldDescriptor
+	fd_Params_c_norm                                    protoreflect.FieldDescriptor
+	fd_Params_topic_fee_revenue_decay_rate              protoreflect.FieldDescriptor
+	fd_Params_epsilon_reputer                           protoreflect.FieldDescriptor
+	fd_Params_min_effective_topic_revenue               protoreflect.FieldDescriptor
+	fd_Params_half_max_process_stake_removals_end_block protoreflect.FieldDescriptor
+	fd_Params_epsilon_safe_div                          protoreflect.FieldDescriptor
+	fd_Params_data_sending_fee                          protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -102,6 +105,9 @@ func init() {
 	fd_Params_topic_fee_revenue_decay_rate = md_Params.Fields().ByName("topic_fee_revenue_decay_rate")
 	fd_Params_epsilon_reputer = md_Params.Fields().ByName("epsilon_reputer")
 	fd_Params_min_effective_topic_revenue = md_Params.Fields().ByName("min_effective_topic_revenue")
+	fd_Params_half_max_process_stake_removals_end_block = md_Params.Fields().ByName("half_max_process_stake_removals_end_block")
+	fd_Params_epsilon_safe_div = md_Params.Fields().ByName("epsilon_safe_div")
+	fd_Params_data_sending_fee = md_Params.Fields().ByName("data_sending_fee")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -409,6 +415,24 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.HalfMaxProcessStakeRemovalsEndBlock != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.HalfMaxProcessStakeRemovalsEndBlock)
+		if !f(fd_Params_half_max_process_stake_removals_end_block, value) {
+			return
+		}
+	}
+	if x.EpsilonSafeDiv != "" {
+		value := protoreflect.ValueOfString(x.EpsilonSafeDiv)
+		if !f(fd_Params_epsilon_safe_div, value) {
+			return
+		}
+	}
+	if x.DataSendingFee != "" {
+		value := protoreflect.ValueOfString(x.DataSendingFee)
+		if !f(fd_Params_data_sending_fee, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -504,6 +528,12 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.EpsilonReputer != ""
 	case "emissions.v1.Params.min_effective_topic_revenue":
 		return x.MinEffectiveTopicRevenue != ""
+	case "emissions.v1.Params.half_max_process_stake_removals_end_block":
+		return x.HalfMaxProcessStakeRemovalsEndBlock != uint64(0)
+	case "emissions.v1.Params.epsilon_safe_div":
+		return x.EpsilonSafeDiv != ""
+	case "emissions.v1.Params.data_sending_fee":
+		return x.DataSendingFee != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -600,6 +630,12 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.EpsilonReputer = ""
 	case "emissions.v1.Params.min_effective_topic_revenue":
 		x.MinEffectiveTopicRevenue = ""
+	case "emissions.v1.Params.half_max_process_stake_removals_end_block":
+		x.HalfMaxProcessStakeRemovalsEndBlock = uint64(0)
+	case "emissions.v1.Params.epsilon_safe_div":
+		x.EpsilonSafeDiv = ""
+	case "emissions.v1.Params.data_sending_fee":
+		x.DataSendingFee = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -736,6 +772,15 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.v1.Params.min_effective_topic_revenue":
 		value := x.MinEffectiveTopicRevenue
 		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Params.half_max_process_stake_removals_end_block":
+		value := x.HalfMaxProcessStakeRemovalsEndBlock
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v1.Params.epsilon_safe_div":
+		value := x.EpsilonSafeDiv
+		return protoreflect.ValueOfString(value)
+	case "emissions.v1.Params.data_sending_fee":
+		value := x.DataSendingFee
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -836,6 +881,12 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.EpsilonReputer = value.Interface().(string)
 	case "emissions.v1.Params.min_effective_topic_revenue":
 		x.MinEffectiveTopicRevenue = value.Interface().(string)
+	case "emissions.v1.Params.half_max_process_stake_removals_end_block":
+		x.HalfMaxProcessStakeRemovalsEndBlock = value.Uint()
+	case "emissions.v1.Params.epsilon_safe_div":
+		x.EpsilonSafeDiv = value.Interface().(string)
+	case "emissions.v1.Params.data_sending_fee":
+		x.DataSendingFee = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -936,6 +987,12 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field epsilon_reputer of message emissions.v1.Params is not mutable"))
 	case "emissions.v1.Params.min_effective_topic_revenue":
 		panic(fmt.Errorf("field min_effective_topic_revenue of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.half_max_process_stake_removals_end_block":
+		panic(fmt.Errorf("field half_max_process_stake_removals_end_block of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.epsilon_safe_div":
+		panic(fmt.Errorf("field epsilon_safe_div of message emissions.v1.Params is not mutable"))
+	case "emissions.v1.Params.data_sending_fee":
+		panic(fmt.Errorf("field data_sending_fee of message emissions.v1.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.Params"))
@@ -1028,6 +1085,12 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "emissions.v1.Params.epsilon_reputer":
 		return protoreflect.ValueOfString("")
 	case "emissions.v1.Params.min_effective_topic_revenue":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.Params.half_max_process_stake_removals_end_block":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v1.Params.epsilon_safe_div":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.Params.data_sending_fee":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -1241,6 +1304,17 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
 		}
+		if x.HalfMaxProcessStakeRemovalsEndBlock != 0 {
+			n += 2 + runtime.Sov(uint64(x.HalfMaxProcessStakeRemovalsEndBlock))
+		}
+		l = len(x.EpsilonSafeDiv)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
+		l = len(x.DataSendingFee)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -1269,6 +1343,31 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.DataSendingFee) > 0 {
+			i -= len(x.DataSendingFee)
+			copy(dAtA[i:], x.DataSendingFee)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.DataSendingFee)))
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xe2
+		}
+		if len(x.EpsilonSafeDiv) > 0 {
+			i -= len(x.EpsilonSafeDiv)
+			copy(dAtA[i:], x.EpsilonSafeDiv)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.EpsilonSafeDiv)))
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xda
+		}
+		if x.HalfMaxProcessStakeRemovalsEndBlock != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.HalfMaxProcessStakeRemovalsEndBlock))
+			i--
+			dAtA[i] = 0x2
+			i--
+			dAtA[i] = 0xd0
 		}
 		if len(x.MinEffectiveTopicRevenue) > 0 {
 			i -= len(x.MinEffectiveTopicRevenue)
@@ -2676,6 +2775,89 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.MinEffectiveTopicRevenue = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 42:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field HalfMaxProcessStakeRemovalsEndBlock", wireType)
+				}
+				x.HalfMaxProcessStakeRemovalsEndBlock = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.HalfMaxProcessStakeRemovalsEndBlock |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 43:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field EpsilonSafeDiv", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.EpsilonSafeDiv = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 44:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field DataSendingFee", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.DataSendingFee = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -2783,6 +2965,12 @@ type Params struct {
 	EpsilonReputer           string `protobuf:"bytes,40,opt,name=epsilon_reputer,json=epsilonReputer,proto3" json:"epsilon_reputer,omitempty"`                                     // a small tolerance quantity used to cap reputer scores at infinitesimally
 	// close proximities
 	MinEffectiveTopicRevenue string `protobuf:"bytes,41,opt,name=min_effective_topic_revenue,json=minEffectiveTopicRevenue,proto3" json:"min_effective_topic_revenue,omitempty"` // we no stop dripping from the topic's effective revenue when the topic's
+	// effective revenue is below this
+	HalfMaxProcessStakeRemovalsEndBlock uint64 `protobuf:"varint,42,opt,name=half_max_process_stake_removals_end_block,json=halfMaxProcessStakeRemovalsEndBlock,proto3" json:"half_max_process_stake_removals_end_block,omitempty"` // max amount of stake removals to process in an ABCI end block. Applied twice once for stakeRemovals and
+	// once for DelegateStakeRemovals, so actual max is this number times two
+	EpsilonSafeDiv string `protobuf:"bytes,43,opt,name=epsilon_safe_div,json=epsilonSafeDiv,proto3" json:"epsilon_safe_div,omitempty"`
+	// / a small tolerance quantity used to cap division by zero
+	DataSendingFee string `protobuf:"bytes,44,opt,name=data_sending_fee,json=dataSendingFee,proto3" json:"data_sending_fee,omitempty"` // payload sending fee for reputer or worker
 }
 
 func (x *Params) Reset() {
@@ -3085,6 +3273,27 @@ func (x *Params) GetMinEffectiveTopicRevenue() string {
 	return ""
 }
 
+func (x *Params) GetHalfMaxProcessStakeRemovalsEndBlock() uint64 {
+	if x != nil {
+		return x.HalfMaxProcessStakeRemovalsEndBlock
+	}
+	return 0
+}
+
+func (x *Params) GetEpsilonSafeDiv() string {
+	if x != nil {
+		return x.EpsilonSafeDiv
+	}
+	return ""
+}
+
+func (x *Params) GetDataSendingFee() string {
+	if x != nil {
+		return x.DataSendingFee
+	}
+	return ""
+}
+
 var File_emissions_v1_params_proto protoreflect.FileDescriptor
 
 var file_emissions_v1_params_proto_rawDesc = []byte{
@@ -3094,7 +3303,7 @@ var file_emissions_v1_params_proto_rawDesc = []byte{
 	0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e,
 	0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x9e, 0x1a,
+	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xb5, 0x1c,
 	0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73,
 	0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69,
 	0x6f, 0x6e, 0x12, 0x39, 0x0a, 0x19, 0x6d, 0x61, 0x78, 0x5f, 0x73, 0x65, 0x72, 0x69, 0x61, 0x6c,
@@ -3304,20 +3513,38 @@ var file_emissions_v1_params_proto_rawDesc = []byte{
 	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
 	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68,
 	0x2e, 0x44, 0x65, 0x63, 0x52, 0x18, 0x6d, 0x69, 0x6e, 0x45, 0x66, 0x66, 0x65, 0x63, 0x74, 0x69,
-	0x76, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x42, 0xc1,
-	0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x76, 0x31, 0x42, 0x0b, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f,
-	0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61,
-	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61,
-	0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a,
-	0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x76, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x12, 0x56,
+	0x0a, 0x29, 0x68, 0x61, 0x6c, 0x66, 0x5f, 0x6d, 0x61, 0x78, 0x5f, 0x70, 0x72, 0x6f, 0x63, 0x65,
+	0x73, 0x73, 0x5f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x5f, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c,
+	0x73, 0x5f, 0x65, 0x6e, 0x64, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x18, 0x2a, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x23, 0x68, 0x61, 0x6c, 0x66, 0x4d, 0x61, 0x78, 0x50, 0x72, 0x6f, 0x63, 0x65, 0x73,
+	0x73, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x61, 0x6c, 0x73, 0x45, 0x6e,
+	0x64, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x61, 0x0a, 0x10, 0x65, 0x70, 0x73, 0x69, 0x6c, 0x6f,
+	0x6e, 0x5f, 0x73, 0x61, 0x66, 0x65, 0x5f, 0x64, 0x69, 0x76, 0x18, 0x2b, 0x20, 0x01, 0x28, 0x09,
+	0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x0e, 0x65, 0x70, 0x73, 0x69, 0x6c,
+	0x6f, 0x6e, 0x53, 0x61, 0x66, 0x65, 0x44, 0x69, 0x76, 0x12, 0x5a, 0x0a, 0x10, 0x64, 0x61, 0x74,
+	0x61, 0x5f, 0x73, 0x65, 0x6e, 0x64, 0x69, 0x6e, 0x67, 0x5f, 0x66, 0x65, 0x65, 0x18, 0x2c, 0x20,
+	0x01, 0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73,
+	0x6d, 0x6f, 0x73, 0x73, 0x64, 0x6b, 0x2e, 0x69, 0x6f, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x49,
+	0x6e, 0x74, 0xd2, 0xb4, 0x2d, 0x0a, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e, 0x49, 0x6e, 0x74,
+	0xa8, 0xe7, 0xb0, 0x2a, 0x01, 0x52, 0x0e, 0x64, 0x61, 0x74, 0x61, 0x53, 0x65, 0x6e, 0x64, 0x69,
+	0x6e, 0x67, 0x46, 0x65, 0x65, 0x42, 0xc1, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0b, 0x50, 0x61, 0x72, 0x61,
+	0x6d, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70,
+	0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58,
+	0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca,
+	0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02,
+	0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50,
+	0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (

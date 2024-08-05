@@ -91,21 +91,11 @@ func generateInsertWorkerBundle(
 	retryTimes int,
 	makeReport bool,
 ) (insertedBlockHeight int64, err error) {
-	leaderWorkerAccountName, err := pickRandomKeyFromMap(workers)
-	if err != nil {
-		m.T.Log(topicLog(topic.Id, "Error getting random worker address: ", err))
-		if makeReport {
-			saveReputerError(topic.Id, leaderWorkerAccountName, err)
-			saveTopicError(topic.Id, err)
-		}
-		return 0, err
-	}
-
 	blockHeightCurrent := topic.EpochLastEnded + topic.EpochLength
 
 	startWorker := time.Now()
 	for i := 0; i < retryTimes; i++ {
-		err = insertWorkerBulk(m, topic, leaderWorkerAccountName, workers, blockHeightCurrent)
+		err = insertWorkerPayloads(m, topic, workers, blockHeightCurrent)
 		if err != nil {
 			if strings.Contains(err.Error(), "nonce already fulfilled") ||
 				strings.Contains(err.Error(), "nonce still unfulfilled") {
@@ -114,49 +104,61 @@ func generateInsertWorkerBundle(
 				topic, err = getLastTopic(ctx, m.Client.QueryEmissions(), topic.Id)
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
-					m.T.Log(topicLog(topic.Id, "Reset ", leaderWorkerAccountName, "blockHeight to (", blockHeightCurrent, ")"))
+					m.T.Log(topicLog(topic.Id, "Reset blockHeight to (", blockHeightCurrent, ")"))
 				} else {
 					m.T.Log(topicLog(topic.Id, "Error getting topic!"))
 					if makeReport {
-						saveWorkerError(topic.Id, leaderWorkerAccountName, err)
 						saveTopicError(topic.Id, err)
 					}
 					return blockHeightCurrent, err
 				}
 			} else {
-				m.T.Log(topicLog(topic.Id, "Error inserting worker bulk: ", err))
+				m.T.Log(topicLog(topic.Id, "Error inserting worker payloads: ", err))
 				if makeReport {
-					saveWorkerError(topic.Id, leaderWorkerAccountName, err)
 					saveTopicError(topic.Id, err)
 				}
 				return blockHeightCurrent, err
 			}
 		} else {
-			m.T.Log(topicLog(topic.Id, "Inserted worker bulk, blockHeight: ", blockHeightCurrent, " with ", len(workers), " workers"))
-			elapsedBulk := time.Since(startWorker)
-			m.T.Log(topicLog(topic.Id, "Insert Worker ", leaderWorkerAccountName, " ", blockHeightCurrent, " Elapsed time:", elapsedBulk))
+			m.T.Log(topicLog(topic.Id, "Inserted worker payloads, blockHeight: ", blockHeightCurrent, " with ", len(workers), " workers"))
+			elapsedPayloads := time.Since(startWorker)
+			m.T.Log(topicLog(topic.Id, "Insert Worker ", blockHeightCurrent, " Elapsed time:", elapsedPayloads))
 			return blockHeightCurrent, nil
 		}
 	}
 	return blockHeightCurrent, err
 }
 
-// Inserts bulk inference and forecast data for a worker
-func insertWorkerBulk(
+// Inserts inference and forecast data for a worker
+func insertWorkerPayloads(
 	m testCommon.TestConfig,
 	topic *emissionstypes.Topic,
-	leaderWorkerAccountName string,
 	workers map[string]AccountAndAddress,
 	blockHeight int64,
 ) error {
 	// Get Bundles
-	workerDataBundles := make([]*emissionstypes.WorkerDataBundle, 0)
 	for key := range workers {
-		workerDataBundles = append(workerDataBundles,
-			generateSingleWorkerBundle(m, topic.Id, blockHeight, key, workers))
+		payload := generateSingleWorkerBundle(m, topic.Id, blockHeight, key, workers)
+
+		// serialize workerMsg to json and print
+		senderAcc, err := m.Client.AccountRegistryGetByName(key)
+		if err != nil {
+			m.T.Log(topicLog(topic.Id, "Error getting leader worker account: ", senderAcc, " - ", err))
+			return err
+		}
+		ctx := context.Background()
+		txResp, err := m.Client.BroadcastTx(ctx, senderAcc, payload)
+		if err != nil {
+			m.T.Log(topicLog(topic.Id, "Error broadcasting worker payload: ", err))
+			return err
+		}
+		_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
+		if err != nil {
+			m.T.Log(topicLog(topic.Id, "Error waiting for worker payload: ", err))
+			return err
+		}
 	}
-	leaderWorker := workers[leaderWorkerAccountName]
-	return insertLeaderWorkerBulk(m, topic.Id, blockHeight, leaderWorkerAccountName, leaderWorker.addr, workerDataBundles)
+	return nil
 }
 
 // create inferences and forecasts for a worker
@@ -178,7 +180,7 @@ func generateSingleWorkerBundle(
 	infererAddress := workers[workerAddressName].addr
 	infererValue := alloraMath.NewDecFromInt64(int64(rand.Intn(300) + 3000))
 
-	// Create a MsgInsertBulkReputerPayload message
+	// Create a MsgInsertReputerPayload message
 	workerDataBundle := &emissionstypes.WorkerDataBundle{
 		Worker: infererAddress,
 		InferenceForecastsBundle: &emissionstypes.InferenceForecastBundle{
@@ -209,43 +211,6 @@ func generateSingleWorkerBundle(
 	workerDataBundle.Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
 	return workerDataBundle
-}
-
-// Inserts worker bulk, given a topic, blockHeight, and leader worker address (which should exist in the keyring)
-func insertLeaderWorkerBulk(
-	m testCommon.TestConfig,
-	topicId uint64,
-	blockHeight int64,
-	leaderWorkerAccountName, leaderWorkerAddress string,
-	WorkerDataBundles []*emissionstypes.WorkerDataBundle) error {
-
-	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
-
-	// Create a MsgInsertBulkReputerPayload message
-	workerMsg := &emissionstypes.MsgInsertBulkWorkerPayload{
-		Sender:            leaderWorkerAddress,
-		Nonce:             &nonce,
-		TopicId:           topicId,
-		WorkerDataBundles: WorkerDataBundles,
-	}
-	// serialize workerMsg to json and print
-	LeaderAcc, err := m.Client.AccountRegistryGetByName(leaderWorkerAccountName)
-	if err != nil {
-		m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderWorkerAccountName, " - ", err))
-		return err
-	}
-	ctx := context.Background()
-	txResp, err := m.Client.BroadcastTx(ctx, LeaderAcc, workerMsg)
-	if err != nil {
-		m.T.Log(topicLog(topicId, "Error broadcasting worker bulk: ", err))
-		return err
-	}
-	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-	if err != nil {
-		m.T.Log(topicLog(topicId, "Error waiting for worker bulk: ", err))
-		return err
-	}
-	return nil
 }
 
 // check that workers balances have risen due to rewards being paid out

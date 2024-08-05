@@ -110,7 +110,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.018004876148456175753781623")},
+		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.055841253742177320400327600231111")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
 		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
@@ -123,7 +123,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		Forecasters:         []string{"forecaster0"},
 		Inferers:            []string{"worker0", "worker1"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -177,7 +177,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		Forecasters:         []string{"worker0"},
 		Inferers:            []string{"worker0", "worker1"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -228,8 +228,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1.09768148018932306697138469819693")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("1.092613996774755705653569661621415")},
+		"worker0": {Value: alloraMath.MustNewDecFromString("1.158380376510523897775902553985830")},
+		"worker1": {Value: alloraMath.MustNewDecFromString("1.149124717287201046499545990921485")},
 		"worker2": nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
@@ -248,7 +248,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		Forecasters:         []string{"worker0", "worker1", "worker2"},
 		Inferers:            []string{"worker0", "worker1", "worker2"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -278,8 +278,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
-	epochGet := GetSimulatedValuesGetterForEpochs()
-	epoch2Get := epochGet[2]
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch2Get := epochGet[302]
 
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
@@ -315,7 +315,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 		Forecasters:         []string{"forecaster0"},
 		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}
@@ -338,8 +338,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
-	epochGet := GetSimulatedValuesGetterForEpochs()
-	epoch3Get := epochGet[3]
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch3Get := epochGet[303]
 
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
@@ -377,7 +377,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 		Forecasters:         []string{"forecaster0"},
 		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
 		NetworkCombinedLoss: networkCombinedLoss,
-		Epsilon:             epsilon,
+		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
 		CNorm:               cNorm,
 	}

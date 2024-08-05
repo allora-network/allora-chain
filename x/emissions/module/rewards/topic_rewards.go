@@ -59,15 +59,14 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 	maxTopicPages uint64,
 ) error {
 	topicPageKey := make([]byte, 0)
-	i := uint64(0)
+	pageIterationCounter := uint64(0)
 	for {
 		topicPageRequest := &types.SimpleCursorPaginationRequest{Limit: topicPageLimit, Key: topicPageKey}
 		topicsActive, topicPageResponse, err := k.GetIdsOfActiveTopics(ctx, topicPageRequest)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting ids of active topics: %s", err.Error()))
-			continue
+			break
 		}
-
 		for _, topicId := range topicsActive {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
@@ -75,7 +74,7 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 				continue
 			}
 
-			if k.CheckCadence(block, topic) {
+			if k.CheckWorkerOpenCadence(block, topic) {
 				// All checks passed => Apply function on the topic
 				err = fn(ctx, &topic)
 				if err != nil {
@@ -86,11 +85,11 @@ func SafeApplyFuncOnAllActiveEpochEndingTopics(
 		}
 
 		// if pageResponse.NextKey is empty then we have reached the end of the list
-		if topicsActive == nil || i > maxTopicPages {
+		if len(topicsActive) == 0 || pageIterationCounter > maxTopicPages {
 			break
 		}
 		topicPageKey = topicPageResponse.NextKey
-		i++
+		pageIterationCounter++
 	}
 	return nil
 }
@@ -115,23 +114,22 @@ func IdentifyChurnableAmongActiveTopicsAndApplyFn(
 		moduleParams.MaxTopicsPerBlock,
 		block,
 	)
-
 	for _, topicId := range sortedTopActiveTopics {
 		weight := weightsOfTopActiveTopics[topicId]
 		if weight.Equal(alloraMath.ZeroDec()) {
-			Logger(ctx).Debug("Skipping Topic ID: ", topicId, " Weight: ", weight)
+			Logger(ctx).Debug(fmt.Sprintf("Skipping Topic ID: %d, Weight: %s", topicId, weight))
 			continue
 		}
 		// Get the topic
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			Logger(ctx).Debug("Error getting topic: ", err)
+			Logger(ctx).Debug(fmt.Sprintf("Error getting topic: %v", err))
 			continue
 		}
 		// Execute the function
 		err = fn(ctx, &topic)
 		if err != nil {
-			Logger(ctx).Debug("Error applying function on topic: ", err)
+			Logger(ctx).Debug(fmt.Sprintf("Error applying function on topic: %v", err))
 			continue
 		}
 	}
@@ -169,6 +167,7 @@ func GetAndUpdateActiveTopicWeights(
 			moduleParams.TopicRewardAlpha,
 			moduleParams.TopicRewardStakeImportance,
 			moduleParams.TopicRewardFeeRevenueImportance,
+			cosmosMath.ZeroInt(),
 			cosmosMath.ZeroInt(),
 		)
 		if err != nil {
