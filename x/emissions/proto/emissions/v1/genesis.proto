@@ -147,8 +147,7 @@ message GenesisState {
   /// RECORD COMMITS
   repeated TopicIdTimestampedActorNonce topicLastWorkerCommit = 53;
   repeated TopicIdTimestampedActorNonce topicLastReputerCommit = 54;
-  repeated TopicIdTimestampedActorNonce topicLastWorkerPayload = 55;
-  repeated TopicIdTimestampedActorNonce topicLastReputerPayload = 56;
+  reserved 55, 56;
 }
 
 message TopicIdAndTopic {
