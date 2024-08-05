@@ -61,11 +61,9 @@ func CalcExpDecay(
 // Generic function that sorts the keys of a map
 // Used for deterministic ranging of maps
 func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
-	keys := make([]K, len(m))
-	i := 0
+	keys := make([]K, 0, len(m))
 	for k := range m {
-		keys[i] = k
-		i++
+		keys = append(keys, k)
 	}
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
 	return keys
@@ -269,7 +267,6 @@ func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
 	if len(xp) != len(fp) {
 		return nil, errors.New("xp and fp must have the same length")
 	}
-
 	result := make([]Dec, len(x))
 	for i, xi := range x {
 		if xi.Lte(xp[0]) {
@@ -277,12 +274,7 @@ func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
 		} else if xi.Gte(xp[len(xp)-1]) {
 			result[i] = fp[len(fp)-1]
 		} else {
-			// Find the interval xp[i] <= xi < xp[i + 1]
-			j := 0
-			for xi.Gte(xp[j+1]) {
-				j++
-			}
-			// Linear interpolation formula
+			j := sort.Search(len(xp)-1, func(j int) bool { return xi.Lt(xp[j+1]) })
 			denominator, err := xp[j+1].Sub(xp[j])
 			if err != nil {
 				return nil, err
@@ -307,11 +299,10 @@ func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
 			if err != nil {
 				return nil, err
 			}
-			fp_j_t, err := fpjMulOneMinusT.Add(fpjPlusOneMulT)
+			result[i], err = fpjMulOneMinusT.Add(fpjPlusOneMulT)
 			if err != nil {
 				return nil, err
 			}
-			result[i] = fp_j_t
 		}
 	}
 	return result, nil
