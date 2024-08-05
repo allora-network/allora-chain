@@ -16,7 +16,7 @@ func MigrateStore(ctx sdk.Context, storeService store.KVStoreService, cdc codec.
 	ctx.Logger().Info("MIGRATING STORE FROM VERSION 1 TO VERSION 2")
 
 	store := runtime.KVStoreAdapter(storeService.OpenKVStore(ctx))
-	err := MigrateMsgCreateNewTopic(store, cdc)
+	err := MigrateTopics(store, cdc)
 	if err != nil {
 		return err
 	}
@@ -39,28 +39,38 @@ func MigrateStore(ctx sdk.Context, storeService store.KVStoreService, cdc codec.
 	return nil
 }
 
-func MigrateMsgCreateNewTopic(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	topicStore := prefix.NewStore(store, emissionsv1.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
 
 	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg emissionsv1.MsgCreateNewTopic
+		var oldMsg emissionsv1.Topic
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return err
 		}
 
-		newMsg := emissionsv1.MsgCreateNewTopic{
+		// Make newWorkerSubmissionWindow to be the 10% of the epoch length
+		newWorkerSubmissionWindow := oldMsg.EpochLength / 10
+		// set min and max boundaries: max 60 blocks
+		if newWorkerSubmissionWindow > 60 {
+			newWorkerSubmissionWindow = 60
+		}
+
+		newMsg := emissionsv1.Topic{
+			Id:                     oldMsg.Id,
 			Creator:                oldMsg.Creator,
 			Metadata:               oldMsg.Metadata,
-			LossMethod:             oldMsg.LossMethod,
+			LossMethod:             "mse",
+			EpochLastEnded:         oldMsg.EpochLastEnded,
 			EpochLength:            oldMsg.EpochLength,
 			GroundTruthLag:         oldMsg.GroundTruthLag,
 			PNorm:                  oldMsg.PNorm,
 			AlphaRegret:            oldMsg.AlphaRegret,
 			AllowNegative:          oldMsg.AllowNegative,
 			Epsilon:                oldMsg.Epsilon,
-			WorkerSubmissionWindow: oldMsg.WorkerSubmissionWindow,
+			InitialRegret:          oldMsg.InitialRegret,
+			WorkerSubmissionWindow: newWorkerSubmissionWindow,
 		}
 
 		store.Delete(iterator.Key())
