@@ -65176,7 +65176,7 @@ var file_emissions_v1_query_proto_rawDesc = []byte{
 	0x28, 0x0b, 0x32, 0x23, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
 	0x31, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x65, 0x64, 0x41, 0x63, 0x74,
 	0x6f, 0x72, 0x4e, 0x6f, 0x6e, 0x63, 0x65, 0x52, 0x07, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64,
-	0x32, 0xb9, 0x69, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79, 0x12, 0x6b, 0x0a, 0x06, 0x50, 0x61,
+	0x32, 0xad, 0x66, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79, 0x12, 0x6b, 0x0a, 0x06, 0x50, 0x61,
 	0x72, 0x61, 0x6d, 0x73, 0x12, 0x20, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
 	0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52,
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
@@ -65995,44 +65995,19 @@ var file_emissions_v1_query_proto_rawDesc = []byte{
 	0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2a, 0x12, 0x28, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
 	0x6e, 0x73, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x72, 0x65, 0x77, 0x61,
 	0x72, 0x64, 0x5f, 0x74, 0x6f, 0x5f, 0x64, 0x69, 0x73, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65,
-	0x12, 0xc1, 0x01, 0x0a, 0x19, 0x47, 0x65, 0x74, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x61, 0x73,
-	0x74, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x30,
-	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75,
-	0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x61, 0x73, 0x74, 0x57, 0x6f, 0x72, 0x6b,
-	0x65, 0x72, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x31, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e,
-	0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x61, 0x73, 0x74, 0x57, 0x6f,
-	0x72, 0x6b, 0x65, 0x72, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x3f, 0x88, 0xe7, 0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x34,
-	0x12, 0x32, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x2f,
-	0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x77, 0x6f, 0x72, 0x6b, 0x65,
-	0x72, 0x5f, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x2f, 0x7b, 0x74, 0x6f, 0x70, 0x69, 0x63,
-	0x5f, 0x69, 0x64, 0x7d, 0x12, 0xc5, 0x01, 0x0a, 0x1a, 0x47, 0x65, 0x74, 0x54, 0x6f, 0x70, 0x69,
-	0x63, 0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x50, 0x61, 0x79, 0x6c,
-	0x6f, 0x61, 0x64, 0x12, 0x31, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x4c, 0x61, 0x73,
-	0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x32, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x76, 0x31, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x54, 0x6f, 0x70, 0x69, 0x63,
-	0x4c, 0x61, 0x73, 0x74, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x50, 0x61, 0x79, 0x6c, 0x6f,
-	0x61, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x40, 0x88, 0xe7, 0xb0, 0x2a,
-	0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x35, 0x12, 0x33, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x6c, 0x61, 0x73,
-	0x74, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x5f, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61,
-	0x64, 0x2f, 0x7b, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x42, 0xc0, 0x01, 0x0a,
-	0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
-	0x31, 0x42, 0x0a, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a,
-	0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
-	0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72,
-	0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31,
-	0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea,
-	0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x0a, 0x51, 0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x74,
+	0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
+	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
+	0x6e, 0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
+	0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a,
+	0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -66316,78 +66291,74 @@ var file_emissions_v1_query_proto_depIdxs = []int32{
 	122, // 107: emissions.v1.Query.GetPreviousForecastRewardFraction:input_type -> emissions.v1.QueryPreviousForecastRewardFractionRequest
 	124, // 108: emissions.v1.Query.GetPreviousPercentageRewardToStakedReputers:input_type -> emissions.v1.QueryPreviousPercentageRewardToStakedReputersRequest
 	126, // 109: emissions.v1.Query.GetTotalRewardToDistribute:input_type -> emissions.v1.QueryTotalRewardToDistributeRequest
-	128, // 110: emissions.v1.Query.GetTopicLastWorkerPayload:input_type -> emissions.v1.QueryTopicLastWorkerPayloadRequest
-	130, // 111: emissions.v1.Query.GetTopicLastReputerPayload:input_type -> emissions.v1.QueryTopicLastReputerPayloadRequest
-	1,   // 112: emissions.v1.Query.Params:output_type -> emissions.v1.QueryParamsResponse
-	21,  // 113: emissions.v1.Query.GetNextTopicId:output_type -> emissions.v1.QueryNextTopicIdResponse
-	23,  // 114: emissions.v1.Query.GetTopic:output_type -> emissions.v1.QueryTopicResponse
-	25,  // 115: emissions.v1.Query.GetActiveTopics:output_type -> emissions.v1.QueryActiveTopicsResponse
-	33,  // 116: emissions.v1.Query.GetWorkerLatestInferenceByTopicId:output_type -> emissions.v1.QueryWorkerLatestInferenceResponse
-	27,  // 117: emissions.v1.Query.GetInferencesAtBlock:output_type -> emissions.v1.QueryInferencesAtBlockResponse
-	29,  // 118: emissions.v1.Query.GetLatestTopicInferences:output_type -> emissions.v1.QueryLatestTopicInferencesResponse
-	31,  // 119: emissions.v1.Query.GetForecastsAtBlock:output_type -> emissions.v1.QueryForecastsAtBlockResponse
-	19,  // 120: emissions.v1.Query.GetNetworkLossBundleAtBlock:output_type -> emissions.v1.QueryNetworkLossBundleAtBlockResponse
-	3,   // 121: emissions.v1.Query.GetTotalStake:output_type -> emissions.v1.QueryTotalStakeResponse
-	5,   // 122: emissions.v1.Query.GetReputerStakeInTopic:output_type -> emissions.v1.QueryReputerStakeInTopicResponse
-	7,   // 123: emissions.v1.Query.GetMultiReputerStakeInTopic:output_type -> emissions.v1.QueryMultiReputerStakeInTopicResponse
-	9,   // 124: emissions.v1.Query.GetStakeFromReputerInTopicInSelf:output_type -> emissions.v1.QueryStakeFromReputerInTopicInSelfResponse
-	11,  // 125: emissions.v1.Query.GetDelegateStakeInTopicInReputer:output_type -> emissions.v1.QueryDelegateStakeInTopicInReputerResponse
-	13,  // 126: emissions.v1.Query.GetStakeFromDelegatorInTopicInReputer:output_type -> emissions.v1.QueryStakeFromDelegatorInTopicInReputerResponse
-	15,  // 127: emissions.v1.Query.GetStakeFromDelegatorInTopic:output_type -> emissions.v1.QueryStakeFromDelegatorInTopicResponse
-	17,  // 128: emissions.v1.Query.GetTopicStake:output_type -> emissions.v1.QueryTopicStakeResponse
-	65,  // 129: emissions.v1.Query.GetStakeRemovalsUpUntilBlock:output_type -> emissions.v1.QueryStakeRemovalsUpUntilBlockResponse
-	67,  // 130: emissions.v1.Query.GetDelegateStakeRemovalsUpUntilBlock:output_type -> emissions.v1.QueryDelegateStakeRemovalsUpUntilBlockResponse
-	69,  // 131: emissions.v1.Query.GetStakeRemovalInfo:output_type -> emissions.v1.QueryStakeRemovalInfoResponse
-	71,  // 132: emissions.v1.Query.GetDelegateStakeRemovalInfo:output_type -> emissions.v1.QueryDelegateStakeRemovalInfoResponse
-	35,  // 133: emissions.v1.Query.GetWorkerNodeInfo:output_type -> emissions.v1.QueryWorkerNodeInfoResponse
-	37,  // 134: emissions.v1.Query.GetReputerNodeInfo:output_type -> emissions.v1.QueryReputerNodeInfoResponse
-	59,  // 135: emissions.v1.Query.IsWorkerRegisteredInTopicId:output_type -> emissions.v1.QueryIsWorkerRegisteredInTopicIdResponse
-	61,  // 136: emissions.v1.Query.IsReputerRegisteredInTopicId:output_type -> emissions.v1.QueryIsReputerRegisteredInTopicIdResponse
-	56,  // 137: emissions.v1.Query.GetNetworkInferencesAtBlock:output_type -> emissions.v1.QueryNetworkInferencesAtBlockResponse
-	57,  // 138: emissions.v1.Query.GetLatestNetworkInference:output_type -> emissions.v1.QueryLatestNetworkInferencesResponse
-	57,  // 139: emissions.v1.Query.GetLatestAvailableNetworkInference:output_type -> emissions.v1.QueryLatestNetworkInferencesResponse
-	41,  // 140: emissions.v1.Query.IsWorkerNonceUnfulfilled:output_type -> emissions.v1.QueryIsWorkerNonceUnfulfilledResponse
-	55,  // 141: emissions.v1.Query.IsReputerNonceUnfulfilled:output_type -> emissions.v1.QueryIsReputerNonceUnfulfilledResponse
-	45,  // 142: emissions.v1.Query.GetUnfulfilledWorkerNonces:output_type -> emissions.v1.QueryUnfulfilledWorkerNoncesResponse
-	43,  // 143: emissions.v1.Query.GetUnfulfilledReputerNonces:output_type -> emissions.v1.QueryUnfulfilledReputerNoncesResponse
-	47,  // 144: emissions.v1.Query.GetInfererNetworkRegret:output_type -> emissions.v1.QueryInfererNetworkRegretResponse
-	49,  // 145: emissions.v1.Query.GetForecasterNetworkRegret:output_type -> emissions.v1.QueryForecasterNetworkRegretResponse
-	51,  // 146: emissions.v1.Query.GetOneInForecasterNetworkRegret:output_type -> emissions.v1.QueryOneInForecasterNetworkRegretResponse
-	53,  // 147: emissions.v1.Query.GetOneInForecasterSelfNetworkRegret:output_type -> emissions.v1.QueryOneInForecasterSelfNetworkRegretResponse
-	63,  // 148: emissions.v1.Query.IsWhitelistAdmin:output_type -> emissions.v1.QueryIsWhitelistAdminResponse
-	73,  // 149: emissions.v1.Query.GetTopicLastWorkerCommitInfo:output_type -> emissions.v1.QueryTopicLastCommitResponse
-	73,  // 150: emissions.v1.Query.GetTopicLastReputerCommitInfo:output_type -> emissions.v1.QueryTopicLastCommitResponse
-	75,  // 151: emissions.v1.Query.GetTopicRewardNonce:output_type -> emissions.v1.QueryTopicRewardNonceResponse
-	77,  // 152: emissions.v1.Query.GetReputerLossBundlesAtBlock:output_type -> emissions.v1.QueryReputerLossBundlesAtBlockResponse
-	79,  // 153: emissions.v1.Query.GetStakeReputerAuthority:output_type -> emissions.v1.QueryStakeReputerAuthorityResponse
-	81,  // 154: emissions.v1.Query.GetDelegateStakePlacement:output_type -> emissions.v1.QueryDelegateStakePlacementResponse
-	83,  // 155: emissions.v1.Query.GetDelegateStakeUponReputer:output_type -> emissions.v1.QueryDelegateStakeUponReputerResponse
-	85,  // 156: emissions.v1.Query.GetDelegateRewardPerShare:output_type -> emissions.v1.QueryDelegateRewardPerShareResponse
-	87,  // 157: emissions.v1.Query.GetStakeRemovalForReputerAndTopicId:output_type -> emissions.v1.QueryStakeRemovalForReputerAndTopicIdResponse
-	89,  // 158: emissions.v1.Query.GetDelegateStakeRemoval:output_type -> emissions.v1.QueryDelegateStakeRemovalResponse
-	91,  // 159: emissions.v1.Query.GetPreviousTopicWeight:output_type -> emissions.v1.QueryPreviousTopicWeightResponse
-	93,  // 160: emissions.v1.Query.TopicExists:output_type -> emissions.v1.QueryTopicExistsResponse
-	95,  // 161: emissions.v1.Query.IsTopicActive:output_type -> emissions.v1.QueryIsTopicActiveResponse
-	97,  // 162: emissions.v1.Query.GetTopicFeeRevenue:output_type -> emissions.v1.QueryTopicFeeRevenueResponse
-	99,  // 163: emissions.v1.Query.GetRewardableTopics:output_type -> emissions.v1.QueryRewardableTopicsResponse
-	101, // 164: emissions.v1.Query.GetLatestInfererScore:output_type -> emissions.v1.QueryLatestInfererScoreResponse
-	103, // 165: emissions.v1.Query.GetLatestForecasterScore:output_type -> emissions.v1.QueryLatestForecasterScoreResponse
-	105, // 166: emissions.v1.Query.GetLatestReputerScore:output_type -> emissions.v1.QueryLatestReputerScoreResponse
-	107, // 167: emissions.v1.Query.GetInferenceScoresUntilBlock:output_type -> emissions.v1.QueryInferenceScoresUntilBlockResponse
-	109, // 168: emissions.v1.Query.GetWorkerInferenceScoresAtBlock:output_type -> emissions.v1.QueryWorkerInferenceScoresAtBlockResponse
-	111, // 169: emissions.v1.Query.GetForecastScoresUntilBlock:output_type -> emissions.v1.QueryForecastScoresUntilBlockResponse
-	113, // 170: emissions.v1.Query.GetWorkerForecastScoresAtBlock:output_type -> emissions.v1.QueryWorkerForecastScoresAtBlockResponse
-	115, // 171: emissions.v1.Query.GetReputersScoresAtBlock:output_type -> emissions.v1.QueryReputersScoresAtBlockResponse
-	117, // 172: emissions.v1.Query.GetListeningCoefficient:output_type -> emissions.v1.QueryListeningCoefficientResponse
-	119, // 173: emissions.v1.Query.GetPreviousReputerRewardFraction:output_type -> emissions.v1.QueryPreviousReputerRewardFractionResponse
-	121, // 174: emissions.v1.Query.GetPreviousInferenceRewardFraction:output_type -> emissions.v1.QueryPreviousInferenceRewardFractionResponse
-	123, // 175: emissions.v1.Query.GetPreviousForecastRewardFraction:output_type -> emissions.v1.QueryPreviousForecastRewardFractionResponse
-	125, // 176: emissions.v1.Query.GetPreviousPercentageRewardToStakedReputers:output_type -> emissions.v1.QueryPreviousPercentageRewardToStakedReputersResponse
-	127, // 177: emissions.v1.Query.GetTotalRewardToDistribute:output_type -> emissions.v1.QueryTotalRewardToDistributeResponse
-	129, // 178: emissions.v1.Query.GetTopicLastWorkerPayload:output_type -> emissions.v1.QueryTopicLastWorkerPayloadResponse
-	131, // 179: emissions.v1.Query.GetTopicLastReputerPayload:output_type -> emissions.v1.QueryTopicLastReputerPayloadResponse
-	112, // [112:180] is the sub-list for method output_type
-	44,  // [44:112] is the sub-list for method input_type
+	1,   // 110: emissions.v1.Query.Params:output_type -> emissions.v1.QueryParamsResponse
+	21,  // 111: emissions.v1.Query.GetNextTopicId:output_type -> emissions.v1.QueryNextTopicIdResponse
+	23,  // 112: emissions.v1.Query.GetTopic:output_type -> emissions.v1.QueryTopicResponse
+	25,  // 113: emissions.v1.Query.GetActiveTopics:output_type -> emissions.v1.QueryActiveTopicsResponse
+	33,  // 114: emissions.v1.Query.GetWorkerLatestInferenceByTopicId:output_type -> emissions.v1.QueryWorkerLatestInferenceResponse
+	27,  // 115: emissions.v1.Query.GetInferencesAtBlock:output_type -> emissions.v1.QueryInferencesAtBlockResponse
+	29,  // 116: emissions.v1.Query.GetLatestTopicInferences:output_type -> emissions.v1.QueryLatestTopicInferencesResponse
+	31,  // 117: emissions.v1.Query.GetForecastsAtBlock:output_type -> emissions.v1.QueryForecastsAtBlockResponse
+	19,  // 118: emissions.v1.Query.GetNetworkLossBundleAtBlock:output_type -> emissions.v1.QueryNetworkLossBundleAtBlockResponse
+	3,   // 119: emissions.v1.Query.GetTotalStake:output_type -> emissions.v1.QueryTotalStakeResponse
+	5,   // 120: emissions.v1.Query.GetReputerStakeInTopic:output_type -> emissions.v1.QueryReputerStakeInTopicResponse
+	7,   // 121: emissions.v1.Query.GetMultiReputerStakeInTopic:output_type -> emissions.v1.QueryMultiReputerStakeInTopicResponse
+	9,   // 122: emissions.v1.Query.GetStakeFromReputerInTopicInSelf:output_type -> emissions.v1.QueryStakeFromReputerInTopicInSelfResponse
+	11,  // 123: emissions.v1.Query.GetDelegateStakeInTopicInReputer:output_type -> emissions.v1.QueryDelegateStakeInTopicInReputerResponse
+	13,  // 124: emissions.v1.Query.GetStakeFromDelegatorInTopicInReputer:output_type -> emissions.v1.QueryStakeFromDelegatorInTopicInReputerResponse
+	15,  // 125: emissions.v1.Query.GetStakeFromDelegatorInTopic:output_type -> emissions.v1.QueryStakeFromDelegatorInTopicResponse
+	17,  // 126: emissions.v1.Query.GetTopicStake:output_type -> emissions.v1.QueryTopicStakeResponse
+	65,  // 127: emissions.v1.Query.GetStakeRemovalsUpUntilBlock:output_type -> emissions.v1.QueryStakeRemovalsUpUntilBlockResponse
+	67,  // 128: emissions.v1.Query.GetDelegateStakeRemovalsUpUntilBlock:output_type -> emissions.v1.QueryDelegateStakeRemovalsUpUntilBlockResponse
+	69,  // 129: emissions.v1.Query.GetStakeRemovalInfo:output_type -> emissions.v1.QueryStakeRemovalInfoResponse
+	71,  // 130: emissions.v1.Query.GetDelegateStakeRemovalInfo:output_type -> emissions.v1.QueryDelegateStakeRemovalInfoResponse
+	35,  // 131: emissions.v1.Query.GetWorkerNodeInfo:output_type -> emissions.v1.QueryWorkerNodeInfoResponse
+	37,  // 132: emissions.v1.Query.GetReputerNodeInfo:output_type -> emissions.v1.QueryReputerNodeInfoResponse
+	59,  // 133: emissions.v1.Query.IsWorkerRegisteredInTopicId:output_type -> emissions.v1.QueryIsWorkerRegisteredInTopicIdResponse
+	61,  // 134: emissions.v1.Query.IsReputerRegisteredInTopicId:output_type -> emissions.v1.QueryIsReputerRegisteredInTopicIdResponse
+	56,  // 135: emissions.v1.Query.GetNetworkInferencesAtBlock:output_type -> emissions.v1.QueryNetworkInferencesAtBlockResponse
+	57,  // 136: emissions.v1.Query.GetLatestNetworkInference:output_type -> emissions.v1.QueryLatestNetworkInferencesResponse
+	57,  // 137: emissions.v1.Query.GetLatestAvailableNetworkInference:output_type -> emissions.v1.QueryLatestNetworkInferencesResponse
+	41,  // 138: emissions.v1.Query.IsWorkerNonceUnfulfilled:output_type -> emissions.v1.QueryIsWorkerNonceUnfulfilledResponse
+	55,  // 139: emissions.v1.Query.IsReputerNonceUnfulfilled:output_type -> emissions.v1.QueryIsReputerNonceUnfulfilledResponse
+	45,  // 140: emissions.v1.Query.GetUnfulfilledWorkerNonces:output_type -> emissions.v1.QueryUnfulfilledWorkerNoncesResponse
+	43,  // 141: emissions.v1.Query.GetUnfulfilledReputerNonces:output_type -> emissions.v1.QueryUnfulfilledReputerNoncesResponse
+	47,  // 142: emissions.v1.Query.GetInfererNetworkRegret:output_type -> emissions.v1.QueryInfererNetworkRegretResponse
+	49,  // 143: emissions.v1.Query.GetForecasterNetworkRegret:output_type -> emissions.v1.QueryForecasterNetworkRegretResponse
+	51,  // 144: emissions.v1.Query.GetOneInForecasterNetworkRegret:output_type -> emissions.v1.QueryOneInForecasterNetworkRegretResponse
+	53,  // 145: emissions.v1.Query.GetOneInForecasterSelfNetworkRegret:output_type -> emissions.v1.QueryOneInForecasterSelfNetworkRegretResponse
+	63,  // 146: emissions.v1.Query.IsWhitelistAdmin:output_type -> emissions.v1.QueryIsWhitelistAdminResponse
+	73,  // 147: emissions.v1.Query.GetTopicLastWorkerCommitInfo:output_type -> emissions.v1.QueryTopicLastCommitResponse
+	73,  // 148: emissions.v1.Query.GetTopicLastReputerCommitInfo:output_type -> emissions.v1.QueryTopicLastCommitResponse
+	75,  // 149: emissions.v1.Query.GetTopicRewardNonce:output_type -> emissions.v1.QueryTopicRewardNonceResponse
+	77,  // 150: emissions.v1.Query.GetReputerLossBundlesAtBlock:output_type -> emissions.v1.QueryReputerLossBundlesAtBlockResponse
+	79,  // 151: emissions.v1.Query.GetStakeReputerAuthority:output_type -> emissions.v1.QueryStakeReputerAuthorityResponse
+	81,  // 152: emissions.v1.Query.GetDelegateStakePlacement:output_type -> emissions.v1.QueryDelegateStakePlacementResponse
+	83,  // 153: emissions.v1.Query.GetDelegateStakeUponReputer:output_type -> emissions.v1.QueryDelegateStakeUponReputerResponse
+	85,  // 154: emissions.v1.Query.GetDelegateRewardPerShare:output_type -> emissions.v1.QueryDelegateRewardPerShareResponse
+	87,  // 155: emissions.v1.Query.GetStakeRemovalForReputerAndTopicId:output_type -> emissions.v1.QueryStakeRemovalForReputerAndTopicIdResponse
+	89,  // 156: emissions.v1.Query.GetDelegateStakeRemoval:output_type -> emissions.v1.QueryDelegateStakeRemovalResponse
+	91,  // 157: emissions.v1.Query.GetPreviousTopicWeight:output_type -> emissions.v1.QueryPreviousTopicWeightResponse
+	93,  // 158: emissions.v1.Query.TopicExists:output_type -> emissions.v1.QueryTopicExistsResponse
+	95,  // 159: emissions.v1.Query.IsTopicActive:output_type -> emissions.v1.QueryIsTopicActiveResponse
+	97,  // 160: emissions.v1.Query.GetTopicFeeRevenue:output_type -> emissions.v1.QueryTopicFeeRevenueResponse
+	99,  // 161: emissions.v1.Query.GetRewardableTopics:output_type -> emissions.v1.QueryRewardableTopicsResponse
+	101, // 162: emissions.v1.Query.GetLatestInfererScore:output_type -> emissions.v1.QueryLatestInfererScoreResponse
+	103, // 163: emissions.v1.Query.GetLatestForecasterScore:output_type -> emissions.v1.QueryLatestForecasterScoreResponse
+	105, // 164: emissions.v1.Query.GetLatestReputerScore:output_type -> emissions.v1.QueryLatestReputerScoreResponse
+	107, // 165: emissions.v1.Query.GetInferenceScoresUntilBlock:output_type -> emissions.v1.QueryInferenceScoresUntilBlockResponse
+	109, // 166: emissions.v1.Query.GetWorkerInferenceScoresAtBlock:output_type -> emissions.v1.QueryWorkerInferenceScoresAtBlockResponse
+	111, // 167: emissions.v1.Query.GetForecastScoresUntilBlock:output_type -> emissions.v1.QueryForecastScoresUntilBlockResponse
+	113, // 168: emissions.v1.Query.GetWorkerForecastScoresAtBlock:output_type -> emissions.v1.QueryWorkerForecastScoresAtBlockResponse
+	115, // 169: emissions.v1.Query.GetReputersScoresAtBlock:output_type -> emissions.v1.QueryReputersScoresAtBlockResponse
+	117, // 170: emissions.v1.Query.GetListeningCoefficient:output_type -> emissions.v1.QueryListeningCoefficientResponse
+	119, // 171: emissions.v1.Query.GetPreviousReputerRewardFraction:output_type -> emissions.v1.QueryPreviousReputerRewardFractionResponse
+	121, // 172: emissions.v1.Query.GetPreviousInferenceRewardFraction:output_type -> emissions.v1.QueryPreviousInferenceRewardFractionResponse
+	123, // 173: emissions.v1.Query.GetPreviousForecastRewardFraction:output_type -> emissions.v1.QueryPreviousForecastRewardFractionResponse
+	125, // 174: emissions.v1.Query.GetPreviousPercentageRewardToStakedReputers:output_type -> emissions.v1.QueryPreviousPercentageRewardToStakedReputersResponse
+	127, // 175: emissions.v1.Query.GetTotalRewardToDistribute:output_type -> emissions.v1.QueryTotalRewardToDistributeResponse
+	110, // [110:176] is the sub-list for method output_type
+	44,  // [44:110] is the sub-list for method input_type
 	44,  // [44:44] is the sub-list for extension type_name
 	44,  // [44:44] is the sub-list for extension extendee
 	0,   // [0:44] is the sub-list for field type_name

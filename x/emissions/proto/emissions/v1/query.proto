@@ -388,7 +388,6 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v1/total_reward_to_distribute";
   }
-
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
