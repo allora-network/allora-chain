@@ -30,6 +30,7 @@ VALIDATORS_API_PORT_START=1317
 HEADS_IP_START=20
 CHAIN_ID="${CHAIN_ID:-devnet}"
 LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
+UPGRADE_VERSION="v0.3.0"
 
 ACCOUNTS_TOKENS=1000000
 
@@ -55,7 +56,7 @@ echo "ALLORA_RPC=http://${NETWORK_PREFIX}.${VALIDATORS_IP_START}:26657" >> ${ENV
 
 echo "Build the docker image"
 pushd ..
-docker build -t $DOCKER_IMAGE -f ./Dockerfile.development .
+docker build -t $DOCKER_IMAGE -f ./Dockerfile.upgrade .
 popd
 
 echo "Download generate_genesis.sh from testnet"
@@ -131,6 +132,21 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
         --env DAEMON_NAME=allorad \
         $DOCKER_IMAGE \
             init /usr/local/bin/allorad
+
+    echo "Setting $UPGRADE_VERSION upgrade for $valName"
+    docker run -t \
+        -u $(id -u):$(id -g) \
+        -v ${LOCALNET_DATADIR}:/data \
+        --entrypoint=mkdir \
+        $DOCKER_IMAGE \
+            -p /data/${valName}/cosmovisor/upgrades/${UPGRADE_VERSION}/bin
+
+    docker run -t \
+        -u $(id -u):$(id -g) \
+        -v ${LOCALNET_DATADIR}:/data \
+        --entrypoint=cp \
+        $DOCKER_IMAGE \
+            /usr/local/bin/allorad-${UPGRADE_VERSION} /data/${valName}/cosmovisor/upgrades/${UPGRADE_VERSION}/bin/allorad
 done
 
 echo "Generate L1 peers, put them in persisent-peers and in genesis.json"
