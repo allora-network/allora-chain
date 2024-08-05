@@ -9,4 +9,5 @@ var (
 	ErrInvalidEcosystemTokensMinted                    = errors.Register(ModuleName, 4, "invalid ecosystem tokens minted")
 	ErrZeroDenominator                                 = errors.Register(ModuleName, 5, "zero denominator")
 	ErrNegativeCirculatingSupply                       = errors.Register(ModuleName, 6, "circulating supply cannot be negative")
+	ErrNotFound                                        = errors.Register(ModuleName, 7, "not found")
 )
