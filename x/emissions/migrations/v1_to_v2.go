@@ -1,56 +1,65 @@
-package v0_3_0
+package migrations
 
 import (
 	"cosmossdk.io/collections"
-	"cosmossdk.io/core/store"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
-	emissionsv1 "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
 )
 
-func MigrateStore(ctx sdk.Context, storeService store.KVStoreService, cdc codec.BinaryCodec) error {
+func V1ToV2(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("MIGRATING STORE FROM VERSION 1 TO VERSION 2")
+	storageService := emissionsKeeper.GetStorageService()
+	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
+	cdc := emissionsKeeper.GetBinaryCodec()
 
-	store := runtime.KVStoreAdapter(storeService.OpenKVStore(ctx))
-	err := MigrateMsgCreateNewTopic(store, cdc)
+	err := migrateMsgCreateNewTopic(store, cdc)
 	if err != nil {
 		return err
 	}
-	err = MigrateOffchainNode(store, cdc)
+	err = migrateOffchainNode(store, cdc)
 	if err != nil {
 		return err
 	}
-	err = MigrateNetworkLossBundles(store, cdc)
+	err = migrateNetworkLossBundles(store, cdc)
 	if err != nil {
 		return err
 	}
-	err = MigrateAllLossBundles(store, cdc)
+	err = migrateAllLossBundles(store, cdc)
 	if err != nil {
 		return err
 	}
-	err = MigrateAllRecordCommits(store, cdc)
+	err = migrateAllRecordCommits(store, cdc)
 	if err != nil {
 		return err
 	}
+	
+	defaultParams := types.DefaultParams()
+	err = emissionsKeeper.SetParams(ctx, defaultParams)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func MigrateMsgCreateNewTopic(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	topicStore := prefix.NewStore(store, emissionsv1.TopicsKey)
+func migrateMsgCreateNewTopic(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+	topicStore := prefix.NewStore(store, types.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
 
 	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg emissionsv1.MsgCreateNewTopic
+		var oldMsg types.MsgCreateNewTopic
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return err
 		}
 
-		newMsg := emissionsv1.MsgCreateNewTopic{
+		newMsg := types.MsgCreateNewTopic{
 			Creator:                oldMsg.Creator,
 			Metadata:               oldMsg.Metadata,
 			LossMethod:             oldMsg.LossMethod,
@@ -70,18 +79,18 @@ func MigrateMsgCreateNewTopic(store storetypes.KVStore, cdc codec.BinaryCodec) e
 	return nil
 }
 
-func MigrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	workerStore := prefix.NewStore(store, emissionsv1.WorkerNodesKey)
+func migrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+	workerStore := prefix.NewStore(store, types.WorkerNodesKey)
 	iterator := workerStore.Iterator(nil, nil)
 
 	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg emissionsv1.OffchainNode
+		var oldMsg types.OffchainNode
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return err
 		}
 
-		newMsg := emissionsv1.OffchainNode{
+		newMsg := types.OffchainNode{
 			NodeAddress: oldMsg.NodeAddress,
 			Owner:       oldMsg.Owner,
 		}
@@ -90,17 +99,17 @@ func MigrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error 
 		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
 	}
 
-	reputerStore := prefix.NewStore(store, emissionsv1.ReputerNodesKey)
+	reputerStore := prefix.NewStore(store, types.ReputerNodesKey)
 	iterator = reputerStore.Iterator(nil, nil)
 
 	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg emissionsv1.OffchainNode
+		var oldMsg types.OffchainNode
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return err
 		}
 
-		newMsg := emissionsv1.OffchainNode{
+		newMsg := types.OffchainNode{
 			NodeAddress: oldMsg.NodeAddress,
 			Owner:       oldMsg.Owner,
 		}
@@ -111,18 +120,18 @@ func MigrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error 
 	return nil
 }
 
-func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	networkLossBundlesStore := prefix.NewStore(store, emissionsv1.NetworkLossBundlesKey)
+func migrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+	networkLossBundlesStore := prefix.NewStore(store, types.NetworkLossBundlesKey)
 	iterator := networkLossBundlesStore.Iterator(nil, nil)
 
 	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg emissionsv1.ValueBundle
+		var oldMsg types.ValueBundle
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return err
 		}
 
-		newMsg := emissionsv1.ValueBundle{
+		newMsg := types.ValueBundle{
 			TopicId:                       oldMsg.TopicId,
 			ReputerRequestNonce:           oldMsg.ReputerRequestNonce,
 			Reputer:                       oldMsg.Reputer,
@@ -131,7 +140,7 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 			InfererValues:                 oldMsg.InfererValues,
 			ForecasterValues:              oldMsg.ForecasterValues,
 			NaiveValue:                    oldMsg.NaiveValue,
-			OneOutInfererForecasterValues: []*emissionsv1.OneOutInfererForecasterValues{},
+			OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{},
 			OneOutInfererValues:           oldMsg.OneOutInfererValues,
 			OneOutForecasterValues:        oldMsg.OneOutForecasterValues,
 			OneInForecasterValues:         oldMsg.OneInForecasterValues,
@@ -143,25 +152,25 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 	return nil
 }
 
-func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	allLossBundlesStore := prefix.NewStore(store, emissionsv1.AllLossBundlesKey)
+func migrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+	allLossBundlesStore := prefix.NewStore(store, types.AllLossBundlesKey)
 	iterator := allLossBundlesStore.Iterator(nil, nil)
 
 	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg emissionsv1.ReputerValueBundles
+		var oldMsg types.ReputerValueBundles
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return err
 		}
 
-		newMsg := emissionsv1.ReputerValueBundles{
-			ReputerValueBundles: []*emissionsv1.ReputerValueBundle{},
+		newMsg := types.ReputerValueBundles{
+			ReputerValueBundles: []*types.ReputerValueBundle{},
 		}
 
 		for _, valueBundle := range oldMsg.ReputerValueBundles {
 			newMsg.ReputerValueBundles = append(newMsg.ReputerValueBundles,
-				&emissionsv1.ReputerValueBundle{
-					ValueBundle: &emissionsv1.ValueBundle{
+				&types.ReputerValueBundle{
+					ValueBundle: &types.ValueBundle{
 						TopicId:                       valueBundle.ValueBundle.TopicId,
 						ReputerRequestNonce:           valueBundle.ValueBundle.ReputerRequestNonce,
 						Reputer:                       valueBundle.ValueBundle.Reputer,
@@ -170,7 +179,7 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 						InfererValues:                 valueBundle.ValueBundle.InfererValues,
 						ForecasterValues:              valueBundle.ValueBundle.ForecasterValues,
 						NaiveValue:                    valueBundle.ValueBundle.NaiveValue,
-						OneOutInfererForecasterValues: []*emissionsv1.OneOutInfererForecasterValues{},
+						OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{},
 						OneOutInfererValues:           valueBundle.ValueBundle.OneOutInfererValues,
 						OneOutForecasterValues:        valueBundle.ValueBundle.OneOutForecasterValues,
 						OneInForecasterValues:         valueBundle.ValueBundle.OneInForecasterValues,
@@ -187,20 +196,20 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 	return nil
 }
 
-func MigrateAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	err := restoreAllRecordCommits(store, cdc, emissionsv1.TopicLastWorkerCommitKey)
+func migrateAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+	err := restoreAllRecordCommits(store, cdc, types.TopicLastWorkerCommitKey)
 	if err != nil {
 		return err
 	}
-	err = restoreAllRecordCommits(store, cdc, emissionsv1.TopicLastReputerCommitKey)
+	err = restoreAllRecordCommits(store, cdc, types.TopicLastReputerCommitKey)
 	if err != nil {
 		return err
 	}
-	err = restoreAllRecordCommits(store, cdc, emissionsv1.TopicLastWorkerPayloadKey)
+	err = restoreAllRecordCommits(store, cdc, types.TopicLastWorkerPayloadKey)
 	if err != nil {
 		return err
 	}
-	err = restoreAllRecordCommits(store, cdc, emissionsv1.TopicLastReputerPayloadKey)
+	err = restoreAllRecordCommits(store, cdc, types.TopicLastReputerPayloadKey)
 	if err != nil {
 		return err
 	}
@@ -212,13 +221,13 @@ func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, co
 	iterator := topicLastWorkerCommitStore.Iterator(nil, nil)
 
 	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg emissionsv1.TimestampedActorNonce
+		var oldMsg types.TimestampedActorNonce
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return err
 		}
 
-		newMsg := emissionsv1.TimestampedActorNonce{
+		newMsg := types.TimestampedActorNonce{
 			BlockHeight: oldMsg.BlockHeight,
 			Nonce:       oldMsg.Nonce,
 		}
