@@ -96,7 +96,7 @@ func migrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error 
 		}
 
 		store.Delete(iterator.Key())
-		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		store.Set([]byte(oldMsg.NodeAddress), cdc.MustMarshal(&newMsg))
 	}
 
 	reputerStore := prefix.NewStore(store, types.ReputerNodesKey)
@@ -115,7 +115,7 @@ func migrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error 
 		}
 
 		store.Delete(iterator.Key())
-		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		store.Set([]byte(oldMsg.NodeAddress), cdc.MustMarshal(&newMsg))
 	}
 	return nil
 }
@@ -236,4 +236,8 @@ func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, co
 		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
 	}
 	return nil
+}
+
+func removeOldKVStores(store storetypes.KVStore) {
+	store.Delete(types.ChurnableTopicsKey)
 }
