@@ -17,21 +17,3 @@ services:
       - "26656-26657:26656-26657"
     user: "0:0"
     entrypoint: /scripts/l1_node.sh
-
-  # Head node
-  head:
-    container_name: head
-    image: "alloranetwork/allora-inference-base-head:latest"
-    environment:
-      - NETWORK=allora-testnet-1
-      - APP_HOME=/data
-      - DIALBACK_PORT=9010                         # P2P Port, the node will announce to the network
-      - DIALBACK_ADDRESS=dns-name.to-access.head   # Name the node will announce to the network
-    volumes:
-      - ./data_head:/data
-      - ./scripts/:/scripts
-    ports:
-      - "9010:9010"                                # P2P Port
-      - "6000:6000"                                # API Port
-    user: "0:0"
-    entrypoint: /scripts/head.sh
