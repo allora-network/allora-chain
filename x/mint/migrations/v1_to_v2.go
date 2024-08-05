@@ -57,7 +57,7 @@ func migrateParameters(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		TeamPercentOfTotalSupply:               oldParams.TeamPercentOfTotalSupply,
 		MaximumMonthlyPercentageYield:          oldParams.MaximumMonthlyPercentageYield,
 		// new parameters
-		InvestorsPreseedPercentOfTotalSupply: defaultParams.InvestorsPercentOfTotalSupply,
+		InvestorsPreseedPercentOfTotalSupply: defaultParams.InvestorsPreseedPercentOfTotalSupply,
 	}
 	store.Delete(types.ParamsKey)
 	store.Set(types.ParamsKey, cdc.MustMarshal(&newParams))
