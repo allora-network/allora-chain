@@ -21,12 +21,12 @@ message Topic {
   int64 ground_truth_lag = 10;
   string p_norm = 12
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string alpha_regret = 10
+  string alpha_regret = 13
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  bool allow_negative = 11;
-  string epsilon = 12
+  bool allow_negative = 14;
+  string epsilon = 15
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string initial_regret = 13
+  string initial_regret = 16
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   int64 worker_submission_window = 17;
 }

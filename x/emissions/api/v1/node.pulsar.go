@@ -14,15 +14,15 @@ import (
 
 var (
 	md_OffchainNode              protoreflect.MessageDescriptor
-	fd_OffchainNode_node_address protoreflect.FieldDescriptor
 	fd_OffchainNode_owner        protoreflect.FieldDescriptor
+	fd_OffchainNode_node_address protoreflect.FieldDescriptor
 )
 
 func init() {
 	file_emissions_v1_node_proto_init()
 	md_OffchainNode = File_emissions_v1_node_proto.Messages().ByName("OffchainNode")
-	fd_OffchainNode_node_address = md_OffchainNode.Fields().ByName("node_address")
 	fd_OffchainNode_owner = md_OffchainNode.Fields().ByName("owner")
+	fd_OffchainNode_node_address = md_OffchainNode.Fields().ByName("node_address")
 }
 
 var _ protoreflect.Message = (*fastReflection_OffchainNode)(nil)
@@ -90,15 +90,15 @@ func (x *fastReflection_OffchainNode) Interface() protoreflect.ProtoMessage {
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_OffchainNode) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.NodeAddress != "" {
-		value := protoreflect.ValueOfString(x.NodeAddress)
-		if !f(fd_OffchainNode_node_address, value) {
-			return
-		}
-	}
 	if x.Owner != "" {
 		value := protoreflect.ValueOfString(x.Owner)
 		if !f(fd_OffchainNode_owner, value) {
+			return
+		}
+	}
+	if x.NodeAddress != "" {
+		value := protoreflect.ValueOfString(x.NodeAddress)
+		if !f(fd_OffchainNode_node_address, value) {
 			return
 		}
 	}
@@ -117,10 +117,10 @@ func (x *fastReflection_OffchainNode) Range(f func(protoreflect.FieldDescriptor,
 // a repeated field is populated if it is non-empty.
 func (x *fastReflection_OffchainNode) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
-	case "emissions.v1.OffchainNode.node_address":
-		return x.NodeAddress != ""
 	case "emissions.v1.OffchainNode.owner":
 		return x.Owner != ""
+	case "emissions.v1.OffchainNode.node_address":
+		return x.NodeAddress != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.OffchainNode"))
@@ -137,10 +137,10 @@ func (x *fastReflection_OffchainNode) Has(fd protoreflect.FieldDescriptor) bool 
 // Clear is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNode) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
-	case "emissions.v1.OffchainNode.node_address":
-		x.NodeAddress = ""
 	case "emissions.v1.OffchainNode.owner":
 		x.Owner = ""
+	case "emissions.v1.OffchainNode.node_address":
+		x.NodeAddress = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.OffchainNode"))
@@ -157,11 +157,11 @@ func (x *fastReflection_OffchainNode) Clear(fd protoreflect.FieldDescriptor) {
 // of the value; to obtain a mutable reference, use Mutable.
 func (x *fastReflection_OffchainNode) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
 	switch descriptor.FullName() {
-	case "emissions.v1.OffchainNode.node_address":
-		value := x.NodeAddress
-		return protoreflect.ValueOfString(value)
 	case "emissions.v1.OffchainNode.owner":
 		value := x.Owner
+		return protoreflect.ValueOfString(value)
+	case "emissions.v1.OffchainNode.node_address":
+		value := x.NodeAddress
 		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
@@ -183,10 +183,10 @@ func (x *fastReflection_OffchainNode) Get(descriptor protoreflect.FieldDescripto
 // Set is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNode) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
-	case "emissions.v1.OffchainNode.node_address":
-		x.NodeAddress = value.Interface().(string)
 	case "emissions.v1.OffchainNode.owner":
 		x.Owner = value.Interface().(string)
+	case "emissions.v1.OffchainNode.node_address":
+		x.NodeAddress = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.OffchainNode"))
@@ -207,10 +207,10 @@ func (x *fastReflection_OffchainNode) Set(fd protoreflect.FieldDescriptor, value
 // Mutable is a mutating operation and unsafe for concurrent use.
 func (x *fastReflection_OffchainNode) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v1.OffchainNode.node_address":
-		panic(fmt.Errorf("field node_address of message emissions.v1.OffchainNode is not mutable"))
 	case "emissions.v1.OffchainNode.owner":
 		panic(fmt.Errorf("field owner of message emissions.v1.OffchainNode is not mutable"))
+	case "emissions.v1.OffchainNode.node_address":
+		panic(fmt.Errorf("field node_address of message emissions.v1.OffchainNode is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v1.OffchainNode"))
@@ -224,9 +224,9 @@ func (x *fastReflection_OffchainNode) Mutable(fd protoreflect.FieldDescriptor) p
 // For lists, maps, and messages, this returns a new, empty, mutable value.
 func (x *fastReflection_OffchainNode) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
-	case "emissions.v1.OffchainNode.node_address":
-		return protoreflect.ValueOfString("")
 	case "emissions.v1.OffchainNode.owner":
+		return protoreflect.ValueOfString("")
+	case "emissions.v1.OffchainNode.node_address":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -297,11 +297,11 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 		var n int
 		var l int
 		_ = l
-		l = len(x.NodeAddress)
+		l = len(x.Owner)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		l = len(x.Owner)
+		l = len(x.NodeAddress)
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
@@ -334,19 +334,19 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
-		if len(x.Owner) > 0 {
-			i -= len(x.Owner)
-			copy(dAtA[i:], x.Owner)
-			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Owner)))
-			i--
-			dAtA[i] = 0x12
-		}
 		if len(x.NodeAddress) > 0 {
 			i -= len(x.NodeAddress)
 			copy(dAtA[i:], x.NodeAddress)
 			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NodeAddress)))
 			i--
-			dAtA[i] = 0xa
+			dAtA[i] = 0x22
+		}
+		if len(x.Owner) > 0 {
+			i -= len(x.Owner)
+			copy(dAtA[i:], x.Owner)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Owner)))
+			i--
+			dAtA[i] = 0x1a
 		}
 		if input.Buf != nil {
 			input.Buf = append(input.Buf, dAtA...)
@@ -397,39 +397,7 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: OffchainNode: illegal tag %d (wire type %d)", fieldNum, wire)
 			}
 			switch fieldNum {
-			case 1:
-				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NodeAddress", wireType)
-				}
-				var stringLen uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					stringLen |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				intStringLen := int(stringLen)
-				if intStringLen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + intStringLen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.NodeAddress = string(dAtA[iNdEx:postIndex])
-				iNdEx = postIndex
-			case 2:
+			case 3:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Owner", wireType)
 				}
@@ -460,6 +428,38 @@ func (x *fastReflection_OffchainNode) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
 				}
 				x.Owner = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			case 4:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NodeAddress", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NodeAddress = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
@@ -514,8 +514,8 @@ type OffchainNode struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	NodeAddress string `protobuf:"bytes,1,opt,name=node_address,json=nodeAddress,proto3" json:"node_address,omitempty"`
-	Owner       string `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
+	Owner       string `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
+	NodeAddress string `protobuf:"bytes,4,opt,name=node_address,json=nodeAddress,proto3" json:"node_address,omitempty"`
 }
 
 func (x *OffchainNode) Reset() {
@@ -538,16 +538,16 @@ func (*OffchainNode) Descriptor() ([]byte, []int) {
 	return file_emissions_v1_node_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *OffchainNode) GetNodeAddress() string {
+func (x *OffchainNode) GetOwner() string {
 	if x != nil {
-		return x.NodeAddress
+		return x.Owner
 	}
 	return ""
 }
 
-func (x *OffchainNode) GetOwner() string {
+func (x *OffchainNode) GetNodeAddress() string {
 	if x != nil {
-		return x.Owner
+		return x.NodeAddress
 	}
 	return ""
 }
@@ -557,24 +557,28 @@ var File_emissions_v1_node_proto protoreflect.FileDescriptor
 var file_emissions_v1_node_proto_rawDesc = []byte{
 	0x0a, 0x17, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x2f, 0x6e,
 	0x6f, 0x64, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0c, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x22, 0x47, 0x0a, 0x0c, 0x4f, 0x66, 0x66, 0x63, 0x68,
-	0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x6e, 0x6f, 0x64, 0x65, 0x5f,
-	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x6e,
-	0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77,
-	0x6e, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72,
-	0x42, 0xbf, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x09, 0x4e, 0x6f, 0x64, 0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f,
-	0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61,
-	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c,
-	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61,
-	0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a,
-	0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x22, 0x7e, 0x0a, 0x0c, 0x4f, 0x66, 0x66, 0x63, 0x68,
+	0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x64, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x21, 0x0a,
+	0x0c, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x0b, 0x6e, 0x6f, 0x64, 0x65, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73,
+	0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x4a, 0x04, 0x08, 0x02, 0x10, 0x03, 0x4a, 0x04, 0x08, 0x05,
+	0x10, 0x06, 0x52, 0x0b, 0x6c, 0x69, 0x62, 0x5f, 0x70, 0x32, 0x70, 0x5f, 0x6b, 0x65, 0x79, 0x52,
+	0x0d, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x52, 0x07,
+	0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x69, 0x64, 0x42, 0xbf, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x31, 0x42, 0x09, 0x4e, 0x6f,
+	0x64, 0x65, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70,
+	0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x31, 0x3b, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x31, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58,
+	0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x31, 0xca,
+	0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0xe2, 0x02,
+	0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x31, 0x5c, 0x47, 0x50,
+	0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
