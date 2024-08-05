@@ -606,7 +606,10 @@ message QueryWorkerLatestInferenceResponse {
 }
 
 message QueryWorkerNodeInfoRequest {
-  string address = 1;
+  reserved 1;
+  reserved "libp2p_key";
+
+  string address = 2;
 }
 
 message QueryWorkerNodeInfoResponse {
@@ -614,7 +617,10 @@ message QueryWorkerNodeInfoResponse {
 }
 
 message QueryReputerNodeInfoRequest {
-  string address = 1;
+  reserved 1;
+  reserved "libp2p_key";
+
+  string address = 2;
 }
 
 message QueryReputerNodeInfoResponse {
