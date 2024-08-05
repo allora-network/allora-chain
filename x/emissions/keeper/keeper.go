@@ -181,8 +181,6 @@ type Keeper struct {
 
 	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
-	// topicLastWorkerPayload  collections.Map[TopicId, types.TimestampedActorNonce]
-	// topicLastReputerPayload collections.Map[TopicId, types.TimestampedActorNonce]
 }
 
 func NewKeeper(
