@@ -271,6 +271,14 @@ func NewKeeper(
 	return k
 }
 
+func (k *Keeper) GetStorageService() coreStore.KVStoreService {
+	return k.storeService
+}
+
+func (k *Keeper) GetBinaryCodec() codec.BinaryCodec {
+	return k.cdc
+}
+
 /// NONCES
 
 // GetTopicIds returns the TopicIds for a given BlockHeight.
