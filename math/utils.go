@@ -98,6 +98,10 @@ func GetSortedElementsByDecWeightDesc[K cmp.Ordered](l []K, m map[K]*Dec) []K {
 // stdDev = sqrt((Σ(x - μ))^2/ N)
 // where μ is mean and N is number of elements
 func StdDev(data []Dec) (Dec, error) {
+	if len(data) == 1 {
+		return ZeroDec(), nil
+	}
+
 	mean := ZeroDec()
 	var err error = nil
 	for _, v := range data {
@@ -126,10 +130,18 @@ func StdDev(data []Dec) (Dec, error) {
 			return Dec{}, err
 		}
 	}
-	sdOverLen, err := sd.Quo(lenData)
+
+	// Apply Bessel's correction by dividing by (N - 1) instead of N
+	lenDataMinusOne, err := lenData.Sub(OneDec())
 	if err != nil {
 		return Dec{}, err
 	}
+
+	sdOverLen, err := sd.Quo(lenDataMinusOne)
+	if err != nil {
+		return Dec{}, err
+	}
+
 	sqrtSdOverLen, err := sdOverLen.Sqrt()
 	if err != nil {
 		return Dec{}, err
@@ -263,11 +275,31 @@ func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
 			result[i] = fp[len(fp)-1]
 		} else {
 			j := sort.Search(len(xp)-1, func(j int) bool { return xi.Lt(xp[j+1]) })
-			t, err := xi.Sub(xp[j]).Quo(xp[j+1].Sub(xp[j]))
+			denominator, err := xp[j+1].Sub(xp[j])
 			if err != nil {
 				return nil, err
 			}
-			result[i], err = fp[j].Mul(OneDec().Sub(t)).Add(fp[j+1].Mul(t))
+			numerator, err := xi.Sub(xp[j])
+			if err != nil {
+				return nil, err
+			}
+			t, err := numerator.Quo(denominator)
+			if err != nil {
+				return nil, err
+			}
+			oneMinusT, err := OneDec().Sub(t)
+			if err != nil {
+				return nil, err
+			}
+			fpjMulOneMinusT, err := fp[j].Mul(oneMinusT)
+			if err != nil {
+				return nil, err
+			}
+			fpjPlusOneMulT, err := fp[j+1].Mul(t)
+			if err != nil {
+				return nil, err
+			}
+			result[i], err = fpjMulOneMinusT.Add(fpjPlusOneMulT)
 			if err != nil {
 				return nil, err
 			}
