@@ -250,4 +250,6 @@ func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, co
 
 func removeOldKVStores(store storetypes.KVStore) {
 	store.Delete(types.ChurnableTopicsKey)
+	store.Delete(types.TopicLastWorkerPayloadKey)
+	store.Delete(types.TopicLastReputerPayloadKey)
 }
