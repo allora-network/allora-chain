@@ -19,29 +19,28 @@ func V1ToV2(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
-	err := migrateTopics(store, cdc)
+	err := MigrateTopics(store, cdc)
 	if err != nil {
 		return err
 	}
-	err = migrateOffchainNode(store, cdc)
+	err = MigrateOffchainNode(store, cdc)
 	if err != nil {
 		return err
 	}
-	err = migrateNetworkLossBundles(store, cdc)
+	err = MigrateNetworkLossBundles(store, cdc)
 	if err != nil {
 		return err
 	}
-	err = migrateAllLossBundles(store, cdc)
+	err = MigrateAllLossBundles(store, cdc)
 	if err != nil {
 		return err
 	}
-	err = migrateAllRecordCommits(store, cdc)
+	err = MigrateAllRecordCommits(store, cdc)
 	if err != nil {
 		return err
 	}
 
-	defaultParams := types.DefaultParams()
-	err = emissionsKeeper.SetParams(ctx, defaultParams)
+	err = MigrateParams(ctx, emissionsKeeper)
 	if err != nil {
 		return err
 	}
@@ -49,7 +48,16 @@ func V1ToV2(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	return nil
 }
 
-func migrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	defaultParams := types.DefaultParams()
+	err := emissionsKeeper.SetParams(ctx, defaultParams)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
 
@@ -72,14 +80,14 @@ func migrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 			Creator:                oldMsg.Creator,
 			Metadata:               oldMsg.Metadata,
 			LossMethod:             "mse",
-			EpochLastEnded:         oldMsg.EpochLastEnded,
+			EpochLastEnded:         oldMsg.EpochLastEnded, // Add default value
 			EpochLength:            oldMsg.EpochLength,
 			GroundTruthLag:         oldMsg.GroundTruthLag,
 			PNorm:                  oldMsg.PNorm,
 			AlphaRegret:            oldMsg.AlphaRegret,
 			AllowNegative:          oldMsg.AllowNegative,
 			Epsilon:                oldMsg.Epsilon,
-			InitialRegret:          oldMsg.InitialRegret,
+			InitialRegret:          oldMsg.InitialRegret, // Add default value
 			WorkerSubmissionWindow: newWorkerSubmissionWindow,
 		}
 
@@ -90,7 +98,7 @@ func migrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	return nil
 }
 
-func migrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	workerStore := prefix.NewStore(store, types.WorkerNodesKey)
 	iterator := workerStore.Iterator(nil, nil)
 
@@ -131,7 +139,7 @@ func migrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error 
 	return nil
 }
 
-func migrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	networkLossBundlesStore := prefix.NewStore(store, types.NetworkLossBundlesKey)
 	iterator := networkLossBundlesStore.Iterator(nil, nil)
 
@@ -204,7 +212,7 @@ func migrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 	return nil
 }
 
-func migrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	allLossBundlesStore := prefix.NewStore(store, types.AllLossBundlesKey)
 	iterator := allLossBundlesStore.Iterator(nil, nil)
 
@@ -248,7 +256,7 @@ func migrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 	return nil
 }
 
-func migrateAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	err := restoreAllRecordCommits(store, cdc, types.TopicLastWorkerCommitKey)
 	if err != nil {
 		return err
