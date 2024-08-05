@@ -215,14 +215,6 @@ func migrateAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec) er
 	if err != nil {
 		return err
 	}
-	err = restoreAllRecordCommits(store, cdc, types.TopicLastWorkerPayloadKey)
-	if err != nil {
-		return err
-	}
-	err = restoreAllRecordCommits(store, cdc, types.TopicLastReputerPayloadKey)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
