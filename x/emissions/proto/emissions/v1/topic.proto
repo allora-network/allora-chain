@@ -9,15 +9,17 @@ import "gogoproto/gogo.proto";
 import "emissions/v1/nonce.proto";
 
 message Topic {
+  reserved 4, 6, 7, 11;
+  reserved "loss_logic", "inference_logic", "inference_method", "default_arg";
+
   uint64 id = 1;
   string creator = 2;
   string metadata = 3;
-  string loss_method = 4;
-  int64 epoch_last_ended = 5;
-  int64 epoch_length = 6;
-  int64 ground_truth_lag = 7;
-  int64 worker_submission_window = 8;
-  string p_norm = 9
+  string loss_method = 5;
+  int64 epoch_last_ended = 8;
+  int64 epoch_length = 9;
+  int64 ground_truth_lag = 10;
+  string p_norm = 12
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   string alpha_regret = 10
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
@@ -26,6 +28,7 @@ message Topic {
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   string initial_regret = 13
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  int64 worker_submission_window = 17;
 }
 
 message TopicList {
@@ -33,10 +36,13 @@ message TopicList {
 }
 
 message TimestampedActorNonce {
+  reserved 2;
+  reserved "actor";
+
   option (gogoproto.equal) = true;
 
   int64 block_height = 1;  // height at which value calculated or received
-  Nonce nonce = 2;
+  Nonce nonce = 3;
 }
 
 message TopicIds {
