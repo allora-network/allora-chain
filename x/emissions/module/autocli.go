@@ -334,22 +334,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetTopicLastReputerPayload",
-					Use:       "latest-reputer-payload [topic_id]",
-					Short:     "Return latest reputer payload delivered for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
-					RpcMethod: "GetTopicLastWorkerPayload",
-					Use:       "latest-worker-payload [topic_id]",
-					Short:     "Return latest worker payload delivered for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
 					RpcMethod: "GetTopicRewardNonce",
 					Use:       "topic-reward-nonce [topic_id]",
 					Short:     "If a topic is rewardable, then this is the nonce that will be used to calculate topic rewards. The actors that participated in the worker/reputer rounds started at this nonce (block height) will be rewarded",

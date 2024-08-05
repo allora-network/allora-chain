@@ -657,17 +657,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	//TopicLastWorkerPayload  []*TopicIdTimestampedActorNonce
-	if len(data.TopicLastWorkerPayload) != 0 {
-		for _, topicIdTimestampedActorNonce := range data.TopicLastWorkerPayload {
-			if err := k.topicLastWorkerPayload.Set(ctx,
-				topicIdTimestampedActorNonce.TopicId,
-				*topicIdTimestampedActorNonce.TimestampedActorNonce,
-			); err != nil {
-				return errors.Wrap(err, "error setting topicLastWorkerPayload")
-			}
-		}
-	}
 	return nil
 }
 
@@ -1590,40 +1579,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		topicLastReputerCommit = append(topicLastReputerCommit, &topicIdTimestampedActorNonce)
 	}
 
-	topicLastWorkerPayload := make([]*types.TopicIdTimestampedActorNonce, 0)
-	topicLastWorkerPayloadIter, err := k.topicLastWorkerPayload.Iterate(ctx, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to iterate topic last worker payload")
-	}
-	for ; topicLastWorkerPayloadIter.Valid(); topicLastWorkerPayloadIter.Next() {
-		keyValue, err := topicLastWorkerPayloadIter.KeyValue()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get key value: topicLastWorkerPayloadIter")
-		}
-		topicIdTimestampedActorNonce := types.TopicIdTimestampedActorNonce{
-			TopicId:               keyValue.Key,
-			TimestampedActorNonce: &keyValue.Value,
-		}
-		topicLastWorkerPayload = append(topicLastWorkerPayload, &topicIdTimestampedActorNonce)
-	}
-
-	topicLastReputerPayload := make([]*types.TopicIdTimestampedActorNonce, 0)
-	topicLastReputerPayloadIter, err := k.topicLastReputerPayload.Iterate(ctx, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to iterate topic last reputer payload")
-	}
-	for ; topicLastReputerPayloadIter.Valid(); topicLastReputerPayloadIter.Next() {
-		keyValue, err := topicLastReputerPayloadIter.KeyValue()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get key value: topicLastReputerPayloadIter")
-		}
-		topicIdTimestampedActorNonce := types.TopicIdTimestampedActorNonce{
-			TopicId:               keyValue.Key,
-			TimestampedActorNonce: &keyValue.Value,
-		}
-		topicLastReputerPayload = append(topicLastReputerPayload, &topicIdTimestampedActorNonce)
-	}
-
 	return &types.GenesisState{
 		Params:                                   moduleParams,
 		NextTopicId:                              nextTopicId,
@@ -1673,8 +1628,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		CoreTeamAddresses:                        coreTeamAddresses,
 		TopicLastWorkerCommit:                    topicLastWorkerCommit,
 		TopicLastReputerCommit:                   topicLastReputerCommit,
-		TopicLastWorkerPayload:                   topicLastWorkerPayload,
-		TopicLastReputerPayload:                  topicLastReputerPayload,
 	}, nil
 }
 

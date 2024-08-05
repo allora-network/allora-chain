@@ -179,10 +179,8 @@ type Keeper struct {
 
 	/// RECORD COMMITS
 
-	topicLastWorkerCommit   collections.Map[TopicId, types.TimestampedActorNonce]
-	topicLastReputerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
-	topicLastWorkerPayload  collections.Map[TopicId, types.TimestampedActorNonce]
-	topicLastReputerPayload collections.Map[TopicId, types.TimestampedActorNonce]
+	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
+	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
 }
 
 func NewKeeper(
@@ -256,8 +254,6 @@ func NewKeeper(
 		topicRewardNonce:                collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
 		topicLastWorkerCommit:           collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerCommit:          collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		topicLastWorkerPayload:          collections.NewMap(sb, types.TopicLastWorkerPayloadKey, "topic_last_worker_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		topicLastReputerPayload:         collections.NewMap(sb, types.TopicLastReputerPayloadKey, "topic_last_reputer_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		openWorkerWindows:               collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.TopicIds](cdc)),
 	}
 
@@ -2639,28 +2635,6 @@ func (k *Keeper) GetTopicLastCommit(ctx context.Context, topic TopicId, actorTyp
 		return k.topicLastReputerCommit.Get(ctx, topic)
 	}
 	return k.topicLastWorkerCommit.Get(ctx, topic)
-}
-
-func (k *Keeper) SetTopicLastWorkerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
-	return k.topicLastWorkerPayload.Set(ctx, topic, types.TimestampedActorNonce{
-		BlockHeight: blockHeight,
-		Nonce:       nonce,
-	})
-}
-
-func (k *Keeper) GetTopicLastWorkerPayload(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
-	return k.topicLastWorkerPayload.Get(ctx, topic)
-}
-
-func (k *Keeper) SetTopicLastReputerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
-	return k.topicLastReputerPayload.Set(ctx, topic, types.TimestampedActorNonce{
-		BlockHeight: blockHeight,
-		Nonce:       nonce,
-	})
-}
-
-func (k *Keeper) GetTopicLastReputerPayload(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
-	return k.topicLastReputerPayload.Get(ctx, topic)
 }
 
 func (k *Keeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId, forecasterScoreRatio alloraMath.Dec) error {
