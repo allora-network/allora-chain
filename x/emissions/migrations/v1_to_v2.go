@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/collections"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -18,7 +18,7 @@ func V1ToV2(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
-	err := migrateMsgCreateNewTopic(store, cdc)
+	err := migrateTopics(store, cdc)
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func V1ToV2(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
-	
+
 	defaultParams := types.DefaultParams()
 	err = emissionsKeeper.SetParams(ctx, defaultParams)
 	if err != nil {
@@ -48,28 +48,38 @@ func V1ToV2(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	return nil
 }
 
-func migrateMsgCreateNewTopic(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func migrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
 
 	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg types.MsgCreateNewTopic
+		var oldMsg types.Topic
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return err
 		}
 
-		newMsg := types.MsgCreateNewTopic{
+		// Make newWorkerSubmissionWindow to be the 10% of the epoch length
+		newWorkerSubmissionWindow := oldMsg.EpochLength / 10
+		// set min and max boundaries: max 60 blocks
+		if newWorkerSubmissionWindow > 60 {
+			newWorkerSubmissionWindow = 60
+		}
+
+		newMsg := types.Topic{
+			Id:                     oldMsg.Id,
 			Creator:                oldMsg.Creator,
 			Metadata:               oldMsg.Metadata,
-			LossMethod:             oldMsg.LossMethod,
+			LossMethod:             "mse",
+			EpochLastEnded:         oldMsg.EpochLastEnded,
 			EpochLength:            oldMsg.EpochLength,
 			GroundTruthLag:         oldMsg.GroundTruthLag,
 			PNorm:                  oldMsg.PNorm,
 			AlphaRegret:            oldMsg.AlphaRegret,
 			AllowNegative:          oldMsg.AllowNegative,
 			Epsilon:                oldMsg.Epsilon,
-			WorkerSubmissionWindow: oldMsg.WorkerSubmissionWindow,
+			InitialRegret:          oldMsg.InitialRegret,
+			WorkerSubmissionWindow: newWorkerSubmissionWindow,
 		}
 
 		store.Delete(iterator.Key())
