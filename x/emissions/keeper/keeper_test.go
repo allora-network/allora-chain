@@ -2370,46 +2370,6 @@ func (s *KeeperTestSuite) TestGetTopic() {
 	s.Require().Equal(newTopic.Metadata, retrievedTopic.Metadata, "Retrieved topic should match the set topic")
 }
 
-func (s *KeeperTestSuite) TestSetGetTopicLastWorkerPayload() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(123)
-	blockHeight := int64(1000)
-	nonce := &types.Nonce{BlockHeight: blockHeight}
-
-	// Set the worker payload
-	err := keeper.SetTopicLastWorkerPayload(ctx, topicId, blockHeight, nonce)
-	s.Require().NoError(err)
-
-	// Get the worker payload
-	payload, err := keeper.GetTopicLastWorkerPayload(ctx, topicId)
-	s.Require().NoError(err)
-
-	// Check the retrieved values
-	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
-	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
-}
-
-func (s *KeeperTestSuite) TestSetGetTopicLastReputerPayload() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(456)
-	blockHeight := int64(2000)
-	nonce := &types.Nonce{BlockHeight: blockHeight}
-
-	// Set the reputer payload
-	err := keeper.SetTopicLastReputerPayload(ctx, topicId, blockHeight, nonce)
-	s.Require().NoError(err)
-
-	// Get the reputer payload
-	payload, err := keeper.GetTopicLastReputerPayload(ctx, topicId)
-	s.Require().NoError(err)
-
-	// Check the retrieved values
-	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
-	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
-}
-
 /// FEE REVENUE
 
 func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {

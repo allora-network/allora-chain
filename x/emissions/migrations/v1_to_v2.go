@@ -215,14 +215,6 @@ func migrateAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec) er
 	if err != nil {
 		return err
 	}
-	err = restoreAllRecordCommits(store, cdc, types.TopicLastWorkerPayloadKey)
-	if err != nil {
-		return err
-	}
-	err = restoreAllRecordCommits(store, cdc, types.TopicLastReputerPayloadKey)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -250,4 +242,6 @@ func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, co
 
 func removeOldKVStores(store storetypes.KVStore) {
 	store.Delete(types.ChurnableTopicsKey)
+	store.Delete(types.TopicLastWorkerPayloadKey)
+	store.Delete(types.TopicLastReputerPayloadKey)
 }

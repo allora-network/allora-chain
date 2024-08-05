@@ -97,10 +97,6 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return err
 	}
 
-	err = k.SetTopicLastWorkerPayload(ctx, topic.Id, blockHeight, &nonce)
-	if err != nil {
-		return err
-	}
 	ctx.Logger().Info(fmt.Sprintf("Closed worker nonce for topic: %d, nonce: %v", topicId, nonce))
 	// Return an empty response as the operation was successful
 	return nil

@@ -141,12 +141,12 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	error,
 ) {
 
-	lastWorkerCommit, err := qs.k.GetTopicLastWorkerPayload(ctx, req.TopicId)
+	lastWorkerCommit, err := qs.k.GetTopicLastCommit(ctx, req.TopicId, types.ActorType_INFERER)
 	if err != nil {
 		return nil, err
 	}
 
-	lastReputerCommit, err := qs.k.GetTopicLastReputerPayload(ctx, req.TopicId)
+	lastReputerCommit, err := qs.k.GetTopicLastCommit(ctx, req.TopicId, types.ActorType_REPUTER)
 	if err != nil {
 		return nil, err
 	}
