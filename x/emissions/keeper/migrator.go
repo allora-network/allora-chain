@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	v2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
+	"github.com/allora-network/allora-chain/x/emissions/migrations/v0_3_0"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -17,6 +17,6 @@ func NewMigrator(k Keeper) Migrator {
 	}
 }
 
-func (m Migrator) Migrate1to2(ctx sdk.Context) error {
-	return v2.MigrateStore(ctx, m.keeper.storeService, m.keeper.cdc)
+func (m Migrator) Migrate0_2_14to0_3_0(ctx sdk.Context) error {
+	return v0_3_0.MigrateStore(ctx, m.keeper.storeService, m.keeper.cdc)
 }

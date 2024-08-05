@@ -70,7 +70,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 	// Register in place module state migration migrations
 	m := keeper.NewMigrator(am.keeper)
-	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate1to2); err != nil {
+	if err := cfg.RegisterMigration(types.ModuleName, 1, m.Migrate0_2_14to0_3_0); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
 	}
 }

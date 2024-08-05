@@ -1,4 +1,4 @@
-package v2
+package v0_3_0
 
 import (
 	"cosmossdk.io/collections"
