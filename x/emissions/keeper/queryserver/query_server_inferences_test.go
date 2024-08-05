@@ -807,18 +807,12 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce, getForecastsForBlockHeight(inferenceBlockHeight))
 	require.NoError(err)
 
-	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce)
-	s.Require().NoError(err)
-
 	// insert inferences and forecasts 2
 	err = keeper.InsertInferences(s.ctx, topicId, inferenceNonce2, getInferencesForBlockHeight(inferenceBlockHeight2))
 	s.Require().NoError(err)
 
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce2, getForecastsForBlockHeight(inferenceBlockHeight2))
 	require.NoError(err)
-
-	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight2, &inferenceNonce2)
-	s.Require().NoError(err)
 
 	// Update epoch topic epoch last ended
 	err = keeper.UpdateTopicEpochLastEnded(s.ctx, topicId, inferenceBlockHeight2)

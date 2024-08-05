@@ -389,15 +389,6 @@ service Query {
     option (google.api.http).get = "/emissions/v1/total_reward_to_distribute";
   }
 
-  rpc GetTopicLastWorkerPayload(QueryTopicLastWorkerPayloadRequest) returns (QueryTopicLastWorkerPayloadResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/topic_last_worker_payload/{topic_id}";
-  }
-
-  rpc GetTopicLastReputerPayload(QueryTopicLastReputerPayloadRequest) returns (QueryTopicLastReputerPayloadResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v1/topic_last_reputer_payload/{topic_id}";
-  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
