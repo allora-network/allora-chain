@@ -320,8 +320,7 @@ func (s *MigrationsTestSuite) TestMigrateValueBundle() {
 	s.Require().True(areWithHeldArraysEqual(oldValueBundle.OneOutForecasterValues, newMsg.OneOutForecasterValues))
 	s.Require().True(areAttributedArraysEqual(oldValueBundle.OneInForecasterValues, newMsg.OneInForecasterValues))
 
-	defaultOneOutInfererForecasterValues := []*types.OneOutInfererForecasterValues{}
-	s.Require().Equal(len(defaultOneOutInfererForecasterValues), len(newMsg.OneOutInfererForecasterValues))
+	s.Require().Equal(0, len(newMsg.OneOutInfererForecasterValues))
 }
 
 func (s *MigrationsTestSuite) TestMigrateAllLossBundles() {
