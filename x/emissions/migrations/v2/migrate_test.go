@@ -428,10 +428,10 @@ func (s *MigrationsTestSuite) TestMigrateAllRecordCommits() {
 	s.Require().NoError(err)
 
 	s.Require().Equal(oldTimestampedActorNonce1.BlockHeight, newMsg1.BlockHeight)
-	s.Require().Equal(oldTimestampedActorNonce1.Nonce, newMsg1.Nonce)
+	s.Require().Equal(oldTimestampedActorNonce1.Nonce.BlockHeight, newMsg1.Nonce.BlockHeight)
 
 	s.Require().Equal(oldTimestampedActorNonce2.BlockHeight, newMsg2.BlockHeight)
-	s.Require().Equal(oldTimestampedActorNonce2.Nonce, newMsg2.Nonce)
+	s.Require().Equal(oldTimestampedActorNonce2.Nonce.BlockHeight, newMsg2.Nonce.BlockHeight)
 }
 
 func (s *MigrationsTestSuite) TestMigrateParams() {
