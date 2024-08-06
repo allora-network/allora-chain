@@ -687,9 +687,6 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	})
 	require.NoError(err)
 
-	err = keeper.SetTopicLastReputerPayload(s.ctx, topicId, lossBlockHeight, &lossNonce)
-	s.Require().NoError(err)
-
 	// Set Inferences
 	s.ctx = s.ctx.WithBlockHeight(inferenceBlockHeight)
 
