@@ -268,12 +268,14 @@ func (s *MigrationsTestSuite) TestMigrateValueBundle() {
 			OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 				{
 					Worker: "",
-					Value:  alloraMath.OneDec(),
+					Value:  alloraMath.ZeroDec(),
 				},
 			},
 		},
 	}
 	s.Require().Equal(defaultOneOutInfererForecasterValues[0].Forecaster, newMsg.OneOutInfererForecasterValues[0].Forecaster)
+	s.Require().Equal(defaultOneOutInfererForecasterValues[0].OneOutInfererValues[0].Worker, newMsg.OneOutInfererForecasterValues[0].OneOutInfererValues[0].Worker)
+	s.Require().Equal(defaultOneOutInfererForecasterValues[0].OneOutInfererValues[0].Value, newMsg.OneOutInfererForecasterValues[0].OneOutInfererValues[0].Value)
 }
 
 func (s *MigrationsTestSuite) TestMigrateAllLossBundles() {
@@ -371,7 +373,9 @@ func (s *MigrationsTestSuite) TestMigrateAllLossBundles() {
 			},
 		},
 	}
-	s.Require().Equal(defaultOneOutInfererForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererForecasterValues)
+	s.Require().Equal(defaultOneOutInfererForecasterValues.Forecaster, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererForecasterValues[0].Forecaster)
+	s.Require().Equal(defaultOneOutInfererForecasterValues.OneOutInfererValues[0].Worker, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererForecasterValues[0].OneOutInfererValues[0].Worker)
+	s.Require().Equal(defaultOneOutInfererForecasterValues.OneOutInfererValues[0].Value, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererForecasterValues[0].OneOutInfererValues[0].Value)
 
 	s.Require().Equal(reputerValueBundle.Signature, newMsg.ReputerValueBundles[0].Signature)
 	s.Require().Equal(reputerValueBundle.Pubkey, newMsg.ReputerValueBundles[0].Pubkey)
