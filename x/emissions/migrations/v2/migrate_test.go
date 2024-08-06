@@ -208,7 +208,7 @@ func (s *MigrationsTestSuite) TestMigrateOffchainNode() {
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 	offchainNodeStoreWorker := prefix.NewStore(store, types.WorkerNodesKey)
 	s.MigrateOffchainNodeStore(offchainNodeStoreWorker, cdc)
-	offchainNodeStoreReputer := prefix.NewStore(store, types.WorkerNodesKey)
+	offchainNodeStoreReputer := prefix.NewStore(store, types.ReputerNodesKey)
 	s.MigrateOffchainNodeStore(offchainNodeStoreReputer, cdc)
 
 }
