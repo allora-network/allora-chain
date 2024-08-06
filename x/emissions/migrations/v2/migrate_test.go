@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
-	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
@@ -432,21 +431,24 @@ func (s *MigrationsTestSuite) TestMigrateAllRecordCommits(t *testing.T) {
 }
 
 func (s *MigrationsTestSuite) TestMigrateParams(t *testing.T) {
-	prevParams := types.DefaultParams()
-	prevParams.DataSendingFee = math.ZeroInt()
+	// Create an empty Params
+	prevParams := types.Params{
+		Version: "v1",
+	}
 	err := s.emissionsKeeper.SetParams(s.ctx, prevParams)
 	s.Require().NoError(err)
 
 	// Check params before migration
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
-	s.Require().Equal(params.DataSendingFee, math.ZeroInt())
+	s.Require().Equal(prevParams, params)
 
 	// Run migration
 	v2.MigrateParams(s.ctx, s.emissionsKeeper)
 	newParams, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
+	defaultParams := types.DefaultParams()
 	// Check params after migration
-	s.Require().NotEqual(newParams.DataSendingFee, math.ZeroInt())
+	s.Require().Equal(newParams, defaultParams)
 }
