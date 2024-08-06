@@ -1,18 +1,18 @@
 syntax = "proto3";
-package emissions.v1;
+package emissions.v2;
 
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
-import "emissions/v1/params.proto";
-import "emissions/v1/score.proto";
-import "emissions/v1/stake.proto";
-import "emissions/v1/types.proto";
-import "emissions/v1/topic.proto";
-import "emissions/v1/worker.proto";
-import "emissions/v1/node.proto";
-import "emissions/v1/reputer.proto";
-import "emissions/v1/nonce.proto";
+import "emissions/v2/params.proto";
+import "emissions/v2/score.proto";
+import "emissions/v2/stake.proto";
+import "emissions/v2/types.proto";
+import "emissions/v2/topic.proto";
+import "emissions/v2/worker.proto";
+import "emissions/v2/node.proto";
+import "emissions/v2/reputer.proto";
+import "emissions/v2/nonce.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
@@ -147,7 +147,6 @@ message GenesisState {
   /// RECORD COMMITS
   repeated TopicIdTimestampedActorNonce topicLastWorkerCommit = 53;
   repeated TopicIdTimestampedActorNonce topicLastReputerCommit = 54;
-  reserved 55, 56;
 }
 
 message TopicIdAndTopic {

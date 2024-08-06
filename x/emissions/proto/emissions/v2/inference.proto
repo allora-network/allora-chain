@@ -1,10 +1,10 @@
 syntax = "proto3";
-package emissions.v1;
+package emissions.v2;
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 import "gogoproto/gogo.proto";
-import "emissions/v1/nonce.proto";
+import "emissions/v2/nonce.proto";
 
 message RegretInformedWeight {
   option (gogoproto.equal) = true;

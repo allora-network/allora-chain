@@ -1,0 +1,9 @@
+syntax = "proto3";
+package emissions.v2;
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+message OffchainNode {
+  string owner = 1;
+  string node_address = 2;
+}
