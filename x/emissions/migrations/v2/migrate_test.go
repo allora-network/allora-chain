@@ -150,10 +150,7 @@ func (s *MigrationsTestSuite) TestMigrateTopic() {
 	s.Require().Equal(oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
 }
 
-func (s *MigrationsTestSuite) TestMigrateOffchainNode() {
-	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
-	cdc := s.emissionsKeeper.GetBinaryCodec()
-
+func (s *MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc codec.BinaryCodec) {
 	oldOffchainNode := oldtypes.OffchainNode{
 		LibP2PKey:    "testLibP2PKey",
 		MultiAddress: "testMultiAddress",
@@ -161,12 +158,22 @@ func (s *MigrationsTestSuite) TestMigrateOffchainNode() {
 		NodeAddress:  "testNodeAddress",
 		NodeId:       "testNodeId",
 	}
+	oldOffchainNode2 := oldtypes.OffchainNode{
+		LibP2PKey:    "testLibP2PKey2",
+		MultiAddress: "testMultiAddress2",
+		Owner:        "testOwner2",
+		NodeAddress:  "testNodeAddress2",
+		NodeId:       "testNodeId2",
+	}
 
 	bz, err := proto.Marshal(&oldOffchainNode)
+	s.Require().NoError(err)
+	bz2, err := proto.Marshal(&oldOffchainNode2)
 	s.Require().NoError(err)
 
 	offchainNodeStore := prefix.NewStore(store, types.WorkerNodesKey)
 	offchainNodeStore.Set([]byte("testLibP2PKey"), bz)
+	offchainNodeStore.Set([]byte("testLibP2PKey2"), bz2)
 
 	err = v2.MigrateOffchainNode(store, cdc)
 	s.Require().NoError(err)
@@ -175,16 +182,35 @@ func (s *MigrationsTestSuite) TestMigrateOffchainNode() {
 
 	oldObj := offchainNodeStore.Get([]byte("testLibP2PKey"))
 	s.Require().Nil(oldObj)
+	oldObj2 := offchainNodeStore.Get([]byte("testLibP2PKey2"))
+	s.Require().Nil(oldObj2)
 
 	newObj := offchainNodeStore.Get([]byte("testNodeAddress"))
 	s.Require().NotNil(newObj)
+	newObj2 := offchainNodeStore.Get([]byte("testNodeAddress2"))
+	s.Require().NotNil(newObj2)
 
 	var newMsg types.OffchainNode
 	err = proto.Unmarshal(newObj, &newMsg)
 	s.Require().NoError(err)
-
 	s.Require().Equal(oldOffchainNode.Owner, newMsg.Owner)
 	s.Require().Equal(oldOffchainNode.NodeAddress, newMsg.NodeAddress)
+	// second object
+	err = proto.Unmarshal(newObj2, &newMsg)
+	s.Require().NoError(err)
+	s.Require().Equal(oldOffchainNode2.Owner, newMsg.Owner)
+	s.Require().Equal(oldOffchainNode2.NodeAddress, newMsg.NodeAddress)
+
+}
+
+func (s *MigrationsTestSuite) TestMigrateOffchainNode() {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
+	offchainNodeStoreWorker := prefix.NewStore(store, types.WorkerNodesKey)
+	s.MigrateOffchainNodeStore(offchainNodeStoreWorker, cdc)
+	offchainNodeStoreReputer := prefix.NewStore(store, types.WorkerNodesKey)
+	s.MigrateOffchainNodeStore(offchainNodeStoreReputer, cdc)
+
 }
 
 func areAttributedArraysEqual(oldValues []*oldtypes.WorkerAttributedValue, newValues []*types.WorkerAttributedValue) bool {
