@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
-	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
@@ -147,8 +146,8 @@ func (s *MigrationsTestSuite) TestMigrateTopic(t *testing.T) {
 	require.Equal(t, oldTopic.AlphaRegret, newMsg.AlphaRegret)
 	require.Equal(t, oldTopic.AllowNegative, newMsg.AllowNegative)
 	require.Equal(t, oldTopic.Epsilon, newMsg.Epsilon)
-	require.Equal(t, 0, newMsg.EpochLastEnded)
-	require.Equal(t, 0, newMsg.InitialRegret)
+	require.Equal(t, oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
+	require.Equal(t, oldTopic.InitialRegret, newMsg.InitialRegret)
 }
 
 func (s *MigrationsTestSuite) TestMigrateOffchainNode(t *testing.T) {
@@ -259,6 +258,18 @@ func (s *MigrationsTestSuite) TestMigrateValueBundle(t *testing.T) {
 	require.Equal(t, oldValueBundle.OneOutInfererValues, newMsg.OneOutInfererValues)
 	require.Equal(t, oldValueBundle.OneOutForecasterValues, newMsg.OneOutForecasterValues)
 	require.Equal(t, oldValueBundle.OneInForecasterValues, newMsg.OneInForecasterValues)
+
+	defaultOneOutInfererForecasterValues := types.OneOutInfererForecasterValues{
+		Forecaster: "",
+		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+			{
+				Worker: "",
+				Value:  alloraMath.ZeroDec(),
+			},
+		},
+	}
+	require.Equal(t, defaultOneOutInfererForecasterValues, newMsg.OneOutInfererForecasterValues)
+
 }
 
 func (s *MigrationsTestSuite) TestMigrateAllLossBundles(t *testing.T) {
@@ -347,6 +358,17 @@ func (s *MigrationsTestSuite) TestMigrateAllLossBundles(t *testing.T) {
 	require.Equal(t, reputerValueBundle.ValueBundle.OneOutInfererValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererValues)
 	require.Equal(t, reputerValueBundle.ValueBundle.OneOutForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutForecasterValues)
 	require.Equal(t, reputerValueBundle.ValueBundle.OneInForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneInForecasterValues)
+	defaultOneOutInfererForecasterValues := types.OneOutInfererForecasterValues{
+		Forecaster: "",
+		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+			{
+				Worker: "",
+				Value:  alloraMath.ZeroDec(),
+			},
+		},
+	}
+	require.Equal(t, defaultOneOutInfererForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererForecasterValues)
+
 	require.Equal(t, reputerValueBundle.Signature, newMsg.ReputerValueBundles[0].Signature)
 	require.Equal(t, reputerValueBundle.Pubkey, newMsg.ReputerValueBundles[0].Pubkey)
 }
@@ -409,21 +431,24 @@ func (s *MigrationsTestSuite) TestMigrateAllRecordCommits(t *testing.T) {
 }
 
 func (s *MigrationsTestSuite) TestMigrateParams(t *testing.T) {
-	prevParams := types.DefaultParams()
-	prevParams.DataSendingFee = math.ZeroInt()
+	// Create an empty Params
+	prevParams := types.Params{
+		Version: "v1",
+	}
 	err := s.emissionsKeeper.SetParams(s.ctx, prevParams)
 	s.Require().NoError(err)
 
 	// Check params before migration
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
-	s.Require().Equal(params.DataSendingFee, math.ZeroInt())
+	s.Require().Equal(prevParams, params)
 
 	// Run migration
 	v2.MigrateParams(s.ctx, s.emissionsKeeper)
 	newParams, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
+	defaultParams := types.DefaultParams()
 	// Check params after migration
-	s.Require().NotEqual(newParams.DataSendingFee, math.ZeroInt())
+	s.Require().Equal(newParams, defaultParams)
 }
