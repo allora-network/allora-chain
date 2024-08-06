@@ -19,6 +19,8 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
+	removeOldKVStores(store)
+
 	err := MigrateTopics(store, cdc)
 	if err != nil {
 		return err
@@ -292,9 +294,8 @@ func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, co
 	return nil
 }
 
-// staticcheck is saying this is never used, can we delete it??
-// func removeOldKVStores(store storetypes.KVStore) {
-// 	store.Delete(types.ChurnableTopicsKey)
-// 	store.Delete(types.TopicLastWorkerPayloadKey)
-// 	store.Delete(types.TopicLastReputerPayloadKey)
-// }
+func removeOldKVStores(store storetypes.KVStore) {
+	store.Delete(types.ChurnableTopicsKey)
+	store.Delete(types.TopicLastWorkerPayloadKey)
+	store.Delete(types.TopicLastReputerPayloadKey)
+}
