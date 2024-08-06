@@ -97,6 +97,7 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 
 		valueToAdd[string(iterator.Key())] = newMsg
 	}
+	iterator.Close()
 
 	for key, value := range valueToAdd {
 		topicStore.Set([]byte(key), cdc.MustMarshal(&value))
@@ -209,6 +210,7 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 
 		valueToAdd[string(iterator.Key())] = newMsg
 	}
+	iterator.Close()
 
 	for key, value := range valueToAdd {
 		networkLossBundlesStore.Set([]byte(key), cdc.MustMarshal(&value))
@@ -257,6 +259,7 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 		}
 		valuesToAdd[string(iterator.Key())] = newMsg
 	}
+	iterator.Close()
 
 	for key, value := range valuesToAdd {
 		allLossBundlesStore.Set([]byte(key), cdc.MustMarshal(&value))
@@ -298,6 +301,7 @@ func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, co
 
 		valuesToAdd[string(iterator.Key())] = newMsg
 	}
+	iterator.Close()
 
 	for key, value := range valuesToAdd {
 		topicLastWorkerCommitStore.Set([]byte(key), cdc.MustMarshal(&value))

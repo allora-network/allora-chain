@@ -142,7 +142,7 @@ func (s *MigrationsTestSuite) TestMigrateTopic() {
 	s.Require().Equal(oldTopic.Id, newMsg.Id)
 	s.Require().Equal(oldTopic.Creator, newMsg.Creator)
 	s.Require().Equal(oldTopic.Metadata, newMsg.Metadata)
-	s.Require().Equal(oldTopic.LossMethod, newMsg.LossMethod)
+	s.Require().Equal("mse", newMsg.LossMethod)
 	s.Require().Equal(oldTopic.EpochLength, newMsg.EpochLength)
 	s.Require().Equal(oldTopic.GroundTruthLag, newMsg.GroundTruthLag)
 	s.Require().Equal(oldTopic.PNorm, newMsg.PNorm)
