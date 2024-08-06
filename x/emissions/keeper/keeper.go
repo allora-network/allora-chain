@@ -166,11 +166,15 @@ type Keeper struct {
 	// map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
 	// all network inferer (3rd index) regrets L_ij made under the regime of the one-in forecaster (2nd index)
 	latestOneInForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
-
-	latestNaiveInfererNetworkRegrets               collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
-	latestOneOutInfererInfererNetworkRegrets       collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
-	latestOneOutInfererForecasterNetworkRegrets    collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
-	latestOneOutForecasterInfererNetworkRegrets    collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	// map of (topic id, inferer) -> regret
+	latestNaiveInfererNetworkRegrets collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
+	// map of (topic id , one out inferer, inferer)-> regret
+	latestOneOutInfererInfererNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	// map of (topicId, oneOutInferer, forecaster) -> regret
+	latestOneOutInfererForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	// map of (topicId, oneOutInferer, inferer) -> regret
+	latestOneOutForecasterInfererNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	// map of (topicId, oneOutForecaster, forecaster) -> regret
 	latestOneOutForecasterForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
 
 	/// WHITELISTS

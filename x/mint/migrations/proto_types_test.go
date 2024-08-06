@@ -298,9 +298,6 @@ func (m *OldParams) Size() (n int) {
 func sovTypes(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
-func sozTypes(x uint64) (n int) {
-	return sovTypes(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
 func (m *OldParams) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
