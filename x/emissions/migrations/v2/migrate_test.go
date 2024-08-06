@@ -7,16 +7,16 @@ import (
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	v2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
+	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/types"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	emissionsv1 "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -28,9 +28,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	cosmosAddress "cosmossdk.io/core/address"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -39,26 +37,12 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
-const (
-	multiPerm  = "multiple permissions account"
-	randomPerm = "random permission"
-)
-
 type MigrationsTestSuite struct {
 	suite.Suite
-
 	ctx             sdk.Context
 	codec           codec.Codec
-	addressCodec    cosmosAddress.Codec
 	storeService    store.KVStoreService
-	accountKeeper   authkeeper.AccountKeeper
-	bankKeeper      bankkeeper.BaseKeeper
 	emissionsKeeper keeper.Keeper
-	appModule       module.AppModule
-	msgServer       types.MsgServer
-	key             *storetypes.KVStoreKey
-	addrs           []sdk.AccAddress
-	addrsStr        []string
 }
 
 func (s *MigrationsTestSuite) SetupTest() {
@@ -67,11 +51,10 @@ func (s *MigrationsTestSuite) SetupTest() {
 	s.storeService = storeService
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
+	s.ctx = ctx
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 	s.codec = encCfg.Codec
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
-	s.addressCodec = addressCodec
-
 	maccPerms := map[string][]string{
 		"fee_collector":                {"minter"},
 		"mint":                         {"minter"},
@@ -81,10 +64,9 @@ func (s *MigrationsTestSuite) SetupTest() {
 		minttypes.EcosystemModuleName:                    nil,
 		"bonded_tokens_pool":                             {"burner", "staking"},
 		"not_bonded_tokens_pool":                         {"burner", "staking"},
-		multiPerm:                                        {"burner", "minter", "staking"},
-		randomPerm:                                       {"random"},
+		"multiple permissions account":                   {"burner", "minter", "staking"},
+		"random permission":                              {"random"},
 	}
-
 	accountKeeper := authkeeper.NewAccountKeeper(
 		encCfg.Codec,
 		storeService,
@@ -94,17 +76,6 @@ func (s *MigrationsTestSuite) SetupTest() {
 		params.Bech32PrefixAccAddr,
 		authtypes.NewModuleAddress("gov").String(),
 	)
-
-	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
-	var addrsStr []string = make([]string, 0)
-	pubkeys := simtestutil.CreateTestPubKeys(5)
-	for i := 0; i < 5; i++ {
-		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
-		addrsStr = append(addrsStr, addrs[i].String())
-	}
-	s.addrs = addrs
-	s.addrsStr = addrsStr
-
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		encCfg.Codec,
 		storeService,
@@ -113,10 +84,6 @@ func (s *MigrationsTestSuite) SetupTest() {
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 		log.NewNopLogger(),
 	)
-
-	s.ctx = ctx
-	s.accountKeeper = accountKeeper
-	s.bankKeeper = bankKeeper
 	s.emissionsKeeper = keeper.NewKeeper(
 		encCfg.Codec,
 		addressCodec,
@@ -124,18 +91,6 @@ func (s *MigrationsTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		authtypes.FeeCollectorName)
-	s.key = key
-	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
-	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
-	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
-
-	s.appModule = appModule
-
-	// Add all tests addresses in whitelists
-	for _, addr := range addrsStr {
-		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
-	}
 }
 
 func (s *MigrationsTestSuite) TestMigrateStore(t *testing.T) {
@@ -143,64 +98,46 @@ func (s *MigrationsTestSuite) TestMigrateStore(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Previous version of the message
-type MsgCreateNewTopicV1 struct {
-	Creator         string
-	Metadata        string
-	LossLogic       string
-	LossMethod      string
-	InferenceLogic  string
-	InferenceMethod string
-	EpochLength     int64
-	GroundTruthLag  int64
-	DefaultArg      string
-	PNorm           math.Dec
-	AlphaRegret     math.Dec
-	AllowNegative   bool
-	Epsilon         math.Dec
-}
-
-func (*MsgCreateNewTopicV1) ProtoMessage()    {}
-func (m *MsgCreateNewTopicV1) Reset()         { *m = MsgCreateNewTopicV1{} }
-func (m *MsgCreateNewTopicV1) String() string { return proto.CompactTextString(m) }
-
-func (s *MigrationsTestSuite) TestMigrateMsgCreateNewTopic(t *testing.T) {
+func (s *MigrationsTestSuite) TestMigrateTopic(t *testing.T) {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-	oldTopic := TopicV1{
-		ID:                     "testKey",
-		Name:                   "testName",
-		Description:            "testDescription",
-		Creator:                "testCreator",
-		Metadata:               "testMetadata",
-		LossMethod:             "testLossMethod",
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		PNorm:                  2,
-		AlphaRegret:            0.1,
-		AllowNegative:          true,
-		Epsilon:                0.01,
-		WorkerSubmissionWindow: 10,
+	oldTopic := oldtypes.Topic{
+		Id:              1,
+		Creator:         "creator",
+		Metadata:        "metadata",
+		LossLogic:       "losslogic",
+		LossMethod:      "lossmethod",
+		InferenceLogic:  "inferencelogic",
+		InferenceMethod: "inferencemethod",
+		EpochLastEnded:  0,
+		EpochLength:     100,
+		GroundTruthLag:  10,
+		DefaultArg:      "defaultarg",
+		PNorm:           alloraMath.NewDecFromInt64(3),
+		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:   false,
+		Epsilon:         alloraMath.MustNewDecFromString("0.0001"),
 	}
 
 	bz, err := proto.Marshal(&oldTopic)
 	require.NoError(t, err)
 
-	topicStore := prefix.NewStore(store, emissionsv1.TopicsKey)
+	topicStore := prefix.NewStore(store, types.TopicsKey)
 	topicStore.Set([]byte("testKey"), bz)
 
-	err = v2.MigrateStore(s.ctx, s.emissionsKeeper)
+	err = v2.MigrateTopics(store, cdc)
 	require.NoError(t, err)
 
 	// Verify the store has been updated correctly
 	iterator := topicStore.Iterator(nil, nil)
 	require.True(t, iterator.Valid())
 
-	var newMsg emissionsv1.Topic
+	var newMsg types.Topic
 	err = proto.Unmarshal(iterator.Value(), &newMsg)
 	require.NoError(t, err)
 
-	require.Equal(t, oldTopic.ID, newMsg.Id)
+	require.Equal(t, oldTopic.Id, newMsg.Id)
 	require.Equal(t, oldTopic.Creator, newMsg.Creator)
 	require.Equal(t, oldTopic.Metadata, newMsg.Metadata)
 	require.Equal(t, oldTopic.LossMethod, newMsg.LossMethod)
@@ -210,66 +147,283 @@ func (s *MigrationsTestSuite) TestMigrateMsgCreateNewTopic(t *testing.T) {
 	require.Equal(t, oldTopic.AlphaRegret, newMsg.AlphaRegret)
 	require.Equal(t, oldTopic.AllowNegative, newMsg.AllowNegative)
 	require.Equal(t, oldTopic.Epsilon, newMsg.Epsilon)
-	require.Equal(t, oldTopic.WorkerSubmissionWindow, newMsg.WorkerSubmissionWindow)
-	// New fields
-	// EpochLastEnded
-	// InitialRegret
-
+	require.Equal(t, 0, newMsg.EpochLastEnded)
+	require.Equal(t, 0, newMsg.InitialRegret)
 }
 
-// Old types
-//
-// types.Topic
-// types.OffchainNode
-// types.ValueBundle
-// types.ReputerValueBundles
-// types.TimestampedActorNonce
-type TopicV1 struct {
-	ID                     string
-	Name                   string
-	Description            string
-	Creator                string
-	Metadata               string
-	LossMethod             string
-	EpochLength            int64
-	GroundTruthLag         int64
-	PNorm                  int64
-	AlphaRegret            float64
-	AllowNegative          bool
-	Epsilon                float64
-	WorkerSubmissionWindow int64
+func (s *MigrationsTestSuite) TestMigrateOffchainNode(t *testing.T) {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
+
+	oldOffchainNode := oldtypes.OffchainNode{
+		LibP2PKey:    "testLibP2PKey",
+		MultiAddress: "testMultiAddress",
+		Owner:        "testOwner",
+		NodeAddress:  "testNodeAddress",
+		NodeId:       "testNodeId",
+	}
+
+	bz, err := proto.Marshal(&oldOffchainNode)
+	require.NoError(t, err)
+
+	offchainNodeStore := prefix.NewStore(store, types.WorkerNodesKey)
+	offchainNodeStore.Set([]byte("testKey"), bz)
+
+	err = v2.MigrateOffchainNode(store, cdc)
+	require.NoError(t, err)
+
+	// Verify the store has been updated correctly
+	iterator := offchainNodeStore.Iterator(nil, nil)
+	require.True(t, iterator.Valid())
+
+	var newMsg types.OffchainNode
+	err = proto.Unmarshal(iterator.Value(), &newMsg)
+	require.NoError(t, err)
+
+	require.Equal(t, oldOffchainNode.Owner, newMsg.Owner)
+	require.Equal(t, oldOffchainNode.NodeAddress, newMsg.NodeAddress)
 }
 
-func (*TopicV1) ProtoMessage()    {}
-func (m *TopicV1) Reset()         { *m = TopicV1{} }
-func (m *TopicV1) String() string { return proto.CompactTextString(m) }
+func (s *MigrationsTestSuite) TestMigrateValueBundle(t *testing.T) {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-type OffchainNodeV1 struct {
-	LibP2PKey    string
-	MultiAddress string
-	Owner        string
-	NodeAddress  string
-	NodeId       string
+	reputerNonce := &oldtypes.Nonce{
+		BlockHeight: 1,
+	}
+	oldValueBundle := oldtypes.ValueBundle{
+		TopicId: 1,
+		ReputerRequestNonce: &oldtypes.ReputerRequestNonce{
+			ReputerNonce: reputerNonce,
+		},
+		ExtraData:     []byte("testExtraData"),
+		CombinedValue: alloraMath.OneDec(),
+		InfererValues: []*oldtypes.WorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+		ForecasterValues: []*oldtypes.WorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+		NaiveValue: alloraMath.OneDec(),
+		OneOutInfererValues: []*oldtypes.WithheldWorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+		OneOutForecasterValues: []*oldtypes.WithheldWorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+		OneInForecasterValues: []*oldtypes.WorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+	}
+
+	bz, err := proto.Marshal(&oldValueBundle)
+	require.NoError(t, err)
+
+	valueBundleStore := prefix.NewStore(store, types.NetworkLossBundlesKey)
+	valueBundleStore.Set([]byte("testKey"), bz)
+
+	err = v2.MigrateNetworkLossBundles(store, cdc)
+	require.NoError(t, err)
+
+	// Verify the store has been updated correctly
+	iterator := valueBundleStore.Iterator(nil, nil)
+	require.True(t, iterator.Valid())
+
+	var newMsg types.ValueBundle
+	err = proto.Unmarshal(iterator.Value(), &newMsg)
+	require.NoError(t, err)
+
+	require.Equal(t, oldValueBundle.TopicId, newMsg.TopicId)
+	require.Equal(t, oldValueBundle.ReputerRequestNonce, newMsg.ReputerRequestNonce)
+	require.Equal(t, oldValueBundle.Reputer, newMsg.Reputer)
+	require.Equal(t, oldValueBundle.ExtraData, newMsg.ExtraData)
+	require.Equal(t, oldValueBundle.CombinedValue, newMsg.CombinedValue)
+	require.Equal(t, oldValueBundle.InfererValues, newMsg.InfererValues)
+	require.Equal(t, oldValueBundle.ForecasterValues, newMsg.ForecasterValues)
+	require.Equal(t, oldValueBundle.NaiveValue, newMsg.NaiveValue)
+	require.Equal(t, oldValueBundle.OneOutInfererValues, newMsg.OneOutInfererValues)
+	require.Equal(t, oldValueBundle.OneOutForecasterValues, newMsg.OneOutForecasterValues)
+	require.Equal(t, oldValueBundle.OneInForecasterValues, newMsg.OneInForecasterValues)
 }
 
-func (*OffchainNodeV1) ProtoMessage()    {}
-func (m *OffchainNodeV1) Reset()         { *m = OffchainNodeV1{} }
-func (m *OffchainNodeV1) String() string { return proto.CompactTextString(m) }
+func (s *MigrationsTestSuite) TestMigrateAllLossBundles(t *testing.T) {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-type ValueBundleV1 struct {
-	TopicId                uint64
-	ReputerRequestNonce    *emissionsv1.ReputerRequestNonce
-	Reputer                string
-	ExtraData              []byte
-	CombinedValue          math.Dec
-	InfererValues          []*emissionsv1.WorkerAttributedValue
-	ForecasterValues       []*emissionsv1.WorkerAttributedValue
-	NaiveValue             math.Dec
-	OneOutInfererValues    []*emissionsv1.WithheldWorkerAttributedValue
-	OneOutForecasterValues []*emissionsv1.WithheldWorkerAttributedValue
-	OneInForecasterValues  []*emissionsv1.WorkerAttributedValue
+	reputerNonce := &oldtypes.Nonce{
+		BlockHeight: 1,
+	}
+	oldValueBundle := oldtypes.ValueBundle{
+		TopicId: 1,
+		ReputerRequestNonce: &oldtypes.ReputerRequestNonce{
+			ReputerNonce: reputerNonce,
+		},
+		ExtraData:     []byte("testExtraData"),
+		CombinedValue: alloraMath.OneDec(),
+		InfererValues: []*oldtypes.WorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+		ForecasterValues: []*oldtypes.WorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+		NaiveValue: alloraMath.OneDec(),
+		OneOutInfererValues: []*oldtypes.WithheldWorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+		OneOutForecasterValues: []*oldtypes.WithheldWorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+		OneInForecasterValues: []*oldtypes.WorkerAttributedValue{
+			{
+				Worker: "testWorker",
+				Value:  alloraMath.OneDec(),
+			},
+		},
+	}
+
+	reputerValueBundle := oldtypes.ReputerValueBundle{
+		ValueBundle: &oldValueBundle,
+		Signature:   []byte("testSignature"),
+		Pubkey:      "testPubkey",
+	}
+
+	reputerValueBundles := oldtypes.ReputerValueBundles{
+		ReputerValueBundles: []*oldtypes.ReputerValueBundle{
+			&reputerValueBundle,
+		},
+	}
+
+	bz := cdc.MustMarshal(&reputerValueBundles)
+
+	allLossBundlesStore := prefix.NewStore(store, types.AllLossBundlesKey)
+	allLossBundlesStore.Set([]byte("testKey"), bz)
+
+	err := v2.MigrateNetworkLossBundles(store, cdc)
+	require.NoError(t, err)
+
+	// Verify the store has been updated correctly
+	iterator := allLossBundlesStore.Iterator(nil, nil)
+	require.True(t, iterator.Valid())
+
+	var newMsg types.ReputerValueBundles
+	err = proto.Unmarshal(iterator.Value(), &newMsg)
+	require.NoError(t, err)
+
+	require.Equal(t, reputerValueBundle.ValueBundle.TopicId, newMsg.ReputerValueBundles[0].ValueBundle.TopicId)
+	require.Equal(t, reputerValueBundle.ValueBundle.ReputerRequestNonce, newMsg.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce)
+	require.Equal(t, reputerValueBundle.ValueBundle.Reputer, newMsg.ReputerValueBundles[0].ValueBundle.Reputer)
+	require.Equal(t, reputerValueBundle.ValueBundle.ExtraData, newMsg.ReputerValueBundles[0].ValueBundle.ExtraData)
+	require.Equal(t, reputerValueBundle.ValueBundle.CombinedValue, newMsg.ReputerValueBundles[0].ValueBundle.CombinedValue)
+	require.Equal(t, reputerValueBundle.ValueBundle.InfererValues, newMsg.ReputerValueBundles[0].ValueBundle.InfererValues)
+	require.Equal(t, reputerValueBundle.ValueBundle.ForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.ForecasterValues)
+	require.Equal(t, reputerValueBundle.ValueBundle.NaiveValue, newMsg.ReputerValueBundles[0].ValueBundle.NaiveValue)
+	require.Equal(t, reputerValueBundle.ValueBundle.OneOutInfererValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererValues)
+	require.Equal(t, reputerValueBundle.ValueBundle.OneOutForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutForecasterValues)
+	require.Equal(t, reputerValueBundle.ValueBundle.OneInForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneInForecasterValues)
+	require.Equal(t, reputerValueBundle.Signature, newMsg.ReputerValueBundles[0].Signature)
+	require.Equal(t, reputerValueBundle.Pubkey, newMsg.ReputerValueBundles[0].Pubkey)
 }
 
-func (*ValueBundleV1) ProtoMessage()    {}
-func (m *ValueBundleV1) Reset()         { *m = ValueBundleV1{} }
-func (m *ValueBundleV1) String() string { return proto.CompactTextString(m) }
+func (s *MigrationsTestSuite) TestMigrateAllRecordCommits(t *testing.T) {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
+
+	oldTimestampedActorNonce1 := oldtypes.TimestampedActorNonce{
+		BlockHeight: 1,
+		Actor:       "testActor1",
+		Nonce: &oldtypes.Nonce{
+			BlockHeight: 1,
+		},
+	}
+
+	oldTimestampedActorNonce2 := oldtypes.TimestampedActorNonce{
+		BlockHeight: 1,
+		Actor:       "testActor2",
+		Nonce: &oldtypes.Nonce{
+			BlockHeight: 1,
+		},
+	}
+
+	bz1, err := proto.Marshal(&oldTimestampedActorNonce1)
+	require.NoError(t, err)
+
+	timestampedActorNonceStore1 := prefix.NewStore(store, types.TopicLastWorkerCommitKey)
+	timestampedActorNonceStore1.Set([]byte("testKey"), bz1)
+
+	bz2, err := proto.Marshal(&oldTimestampedActorNonce2)
+	require.NoError(t, err)
+
+	timestampedActorNonceStore2 := prefix.NewStore(store, types.TopicLastReputerCommitKey)
+	timestampedActorNonceStore2.Set([]byte("testKey"), bz2)
+
+	err = v2.MigrateAllRecordCommits(store, cdc)
+	require.NoError(t, err)
+
+	// Verify the store has been updated correctly
+	iterator1 := timestampedActorNonceStore1.Iterator(nil, nil)
+	require.True(t, iterator1.Valid())
+
+	iterator2 := timestampedActorNonceStore2.Iterator(nil, nil)
+	require.True(t, iterator2.Valid())
+
+	var newMsg1 types.TimestampedActorNonce
+	err = proto.Unmarshal(iterator1.Value(), &newMsg1)
+	require.NoError(t, err)
+
+	var newMsg2 types.TimestampedActorNonce
+	err = proto.Unmarshal(iterator2.Value(), &newMsg2)
+	require.NoError(t, err)
+
+	require.Equal(t, oldTimestampedActorNonce1.BlockHeight, newMsg1.BlockHeight)
+	require.Equal(t, oldTimestampedActorNonce1.Nonce, newMsg1.Nonce)
+
+	require.Equal(t, oldTimestampedActorNonce2.BlockHeight, newMsg2.BlockHeight)
+	require.Equal(t, oldTimestampedActorNonce2.Nonce, newMsg2.Nonce)
+}
+
+func (s *MigrationsTestSuite) TestMigrateParams(t *testing.T) {
+	prevParams := types.DefaultParams()
+	prevParams.DataSendingFee = math.ZeroInt()
+	err := s.emissionsKeeper.SetParams(s.ctx, prevParams)
+	s.Require().NoError(err)
+
+	// Check params before migration
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+	s.Require().Equal(params.DataSendingFee, math.ZeroInt())
+
+	// Run migration
+	v2.MigrateParams(s.ctx, s.emissionsKeeper)
+	newParams, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+
+	// Check params after migration
+	s.Require().NotEqual(newParams.DataSendingFee, math.ZeroInt())
+}
