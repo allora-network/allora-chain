@@ -38,7 +38,7 @@ jobs:
       with:
         go-version: 1.22.x
 
-    -name: "Install staticcheck"
+    - name: "Install staticcheck"
       run: go install 'honnef.co/go/tools/cmd/staticcheck@latest'
 
     - name: Run staticcheck linter
