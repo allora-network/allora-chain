@@ -27,6 +27,16 @@ jobs:
         clang-format-version: '17'
         include-regex: '^.*\.proto$'
 
+  staticcheck-linter:
+    name: "Go staticcheck Lint Tool"
+    runs-on : ubuntu-latest
+    needs: [clang-format]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dominikh/staticcheck-action@v1
+      with:
+        version: "latest"
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
