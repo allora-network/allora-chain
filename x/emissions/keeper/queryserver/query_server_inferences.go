@@ -141,12 +141,12 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	error,
 ) {
 
-	lastWorkerCommit, err := qs.k.GetTopicLastCommit(ctx, req.TopicId, types.ActorType_INFERER)
+	lastWorkerCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
 
-	lastReputerCommit, err := qs.k.GetTopicLastCommit(ctx, req.TopicId, types.ActorType_REPUTER)
+	lastReputerCommit, err := qs.k.GetReputerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
 	}
@@ -170,6 +170,9 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 			infererWeights,
 			forecasterWeights,
 		)
+	if err != nil {
+		return nil, err
+	}
 
 	if ciRawPercentiles == nil {
 		ciRawPercentiles = []alloraMath.Dec{}

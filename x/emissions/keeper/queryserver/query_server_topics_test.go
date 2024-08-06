@@ -103,12 +103,11 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 	}
 
 	topic := types.Topic{Id: 1}
-	_ = keeper.SetTopicLastCommit(
+	_ = keeper.SetReputerTopicLastCommit(
 		ctx,
 		topic.Id,
 		int64(blockHeight),
 		&nonce,
-		types.ActorType_REPUTER,
 	)
 
 	req := &types.QueryTopicLastCommitRequest{
@@ -127,12 +126,11 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 		BlockHeight: 98,
 	}
 
-	_ = keeper.SetTopicLastCommit(
+	_ = keeper.SetWorkerTopicLastCommit(
 		ctx,
 		topic2.Id,
 		int64(blockHeight),
 		&nonce,
-		types.ActorType_INFERER,
 	)
 
 	req2 := &types.QueryTopicLastCommitRequest{
