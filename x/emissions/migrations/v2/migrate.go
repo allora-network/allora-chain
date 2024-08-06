@@ -64,6 +64,7 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
 
+	valueToAdd := make(map[string]types.Topic, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var oldMsg oldtypes.Topic
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
@@ -94,50 +95,47 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 			WorkerSubmissionWindow: newWorkerSubmissionWindow,
 		}
 
-		topicStore.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		valueToAdd[string(iterator.Key())] = newMsg
+	}
+
+	for key, value := range valueToAdd {
+		topicStore.Set([]byte(key), cdc.MustMarshal(&value))
 	}
 
 	return nil
 }
 
+func MigrateOffchainStore(workerStore storetypes.KVStore, cdc codec.BinaryCodec) error {
+	iterator := workerStore.Iterator(nil, nil)
+	keysToDelete := make([][]byte, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		keysToDelete = append(keysToDelete, iterator.Key())
+	}
+	iterator.Close()
+
+	// delete the old keys
+	for _, key := range keysToDelete {
+		oldNode := workerStore.Get(key)
+		var oldMsg oldtypes.OffchainNode
+		err := proto.Unmarshal(oldNode, &oldMsg)
+		if err != nil {
+			return err
+		}
+		newMsg := types.OffchainNode{
+			NodeAddress: oldMsg.NodeAddress,
+			Owner:       oldMsg.Owner,
+		}
+		workerStore.Set([]byte(oldMsg.NodeAddress), cdc.MustMarshal(&newMsg))
+		workerStore.Delete(key)
+	}
+	return nil
+}
+
 func MigrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	workerStore := prefix.NewStore(store, types.WorkerNodesKey)
-	iterator := workerStore.Iterator(nil, nil)
-
-	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg oldtypes.OffchainNode
-		err := proto.Unmarshal(iterator.Value(), &oldMsg)
-		if err != nil {
-			return err
-		}
-
-		newMsg := types.OffchainNode{
-			NodeAddress: oldMsg.NodeAddress,
-			Owner:       oldMsg.Owner,
-		}
-
-		store.Delete(iterator.Key())
-		store.Set([]byte(oldMsg.NodeAddress), cdc.MustMarshal(&newMsg))
-	}
-
+	MigrateOffchainStore(workerStore, cdc)
 	reputerStore := prefix.NewStore(store, types.ReputerNodesKey)
-	iterator = reputerStore.Iterator(nil, nil)
-
-	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg oldtypes.OffchainNode
-		err := proto.Unmarshal(iterator.Value(), &oldMsg)
-		if err != nil {
-			return err
-		}
-
-		newMsg := types.OffchainNode{
-			NodeAddress: oldMsg.NodeAddress,
-			Owner:       oldMsg.Owner,
-		}
-
-		store.Delete(iterator.Key())
-		store.Set([]byte(oldMsg.NodeAddress), cdc.MustMarshal(&newMsg))
-	}
+	MigrateOffchainStore(reputerStore, cdc)
 	return nil
 }
 
@@ -145,6 +143,7 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 	networkLossBundlesStore := prefix.NewStore(store, types.NetworkLossBundlesKey)
 	iterator := networkLossBundlesStore.Iterator(nil, nil)
 
+	valueToAdd := make(map[string]types.ValueBundle, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var oldMsg oldtypes.ValueBundle
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
@@ -208,7 +207,11 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 		newMsg.OneOutForecasterValues = newOneOutForecasterValues
 		newMsg.OneInForecasterValues = newOneInForecastValues
 
-		networkLossBundlesStore.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		valueToAdd[string(iterator.Key())] = newMsg
+	}
+
+	for key, value := range valueToAdd {
+		networkLossBundlesStore.Set([]byte(key), cdc.MustMarshal(&value))
 	}
 
 	return nil
@@ -218,6 +221,7 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 	allLossBundlesStore := prefix.NewStore(store, types.AllLossBundlesKey)
 	iterator := allLossBundlesStore.Iterator(nil, nil)
 
+	valuesToAdd := make(map[string]types.ReputerValueBundles, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var oldMsg types.ReputerValueBundles
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
@@ -251,7 +255,11 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 				},
 			)
 		}
-		allLossBundlesStore.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		valuesToAdd[string(iterator.Key())] = newMsg
+	}
+
+	for key, value := range valuesToAdd {
+		allLossBundlesStore.Set([]byte(key), cdc.MustMarshal(&value))
 	}
 
 	return nil
@@ -273,6 +281,7 @@ func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, co
 	topicLastWorkerCommitStore := prefix.NewStore(store, commitKey)
 	iterator := topicLastWorkerCommitStore.Iterator(nil, nil)
 
+	valuesToAdd := make(map[string]types.TimestampedActorNonce, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		var oldMsg oldtypes.TimestampedActorNonce
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
@@ -287,7 +296,11 @@ func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, co
 			},
 		}
 
-		topicLastWorkerCommitStore.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		valuesToAdd[string(iterator.Key())] = newMsg
+	}
+
+	for key, value := range valuesToAdd {
+		topicLastWorkerCommitStore.Set([]byte(key), cdc.MustMarshal(&value))
 	}
 
 	return nil
