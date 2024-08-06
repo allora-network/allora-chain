@@ -19,6 +19,8 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
+	removeOldKVStores(store)
+
 	err := MigrateTopics(store, cdc)
 	if err != nil {
 		return err
@@ -203,8 +205,8 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 		newMsg.InfererValues = newInfererValues
 		newMsg.ForecasterValues = newForecastValues
 		newMsg.OneOutInfererValues = newOneOutInfererValues
-		newMsg.OneInForecasterValues = newOneInForecastValues
 		newMsg.OneOutForecasterValues = newOneOutForecasterValues
+		newMsg.OneInForecasterValues = newOneInForecastValues
 
 		store.Delete(iterator.Key())
 		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
