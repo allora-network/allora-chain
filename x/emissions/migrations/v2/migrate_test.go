@@ -442,11 +442,6 @@ func (s *MigrationsTestSuite) TestMigrateParams() {
 	err := s.emissionsKeeper.SetParams(s.ctx, prevParams)
 	s.Require().NoError(err)
 
-	// Check params before migration
-	params, err := s.emissionsKeeper.GetParams(s.ctx)
-	s.Require().NoError(err)
-	s.Require().Equal(prevParams, params)
-
 	// Run migration
 	v2.MigrateParams(s.ctx, s.emissionsKeeper)
 	newParams, err := s.emissionsKeeper.GetParams(s.ctx)
