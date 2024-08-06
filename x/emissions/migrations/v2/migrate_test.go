@@ -375,16 +375,21 @@ func (s *MigrationsTestSuite) TestMigrateAllLossBundles() {
 	s.Require().NoError(err)
 
 	s.Require().Equal(reputerValueBundle.ValueBundle.TopicId, newMsg.ReputerValueBundles[0].ValueBundle.TopicId)
-	s.Require().Equal(reputerValueBundle.ValueBundle.ReputerRequestNonce, newMsg.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce)
+	s.Require().Equal(reputerValueBundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight, newMsg.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight)
 	s.Require().Equal(reputerValueBundle.ValueBundle.Reputer, newMsg.ReputerValueBundles[0].ValueBundle.Reputer)
 	s.Require().Equal(reputerValueBundle.ValueBundle.ExtraData, newMsg.ReputerValueBundles[0].ValueBundle.ExtraData)
 	s.Require().Equal(reputerValueBundle.ValueBundle.CombinedValue, newMsg.ReputerValueBundles[0].ValueBundle.CombinedValue)
-	s.Require().Equal(reputerValueBundle.ValueBundle.InfererValues, newMsg.ReputerValueBundles[0].ValueBundle.InfererValues)
-	s.Require().Equal(reputerValueBundle.ValueBundle.ForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.ForecasterValues)
+
+	s.Require().True(areAttributedArraysEqual(oldValueBundle.InfererValues, newMsg.ReputerValueBundles[0].ValueBundle.InfererValues))
+	s.Require().True(areAttributedArraysEqual(oldValueBundle.ForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.ForecasterValues))
+
 	s.Require().Equal(reputerValueBundle.ValueBundle.NaiveValue, newMsg.ReputerValueBundles[0].ValueBundle.NaiveValue)
-	s.Require().Equal(reputerValueBundle.ValueBundle.OneOutInfererValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererValues)
-	s.Require().Equal(reputerValueBundle.ValueBundle.OneOutForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutForecasterValues)
-	s.Require().Equal(reputerValueBundle.ValueBundle.OneInForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneInForecasterValues)
+
+	s.Require().True(areWithHeldArraysEqual(oldValueBundle.OneOutInfererValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererValues))
+	s.Require().True(areWithHeldArraysEqual(oldValueBundle.OneOutForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutForecasterValues))
+
+	s.Require().True(areAttributedArraysEqual(oldValueBundle.OneInForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneInForecasterValues))
+
 	defaultOneOutInfererForecasterValues := types.OneOutInfererForecasterValues{
 		Forecaster: "",
 		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
