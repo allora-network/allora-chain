@@ -206,7 +206,7 @@ func CloseReputerNonce(
 		return err
 	}
 
-	err = k.SetTopicLastCommit(ctx, topic.Id, blockHeight, &nonce, types.ActorType_REPUTER)
+	err = k.SetReputerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		return err
 	}
