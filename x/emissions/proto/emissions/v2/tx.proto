@@ -154,22 +154,25 @@ message MsgUpdateParamsResponse {}
 /// TOPICS
 
 message MsgCreateNewTopic {
+  reserved 3, 5, 6, 9;
+  reserved "loss_logic", "inference_logic", "inference_method", "default_arg";
+
   option (cosmos.msg.v1.signer) = "creator";
 
   // creator is the message sender.
   string creator = 1;
   string metadata = 2;
-  string loss_method = 3;
-  int64 epoch_length = 4;
-  int64 ground_truth_lag = 5;
-  string p_norm = 6
+  string loss_method = 4;
+  int64 epoch_length = 7;
+  int64 ground_truth_lag = 8;
+  string p_norm = 10
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string alpha_regret = 7
+  string alpha_regret = 11
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  bool allow_negative = 8;
-  string epsilon = 9
+  bool allow_negative = 12;
+  string epsilon = 13
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  int64 worker_submission_window = 10;
+  int64 worker_submission_window = 14;
 }
 
 message MsgCreateNewTopicResponse {
@@ -198,12 +201,15 @@ message MsgInsertWorkerPayloadResponse {}
 ///  Inference Node Registration
 
 message MsgRegister {
+  reserved 2, 3;
+  reserved "lib_p2p_key", "multi_address";
+
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
-  uint64 topic_id = 2;
-  string owner = 3;
-  bool is_reputer = 4;
+  uint64 topic_id = 4;
+  string owner = 5;
+  bool is_reputer = 6;
 }
 
 message MsgRegisterResponse {
