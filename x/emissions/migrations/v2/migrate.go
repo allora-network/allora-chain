@@ -94,8 +94,7 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 			WorkerSubmissionWindow: newWorkerSubmissionWindow,
 		}
 
-		store.Delete(iterator.Key())
-		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		topicStore.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
 	}
 
 	return nil
@@ -209,9 +208,9 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 		newMsg.OneOutForecasterValues = newOneOutForecasterValues
 		newMsg.OneInForecasterValues = newOneInForecastValues
 
-		store.Delete(iterator.Key())
-		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		networkLossBundlesStore.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
 	}
+
 	return nil
 }
 
@@ -252,10 +251,9 @@ func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) erro
 				},
 			)
 		}
-
-		store.Delete(iterator.Key())
-		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		allLossBundlesStore.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
 	}
+
 	return nil
 }
 
@@ -289,9 +287,9 @@ func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, co
 			},
 		}
 
-		store.Delete(iterator.Key())
-		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
+		topicLastWorkerCommitStore.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
 	}
+
 	return nil
 }
 
