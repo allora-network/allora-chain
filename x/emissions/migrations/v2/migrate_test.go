@@ -147,8 +147,8 @@ func (s *MigrationsTestSuite) TestMigrateTopic(t *testing.T) {
 	require.Equal(t, oldTopic.AlphaRegret, newMsg.AlphaRegret)
 	require.Equal(t, oldTopic.AllowNegative, newMsg.AllowNegative)
 	require.Equal(t, oldTopic.Epsilon, newMsg.Epsilon)
-	require.Equal(t, 0, newMsg.EpochLastEnded)
-	require.Equal(t, 0, newMsg.InitialRegret)
+	require.Equal(t, oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
+	require.Equal(t, oldTopic.InitialRegret, newMsg.InitialRegret)
 }
 
 func (s *MigrationsTestSuite) TestMigrateOffchainNode(t *testing.T) {
@@ -259,6 +259,18 @@ func (s *MigrationsTestSuite) TestMigrateValueBundle(t *testing.T) {
 	require.Equal(t, oldValueBundle.OneOutInfererValues, newMsg.OneOutInfererValues)
 	require.Equal(t, oldValueBundle.OneOutForecasterValues, newMsg.OneOutForecasterValues)
 	require.Equal(t, oldValueBundle.OneInForecasterValues, newMsg.OneInForecasterValues)
+
+	defaultOneOutInfererForecasterValues := types.OneOutInfererForecasterValues{
+		Forecaster: "",
+		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+			{
+				Worker: "",
+				Value:  alloraMath.ZeroDec(),
+			},
+		},
+	}
+	require.Equal(t, defaultOneOutInfererForecasterValues, newMsg.OneOutInfererForecasterValues)
+
 }
 
 func (s *MigrationsTestSuite) TestMigrateAllLossBundles(t *testing.T) {
@@ -347,6 +359,17 @@ func (s *MigrationsTestSuite) TestMigrateAllLossBundles(t *testing.T) {
 	require.Equal(t, reputerValueBundle.ValueBundle.OneOutInfererValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererValues)
 	require.Equal(t, reputerValueBundle.ValueBundle.OneOutForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutForecasterValues)
 	require.Equal(t, reputerValueBundle.ValueBundle.OneInForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneInForecasterValues)
+	defaultOneOutInfererForecasterValues := types.OneOutInfererForecasterValues{
+		Forecaster: "",
+		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+			{
+				Worker: "",
+				Value:  alloraMath.ZeroDec(),
+			},
+		},
+	}
+	require.Equal(t, defaultOneOutInfererForecasterValues, newMsg.ReputerValueBundles[0].ValueBundle.OneOutInfererForecasterValues)
+
 	require.Equal(t, reputerValueBundle.Signature, newMsg.ReputerValueBundles[0].Signature)
 	require.Equal(t, reputerValueBundle.Pubkey, newMsg.ReputerValueBundles[0].Pubkey)
 }
