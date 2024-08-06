@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: emissions/v1/tx.proto
+// source: emissions/v2/tx.proto
 
-package emissionsv1
+package emissionsv2
 
 import (
 	context "context"
@@ -19,22 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName              = "/emissions.v1.Msg/UpdateParams"
-	Msg_CreateNewTopic_FullMethodName            = "/emissions.v1.Msg/CreateNewTopic"
-	Msg_Register_FullMethodName                  = "/emissions.v1.Msg/Register"
-	Msg_RemoveRegistration_FullMethodName        = "/emissions.v1.Msg/RemoveRegistration"
-	Msg_AddStake_FullMethodName                  = "/emissions.v1.Msg/AddStake"
-	Msg_RemoveStake_FullMethodName               = "/emissions.v1.Msg/RemoveStake"
-	Msg_CancelRemoveStake_FullMethodName         = "/emissions.v1.Msg/CancelRemoveStake"
-	Msg_DelegateStake_FullMethodName             = "/emissions.v1.Msg/DelegateStake"
-	Msg_RewardDelegateStake_FullMethodName       = "/emissions.v1.Msg/RewardDelegateStake"
-	Msg_RemoveDelegateStake_FullMethodName       = "/emissions.v1.Msg/RemoveDelegateStake"
-	Msg_CancelRemoveDelegateStake_FullMethodName = "/emissions.v1.Msg/CancelRemoveDelegateStake"
-	Msg_FundTopic_FullMethodName                 = "/emissions.v1.Msg/FundTopic"
-	Msg_AddToWhitelistAdmin_FullMethodName       = "/emissions.v1.Msg/AddToWhitelistAdmin"
-	Msg_RemoveFromWhitelistAdmin_FullMethodName  = "/emissions.v1.Msg/RemoveFromWhitelistAdmin"
-	Msg_InsertWorkerPayload_FullMethodName       = "/emissions.v1.Msg/InsertWorkerPayload"
-	Msg_InsertReputerPayload_FullMethodName      = "/emissions.v1.Msg/InsertReputerPayload"
+	Msg_UpdateParams_FullMethodName              = "/emissions.v2.Msg/UpdateParams"
+	Msg_CreateNewTopic_FullMethodName            = "/emissions.v2.Msg/CreateNewTopic"
+	Msg_Register_FullMethodName                  = "/emissions.v2.Msg/Register"
+	Msg_RemoveRegistration_FullMethodName        = "/emissions.v2.Msg/RemoveRegistration"
+	Msg_AddStake_FullMethodName                  = "/emissions.v2.Msg/AddStake"
+	Msg_RemoveStake_FullMethodName               = "/emissions.v2.Msg/RemoveStake"
+	Msg_CancelRemoveStake_FullMethodName         = "/emissions.v2.Msg/CancelRemoveStake"
+	Msg_DelegateStake_FullMethodName             = "/emissions.v2.Msg/DelegateStake"
+	Msg_RewardDelegateStake_FullMethodName       = "/emissions.v2.Msg/RewardDelegateStake"
+	Msg_RemoveDelegateStake_FullMethodName       = "/emissions.v2.Msg/RemoveDelegateStake"
+	Msg_CancelRemoveDelegateStake_FullMethodName = "/emissions.v2.Msg/CancelRemoveDelegateStake"
+	Msg_FundTopic_FullMethodName                 = "/emissions.v2.Msg/FundTopic"
+	Msg_AddToWhitelistAdmin_FullMethodName       = "/emissions.v2.Msg/AddToWhitelistAdmin"
+	Msg_RemoveFromWhitelistAdmin_FullMethodName  = "/emissions.v2.Msg/RemoveFromWhitelistAdmin"
+	Msg_InsertWorkerPayload_FullMethodName       = "/emissions.v2.Msg/InsertWorkerPayload"
+	Msg_InsertReputerPayload_FullMethodName      = "/emissions.v2.Msg/InsertReputerPayload"
 )
 
 // MsgClient is the client API for Msg service.
@@ -591,7 +591,7 @@ func _Msg_InsertReputerPayload_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Msg_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "emissions.v1.Msg",
+	ServiceName: "emissions.v2.Msg",
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -660,5 +660,5 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "emissions/v1/tx.proto",
+	Metadata: "emissions/v2/tx.proto",
 }

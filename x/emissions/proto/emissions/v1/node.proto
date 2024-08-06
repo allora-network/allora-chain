@@ -1,12 +1,12 @@
 syntax = "proto3";
 package emissions.v1;
 
-option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+option go_package = "github.com/allora-network/allora-chain/x/emissions/migrations/types";
 
 message OffchainNode {
-  reserved 1, 2, 5;
-  reserved "lib_p2p_key", "multi_address", "node_id";
-
+  string lib_p2p_key = 1;
+  string multi_address = 2;
   string owner = 3;
   string node_address = 4;
+  string node_id = 5;
 }

@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: emissions/v1/query.proto
+// source: emissions/v2/query.proto
 
-package emissionsv1
+package emissionsv2
 
 import (
 	context "context"
@@ -19,72 +19,72 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName                                      = "/emissions.v1.Query/Params"
-	Query_GetNextTopicId_FullMethodName                              = "/emissions.v1.Query/GetNextTopicId"
-	Query_GetTopic_FullMethodName                                    = "/emissions.v1.Query/GetTopic"
-	Query_GetActiveTopics_FullMethodName                             = "/emissions.v1.Query/GetActiveTopics"
-	Query_GetWorkerLatestInferenceByTopicId_FullMethodName           = "/emissions.v1.Query/GetWorkerLatestInferenceByTopicId"
-	Query_GetInferencesAtBlock_FullMethodName                        = "/emissions.v1.Query/GetInferencesAtBlock"
-	Query_GetLatestTopicInferences_FullMethodName                    = "/emissions.v1.Query/GetLatestTopicInferences"
-	Query_GetForecastsAtBlock_FullMethodName                         = "/emissions.v1.Query/GetForecastsAtBlock"
-	Query_GetNetworkLossBundleAtBlock_FullMethodName                 = "/emissions.v1.Query/GetNetworkLossBundleAtBlock"
-	Query_GetTotalStake_FullMethodName                               = "/emissions.v1.Query/GetTotalStake"
-	Query_GetReputerStakeInTopic_FullMethodName                      = "/emissions.v1.Query/GetReputerStakeInTopic"
-	Query_GetMultiReputerStakeInTopic_FullMethodName                 = "/emissions.v1.Query/GetMultiReputerStakeInTopic"
-	Query_GetStakeFromReputerInTopicInSelf_FullMethodName            = "/emissions.v1.Query/GetStakeFromReputerInTopicInSelf"
-	Query_GetDelegateStakeInTopicInReputer_FullMethodName            = "/emissions.v1.Query/GetDelegateStakeInTopicInReputer"
-	Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName       = "/emissions.v1.Query/GetStakeFromDelegatorInTopicInReputer"
-	Query_GetStakeFromDelegatorInTopic_FullMethodName                = "/emissions.v1.Query/GetStakeFromDelegatorInTopic"
-	Query_GetTopicStake_FullMethodName                               = "/emissions.v1.Query/GetTopicStake"
-	Query_GetStakeRemovalsUpUntilBlock_FullMethodName                = "/emissions.v1.Query/GetStakeRemovalsUpUntilBlock"
-	Query_GetDelegateStakeRemovalsUpUntilBlock_FullMethodName        = "/emissions.v1.Query/GetDelegateStakeRemovalsUpUntilBlock"
-	Query_GetStakeRemovalInfo_FullMethodName                         = "/emissions.v1.Query/GetStakeRemovalInfo"
-	Query_GetDelegateStakeRemovalInfo_FullMethodName                 = "/emissions.v1.Query/GetDelegateStakeRemovalInfo"
-	Query_GetWorkerNodeInfo_FullMethodName                           = "/emissions.v1.Query/GetWorkerNodeInfo"
-	Query_GetReputerNodeInfo_FullMethodName                          = "/emissions.v1.Query/GetReputerNodeInfo"
-	Query_IsWorkerRegisteredInTopicId_FullMethodName                 = "/emissions.v1.Query/IsWorkerRegisteredInTopicId"
-	Query_IsReputerRegisteredInTopicId_FullMethodName                = "/emissions.v1.Query/IsReputerRegisteredInTopicId"
-	Query_GetNetworkInferencesAtBlock_FullMethodName                 = "/emissions.v1.Query/GetNetworkInferencesAtBlock"
-	Query_GetLatestNetworkInference_FullMethodName                   = "/emissions.v1.Query/GetLatestNetworkInference"
-	Query_GetLatestAvailableNetworkInference_FullMethodName          = "/emissions.v1.Query/GetLatestAvailableNetworkInference"
-	Query_IsWorkerNonceUnfulfilled_FullMethodName                    = "/emissions.v1.Query/IsWorkerNonceUnfulfilled"
-	Query_IsReputerNonceUnfulfilled_FullMethodName                   = "/emissions.v1.Query/IsReputerNonceUnfulfilled"
-	Query_GetUnfulfilledWorkerNonces_FullMethodName                  = "/emissions.v1.Query/GetUnfulfilledWorkerNonces"
-	Query_GetUnfulfilledReputerNonces_FullMethodName                 = "/emissions.v1.Query/GetUnfulfilledReputerNonces"
-	Query_GetInfererNetworkRegret_FullMethodName                     = "/emissions.v1.Query/GetInfererNetworkRegret"
-	Query_GetForecasterNetworkRegret_FullMethodName                  = "/emissions.v1.Query/GetForecasterNetworkRegret"
-	Query_GetOneInForecasterNetworkRegret_FullMethodName             = "/emissions.v1.Query/GetOneInForecasterNetworkRegret"
-	Query_GetOneInForecasterSelfNetworkRegret_FullMethodName         = "/emissions.v1.Query/GetOneInForecasterSelfNetworkRegret"
-	Query_IsWhitelistAdmin_FullMethodName                            = "/emissions.v1.Query/IsWhitelistAdmin"
-	Query_GetTopicLastWorkerCommitInfo_FullMethodName                = "/emissions.v1.Query/GetTopicLastWorkerCommitInfo"
-	Query_GetTopicLastReputerCommitInfo_FullMethodName               = "/emissions.v1.Query/GetTopicLastReputerCommitInfo"
-	Query_GetTopicRewardNonce_FullMethodName                         = "/emissions.v1.Query/GetTopicRewardNonce"
-	Query_GetReputerLossBundlesAtBlock_FullMethodName                = "/emissions.v1.Query/GetReputerLossBundlesAtBlock"
-	Query_GetStakeReputerAuthority_FullMethodName                    = "/emissions.v1.Query/GetStakeReputerAuthority"
-	Query_GetDelegateStakePlacement_FullMethodName                   = "/emissions.v1.Query/GetDelegateStakePlacement"
-	Query_GetDelegateStakeUponReputer_FullMethodName                 = "/emissions.v1.Query/GetDelegateStakeUponReputer"
-	Query_GetDelegateRewardPerShare_FullMethodName                   = "/emissions.v1.Query/GetDelegateRewardPerShare"
-	Query_GetStakeRemovalForReputerAndTopicId_FullMethodName         = "/emissions.v1.Query/GetStakeRemovalForReputerAndTopicId"
-	Query_GetDelegateStakeRemoval_FullMethodName                     = "/emissions.v1.Query/GetDelegateStakeRemoval"
-	Query_GetPreviousTopicWeight_FullMethodName                      = "/emissions.v1.Query/GetPreviousTopicWeight"
-	Query_TopicExists_FullMethodName                                 = "/emissions.v1.Query/TopicExists"
-	Query_IsTopicActive_FullMethodName                               = "/emissions.v1.Query/IsTopicActive"
-	Query_GetTopicFeeRevenue_FullMethodName                          = "/emissions.v1.Query/GetTopicFeeRevenue"
-	Query_GetRewardableTopics_FullMethodName                         = "/emissions.v1.Query/GetRewardableTopics"
-	Query_GetLatestInfererScore_FullMethodName                       = "/emissions.v1.Query/GetLatestInfererScore"
-	Query_GetLatestForecasterScore_FullMethodName                    = "/emissions.v1.Query/GetLatestForecasterScore"
-	Query_GetLatestReputerScore_FullMethodName                       = "/emissions.v1.Query/GetLatestReputerScore"
-	Query_GetInferenceScoresUntilBlock_FullMethodName                = "/emissions.v1.Query/GetInferenceScoresUntilBlock"
-	Query_GetWorkerInferenceScoresAtBlock_FullMethodName             = "/emissions.v1.Query/GetWorkerInferenceScoresAtBlock"
-	Query_GetForecastScoresUntilBlock_FullMethodName                 = "/emissions.v1.Query/GetForecastScoresUntilBlock"
-	Query_GetWorkerForecastScoresAtBlock_FullMethodName              = "/emissions.v1.Query/GetWorkerForecastScoresAtBlock"
-	Query_GetReputersScoresAtBlock_FullMethodName                    = "/emissions.v1.Query/GetReputersScoresAtBlock"
-	Query_GetListeningCoefficient_FullMethodName                     = "/emissions.v1.Query/GetListeningCoefficient"
-	Query_GetPreviousReputerRewardFraction_FullMethodName            = "/emissions.v1.Query/GetPreviousReputerRewardFraction"
-	Query_GetPreviousInferenceRewardFraction_FullMethodName          = "/emissions.v1.Query/GetPreviousInferenceRewardFraction"
-	Query_GetPreviousForecastRewardFraction_FullMethodName           = "/emissions.v1.Query/GetPreviousForecastRewardFraction"
-	Query_GetPreviousPercentageRewardToStakedReputers_FullMethodName = "/emissions.v1.Query/GetPreviousPercentageRewardToStakedReputers"
-	Query_GetTotalRewardToDistribute_FullMethodName                  = "/emissions.v1.Query/GetTotalRewardToDistribute"
+	Query_Params_FullMethodName                                      = "/emissions.v2.Query/Params"
+	Query_GetNextTopicId_FullMethodName                              = "/emissions.v2.Query/GetNextTopicId"
+	Query_GetTopic_FullMethodName                                    = "/emissions.v2.Query/GetTopic"
+	Query_GetActiveTopics_FullMethodName                             = "/emissions.v2.Query/GetActiveTopics"
+	Query_GetWorkerLatestInferenceByTopicId_FullMethodName           = "/emissions.v2.Query/GetWorkerLatestInferenceByTopicId"
+	Query_GetInferencesAtBlock_FullMethodName                        = "/emissions.v2.Query/GetInferencesAtBlock"
+	Query_GetLatestTopicInferences_FullMethodName                    = "/emissions.v2.Query/GetLatestTopicInferences"
+	Query_GetForecastsAtBlock_FullMethodName                         = "/emissions.v2.Query/GetForecastsAtBlock"
+	Query_GetNetworkLossBundleAtBlock_FullMethodName                 = "/emissions.v2.Query/GetNetworkLossBundleAtBlock"
+	Query_GetTotalStake_FullMethodName                               = "/emissions.v2.Query/GetTotalStake"
+	Query_GetReputerStakeInTopic_FullMethodName                      = "/emissions.v2.Query/GetReputerStakeInTopic"
+	Query_GetMultiReputerStakeInTopic_FullMethodName                 = "/emissions.v2.Query/GetMultiReputerStakeInTopic"
+	Query_GetStakeFromReputerInTopicInSelf_FullMethodName            = "/emissions.v2.Query/GetStakeFromReputerInTopicInSelf"
+	Query_GetDelegateStakeInTopicInReputer_FullMethodName            = "/emissions.v2.Query/GetDelegateStakeInTopicInReputer"
+	Query_GetStakeFromDelegatorInTopicInReputer_FullMethodName       = "/emissions.v2.Query/GetStakeFromDelegatorInTopicInReputer"
+	Query_GetStakeFromDelegatorInTopic_FullMethodName                = "/emissions.v2.Query/GetStakeFromDelegatorInTopic"
+	Query_GetTopicStake_FullMethodName                               = "/emissions.v2.Query/GetTopicStake"
+	Query_GetStakeRemovalsUpUntilBlock_FullMethodName                = "/emissions.v2.Query/GetStakeRemovalsUpUntilBlock"
+	Query_GetDelegateStakeRemovalsUpUntilBlock_FullMethodName        = "/emissions.v2.Query/GetDelegateStakeRemovalsUpUntilBlock"
+	Query_GetStakeRemovalInfo_FullMethodName                         = "/emissions.v2.Query/GetStakeRemovalInfo"
+	Query_GetDelegateStakeRemovalInfo_FullMethodName                 = "/emissions.v2.Query/GetDelegateStakeRemovalInfo"
+	Query_GetWorkerNodeInfo_FullMethodName                           = "/emissions.v2.Query/GetWorkerNodeInfo"
+	Query_GetReputerNodeInfo_FullMethodName                          = "/emissions.v2.Query/GetReputerNodeInfo"
+	Query_IsWorkerRegisteredInTopicId_FullMethodName                 = "/emissions.v2.Query/IsWorkerRegisteredInTopicId"
+	Query_IsReputerRegisteredInTopicId_FullMethodName                = "/emissions.v2.Query/IsReputerRegisteredInTopicId"
+	Query_GetNetworkInferencesAtBlock_FullMethodName                 = "/emissions.v2.Query/GetNetworkInferencesAtBlock"
+	Query_GetLatestNetworkInference_FullMethodName                   = "/emissions.v2.Query/GetLatestNetworkInference"
+	Query_GetLatestAvailableNetworkInference_FullMethodName          = "/emissions.v2.Query/GetLatestAvailableNetworkInference"
+	Query_IsWorkerNonceUnfulfilled_FullMethodName                    = "/emissions.v2.Query/IsWorkerNonceUnfulfilled"
+	Query_IsReputerNonceUnfulfilled_FullMethodName                   = "/emissions.v2.Query/IsReputerNonceUnfulfilled"
+	Query_GetUnfulfilledWorkerNonces_FullMethodName                  = "/emissions.v2.Query/GetUnfulfilledWorkerNonces"
+	Query_GetUnfulfilledReputerNonces_FullMethodName                 = "/emissions.v2.Query/GetUnfulfilledReputerNonces"
+	Query_GetInfererNetworkRegret_FullMethodName                     = "/emissions.v2.Query/GetInfererNetworkRegret"
+	Query_GetForecasterNetworkRegret_FullMethodName                  = "/emissions.v2.Query/GetForecasterNetworkRegret"
+	Query_GetOneInForecasterNetworkRegret_FullMethodName             = "/emissions.v2.Query/GetOneInForecasterNetworkRegret"
+	Query_GetOneInForecasterSelfNetworkRegret_FullMethodName         = "/emissions.v2.Query/GetOneInForecasterSelfNetworkRegret"
+	Query_IsWhitelistAdmin_FullMethodName                            = "/emissions.v2.Query/IsWhitelistAdmin"
+	Query_GetTopicLastWorkerCommitInfo_FullMethodName                = "/emissions.v2.Query/GetTopicLastWorkerCommitInfo"
+	Query_GetTopicLastReputerCommitInfo_FullMethodName               = "/emissions.v2.Query/GetTopicLastReputerCommitInfo"
+	Query_GetTopicRewardNonce_FullMethodName                         = "/emissions.v2.Query/GetTopicRewardNonce"
+	Query_GetReputerLossBundlesAtBlock_FullMethodName                = "/emissions.v2.Query/GetReputerLossBundlesAtBlock"
+	Query_GetStakeReputerAuthority_FullMethodName                    = "/emissions.v2.Query/GetStakeReputerAuthority"
+	Query_GetDelegateStakePlacement_FullMethodName                   = "/emissions.v2.Query/GetDelegateStakePlacement"
+	Query_GetDelegateStakeUponReputer_FullMethodName                 = "/emissions.v2.Query/GetDelegateStakeUponReputer"
+	Query_GetDelegateRewardPerShare_FullMethodName                   = "/emissions.v2.Query/GetDelegateRewardPerShare"
+	Query_GetStakeRemovalForReputerAndTopicId_FullMethodName         = "/emissions.v2.Query/GetStakeRemovalForReputerAndTopicId"
+	Query_GetDelegateStakeRemoval_FullMethodName                     = "/emissions.v2.Query/GetDelegateStakeRemoval"
+	Query_GetPreviousTopicWeight_FullMethodName                      = "/emissions.v2.Query/GetPreviousTopicWeight"
+	Query_TopicExists_FullMethodName                                 = "/emissions.v2.Query/TopicExists"
+	Query_IsTopicActive_FullMethodName                               = "/emissions.v2.Query/IsTopicActive"
+	Query_GetTopicFeeRevenue_FullMethodName                          = "/emissions.v2.Query/GetTopicFeeRevenue"
+	Query_GetRewardableTopics_FullMethodName                         = "/emissions.v2.Query/GetRewardableTopics"
+	Query_GetLatestInfererScore_FullMethodName                       = "/emissions.v2.Query/GetLatestInfererScore"
+	Query_GetLatestForecasterScore_FullMethodName                    = "/emissions.v2.Query/GetLatestForecasterScore"
+	Query_GetLatestReputerScore_FullMethodName                       = "/emissions.v2.Query/GetLatestReputerScore"
+	Query_GetInferenceScoresUntilBlock_FullMethodName                = "/emissions.v2.Query/GetInferenceScoresUntilBlock"
+	Query_GetWorkerInferenceScoresAtBlock_FullMethodName             = "/emissions.v2.Query/GetWorkerInferenceScoresAtBlock"
+	Query_GetForecastScoresUntilBlock_FullMethodName                 = "/emissions.v2.Query/GetForecastScoresUntilBlock"
+	Query_GetWorkerForecastScoresAtBlock_FullMethodName              = "/emissions.v2.Query/GetWorkerForecastScoresAtBlock"
+	Query_GetReputersScoresAtBlock_FullMethodName                    = "/emissions.v2.Query/GetReputersScoresAtBlock"
+	Query_GetListeningCoefficient_FullMethodName                     = "/emissions.v2.Query/GetListeningCoefficient"
+	Query_GetPreviousReputerRewardFraction_FullMethodName            = "/emissions.v2.Query/GetPreviousReputerRewardFraction"
+	Query_GetPreviousInferenceRewardFraction_FullMethodName          = "/emissions.v2.Query/GetPreviousInferenceRewardFraction"
+	Query_GetPreviousForecastRewardFraction_FullMethodName           = "/emissions.v2.Query/GetPreviousForecastRewardFraction"
+	Query_GetPreviousPercentageRewardToStakedReputers_FullMethodName = "/emissions.v2.Query/GetPreviousPercentageRewardToStakedReputers"
+	Query_GetTotalRewardToDistribute_FullMethodName                  = "/emissions.v2.Query/GetTotalRewardToDistribute"
 )
 
 // QueryClient is the client API for Query service.
@@ -2243,7 +2243,7 @@ func _Query_GetTotalRewardToDistribute_Handler(srv interface{}, ctx context.Cont
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Query_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "emissions.v1.Query",
+	ServiceName: "emissions.v2.Query",
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -2512,5 +2512,5 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "emissions/v1/query.proto",
+	Metadata: "emissions/v2/query.proto",
 }

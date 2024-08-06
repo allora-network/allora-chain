@@ -1,7 +1,7 @@
 syntax = "proto3";
-package emissions.v1;
+package emissions.v2;
 
-option go_package = "github.com/allora-network/allora-chain/x/emissions/migrations/types";
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 import "gogoproto/gogo.proto";
 

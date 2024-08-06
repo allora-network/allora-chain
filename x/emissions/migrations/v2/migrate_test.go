@@ -1,4 +1,4 @@
-package migrations_test
+package v2_test
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ import (
 	"github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
-	"github.com/allora-network/allora-chain/x/emissions/migrations"
+	v2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissionsv1 "github.com/allora-network/allora-chain/x/emissions/types"
@@ -139,7 +139,7 @@ func (s *MigrationsTestSuite) SetupTest() {
 }
 
 func (s *MigrationsTestSuite) TestMigrateStore(t *testing.T) {
-	err := migrations.V1ToV2(s.ctx, s.emissionsKeeper)
+	err := v2.MigrateStore(s.ctx, s.emissionsKeeper)
 	require.NoError(t, err)
 }
 
@@ -189,7 +189,7 @@ func (s *MigrationsTestSuite) TestMigrateMsgCreateNewTopic(t *testing.T) {
 	topicStore := prefix.NewStore(store, emissionsv1.TopicsKey)
 	topicStore.Set([]byte("testKey"), bz)
 
-	err = migrations.V1ToV2(s.ctx, s.emissionsKeeper)
+	err = v2.MigrateStore(s.ctx, s.emissionsKeeper)
 	require.NoError(t, err)
 
 	// Verify the store has been updated correctly
