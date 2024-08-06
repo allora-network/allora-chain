@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
@@ -150,7 +151,7 @@ func (s *MigrationsTestSuite) TestMigrateTopic() {
 	s.Require().Equal(oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
 }
 
-func (s *MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc codec.BinaryCodec) {
+func (s *MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc codec.BinaryCodec, prefixKey collections.Prefix) {
 	oldOffchainNode := oldtypes.OffchainNode{
 		LibP2PKey:    "testLibP2PKey",
 		MultiAddress: "testMultiAddress",
@@ -171,7 +172,7 @@ func (s *MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc c
 	bz2, err := proto.Marshal(&oldOffchainNode2)
 	s.Require().NoError(err)
 
-	offchainNodeStore := prefix.NewStore(store, types.WorkerNodesKey)
+	offchainNodeStore := prefix.NewStore(store, prefixKey)
 	offchainNodeStore.Set([]byte("testLibP2PKey"), bz)
 	offchainNodeStore.Set([]byte("testLibP2PKey2"), bz2)
 
@@ -203,14 +204,18 @@ func (s *MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc c
 
 }
 
-func (s *MigrationsTestSuite) TestMigrateOffchainNode() {
+func (s *MigrationsTestSuite) TestMigrateOffchainNodeWorkers() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 	offchainNodeStoreWorker := prefix.NewStore(store, types.WorkerNodesKey)
-	s.MigrateOffchainNodeStore(offchainNodeStoreWorker, cdc)
-	offchainNodeStoreReputer := prefix.NewStore(store, types.ReputerNodesKey)
-	s.MigrateOffchainNodeStore(offchainNodeStoreReputer, cdc)
+	s.MigrateOffchainNodeStore(offchainNodeStoreWorker, cdc, types.WorkerNodesKey)
+}
 
+func (s *MigrationsTestSuite) TestMigrateOffchainNodeReputers() {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
+	offchainNodeStoreReputer := prefix.NewStore(store, types.ReputerNodesKey)
+	s.MigrateOffchainNodeStore(offchainNodeStoreReputer, cdc, types.ReputerNodesKey)
 }
 
 func areAttributedArraysEqual(oldValues []*oldtypes.WorkerAttributedValue, newValues []*types.WorkerAttributedValue) bool {
