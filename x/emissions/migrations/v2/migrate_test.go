@@ -119,7 +119,6 @@ func (s *MigrationsTestSuite) TestMigrateTopic() {
 		PNorm:           alloraMath.NewDecFromInt64(3),
 		AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
 		AllowNegative:   false,
-		Epsilon:         alloraMath.MustNewDecFromString("0.0001"),
 	}
 
 	bz, err := proto.Marshal(&oldTopic)
@@ -148,9 +147,7 @@ func (s *MigrationsTestSuite) TestMigrateTopic() {
 	s.Require().Equal(oldTopic.PNorm, newMsg.PNorm)
 	s.Require().Equal(oldTopic.AlphaRegret, newMsg.AlphaRegret)
 	s.Require().Equal(oldTopic.AllowNegative, newMsg.AllowNegative)
-	s.Require().Equal(oldTopic.Epsilon, newMsg.Epsilon)
 	s.Require().Equal(oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
-	s.Require().Equal(oldTopic.InitialRegret, newMsg.InitialRegret)
 }
 
 func (s *MigrationsTestSuite) TestMigrateOffchainNode() {

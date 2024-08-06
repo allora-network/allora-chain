@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/collections"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/types"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -88,8 +89,8 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 			PNorm:                  oldMsg.PNorm,
 			AlphaRegret:            oldMsg.AlphaRegret,
 			AllowNegative:          oldMsg.AllowNegative,
-			Epsilon:                oldMsg.Epsilon,
-			InitialRegret:          oldMsg.InitialRegret, // Add default value
+			Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+			InitialRegret:          alloraMath.MustNewDecFromString("0"),
 			WorkerSubmissionWindow: newWorkerSubmissionWindow,
 		}
 
