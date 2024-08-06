@@ -105,44 +105,37 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	return nil
 }
 
+func MigrateOffchainStore(workerStore storetypes.KVStore, cdc codec.BinaryCodec) error {
+	iterator := workerStore.Iterator(nil, nil)
+	keysToDelete := make([][]byte, 0)
+	for ; iterator.Valid(); iterator.Next() {
+		keysToDelete = append(keysToDelete, iterator.Key())
+	}
+	iterator.Close()
+
+	// delete the old keys
+	for _, key := range keysToDelete {
+		oldNode := workerStore.Get(key)
+		var oldMsg oldtypes.OffchainNode
+		err := proto.Unmarshal(oldNode, &oldMsg)
+		if err != nil {
+			return err
+		}
+		newMsg := types.OffchainNode{
+			NodeAddress: oldMsg.NodeAddress,
+			Owner:       oldMsg.Owner,
+		}
+		workerStore.Set([]byte(oldMsg.NodeAddress), cdc.MustMarshal(&newMsg))
+		workerStore.Delete(key)
+	}
+	return nil
+}
+
 func MigrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	workerStore := prefix.NewStore(store, types.WorkerNodesKey)
-	iterator := workerStore.Iterator(nil, nil)
-
-	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg oldtypes.OffchainNode
-		err := proto.Unmarshal(iterator.Value(), &oldMsg)
-		if err != nil {
-			return err
-		}
-
-		newMsg := types.OffchainNode{
-			NodeAddress: oldMsg.NodeAddress,
-			Owner:       oldMsg.Owner,
-		}
-
-		store.Delete(iterator.Key())
-		store.Set([]byte(oldMsg.NodeAddress), cdc.MustMarshal(&newMsg))
-	}
-
+	MigrateOffchainStore(workerStore, cdc)
 	reputerStore := prefix.NewStore(store, types.ReputerNodesKey)
-	iterator = reputerStore.Iterator(nil, nil)
-
-	for ; iterator.Valid(); iterator.Next() {
-		var oldMsg oldtypes.OffchainNode
-		err := proto.Unmarshal(iterator.Value(), &oldMsg)
-		if err != nil {
-			return err
-		}
-
-		newMsg := types.OffchainNode{
-			NodeAddress: oldMsg.NodeAddress,
-			Owner:       oldMsg.Owner,
-		}
-
-		store.Delete(iterator.Key())
-		store.Set([]byte(oldMsg.NodeAddress), cdc.MustMarshal(&newMsg))
-	}
+	MigrateOffchainStore(reputerStore, cdc)
 	return nil
 }
 
