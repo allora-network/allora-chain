@@ -24,7 +24,7 @@ if [ ! -f $INIT_FLAG ]; then
     rm -rf ${APP_HOME}/config
 
     #* Create symlink for allorad config - workaround
-    ln -sf /data ${HOME}/.allorad
+    ln -sf ${APP_HOME} ${HOME}/.allorad
 
     #* Init node
     allorad --home=${APP_HOME} init ${MONIKER} --chain-id=${NETWORK} --default-denom $DENOM
