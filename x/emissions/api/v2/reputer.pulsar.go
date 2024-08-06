@@ -1644,7 +1644,7 @@ func (x *_ValueBundle_7_list) IsValid() bool {
 var _ protoreflect.List = (*_ValueBundle_9_list)(nil)
 
 type _ValueBundle_9_list struct {
-	list *[]*OneOutInfererForecasterValues
+	list *[]*WithheldWorkerAttributedValue
 }
 
 func (x *_ValueBundle_9_list) Len() int {
@@ -1660,18 +1660,18 @@ func (x *_ValueBundle_9_list) Get(i int) protoreflect.Value {
 
 func (x *_ValueBundle_9_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*OneOutInfererForecasterValues)
+	concreteValue := valueUnwrapped.Interface().(*WithheldWorkerAttributedValue)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_ValueBundle_9_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*OneOutInfererForecasterValues)
+	concreteValue := valueUnwrapped.Interface().(*WithheldWorkerAttributedValue)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_ValueBundle_9_list) AppendMutable() protoreflect.Value {
-	v := new(OneOutInfererForecasterValues)
+	v := new(WithheldWorkerAttributedValue)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -1684,7 +1684,7 @@ func (x *_ValueBundle_9_list) Truncate(n int) {
 }
 
 func (x *_ValueBundle_9_list) NewElement() protoreflect.Value {
-	v := new(OneOutInfererForecasterValues)
+	v := new(WithheldWorkerAttributedValue)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -1746,7 +1746,7 @@ func (x *_ValueBundle_10_list) IsValid() bool {
 var _ protoreflect.List = (*_ValueBundle_11_list)(nil)
 
 type _ValueBundle_11_list struct {
-	list *[]*WithheldWorkerAttributedValue
+	list *[]*WorkerAttributedValue
 }
 
 func (x *_ValueBundle_11_list) Len() int {
@@ -1762,18 +1762,18 @@ func (x *_ValueBundle_11_list) Get(i int) protoreflect.Value {
 
 func (x *_ValueBundle_11_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*WithheldWorkerAttributedValue)
+	concreteValue := valueUnwrapped.Interface().(*WorkerAttributedValue)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_ValueBundle_11_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*WithheldWorkerAttributedValue)
+	concreteValue := valueUnwrapped.Interface().(*WorkerAttributedValue)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_ValueBundle_11_list) AppendMutable() protoreflect.Value {
-	v := new(WithheldWorkerAttributedValue)
+	v := new(WorkerAttributedValue)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -1786,7 +1786,7 @@ func (x *_ValueBundle_11_list) Truncate(n int) {
 }
 
 func (x *_ValueBundle_11_list) NewElement() protoreflect.Value {
-	v := new(WithheldWorkerAttributedValue)
+	v := new(WorkerAttributedValue)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -1797,7 +1797,7 @@ func (x *_ValueBundle_11_list) IsValid() bool {
 var _ protoreflect.List = (*_ValueBundle_12_list)(nil)
 
 type _ValueBundle_12_list struct {
-	list *[]*WorkerAttributedValue
+	list *[]*OneOutInfererForecasterValues
 }
 
 func (x *_ValueBundle_12_list) Len() int {
@@ -1813,18 +1813,18 @@ func (x *_ValueBundle_12_list) Get(i int) protoreflect.Value {
 
 func (x *_ValueBundle_12_list) Set(i int, value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*WorkerAttributedValue)
+	concreteValue := valueUnwrapped.Interface().(*OneOutInfererForecasterValues)
 	(*x.list)[i] = concreteValue
 }
 
 func (x *_ValueBundle_12_list) Append(value protoreflect.Value) {
 	valueUnwrapped := value.Message()
-	concreteValue := valueUnwrapped.Interface().(*WorkerAttributedValue)
+	concreteValue := valueUnwrapped.Interface().(*OneOutInfererForecasterValues)
 	*x.list = append(*x.list, concreteValue)
 }
 
 func (x *_ValueBundle_12_list) AppendMutable() protoreflect.Value {
-	v := new(WorkerAttributedValue)
+	v := new(OneOutInfererForecasterValues)
 	*x.list = append(*x.list, v)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
@@ -1837,7 +1837,7 @@ func (x *_ValueBundle_12_list) Truncate(n int) {
 }
 
 func (x *_ValueBundle_12_list) NewElement() protoreflect.Value {
-	v := new(WorkerAttributedValue)
+	v := new(OneOutInfererForecasterValues)
 	return protoreflect.ValueOfMessage(v.ProtoReflect())
 }
 
@@ -1855,10 +1855,10 @@ var (
 	fd_ValueBundle_inferer_values                    protoreflect.FieldDescriptor
 	fd_ValueBundle_forecaster_values                 protoreflect.FieldDescriptor
 	fd_ValueBundle_naive_value                       protoreflect.FieldDescriptor
-	fd_ValueBundle_one_out_inferer_forecaster_values protoreflect.FieldDescriptor
 	fd_ValueBundle_one_out_inferer_values            protoreflect.FieldDescriptor
 	fd_ValueBundle_one_out_forecaster_values         protoreflect.FieldDescriptor
 	fd_ValueBundle_one_in_forecaster_values          protoreflect.FieldDescriptor
+	fd_ValueBundle_one_out_inferer_forecaster_values protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -1872,10 +1872,10 @@ func init() {
 	fd_ValueBundle_inferer_values = md_ValueBundle.Fields().ByName("inferer_values")
 	fd_ValueBundle_forecaster_values = md_ValueBundle.Fields().ByName("forecaster_values")
 	fd_ValueBundle_naive_value = md_ValueBundle.Fields().ByName("naive_value")
-	fd_ValueBundle_one_out_inferer_forecaster_values = md_ValueBundle.Fields().ByName("one_out_inferer_forecaster_values")
 	fd_ValueBundle_one_out_inferer_values = md_ValueBundle.Fields().ByName("one_out_inferer_values")
 	fd_ValueBundle_one_out_forecaster_values = md_ValueBundle.Fields().ByName("one_out_forecaster_values")
 	fd_ValueBundle_one_in_forecaster_values = md_ValueBundle.Fields().ByName("one_in_forecaster_values")
+	fd_ValueBundle_one_out_inferer_forecaster_values = md_ValueBundle.Fields().ByName("one_out_inferer_forecaster_values")
 }
 
 var _ protoreflect.Message = (*fastReflection_ValueBundle)(nil)
@@ -1991,27 +1991,27 @@ func (x *fastReflection_ValueBundle) Range(f func(protoreflect.FieldDescriptor, 
 			return
 		}
 	}
-	if len(x.OneOutInfererForecasterValues) != 0 {
-		value := protoreflect.ValueOfList(&_ValueBundle_9_list{list: &x.OneOutInfererForecasterValues})
-		if !f(fd_ValueBundle_one_out_inferer_forecaster_values, value) {
-			return
-		}
-	}
 	if len(x.OneOutInfererValues) != 0 {
-		value := protoreflect.ValueOfList(&_ValueBundle_10_list{list: &x.OneOutInfererValues})
+		value := protoreflect.ValueOfList(&_ValueBundle_9_list{list: &x.OneOutInfererValues})
 		if !f(fd_ValueBundle_one_out_inferer_values, value) {
 			return
 		}
 	}
 	if len(x.OneOutForecasterValues) != 0 {
-		value := protoreflect.ValueOfList(&_ValueBundle_11_list{list: &x.OneOutForecasterValues})
+		value := protoreflect.ValueOfList(&_ValueBundle_10_list{list: &x.OneOutForecasterValues})
 		if !f(fd_ValueBundle_one_out_forecaster_values, value) {
 			return
 		}
 	}
 	if len(x.OneInForecasterValues) != 0 {
-		value := protoreflect.ValueOfList(&_ValueBundle_12_list{list: &x.OneInForecasterValues})
+		value := protoreflect.ValueOfList(&_ValueBundle_11_list{list: &x.OneInForecasterValues})
 		if !f(fd_ValueBundle_one_in_forecaster_values, value) {
+			return
+		}
+	}
+	if len(x.OneOutInfererForecasterValues) != 0 {
+		value := protoreflect.ValueOfList(&_ValueBundle_12_list{list: &x.OneOutInfererForecasterValues})
+		if !f(fd_ValueBundle_one_out_inferer_forecaster_values, value) {
 			return
 		}
 	}
@@ -2046,14 +2046,14 @@ func (x *fastReflection_ValueBundle) Has(fd protoreflect.FieldDescriptor) bool {
 		return len(x.ForecasterValues) != 0
 	case "emissions.v2.ValueBundle.naive_value":
 		return x.NaiveValue != ""
-	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
-		return len(x.OneOutInfererForecasterValues) != 0
 	case "emissions.v2.ValueBundle.one_out_inferer_values":
 		return len(x.OneOutInfererValues) != 0
 	case "emissions.v2.ValueBundle.one_out_forecaster_values":
 		return len(x.OneOutForecasterValues) != 0
 	case "emissions.v2.ValueBundle.one_in_forecaster_values":
 		return len(x.OneInForecasterValues) != 0
+	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
+		return len(x.OneOutInfererForecasterValues) != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v2.ValueBundle"))
@@ -2086,14 +2086,14 @@ func (x *fastReflection_ValueBundle) Clear(fd protoreflect.FieldDescriptor) {
 		x.ForecasterValues = nil
 	case "emissions.v2.ValueBundle.naive_value":
 		x.NaiveValue = ""
-	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
-		x.OneOutInfererForecasterValues = nil
 	case "emissions.v2.ValueBundle.one_out_inferer_values":
 		x.OneOutInfererValues = nil
 	case "emissions.v2.ValueBundle.one_out_forecaster_values":
 		x.OneOutForecasterValues = nil
 	case "emissions.v2.ValueBundle.one_in_forecaster_values":
 		x.OneInForecasterValues = nil
+	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
+		x.OneOutInfererForecasterValues = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v2.ValueBundle"))
@@ -2140,29 +2140,29 @@ func (x *fastReflection_ValueBundle) Get(descriptor protoreflect.FieldDescriptor
 	case "emissions.v2.ValueBundle.naive_value":
 		value := x.NaiveValue
 		return protoreflect.ValueOfString(value)
-	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
-		if len(x.OneOutInfererForecasterValues) == 0 {
-			return protoreflect.ValueOfList(&_ValueBundle_9_list{})
-		}
-		listValue := &_ValueBundle_9_list{list: &x.OneOutInfererForecasterValues}
-		return protoreflect.ValueOfList(listValue)
 	case "emissions.v2.ValueBundle.one_out_inferer_values":
 		if len(x.OneOutInfererValues) == 0 {
-			return protoreflect.ValueOfList(&_ValueBundle_10_list{})
+			return protoreflect.ValueOfList(&_ValueBundle_9_list{})
 		}
-		listValue := &_ValueBundle_10_list{list: &x.OneOutInfererValues}
+		listValue := &_ValueBundle_9_list{list: &x.OneOutInfererValues}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v2.ValueBundle.one_out_forecaster_values":
 		if len(x.OneOutForecasterValues) == 0 {
-			return protoreflect.ValueOfList(&_ValueBundle_11_list{})
+			return protoreflect.ValueOfList(&_ValueBundle_10_list{})
 		}
-		listValue := &_ValueBundle_11_list{list: &x.OneOutForecasterValues}
+		listValue := &_ValueBundle_10_list{list: &x.OneOutForecasterValues}
 		return protoreflect.ValueOfList(listValue)
 	case "emissions.v2.ValueBundle.one_in_forecaster_values":
 		if len(x.OneInForecasterValues) == 0 {
+			return protoreflect.ValueOfList(&_ValueBundle_11_list{})
+		}
+		listValue := &_ValueBundle_11_list{list: &x.OneInForecasterValues}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
+		if len(x.OneOutInfererForecasterValues) == 0 {
 			return protoreflect.ValueOfList(&_ValueBundle_12_list{})
 		}
-		listValue := &_ValueBundle_12_list{list: &x.OneInForecasterValues}
+		listValue := &_ValueBundle_12_list{list: &x.OneOutInfererForecasterValues}
 		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
@@ -2204,22 +2204,22 @@ func (x *fastReflection_ValueBundle) Set(fd protoreflect.FieldDescriptor, value 
 		x.ForecasterValues = *clv.list
 	case "emissions.v2.ValueBundle.naive_value":
 		x.NaiveValue = value.Interface().(string)
-	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
-		lv := value.List()
-		clv := lv.(*_ValueBundle_9_list)
-		x.OneOutInfererForecasterValues = *clv.list
 	case "emissions.v2.ValueBundle.one_out_inferer_values":
 		lv := value.List()
-		clv := lv.(*_ValueBundle_10_list)
+		clv := lv.(*_ValueBundle_9_list)
 		x.OneOutInfererValues = *clv.list
 	case "emissions.v2.ValueBundle.one_out_forecaster_values":
 		lv := value.List()
-		clv := lv.(*_ValueBundle_11_list)
+		clv := lv.(*_ValueBundle_10_list)
 		x.OneOutForecasterValues = *clv.list
 	case "emissions.v2.ValueBundle.one_in_forecaster_values":
 		lv := value.List()
-		clv := lv.(*_ValueBundle_12_list)
+		clv := lv.(*_ValueBundle_11_list)
 		x.OneInForecasterValues = *clv.list
+	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
+		lv := value.List()
+		clv := lv.(*_ValueBundle_12_list)
+		x.OneOutInfererForecasterValues = *clv.list
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v2.ValueBundle"))
@@ -2257,29 +2257,29 @@ func (x *fastReflection_ValueBundle) Mutable(fd protoreflect.FieldDescriptor) pr
 		}
 		value := &_ValueBundle_7_list{list: &x.ForecasterValues}
 		return protoreflect.ValueOfList(value)
-	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
-		if x.OneOutInfererForecasterValues == nil {
-			x.OneOutInfererForecasterValues = []*OneOutInfererForecasterValues{}
-		}
-		value := &_ValueBundle_9_list{list: &x.OneOutInfererForecasterValues}
-		return protoreflect.ValueOfList(value)
 	case "emissions.v2.ValueBundle.one_out_inferer_values":
 		if x.OneOutInfererValues == nil {
 			x.OneOutInfererValues = []*WithheldWorkerAttributedValue{}
 		}
-		value := &_ValueBundle_10_list{list: &x.OneOutInfererValues}
+		value := &_ValueBundle_9_list{list: &x.OneOutInfererValues}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v2.ValueBundle.one_out_forecaster_values":
 		if x.OneOutForecasterValues == nil {
 			x.OneOutForecasterValues = []*WithheldWorkerAttributedValue{}
 		}
-		value := &_ValueBundle_11_list{list: &x.OneOutForecasterValues}
+		value := &_ValueBundle_10_list{list: &x.OneOutForecasterValues}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v2.ValueBundle.one_in_forecaster_values":
 		if x.OneInForecasterValues == nil {
 			x.OneInForecasterValues = []*WorkerAttributedValue{}
 		}
-		value := &_ValueBundle_12_list{list: &x.OneInForecasterValues}
+		value := &_ValueBundle_11_list{list: &x.OneInForecasterValues}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
+		if x.OneOutInfererForecasterValues == nil {
+			x.OneOutInfererForecasterValues = []*OneOutInfererForecasterValues{}
+		}
+		value := &_ValueBundle_12_list{list: &x.OneOutInfererForecasterValues}
 		return protoreflect.ValueOfList(value)
 	case "emissions.v2.ValueBundle.topic_id":
 		panic(fmt.Errorf("field topic_id of message emissions.v2.ValueBundle is not mutable"))
@@ -2323,17 +2323,17 @@ func (x *fastReflection_ValueBundle) NewField(fd protoreflect.FieldDescriptor) p
 		return protoreflect.ValueOfList(&_ValueBundle_7_list{list: &list})
 	case "emissions.v2.ValueBundle.naive_value":
 		return protoreflect.ValueOfString("")
-	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
-		list := []*OneOutInfererForecasterValues{}
-		return protoreflect.ValueOfList(&_ValueBundle_9_list{list: &list})
 	case "emissions.v2.ValueBundle.one_out_inferer_values":
 		list := []*WithheldWorkerAttributedValue{}
-		return protoreflect.ValueOfList(&_ValueBundle_10_list{list: &list})
+		return protoreflect.ValueOfList(&_ValueBundle_9_list{list: &list})
 	case "emissions.v2.ValueBundle.one_out_forecaster_values":
 		list := []*WithheldWorkerAttributedValue{}
-		return protoreflect.ValueOfList(&_ValueBundle_11_list{list: &list})
+		return protoreflect.ValueOfList(&_ValueBundle_10_list{list: &list})
 	case "emissions.v2.ValueBundle.one_in_forecaster_values":
 		list := []*WorkerAttributedValue{}
+		return protoreflect.ValueOfList(&_ValueBundle_11_list{list: &list})
+	case "emissions.v2.ValueBundle.one_out_inferer_forecaster_values":
+		list := []*OneOutInfererForecasterValues{}
 		return protoreflect.ValueOfList(&_ValueBundle_12_list{list: &list})
 	default:
 		if fd.IsExtension() {
@@ -2439,12 +2439,6 @@ func (x *fastReflection_ValueBundle) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 1 + l + runtime.Sov(uint64(l))
 		}
-		if len(x.OneOutInfererForecasterValues) > 0 {
-			for _, e := range x.OneOutInfererForecasterValues {
-				l = options.Size(e)
-				n += 1 + l + runtime.Sov(uint64(l))
-			}
-		}
 		if len(x.OneOutInfererValues) > 0 {
 			for _, e := range x.OneOutInfererValues {
 				l = options.Size(e)
@@ -2459,6 +2453,12 @@ func (x *fastReflection_ValueBundle) ProtoMethods() *protoiface.Methods {
 		}
 		if len(x.OneInForecasterValues) > 0 {
 			for _, e := range x.OneInForecasterValues {
+				l = options.Size(e)
+				n += 1 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.OneOutInfererForecasterValues) > 0 {
+			for _, e := range x.OneOutInfererForecasterValues {
 				l = options.Size(e)
 				n += 1 + l + runtime.Sov(uint64(l))
 			}
@@ -2492,6 +2492,22 @@ func (x *fastReflection_ValueBundle) ProtoMethods() *protoiface.Methods {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
 		}
+		if len(x.OneOutInfererForecasterValues) > 0 {
+			for iNdEx := len(x.OneOutInfererForecasterValues) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.OneOutInfererForecasterValues[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x62
+			}
+		}
 		if len(x.OneInForecasterValues) > 0 {
 			for iNdEx := len(x.OneInForecasterValues) - 1; iNdEx >= 0; iNdEx-- {
 				encoded, err := options.Marshal(x.OneInForecasterValues[iNdEx])
@@ -2505,7 +2521,7 @@ func (x *fastReflection_ValueBundle) ProtoMethods() *protoiface.Methods {
 				copy(dAtA[i:], encoded)
 				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
 				i--
-				dAtA[i] = 0x62
+				dAtA[i] = 0x5a
 			}
 		}
 		if len(x.OneOutForecasterValues) > 0 {
@@ -2521,28 +2537,12 @@ func (x *fastReflection_ValueBundle) ProtoMethods() *protoiface.Methods {
 				copy(dAtA[i:], encoded)
 				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
 				i--
-				dAtA[i] = 0x5a
+				dAtA[i] = 0x52
 			}
 		}
 		if len(x.OneOutInfererValues) > 0 {
 			for iNdEx := len(x.OneOutInfererValues) - 1; iNdEx >= 0; iNdEx-- {
 				encoded, err := options.Marshal(x.OneOutInfererValues[iNdEx])
-				if err != nil {
-					return protoiface.MarshalOutput{
-						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
-						Buf:               input.Buf,
-					}, err
-				}
-				i -= len(encoded)
-				copy(dAtA[i:], encoded)
-				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
-				i--
-				dAtA[i] = 0x52
-			}
-		}
-		if len(x.OneOutInfererForecasterValues) > 0 {
-			for iNdEx := len(x.OneOutInfererForecasterValues) - 1; iNdEx >= 0; iNdEx-- {
-				encoded, err := options.Marshal(x.OneOutInfererForecasterValues[iNdEx])
 				if err != nil {
 					return protoiface.MarshalOutput{
 						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
@@ -2939,40 +2939,6 @@ func (x *fastReflection_ValueBundle) ProtoMethods() *protoiface.Methods {
 				iNdEx = postIndex
 			case 9:
 				if wireType != 2 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OneOutInfererForecasterValues", wireType)
-				}
-				var msglen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
-					}
-					if iNdEx >= l {
-						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					msglen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if msglen < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				postIndex := iNdEx + msglen
-				if postIndex < 0 {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
-				}
-				if postIndex > l {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
-				}
-				x.OneOutInfererForecasterValues = append(x.OneOutInfererForecasterValues, &OneOutInfererForecasterValues{})
-				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.OneOutInfererForecasterValues[len(x.OneOutInfererForecasterValues)-1]); err != nil {
-					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
-				}
-				iNdEx = postIndex
-			case 10:
-				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OneOutInfererValues", wireType)
 				}
 				var msglen int
@@ -3005,7 +2971,7 @@ func (x *fastReflection_ValueBundle) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
-			case 11:
+			case 10:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OneOutForecasterValues", wireType)
 				}
@@ -3039,7 +3005,7 @@ func (x *fastReflection_ValueBundle) ProtoMethods() *protoiface.Methods {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
-			case 12:
+			case 11:
 				if wireType != 2 {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OneInForecasterValues", wireType)
 				}
@@ -3070,6 +3036,40 @@ func (x *fastReflection_ValueBundle) ProtoMethods() *protoiface.Methods {
 				}
 				x.OneInForecasterValues = append(x.OneInForecasterValues, &WorkerAttributedValue{})
 				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.OneInForecasterValues[len(x.OneInForecasterValues)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 12:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field OneOutInfererForecasterValues", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.OneOutInfererForecasterValues = append(x.OneOutInfererForecasterValues, &OneOutInfererForecasterValues{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.OneOutInfererForecasterValues[len(x.OneOutInfererForecasterValues)-1]); err != nil {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
 				}
 				iNdEx = postIndex
@@ -4329,18 +4329,18 @@ type ValueBundle struct {
 	ForecasterValues []*WorkerAttributedValue `protobuf:"bytes,7,rep,name=forecaster_values,json=forecasterValues,proto3" json:"forecaster_values,omitempty"`
 	// R^-_im  || log10 L^-_im || I^-_i
 	NaiveValue string `protobuf:"bytes,8,opt,name=naive_value,json=naiveValue,proto3" json:"naive_value,omitempty"`
-	// R^-_ilm || log10 L^-_ilm || I^-_il where l = any j
-	// log10 L^-_j'ikm || I^-_j'ik
-	OneOutInfererForecasterValues []*OneOutInfererForecasterValues `protobuf:"bytes,9,rep,name=one_out_inferer_forecaster_values,json=oneOutInfererForecasterValues,proto3" json:"one_out_inferer_forecaster_values,omitempty"`
 	// Note: forecast-implied inferences are recomputed for each left-out
 	// inference
-	OneOutInfererValues []*WithheldWorkerAttributedValue `protobuf:"bytes,10,rep,name=one_out_inferer_values,json=oneOutInfererValues,proto3" json:"one_out_inferer_values,omitempty"`
+	OneOutInfererValues []*WithheldWorkerAttributedValue `protobuf:"bytes,9,rep,name=one_out_inferer_values,json=oneOutInfererValues,proto3" json:"one_out_inferer_values,omitempty"`
 	// R^-_ilm || log10 L^-_ilm || I^-_il where l = any k
-	OneOutForecasterValues []*WithheldWorkerAttributedValue `protobuf:"bytes,11,rep,name=one_out_forecaster_values,json=oneOutForecasterValues,proto3" json:"one_out_forecaster_values,omitempty"`
+	OneOutForecasterValues []*WithheldWorkerAttributedValue `protobuf:"bytes,10,rep,name=one_out_forecaster_values,json=oneOutForecasterValues,proto3" json:"one_out_forecaster_values,omitempty"`
 	// R^+_ikm || log10 L^+_ikm || I^+_ik
 	// aka one_in_forecaster_values because equivalent to using only one
 	// forecast-implied inference
-	OneInForecasterValues []*WorkerAttributedValue `protobuf:"bytes,12,rep,name=one_in_forecaster_values,json=oneInForecasterValues,proto3" json:"one_in_forecaster_values,omitempty"`
+	OneInForecasterValues []*WorkerAttributedValue `protobuf:"bytes,11,rep,name=one_in_forecaster_values,json=oneInForecasterValues,proto3" json:"one_in_forecaster_values,omitempty"`
+	// R^-_ilm || log10 L^-_ilm || I^-_il where l = any j
+	// log10 L^-_j'ikm || I^-_j'ik
+	OneOutInfererForecasterValues []*OneOutInfererForecasterValues `protobuf:"bytes,12,rep,name=one_out_inferer_forecaster_values,json=oneOutInfererForecasterValues,proto3" json:"one_out_inferer_forecaster_values,omitempty"`
 }
 
 func (x *ValueBundle) Reset() {
@@ -4419,13 +4419,6 @@ func (x *ValueBundle) GetNaiveValue() string {
 	return ""
 }
 
-func (x *ValueBundle) GetOneOutInfererForecasterValues() []*OneOutInfererForecasterValues {
-	if x != nil {
-		return x.OneOutInfererForecasterValues
-	}
-	return nil
-}
-
 func (x *ValueBundle) GetOneOutInfererValues() []*WithheldWorkerAttributedValue {
 	if x != nil {
 		return x.OneOutInfererValues
@@ -4443,6 +4436,13 @@ func (x *ValueBundle) GetOneOutForecasterValues() []*WithheldWorkerAttributedVal
 func (x *ValueBundle) GetOneInForecasterValues() []*WorkerAttributedValue {
 	if x != nil {
 		return x.OneInForecasterValues
+	}
+	return nil
+}
+
+func (x *ValueBundle) GetOneOutInfererForecasterValues() []*OneOutInfererForecasterValues {
+	if x != nil {
+		return x.OneOutInfererForecasterValues
 	}
 	return nil
 }
@@ -4604,32 +4604,32 @@ var file_emissions_v2_reputer_proto_rawDesc = []byte{
 	0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c,
 	0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f,
 	0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e, 0x44, 0x65,
-	0x63, 0x52, 0x0a, 0x6e, 0x61, 0x69, 0x76, 0x65, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x75, 0x0a,
-	0x21, 0x6f, 0x6e, 0x65, 0x5f, 0x6f, 0x75, 0x74, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72,
-	0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x76, 0x61, 0x6c, 0x75,
-	0x65, 0x73, 0x18, 0x09, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x32, 0x2e, 0x4f, 0x6e, 0x65, 0x4f, 0x75, 0x74, 0x49, 0x6e,
-	0x66, 0x65, 0x72, 0x65, 0x72, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x56,
-	0x61, 0x6c, 0x75, 0x65, 0x73, 0x52, 0x1d, 0x6f, 0x6e, 0x65, 0x4f, 0x75, 0x74, 0x49, 0x6e, 0x66,
-	0x65, 0x72, 0x65, 0x72, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x56, 0x61,
-	0x6c, 0x75, 0x65, 0x73, 0x12, 0x60, 0x0a, 0x16, 0x6f, 0x6e, 0x65, 0x5f, 0x6f, 0x75, 0x74, 0x5f,
-	0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x0a,
-	0x20, 0x03, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x76, 0x32, 0x2e, 0x57, 0x69, 0x74, 0x68, 0x68, 0x65, 0x6c, 0x64, 0x57, 0x6f, 0x72, 0x6b,
-	0x65, 0x72, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x56, 0x61, 0x6c, 0x75,
-	0x65, 0x52, 0x13, 0x6f, 0x6e, 0x65, 0x4f, 0x75, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72,
-	0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x12, 0x66, 0x0a, 0x19, 0x6f, 0x6e, 0x65, 0x5f, 0x6f, 0x75,
-	0x74, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x76, 0x61, 0x6c,
-	0x75, 0x65, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x32, 0x2e, 0x57, 0x69, 0x74, 0x68, 0x68, 0x65, 0x6c,
-	0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65,
-	0x64, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x16, 0x6f, 0x6e, 0x65, 0x4f, 0x75, 0x74, 0x46, 0x6f,
-	0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x12, 0x5c,
-	0x0a, 0x18, 0x6f, 0x6e, 0x65, 0x5f, 0x69, 0x6e, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73,
+	0x63, 0x52, 0x0a, 0x6e, 0x61, 0x69, 0x76, 0x65, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x60, 0x0a,
+	0x16, 0x6f, 0x6e, 0x65, 0x5f, 0x6f, 0x75, 0x74, 0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72,
+	0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x09, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2b, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x32, 0x2e, 0x57, 0x69, 0x74,
+	0x68, 0x68, 0x65, 0x6c, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x74, 0x74, 0x72, 0x69,
+	0x62, 0x75, 0x74, 0x65, 0x64, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x13, 0x6f, 0x6e, 0x65, 0x4f,
+	0x75, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x12,
+	0x66, 0x0a, 0x19, 0x6f, 0x6e, 0x65, 0x5f, 0x6f, 0x75, 0x74, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63,
+	0x61, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x0a, 0x20, 0x03,
+	0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76,
+	0x32, 0x2e, 0x57, 0x69, 0x74, 0x68, 0x68, 0x65, 0x6c, 0x64, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72,
+	0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52,
+	0x16, 0x6f, 0x6e, 0x65, 0x4f, 0x75, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65,
+	0x72, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x12, 0x5c, 0x0a, 0x18, 0x6f, 0x6e, 0x65, 0x5f, 0x69,
+	0x6e, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x76, 0x61, 0x6c,
+	0x75, 0x65, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x32, 0x2e, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41,
+	0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x15,
+	0x6f, 0x6e, 0x65, 0x49, 0x6e, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x56,
+	0x61, 0x6c, 0x75, 0x65, 0x73, 0x12, 0x75, 0x0a, 0x21, 0x6f, 0x6e, 0x65, 0x5f, 0x6f, 0x75, 0x74,
+	0x5f, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x5f, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73,
 	0x74, 0x65, 0x72, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x0c, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x23, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x32, 0x2e,
-	0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x41, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x64,
-	0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x15, 0x6f, 0x6e, 0x65, 0x49, 0x6e, 0x46, 0x6f, 0x72, 0x65,
+	0x32, 0x2b, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x32, 0x2e,
+	0x4f, 0x6e, 0x65, 0x4f, 0x75, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x46, 0x6f, 0x72,
+	0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x52, 0x1d, 0x6f,
+	0x6e, 0x65, 0x4f, 0x75, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x46, 0x6f, 0x72, 0x65,
 	0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x3a, 0x04, 0xe8, 0xa0,
 	0x1f, 0x01, 0x22, 0x8e, 0x01, 0x0a, 0x12, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x56, 0x61,
 	0x6c, 0x75, 0x65, 0x42, 0x75, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x3c, 0x0a, 0x0c, 0x76, 0x61, 0x6c,
@@ -4689,10 +4689,10 @@ var file_emissions_v2_reputer_proto_depIdxs = []int32{
 	6,  // 1: emissions.v2.ValueBundle.reputer_request_nonce:type_name -> emissions.v2.ReputerRequestNonce
 	0,  // 2: emissions.v2.ValueBundle.inferer_values:type_name -> emissions.v2.WorkerAttributedValue
 	0,  // 3: emissions.v2.ValueBundle.forecaster_values:type_name -> emissions.v2.WorkerAttributedValue
-	2,  // 4: emissions.v2.ValueBundle.one_out_inferer_forecaster_values:type_name -> emissions.v2.OneOutInfererForecasterValues
-	1,  // 5: emissions.v2.ValueBundle.one_out_inferer_values:type_name -> emissions.v2.WithheldWorkerAttributedValue
-	1,  // 6: emissions.v2.ValueBundle.one_out_forecaster_values:type_name -> emissions.v2.WithheldWorkerAttributedValue
-	0,  // 7: emissions.v2.ValueBundle.one_in_forecaster_values:type_name -> emissions.v2.WorkerAttributedValue
+	1,  // 4: emissions.v2.ValueBundle.one_out_inferer_values:type_name -> emissions.v2.WithheldWorkerAttributedValue
+	1,  // 5: emissions.v2.ValueBundle.one_out_forecaster_values:type_name -> emissions.v2.WithheldWorkerAttributedValue
+	0,  // 6: emissions.v2.ValueBundle.one_in_forecaster_values:type_name -> emissions.v2.WorkerAttributedValue
+	2,  // 7: emissions.v2.ValueBundle.one_out_inferer_forecaster_values:type_name -> emissions.v2.OneOutInfererForecasterValues
 	3,  // 8: emissions.v2.ReputerValueBundle.value_bundle:type_name -> emissions.v2.ValueBundle
 	4,  // 9: emissions.v2.ReputerValueBundles.reputer_value_bundles:type_name -> emissions.v2.ReputerValueBundle
 	10, // [10:10] is the sub-list for method output_type
