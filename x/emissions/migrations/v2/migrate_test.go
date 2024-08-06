@@ -186,6 +186,30 @@ func (s *MigrationsTestSuite) TestMigrateOffchainNode() {
 	s.Require().Equal(oldOffchainNode.NodeAddress, newMsg.NodeAddress)
 }
 
+func areAttributedArraysEqual(oldValues []*oldtypes.WorkerAttributedValue, newValues []*types.WorkerAttributedValue) bool {
+	if len(oldValues) != len(newValues) {
+		return false
+	}
+	for i, oldVal := range oldValues {
+		if oldVal.Worker != newValues[i].Worker || oldVal.Value != newValues[i].Value {
+			return false
+		}
+	}
+	return true
+}
+
+func areWithHeldArraysEqual(oldValues []*oldtypes.WithheldWorkerAttributedValue, newValues []*types.WithheldWorkerAttributedValue) bool {
+	if len(oldValues) != len(newValues) {
+		return false
+	}
+	for i, oldVal := range oldValues {
+		if oldVal.Worker != newValues[i].Worker || oldVal.Value != newValues[i].Value {
+			return false
+		}
+	}
+	return true
+}
+
 func (s *MigrationsTestSuite) TestMigrateValueBundle() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
@@ -251,16 +275,18 @@ func (s *MigrationsTestSuite) TestMigrateValueBundle() {
 	s.Require().NoError(err)
 
 	s.Require().Equal(oldValueBundle.TopicId, newMsg.TopicId)
-	s.Require().Equal(oldValueBundle.ReputerRequestNonce, newMsg.ReputerRequestNonce)
+	s.Require().Equal(oldValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight, newMsg.ReputerRequestNonce.ReputerNonce.BlockHeight)
 	s.Require().Equal(oldValueBundle.Reputer, newMsg.Reputer)
 	s.Require().Equal(oldValueBundle.ExtraData, newMsg.ExtraData)
 	s.Require().Equal(oldValueBundle.CombinedValue, newMsg.CombinedValue)
-	s.Require().Equal(oldValueBundle.InfererValues, newMsg.InfererValues)
-	s.Require().Equal(oldValueBundle.ForecasterValues, newMsg.ForecasterValues)
+	// check that the infererValues have been migrated correctly in a loop
+	s.Require().True(areAttributedArraysEqual(oldValueBundle.InfererValues, newMsg.InfererValues))
+	s.Require().True(areAttributedArraysEqual(oldValueBundle.ForecasterValues, newMsg.ForecasterValues))
 	s.Require().Equal(oldValueBundle.NaiveValue, newMsg.NaiveValue)
-	s.Require().Equal(oldValueBundle.OneOutInfererValues, newMsg.OneOutInfererValues)
-	s.Require().Equal(oldValueBundle.OneOutForecasterValues, newMsg.OneOutForecasterValues)
-	s.Require().Equal(oldValueBundle.OneInForecasterValues, newMsg.OneInForecasterValues)
+
+	s.Require().True(areWithHeldArraysEqual(oldValueBundle.OneOutInfererValues, newMsg.OneOutInfererValues))
+	s.Require().True(areWithHeldArraysEqual(oldValueBundle.OneOutForecasterValues, newMsg.OneOutForecasterValues))
+	s.Require().True(areAttributedArraysEqual(oldValueBundle.OneInForecasterValues, newMsg.OneInForecasterValues))
 
 	defaultOneOutInfererForecasterValues := []*types.OneOutInfererForecasterValues{
 		{
