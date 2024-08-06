@@ -131,9 +131,6 @@ func CloseReputerNonce(
 
 		/// Filtering done now, now write what we must for inclusion
 
-		if err != nil {
-			continue
-		}
 		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
 
 		stake, err = k.GetStakeReputerAuthority(ctx, topicId, reputer)
@@ -180,7 +177,7 @@ func CloseReputerNonce(
 		*k,
 		topicId,
 		networkLossBundle,
-		*&nonce,
+		nonce,
 		topic.AlphaRegret,
 		params.CNorm,
 		topic.PNorm,
