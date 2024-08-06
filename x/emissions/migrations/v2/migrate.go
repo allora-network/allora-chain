@@ -167,7 +167,7 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 		newInfererValues := make([]*types.WorkerAttributedValue, 0)
 		newForecastValues := make([]*types.WorkerAttributedValue, 0)
 		newOneOutInfererValues := make([]*types.WithheldWorkerAttributedValue, 0)
-		newIneOutForecasterValues := make([]*types.WithheldWorkerAttributedValue, 0)
+		newOneOutForecasterValues := make([]*types.WithheldWorkerAttributedValue, 0)
 		newOneInForecastValues := make([]*types.WorkerAttributedValue, 0)
 		for _, inference := range oldMsg.InfererValues {
 			newInfererValues = append(newInfererValues, &types.WorkerAttributedValue{
@@ -188,7 +188,7 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 			})
 		}
 		for _, forecast := range oldMsg.OneOutForecasterValues {
-			newIneOutForecasterValues = append(newIneOutForecasterValues, &types.WithheldWorkerAttributedValue{
+			newOneOutForecasterValues = append(newOneOutForecasterValues, &types.WithheldWorkerAttributedValue{
 				Worker: forecast.Worker,
 				Value:  forecast.Value,
 			})
@@ -204,7 +204,7 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 		newMsg.ForecasterValues = newForecastValues
 		newMsg.OneOutInfererValues = newOneOutInfererValues
 		newMsg.OneInForecasterValues = newOneInForecastValues
-		newMsg.OneOutForecasterValues = newOneOutInfererValues
+		newMsg.OneOutForecasterValues = newOneOutForecasterValues
 
 		store.Delete(iterator.Key())
 		store.Set(iterator.Key(), cdc.MustMarshal(&newMsg))
