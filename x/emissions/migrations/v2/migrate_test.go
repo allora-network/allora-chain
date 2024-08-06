@@ -166,17 +166,21 @@ func (s *MigrationsTestSuite) TestMigrateOffchainNode() {
 	s.Require().NoError(err)
 
 	offchainNodeStore := prefix.NewStore(store, types.WorkerNodesKey)
-	offchainNodeStore.Set([]byte("testKey"), bz)
+	offchainNodeStore.Set([]byte("testLibP2PKey"), bz)
 
 	err = v2.MigrateOffchainNode(store, cdc)
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
-	iterator := offchainNodeStore.Iterator(nil, nil)
-	s.Require().True(iterator.Valid())
+
+	oldObj := offchainNodeStore.Get([]byte("testLibP2PKey"))
+	s.Require().Nil(oldObj)
+
+	newObj := offchainNodeStore.Get([]byte("testNodeAddress"))
+	s.Require().NotNil(newObj)
 
 	var newMsg types.OffchainNode
-	err = proto.Unmarshal(iterator.Value(), &newMsg)
+	err = proto.Unmarshal(newObj, &newMsg)
 	s.Require().NoError(err)
 
 	s.Require().Equal(oldOffchainNode.Owner, newMsg.Owner)
