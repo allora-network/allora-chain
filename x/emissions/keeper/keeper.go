@@ -2621,24 +2621,26 @@ func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
 	return nil
 }
 
-func (k *Keeper) SetTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actorType types.ActorType) error {
-	if actorType == types.ActorType_REPUTER {
-		return k.topicLastReputerCommit.Set(ctx, topic, types.TimestampedActorNonce{
-			BlockHeight: blockHeight,
-			Nonce:       nonce,
-		})
-	}
+func (k *Keeper) SetWorkerTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
 	return k.topicLastWorkerCommit.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
 		Nonce:       nonce,
 	})
 }
 
-func (k *Keeper) GetTopicLastCommit(ctx context.Context, topic TopicId, actorType types.ActorType) (types.TimestampedActorNonce, error) {
-	if actorType == types.ActorType_REPUTER {
-		return k.topicLastReputerCommit.Get(ctx, topic)
-	}
+func (k *Keeper) SetReputerTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
+	return k.topicLastReputerCommit.Set(ctx, topic, types.TimestampedActorNonce{
+		BlockHeight: blockHeight,
+		Nonce:       nonce,
+	})
+}
+
+func (k *Keeper) GetWorkerTopicLastCommit(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
 	return k.topicLastWorkerCommit.Get(ctx, topic)
+}
+
+func (k *Keeper) GetReputerTopicLastCommit(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
+	return k.topicLastReputerCommit.Get(ctx, topic)
 }
 
 func (k *Keeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId, forecasterScoreRatio alloraMath.Dec) error {
