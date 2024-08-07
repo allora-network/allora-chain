@@ -29,7 +29,7 @@ RUN chmod a+x /usr/local/bin/dasel
 
 ENV COSMOVISOR_VERSION="v1.5.0"
 #* See https://docs.cosmos.network/main/build/tooling/cosmovisor#setup for details
-# ENV DAEMON_HOME="/cosmovisor"     
+ENV DAEMON_HOME="/cosmovisor"     
 # ENV DAEMON_NAME=allorad
 # ENV DAEMON_ALLOW_DOWNLOAD_BINARIES=false
 # ENV DAEMON_DOWNLOAD_MUST_HAVE_CHECKSUM=false
@@ -52,12 +52,15 @@ RUN mkdir -p ${DAEMON_HOME}/genesis/bin && \
     curl -Lo ${DAEMON_HOME}/genesis/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_CURRENT_VERSION}/allorad_linux_amd64 && \
     chmod +x ${DAEMON_HOME}/genesis/bin/allorad
 
-RUN for ver in "${ALLORAD_UPGRADE_VERSIONS}"; do \
-        mkdir -p ${DAEMON_HOME}/upgrades/${ver}/bin && \
-        curl -Lo ${DAEMON_HOME}/upgrades/${ver}/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ver}/allorad_linux_amd64 && \
-        chmod +x ${DAEMON_HOME}/upgrades/${ver}/bin/allorad ; \
-    done && \
-    chown -R ${USERNAME}:${USERNAME} ${DAEMON_HOME}
+# RUN for ver in "${ALLORAD_UPGRADE_VERSIONS}"; do \
+#         mkdir -p ${DAEMON_HOME}/upgrades/${ver}/bin && \
+#         curl -Lo ${DAEMON_HOME}/upgrades/${ver}/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ver}/allorad_linux_amd64 && \
+#         chmod +x ${DAEMON_HOME}/upgrades/${ver}/bin/allorad ; \
+#     done && \
+#     chown -R ${USERNAME}:${USERNAME} ${DAEMON_HOME}
+ENV ver="v0.3.0"
+RUN mkdir -p ${DAEMON_HOME}/upgrades/${ver}/bin
+COPY allorad ${DAEMON_HOME}/upgrades/${ver}/bin/allorad
 
 VOLUME ${APP_PATH}
 WORKDIR ${APP_PATH}
