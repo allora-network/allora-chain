@@ -170,9 +170,11 @@ func insertForecastsFromTopForecasters(
 		// We keep what we can, ignoring the forecaster and their contribution (forecast) entirely
 		// if they're left with no valid forecast elements.
 		acceptedForecastElements := make([]*types.ForecastElement, 0)
+		seenInferers := make(map[string]bool)
 		for _, el := range forecast.ForecastElements {
-			if _, ok := acceptedInferersOfBatch[el.Inferer]; ok {
+			if _, ok := acceptedInferersOfBatch[el.Inferer]; ok && !seenInferers[el.Inferer] {
 				acceptedForecastElements = append(acceptedForecastElements, el)
+				seenInferers[el.Inferer] = true
 			}
 		}
 
@@ -180,6 +182,9 @@ func insertForecastsFromTopForecasters(
 		if len(acceptedForecastElements) == 0 {
 			continue
 		}
+
+		// Update the forecast with the filtered elements
+		forecast.ForecastElements = acceptedForecastElements
 
 		if forecast == nil {
 			ctx.Logger().Warn("Forecast was added that is nil, ignoring")
