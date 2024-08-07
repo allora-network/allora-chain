@@ -342,17 +342,77 @@ func (qs queryServer) GetOneInForecasterNetworkRegret(
 	return &emissionstypes.QueryOneInForecasterNetworkRegretResponse{Regret: &oneInForecasterNetworkRegret}, nil
 }
 
-func (qs queryServer) GetOneInForecasterSelfNetworkRegret(
+func (qs queryServer) GetNaiveInfererNetworkRegret(
 	ctx context.Context,
-	req *emissionstypes.QueryOneInForecasterSelfNetworkRegretRequest,
+	req *emissionstypes.QueryNaiveInfererNetworkRegretRequest,
 ) (
-	*emissionstypes.QueryOneInForecasterSelfNetworkRegretResponse,
+	*emissionstypes.QueryNaiveInfererNetworkRegretResponse,
 	error,
 ) {
-	oneInForecasterSelfNetworkRegret, _, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Forecaster)
+	regret, _, err := qs.k.GetNaiveInfererNetworkRegret(ctx, req.TopicId, req.Inferer)
 	if err != nil {
 		return nil, err
 	}
 
-	return &emissionstypes.QueryOneInForecasterSelfNetworkRegretResponse{Regret: &oneInForecasterSelfNetworkRegret}, nil
+	return &emissionstypes.QueryNaiveInfererNetworkRegretResponse{Regret: &regret}, nil
+}
+
+func (qs queryServer) GetOneOutInfererInfererNetworkRegret(
+	ctx context.Context,
+	req *emissionstypes.QueryOneOutInfererInfererNetworkRegretRequest,
+) (
+	*emissionstypes.QueryOneOutInfererInfererNetworkRegretResponse,
+	error,
+) {
+	regret, _, err := qs.k.GetOneOutInfererInfererNetworkRegret(ctx, req.TopicId, req.OneOutInferer, req.Inferer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emissionstypes.QueryOneOutInfererInfererNetworkRegretResponse{Regret: &regret}, nil
+}
+
+func (qs queryServer) GetOneOutInfererForecasterNetworkRegret(
+	ctx context.Context,
+	req *emissionstypes.QueryOneOutInfererForecasterNetworkRegretRequest,
+) (
+	*emissionstypes.QueryOneOutInfererForecasterNetworkRegretResponse,
+	error,
+) {
+	regret, _, err := qs.k.GetOneOutInfererForecasterNetworkRegret(ctx, req.TopicId, req.OneOutInferer, req.Forecaster)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emissionstypes.QueryOneOutInfererForecasterNetworkRegretResponse{Regret: &regret}, nil
+}
+
+func (qs queryServer) GetOneOutForecasterInfererNetworkRegret(
+	ctx context.Context,
+	req *emissionstypes.QueryOneOutForecasterInfererNetworkRegretRequest,
+) (
+	*emissionstypes.QueryOneOutForecasterInfererNetworkRegretResponse,
+	error,
+) {
+	regret, _, err := qs.k.GetOneOutForecasterInfererNetworkRegret(ctx, req.TopicId, req.OneOutForecaster, req.Inferer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emissionstypes.QueryOneOutForecasterInfererNetworkRegretResponse{Regret: &regret}, nil
+}
+
+func (qs queryServer) GetOneOutForecasterForecasterNetworkRegret(
+	ctx context.Context,
+	req *emissionstypes.QueryOneOutForecasterForecasterNetworkRegretRequest,
+) (
+	*emissionstypes.QueryOneOutForecasterForecasterNetworkRegretResponse,
+	error,
+) {
+	regret, _, err := qs.k.GetOneOutForecasterForecasterNetworkRegret(ctx, req.TopicId, req.OneOutForecaster, req.Forecaster)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emissionstypes.QueryOneOutForecasterForecasterNetworkRegretResponse{Regret: &regret}, nil
 }
