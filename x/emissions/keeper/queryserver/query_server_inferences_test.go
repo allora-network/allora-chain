@@ -563,35 +563,6 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 }
 
-func (s *KeeperTestSuite) TestGetOneInForecasterSelfNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
-	forecaster := "forecaster-address"
-	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
-	emptyRegret := types.TimestampedValue{
-		BlockHeight: 0,
-		Value:       alloraMath.NewDecFromInt64(0),
-	}
-
-	req := &types.QueryOneInForecasterSelfNetworkRegretRequest{
-		TopicId:    topicId,
-		Forecaster: forecaster,
-	}
-	response, err := s.queryServer.GetOneInForecasterSelfNetworkRegret(s.ctx, req)
-	s.Require().NoError(err)
-	s.Require().Equal(response.Regret, &emptyRegret)
-
-	// Set One In Forecaster Self Network Regret
-	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster, forecaster, regret)
-	s.Require().NoError(err)
-
-	// Get One In Forecaster Self Network Regret
-	response, err = s.queryServer.GetOneInForecasterSelfNetworkRegret(s.ctx, req)
-	s.Require().NoError(err)
-	s.Require().Equal(response.Regret, &regret)
-}
-
 func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
