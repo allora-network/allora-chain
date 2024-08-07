@@ -247,8 +247,6 @@ func GetAndUpdateActiveTopicWeights(
 			moduleParams.TopicRewardAlpha,
 			moduleParams.TopicRewardStakeImportance,
 			moduleParams.TopicRewardFeeRevenueImportance,
-			cosmosMath.ZeroInt(),
-			cosmosMath.ZeroInt(),
 		)
 		if err != nil {
 			return errors.Wrapf(err, "failed to get current topic weight")

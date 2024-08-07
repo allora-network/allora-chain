@@ -6,9 +6,9 @@ import (
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	appParams "github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type TopicId = uint64
@@ -18,8 +18,6 @@ func activateTopicIfWeightAtLeastGlobalMin(
 	ctx context.Context,
 	ms msgServer,
 	topicId TopicId,
-	newRevenue Allo,
-	newStake Allo,
 ) error {
 	isActivated, err := ms.k.IsTopicActive(ctx, topicId)
 	if err != nil {
@@ -42,8 +40,6 @@ func activateTopicIfWeightAtLeastGlobalMin(
 			params.TopicRewardAlpha,
 			params.TopicRewardStakeImportance,
 			params.TopicRewardFeeRevenueImportance,
-			newRevenue,
-			newStake,
 		)
 		if err != nil {
 			return errors.Wrapf(err, "error getting current topic weight")
@@ -75,7 +71,7 @@ func checkBalanceAndSendFee(
 	fee := sdk.NewCoin(balance.Denom, amount)
 
 	if balance.IsLT(fee) {
-		return types.ErrTopicRegistrantNotEnoughDenom
+		return errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover fees")
 	}
 
 	err = ms.k.SendCoinsFromAccountToModule(ctx, sender, minttypes.EcosystemModuleName, sdk.NewCoins(fee))
@@ -99,7 +95,6 @@ func sendEffectiveRevenueActivateTopicIfWeightSufficient(
 	sender string,
 	topicId TopicId,
 	amount Allo,
-	insufficientBalanceErrorMsg string,
 ) error {
 	err := checkBalanceAndSendFee(ctx, ms, sender, amount)
 	if err != nil {
@@ -111,6 +106,6 @@ func sendEffectiveRevenueActivateTopicIfWeightSufficient(
 		return err
 	}
 
-	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId, amount, cosmosMath.ZeroInt())
+	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId)
 	return err
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
-	cosmosMath "cosmossdk.io/math"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -39,8 +38,6 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
-		cosmosMath.ZeroInt(),
-		cosmosMath.ZeroInt(),
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting current topic weight")

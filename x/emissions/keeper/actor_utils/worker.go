@@ -165,6 +165,10 @@ func insertForecastsFromTopForecasters(
 	forecastsByForecaster := make(map[string]*types.Forecast)
 	latestForecaster := make([]*types.Forecast, 0)
 	for _, forecast := range forecasts {
+		if forecast == nil {
+			continue
+		}
+
 		// Examine forecast elements to verify that they're for inferers in the current set.
 		// We assume that set of inferers has been verified above.
 		// We keep what we can, ignoring the forecaster and their contribution (forecast) entirely
@@ -181,9 +185,9 @@ func insertForecastsFromTopForecasters(
 			continue
 		}
 
-		if forecast == nil {
-			ctx.Logger().Warn("Forecast was added that is nil, ignoring")
-			continue
+		// Update the forecast with the filtered elements
+		if forecast.ForecastElements != nil {
+			forecast.ForecastElements = acceptedForecastElements
 		}
 
 		if forecast.Forecaster == "" {

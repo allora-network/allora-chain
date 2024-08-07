@@ -33,8 +33,6 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
-		r.Amount,
-		cosmosMath.ZeroInt(),
 	)
 	s.Require().NoError(err)
 	response, err := s.msgServer.FundTopic(s.ctx, &r)
@@ -53,8 +51,6 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
-		r.Amount,
-		cosmosMath.ZeroInt(),
 	)
 	s.Require().NoError(err)
 	s.Require().True(feeRevAfter.GT(feeRevBefore), "Topic fee revenue should be greater after funding the topic")
@@ -111,8 +107,6 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
-		r.Amount,
-		cosmosMath.ZeroInt(),
 	)
 	s.Require().NoError(err)
 
@@ -123,8 +117,6 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
-		r2.Amount,
-		cosmosMath.ZeroInt(),
 	)
 	s.Require().NoError(err)
 
