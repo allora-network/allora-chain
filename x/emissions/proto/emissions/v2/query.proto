@@ -218,13 +218,6 @@ service Query {
                                    "{forecaster}/{inferer}";
   }
 
-  rpc GetOneInForecasterSelfNetworkRegret(QueryOneInForecasterSelfNetworkRegretRequest)
-      returns (QueryOneInForecasterSelfNetworkRegretResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v2/one_in_forecaster_self_network_regret/{topic_id}/"
-                                   "{forecaster}";
-  }
-
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
     option (google.api.http).get = "/emissions/v2/whitelist_admin/{address}";
   }
@@ -388,6 +381,85 @@ service Query {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v2/total_reward_to_distribute";
   }
+
+  rpc GetNaiveInfererNetworkRegret(QueryNaiveInfererNetworkRegretRequest)
+      returns (QueryNaiveInfererNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v2/native_inferer_network_regret";
+  }
+
+  rpc GetOneOutInfererInfererNetworkRegret(QueryOneOutInfererInfererNetworkRegretRequest)
+      returns (QueryOneOutInfererInfererNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v2/one_out_inferer_inferer_network_regret";
+  }
+
+  rpc GetOneOutInfererForecasterNetworkRegret(QueryOneOutInfererForecasterNetworkRegretRequest)
+      returns (QueryOneOutInfererForecasterNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v2/one_out_inferer_forecaster_network_regret";
+  }
+
+  rpc GetOneOutForecasterInfererNetworkRegret(QueryOneOutForecasterInfererNetworkRegretRequest)
+      returns (QueryOneOutForecasterInfererNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v2/one_out_forecaster_inferer_network_regret";
+  }
+
+  rpc GetOneOutForecasterForecasterNetworkRegret(QueryOneOutForecasterForecasterNetworkRegretRequest)
+      returns (QueryOneOutForecasterForecasterNetworkRegretResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v2/one_out_forecaster_forecaster_network_regret";
+  }
+}
+
+message QueryNaiveInfererNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string inferer = 2;
+}
+
+message QueryNaiveInfererNetworkRegretResponse {
+  TimestampedValue regret = 1;
+}
+
+message QueryOneOutInfererInfererNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string one_out_inferer = 2;
+  string inferer = 3;
+}
+
+message QueryOneOutInfererInfererNetworkRegretResponse {
+  TimestampedValue regret = 1;
+}
+
+message QueryOneOutInfererForecasterNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string one_out_inferer = 2;
+  string forecaster = 3;
+}
+
+message QueryOneOutInfererForecasterNetworkRegretResponse {
+  TimestampedValue regret = 1;
+}
+
+message QueryOneOutForecasterInfererNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string one_out_forecaster = 2;
+  string inferer = 3;
+}
+
+message QueryOneOutForecasterInfererNetworkRegretResponse {
+  TimestampedValue regret = 1;
+}
+
+message QueryOneOutForecasterForecasterNetworkRegretRequest {
+  uint64 topic_id = 1;
+  string one_out_forecaster = 2;
+  string forecaster = 3;
+}
+
+message QueryOneOutForecasterForecasterNetworkRegretResponse {
+  TimestampedValue regret = 1;
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -677,15 +749,6 @@ message QueryOneInForecasterNetworkRegretRequest {
 }
 
 message QueryOneInForecasterNetworkRegretResponse {
-  TimestampedValue regret = 1;
-}
-
-message QueryOneInForecasterSelfNetworkRegretRequest {
-  uint64 topic_id = 1;
-  string forecaster = 2;
-}
-
-message QueryOneInForecasterSelfNetworkRegretResponse {
   TimestampedValue regret = 1;
 }
 

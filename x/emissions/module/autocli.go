@@ -241,11 +241,51 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetOneInForecasterSelfNetworkRegret",
-					Use:       "one-in-forecaster-self-regret [topic_id] [forecaster]",
-					Short:     "Returns regret born from including [forecaster]'s implied inference. Default to topic InitialRegret if does not exist",
+					RpcMethod: "GetNaiveInfererNetworkRegret",
+					Use:       "naive-inferer-network-regret [topic_id] [inferer]",
+					Short:     "Returns regret born from including [inferer]'s naive inference in a batch. Default to topic InitialRegret if does not exist",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutInfererInfererNetworkRegret",
+					Use:       "one-out-inferer-inferer-network-regret [topic_id] [one_out_inferer] [inferer]",
+					Short:     "Returns regret born from including [one_out_inferer]'s implied inference in a batch with [inferer]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_inferer"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutInfererForecasterNetworkRegret",
+					Use:       "one-out-inferer-forecaster-network-regret [topic_id] [one_out_inferer] [forecaster]",
+					Short:     "Returns regret born from including [one_out_inferer]'s implied inference in a batch with [forecaster]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_inferer"},
+						{ProtoField: "forecaster"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutForecasterInfererNetworkRegret",
+					Use:       "one-out-forecaster-inferer-network-regret [topic_id] [one_out_forecaster] [inferer]",
+					Short:     "Returns regret born from including [one_out_forecaster]'s implied inference in a batch with [inferer]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_forecaster"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutForecasterForecasterNetworkRegret",
+					Use:       "one-out-forecaster-forecaster-network-regret [topic_id] [one_out_forecaster] [forecaster]",
+					Short:     "Returns regret born from including [one_out_forecaster]'s implied inference in a batch with [forecaster]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_forecaster"},
 						{ProtoField: "forecaster"},
 					},
 				},

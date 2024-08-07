@@ -54,7 +54,6 @@ const (
 	Query_GetInfererNetworkRegret_FullMethodName                     = "/emissions.v2.Query/GetInfererNetworkRegret"
 	Query_GetForecasterNetworkRegret_FullMethodName                  = "/emissions.v2.Query/GetForecasterNetworkRegret"
 	Query_GetOneInForecasterNetworkRegret_FullMethodName             = "/emissions.v2.Query/GetOneInForecasterNetworkRegret"
-	Query_GetOneInForecasterSelfNetworkRegret_FullMethodName         = "/emissions.v2.Query/GetOneInForecasterSelfNetworkRegret"
 	Query_IsWhitelistAdmin_FullMethodName                            = "/emissions.v2.Query/IsWhitelistAdmin"
 	Query_GetTopicLastWorkerCommitInfo_FullMethodName                = "/emissions.v2.Query/GetTopicLastWorkerCommitInfo"
 	Query_GetTopicLastReputerCommitInfo_FullMethodName               = "/emissions.v2.Query/GetTopicLastReputerCommitInfo"
@@ -85,6 +84,11 @@ const (
 	Query_GetPreviousForecastRewardFraction_FullMethodName           = "/emissions.v2.Query/GetPreviousForecastRewardFraction"
 	Query_GetPreviousPercentageRewardToStakedReputers_FullMethodName = "/emissions.v2.Query/GetPreviousPercentageRewardToStakedReputers"
 	Query_GetTotalRewardToDistribute_FullMethodName                  = "/emissions.v2.Query/GetTotalRewardToDistribute"
+	Query_GetNaiveInfererNetworkRegret_FullMethodName                = "/emissions.v2.Query/GetNaiveInfererNetworkRegret"
+	Query_GetOneOutInfererInfererNetworkRegret_FullMethodName        = "/emissions.v2.Query/GetOneOutInfererInfererNetworkRegret"
+	Query_GetOneOutInfererForecasterNetworkRegret_FullMethodName     = "/emissions.v2.Query/GetOneOutInfererForecasterNetworkRegret"
+	Query_GetOneOutForecasterInfererNetworkRegret_FullMethodName     = "/emissions.v2.Query/GetOneOutForecasterInfererNetworkRegret"
+	Query_GetOneOutForecasterForecasterNetworkRegret_FullMethodName  = "/emissions.v2.Query/GetOneOutForecasterForecasterNetworkRegret"
 )
 
 // QueryClient is the client API for Query service.
@@ -127,7 +131,6 @@ type QueryClient interface {
 	GetInfererNetworkRegret(ctx context.Context, in *QueryInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryInfererNetworkRegretResponse, error)
 	GetForecasterNetworkRegret(ctx context.Context, in *QueryForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryForecasterNetworkRegretResponse, error)
 	GetOneInForecasterNetworkRegret(ctx context.Context, in *QueryOneInForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterNetworkRegretResponse, error)
-	GetOneInForecasterSelfNetworkRegret(ctx context.Context, in *QueryOneInForecasterSelfNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterSelfNetworkRegretResponse, error)
 	IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error)
 	GetTopicLastWorkerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
@@ -158,6 +161,11 @@ type QueryClient interface {
 	GetPreviousForecastRewardFraction(ctx context.Context, in *QueryPreviousForecastRewardFractionRequest, opts ...grpc.CallOption) (*QueryPreviousForecastRewardFractionResponse, error)
 	GetPreviousPercentageRewardToStakedReputers(ctx context.Context, in *QueryPreviousPercentageRewardToStakedReputersRequest, opts ...grpc.CallOption) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
 	GetTotalRewardToDistribute(ctx context.Context, in *QueryTotalRewardToDistributeRequest, opts ...grpc.CallOption) (*QueryTotalRewardToDistributeResponse, error)
+	GetNaiveInfererNetworkRegret(ctx context.Context, in *QueryNaiveInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryNaiveInfererNetworkRegretResponse, error)
+	GetOneOutInfererInfererNetworkRegret(ctx context.Context, in *QueryOneOutInfererInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutInfererInfererNetworkRegretResponse, error)
+	GetOneOutInfererForecasterNetworkRegret(ctx context.Context, in *QueryOneOutInfererForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutInfererForecasterNetworkRegretResponse, error)
+	GetOneOutForecasterInfererNetworkRegret(ctx context.Context, in *QueryOneOutForecasterInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutForecasterInfererNetworkRegretResponse, error)
+	GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, in *QueryOneOutForecasterForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutForecasterForecasterNetworkRegretResponse, error)
 }
 
 type queryClient struct {
@@ -483,15 +491,6 @@ func (c *queryClient) GetOneInForecasterNetworkRegret(ctx context.Context, in *Q
 	return out, nil
 }
 
-func (c *queryClient) GetOneInForecasterSelfNetworkRegret(ctx context.Context, in *QueryOneInForecasterSelfNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterSelfNetworkRegretResponse, error) {
-	out := new(QueryOneInForecasterSelfNetworkRegretResponse)
-	err := c.cc.Invoke(ctx, Query_GetOneInForecasterSelfNetworkRegret_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error) {
 	out := new(QueryIsWhitelistAdminResponse)
 	err := c.cc.Invoke(ctx, Query_IsWhitelistAdmin_FullMethodName, in, out, opts...)
@@ -762,6 +761,51 @@ func (c *queryClient) GetTotalRewardToDistribute(ctx context.Context, in *QueryT
 	return out, nil
 }
 
+func (c *queryClient) GetNaiveInfererNetworkRegret(ctx context.Context, in *QueryNaiveInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryNaiveInfererNetworkRegretResponse, error) {
+	out := new(QueryNaiveInfererNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, Query_GetNaiveInfererNetworkRegret_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetOneOutInfererInfererNetworkRegret(ctx context.Context, in *QueryOneOutInfererInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutInfererInfererNetworkRegretResponse, error) {
+	out := new(QueryOneOutInfererInfererNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, Query_GetOneOutInfererInfererNetworkRegret_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetOneOutInfererForecasterNetworkRegret(ctx context.Context, in *QueryOneOutInfererForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutInfererForecasterNetworkRegretResponse, error) {
+	out := new(QueryOneOutInfererForecasterNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, Query_GetOneOutInfererForecasterNetworkRegret_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetOneOutForecasterInfererNetworkRegret(ctx context.Context, in *QueryOneOutForecasterInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutForecasterInfererNetworkRegretResponse, error) {
+	out := new(QueryOneOutForecasterInfererNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, Query_GetOneOutForecasterInfererNetworkRegret_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, in *QueryOneOutForecasterForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutForecasterForecasterNetworkRegretResponse, error) {
+	out := new(QueryOneOutForecasterForecasterNetworkRegretResponse)
+	err := c.cc.Invoke(ctx, Query_GetOneOutForecasterForecasterNetworkRegret_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -802,7 +846,6 @@ type QueryServer interface {
 	GetInfererNetworkRegret(context.Context, *QueryInfererNetworkRegretRequest) (*QueryInfererNetworkRegretResponse, error)
 	GetForecasterNetworkRegret(context.Context, *QueryForecasterNetworkRegretRequest) (*QueryForecasterNetworkRegretResponse, error)
 	GetOneInForecasterNetworkRegret(context.Context, *QueryOneInForecasterNetworkRegretRequest) (*QueryOneInForecasterNetworkRegretResponse, error)
-	GetOneInForecasterSelfNetworkRegret(context.Context, *QueryOneInForecasterSelfNetworkRegretRequest) (*QueryOneInForecasterSelfNetworkRegretResponse, error)
 	IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error)
 	GetTopicLastWorkerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
 	GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
@@ -833,6 +876,11 @@ type QueryServer interface {
 	GetPreviousForecastRewardFraction(context.Context, *QueryPreviousForecastRewardFractionRequest) (*QueryPreviousForecastRewardFractionResponse, error)
 	GetPreviousPercentageRewardToStakedReputers(context.Context, *QueryPreviousPercentageRewardToStakedReputersRequest) (*QueryPreviousPercentageRewardToStakedReputersResponse, error)
 	GetTotalRewardToDistribute(context.Context, *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error)
+	GetNaiveInfererNetworkRegret(context.Context, *QueryNaiveInfererNetworkRegretRequest) (*QueryNaiveInfererNetworkRegretResponse, error)
+	GetOneOutInfererInfererNetworkRegret(context.Context, *QueryOneOutInfererInfererNetworkRegretRequest) (*QueryOneOutInfererInfererNetworkRegretResponse, error)
+	GetOneOutInfererForecasterNetworkRegret(context.Context, *QueryOneOutInfererForecasterNetworkRegretRequest) (*QueryOneOutInfererForecasterNetworkRegretResponse, error)
+	GetOneOutForecasterInfererNetworkRegret(context.Context, *QueryOneOutForecasterInfererNetworkRegretRequest) (*QueryOneOutForecasterInfererNetworkRegretResponse, error)
+	GetOneOutForecasterForecasterNetworkRegret(context.Context, *QueryOneOutForecasterForecasterNetworkRegretRequest) (*QueryOneOutForecasterForecasterNetworkRegretResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -945,9 +993,6 @@ func (UnimplementedQueryServer) GetForecasterNetworkRegret(context.Context, *Que
 func (UnimplementedQueryServer) GetOneInForecasterNetworkRegret(context.Context, *QueryOneInForecasterNetworkRegretRequest) (*QueryOneInForecasterNetworkRegretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOneInForecasterNetworkRegret not implemented")
 }
-func (UnimplementedQueryServer) GetOneInForecasterSelfNetworkRegret(context.Context, *QueryOneInForecasterSelfNetworkRegretRequest) (*QueryOneInForecasterSelfNetworkRegretResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetOneInForecasterSelfNetworkRegret not implemented")
-}
 func (UnimplementedQueryServer) IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistAdmin not implemented")
 }
@@ -1037,6 +1082,21 @@ func (UnimplementedQueryServer) GetPreviousPercentageRewardToStakedReputers(cont
 }
 func (UnimplementedQueryServer) GetTotalRewardToDistribute(context.Context, *QueryTotalRewardToDistributeRequest) (*QueryTotalRewardToDistributeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTotalRewardToDistribute not implemented")
+}
+func (UnimplementedQueryServer) GetNaiveInfererNetworkRegret(context.Context, *QueryNaiveInfererNetworkRegretRequest) (*QueryNaiveInfererNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNaiveInfererNetworkRegret not implemented")
+}
+func (UnimplementedQueryServer) GetOneOutInfererInfererNetworkRegret(context.Context, *QueryOneOutInfererInfererNetworkRegretRequest) (*QueryOneOutInfererInfererNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOneOutInfererInfererNetworkRegret not implemented")
+}
+func (UnimplementedQueryServer) GetOneOutInfererForecasterNetworkRegret(context.Context, *QueryOneOutInfererForecasterNetworkRegretRequest) (*QueryOneOutInfererForecasterNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOneOutInfererForecasterNetworkRegret not implemented")
+}
+func (UnimplementedQueryServer) GetOneOutForecasterInfererNetworkRegret(context.Context, *QueryOneOutForecasterInfererNetworkRegretRequest) (*QueryOneOutForecasterInfererNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOneOutForecasterInfererNetworkRegret not implemented")
+}
+func (UnimplementedQueryServer) GetOneOutForecasterForecasterNetworkRegret(context.Context, *QueryOneOutForecasterForecasterNetworkRegretRequest) (*QueryOneOutForecasterForecasterNetworkRegretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOneOutForecasterForecasterNetworkRegret not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -1681,24 +1741,6 @@ func _Query_GetOneInForecasterNetworkRegret_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetOneInForecasterSelfNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryOneInForecasterSelfNetworkRegretRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetOneInForecasterSelfNetworkRegret(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetOneInForecasterSelfNetworkRegret_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetOneInForecasterSelfNetworkRegret(ctx, req.(*QueryOneInForecasterSelfNetworkRegretRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_IsWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryIsWhitelistAdminRequest)
 	if err := dec(in); err != nil {
@@ -2239,6 +2281,96 @@ func _Query_GetTotalRewardToDistribute_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetNaiveInfererNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryNaiveInfererNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetNaiveInfererNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetNaiveInfererNetworkRegret_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetNaiveInfererNetworkRegret(ctx, req.(*QueryNaiveInfererNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetOneOutInfererInfererNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOneOutInfererInfererNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetOneOutInfererInfererNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetOneOutInfererInfererNetworkRegret_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetOneOutInfererInfererNetworkRegret(ctx, req.(*QueryOneOutInfererInfererNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetOneOutInfererForecasterNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOneOutInfererForecasterNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetOneOutInfererForecasterNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetOneOutInfererForecasterNetworkRegret_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetOneOutInfererForecasterNetworkRegret(ctx, req.(*QueryOneOutInfererForecasterNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetOneOutForecasterInfererNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOneOutForecasterInfererNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetOneOutForecasterInfererNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetOneOutForecasterInfererNetworkRegret_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetOneOutForecasterInfererNetworkRegret(ctx, req.(*QueryOneOutForecasterInfererNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetOneOutForecasterForecasterNetworkRegret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOneOutForecasterForecasterNetworkRegretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetOneOutForecasterForecasterNetworkRegret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetOneOutForecasterForecasterNetworkRegret_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetOneOutForecasterForecasterNetworkRegret(ctx, req.(*QueryOneOutForecasterForecasterNetworkRegretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2387,10 +2519,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GetOneInForecasterNetworkRegret_Handler,
 		},
 		{
-			MethodName: "GetOneInForecasterSelfNetworkRegret",
-			Handler:    _Query_GetOneInForecasterSelfNetworkRegret_Handler,
-		},
-		{
 			MethodName: "IsWhitelistAdmin",
 			Handler:    _Query_IsWhitelistAdmin_Handler,
 		},
@@ -2509,6 +2637,26 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTotalRewardToDistribute",
 			Handler:    _Query_GetTotalRewardToDistribute_Handler,
+		},
+		{
+			MethodName: "GetNaiveInfererNetworkRegret",
+			Handler:    _Query_GetNaiveInfererNetworkRegret_Handler,
+		},
+		{
+			MethodName: "GetOneOutInfererInfererNetworkRegret",
+			Handler:    _Query_GetOneOutInfererInfererNetworkRegret_Handler,
+		},
+		{
+			MethodName: "GetOneOutInfererForecasterNetworkRegret",
+			Handler:    _Query_GetOneOutInfererForecasterNetworkRegret_Handler,
+		},
+		{
+			MethodName: "GetOneOutForecasterInfererNetworkRegret",
+			Handler:    _Query_GetOneOutForecasterInfererNetworkRegret_Handler,
+		},
+		{
+			MethodName: "GetOneOutForecasterForecasterNetworkRegret",
+			Handler:    _Query_GetOneOutForecasterForecasterNetworkRegret_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
