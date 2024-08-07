@@ -254,7 +254,7 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 
 	// Try to register without any funds to pay fees
 	_, err := msgServer.Register(ctx, reputerRegMsg)
-	require.ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
+	require.ErrorIs(err, sdkerrors.ErrInsufficientFunds, "Register should return an error")
 }
 
 func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
