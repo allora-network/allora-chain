@@ -71,7 +71,7 @@ func checkBalanceAndSendFee(
 	fee := sdk.NewCoin(balance.Denom, amount)
 
 	if balance.IsLT(fee) {
-		return  errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover fees")
+		return errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover fees")
 	}
 
 	err = ms.k.SendCoinsFromAccountToModule(ctx, sender, minttypes.EcosystemModuleName, sdk.NewCoins(fee))
