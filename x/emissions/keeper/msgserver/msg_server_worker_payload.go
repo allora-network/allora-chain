@@ -66,58 +66,62 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
-	inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
-	if inference == nil {
-		return nil, errorsmod.Wrapf(err, "Inference not found")
-	}
-	if inference.TopicId != msg.WorkerDataBundle.TopicId {
-		return nil, errorsmod.Wrapf(err,
-			"Error inferer not use same topic")
-	}
-	isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err,
-			"Error inferer address is not registered in this topic")
-	}
-	if !isInfererRegistered {
-		return nil, errorsmod.Wrapf(err,
-			"Error inferer address is not registered in this topic")
-	}
-	err = ms.k.AppendInference(ctx, topicId, *nonce, inference)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error appending inference")
+	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
+		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
+		if inference == nil {
+			return nil, errorsmod.Wrapf(err, "Inference not found")
+		}
+		if inference.TopicId != msg.WorkerDataBundle.TopicId {
+			return nil, errorsmod.Wrapf(err,
+				"Error inferer not use same topic")
+		}
+		isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err,
+				"Error inferer address is not registered in this topic")
+		}
+		if !isInfererRegistered {
+			return nil, errorsmod.Wrapf(err,
+				"Error inferer address is not registered in this topic")
+		}
+		err = ms.k.AppendInference(ctx, topicId, *nonce, inference)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "Error appending inference")
+		}
 	}
 
 	// Append this individual inference to all inferences
-	forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
-	if forecast == nil {
-		return nil, errorsmod.Wrapf(err, "Forecast not found")
-	}
-	isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err,
-			"Error forecaster address is not registered in this topic")
-	}
-	if !isForecasterRegistered {
-		return nil, errorsmod.Wrapf(err,
-			"Error forecaster address is not registered in this topic")
-	}
+	if msg.WorkerDataBundle.InferenceForecastsBundle.Forecast != nil {
+		forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
+		if forecast.TopicId != msg.WorkerDataBundle.TopicId {
+			return nil, errorsmod.Wrapf(err,
+				"Error forecaster not use same topic")
+		}
+		isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err,
+				"Error forecaster address is not registered in this topic")
+		}
+		if !isForecasterRegistered {
+			return nil, errorsmod.Wrapf(err,
+				"Error forecaster address is not registered in this topic")
+		}
 
-	// Remove duplicate forecast element
-	acceptedForecastElements := make([]*types.ForecastElement, 0)
-	seenInferers := make(map[string]bool)
-	for _, el := range forecast.ForecastElements {
-		if !seenInferers[el.Inferer] {
-			acceptedForecastElements = append(acceptedForecastElements, el)
-			seenInferers[el.Inferer] = true
+		// Remove duplicate forecast element
+		acceptedForecastElements := make([]*types.ForecastElement, 0)
+		seenInferers := make(map[string]bool)
+		for _, el := range forecast.ForecastElements {
+			if !seenInferers[el.Inferer] {
+				acceptedForecastElements = append(acceptedForecastElements, el)
+				seenInferers[el.Inferer] = true
+			}
+		}
+		forecast.ForecastElements = acceptedForecastElements
+		err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err,
+				"Error appending forecast")
 		}
 	}
-	forecast.ForecastElements = acceptedForecastElements
-	err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err,
-			"Error appending forecast")
-	}
-
 	return &types.MsgInsertWorkerPayloadResponse{}, nil
 }
