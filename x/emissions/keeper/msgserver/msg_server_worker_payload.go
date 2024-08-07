@@ -61,7 +61,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee, "insert worker payload")
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}

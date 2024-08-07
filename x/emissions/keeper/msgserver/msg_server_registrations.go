@@ -27,7 +27,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 	if err != nil {
 		return nil, err
 	}
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, msg.TopicId, params.RegistrationFee, "register")
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, msg.TopicId, params.RegistrationFee)
 	if err != nil {
 		return nil, err
 	}
