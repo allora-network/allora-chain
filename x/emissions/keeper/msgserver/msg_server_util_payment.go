@@ -2,6 +2,7 @@ package msgserver
 
 import (
 	"context"
+
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	appParams "github.com/allora-network/allora-chain/app/params"
@@ -56,7 +57,6 @@ func activateTopicIfWeightAtLeastGlobalMin(
 }
 
 // Check if user has enough balance to send the fee, then send the fee to EcoSystem bucket
-// insufficientBalanceErrorMsg is appended to error message if sender has insufficient balance
 func checkBalanceAndSendFee(
 	ctx context.Context,
 	ms msgServer,

@@ -3,7 +3,9 @@ package types
 import "cosmossdk.io/errors"
 
 var (
-	ErrTopicReputerStakeDoesNotExist     = errors.Register(ModuleName, 1, "topic reputer stake does not exist")
+	// ERROR 1 IS RESERVED BY COSMOS-SDK PACKAGE
+	// also we don't use ErrTopicReputerStakeDoesNotExist
+	// ErrTopicReputerStakeDoesNotExist     = errors.Register(ModuleName, 1, "topic reputer stake does not exist")
 	ErrIntegerUnderflowTopicReputerStake = errors.Register(ModuleName, 2, "integer underflow for topic reputer stake")
 	ErrIntegerUnderflowTopicStake        = errors.Register(ModuleName, 3, "integer underflow for topic stake")
 	ErrIntegerUnderflowTotalStake        = errors.Register(ModuleName, 4, "integer underflow for total stake")
