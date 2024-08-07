@@ -77,6 +77,8 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		// set min and max boundaries: max 60 blocks
 		if newWorkerSubmissionWindow > 60 {
 			newWorkerSubmissionWindow = 60
+		} else if newWorkerSubmissionWindow == 0 {
+			newWorkerSubmissionWindow = max(1, oldMsg.EpochLength/2)
 		}
 
 		newMsg := types.Topic{
