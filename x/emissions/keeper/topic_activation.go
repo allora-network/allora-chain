@@ -26,6 +26,7 @@ blockToLowestActiveTopicWeight collections.Map[BlockHeight, alloraMath.Dec]
 // * Implement GetTopicWeight() + cascade its usage + possibly should couple with topic weight-related corrections from Sherlock
 // * Finish propagating per global param checklist
 // * Error msgs + logging
+// * Migration + genesis update + test
 
 // Boolean true if topic is active, else false
 func (k *Keeper) GetNextPossibleChurningBlockByTopicId(ctx context.Context, topicId TopicId) (BlockHeight, bool, error) {
