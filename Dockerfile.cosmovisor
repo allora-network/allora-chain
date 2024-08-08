@@ -58,9 +58,11 @@ RUN mkdir -p ${DAEMON_HOME}/genesis/bin && \
 #         chmod +x ${DAEMON_HOME}/upgrades/${ver}/bin/allorad ; \
 #     done && \
 #     chown -R ${USERNAME}:${USERNAME} ${DAEMON_HOME}
+
 ENV ver="v0.3.0"
-RUN mkdir -p ${DAEMON_HOME}/upgrades/${ver}/bin
-COPY allorad ${DAEMON_HOME}/upgrades/${ver}/bin/allorad
+RUN mkdir -p ${DAEMON_HOME}/upgrades/${ver}/bin && \ 
+    curl -Lo {DAEMON_HOME}/upgrades/${ver}/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ver}/allorad_linux_amd64 && \
+    chmod +x {DAEMON_HOME}/upgrades/${ver}/bin/allorad
 
 VOLUME ${APP_PATH}
 WORKDIR ${APP_PATH}
