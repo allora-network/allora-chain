@@ -12,12 +12,10 @@ import (
 func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
 	registerAliceRequest := &emissionstypes.MsgRegister{
-		Sender:       m.AliceAddr,
-		Owner:        m.AliceAddr,
-		LibP2PKey:    "reputerkey",
-		MultiAddress: "reputermultiaddress",
-		TopicId:      1,
-		IsReputer:    true,
+		Sender:    m.AliceAddr,
+		Owner:     m.AliceAddr,
+		TopicId:   1,
+		IsReputer: true,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, registerAliceRequest)
 	require.NoError(m.T, err)
@@ -56,12 +54,10 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
 	registerBobRequest := &emissionstypes.MsgRegister{
-		Sender:       m.BobAddr,
-		Owner:        m.BobAddr,
-		LibP2PKey:    "workerkey",
-		MultiAddress: "workermultiaddress",
-		TopicId:      1,
-		IsReputer:    false,
+		Sender:    m.BobAddr,
+		Owner:     m.BobAddr,
+		TopicId:   1,
+		IsReputer: false,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.BobAcc, registerBobRequest)
 	require.NoError(m.T, err)

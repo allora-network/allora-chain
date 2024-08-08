@@ -4,6 +4,22 @@ set -eu  #e
 # Ensure we're in integration folder
 cd "$(dirname "$0")"
 
+# Function to check if a command exists
+check_command() {
+  if ! command -v "$1" &> /dev/null; then
+    echo "Error: $1 is not installed."
+    exit 1
+  fi
+}
+
+# List of required commands
+commands=("docker" "jq" "envsubst" "curl")
+
+# Check each command
+for cmd in "${commands[@]}"; do
+  check_command "$cmd"
+done
+
 DOCKER_IMAGE=allorad
 VALIDATOR_NUMBER="${VALIDATOR_NUMBER:-3}"
 VALIDATOR_PREFIX=validator
@@ -70,6 +86,13 @@ docker run \
     --entrypoint=/data/generate_genesis.sh \
     $DOCKER_IMAGE > /dev/null 2>&1
 
+echo "Ensure permissions on data folder after genesis generation"
+docker run \
+    -u 0:0 \
+    -v ${LOCALNET_DATADIR}:/data \
+    --entrypoint=chmod \
+    $DOCKER_IMAGE -R 777 /data
+
 echo "Updating expedited_voting_period in genesis.json"
 genesis_file="${LOCALNET_DATADIR}/genesis/config/genesis.json"
 tmp_file=$(mktemp)
@@ -108,21 +131,6 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
         --env DAEMON_NAME=allorad \
         $DOCKER_IMAGE \
             init /usr/local/bin/allorad
-
-    echo "Setting vintegration upgrade for $valName"
-    docker run -t \
-        -u $(id -u):$(id -g) \
-        -v ${LOCALNET_DATADIR}:/data \
-        --entrypoint=mkdir \
-        $DOCKER_IMAGE \
-            -p /data/${valName}/cosmovisor/upgrades/vintegration/bin
-
-    docker run -t \
-        -u $(id -u):$(id -g) \
-        -v ${LOCALNET_DATADIR}:/data \
-        --entrypoint=cp \
-        $DOCKER_IMAGE \
-            /usr/local/bin/allorad-integration /data/${valName}/cosmovisor/upgrades/vintegration/bin/allorad
 done
 
 echo "Generate L1 peers, put them in persisent-peers and in genesis.json"

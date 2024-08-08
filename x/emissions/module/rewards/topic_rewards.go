@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"cosmossdk.io/errors"
+	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	cosmosMath "cosmossdk.io/math"
@@ -73,7 +74,7 @@ func GetAllActiveEpochEndingTopics(
 				continue
 			}
 
-			if k.CheckCadence(block, topic) {
+			if k.CheckWorkerOpenCadence(block, topic) {
 				epochEndingTopics = append(epochEndingTopics, topic)
 			}
 		}
@@ -129,16 +130,16 @@ func PickChurnableActiveTopics(
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 		// to avoid potential situations where the block is missed
-		if k.CheckCadence(block, topic) {
-			ctx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Inference cadence met for topic: %v metadata: %s default arg: %s. \n",
+		if k.CheckWorkerOpenCadence(block, topic) {
+			ctx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker open cadence met for topic: %v metadata: %s . \n",
 				topic.Id,
-				topic.Metadata,
-				topic.DefaultArg))
+				topic.Metadata))
 
 			// Update the last inference ran
 			err = k.UpdateTopicEpochLastEnded(ctx, topic.Id, block)
 			if err != nil {
 				ctx.Logger().Warn(fmt.Sprintf("Error updating last inference ran: %s", err.Error()))
+				continue
 			}
 			// Add Worker Nonces
 			nextNonce := types.Nonce{BlockHeight: block}
@@ -148,10 +149,10 @@ func PickChurnableActiveTopics(
 				continue
 			}
 			ctx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
-			// To notify topic handler that the topic is ready for churn i.e. requests to be sent to workers and reputers
-			err = k.AddChurnableTopic(ctx, topic.Id)
+
+			err = k.AddWorkerWindowTopicId(ctx, block+topic.WorkerSubmissionWindow, topic.Id)
 			if err != nil {
-				ctx.Logger().Warn(fmt.Sprintf("Error setting churn ready topic: %s", err.Error()))
+				ctx.Logger().Warn(fmt.Sprintf("Error adding worker window topic id: %s", err.Error()))
 				continue
 			}
 
@@ -165,15 +166,45 @@ func PickChurnableActiveTopics(
 			// Adding one to cover for one extra epochLength
 			reputerPruningBlock := block - (int64(MaxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag)
 			if reputerPruningBlock > 0 {
-				ctx.Logger().Warn(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, block))
-				k.PruneReputerNonces(ctx, topic.Id, reputerPruningBlock)
+				ctx.Logger().Debug(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, block))
+				err = k.PruneReputerNonces(ctx, topic.Id, reputerPruningBlock)
+				if err != nil {
+					ctx.Logger().Warn(fmt.Sprintf("Error pruning reputer nonces: %s", err.Error()))
+				}
 
 				// Reputer nonces need to check worker nonces from one epoch before
 				workerPruningBlock := reputerPruningBlock - topic.EpochLength
 				if workerPruningBlock > 0 {
 					ctx.Logger().Debug("Pruning worker nonces before block: ", workerPruningBlock, " for topic: ", topic.Id)
-					// Prune old worker nonces previous to current blockHeight to avoid inserting inferences after its time has passed
-					k.PruneWorkerNonces(ctx, topic.Id, workerPruningBlock)
+					// Prune old worker nonces previous to current block to avoid inserting inferences after its time has passed
+					err = k.PruneWorkerNonces(ctx, topic.Id, workerPruningBlock)
+					if err != nil {
+						ctx.Logger().Warn(fmt.Sprintf("Error pruning worker nonces: %s", err.Error()))
+					}
+				}
+			}
+		}
+		// Check Reputer Close Cadence
+		if k.CheckReputerCloseCadence(block, topic) {
+			// Check if there is an unfulfilled nonce
+			nonces, err := k.GetUnfulfilledReputerNonces(ctx, topic.Id)
+			if err != nil {
+				ctx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+				continue
+			}
+			for _, nonce := range nonces.Nonces {
+				// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
+				// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
+				closingReputerNonceMinBlockHeight := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
+				if block >= closingReputerNonceMinBlockHeight {
+					ctx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Closing reputer nonce for topic: %v nonce: %v, min: %d. \n",
+						topic.Id, nonce, closingReputerNonceMinBlockHeight))
+					err = allorautils.CloseReputerNonce(&k, ctx, topic.Id, *nonce.ReputerNonce)
+					if err != nil {
+						ctx.Logger().Warn(fmt.Sprintf("Error closing reputer nonce: %s", err.Error()))
+						// Proactively close the nonce to avoid
+						k.FulfillReputerNonce(ctx, topic.Id, nonce.ReputerNonce)
+					}
 				}
 			}
 		}
@@ -211,7 +242,9 @@ func GetAndUpdateActiveTopicWeights(
 	totalRevenue = cosmosMath.ZeroInt()
 	sumWeight = alloraMath.ZeroDec()
 	weights = make(map[TopicId]*alloraMath.Dec)
-	fn := func(ctx sdk.Context, topic *types.Topic) error {
+
+	// Apply the function on all sorted topics
+	for _, topic := range sortedEpochEndingTopics {
 		// Calc weight and related data per topic
 		weight, topicFeeRevenue, err := k.GetCurrentTopicWeight(
 			ctx,
@@ -220,15 +253,14 @@ func GetAndUpdateActiveTopicWeights(
 			moduleParams.TopicRewardAlpha,
 			moduleParams.TopicRewardStakeImportance,
 			moduleParams.TopicRewardFeeRevenueImportance,
-			cosmosMath.ZeroInt(),
 		)
 		if err != nil {
-			return errors.Wrapf(err, "failed to get current topic weight")
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get current topic weight")
 		}
 
 		err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
 		if err != nil {
-			return errors.Wrapf(err, "failed to set previous topic weight")
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to set previous topic weight")
 		}
 
 		// This revenue will be paid to top active topics of this block (the churnable topics).
@@ -236,29 +268,20 @@ func GetAndUpdateActiveTopicWeights(
 		// => the influence of this topic's revenue needs to be appropriately diminished.
 		err = k.DripTopicFeeRevenue(ctx, topic.Id, block)
 		if err != nil {
-			return errors.Wrapf(err, "failed to reset topic fee revenue")
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to reset topic fee revenue")
 		}
 
 		// If the topic is inactive, inactivate it
 		if weight.Lt(moduleParams.MinTopicWeight) {
 			err := k.InactivateTopic(ctx, topic.Id)
-			return errors.Wrapf(err, "failed to inactivate topic")
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 		}
 
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)
 		weights[topic.Id] = &weight
 		sumWeight, err = sumWeight.Add(weight)
 		if err != nil {
-			return errors.Wrapf(err, "failed to add weight to sum")
-		}
-		return nil
-	}
-
-	// Apply the function on all sorted topics
-	for _, topic := range sortedEpochEndingTopics {
-		err := fn(ctx, &topic)
-		if err != nil {
-			return nil, alloraMath.Dec{}, cosmosMath.Int{}, err
+			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to add weight to sum")
 		}
 	}
 

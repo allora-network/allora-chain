@@ -18,19 +18,16 @@ func createTopic(
 ) (topicId uint64) {
 	ctx := context.Background()
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:         creator.aa.addr,
-		Metadata:        "ETH 24h Prediction",
-		LossLogic:       "bafybeid7mmrv5qr4w5un6c64a6kt2y4vce2vylsmfvnjt7z2wodngknway",
-		LossMethod:      "loss-calculation-eth.wasm",
-		InferenceLogic:  "bafybeigx43n7kho3gslauwtsenaxehki6ndjo3s63ahif3yc5pltno3pyq",
-		InferenceMethod: "allora-inference-function.wasm",
-		EpochLength:     epochLength,
-		GroundTruthLag:  epochLength,
-		DefaultArg:      "ETH",
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		AlphaRegret:     alloraMath.NewDecFromInt64(1),
-		AllowNegative:   true,
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+		Creator:                creator.aa.addr,
+		Metadata:               "ETH 24h Prediction",
+		LossMethod:             "mse",
+		EpochLength:            epochLength,
+		GroundTruthLag:         epochLength,
+		WorkerSubmissionWindow: epochLength,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		AllowNegative:          true,
+		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
 	}
 
 	txResp, err := m.Client.BroadcastTx(ctx, creator.aa.acc, createTopicRequest)

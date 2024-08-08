@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/errors"
+	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -29,7 +30,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
 	}
-	sdkCtx.Logger().Debug(fmt.Sprintf("EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
+	sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
 	// REWARDS (will internally filter any non-RewardReady topics)
 	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
@@ -38,14 +39,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return errors.Wrapf(err, "Rewards error")
 	}
 
-	// Reset the churn ready topics
-	err = am.keeper.ResetChurnableTopics(sdkCtx)
-	if err != nil {
-		sdkCtx.Logger().Error("Error resetting churn ready topics: ", err)
-		return errors.Wrapf(err, "Resetting churn ready topics error")
-	}
-
-	// identify which topics are churnable from the list of active topics
 	err = rewards.PickChurnableActiveTopics(
 		sdkCtx,
 		am.keeper,
@@ -57,5 +50,40 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return err
 	}
 
+	// Close any open windows due this blockHeight
+	workerWindowsToClose := am.keeper.GetWorkerWindowTopicIds(sdkCtx, blockHeight)
+	if len(workerWindowsToClose.TopicIds) > 0 {
+		for _, topicId := range workerWindowsToClose.TopicIds {
+			sdkCtx.Logger().Info(fmt.Sprintf("ABCI EndBlocker: Worker close cadence met for topic: %d", topicId))
+			// Check if there is an unfulfilled nonce
+			nonces, err := am.keeper.GetUnfulfilledWorkerNonces(sdkCtx, topicId)
+			if err != nil {
+				sdkCtx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+				continue
+			} else if len(nonces.Nonces) == 0 {
+				// No nonces to fulfill
+				continue
+			} else {
+				for _, nonce := range nonces.Nonces {
+					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId, nonce))
+					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topicId, *nonce)
+					if err != nil {
+						sdkCtx.Logger().Info(fmt.Sprintf("Error closing worker nonce, proactively fulfilling: %s", err.Error()))
+						// Proactively close the nonce
+						fulfilledNonce, err := am.keeper.FulfillWorkerNonce(sdkCtx, topicId, nonce)
+						if err != nil {
+							sdkCtx.Logger().Warn(fmt.Sprintf("Error fulfilling worker nonce: %s", err.Error()))
+						} else {
+							sdkCtx.Logger().Debug(fmt.Sprintf("Fulfilled: %t, worker nonce: %v", fulfilledNonce, nonce))
+						}
+					}
+				}
+			}
+		}
+		err = am.keeper.DeleteWorkerWindowBlockheight(sdkCtx, blockHeight)
+		if err != nil {
+			sdkCtx.Logger().Warn(fmt.Sprintf("Error deleting worker window blockheight: %s", err.Error()))
+		}
+	}
 	return nil
 }

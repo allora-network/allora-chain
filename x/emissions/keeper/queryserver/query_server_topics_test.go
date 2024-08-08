@@ -101,16 +101,13 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 	nonce := types.Nonce{
 		BlockHeight: 95,
 	}
-	actor := "TestReputer"
 
 	topic := types.Topic{Id: 1}
-	_ = keeper.SetTopicLastCommit(
+	_ = keeper.SetReputerTopicLastCommit(
 		ctx,
 		topic.Id,
 		int64(blockHeight),
 		&nonce,
-		actor,
-		types.ActorType_REPUTER,
 	)
 
 	req := &types.QueryTopicLastCommitRequest{
@@ -122,22 +119,18 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().Equal(int64(blockHeight), response.LastCommit.BlockHeight, "Retrieved blockheight should match")
 	s.Require().Equal(&nonce, response.LastCommit.Nonce, "The metadata of the retrieved nonce should match")
-	s.Require().Equal(actor, response.LastCommit.Actor, "The metadata of the retrieved nonce should match")
 
 	topic2 := types.Topic{Id: 2}
 	blockHeight = 101
 	nonce = types.Nonce{
 		BlockHeight: 98,
 	}
-	actor = "TestWorker"
 
-	_ = keeper.SetTopicLastCommit(
+	_ = keeper.SetWorkerTopicLastCommit(
 		ctx,
 		topic2.Id,
 		int64(blockHeight),
 		&nonce,
-		actor,
-		types.ActorType_INFERER,
 	)
 
 	req2 := &types.QueryTopicLastCommitRequest{
@@ -149,7 +142,6 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 	s.Require().NotNil(response2, "The response should not be nil")
 	s.Require().Equal(int64(blockHeight), response2.LastCommit.BlockHeight, "Retrieved blockheight should match")
 	s.Require().Equal(&nonce, response2.LastCommit.Nonce, "The metadata of the retrieved nonce should match")
-	s.Require().Equal(actor, response2.LastCommit.Actor, "The metadata of the retrieved nonce should match")
 }
 
 func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
@@ -309,37 +301,6 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }
 
-func (s *KeeperTestSuite) TestGetChurnableTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(123)
-	topicId2 := uint64(456)
-
-	err := keeper.AddChurnableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	err = keeper.AddChurnableTopic(ctx, topicId2)
-	s.Require().NoError(err)
-
-	// Ensure the first topic is retrieved
-	req := &types.QueryChurnableTopicsRequest{}
-	response, err := s.queryServer.GetChurnableTopics(ctx, req)
-	retrievedIds := response.ChurnableTopicIds
-	s.Require().NoError(err)
-	s.Require().Len(retrievedIds, 2, "Should retrieve all churn ready topics")
-
-	// Reset the churn ready topics
-	err = keeper.ResetChurnableTopics(ctx)
-	s.Require().NoError(err)
-
-	// Ensure no topics remain
-	req = &types.QueryChurnableTopicsRequest{}
-	response, err = s.queryServer.GetChurnableTopics(ctx, req)
-	remainingIds := response.ChurnableTopicIds
-	s.Require().NoError(err)
-	s.Require().Len(remainingIds, 0, "Should have no churn ready topics after reset")
-}
-
 func (s *KeeperTestSuite) TestGetRewardableTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -370,52 +331,4 @@ func (s *KeeperTestSuite) TestGetRewardableTopics() {
 	remainingIds := response.RewardableTopicIds
 	s.Require().NoError(err)
 	s.Require().Len(remainingIds, 1)
-}
-
-func (s *KeeperTestSuite) TestGetTopicLastWorkerPayload() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(123)
-	blockHeight := int64(1000)
-	nonce := &types.Nonce{BlockHeight: blockHeight}
-	actor := "allo1j62tlhf5empp365vy39kgvr92uzrmglm7krt6p"
-
-	// Set the worker payload
-	err := keeper.SetTopicLastWorkerPayload(ctx, topicId, blockHeight, nonce, actor)
-	s.Require().NoError(err)
-
-	// Get the worker payload
-	req := &types.QueryTopicLastWorkerPayloadRequest{TopicId: topicId}
-	response, err := s.queryServer.GetTopicLastWorkerPayload(ctx, req)
-	s.Require().NoError(err)
-	payload := response.Payload
-
-	// Check the retrieved values
-	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
-	s.Require().Equal(actor, payload.Actor, "Actor ID should match")
-	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
-}
-
-func (s *KeeperTestSuite) TestGetTopicLastReputerPayload() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(456)
-	blockHeight := int64(2000)
-	nonce := &types.Nonce{BlockHeight: blockHeight}
-	actor := "allo1j62tlhf5empp365vy39kgvr92uzrmglm7krt6p"
-
-	// Set the reputer payload
-	err := keeper.SetTopicLastReputerPayload(ctx, topicId, blockHeight, nonce, actor)
-	s.Require().NoError(err)
-
-	// Get the reputer payload
-	req := &types.QueryTopicLastReputerPayloadRequest{TopicId: topicId}
-	response, err := s.queryServer.GetTopicLastReputerPayload(ctx, req)
-	s.Require().NoError(err)
-	payload := response.Payload
-
-	// Check the retrieved values
-	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
-	s.Require().Equal(actor, payload.Actor, "Actor ID should match")
-	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
 }

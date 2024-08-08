@@ -40,23 +40,23 @@ func EmitRewards(
 	if err != nil {
 		return errors.Wrapf(err, "failed to get rewardable topics")
 	}
-	// Sorted, active topics by weight descending. Still need skim top N to truly be the churnable topics
-	sortedChurnableTopics := alloraMath.GetSortedElementsByDecWeightDesc(rewardableTopics, weights)
+	// Sorted, active topics by weight descending. Still need skim top N to truly be the rewardable topics
+	sortedRewardableTopics := alloraMath.GetSortedElementsByDecWeightDesc(rewardableTopics, weights)
 
-	if len(sortedChurnableTopics) == 0 {
-		Logger(ctx).Warn("No churnable topics found")
+	if len(sortedRewardableTopics) == 0 {
+		Logger(ctx).Warn("No rewardable topics found")
 		return nil
 	}
 
-	// Top `N=MaxTopicsPerBlock` active topics of this block => the *actually* churnable topics
-	if uint64(len(sortedChurnableTopics)) > moduleParams.MaxTopicsPerBlock {
-		sortedChurnableTopics = sortedChurnableTopics[:moduleParams.MaxTopicsPerBlock]
+	// Top `N=MaxTopicsPerBlock` active topics of this block => the *actually* rewardable topics
+	if uint64(len(sortedRewardableTopics)) > moduleParams.MaxTopicsPerBlock {
+		sortedRewardableTopics = sortedRewardableTopics[:moduleParams.MaxTopicsPerBlock]
 	}
 
-	// Get total weight of churnable topics
-	sumWeightOfChurnableTopics := alloraMath.ZeroDec()
-	for _, topicId := range sortedChurnableTopics {
-		sumWeightOfChurnableTopics, err = sumWeightOfChurnableTopics.Add(*weights[topicId])
+	// Get total weight of rewardable topics
+	sumWeightOfRewardableTopics := alloraMath.ZeroDec()
+	for _, topicId := range sortedRewardableTopics {
+		sumWeightOfRewardableTopics, err = sumWeightOfRewardableTopics.Add(*weights[topicId])
 		if err != nil {
 			return errors.Wrapf(err, "failed to add weight of top topics")
 		}
@@ -64,14 +64,14 @@ func EmitRewards(
 
 	// Revenue (above) is what was earned by topics in this timestep. Rewards are what are actually paid to topics => participants
 	// The reward and revenue calculations are coupled here to minimize excessive compute
-	topicRewards, err := CalcTopicRewards(ctx, k, weights, sortedChurnableTopics, sumWeightOfChurnableTopics, totalReward)
+	topicRewards, err := CalcTopicRewards(ctx, k, weights, sortedRewardableTopics, sumWeightOfRewardableTopics, totalReward)
 	if err != nil {
 		return errors.Wrapf(err, "failed to calculate topic rewards")
 	}
 
 	// Calculate then pay out topic rewards to topic participants
 	totalRewardToStakedReputers := alloraMath.ZeroDec() // This is used to communicate with the mint module
-	for _, topicId := range sortedChurnableTopics {
+	for _, topicId := range sortedRewardableTopics {
 		topicReward := topicRewards[topicId]
 		if topicReward == nil {
 			Logger(ctx).Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
@@ -304,7 +304,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	var forecastingEntropy alloraMath.Dec
 	if len(forecasters) > 0 && len(inferers) > 1 {
 		// Get forecasting entropy
-		forecastingEntropy, err = GetForecastingTaskEntropy(
+		forecastingEntropy, err = GetForecastTaskEntropy(
 			ctx,
 			k,
 			topicId,
@@ -332,15 +332,34 @@ func GenerateRewardsDistributionByTopicParticipant(
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for reputer task in topic")
 	}
 
-	// Get Total Rewards for Inference task
-	taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
+	// Get previous forecaster score ratio for topic
+	previousForecasterScoreRatio, err := k.GetPreviousForecasterScoreRatio(ctx, topicId)
+	if err != nil {
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast score ratio")
+	}
+
+	// Get chi (Forecasting Utility) and gamma (Normalization Factor)
+	chi, gamma, err := GetChiAndGamma(
 		lossBundles.NaiveValue,
 		lossBundles.CombinedValue,
 		inferenceEntropy,
 		forecastingEntropy,
+		infererScores,
+		previousForecasterScoreRatio,
+		moduleParams.TaskRewardAlpha,
+	)
+	if err != nil {
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
+	}
+
+	// Get Total Rewards for Inference task
+	taskInferenceReward, err := GetRewardForInferenceTaskInTopic(
+		inferenceEntropy,
+		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
-		infererScores,
+		chi,
+		gamma,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for inference task in topic")
@@ -348,13 +367,12 @@ func GenerateRewardsDistributionByTopicParticipant(
 
 	// Get Total Rewards for Forecasting task
 	taskForecastingReward, err := GetRewardForForecastingTaskInTopic(
-		lossBundles.NaiveValue,
-		lossBundles.CombinedValue,
 		inferenceEntropy,
 		forecastingEntropy,
 		reputerEntropy,
 		topicReward,
-		infererScores,
+		chi,
+		gamma,
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get reward for forecasting task in topic")

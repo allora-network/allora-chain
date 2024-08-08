@@ -77,4 +77,11 @@ message Params {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  // percentage of the total supply that is locked in the preseed investors bucket at the genesis
+  string investors_preseed_percent_of_total_supply = 11 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }

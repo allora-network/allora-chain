@@ -1,0 +1,72 @@
+FROM debian:bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    USERNAME=appuser \
+    APP_PATH=/data
+
+#* curl jq - required for readyness probe and to download genesis
+RUN apt update && \
+    apt -y dist-upgrade && \
+    apt install -y --no-install-recommends \
+        curl jq \
+        tzdata \
+        ca-certificates && \
+    echo "deb http://deb.debian.org/debian testing main" >> /etc/apt/sources.list && \
+    apt update && \
+    apt install -y --no-install-recommends -t testing \
+      zlib1g \
+      libgnutls30 \
+      perl-base && \
+    rm -rf /var/cache/apt/*
+
+RUN groupadd -g 1001 ${USERNAME} && \
+    useradd -m -d ${APP_PATH} -u 1001 -g 1001 ${USERNAME}
+
+#* Install dasel to work with json/yaml/toml configs
+ENV DASEL_VERSION="v2.8.1"
+ADD https://github.com/TomWright/dasel/releases/download/${DASEL_VERSION}/dasel_linux_amd64 /usr/local/bin/dasel
+RUN chmod a+x /usr/local/bin/dasel
+
+ENV COSMOVISOR_VERSION="v1.5.0"
+#* See https://docs.cosmos.network/main/build/tooling/cosmovisor#setup for details
+ENV DAEMON_HOME="/cosmovisor"     
+# ENV DAEMON_NAME=allorad
+# ENV DAEMON_ALLOW_DOWNLOAD_BINARIES=false
+# ENV DAEMON_DOWNLOAD_MUST_HAVE_CHECKSUM=false
+# ENV DAEMON_RESTART_AFTER_UPGRADE=true
+# ENV DAEMON_RESTART_DELAY=1s
+# ENV DAEMON_POLL_INTERVAL=3s
+# ENV UNSAFE_SKIP_BACKUP=true
+# ENV DAEMON_PREUPGRADE_MAX_RETRIES=3
+# ENV COSMOVISOR_DISABLE_LOGS=false
+# ENV COSMOVISOR_COLOR_LOGS=true
+ADD https://github.com/cosmos/cosmos-sdk/releases/download/cosmovisor/${COSMOVISOR_VERSION}/cosmovisor-v1.5.0-linux-amd64.tar.gz /tmp/cosmovisor.tar.gz
+RUN tar -xvf /tmp/cosmovisor.tar.gz -C /usr/local/bin/ && \
+    chmod +x /usr/local/bin/cosmovisor
+
+ENV ALLORAD_CURRENT_VERSION="v0.2.14"
+#* ALLORAD_UPGRADE_VERSIONS - Could be many versions, space separated
+ENV ALLORAD_UPGRADE_VERSIONS="untagged-e66cf245a46ad9a6cef6"
+
+RUN mkdir -p ${DAEMON_HOME}/genesis/bin && \
+    curl -Lo ${DAEMON_HOME}/genesis/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_CURRENT_VERSION}/allorad_linux_amd64 && \
+    chmod +x ${DAEMON_HOME}/genesis/bin/allorad
+
+# RUN for ver in "${ALLORAD_UPGRADE_VERSIONS}"; do \
+#         mkdir -p ${DAEMON_HOME}/upgrades/${ver}/bin && \
+#         curl -Lo ${DAEMON_HOME}/upgrades/${ver}/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ver}/allorad_linux_amd64 && \
+#         chmod +x ${DAEMON_HOME}/upgrades/${ver}/bin/allorad ; \
+#     done && \
+#     chown -R ${USERNAME}:${USERNAME} ${DAEMON_HOME}
+ENV ver="v0.3.0"
+RUN mkdir -p ${DAEMON_HOME}/upgrades/${ver}/bin
+COPY allorad ${DAEMON_HOME}/upgrades/${ver}/bin/allorad
+
+VOLUME ${APP_PATH}
+WORKDIR ${APP_PATH}
+
+USER ${USERNAME}
+
+EXPOSE 26656/tcp 26657/tcp 26660/tcp 9090/tcp 1317/tcp
+
+ENTRYPOINT ["cosmovisor"]

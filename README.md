@@ -58,7 +58,7 @@ When you run a node you have 2 options:
 
 *NOTE:* `scripts/l1_node.sh` will generate keys for the node. For production environments you need to use a proper keys storage, and follow secrets management best practices.
 
-## Run a node and a head with docker compose
+## Run a node
 
 ### Run
 ```
@@ -69,47 +69,6 @@ docker compose up
 run `docker compose up -d` to run detached.
 
 *NOTE:* Don't forget to pull the images first, to ensure that you're using the latest images.
-
-
-## Run only a node with docker compose
-
-### Run
-```
-docker compose pull
-docker compose up node
-```
-To run only head: `docker compose up head`
-
-*NOTE:* You also can comment head service in the docker file.
-
-## Run a node with statesync enabled
-
-To speed up nodes syncing, you can enable statesync, so the node will download state snapshot and sync only the rest blocks (last \<1000 blocks).  
-Here is a [guide](https://blog.cosmos.network/cosmos-sdk-state-sync-guide-99e4cf43be2f)  from Cosmos SDK. 
-
-To use statesync, you need:
-
-1. Peers with state snapshots enabled. Allora [peers](https://github.com/allora-network/networks/blob/main/testnet-1/peers.txt) have enabled snapshots for every 1000 blocks.
-2. 2 RPC endpoints, you can use any synced full nodes for this purpose.
-
-**NOTE:** To enable state snapshots, you just need to pass `--state-sync.snapshot-keep-recent=X` and `--state-sync.snapshot-interval=Y` to the `allorad start` command.
-
-### Enable statesync with docker compose
-
-Set in the docker compose file the following environment variables
-```
-      - STATE_SYNC_RPC1=synced_full_node_rpc_1
-      - STATE_SYNC_RPC2=synced_full_node_rpc_2
-```
-
-### Enable statesync with l1_node.sh script
-
-Just add to the script's environment the following variables:
-```
-export STATE_SYNC_RPC1=synced_full_node_rpc_1
-export STATE_SYNC_RPC2=synced_full_node_rpc_2
-scripts/l1_node.sh
-```
 
 ### See logs
 `docker compose logs -f`
@@ -265,6 +224,15 @@ To run integration tests, execute the following commands:
 ```bash
 bash test/local_testnet_l1.sh
 INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
+```
+
+## Run Upgrade Tests
+
+To run upgrade tests, execute the following commands:
+
+```bash
+bash test/local_testnet_upgrade_l1.sh
+UPGRADE=TRUE go test -timeout 10m ./test/integration/ -v
 ```
 
 ## Run Stress Tests

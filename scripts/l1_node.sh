@@ -20,7 +20,11 @@ DENOM="uallo"
 
 echo "To re-initiate the node, remove the file: ${INIT_FLAG}"
 if [ ! -f $INIT_FLAG ]; then
+    #* Remove if existing config
     rm -rf ${APP_HOME}/config
+
+    #* Create symlink for allorad config - workaround
+    ln -sf ${APP_HOME} ${HOME}/.allorad
 
     #* Init node
     allorad --home=${APP_HOME} init ${MONIKER} --chain-id=${NETWORK} --default-denom $DENOM
@@ -44,9 +48,6 @@ if [ ! -f $INIT_FLAG ]; then
     #* Mitigate mempool spamming attacks
     dasel put mempool.max_txs_bytes -t int -v 2097152 -f ${APP_HOME}/config/config.toml
     dasel put mempool.size -t int -v 1000 -f ${APP_HOME}/config/config.toml
-
-    #* Create symlink for allorad config
-    ln -sf . ${APP_HOME}/.allorad
 
     touch $INIT_FLAG
 fi
@@ -73,8 +74,6 @@ if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
     dasel put statesync.trust_height -t string -v $TRUST_HEIGHT -f ${APP_HOME}/config/config.toml
     dasel put statesync.trust_hash -t string -v $TRUST_HEIGHT_HASH -f ${APP_HOME}/config/config.toml
 fi
-
-export BLOCKLESS_API_URL="${BLOCKLESS_API_URL:-$(curl -Ls ${HEADS_URL})}"
 
 echo "Starting validator node"
 allorad \

@@ -1,0 +1,80 @@
+FROM golang:1.22-bookworm AS builder
+
+ENV GO111MODULE=on
+ENV GOMODCACHE=/gocache
+ENV BASELINE_VERSION_TAG=v0.2.14
+ENV GIT_STASH_MESSAGE="Docker build"
+
+ADD . /src
+WORKDIR /src
+
+# Save the uncommited changes
+RUN git stash -u -m "$GIT_STASH_MESSAGE"
+# Switch to the baseline version
+RUN git checkout $BASELINE_VERSION_TAG
+
+# Build the baseline version
+RUN mkdir -p $GOMODCACHE
+RUN --mount=type=cache,target=/gocache \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@latest
+RUN --mount=type=cache,target=/gocache \
+    --mount=type=cache,target=/root/.cache/go-build \
+    make install
+
+# Restore the current version
+RUN git switch -
+RUN sh -c 'git stash list | grep "$GIT_STASH_MESSAGE" && git stash pop'; true
+
+# Build the current version
+RUN --mount=type=cache,target=/gocache \
+    --mount=type=cache,target=/root/.cache/go-build \
+    make build-local-edits
+
+RUN cp build/allorad /go/bin/allorad-v0.3.0
+
+#==============================================================
+
+FROM debian:bookworm-slim as execution
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    USERNAME=appuser \
+    APP_PATH=/data
+
+#* curl jq - required for readyness probe and to download genesis
+#* bc - required for generate_genesis.sh
+RUN apt update && \
+    apt -y dist-upgrade && \
+    apt install -y --no-install-recommends \
+        curl jq \
+        tzdata \
+        bc \
+        ca-certificates && \
+    echo "deb http://deb.debian.org/debian testing main" >> /etc/apt/sources.list && \
+    apt update && \
+    apt install -y --no-install-recommends -t testing \
+      zlib1g \
+      libgnutls30 \
+      perl-base && \
+    rm -rf /var/cache/apt/*
+
+#* Install dasel to work with json/yaml/toml configs
+ENV DASEL_VERSION="v2.8.1"
+ADD https://github.com/TomWright/dasel/releases/download/${DASEL_VERSION}/dasel_linux_amd64 /usr/local/bin/dasel
+RUN chmod a+x /usr/local/bin/dasel
+
+COPY --from=builder /go/bin/* /usr/local/bin/
+
+RUN groupadd -g 1001 ${USERNAME} \
+    && useradd -m -d ${APP_PATH} -u 1001 -g 1001 ${USERNAME}
+
+EXPOSE 1317 26656 26657
+VOLUME ${APP_PATH}
+WORKDIR ${APP_PATH}
+
+USER ${USERNAME}
+
+ENV DAEMON_NAME="allorad"
+ENV DAEMON_HOME="/data"
+
+ENTRYPOINT ["cosmovisor" "run" "start"]

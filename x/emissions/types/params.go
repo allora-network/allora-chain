@@ -10,7 +10,7 @@ import (
 // DefaultParams returns default module parameters.
 func DefaultParams() Params {
 	return Params{
-		Version:                             "0.0.3",                                       // version of the protocol should be in lockstep with github release tag version
+		Version:                             "v2",                                          // version of the protocol should be in lockstep with github release tag version
 		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),        // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:                   uint64(128),                                   // max number of topics to run cadence for per block
 		RequiredMinimumStake:                cosmosMath.NewInt(100),                        // minimum stake required to be a worker or reputer
@@ -22,6 +22,7 @@ func DefaultParams() Params {
 		MaxGradientThreshold:                alloraMath.MustNewDecFromString("0.001"),      // gradient descent stops when gradient falls below this
 		MinStakeFraction:                    alloraMath.MustNewDecFromString("0.5"),        // minimum fraction of stake that should be listened to when setting consensus listening coefficients
 		EpsilonReputer:                      alloraMath.MustNewDecFromString("0.01"),       // a small tolerance quantity used to cap reputer scores at infinitesimally close proximities
+		EpsilonSafeDiv:                      alloraMath.MustNewDecFromString("0.0000001"),  // a small tolerance quantity used to cap division by zero
 		MaxUnfulfilledWorkerRequests:        uint64(100),                                   // maximum number of outstanding nonces for worker requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		MaxUnfulfilledReputerRequests:       uint64(100),                                   // maximum number of outstanding nonces for reputer requests per topic from the chain; needs to be bigger to account for varying topic ground truth lag
 		TopicRewardStakeImportance:          alloraMath.MustNewDecFromString("0.5"),        // importance of stake in determining rewards for a topic
@@ -51,6 +52,7 @@ func DefaultParams() Params {
 		TopicFeeRevenueDecayRate:            alloraMath.MustNewDecFromString("0.0025"),     // rate at which topic fee revenue decays over time
 		MinEffectiveTopicRevenue:            alloraMath.MustNewDecFromString("0.00000001"), // we no stop dripping from the topic's effective revenue when the topic's effective revenue is below this
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                    // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
+		DataSendingFee:                      cosmosMath.NewInt(10),                         // how much workers and reputers must pay to send payload
 	}
 }
 
@@ -90,6 +92,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateEpsilonReputer(p.EpsilonReputer); err != nil {
+		return err
+	}
+	if err := validateEpsilonSafeDiv(p.EpsilonSafeDiv); err != nil {
 		return err
 	}
 	if err := validateMaxUnfulfilledWorkerRequests(p.MaxUnfulfilledWorkerRequests); err != nil {
@@ -177,6 +182,12 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateHalfMaxProcessStakeRemovalsEndBlock(p.HalfMaxProcessStakeRemovalsEndBlock); err != nil {
+		return err
+	}
+	if err := validateMinEffectiveTopicRevenue(p.MinEffectiveTopicRevenue); err != nil {
+		return err
+	}
+	if err := validateDataSendingFee(p.DataSendingFee); err != nil {
 		return err
 	}
 
@@ -286,6 +297,14 @@ func validateMinStakeFraction(i alloraMath.Dec) error {
 // Small tolerance quantity used to cap reputer scores at infinitesimally close proximities.
 // Should be close to zero, but not zero. i > 0
 func validateEpsilonReputer(i alloraMath.Dec) error {
+	if i.Lte(alloraMath.ZeroDec()) {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+// Small tolerance quantity used to cap division by zero.
+func validateEpsilonSafeDiv(i alloraMath.Dec) error {
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -539,4 +558,13 @@ func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
 // Whether an alloraDec is between the value of (0, 1) exclusive
 func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
 	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+}
+
+// How much workers and reputers must pay to send data.
+// Should be non-negative.
+func validateDataSendingFee(i cosmosMath.Int) error {
+	if i.IsNegative() {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
 }

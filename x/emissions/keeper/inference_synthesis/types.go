@@ -18,12 +18,6 @@ type Weight = alloraMath.Dec
 type InferenceValue = alloraMath.Dec
 type Stake = cosmosMath.Int
 
-type StdDevRegrets struct {
-	stdDevInferenceRegrets Regret
-	stdDevCombinedRegrets  Regret
-	// StdDevOneInForecastRegret map[Worker]Regret // max regret for each one-in forecaster
-}
-
 // Need to differentiate between the two types of regrets because workers may complete tasks
 // for both roles and may have different regrets for those different roles
 type RegretInformedWeights struct {
@@ -38,7 +32,8 @@ type SynthRequest struct {
 	Inferences          *emissions.Inferences
 	Forecasts           *emissions.Forecasts
 	NetworkCombinedLoss Loss
-	Epsilon             alloraMath.Dec
+	EpsilonTopic        alloraMath.Dec
+	EpsilonSafeDiv      alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }
@@ -67,7 +62,8 @@ type SynthPalette struct {
 	// Must respect the order of sister `forecasters` property
 	ForecasterRegrets   map[Worker]*alloraMath.Dec
 	NetworkCombinedLoss Loss
-	Epsilon             alloraMath.Dec
+	EpsilonTopic        alloraMath.Dec
+	EpsilonSafeDiv      alloraMath.Dec
 	PNorm               alloraMath.Dec
 	CNorm               alloraMath.Dec
 }

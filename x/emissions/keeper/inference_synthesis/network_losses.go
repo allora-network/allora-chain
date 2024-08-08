@@ -70,6 +70,7 @@ func CalcNetworkLosses(
 	runningWeightedInfererLosses := make(map[Worker]*RunningWeightedLoss)
 	runningWeightedForecasterLosses := make(map[Worker]*RunningWeightedLoss)
 	runningWeightedNaiveLoss := RunningWeightedLoss{alloraMath.ZeroDec(), alloraMath.ZeroDec()}
+	runningWeightedOneOutInfererForecasterLosses := make(map[Worker]map[Worker]*RunningWeightedLoss)
 	runningWeightedOneOutInfererLosses := make(map[Worker]*RunningWeightedLoss) // Withheld worker -> Forecaster -> Loss
 	runningWeightedOneOutForecasterLosses := make(map[Worker]*RunningWeightedLoss)
 	runningWeightedOneInForecasterLosses := make(map[Worker]*RunningWeightedLoss)
@@ -124,6 +125,28 @@ func CalcNetworkLosses(
 			runningWeightedNaiveLoss, err = RunningWeightedAvgUpdate(&runningWeightedNaiveLoss, stakeAmount, report.ValueBundle.NaiveValue)
 			if err != nil {
 				return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for naive loss: ")
+			}
+
+			// Update one-out inferer forecaster losses
+			for _, losses := range report.ValueBundle.OneOutInfererForecasterValues {
+				for _, loss := range losses.OneOutInfererValues {
+					if runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker] == nil {
+						// initialize first map
+						if runningWeightedOneOutInfererForecasterLosses[losses.Forecaster] == nil {
+							runningWeightedOneOutInfererForecasterLosses[losses.Forecaster] = make(map[Worker]*RunningWeightedLoss)
+						}
+						runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker] = &RunningWeightedLoss{
+							UnnormalizedWeightedLoss: alloraMath.ZeroDec(),
+							SumWeight:                alloraMath.ZeroDec(),
+						}
+					}
+
+					nextAvg, err := RunningWeightedAvgUpdate(runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker], stakeAmount, loss.Value)
+					if err != nil {
+						return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error updating running weighted average for one-out inferer forecaster")
+					}
+					runningWeightedOneOutInfererForecasterLosses[losses.Forecaster][loss.Worker] = &nextAvg
+				}
 			}
 
 			// Update one-out inferer losses
@@ -196,15 +219,28 @@ func CalcNetworkLosses(
 	oneOutInfererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutInfererLosses, sortedInferers, epsilon)
 	oneOutForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutForecasterLosses, sortedForecasters, epsilon)
 	oneInForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedOneInForecasterLosses, sortedForecasters, epsilon)
+	oneOutInfererForecasterLosses := make([]*emissions.OneOutInfererForecasterValues, 0)
+	for _, forecaster := range sortedForecasters {
+		innerMap, ok := runningWeightedOneOutInfererForecasterLosses[forecaster]
+		if !ok {
+			continue
+		}
+		oneOutInfererValues := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](innerMap, sortedInferers, epsilon)
+		oneOutInfererForecasterLosses = append(oneOutInfererForecasterLosses, &emissions.OneOutInfererForecasterValues{
+			Forecaster:          forecaster,
+			OneOutInfererValues: oneOutInfererValues,
+		})
+	}
 
 	output := emissions.ValueBundle{
-		CombinedValue:          combinedValue,
-		InfererValues:          infererLosses,
-		ForecasterValues:       forecasterLosses,
-		NaiveValue:             naiveValue,
-		OneOutInfererValues:    oneOutInfererLosses,
-		OneOutForecasterValues: oneOutForecasterLosses,
-		OneInForecasterValues:  oneInForecasterLosses,
+		CombinedValue:                 combinedValue,
+		InfererValues:                 infererLosses,
+		ForecasterValues:              forecasterLosses,
+		NaiveValue:                    naiveValue,
+		OneOutInfererForecasterValues: oneOutInfererForecasterLosses,
+		OneOutInfererValues:           oneOutInfererLosses,
+		OneOutForecasterValues:        oneOutForecasterLosses,
+		OneInForecasterValues:         oneInForecasterLosses,
 	}
 
 	return output, nil

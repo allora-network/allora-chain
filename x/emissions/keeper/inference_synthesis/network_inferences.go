@@ -42,7 +42,7 @@ func GetNetworkInferencesAtBlock(
 	var forecasterWeights map[string]alloraMath.Dec
 
 	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferencesNonce)
-	if err != nil {
+	if err != nil || len(inferences.Inferences) == 0 {
 		return nil, nil, infererWeights, forecasterWeights, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, inferencesNonce)
 	}
 	// Add inferences in the bundle -> this bundle will be used as a fallback in case of error
@@ -91,7 +91,8 @@ func GetNetworkInferencesAtBlock(
 				Inferences:          inferences,
 				Forecasts:           forecasts,
 				NetworkCombinedLoss: networkLosses.CombinedValue,
-				Epsilon:             topic.Epsilon,
+				EpsilonTopic:        topic.Epsilon,
+				EpsilonSafeDiv:      moduleParams.EpsilonSafeDiv,
 				PNorm:               topic.PNorm,
 				CNorm:               moduleParams.CNorm,
 			},
@@ -171,12 +172,12 @@ func GetLatestNetworkInference(
 
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferenceBlockHeight)
 	if err != nil {
-		Logger(ctx).Warn(fmt.Sprintf("Error getting forecasts: %s", err.Error()))
 		if errors.Is(err, collections.ErrNotFound) {
 			forecasts = &emissions.Forecasts{
 				Forecasts: make([]*emissions.Forecast, 0),
 			}
 		} else {
+			Logger(ctx).Warn(fmt.Sprintf("Error getting forecasts: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
 		}
 	}
@@ -210,7 +211,8 @@ func GetLatestNetworkInference(
 				Inferences:          inferences,
 				Forecasts:           forecasts,
 				NetworkCombinedLoss: networkLosses.CombinedValue,
-				Epsilon:             topic.Epsilon,
+				EpsilonTopic:        topic.Epsilon,
+				EpsilonSafeDiv:      moduleParams.EpsilonSafeDiv,
 				PNorm:               topic.PNorm,
 				CNorm:               moduleParams.CNorm,
 			},

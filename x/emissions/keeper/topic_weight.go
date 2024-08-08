@@ -45,7 +45,6 @@ func (k *Keeper) GetCurrentTopicWeight(
 	topicRewardAlpha alloraMath.Dec,
 	stakeImportance alloraMath.Dec,
 	feeImportance alloraMath.Dec,
-	additionalRevenue cosmosMath.Int,
 ) (weight alloraMath.Dec, topicRevenue cosmosMath.Int, err error) {
 	topicStake, err := k.GetTopicStake(ctx, topicId)
 	if err != nil {
@@ -64,17 +63,16 @@ func (k *Keeper) GetCurrentTopicWeight(
 	}
 
 	// Calc target weight using fees, epoch length, stake, and params
-	newFeeRevenue := additionalRevenue.Add(topicFeeRevenue)
-	feeRevenue, err := alloraMath.NewDecFromSdkInt(newFeeRevenue)
+	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue)
 	if err != nil {
 		return alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to convert topic fee revenue to dec")
 	}
 
-	if !feeRevenue.Equal(alloraMath.ZeroDec()) {
+	if !topicFeeRevenueDec.Equal(alloraMath.ZeroDec()) {
 		targetWeight, err := k.GetTargetWeight(
 			topicStakeDec,
 			topicEpochLength,
-			feeRevenue,
+			topicFeeRevenueDec,
 			stakeImportance,
 			feeImportance,
 		)

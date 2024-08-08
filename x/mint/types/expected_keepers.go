@@ -42,3 +42,12 @@ type EmissionsKeeper interface {
 	GetParams(ctx context.Context) (emissionstypes.Params, error)
 	IsWhitelistAdmin(ctx context.Context, admin string) (bool, error)
 }
+
+// used for testing
+type MintKeeper interface {
+	CosmosValidatorStakedSupply(ctx context.Context) (math.Int, error)
+	GetEmissionsKeeperTotalStake(ctx context.Context) (math.Int, error)
+	GetTotalCurrTokenSupply(ctx context.Context) sdk.Coin
+	GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (math.LegacyDec, error)
+	GetPreviousRewardEmissionPerUnitStakedToken(ctx context.Context) (math.LegacyDec, error)
+}
