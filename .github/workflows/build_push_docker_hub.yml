@@ -47,7 +47,7 @@ jobs:
           fi
 
           # Build a docker container and push it to Docker Hub.
-          docker build --pull --build-arg "GH_TOKEN=${{ secrets.GH_READONLY_PAT }}" -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG .
+          docker build -f Dockerfile.cosmovisor --pull -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG .
           docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG
 
           # Build and PUSH additional tags
