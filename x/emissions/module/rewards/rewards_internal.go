@@ -48,7 +48,7 @@ func GetScoreFractions(
 }
 
 // Mapping function used by score fraction calculation
-// M(T) = φ_p (abs[ T / σ(T) + ɛ])
+// M(T) = φ_p (T / (σ(T) + ɛ))
 // phi is the phi function
 // sigma is NOT the sigma function but rather represents standard deviation
 func GetMappingFunctionValues(
@@ -450,7 +450,7 @@ func GetAllReputersOutput(
 	// finalScores := make([]alloraMath.Dec, numReputers)
 	newScores := make([]alloraMath.Dec, numReputers)
 
-	for maxGradient.Gt(maxGradientThreshold) && i < gradientDescentMaxIters {
+	for maxGradient.Gte(maxGradientThreshold) && i < gradientDescentMaxIters {
 		copy(oldCoefficients, coefficients)
 		gradient := make([]alloraMath.Dec, numReputers)
 

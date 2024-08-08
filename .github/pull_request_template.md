@@ -1,45 +1,18 @@
 <!-- < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < < ☺
-v                               ✰  Thanks for creating a PR! ✰
-v    Before smashing the submit button please review the checkboxes.
-v    If a checkbox is n/a - please still include it but + a little note why
-v    If your PR doesn't close an issue, that's OK!  Just remove the Closes: #XXX line!
+v           ✰  Thanks for creating a PR! You're awesome! ✰
+v Please note that maintainers will only review those PRs with a completed PR template.
 ☺ > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >  -->
 
-Closes: #XXX
+## Purpose of Changes and their Description
 
-## What is the purpose of the change
+## Link(s) to Ticket(s) or Issue(s) resolved by this PR
 
-> Add a description of the overall background and high level changes that this PR introduces
+## Are these changes tested and documented?
 
-*(E.g.: This pull request improves documentation of area A by adding ....)*
+- [ ] If tested, please describe how. If not, why tests are not needed.
+- [ ] If documented, please describe where. If not, describe why docs are not needed.
+- [ ] Added to `Unreleased` section of `CHANGELOG.md`?
 
-## Testing and Verifying
+## Still Left Todo
 
-*(Please pick one of the following options)*
-
-This change is a trivial rework / code cleanup without any test coverage.
-
-*(or)*
-
-This change is already covered by existing tests, such as *(please describe tests)*.
-
-*(or)*
-
-This change added tests and can be verified as follows:
-
-*(example:)*
-  - *Added unit test that validates ...*
-  - *Added integration tests for end-to-end deployment with ...*
-  - *Extended integration test for ...*
-  - *Manually verified the change by ...*
-
-## Documentation and Release Note
-
-  - [ ] Does this pull request introduce a new feature or user-facing behavior changes?
-
-
-Where is the change documented?
-  - [ ] Specification (`x/{module}/README.md`)
-  - [ ] Allora documentation site `docs.allora.network` source code at: `https://github.com/allora-network/docs`
-  - [ ] Code comments?
-  - [ ] N/A
+*Fill this out if this is a Draft PR so others can help.*
