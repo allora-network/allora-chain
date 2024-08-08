@@ -193,7 +193,7 @@ func GenerateForecastScores(
 			Address:     networkLosses.InfererValues[0].Worker,
 			Score:       alloraMath.ZeroDec(),
 		}
-		err := keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
+		err := keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}

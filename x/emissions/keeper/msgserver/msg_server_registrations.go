@@ -6,7 +6,6 @@ import (
 
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -24,26 +23,18 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	hasEnoughBal, fee, err := ms.CheckBalanceForRegistration(ctx, msg.Sender)
+	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if !hasEnoughBal {
-		return nil, types.ErrTopicRegistrantNotEnoughDenom
-	}
-
-	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = ms.k.SendCoinsFromAccountToModule(ctx, msg.Sender, mintTypes.EcosystemModuleName, sdk.NewCoins(fee))
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, msg.TopicId, params.RegistrationFee)
 	if err != nil {
 		return nil, err
 	}
 
 	nodeInfo := types.OffchainNode{
-		NodeAddress:  msg.Sender,
-		LibP2PKey:    msg.LibP2PKey,
-		MultiAddress: msg.MultiAddress,
-		Owner:        msg.Owner,
-		NodeId:       msg.Owner + "|" + msg.LibP2PKey,
+		NodeAddress: msg.Sender,
+		Owner:       msg.Owner,
 	}
 
 	if msg.IsReputer {

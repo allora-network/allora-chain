@@ -48,7 +48,7 @@ func GetScoreFractions(
 }
 
 // Mapping function used by score fraction calculation
-// M(T) = φ_p (abs[ T / σ(T) + ɛ])
+// M(T) = φ_p (T / (σ(T) + ɛ))
 // phi is the phi function
 // sigma is NOT the sigma function but rather represents standard deviation
 func GetMappingFunctionValues(
@@ -450,7 +450,7 @@ func GetAllReputersOutput(
 	// finalScores := make([]alloraMath.Dec, numReputers)
 	newScores := make([]alloraMath.Dec, numReputers)
 
-	for maxGradient.Gt(maxGradientThreshold) && i < gradientDescentMaxIters {
+	for maxGradient.Gte(maxGradientThreshold) && i < gradientDescentMaxIters {
 		copy(oldCoefficients, coefficients)
 		gradient := make([]alloraMath.Dec, numReputers)
 
@@ -807,6 +807,17 @@ func ExtractValues(bundle *types.ValueBundle) []alloraMath.Dec {
 	})
 	for _, v := range bundle.ForecasterValues {
 		values = append(values, v.Value)
+	}
+	sort.Slice(bundle.OneOutInfererForecasterValues, func(i, j int) bool {
+		return bundle.OneOutInfererForecasterValues[i].Forecaster < bundle.OneOutInfererForecasterValues[j].Forecaster
+	})
+	for _, v := range bundle.OneOutInfererForecasterValues {
+		sort.Slice(v.OneOutInfererValues, func(i, j int) bool {
+			return v.OneOutInfererValues[i].Worker < v.OneOutInfererValues[j].Worker
+		})
+		for _, v2 := range v.OneOutInfererValues {
+			values = append(values, v2.Value)
+		}
 	}
 	sort.Slice(bundle.OneOutInfererValues, func(i, j int) bool {
 		return bundle.OneOutInfererValues[i].Worker < bundle.OneOutInfererValues[j].Worker

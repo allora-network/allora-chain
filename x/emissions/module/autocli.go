@@ -2,14 +2,14 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	statev1 "github.com/allora-network/allora-chain/x/emissions/api/v1"
+	statev2 "github.com/allora-network/allora-chain/x/emissions/api/v2"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: statev1.Query_ServiceDesc.ServiceName,
+			Service: statev2.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "Params",
@@ -52,11 +52,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "pagination"},
 					},
-				},
-				{
-					RpcMethod: "GetChurnableTopics",
-					Use:       "churnable-topics",
-					Short:     "Get Churnable Topics",
 				},
 				{
 					RpcMethod: "GetRewardableTopics",
@@ -246,11 +241,51 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetOneInForecasterSelfNetworkRegret",
-					Use:       "one-in-forecaster-self-regret [topic_id] [forecaster]",
-					Short:     "Returns regret born from including [forecaster]'s implied inference. Default to topic InitialRegret if does not exist",
+					RpcMethod: "GetNaiveInfererNetworkRegret",
+					Use:       "naive-inferer-network-regret [topic_id] [inferer]",
+					Short:     "Returns regret born from including [inferer]'s naive inference in a batch. Default to topic InitialRegret if does not exist",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutInfererInfererNetworkRegret",
+					Use:       "one-out-inferer-inferer-network-regret [topic_id] [one_out_inferer] [inferer]",
+					Short:     "Returns regret born from including [one_out_inferer]'s implied inference in a batch with [inferer]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_inferer"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutInfererForecasterNetworkRegret",
+					Use:       "one-out-inferer-forecaster-network-regret [topic_id] [one_out_inferer] [forecaster]",
+					Short:     "Returns regret born from including [one_out_inferer]'s implied inference in a batch with [forecaster]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_inferer"},
+						{ProtoField: "forecaster"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutForecasterInfererNetworkRegret",
+					Use:       "one-out-forecaster-inferer-network-regret [topic_id] [one_out_forecaster] [inferer]",
+					Short:     "Returns regret born from including [one_out_forecaster]'s implied inference in a batch with [inferer]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_forecaster"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutForecasterForecasterNetworkRegret",
+					Use:       "one-out-forecaster-forecaster-network-regret [topic_id] [one_out_forecaster] [forecaster]",
+					Short:     "Returns regret born from including [one_out_forecaster]'s implied inference in a batch with [forecaster]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_forecaster"},
 						{ProtoField: "forecaster"},
 					},
 				},
@@ -334,22 +369,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "GetTopicFeeRevenue",
 					Use:       "topic-fee-revenue [topic_id]",
 					Short:     "Return effective fee revenue for a topic i.e. the total fees collected by the topic less an exponential decay of the fees over time. This is the impact of topic fees on the topic's weight",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
-					RpcMethod: "GetTopicLastReputerPayload",
-					Use:       "latest-reputer-payload [topic_id]",
-					Short:     "Return latest reputer payload delivered for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
-					RpcMethod: "GetTopicLastWorkerPayload",
-					Use:       "latest-worker-payload [topic_id]",
-					Short:     "Return latest worker payload delivered for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},
@@ -457,34 +476,18 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetWorkerNodeInfo",
-					Use:       "worker-info [libp2p_key]",
-					Short:     "Get node info for worker node libp2p key",
+					Use:       "worker-info [address]",
+					Short:     "Get node info for worker node",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
+						{ProtoField: "address"},
 					},
 				},
 				{
 					RpcMethod: "GetReputerNodeInfo",
-					Use:       "reputer-info [libp2p_key]",
-					Short:     "Get node info for reputer node libp2p key",
+					Use:       "reputer-info [addresss]",
+					Short:     "Get node info for reputer node",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
-					},
-				},
-				{
-					RpcMethod: "GetWorkerAddressByP2PKey",
-					Use:       "worker-address [libp2p_key]",
-					Short:     "Get Worker Address by libp2p key",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
-					},
-				},
-				{
-					RpcMethod: "GetReputerAddressByP2PKey",
-					Use:       "reputer-address [libp2p_key]",
-					Short:     "Get Reputer Address by libp2p key",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "libp2p_key"},
+						{ProtoField: "address"},
 					},
 				},
 				{
@@ -555,16 +558,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetStakeRemovalsForBlock",
-					Use:       "stake-removals-for-block [block_height]",
+					RpcMethod: "GetStakeRemovalsUpUntilBlock",
+					Use:       "stake-removals-up-until-block [block_height]",
 					Short:     "Get all pending stake removal requests going to happen at a given block height",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "block_height"},
 					},
 				},
 				{
-					RpcMethod: "GetDelegateStakeRemovalsForBlock",
-					Use:       "delegate-stake-removals-for-block [block_height]",
+					RpcMethod: "GetDelegateStakeRemovalsUpUntilBlock",
+					Use:       "delegate-stake-removals-up-until-block [block_height]",
 					Short:     "Get all pending delegate stake removal requests going to happen at a given block height",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "block_height"},
@@ -608,7 +611,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service: statev1.Msg_ServiceDesc.ServiceName,
+			Service: statev2.Msg_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",
@@ -621,18 +624,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_logic] [loss_method] [inference_logic] [inference_method] [epoch_length] [ground_truth_lag] [default_arg] [p_norm] [alpha_regret] [allow_negative] [epsilon]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
 						{ProtoField: "metadata"},
-						{ProtoField: "loss_logic"},
 						{ProtoField: "loss_method"},
-						{ProtoField: "inference_logic"},
-						{ProtoField: "inference_method"},
 						{ProtoField: "epoch_length"},
 						{ProtoField: "ground_truth_lag"},
-						{ProtoField: "default_arg"},
+						{ProtoField: "worker_submission_window"},
 						{ProtoField: "p_norm"},
 						{ProtoField: "alpha_regret"},
 						{ProtoField: "allow_negative"},
@@ -641,12 +641,10 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "Register",
-					Use:       "register [sender] [lib_p2p_key] [multi_address] [topic_ids] [initial_stake] [owner] [is_reputer]",
+					Use:       "register [sender] [topic_ids] [owner] [is_reputer]",
 					Short:     "Register a new reputer or worker for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "lib_p2p_key"},
-						{ProtoField: "multi_address"},
 						{ProtoField: "topic_id"},
 						{ProtoField: "owner"},
 						{ProtoField: "is_reputer"},
@@ -762,21 +760,21 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "InsertBulkWorkerPayload",
-					Use:       "insert-bulk-worker-payload [worker_data_bundles]",
-					Short:     "Insert bulk worker payload",
+					RpcMethod: "InsertWorkerPayload",
+					Use:       "insert-worker-payload [sender] [worker_data]",
+					Short:     "Insert worker payload",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "worker_data_bundles"},
+						{ProtoField: "worker_data_bundle"},
 					},
 				},
 				{
-					RpcMethod: "InsertBulkReputerPayload",
-					Use:       "insert-bulk-reputer-payload [reputer_value_bundles]",
-					Short:     "Insert bulk reputer payload",
+					RpcMethod: "InsertReputerPayload",
+					Use:       "insert-reputer-payload [sender] [reputer_data]",
+					Short:     "Insert reputer payload",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
-						{ProtoField: "reputer_value_bundles"},
+						{ProtoField: "reputer_value_bundle"},
 					},
 				},
 			},

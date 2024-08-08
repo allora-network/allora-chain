@@ -415,8 +415,11 @@ func (x Dec) SdkIntTrim() sdkmath.Int {
 	return sdkmath.NewIntFromBigInt(&r)
 }
 
+// SdkLegacyDec converts Dec to `sdkmath.LegacyDec`
+// can return nil if the value is not representable in a LegacyDec
 func (x Dec) SdkLegacyDec() sdkmath.LegacyDec {
-	y, _ := sdkmath.LegacyNewDecFromStr(x.dec.Text('f'))
+	stringRep := x.dec.Text('f')
+	y, _ := sdkmath.LegacyNewDecFromStr(stringRep)
 	return y
 }
 

@@ -123,7 +123,7 @@ func generateInsertReputerBulk(
 
 	startReputer := time.Now()
 	for i := 0; i < retryTimes; i++ {
-		err = insertReputerBulk(m, topic, leaderReputerAccountName, reputers, workers, blockHeightCurrent, blockHeightEval)
+		err = insertReputerPayload(m, topic, leaderReputerAccountName, reputers, workers, blockHeightCurrent, blockHeightEval)
 		if err != nil {
 			if strings.Contains(err.Error(), "nonce already fulfilled") ||
 				strings.Contains(err.Error(), "nonce still unfulfilled") {
@@ -230,7 +230,7 @@ func generateSingleReputerValueBundle(
 	require.NoError(m.T, err, "Sign should not return an error")
 	reputerPublicKeyBytes := pubKey.Bytes()
 
-	// Create a MsgInsertBulkReputerPayload message
+	// Create a MsgInsertReputerPayload message
 	reputerValueBundle := &emissionstypes.ReputerValueBundle{
 		ValueBundle: &valueBundle,
 		Signature:   valueBundleSignature,
@@ -240,25 +240,8 @@ func generateSingleReputerValueBundle(
 	return reputerValueBundle
 }
 
-// create a MsgInsertBulkReputerPayload message of scores
-func generateReputerValueBundleMsg(
-	topicId uint64,
-	reputerValueBundles []*emissionstypes.ReputerValueBundle,
-	leaderReputerAddress string,
-	reputerNonce *emissionstypes.Nonce) *emissionstypes.MsgInsertBulkReputerPayload {
-
-	return &emissionstypes.MsgInsertBulkReputerPayload{
-		Sender:  leaderReputerAddress,
-		TopicId: topicId,
-		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
-			ReputerNonce: reputerNonce,
-		},
-		ReputerValueBundles: reputerValueBundles,
-	}
-}
-
 // reputers submit their assessment of the quality of workers' work compared to ground truth
-func insertReputerBulk(
+func insertReputerPayload(
 	m testCommon.TestConfig,
 	topic *emissionstypes.Topic,
 	leaderReputerAccountName string,
@@ -273,34 +256,26 @@ func insertReputerBulk(
 	reputerNonce := &emissionstypes.Nonce{
 		BlockHeight: BlockHeightCurrent,
 	}
-	leaderReputer := reputerAddresses[leaderReputerAccountName]
+	ctx := context.Background()
 	valueBundle := generateValueBundle(topicId, workerAddresses, reputerNonce)
-	reputerValueBundles := make([]*emissionstypes.ReputerValueBundle, 0)
 	for reputerAddressName := range reputerAddresses {
 		reputer := reputerAddresses[reputerAddressName]
 		reputerValueBundle := generateSingleReputerValueBundle(m, reputerAddressName, reputer.addr, valueBundle)
-		reputerValueBundles = append(reputerValueBundles, reputerValueBundle)
+
+		senderAcc, err := m.Client.AccountRegistryGetByName(reputerAddressName)
+		if err != nil {
+			m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderReputerAccountName, " - ", err))
+			return err
+		}
+		txResp, err := m.Client.BroadcastTx(ctx, senderAcc, reputerValueBundle)
+		if err != nil {
+			m.T.Log(topicLog(topicId, "Error broadcasting reputer value bundle: ", err))
+			return err
+		}
+		_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
+		require.NoError(m.T, err)
 	}
 
-	reputerValueBundleMsg := generateReputerValueBundleMsg(
-		topicId,
-		reputerValueBundles,
-		leaderReputer.addr,
-		reputerNonce,
-	)
-	LeaderAcc, err := m.Client.AccountRegistryGetByName(leaderReputerAccountName)
-	if err != nil {
-		m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderReputerAccountName, " - ", err))
-		return err
-	}
-	ctx := context.Background()
-	txResp, err := m.Client.BroadcastTx(ctx, LeaderAcc, reputerValueBundleMsg)
-	if err != nil {
-		m.T.Log(topicLog(topicId, "Error broadcasting reputer value bundle: ", err))
-		return err
-	}
-	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-	require.NoError(m.T, err)
 	return nil
 }
 

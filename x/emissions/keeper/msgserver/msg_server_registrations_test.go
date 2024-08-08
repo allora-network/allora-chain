@@ -9,6 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -29,12 +30,10 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputer() {
 	s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	// Reputer register
 	registerMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
-		Owner:        reputerAddr.String(),
+		Sender:    reputerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: true,
+		Owner:     reputerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -74,12 +73,10 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistration() {
 	s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	// Reputer register
 	registerMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
-		Owner:        reputerAddr.String(),
+		Sender:    reputerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: true,
+		Owner:     reputerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -128,12 +125,10 @@ func (s *MsgServerTestSuite) TestMsgRegisterWorker() {
 	s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	// Reputer register
 	registerMsg := &types.MsgRegister{
-		Sender:       workerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    false,
-		Owner:        workerAddr.String(),
+		Sender:    workerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: false,
+		Owner:     workerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -177,12 +172,10 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistrationWorker() {
 	s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	// Reputer register
 	registerMsg := &types.MsgRegister{
-		Sender:       workerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    false,
-		Owner:        workerAddr.String(),
+		Sender:    workerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: false,
+		Owner:     workerAddr.String(),
 	}
 
 	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
@@ -216,32 +209,10 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistrationWorker() {
 	require.False(isWorkerRegistered, "Worker should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgRegisterReputerInvalidLibP2PKey() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	topicId := uint64(0)
-
-	// Mock setup for addresses
-	reputerAddr := sdk.AccAddress(PKS[0].Address())
-
-	// Topic does not exist
-	registerMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		Owner:        reputerAddr.String(),
-		LibP2PKey:    "",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
-	}
-	_, err := msgServer.Register(ctx, registerMsg)
-	require.ErrorIs(err, types.ErrLibP2PKeyRequired, "Register should return an error")
-}
-
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
-	topicId := uint64(0)
+	topicId := s.CreateOneTopic()
 
 	// Mock setup for addresses
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
@@ -250,17 +221,16 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	s.emissionsKeeper.ActivateTopic(ctx, 1)
 	// Zero initial stake
 
+	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1))
 	// Topic does not exist
 	registerMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		Owner:        reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
+		Sender:    reputerAddr.String(),
+		Owner:     reputerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: true,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)
-	require.ErrorIs(types.ErrTopicRegistrantNotEnoughDenom, err, "Register should return an error")
+	require.Error(err)
 }
 
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
@@ -274,19 +244,17 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 
 	// Register Reputer
 	reputerRegMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
-		Owner:        reputerAddr.String(),
+		Sender:    reputerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: true,
+		Owner:     reputerAddr.String(),
 	}
 
 	s.emissionsKeeper.AddReputerStake(ctx, topicId, reputerAddr.String(), registrationInitialStake.QuoRaw(2))
 
 	// Try to register without any funds to pay fees
 	_, err := msgServer.Register(ctx, reputerRegMsg)
-	require.ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
+	require.ErrorIs(err, sdkerrors.ErrInsufficientFunds, "Register should return an error")
 }
 
 func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
@@ -323,18 +291,15 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 	s.MintTokensToAddress(worker, cosmosMath.NewInt(10).Mul(cosmosOneE18))
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:         worker.String(),
-		Metadata:        "test",
-		LossLogic:       "logic",
-		LossMethod:      "method",
-		EpochLength:     epochLength,
-		GroundTruthLag:  epochLength,
-		InferenceLogic:  "Ilogic",
-		InferenceMethod: "Imethod",
-		DefaultArg:      "ETH",
-		AlphaRegret:     alloraMath.NewDecFromInt64(1),
-		PNorm:           alloraMath.NewDecFromInt64(3),
-		Epsilon:         alloraMath.MustNewDecFromString("0.01"),
+		Creator:                worker.String(),
+		Metadata:               "test",
+		LossMethod:             "mse",
+		EpochLength:            epochLength,
+		GroundTruthLag:         epochLength,
+		WorkerSubmissionWindow: 10,
+		AlphaRegret:            alloraMath.NewDecFromInt64(1),
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -343,26 +308,22 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 
 	// Register 1 worker
 	workerRegMsg := &types.MsgRegister{
-		Sender:       worker.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    false,
-		Owner:        worker.String(),
+		Sender:    worker.String(),
+		TopicId:   topicId,
+		IsReputer: false,
+		Owner:     worker.String(),
 	}
 	_, err = s.msgServer.Register(s.ctx, workerRegMsg)
 	s.Require().NoError(err)
 
 	reputerRegMsg := &types.MsgRegister{
-		Sender:       reputer.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
-		Owner:        reputer.String(),
+		Sender:    reputer.String(),
+		TopicId:   topicId,
+		IsReputer: true,
+		Owner:     reputer.String(),
 	}
 	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
-	s.Require().ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
+	s.Require().ErrorIs(err, sdkerrors.ErrInsufficientFunds, "Register should return an error")
 }
 
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
@@ -376,12 +337,10 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 
 	// Topic does not exist
 	registerMsg := &types.MsgRegister{
-		Sender:       reputerAddr.String(),
-		Owner:        reputerAddr.String(),
-		LibP2PKey:    "test",
-		MultiAddress: "test",
-		TopicId:      topicId,
-		IsReputer:    true,
+		Sender:    reputerAddr.String(),
+		Owner:     reputerAddr.String(),
+		TopicId:   topicId,
+		IsReputer: true,
 	}
 	_, err := msgServer.Register(ctx, registerMsg)
 	require.ErrorIs(err, types.ErrTopicDoesNotExist, "Register should return an error")

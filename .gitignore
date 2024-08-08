@@ -15,13 +15,15 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 
 # Go workspace file
 go.work
 
 # Data folder
 data/
+data_head/
+data_validator/
 # Account info
 *.account_info
 
@@ -36,3 +38,5 @@ coverage_raw.lcov
 coverage.lcov
 
 build/
+
+tokenomics_output.csv

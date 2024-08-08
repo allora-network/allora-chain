@@ -14,22 +14,19 @@ func getNewAddress() string {
 	return sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()).String()
 }
 
-func (s *MsgServerTestSuite) setUpMsgInsertBulkWorkerPayload(
+func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	workerPrivateKey secp256k1.PrivKey,
 
-) (types.MsgInsertBulkWorkerPayload, uint64) {
+) (types.MsgInsertWorkerPayload, uint64) {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	nonce := types.Nonce{BlockHeight: 1}
-	topicId := uint64(0)
+	topicId := s.CreateOneTopic()
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+		Owner:       "worker-owner-sample",
+		NodeAddress: "worker-node-address-sample",
 	}
 
 	// Mock setup for addresses
@@ -44,39 +41,40 @@ func (s *MsgServerTestSuite) setUpMsgInsertBulkWorkerPayload(
 
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
-	keeper.AddWorkerNonce(ctx, 0, &nonce)
+	keeper.AddWorkerNonce(ctx, topicId, &nonce)
 	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
+	keeper.InsertWorker(ctx, topicId, Inferer2Addr, workerInfo)
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
-	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
-	// Create a MsgInsertBulkWorkerPayload message
-	workerMsg := types.MsgInsertBulkWorkerPayload{
-		Sender:  workerAddr,
-		Nonce:   &nonce,
-		TopicId: topicId,
-		WorkerDataBundles: []*types.WorkerDataBundle{
-			{
-				Worker: InfererAddr,
-				InferenceForecastsBundle: &types.InferenceForecastBundle{
-					Inference: &types.Inference{
-						TopicId:     topicId,
-						BlockHeight: nonce.BlockHeight,
-						Inferer:     InfererAddr,
-						Value:       alloraMath.NewDecFromInt64(100),
-					},
-					Forecast: &types.Forecast{
-						TopicId:     0,
-						BlockHeight: nonce.BlockHeight,
-						Forecaster:  ForecasterAddr,
-						ForecastElements: []*types.ForecastElement{
-							{
-								Inferer: InfererAddr,
-								Value:   alloraMath.NewDecFromInt64(100),
-							},
-							{
-								Inferer: Inferer2Addr,
-								Value:   alloraMath.NewDecFromInt64(100),
-							},
+	topic, _ := s.emissionsKeeper.GetTopic(ctx, topicId)
+	s.emissionsKeeper.SetTopic(ctx, topicId, topic)
+
+	// Create a MsgInsertWorkerPayload message
+	workerMsg := types.MsgInsertWorkerPayload{
+		Sender: workerAddr,
+		WorkerDataBundle: &types.WorkerDataBundle{
+			Worker:  InfererAddr,
+			Nonce:   &nonce,
+			TopicId: topicId,
+			InferenceForecastsBundle: &types.InferenceForecastBundle{
+				Inference: &types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce.BlockHeight,
+					Inferer:     Inferer2Addr,
+					Value:       alloraMath.NewDecFromInt64(100),
+				},
+				Forecast: &types.Forecast{
+					TopicId:     topicId,
+					BlockHeight: nonce.BlockHeight,
+					Forecaster:  ForecasterAddr,
+					ForecastElements: []*types.ForecastElement{
+						{
+							Inferer: InfererAddr,
+							Value:   alloraMath.NewDecFromInt64(100),
+						},
+						{
+							Inferer: Inferer2Addr,
+							Value:   alloraMath.NewDecFromInt64(101),
 						},
 					},
 				},
@@ -87,39 +85,40 @@ func (s *MsgServerTestSuite) setUpMsgInsertBulkWorkerPayload(
 	return workerMsg, topicId
 }
 
-func (s *MsgServerTestSuite) signMsgInsertBulkWorkerPayload(workerMsg types.MsgInsertBulkWorkerPayload, workerPrivateKey secp256k1.PrivKey) types.MsgInsertBulkWorkerPayload {
+func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(workerMsg types.MsgInsertWorkerPayload, workerPrivateKey secp256k1.PrivKey) types.MsgInsertWorkerPayload {
 	require := s.Require()
 
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
 
 	src := make([]byte, 0)
-	src, err := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.XXX_Marshal(src, true)
+	src, err := workerMsg.WorkerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
 	require.NoError(err, "Marshall reputer value bundle should not return an error")
 
 	sig, err := workerPrivateKey.Sign(src)
 	require.NoError(err, "Sign should not return an error")
-	workerMsg.WorkerDataBundles[0].InferencesForecastsBundleSignature = sig
-	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
+	workerMsg.WorkerDataBundle.InferencesForecastsBundleSignature = sig
+	workerMsg.WorkerDataBundle.Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
 	return workerMsg
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayload() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 
-	workerMsg, topicId := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
-	blockHeight := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast.BlockHeight
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 
 	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
 
-	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
-	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
+	ctx = ctx.WithBlockHeight(blockHeight)
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
 
 	forecastsCount1 := s.getCountForecastsAtBlock(topicId, blockHeight)
 
@@ -127,51 +126,66 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayload() {
 	require.Equal(forecastsCount1, 1)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithoutWorkerDataBundle() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithNilInference() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 
-	workerMsg, _ := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
-	// BEGIN MODIFICATION
-	workerMsg.WorkerDataBundles = make([]*types.WorkerDataBundle, 0)
-	// workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
-	// END MODIFICATION
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
-	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference = nil
+
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.Error(err)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedTopicId() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithoutWorkerDataBundle() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 
-	workerMsg, _ := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
 	// BEGIN MODIFICATION
-	workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Inference.TopicId = 1
+	// workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	// END MODIFICATION
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.Error(err)
+}
 
-	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedTopicId() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+
+	// BEGIN MODIFICATION
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = 1
+	// END MODIFICATION
+
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.Error(err, types.ErrNoValidBundles)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredInferer() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredInferer() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 
-	workerMsg, topicId := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
 	// BEGIN MODIFICATION
-	inferer := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Inference.Inferer
+	inferer := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Inferer
 
 	unregisterMsg := &types.MsgRemoveRegistration{
 		Sender:    inferer,
@@ -184,9 +198,9 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregistered
 
 	// END MODIFICATION
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
-	_, err = msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.Error(err, types.ErrNoValidBundles)
 }
 
@@ -201,26 +215,27 @@ func (s *MsgServerTestSuite) getCountForecastsAtBlock(topicId uint64, blockHeigh
 
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedForecastTopicId() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedForecastTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 
-	workerMsg, _ := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
 	// BEGIN MODIFICATION
-	originalTopicId := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast.TopicId
-	workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast.TopicId = 123
+	originalTopicId := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = 123
 	// END MODIFICATION
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
-	blockHeight := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast.BlockHeight
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 
 	forecastsCount0 := s.getCountForecastsAtBlock(originalTopicId, blockHeight)
 
-	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
+	ctx = ctx.WithBlockHeight(blockHeight)
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err)
 
 	forecastsCount1 := s.getCountForecastsAtBlock(originalTopicId, blockHeight)
@@ -229,16 +244,16 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithMismatchedFo
 	require.Equal(forecastsCount1, 0)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregisteredForecaster() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredForecaster() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 
-	workerMsg, topicId := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
 	// BEGIN MODIFICATION
-	forecaster := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast.Forecaster
+	forecaster := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.Forecaster
 
 	unregisterMsg := &types.MsgRemoveRegistration{
 		Sender:    forecaster,
@@ -251,16 +266,59 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadFailsWithUnregistered
 
 	// END MODIFICATION
 
-	blockHeight := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.Forecast.BlockHeight
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 
 	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
 
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	forecastsCount1 := s.getCountForecastsAtBlock(topicId, blockHeight)
 
 	require.Equal(forecastsCount0, 0)
 	require.Equal(forecastsCount1, 0)
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastElements() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+
+	// BEGIN MODIFICATION
+	forecast := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast
+	originalElement := forecast.ForecastElements[0]
+	duplicateElement := &types.ForecastElement{
+		Inferer: originalElement.Inferer,
+		Value:   originalElement.Value,
+	}
+	forecast.ForecastElements = append(forecast.ForecastElements, duplicateElement)
+	// END MODIFICATION
+
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+
+	blockHeight := forecast.BlockHeight
+	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
+
+	ctx = ctx.WithBlockHeight(blockHeight)
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
+
+	// Check the forecast count to ensure duplicates were filtered out
+	forecastsCount1 := s.getCountForecastsAtBlock(topicId, blockHeight)
+	require.Equal(forecastsCount0+1, forecastsCount1, "Forecast count should increase by one")
+
+	storedForecasts, err := s.emissionsKeeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
+	require.NoError(err, "GetForecastsAtBlock should not return an error")
+
+	for _, forecast := range storedForecasts.Forecasts {
+		infererMap := make(map[string]bool)
+		for _, el := range forecast.ForecastElements {
+			_, exists := infererMap[el.Inferer]
+			require.False(exists, "Each inferer should appear only once in ForecastElements")
+			infererMap[el.Inferer] = true
+		}
+	}
 }
 
 func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
@@ -272,11 +330,9 @@ func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+
+		Owner:       "worker-owner-sample",
+		NodeAddress: "worker-node-address-sample",
 	}
 	// Mock setup for addresses
 
@@ -310,45 +366,41 @@ func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
 		})
 	}
 
-	// Create a MsgInsertBulkWorkerPayload message
-	workerMsg := &types.MsgInsertBulkWorkerPayload{
-		Sender:  workerAddr,
-		Nonce:   &nonce,
-		TopicId: topicId,
-		WorkerDataBundles: []*types.WorkerDataBundle{
-			{
-				Worker: InfererAddr,
-				InferenceForecastsBundle: &types.InferenceForecastBundle{
-					Inference: &types.Inference{
-						TopicId:     topicId,
-						BlockHeight: nonce.BlockHeight,
-						Inferer:     InfererAddr,
-						Value:       alloraMath.NewDecFromInt64(100),
-					},
-					Forecast: &types.Forecast{
-						TopicId:          0,
-						BlockHeight:      nonce.BlockHeight,
-						Forecaster:       ForecasterAddr,
-						ForecastElements: forecastElements,
-					},
+	// Create a MsgInsertWorkerPayload message
+	workerMsg := &types.MsgInsertWorkerPayload{
+		Sender: workerAddr,
+		WorkerDataBundle: &types.WorkerDataBundle{
+			Worker: InfererAddr,
+			InferenceForecastsBundle: &types.InferenceForecastBundle{
+				Inference: &types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce.BlockHeight,
+					Inferer:     InfererAddr,
+					Value:       alloraMath.NewDecFromInt64(100),
+				},
+				Forecast: &types.Forecast{
+					TopicId:          0,
+					BlockHeight:      nonce.BlockHeight,
+					Forecaster:       ForecasterAddr,
+					ForecastElements: forecastElements,
 				},
 			},
 		},
 	}
 
 	src := make([]byte, 0)
-	src, err := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.XXX_Marshal(src, true)
+	src, err := workerMsg.WorkerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
 	require.NoError(err, "Marshall reputer value bundle should not return an error")
 
 	sig, err := workerPrivateKey.Sign(src)
 	require.NoError(err, "Sign should not return an error")
-	workerMsg.WorkerDataBundles[0].InferencesForecastsBundleSignature = sig
-	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
-	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
+	workerMsg.WorkerDataBundle.InferencesForecastsBundleSignature = sig
+	workerMsg.WorkerDataBundle.Pubkey = hex.EncodeToString(workerPublicKeyBytes)
+	_, err = msgServer.InsertWorkerPayload(ctx, workerMsg)
 	require.Error(err, types.ErrQueryTooLarge)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -357,11 +409,9 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
+
+		Owner:       "worker-owner-sample",
+		NodeAddress: "worker-node-address-sample",
 	}
 	// Mock setup for addresses
 
@@ -389,117 +439,32 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadVerifyFailed() {
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 
-	// Create a MsgInsertBulkWorkerPayload message
-	workerMsg := &types.MsgInsertBulkWorkerPayload{
-		Sender:  workerAddr,
-		Nonce:   &nonce,
-		TopicId: topicId,
-		WorkerDataBundles: []*types.WorkerDataBundle{
-			{
-				Worker: InfererAddr,
-				InferenceForecastsBundle: &types.InferenceForecastBundle{
-					Inference: &types.Inference{
-						TopicId:     topicId,
-						BlockHeight: nonce.BlockHeight,
-						Inferer:     InfererAddr,
-						Value:       alloraMath.NewDecFromInt64(100),
-					},
-					Forecast: &types.Forecast{
-						TopicId:     0,
-						BlockHeight: nonce.BlockHeight,
-						Forecaster:  ForecasterAddr,
-						ForecastElements: []*types.ForecastElement{
-							{
-								Inferer: InfererAddr,
-								Value:   alloraMath.NewDecFromInt64(100),
-							},
-							{
-								Inferer: Inferer2Addr,
-								Value:   alloraMath.NewDecFromInt64(100),
-							},
-						},
-					},
+	// Create a MsgInsertWorkerPayload message
+	workerMsg := &types.MsgInsertWorkerPayload{
+		Sender: workerAddr,
+		WorkerDataBundle: &types.WorkerDataBundle{
+			Worker:  InfererAddr,
+			TopicId: topicId,
+			Nonce:   &nonce,
+			InferenceForecastsBundle: &types.InferenceForecastBundle{
+				Inference: &types.Inference{
+					TopicId:     topicId,
+					BlockHeight: nonce.BlockHeight,
+					Inferer:     InfererAddr,
+					Value:       alloraMath.NewDecFromInt64(100),
 				},
-				InferencesForecastsBundleSignature: []byte("Signature"),
-				Pubkey:                             "Failed Pubkey",
-			},
-		},
-	}
-
-	_, err := msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
-	require.ErrorIs(err, types.ErrNoValidBundles)
-}
-
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-	keeper := s.emissionsKeeper
-	topicId := uint64(0)
-	nonce := types.Nonce{BlockHeight: 1}
-
-	// Define sample OffchainNode information for a worker
-	workerInfo := types.OffchainNode{
-		LibP2PKey:    "worker-libp2p-key-sample",
-		MultiAddress: "worker-multi-address-sample",
-		Owner:        "worker-owner-sample",
-		NodeAddress:  "worker-node-address-sample",
-		NodeId:       "worker-node-id-sample",
-	}
-	// Mock setup for addresses
-
-	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address()).String()
-
-	workerPrivateKey := secp256k1.GenPrivKey()
-	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
-
-	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address()).String()
-
-	Inferer2PrivateKey := secp256k1.GenPrivKey()
-	Inferer2Addr := sdk.AccAddress(Inferer2PrivateKey.PubKey().Address()).String()
-
-	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
-
-	registrationInitialStake := cosmosMath.NewInt(100)
-
-	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
-	keeper.AddWorkerNonce(ctx, 0, &nonce)
-	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
-	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
-	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
-
-	// Create a MsgInsertBulkWorkerPayload message
-	workerMsg := &types.MsgInsertBulkWorkerPayload{
-		Sender:  workerAddr,
-		Nonce:   &nonce,
-		TopicId: topicId,
-		WorkerDataBundles: []*types.WorkerDataBundle{
-			{
-				Worker: InfererAddr,
-				InferenceForecastsBundle: &types.InferenceForecastBundle{
-					Inference: &types.Inference{
-						TopicId:     topicId,
-						BlockHeight: nonce.BlockHeight,
-						Inferer:     InfererAddr,
-						Value:       alloraMath.NewDecFromInt64(100),
-					},
-					Forecast: &types.Forecast{
-						TopicId:     0,
-						BlockHeight: nonce.BlockHeight,
-						Forecaster:  ForecasterAddr,
-						ForecastElements: []*types.ForecastElement{
-							{
-								Inferer: InfererAddr,
-								Value:   alloraMath.NewDecFromInt64(100),
-							},
-							{
-								Inferer: Inferer2Addr,
-								Value:   alloraMath.NewDecFromInt64(100),
-							},
+				Forecast: &types.Forecast{
+					TopicId:     0,
+					BlockHeight: nonce.BlockHeight,
+					Forecaster:  ForecasterAddr,
+					ForecastElements: []*types.ForecastElement{
+						{
+							Inferer: InfererAddr,
+							Value:   alloraMath.NewDecFromInt64(100),
+						},
+						{
+							Inferer: Inferer2Addr,
+							Value:   alloraMath.NewDecFromInt64(100),
 						},
 					},
 				},
@@ -507,44 +472,6 @@ func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerAlreadyFullfilledNonce() {
 		},
 	}
 
-	src := make([]byte, 0)
-	src, err := workerMsg.WorkerDataBundles[0].InferenceForecastsBundle.XXX_Marshal(src, true)
-	require.NoError(err, "Marshall reputer value bundle should not return an error")
-
-	sig, err := workerPrivateKey.Sign(src)
-	require.NoError(err, "Sign should not return an error")
-	workerMsg.WorkerDataBundles[0].InferencesForecastsBundleSignature = sig
-	workerMsg.WorkerDataBundles[0].Pubkey = hex.EncodeToString(workerPublicKeyBytes)
-
-	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
-	require.NoError(err)
-	_, err = msgServer.InsertBulkWorkerPayload(ctx, workerMsg)
-	require.ErrorIs(err, types.ErrNonceAlreadyFulfilled)
-}
-
-func (s *MsgServerTestSuite) TestMsgInsertBulkWorkerPayloadUpdateTopicCommit() {
-	ctx, msgServer := s.ctx, s.msgServer
-	require := s.Require()
-
-	workerPrivateKey := secp256k1.GenPrivKey()
-	workerMsg, topicId := s.setUpMsgInsertBulkWorkerPayload(workerPrivateKey)
-	workerMsg = s.signMsgInsertBulkWorkerPayload(workerMsg, workerPrivateKey)
-
-	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
-	_, err := msgServer.InsertBulkWorkerPayload(ctx, &workerMsg)
-	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
-
-	lastCommit, err := s.emissionsKeeper.GetTopicLastCommit(ctx, topicId, types.ActorType_INFERER)
-	require.NoError(err, "GetTopicLastCommit should not return an error")
-
-	require.Equal(blockHeight, lastCommit.BlockHeight, "BlockHeight should be same")
-	require.Equal(workerMsg.Sender, lastCommit.Actor, "Actor should be same")
-	require.Equal(workerMsg.Nonce, lastCommit.Nonce, "Nonce should be same")
-
-	lastWorkerPayload, err := s.emissionsKeeper.GetTopicLastWorkerPayload(ctx, topicId)
-	require.NoError(err)
-
-	require.Equal(blockHeight, lastWorkerPayload.BlockHeight, "BlockHeight should be same")
-	require.Equal(workerMsg.Sender, lastWorkerPayload.Actor, "Actor should be same")
-	require.Equal(workerMsg.Nonce, lastWorkerPayload.Nonce, "Nonce should be same")
+	_, err := msgServer.InsertWorkerPayload(ctx, workerMsg)
+	require.Error(err, types.ErrNoValidBundles)
 }

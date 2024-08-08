@@ -102,7 +102,8 @@ func (p SynthPalette) Clone() SynthPalette {
 		ForecastImpliedInferenceByWorker: forecastImpliedInferenceByWorker,
 		ForecasterRegrets:                forecasterRegrets,
 		NetworkCombinedLoss:              p.NetworkCombinedLoss,
-		Epsilon:                          p.Epsilon,
+		EpsilonTopic:                     p.EpsilonTopic,
+		EpsilonSafeDiv:                   p.EpsilonSafeDiv,
 		PNorm:                            p.PNorm,
 		CNorm:                            p.CNorm,
 	}

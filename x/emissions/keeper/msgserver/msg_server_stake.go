@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	errorsmod "cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -51,7 +52,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 		return nil, err
 	}
 
-	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, msg.TopicId, msg.Amount)
+	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, msg.TopicId)
 	return &types.MsgAddStakeResponse{}, err
 }
 
@@ -59,8 +60,8 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) (*types.MsgRemoveStakeResponse, error) {
-	if msg.Amount.IsZero() {
-		return nil, types.ErrReceivedZeroAmount
+	if msg.Amount.LTE(cosmosMath.ZeroInt()) {
+		return nil, types.ErrInvalidValue
 	}
 
 	// Check the sender has enough stake already placed on the topic to remove the stake
@@ -165,15 +166,16 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 		return nil, err
 	}
 
-	return &types.MsgDelegateStakeResponse{}, nil
+	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, msg.TopicId)
+	return &types.MsgDelegateStakeResponse{}, err
 }
 
 // RemoveDelegateStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemoveDelegateStake) (*types.MsgRemoveDelegateStakeResponse, error) {
-	if msg.Amount.IsZero() {
-		return nil, types.ErrReceivedZeroAmount
+	if msg.Amount.LTE(cosmosMath.ZeroInt()) {
+		return nil, types.ErrInvalidValue
 	}
 
 	// Check the delegator has enough stake already placed on the topic to remove the stake
@@ -303,7 +305,10 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 		if err != nil {
 			return nil, err
 		}
-		ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer, delegateInfo)
+		err = ms.k.SetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer, delegateInfo)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &types.MsgRewardDelegateStakeResponse{}, nil
 }

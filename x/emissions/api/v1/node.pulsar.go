@@ -706,8 +706,8 @@ type OffchainNode struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	LibP2PKey    string `protobuf:"bytes,1,opt,name=lib_p2p_key,json=libP2pKey,proto3" json:"lib_p2p_key,omitempty"`        // LibP2P key of the node
-	MultiAddress string `protobuf:"bytes,2,opt,name=multi_address,json=multiAddress,proto3" json:"multi_address,omitempty"` // Network address for accessing the node
+	LibP2PKey    string `protobuf:"bytes,1,opt,name=lib_p2p_key,json=libP2pKey,proto3" json:"lib_p2p_key,omitempty"`
+	MultiAddress string `protobuf:"bytes,2,opt,name=multi_address,json=multiAddress,proto3" json:"multi_address,omitempty"`
 	Owner        string `protobuf:"bytes,3,opt,name=owner,proto3" json:"owner,omitempty"`
 	NodeAddress  string `protobuf:"bytes,4,opt,name=node_address,json=nodeAddress,proto3" json:"node_address,omitempty"`
 	NodeId       string `protobuf:"bytes,5,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`

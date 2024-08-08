@@ -1,15 +1,17 @@
 # Change all occurrences of "sample_validator" to your prerferred name
 services:
-  sample_validator:
+  node:
     container_name: sample_validator
-    # build: .
     image: "alloranetwork/allora-chain:v0.2.14"
     environment:
       - NETWORK=allora-testnet-1
       - MONIKER=sample_validator
-      - APP_HOME=./data
+      - APP_HOME=/data
+      - HOME=/data
+      - STATE_SYNC_RPC1=https://allora-rpc.testnet-1.testnet.allora.network:443
+      - STATE_SYNC_RPC2=https://allora-rpc.testnet-1.testnet.allora.network:443
     volumes:
-      - ./data:/data
+      - ./data_validator:/data
       - ./scripts/:/scripts
     ports:
       - "26656-26657:26656-26657"

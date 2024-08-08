@@ -31,7 +31,8 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 		ForecastImpliedInferenceByWorker: nil,                              // Populated below
 		ForecasterRegrets:                make(map[string]*alloraMath.Dec), // Populated below
 		NetworkCombinedLoss:              req.NetworkCombinedLoss,
-		Epsilon:                          req.Epsilon,
+		EpsilonTopic:                     req.EpsilonTopic,
+		EpsilonSafeDiv:                   req.EpsilonSafeDiv,
 		PNorm:                            req.PNorm,
 		CNorm:                            req.CNorm,
 	}

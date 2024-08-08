@@ -94,9 +94,9 @@ func pickTransitionWithWeight(m *testcommon.TestConfig) StateTransition {
 // unstakeDelegator: delegateStake
 // cancelStakeRemoval: unstakeReputer
 // cancelDelegateStakeRemoval: unstakeDelegator
-// collectDelegatorRewards: delegateStake, fundTopic, InsertBulkWorkerPayload, InsertBulkReputerPayload
-// InsertBulkWorkerPayload: RegisterWorkerForTopic, FundTopic
-// InsertBulkReputerPayload: RegisterReputerForTopic, InsertBulkWorkerPayload
+// collectDelegatorRewards: delegateStake, fundTopic, InsertWorkerPayload, InsertReputerPayload
+// InsertWorkerPayload: RegisterWorkerForTopic, FundTopic
+// InsertReputerPayload: RegisterReputerForTopic, InsertWorkerPayload
 func canTransitionOccur(m *testcommon.TestConfig, data *SimulationData, transition StateTransition) bool {
 	switch transition.name {
 	case "unregisterWorker":

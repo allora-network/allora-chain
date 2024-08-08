@@ -33,7 +33,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
 	}
 	// Add epsilon to standard deviation
-	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.Epsilon)
+	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.EpsilonTopic)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation")
 	}
@@ -188,8 +188,8 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 	}
 
 	// Normalize the running unnormalized network inference to yield output
-	if sumWeights.Lt(p.Epsilon) {
-		sumWeights = p.Epsilon
+	if sumWeights.Lt(p.EpsilonSafeDiv) {
+		sumWeights = p.EpsilonSafeDiv
 	}
 	ret, err := runningUnnormalizedI_i.Quo(sumWeights)
 	if err != nil {

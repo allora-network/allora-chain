@@ -13,6 +13,9 @@ func (bundle *WorkerDataBundle) Validate() error {
 	if bundle == nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle cannot be nil")
 	}
+	if bundle.Nonce == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle nonce cannot be nil")
+	}
 	if len(bundle.Worker) == 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker cannot be empty")
 	}
