@@ -80,11 +80,11 @@ func GetAllActiveEpochEndingTopics(
 		}
 
 		// if pageResponse.NextKey is empty then we have reached the end of the list
-		if len(topicsActive) == 0 || pageIterationCounter > maxTopicPages {
-			break
-		}
 		topicPageKey = topicPageResponse.NextKey
 		pageIterationCounter++
+		if len(topicsActive) == 0 || pageIterationCounter >= maxTopicPages {
+			break
+		}
 	}
 
 	// Sort topics by ID

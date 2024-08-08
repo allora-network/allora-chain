@@ -1,46 +1,131 @@
-package rewards
+package rewards_test
 
-// import (
-// 	"testing"
+import (
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+)
 
-// 	sdk "github.com/cosmos/cosmos-sdk/types"
-// 	"github.com/stretchr/testify/require"
+func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopics() {
+	// Test case 1: No active topics
+	block := int64(100)
+	topicPageLimit := uint64(10)
+	maxTopicPages := uint64(5)
 
-// 	"cosmossdk.io/math"
-// 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-// 	"github.com/allora-network/allora-chain/x/emissions/types"
-// )
+	createNewTopic(s)
+	createNewTopic(s)
+	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
+	s.Require().Len(result, 0)
+}
 
-// func TestGetAndUpdateActiveTopicWeights(t *testing.T) {
-// 	ctx := sdk.Context{}
-// 	block := int64(100)
+func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopicsActiveTopicsExistButNotEpochEnding() {
+	// Test case 2: Active topics exist but no epoch ending topics
+	block := int64(100)
+	topicPageLimit := uint64(10)
+	maxTopicPages := uint64(5)
+	id1 := uint64(1)
+	id3 := uint64(3)
 
-// 	// Create a mock keeper
-// 	k := keeper.Keeper{}
+	err := s.emissionsKeeper.SetTopic(s.ctx, id1, emissionstypes.Topic{
+		Id:                     id1,
+		Creator:                "creator",
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		EpochLastEnded:         10,
+		EpochLength:            100,
+		GroundTruthLag:         10,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          false,
+		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.SetTopic(s.ctx, id3, emissionstypes.Topic{
+		Id:                     id3,
+		Creator:                "creator",
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		EpochLastEnded:         10,
+		EpochLength:            100,
+		GroundTruthLag:         10,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          false,
+		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
+	})
+	s.Require().NoError(err)
 
-// 	// Set up the mock keeper's parameters
-// 	moduleParams := types.Params{
-// 		DefaultPageLimit:                100,
-// 		TopicRewardAlpha:                math.NewDecFromInt64(10),
-// 		TopicRewardStakeImportance:      math.NewDecFromInt64(0.5),
-// 		TopicRewardFeeRevenueImportance: math.NewDecFromInt64(0.5),
-// 		MinTopicWeight:                  math.NewDecFromInt64(1),
-// 	}
-// 	k.SetParams(ctx, moduleParams)
+	s.emissionsKeeper.ActivateTopic(s.ctx, id1)
+	s.emissionsKeeper.ActivateTopic(s.ctx, id3)
 
-// 	// Set up the mock keeper's topic data
-// 	topic := types.Topic{
-// 		Id:          1,
-// 		EpochLength: 100,
-// 	}
-// 	k.SetTopic(ctx, topic.Id, topic)
+	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
+	s.Require().Len(result, 0)
+}
 
-// 	// Call the function being tested
-// 	weights, sumWeight, totalRevenue, err := GetAndUpdateActiveTopicWeights(ctx, k, block)
+func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopicsActiveTopicsExistAndSomeEpochEnding() {
+	// Test case 3: Active topics exist and some epoch ending topics
+	block := int64(300)
+	topicPageLimit := uint64(10)
+	maxTopicPages := uint64(5)
+	id1 := uint64(1)
+	id3 := uint64(3)
 
-// 	// Check the results
-// 	require.NoError(t, err)
-// 	require.NotNil(t, weights)
-// 	require.Equal(t, math.NewDecFromInt64(1), sumWeight)
-// 	require.Equal(t, sdk.ZeroInt(), totalRevenue)
-// }
+	err := s.emissionsKeeper.SetTopic(s.ctx, id1, emissionstypes.Topic{
+		Id:                     id1,
+		Creator:                "creator",
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		EpochLastEnded:         200,
+		EpochLength:            100,
+		GroundTruthLag:         10,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          false,
+		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
+	})
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.SetTopic(s.ctx, id3, emissionstypes.Topic{
+		Id:                     id3,
+		Creator:                "creator",
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		EpochLastEnded:         250,
+		EpochLength:            50,
+		GroundTruthLag:         10,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          false,
+		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
+	})
+	s.Require().NoError(err)
+
+	s.emissionsKeeper.ActivateTopic(s.ctx, id1)
+	s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+
+	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
+	s.Require().Len(result, 2)
+	// Topics in result should be in ascending order of id
+	s.Require().Equal(result[0].Id, id1, "topics in result should be in ascending order of id, and id1 should be of active topic")
+	s.Require().Equal(result[1].Id, id3, "topics in result should be in ascending order of id, and id3 should be of active topic")
+}
+
+func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopicsActiveTopicsExistAndAbideByPageLimits() {
+	// Test case 4: Respecting page limits
+	block := int64(100)
+	topicPageLimit := uint64(1)
+	maxTopicPages := uint64(1)
+
+	id1 := createNewTopic(s)
+	id3 := createNewTopic(s)
+
+	s.emissionsKeeper.ActivateTopic(s.ctx, id1)
+	s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+
+	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
+	s.Require().Len(result, 1)
+	s.Require().Equal(result[0].Id, id1, "topics in result should be in ascending order of id")
+}
