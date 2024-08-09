@@ -131,9 +131,6 @@ func CloseReputerNonce(
 
 		/// Filtering done now, now write what we must for inclusion
 
-		if err != nil {
-			continue
-		}
 		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
 
 		stake, err = k.GetStakeReputerAuthority(ctx, topicId, reputer)
@@ -180,7 +177,7 @@ func CloseReputerNonce(
 		*k,
 		topicId,
 		networkLossBundle,
-		*&nonce,
+		nonce,
 		topic.AlphaRegret,
 		params.CNorm,
 		topic.PNorm,
@@ -206,15 +203,11 @@ func CloseReputerNonce(
 		return err
 	}
 
-	err = k.SetTopicLastCommit(ctx, topic.Id, blockHeight, &nonce, types.ActorType_REPUTER)
+	err = k.SetReputerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		return err
 	}
 
-	err = k.SetTopicLastReputerPayload(ctx, topic.Id, blockHeight, &nonce)
-	if err != nil {
-		return err
-	}
 	sdkCtx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topicId, nonce))
 	return nil
 }

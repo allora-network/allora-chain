@@ -64,14 +64,12 @@ func (s *KeeperTestSuite) TestGetPreviousInferenceRewardFraction() {
 	_ = keeper.SetPreviousInferenceRewardFraction(ctx, topicId, worker, setReward)
 
 	// Fetch and verify the reward fraction after setting
-	fetchedReward, noPrior, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
-	response, err = s.queryServer.GetPreviousInferenceRewardFraction(ctx, req)
+	fetchedReward, _, err := keeper.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 	s.Require().NoError(err)
-	defaultReward = response.RewardFraction
-	noPrior = response.NotFound
+	response, err = s.queryServer.GetPreviousInferenceRewardFraction(ctx, req)
 	s.Require().NoError(err, "Fetching reward fraction should not fail after setting")
 	s.Require().True(fetchedReward.Equal(setReward), "The fetched reward fraction should match the set value")
-	s.Require().False(noPrior, "Should not return no prior value after setting")
+	s.Require().True(response.RewardFraction.Equal(setReward), "The fetched reward fraction should match the set value")
 }
 
 func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
@@ -119,10 +117,22 @@ func (s *KeeperTestSuite) TestGetPreviousPercentageRewardToStakedReputers() {
 
 	// Get the previous percentage reward to staked reputers
 	fetchedPercentageReward, err := keeper.GetPreviousPercentageRewardToStakedReputers(ctx)
+	s.Require().NoError(err)
+	s.Require().True(
+		fetchedPercentageReward.Equal(previousPercentageReward),
+		"%s != %s",
+		fetchedPercentageReward.String(),
+		previousPercentageReward.String(),
+	)
 	req := &types.QueryPreviousPercentageRewardToStakedReputersRequest{}
 	response, err := s.queryServer.GetPreviousPercentageRewardToStakedReputers(ctx, req)
 	s.Require().NoError(err)
 	fetchedPercentageReward = response.PercentageReward
 
-	s.Require().Equal(previousPercentageReward, fetchedPercentageReward, "The fetched percentage reward should match the set value")
+	s.Require().True(
+		fetchedPercentageReward.Equal(previousPercentageReward),
+		"%s != %s",
+		fetchedPercentageReward.String(),
+		previousPercentageReward.String(),
+	)
 }

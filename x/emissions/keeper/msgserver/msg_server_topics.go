@@ -30,7 +30,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	err = checkBalanceAndSendFee(ctx, ms, msg.Creator, topicId, params.CreateTopicFee, "create topic")
+	err = checkBalanceAndSendFee(ctx, ms, msg.Creator, params.CreateTopicFee)
 	if err != nil {
 		return nil, err
 	}

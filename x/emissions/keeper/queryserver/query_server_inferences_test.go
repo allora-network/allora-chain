@@ -563,35 +563,6 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 }
 
-func (s *KeeperTestSuite) TestGetOneInForecasterSelfNetworkRegret() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
-	forecaster := "forecaster-address"
-	regret := types.TimestampedValue{BlockHeight: 100, Value: alloraMath.NewDecFromInt64(10)}
-	emptyRegret := types.TimestampedValue{
-		BlockHeight: 0,
-		Value:       alloraMath.NewDecFromInt64(0),
-	}
-
-	req := &types.QueryOneInForecasterSelfNetworkRegretRequest{
-		TopicId:    topicId,
-		Forecaster: forecaster,
-	}
-	response, err := s.queryServer.GetOneInForecasterSelfNetworkRegret(s.ctx, req)
-	s.Require().NoError(err)
-	s.Require().Equal(response.Regret, &emptyRegret)
-
-	// Set One In Forecaster Self Network Regret
-	err = keeper.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster, forecaster, regret)
-	s.Require().NoError(err)
-
-	// Get One In Forecaster Self Network Regret
-	response, err = s.queryServer.GetOneInForecasterSelfNetworkRegret(s.ctx, req)
-	s.Require().NoError(err)
-	s.Require().Equal(response.Regret, &regret)
-}
-
 func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -687,7 +658,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	})
 	require.NoError(err)
 
-	err = keeper.SetTopicLastReputerPayload(s.ctx, topicId, lossBlockHeight, &lossNonce)
+	err = keeper.SetReputerTopicLastCommit(s.ctx, topicId, lossBlockHeight, &lossNonce)
 	s.Require().NoError(err)
 
 	// Set Inferences
@@ -807,7 +778,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce, getForecastsForBlockHeight(inferenceBlockHeight))
 	require.NoError(err)
 
-	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce)
+	err = keeper.SetWorkerTopicLastCommit(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce)
 	s.Require().NoError(err)
 
 	// insert inferences and forecasts 2
@@ -817,7 +788,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce2, getForecastsForBlockHeight(inferenceBlockHeight2))
 	require.NoError(err)
 
-	err = keeper.SetTopicLastWorkerPayload(s.ctx, topicId, inferenceBlockHeight2, &inferenceNonce2)
+	err = keeper.SetWorkerTopicLastCommit(s.ctx, topicId, inferenceBlockHeight2, &inferenceNonce2)
 	s.Require().NoError(err)
 
 	// Update epoch topic epoch last ended

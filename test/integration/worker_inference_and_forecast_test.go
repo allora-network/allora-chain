@@ -16,7 +16,6 @@ import (
 
 const defaultEpochLength = 10
 const approximateBlockLengthSeconds = 5
-const minWaitingNumberofEpochs = 3
 
 func getNonZeroTopicEpochLastRan(m testCommon.TestConfig, topicID uint64, maxRetries int) (*types.Topic, error) {
 	ctx := context.Background()
