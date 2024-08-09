@@ -31,6 +31,7 @@ type Delegator = string
 
 type Keeper struct {
 	cdc              codec.BinaryCodec
+	storeService     coreStore.KVStoreService
 	addressCodec     address.Codec
 	feeCollectorName string
 
@@ -148,7 +149,7 @@ type Keeper struct {
 	/// NONCES
 
 	// map of open worker nonce windows for topics on particular block heights
-	openWorkerWindows collections.Map[BlockHeight, types.Topicids]
+	openWorkerWindows collections.Map[BlockHeight, types.TopicIds]
 
 	// map of (topic) -> unfulfilled nonces
 	unfulfilledWorkerNonces collections.Map[TopicId, types.Nonces]
@@ -165,11 +166,15 @@ type Keeper struct {
 	// map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
 	// all network inferer (3rd index) regrets L_ij made under the regime of the one-in forecaster (2nd index)
 	latestOneInForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
-
-	latestNaiveInfererNetworkRegrets               collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
-	latestOneOutInfererInfererNetworkRegrets       collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
-	latestOneOutInfererForecasterNetworkRegrets    collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
-	latestOneOutForecasterInfererNetworkRegrets    collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	// map of (topic id, inferer) -> regret
+	latestNaiveInfererNetworkRegrets collections.Map[collections.Pair[TopicId, ActorId], types.TimestampedValue]
+	// map of (topic id , one out inferer, inferer)-> regret
+	latestOneOutInfererInfererNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	// map of (topicId, oneOutInferer, forecaster) -> regret
+	latestOneOutInfererForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	// map of (topicId, oneOutInferer, inferer) -> regret
+	latestOneOutForecasterInfererNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
+	// map of (topicId, oneOutForecaster, forecaster) -> regret
 	latestOneOutForecasterForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
 
 	/// WHITELISTS
@@ -178,10 +183,8 @@ type Keeper struct {
 
 	/// RECORD COMMITS
 
-	topicLastWorkerCommit   collections.Map[TopicId, types.TimestampedActorNonce]
-	topicLastReputerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
-	topicLastWorkerPayload  collections.Map[TopicId, types.TimestampedActorNonce]
-	topicLastReputerPayload collections.Map[TopicId, types.TimestampedActorNonce]
+	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
+	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
 }
 
 func NewKeeper(
@@ -196,6 +199,7 @@ func NewKeeper(
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
 		cdc:                                      cdc,
+		storeService:                             storeService,
 		addressCodec:                             addressCodec,
 		feeCollectorName:                         feeCollectorName,
 		params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
@@ -254,9 +258,7 @@ func NewKeeper(
 		topicRewardNonce:                collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
 		topicLastWorkerCommit:           collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerCommit:          collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		topicLastWorkerPayload:          collections.NewMap(sb, types.TopicLastWorkerPayloadKey, "topic_last_worker_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		topicLastReputerPayload:         collections.NewMap(sb, types.TopicLastReputerPayloadKey, "topic_last_reputer_payload", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		openWorkerWindows:               collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.Topicids](cdc)),
+		openWorkerWindows:               collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.TopicIds](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -269,27 +271,35 @@ func NewKeeper(
 	return k
 }
 
+func (k *Keeper) GetStorageService() coreStore.KVStoreService {
+	return k.storeService
+}
+
+func (k *Keeper) GetBinaryCodec() codec.BinaryCodec {
+	return k.cdc
+}
+
 /// NONCES
 
 // GetTopicIds returns the TopicIds for a given BlockHeight.
 // If no TopicIds are found for the BlockHeight, it returns an empty slice.
-func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) types.Topicids {
+func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) types.TopicIds {
 	topicIds, err := k.openWorkerWindows.Get(ctx, height)
 	if err != nil {
-		return types.Topicids{}
+		return types.TopicIds{}
 	}
 	return topicIds
 }
 
 // SetTopicId appends a new TopicId to the list of TopicIds for a given BlockHeight.
 // If no entry exists for the BlockHeight, it creates a new entry with the TopicId.
-func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicid types.Topicid) error {
-	var topicIds types.Topicids
+func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicId TopicId) error {
+	var topicIds types.TopicIds
 	topicIds, err := k.openWorkerWindows.Get(ctx, height)
 	if err != nil {
-		topicIds = types.Topicids{}
+		topicIds = types.TopicIds{}
 	}
-	topicIds.TopicIds = append(topicIds.TopicIds, &topicid)
+	topicIds.TopicIds = append(topicIds.TopicIds, topicId)
 	k.openWorkerWindows.Set(ctx, height, topicIds)
 	return nil
 }
@@ -979,6 +989,9 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 	key := collections.Join(topicId, block)
 	lossBundle, err := k.networkLossBundles.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return &types.ValueBundle{}, nil
+		}
 		return nil, err
 	}
 	return &lossBundle, nil
@@ -2608,46 +2621,26 @@ func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
 	return nil
 }
 
-func (k *Keeper) SetTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce, actorType types.ActorType) error {
-	if actorType == types.ActorType_REPUTER {
-		return k.topicLastReputerCommit.Set(ctx, topic, types.TimestampedActorNonce{
-			BlockHeight: blockHeight,
-			Nonce:       nonce,
-		})
-	}
+func (k *Keeper) SetWorkerTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
 	return k.topicLastWorkerCommit.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
 		Nonce:       nonce,
 	})
 }
 
-func (k *Keeper) GetTopicLastCommit(ctx context.Context, topic TopicId, actorType types.ActorType) (types.TimestampedActorNonce, error) {
-	if actorType == types.ActorType_REPUTER {
-		return k.topicLastReputerCommit.Get(ctx, topic)
-	}
+func (k *Keeper) SetReputerTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
+	return k.topicLastReputerCommit.Set(ctx, topic, types.TimestampedActorNonce{
+		BlockHeight: blockHeight,
+		Nonce:       nonce,
+	})
+}
+
+func (k *Keeper) GetWorkerTopicLastCommit(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
 	return k.topicLastWorkerCommit.Get(ctx, topic)
 }
 
-func (k *Keeper) SetTopicLastWorkerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
-	return k.topicLastWorkerPayload.Set(ctx, topic, types.TimestampedActorNonce{
-		BlockHeight: blockHeight,
-		Nonce:       nonce,
-	})
-}
-
-func (k *Keeper) GetTopicLastWorkerPayload(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
-	return k.topicLastWorkerPayload.Get(ctx, topic)
-}
-
-func (k *Keeper) SetTopicLastReputerPayload(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
-	return k.topicLastReputerPayload.Set(ctx, topic, types.TimestampedActorNonce{
-		BlockHeight: blockHeight,
-		Nonce:       nonce,
-	})
-}
-
-func (k *Keeper) GetTopicLastReputerPayload(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
-	return k.topicLastReputerPayload.Get(ctx, topic)
+func (k *Keeper) GetReputerTopicLastCommit(ctx context.Context, topic TopicId) (types.TimestampedActorNonce, error) {
+	return k.topicLastReputerCommit.Get(ctx, topic)
 }
 
 func (k *Keeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId, forecasterScoreRatio alloraMath.Dec) error {

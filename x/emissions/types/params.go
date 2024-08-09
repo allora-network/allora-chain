@@ -10,7 +10,7 @@ import (
 // DefaultParams returns default module parameters.
 func DefaultParams() Params {
 	return Params{
-		Version:                             "0.0.3",                                       // version of the protocol should be in lockstep with github release tag version
+		Version:                             "v2",                                          // version of the protocol should be in lockstep with github release tag version
 		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),        // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:                   uint64(128),                                   // max number of topics to run cadence for per block
 		RequiredMinimumStake:                cosmosMath.NewInt(100),                        // minimum stake required to be a worker or reputer

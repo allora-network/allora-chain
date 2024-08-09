@@ -43,6 +43,27 @@ func TestExternalTestSuite(t *testing.T) {
 	WorkerInferenceAndForecastChecks(testConfig)
 	t.Log(">>> Test Reputer Un-Staking <<<")
 	UnstakingChecks(testConfig)
-	// t.Log(">>> Test Upgrading Emissions Module Version")
-	// UpgradeChecks(testConfig)
+}
+
+func TestUpgradeTestSuite(t *testing.T) {
+	if _, runUpgradeChecks := os.LookupEnv("UPGRADE"); runUpgradeChecks == false {
+		t.Skip("Skipping Upgrade Test Outside CI")
+	}
+	t.Log(">>> Setting up connection to local node <<<")
+
+	seed := testCommon.LookupEnvInt(t, "SEED", 0)
+	rpcMode := testCommon.LookupRpcMode(t, "RPC_MODE", testCommon.SingleRpc)
+	rpcEndpoints := testCommon.LookupEnvStringArray("RPC_URLS", []string{"http://localhost:26657"})
+
+	testConfig := testCommon.NewTestConfig(
+		t,
+		rpcMode,
+		rpcEndpoints,
+		"../devnet/genesis",
+		seed,
+	)
+
+	t.Log(">>> Test Upgrading Emissions Module Version")
+	UpgradeChecks(testConfig)
+
 }

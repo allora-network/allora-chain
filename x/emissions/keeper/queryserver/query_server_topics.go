@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"cosmossdk.io/errors"
-	cosmosMath "cosmossdk.io/math"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -39,8 +38,6 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest
 		params.TopicRewardAlpha,
 		params.TopicRewardStakeImportance,
 		params.TopicRewardFeeRevenueImportance,
-		cosmosMath.ZeroInt(),
-		cosmosMath.ZeroInt(),
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting current topic weight")
@@ -73,7 +70,7 @@ func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiv
 
 // Return last payload timestamp & nonce by worker/reputer
 func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *types.QueryTopicLastCommitRequest) (*types.QueryTopicLastCommitResponse, error) {
-	lastCommit, err := qs.k.GetTopicLastCommit(ctx, req.TopicId, types.ActorType_INFERER)
+	lastCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -83,7 +80,7 @@ func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *typ
 
 // Return last payload timestamp & nonce by worker/reputer
 func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *types.QueryTopicLastCommitRequest) (*types.QueryTopicLastCommitResponse, error) {
-	lastCommit, err := qs.k.GetTopicLastCommit(ctx, req.TopicId, types.ActorType_REPUTER)
+	lastCommit, err := qs.k.GetReputerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -179,34 +176,4 @@ func (qs queryServer) GetRewardableTopics(
 	}
 
 	return &types.QueryRewardableTopicsResponse{RewardableTopicIds: rewardableTopics}, nil
-}
-
-func (qs queryServer) GetTopicLastWorkerPayload(
-	ctx context.Context,
-	req *types.QueryTopicLastWorkerPayloadRequest,
-) (
-	*types.QueryTopicLastWorkerPayloadResponse,
-	error,
-) {
-	payload, err := qs.k.GetTopicLastWorkerPayload(ctx, req.TopicId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryTopicLastWorkerPayloadResponse{Payload: &payload}, nil
-}
-
-func (qs queryServer) GetTopicLastReputerPayload(
-	ctx context.Context,
-	req *types.QueryTopicLastReputerPayloadRequest,
-) (
-	*types.QueryTopicLastReputerPayloadResponse,
-	error,
-) {
-	payload, err := qs.k.GetTopicLastReputerPayload(ctx, req.TopicId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryTopicLastReputerPayloadResponse{Payload: &payload}, nil
 }

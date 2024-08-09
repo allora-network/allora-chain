@@ -92,15 +92,11 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return err
 	}
 
-	err = k.SetTopicLastCommit(ctx, topic.Id, blockHeight, &nonce, types.ActorType_INFERER)
+	err = k.SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		return err
 	}
 
-	err = k.SetTopicLastWorkerPayload(ctx, topic.Id, blockHeight, &nonce)
-	if err != nil {
-		return err
-	}
 	ctx.Logger().Info(fmt.Sprintf("Closed worker nonce for topic: %d, nonce: %v", topicId, nonce))
 	// Return an empty response as the operation was successful
 	return nil
@@ -169,6 +165,10 @@ func insertForecastsFromTopForecasters(
 	forecastsByForecaster := make(map[string]*types.Forecast)
 	latestForecaster := make([]*types.Forecast, 0)
 	for _, forecast := range forecasts {
+		if forecast == nil {
+			continue
+		}
+
 		// Examine forecast elements to verify that they're for inferers in the current set.
 		// We assume that set of inferers has been verified above.
 		// We keep what we can, ignoring the forecaster and their contribution (forecast) entirely
@@ -185,9 +185,9 @@ func insertForecastsFromTopForecasters(
 			continue
 		}
 
-		if forecast == nil {
-			ctx.Logger().Warn("Forecast was added that is nil, ignoring")
-			continue
+		// Update the forecast with the filtered elements
+		if forecast.ForecastElements != nil {
+			forecast.ForecastElements = acceptedForecastElements
 		}
 
 		if forecast.Forecaster == "" {

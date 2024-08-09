@@ -61,13 +61,16 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee, "insert worker payload")
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
 
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
 		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
+		if inference == nil {
+			return nil, errorsmod.Wrapf(err, "Inference not found")
+		}
 		if inference.TopicId != msg.WorkerDataBundle.TopicId {
 			return nil, errorsmod.Wrapf(err,
 				"Error inferer not use same topic")
