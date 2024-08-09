@@ -2,14 +2,14 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	statev1 "github.com/allora-network/allora-chain/x/emissions/api/v1"
+	statev2 "github.com/allora-network/allora-chain/x/emissions/api/v2"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: statev1.Query_ServiceDesc.ServiceName,
+			Service: statev2.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "Params",
@@ -241,11 +241,51 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetOneInForecasterSelfNetworkRegret",
-					Use:       "one-in-forecaster-self-regret [topic_id] [forecaster]",
-					Short:     "Returns regret born from including [forecaster]'s implied inference. Default to topic InitialRegret if does not exist",
+					RpcMethod: "GetNaiveInfererNetworkRegret",
+					Use:       "naive-inferer-network-regret [topic_id] [inferer]",
+					Short:     "Returns regret born from including [inferer]'s naive inference in a batch. Default to topic InitialRegret if does not exist",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutInfererInfererNetworkRegret",
+					Use:       "one-out-inferer-inferer-network-regret [topic_id] [one_out_inferer] [inferer]",
+					Short:     "Returns regret born from including [one_out_inferer]'s implied inference in a batch with [inferer]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_inferer"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutInfererForecasterNetworkRegret",
+					Use:       "one-out-inferer-forecaster-network-regret [topic_id] [one_out_inferer] [forecaster]",
+					Short:     "Returns regret born from including [one_out_inferer]'s implied inference in a batch with [forecaster]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_inferer"},
+						{ProtoField: "forecaster"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutForecasterInfererNetworkRegret",
+					Use:       "one-out-forecaster-inferer-network-regret [topic_id] [one_out_forecaster] [inferer]",
+					Short:     "Returns regret born from including [one_out_forecaster]'s implied inference in a batch with [inferer]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_forecaster"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetOneOutForecasterForecasterNetworkRegret",
+					Use:       "one-out-forecaster-forecaster-network-regret [topic_id] [one_out_forecaster] [forecaster]",
+					Short:     "Returns regret born from including [one_out_forecaster]'s implied inference in a batch with [forecaster]. Default to topic InitialRegret if does not exist",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "one_out_forecaster"},
 						{ProtoField: "forecaster"},
 					},
 				},
@@ -329,22 +369,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "GetTopicFeeRevenue",
 					Use:       "topic-fee-revenue [topic_id]",
 					Short:     "Return effective fee revenue for a topic i.e. the total fees collected by the topic less an exponential decay of the fees over time. This is the impact of topic fees on the topic's weight",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
-					RpcMethod: "GetTopicLastReputerPayload",
-					Use:       "latest-reputer-payload [topic_id]",
-					Short:     "Return latest reputer payload delivered for a topic",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "topic_id"},
-					},
-				},
-				{
-					RpcMethod: "GetTopicLastWorkerPayload",
-					Use:       "latest-worker-payload [topic_id]",
-					Short:     "Return latest worker payload delivered for a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},
@@ -587,7 +611,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service: statev1.Msg_ServiceDesc.ServiceName,
+			Service: statev2.Msg_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",

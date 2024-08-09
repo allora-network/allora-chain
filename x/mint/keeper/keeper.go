@@ -78,6 +78,16 @@ func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return sdkCtx.Logger().With("module", "x/"+types.ModuleName)
 }
 
+// getter for the storage service
+func (k Keeper) GetStorageService() storetypes.KVStoreService {
+	return k.storeService
+}
+
+// getter for the binary codec
+func (k Keeper) GetBinaryCodec() codec.BinaryCodec {
+	return k.cdc
+}
+
 // This function increases the ledger that tracks the total tokens minted by the ecosystem treasury
 // over the life of the blockchain.
 func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) error {

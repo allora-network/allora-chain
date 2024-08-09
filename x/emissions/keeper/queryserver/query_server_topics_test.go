@@ -103,12 +103,11 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 	}
 
 	topic := types.Topic{Id: 1}
-	_ = keeper.SetTopicLastCommit(
+	_ = keeper.SetReputerTopicLastCommit(
 		ctx,
 		topic.Id,
 		int64(blockHeight),
 		&nonce,
-		types.ActorType_REPUTER,
 	)
 
 	req := &types.QueryTopicLastCommitRequest{
@@ -127,12 +126,11 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 		BlockHeight: 98,
 	}
 
-	_ = keeper.SetTopicLastCommit(
+	_ = keeper.SetWorkerTopicLastCommit(
 		ctx,
 		topic2.Id,
 		int64(blockHeight),
 		&nonce,
-		types.ActorType_INFERER,
 	)
 
 	req2 := &types.QueryTopicLastCommitRequest{
@@ -333,48 +331,4 @@ func (s *KeeperTestSuite) TestGetRewardableTopics() {
 	remainingIds := response.RewardableTopicIds
 	s.Require().NoError(err)
 	s.Require().Len(remainingIds, 1)
-}
-
-func (s *KeeperTestSuite) TestGetTopicLastWorkerPayload() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(123)
-	blockHeight := int64(1000)
-	nonce := &types.Nonce{BlockHeight: blockHeight}
-
-	// Set the worker payload
-	err := keeper.SetTopicLastWorkerPayload(ctx, topicId, blockHeight, nonce)
-	s.Require().NoError(err)
-
-	// Get the worker payload
-	req := &types.QueryTopicLastWorkerPayloadRequest{TopicId: topicId}
-	response, err := s.queryServer.GetTopicLastWorkerPayload(ctx, req)
-	s.Require().NoError(err)
-	payload := response.Payload
-
-	// Check the retrieved values
-	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
-	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
-}
-
-func (s *KeeperTestSuite) TestGetTopicLastReputerPayload() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(456)
-	blockHeight := int64(2000)
-	nonce := &types.Nonce{BlockHeight: blockHeight}
-
-	// Set the reputer payload
-	err := keeper.SetTopicLastReputerPayload(ctx, topicId, blockHeight, nonce)
-	s.Require().NoError(err)
-
-	// Get the reputer payload
-	req := &types.QueryTopicLastReputerPayloadRequest{TopicId: topicId}
-	response, err := s.queryServer.GetTopicLastReputerPayload(ctx, req)
-	s.Require().NoError(err)
-	payload := response.Payload
-
-	// Check the retrieved values
-	s.Require().Equal(blockHeight, payload.BlockHeight, "Block height should match")
-	s.Require().Equal(nonce, payload.Nonce, "Nonce should match")
 }

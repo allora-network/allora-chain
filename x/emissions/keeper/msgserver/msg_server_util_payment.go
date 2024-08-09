@@ -2,12 +2,13 @@ package msgserver
 
 import (
 	"context"
+
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	appParams "github.com/allora-network/allora-chain/app/params"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 type TopicId = uint64
@@ -17,8 +18,6 @@ func activateTopicIfWeightAtLeastGlobalMin(
 	ctx context.Context,
 	ms msgServer,
 	topicId TopicId,
-	newRevenue Allo,
-	newStake Allo,
 ) error {
 	isActivated, err := ms.k.IsTopicActive(ctx, topicId)
 	if err != nil {
@@ -41,8 +40,6 @@ func activateTopicIfWeightAtLeastGlobalMin(
 			params.TopicRewardAlpha,
 			params.TopicRewardStakeImportance,
 			params.TopicRewardFeeRevenueImportance,
-			newRevenue,
-			newStake,
 		)
 		if err != nil {
 			return errors.Wrapf(err, "error getting current topic weight")
@@ -60,14 +57,11 @@ func activateTopicIfWeightAtLeastGlobalMin(
 }
 
 // Check if user has enough balance to send the fee, then send the fee to EcoSystem bucket
-// insufficientBalanceErrorMsg is appended to error message if sender has insufficient balance
 func checkBalanceAndSendFee(
 	ctx context.Context,
 	ms msgServer,
 	sender string,
-	topicId TopicId,
 	amount Allo,
-	insufficientBalanceErrorMsg string,
 ) error {
 	accAddress, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
@@ -77,8 +71,7 @@ func checkBalanceAndSendFee(
 	fee := sdk.NewCoin(balance.Denom, amount)
 
 	if balance.IsLT(fee) {
-		//errMsg := insufficientBalanceErrorMsg + " " + strconv.FormatUint(topicId, 10) + " sender " + sender
-		return types.ErrTopicRegistrantNotEnoughDenom
+		return errors.Wrapf(sdkerrors.ErrInsufficientFunds, "sender has insufficient balance to cover fees")
 	}
 
 	err = ms.k.SendCoinsFromAccountToModule(ctx, sender, minttypes.EcosystemModuleName, sdk.NewCoins(fee))
@@ -102,9 +95,8 @@ func sendEffectiveRevenueActivateTopicIfWeightSufficient(
 	sender string,
 	topicId TopicId,
 	amount Allo,
-	insufficientBalanceErrorMsg string,
 ) error {
-	err := checkBalanceAndSendFee(ctx, ms, sender, topicId, amount, insufficientBalanceErrorMsg)
+	err := checkBalanceAndSendFee(ctx, ms, sender, amount)
 	if err != nil {
 		return err
 	}
@@ -114,6 +106,6 @@ func sendEffectiveRevenueActivateTopicIfWeightSufficient(
 		return err
 	}
 
-	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId, amount, cosmosMath.ZeroInt())
+	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId)
 	return err
 }

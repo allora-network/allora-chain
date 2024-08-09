@@ -18,12 +18,6 @@ type Weight = alloraMath.Dec
 type InferenceValue = alloraMath.Dec
 type Stake = cosmosMath.Int
 
-type StdDevRegrets struct {
-	stdDevInferenceRegrets Regret
-	stdDevCombinedRegrets  Regret
-	// StdDevOneInForecastRegret map[Worker]Regret // max regret for each one-in forecaster
-}
-
 // Need to differentiate between the two types of regrets because workers may complete tasks
 // for both roles and may have different regrets for those different roles
 type RegretInformedWeights struct {

@@ -1,10 +1,11 @@
 package testing
 
 import (
-	"cosmossdk.io/log"
 	"encoding/json"
 	"fmt"
 	"testing"
+
+	"cosmossdk.io/log"
 
 	"cosmossdk.io/math"
 	app2 "github.com/allora-network/allora-chain/app"
@@ -14,6 +15,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+
+	//lint:ignore SA1019 deprecated code breaking unit tests
 	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"

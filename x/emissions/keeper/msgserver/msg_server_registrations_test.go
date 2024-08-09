@@ -9,6 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -253,7 +254,7 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 
 	// Try to register without any funds to pay fees
 	_, err := msgServer.Register(ctx, reputerRegMsg)
-	require.ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
+	require.ErrorIs(err, sdkerrors.ErrInsufficientFunds, "Register should return an error")
 }
 
 func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
@@ -322,7 +323,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 		Owner:     reputer.String(),
 	}
 	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
-	s.Require().ErrorIs(err, types.ErrTopicRegistrantNotEnoughDenom, "Register should return an error")
+	s.Require().ErrorIs(err, sdkerrors.ErrInsufficientFunds, "Register should return an error")
 }
 
 func (s *MsgServerTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
