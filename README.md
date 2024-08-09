@@ -102,6 +102,13 @@ export STATE_SYNC_RPC2=synced_full_node_rpc_2
 scripts/l1_node.sh
 ```
 
+### Running and updating with cosmovisor
+
+We will build and provide Docker image with cosmovisor and all the required allorad version in it prior upgrades, and communicate image tag.
+
+If you need to build it your self, see `Dockerfile.cosmovisor`.
+
+
 ## Call the node
 After the node is running you can exec RPC calls to it.
 
