@@ -102,12 +102,14 @@ export STATE_SYNC_RPC2=synced_full_node_rpc_2
 scripts/l1_node.sh
 ```
 
-### Running and updating with cosmovisor
+## Running and updating with cosmovisor
 
+We use cosmovisor  to automate chain upgrades, you can find info about it on [the home page](https://docs.cosmos.network/main/build/tooling/cosmovisor).
 We will build and provide Docker image with cosmovisor and all the required allorad version in it prior upgrades, and communicate image tag.
 
-If you need to build it your self, see `Dockerfile.cosmovisor`.
+The allorad docker image with cosmovisor for [1. Lowerexpeditedvotingperiodto12hr](https://explorer.testnet-1.testnet.allora.network/allora-testnet-1/gov/1) upgrade is `alloranetwork/allora-chain:v0.3.0-cosmovisor`
 
+If you dont want to use cosmovisor, you can take allorad binaries from the [release page](https://github.com/allora-network/allora-chain/releases)
 
 ## Call the node
 After the node is running you can exec RPC calls to it.

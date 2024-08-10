@@ -2,7 +2,7 @@
 services:
   node:
     container_name: sample_validator
-    image: "alloranetwork/allora-chain:v0.2.14"
+    image: "alloranetwork/allora-chain:v0.3.0-cosmovisor"
     environment:
       - NETWORK=allora-testnet-1
       - MONIKER=sample_validator
