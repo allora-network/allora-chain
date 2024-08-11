@@ -114,7 +114,7 @@ func insertWorkerBulk(
 	// Get Bundles
 	for _, worker := range workers {
 		workerData := generateSingleWorkerBundle(m, topic.Id, workerNonce, worker, workers)
-		wasErr = insertLeaderWorkerBulk(m, data, topic.Id, workerNonce, leaderWorker, workerData)
+		wasErr = insertLeaderWorkerBulk(m, data, leaderWorker, workerData)
 	}
 	return wasErr
 }
@@ -141,6 +141,10 @@ func generateSingleWorkerBundle(
 	// Create a MsgInsertReputerPayload message
 	workerDataBundle := &emissionstypes.WorkerDataBundle{
 		Worker: infererAddress,
+		Nonce: &emissionstypes.Nonce{
+			BlockHeight: blockHeight,
+		},
+		TopicId: topicId,
 		InferenceForecastsBundle: &emissionstypes.InferenceForecastBundle{
 			Inference: &emissionstypes.Inference{
 				TopicId:     topicId,
@@ -175,8 +179,6 @@ func generateSingleWorkerBundle(
 func insertLeaderWorkerBulk(
 	m *testcommon.TestConfig,
 	data *SimulationData,
-	topicId uint64,
-	workerNonce int64,
 	leaderWorker Actor,
 	WorkerDataBundles *emissionstypes.WorkerDataBundle,
 ) bool {
@@ -220,12 +222,16 @@ func insertReputerBulk(
 	reputerNonce := &emissionstypes.Nonce{
 		BlockHeight: workerNonce,
 	}
-	valueBundle := generateValueBundle(m, topicId, workers, reputerNonce)
+	valueBundle := generateValueBundle(m, topicId, leaderReputer, workers, reputerNonce)
 	ctx := context.Background()
 	for _, reputer := range reputers {
 		reputerValueBundle := generateSingleReputerValueBundle(m, reputer, valueBundle)
+		lossesMsg := &emissionstypes.MsgInsertReputerPayload{
+			Sender:             leaderReputer.addr,
+			ReputerValueBundle: reputerValueBundle,
+		}
 
-		txResp, err := m.Client.BroadcastTx(ctx, leaderReputer.acc, reputerValueBundle)
+		txResp, err := m.Client.BroadcastTx(ctx, leaderReputer.acc, lossesMsg)
 		requireNoError(m.T, data.failOnErr, err)
 		wasErr = orErr(wasErr, err)
 		if wasErr {
@@ -242,11 +248,13 @@ func insertReputerBulk(
 func generateValueBundle(
 	m *testcommon.TestConfig,
 	topicId uint64,
+	leaderReputer Actor,
 	workers []Actor,
 	reputerNonce *emissionstypes.Nonce,
 ) emissionstypes.ValueBundle {
 	return emissionstypes.ValueBundle{
 		TopicId:                topicId,
+		Reputer:                leaderReputer.addr,
 		CombinedValue:          alloraMath.NewDecFromInt64(100),
 		InfererValues:          generateWorkerAttributedValueLosses(m, workers, 3000, 3500),
 		ForecasterValues:       generateWorkerAttributedValueLosses(m, workers, 50, 50),
