@@ -5,6 +5,9 @@ import (
 	"strings"
 	"testing"
 
+	"fmt"
+	"time"
+
 	cosmossdk_io_math "cosmossdk.io/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 )
@@ -68,6 +71,9 @@ func TestInvariantTestSuite(t *testing.T) {
 	t.Log("Simulation mode: ", mode)
 
 	t.Log(">>> Starting Test <<<")
+	timestr := fmt.Sprintf(">>> Time and Date %s <<<", time.Now().Format(time.RFC850))
+	t.Log(timestr)
+
 	simulate(
 		&testConfig,
 		maxIterations,
