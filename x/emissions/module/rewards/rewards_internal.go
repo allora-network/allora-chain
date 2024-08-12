@@ -538,8 +538,8 @@ func GetAllReputersOutput(
 			return nil, nil, err
 		}
 		if listenedStakeFraction.Lt(minStakeFraction) {
-			for l := range coefficients {
-				coeffDiff, err := coefficients[l].Sub(oldCoefficients[l])
+			for l := range newCoefficients {
+				coeffDiff, err := newCoefficients[l].Sub(oldCoefficients[l])
 				if err != nil {
 					return nil, nil, err
 				}
