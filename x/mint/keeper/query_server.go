@@ -3,6 +3,8 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/errors"
+
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -60,27 +62,27 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInfoRequest) (*types.QueryEmissionInfoResponse, error) {
 	moduleParams, err := q.k.Params.Get(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get module params")
 	}
 
 	ecosystemBalance, err := q.k.GetEcosystemBalance(ctx, moduleParams.MintDenom)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get ecosystem balance")
 	}
 
 	previousBlockEmission, err := q.k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get previous block emission")
 	}
 
 	ecosystemMintSupplyRemaining, err := q.k.GetEcosystemMintSupplyRemaining(ctx, moduleParams)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get ecosystem mint supply remaining")
 	}
 
 	blocksPerMonth, err := q.k.GetParamsBlocksPerMonth(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get blocks per month")
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -91,7 +93,7 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 
 	networkStakedTokens, err := GetNumStakedTokens(ctx, q.k)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get number of staked tokens")
 	}
 	lockedVestingTokensTotal, lockedVestingTokensPreseed,
 		lockedVestingTokensSeed, lockedVestingTokensTeam := GetLockedVestingTokens(
@@ -109,15 +111,15 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 		moduleParams.MaxSupply,
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get target reward emission per unit staked token")
 	}
 	reputersPercent, err := q.k.GetPreviousPercentageRewardToStakedReputers(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get previous percentage reward to staked reputers")
 	}
 	vPercentADec, err := q.k.GetValidatorsVsAlloraPercentReward(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get validators vs allora percent reward")
 	}
 	vPercent := vPercentADec.SdkLegacyDec()
 	maximumMonthlyEmissionPerUnitStakedToken := GetMaximumMonthlyEmissionPerUnitStakedToken(
@@ -136,7 +138,7 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 	} else {
 		previousRewardEmissionPerUnitStakedToken, err = q.k.GetPreviousRewardEmissionPerUnitStakedToken(ctx)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to get previous reward emission per unit staked token")
 		}
 	}
 	emissionPerUnitStakedToken := GetExponentialMovingAverage(
