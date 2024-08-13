@@ -13,6 +13,7 @@ MONIKER="${MONIKER:-$(hostname)}"
 KEYRING_BACKEND=test                              #! Use test for simplicity, you should decide which backend to use !!!
 GENESIS_FILE="${APP_HOME}/config/genesis.json"
 DENOM="uallo"
+RPC_PORT="${RPC_PORT:-26657}"
 
 # uncomment this block if you want to restore from a snapshot
 # SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -81,6 +82,6 @@ allorad \
     start \
     --moniker=${MONIKER} \
     --minimum-gas-prices=0${DENOM} \
-    --rpc.laddr=tcp://0.0.0.0:26657 \
+    --rpc.laddr=tcp://0.0.0.0:${RPC_PORT} \
     --p2p.seeds=$SEEDS \
     --p2p.persistent_peers $PEERS
