@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ types.QueryServer = queryServer{}
@@ -52,4 +53,128 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 		Inflation: inflation,
 	}
 	return &ret, nil
+}
+
+// mint and inflation emission rate endpoint
+// nice way to access live chain data
+func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInfoRequest) (*types.QueryEmissionInfoResponse, error) {
+	moduleParams, err := q.k.Params.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ecosystemBalance, err := q.k.GetEcosystemBalance(ctx, moduleParams.MintDenom)
+	if err != nil {
+		return nil, err
+	}
+
+	previousBlockEmission, err := q.k.PreviousBlockEmission.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	ecosystemMintSupplyRemaining, err := q.k.GetEcosystemMintSupplyRemaining(ctx, moduleParams)
+	if err != nil {
+		return nil, err
+	}
+
+	blocksPerMonth, err := q.k.GetParamsBlocksPerMonth(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockHeight := uint64(sdkCtx.BlockHeight())
+	numberOfRecalcs := blockHeight / blocksPerMonth
+	blockHeightTarget_e_i_LastCalculated := numberOfRecalcs*blocksPerMonth + 1
+	blockHeightTarget_e_i_Next := blockHeightTarget_e_i_LastCalculated + blocksPerMonth
+
+	networkStakedTokens, err := GetNumStakedTokens(ctx, q.k)
+	if err != nil {
+		return nil, err
+	}
+	lockedVestingTokensTotal, lockedVestingTokensPreseed,
+		lockedVestingTokensSeed, lockedVestingTokensTeam := GetLockedVestingTokens(
+		blocksPerMonth,
+		math.NewIntFromUint64(blockHeight),
+		moduleParams)
+	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
+	circulatingSupply := moduleParams.MaxSupply.Sub(lockedVestingTokensTotal).Sub(ecosystemLocked)
+	targetRewardEmissionPerUnitStakedToken,
+		err := GetTargetRewardEmissionPerUnitStakedToken(
+		moduleParams.FEmission,
+		ecosystemLocked,
+		networkStakedTokens,
+		circulatingSupply,
+		moduleParams.MaxSupply,
+	)
+	if err != nil {
+		return nil, err
+	}
+	reputersPercent, err := q.k.GetPreviousPercentageRewardToStakedReputers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	vPercentADec, err := q.k.GetValidatorsVsAlloraPercentReward(ctx)
+	if err != nil {
+		return nil, err
+	}
+	vPercent := vPercentADec.SdkLegacyDec()
+	maximumMonthlyEmissionPerUnitStakedToken := GetMaximumMonthlyEmissionPerUnitStakedToken(
+		moduleParams.MaximumMonthlyPercentageYield,
+		reputersPercent,
+		vPercent,
+	)
+	targetRewardEmissionPerUnitStakedToken = GetCappedTargetEmissionPerUnitStakedToken(
+		targetRewardEmissionPerUnitStakedToken,
+		maximumMonthlyEmissionPerUnitStakedToken,
+	)
+	var previousRewardEmissionPerUnitStakedToken math.LegacyDec
+	// if this is the first month/time we're calculating the target emission...
+	if blockHeight < blocksPerMonth {
+		previousRewardEmissionPerUnitStakedToken = targetRewardEmissionPerUnitStakedToken
+	} else {
+		previousRewardEmissionPerUnitStakedToken, err = q.k.GetPreviousRewardEmissionPerUnitStakedToken(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+	emissionPerUnitStakedToken := GetExponentialMovingAverage(
+		targetRewardEmissionPerUnitStakedToken,
+		moduleParams.OneMonthSmoothingDegree,
+		previousRewardEmissionPerUnitStakedToken,
+	)
+	emissionPerMonth := GetTotalEmissionPerMonth(emissionPerUnitStakedToken, networkStakedTokens)
+	blockEmission := emissionPerMonth.
+		Quo(math.NewIntFromUint64(blocksPerMonth))
+	validatorCut := vPercent.Mul(blockEmission.ToLegacyDec()).TruncateInt()
+	alloraRewardsCut := blockEmission.Sub(validatorCut)
+
+	return &types.QueryEmissionInfoResponse{
+		Params:                                   moduleParams,
+		EcosystemBalance:                         ecosystemBalance,
+		PreviousBlockEmission:                    previousBlockEmission,
+		EcosystemMintSupplyRemaining:             ecosystemMintSupplyRemaining,
+		BlocksPerMonth:                           blocksPerMonth,
+		BlockHeightTargetEILastCalculated:        blockHeightTarget_e_i_LastCalculated,
+		BlockHeightTargetEINextCalculated:        blockHeightTarget_e_i_Next,
+		NetworkStakedTokens:                      networkStakedTokens,
+		LockedVestingTokensTotal:                 lockedVestingTokensTotal,
+		LockedVestingTokensInvestorsPreseed:      lockedVestingTokensPreseed,
+		LockedVestingTokensInvestorsSeed:         lockedVestingTokensSeed,
+		LockedVestingTokensTeam:                  lockedVestingTokensTeam,
+		EcosystemLocked:                          ecosystemLocked,
+		CirculatingSupply:                        circulatingSupply,
+		MaxSupply:                                moduleParams.MaxSupply,
+		TargetEmissionRatePerUnitStakedToken:     targetRewardEmissionPerUnitStakedToken,
+		ReputersPercent:                          reputersPercent,
+		ValidatorsPercent:                        vPercent,
+		MaximumMonthlyEmissionPerUnitStakedToken: maximumMonthlyEmissionPerUnitStakedToken,
+		TargetRewardEmissionPerUnitStakedToken:   targetRewardEmissionPerUnitStakedToken,
+		EmissionPerUnitStakedToken:               emissionPerUnitStakedToken,
+		EmissionPerMonth:                         emissionPerMonth,
+		BlockEmission:                            blockEmission,
+		ValidatorCut:                             validatorCut,
+		AlloraRewardsCut:                         alloraRewardsCut,
+	}, nil
 }

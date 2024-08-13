@@ -179,3 +179,19 @@ func GetExponentialMovingAverage(
 	secondTerm := inverseAlpha.Mul(previousRewardEmissionPerUnitStakedToken)
 	return firstTerm.Add(secondTerm)
 }
+
+// How many tokens are left that the ecosystem bucket is allowed to mint?
+func (k Keeper) GetEcosystemMintSupplyRemaining(
+	ctx context.Context,
+	params types.Params,
+) (math.Int, error) {
+	// calculate how many tokens left the ecosystem account is allowed to mint
+	ecosystemTokensAlreadyMinted, err := k.EcosystemTokensMinted.Get(ctx)
+	if err != nil {
+		return math.Int{}, err
+	}
+	// check that you are allowed to mint more tokens and we haven't hit the max supply
+	ecosystemMaxSupply := math.LegacyNewDecFromInt(params.MaxSupply).
+		Mul(params.EcosystemTreasuryPercentOfTotalSupply).TruncateInt()
+	return ecosystemMaxSupply.Sub(ecosystemTokensAlreadyMinted), nil
+}
