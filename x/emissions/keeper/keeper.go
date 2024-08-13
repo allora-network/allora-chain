@@ -2201,7 +2201,7 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 		iter.Next()
 	}
 
-	return scores, nil
+	return sortedScores, nil
 }
 
 func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
@@ -2278,7 +2278,7 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 		iter.Next()
 	}
 
-	return scores, nil
+	return sortedScores, nil
 }
 
 func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
