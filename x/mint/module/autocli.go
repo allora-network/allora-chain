@@ -20,6 +20,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "inflation",
 					Short:     "Query the current minting inflation value",
 				},
+				{
+					RpcMethod: "EmissionInfo",
+					Use:       "emission-info",
+					Short:     "Get a bunch of debugging info about the inflation rate",
+				},
 			},
 		},
 	}
