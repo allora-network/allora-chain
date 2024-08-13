@@ -178,5 +178,6 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 		BlockEmission:                            blockEmission,
 		ValidatorCut:                             validatorCut,
 		AlloraRewardsCut:                         alloraRewardsCut,
+		PreviousRewardEmissionPerUnitStakedToken: previousRewardEmissionPerUnitStakedToken,
 	}, nil
 }

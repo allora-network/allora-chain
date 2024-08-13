@@ -184,4 +184,10 @@ message QueryEmissionInfoResponse {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+  string previous_reward_emission_per_unit_staked_token = 26 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
