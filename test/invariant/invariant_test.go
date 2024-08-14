@@ -71,7 +71,7 @@ func TestInvariantTestSuite(t *testing.T) {
 	t.Log("Simulation mode: ", mode)
 
 	t.Log(">>> Starting Test <<<")
-	timestr := fmt.Sprintf(">>> Time and Date %s <<<", time.Now().Format(time.RFC850))
+	timestr := fmt.Sprintf(">>> Starting %s <<<", time.Now().Format(time.RFC850))
 	t.Log(timestr)
 
 	simulate(
@@ -81,6 +81,9 @@ func TestInvariantTestSuite(t *testing.T) {
 		epochLength,
 		mode,
 	)
+
+	timestr = fmt.Sprintf(">>> Complete %s <<<", time.Now().Format(time.RFC850))
+	t.Log(timestr)
 }
 
 // set up the common state for the simulator
@@ -181,14 +184,14 @@ func simulateManual(
 	// now nobody has stake, is the topic active?
 	// make sure an ABCI endblock has passed
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 7)
-	doInferenceAndReputation(m, worker, reputer, nil, 1, data, 8)
+	doInferenceAndReputation(m, Actor{}, Actor{}, nil, 1, data, 8)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 9)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 10)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 11)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 12)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 13)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 14)
-	doInferenceAndReputation(m, worker, reputer, nil, 1, data, 15)
+	doInferenceAndReputation(m, Actor{}, Actor{}, nil, 1, data, 15)
 	amount2 := amount.QuoRaw(2)
 	undelegateStake(m, delegator, reputer, &amount2, 1, data, 16)
 	m.T.Log("Done.")
@@ -262,8 +265,8 @@ func simulateAutomaticInitialState(m *testcommon.TestConfig, faucet Actor, data 
 	fundAmount, err = pickRandomBalanceLessThanHalf(m, faucet)
 	requireNoError(m.T, true, err)
 	fundTopic(m, faucet, Actor{}, &fundAmount, 2, data, 17)
-	doInferenceAndReputation(m, startWorkers[0], startReputers[0], nil, 1, data, 18)
-	doInferenceAndReputation(m, startWorkers[1], startReputers[1], nil, 2, data, 19)
+	doInferenceAndReputation(m, Actor{}, Actor{}, nil, 1, data, 18)
+	doInferenceAndReputation(m, Actor{}, Actor{}, nil, 2, data, 19)
 }
 
 // this is the body of the "normal" simulation mode
