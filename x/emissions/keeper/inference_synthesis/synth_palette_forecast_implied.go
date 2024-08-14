@@ -47,7 +47,6 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 				// However, this seeds losses for forecasters for future rounds
 
 				inferenceValues := make([]alloraMath.Dec, 0, len(sortedInferersInForecast))
-
 				for _, inferer := range sortedInferersInForecast {
 					if p.InferenceByWorker[inferer] != nil {
 						inferenceValues = append(inferenceValues, p.InferenceByWorker[inferer].Value)

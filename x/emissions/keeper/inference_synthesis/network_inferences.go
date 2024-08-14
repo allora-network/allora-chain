@@ -69,42 +69,54 @@ func GetNetworkInferencesAtBlock(
 			return nil, nil, infererWeights, forecasterWeights, err
 		}
 
-		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
-		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error getting latest network losses: %s", err.Error()))
-			return networkInferences, nil, infererWeights, forecasterWeights, nil
-		}
-
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
 
-		Logger(ctx).Debug(fmt.Sprintf("Creating network inferences for topic %v with %v inferences and %v forecasts", topicId, len(inferences.Inferences), len(forecasts.Forecasts)))
-		networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
-			SynthRequest{
-				Ctx:                 ctx,
-				K:                   k,
-				TopicId:             topicId,
-				Inferences:          inferences,
-				Forecasts:           forecasts,
-				NetworkCombinedLoss: networkLosses.CombinedValue,
-				EpsilonTopic:        topic.Epsilon,
-				EpsilonSafeDiv:      moduleParams.EpsilonSafeDiv,
-				PNorm:               topic.PNorm,
-				CNorm:               moduleParams.CNorm,
-			},
-		)
+		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
 		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
-			return nil, nil, infererWeights, forecasterWeights, err
-		}
-		networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
+			Logger(ctx).Warn(fmt.Sprintf("Error getting network losses: %s", err.Error()))
 
-		forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
-		infererWeights = networkInferenceBuilder.weights.inferers
-		forecasterWeights = networkInferenceBuilder.weights.forecasters
+			inferenceValues := make([]alloraMath.Dec, 0, len(inferences.Inferences))
+			for _, inference := range inferences.Inferences {
+				inferenceValues = append(inferenceValues, inference.Value)
+			}
+
+			medianValue, err := alloraMath.Median(inferenceValues)
+			if err != nil {
+				Logger(ctx).Warn(fmt.Sprintf("Error calculating median: %s", err.Error()))
+				return networkInferences, nil, infererWeights, forecasterWeights, nil
+			}
+
+			networkInferences.CombinedValue = medianValue
+			return networkInferences, nil, infererWeights, forecasterWeights, nil
+		} else {
+			Logger(ctx).Debug(fmt.Sprintf("Creating network inferences for topic %v with %v inferences and %v forecasts", topicId, len(inferences.Inferences), len(forecasts.Forecasts)))
+			networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
+				SynthRequest{
+					Ctx:                 ctx,
+					K:                   k,
+					TopicId:             topicId,
+					Inferences:          inferences,
+					Forecasts:           forecasts,
+					NetworkCombinedLoss: networkLosses.CombinedValue,
+					EpsilonTopic:        topic.Epsilon,
+					EpsilonSafeDiv:      moduleParams.EpsilonSafeDiv,
+					PNorm:               topic.PNorm,
+					CNorm:               moduleParams.CNorm,
+				},
+			)
+			if err != nil {
+				Logger(ctx).Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
+				return nil, nil, infererWeights, forecasterWeights, err
+			}
+			networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
+			forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
+			infererWeights = networkInferenceBuilder.weights.inferers
+			forecasterWeights = networkInferenceBuilder.weights.forecasters
+		}
 	} else {
 		// If there is only one valid inference, then the network inference is the same as the single inference
 		// For the forecasts to be meaningful, there should be at least 2 inferences
@@ -198,30 +210,44 @@ func GetLatestNetworkInference(
 		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting network losses: %s", err.Error()))
+
+			inferenceValues := make([]alloraMath.Dec, 0, len(inferences.Inferences))
+			for _, inference := range inferences.Inferences {
+				inferenceValues = append(inferenceValues, inference.Value)
+			}
+
+			medianValue, err := alloraMath.Median(inferenceValues)
+			if err != nil {
+				Logger(ctx).Warn(fmt.Sprintf("Error calculating median: %s", err.Error()))
+				return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
+			}
+			networkInferences.CombinedValue = medianValue
+
 			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
+		} else {
+			networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
+				SynthRequest{
+					Ctx:                 ctx,
+					K:                   k,
+					TopicId:             topicId,
+					Inferences:          inferences,
+					Forecasts:           forecasts,
+					NetworkCombinedLoss: networkLosses.CombinedValue,
+					EpsilonTopic:        topic.Epsilon,
+					EpsilonSafeDiv:      moduleParams.EpsilonSafeDiv,
+					PNorm:               topic.PNorm,
+					CNorm:               moduleParams.CNorm,
+				},
+			)
+			if err != nil {
+				Logger(ctx).Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
+				return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err
+			}
+			networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
+			forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
+			infererWeights = networkInferenceBuilder.weights.inferers
+			forecasterWeights = networkInferenceBuilder.weights.forecasters
 		}
-		networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
-			SynthRequest{
-				Ctx:                 ctx,
-				K:                   k,
-				TopicId:             topicId,
-				Inferences:          inferences,
-				Forecasts:           forecasts,
-				NetworkCombinedLoss: networkLosses.CombinedValue,
-				EpsilonTopic:        topic.Epsilon,
-				EpsilonSafeDiv:      moduleParams.EpsilonSafeDiv,
-				PNorm:               topic.PNorm,
-				CNorm:               moduleParams.CNorm,
-			},
-		)
-		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
-			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err
-		}
-		networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
-		forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
-		infererWeights = networkInferenceBuilder.weights.inferers
-		forecasterWeights = networkInferenceBuilder.weights.forecasters
 	} else {
 		// If there is only one valid inference, then the network inference is the same as the single inference
 		// For the forecasts to be meaningful, there should be at least 2 inferences
