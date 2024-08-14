@@ -141,13 +141,12 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	s.Require().NoError(err)
 
 	// Calculate
-	valueBundle, _, _, _, err :=
-		inferencesynthesis.GetNetworkInferencesAtBlock(
+	valueBundle, _, _, _, _, _, err :=
+		inferencesynthesis.GetNetworkInferences(
 			s.ctx,
 			s.emissionsKeeper,
 			topicId,
-			blockHeight,
-			blockHeightPreviousLosses,
+			&blockHeight,
 		)
 	require.NoError(err)
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
@@ -665,10 +664,11 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 
 	// Calculate
 	valueBundle, _, _, _, _, _, err :=
-		inferencesynthesis.GetLatestNetworkInference(
+		inferencesynthesis.GetNetworkInferences(
 			s.ctx,
 			s.emissionsKeeper,
 			topicId,
+			nil,
 		)
 	require.NoError(err)
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
@@ -744,5 +744,58 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 		default:
 			require.Fail("Unexpected worker %v", oneInForecasterValue.Worker)
 		}
+	}
+}
+
+func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculation() {
+	require := s.Require()
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockHeight := int64(300)
+
+	inferer1 := "worker1"
+	inferer2 := "worker2"
+	inferer3 := "worker3"
+
+	inferences := emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{
+				TopicId: topicId,
+				Inferer: inferer1,
+				Value:   alloraMath.MustNewDecFromString("10.0"),
+			},
+			{
+				TopicId: topicId,
+				Inferer: inferer2,
+				Value:   alloraMath.MustNewDecFromString("30.0"),
+			},
+			{
+				TopicId: topicId,
+				Inferer: inferer3,
+				Value:   alloraMath.MustNewDecFromString("20.0"),
+			},
+		},
+	}
+
+	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+	err := keeper.InsertInferences(s.ctx, topicId, nonce, inferences)
+	s.Require().NoError(err)
+
+	valueBundle, _, _, _, _, _, err := inferencesynthesis.GetNetworkInferences(s.ctx, keeper, topicId, &blockHeight)
+	s.Require().NoError(err)
+
+	expectedMedian := alloraMath.MustNewDecFromString("20.0")
+	s.Require().True(expectedMedian.Equal(valueBundle.CombinedValue), "The combined value should be the median of the inferences")
+
+	require.Len(valueBundle.InfererValues, len(inferences.Inferences))
+	for _, infererValue := range valueBundle.InfererValues {
+		found := false
+		for _, inference := range inferences.Inferences {
+			if inference.Inferer == infererValue.Worker {
+				found = true
+				s.Require().True(inference.Value.Equal(infererValue.Value))
+			}
+		}
+		s.Require().True(found, "Inference not found in the result")
 	}
 }

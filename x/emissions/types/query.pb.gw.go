@@ -1638,17 +1638,6 @@ func request_Query_GetNetworkInferencesAtBlock_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height_last_inference", err)
 	}
 
-	val, ok = pathParams["block_height_last_reward"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height_last_reward")
-	}
-
-	protoReq.BlockHeightLastReward, err = runtime.Int64(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height_last_reward", err)
-	}
-
 	msg, err := client.GetNetworkInferencesAtBlock(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -1685,17 +1674,6 @@ func local_request_Query_GetNetworkInferencesAtBlock_0(ctx context.Context, mars
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height_last_inference", err)
-	}
-
-	val, ok = pathParams["block_height_last_reward"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "block_height_last_reward")
-	}
-
-	protoReq.BlockHeightLastReward, err = runtime.Int64(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "block_height_last_reward", err)
 	}
 
 	msg, err := server.GetNetworkInferencesAtBlock(ctx, &protoReq)
@@ -7608,7 +7586,7 @@ var (
 
 	pattern_Query_IsReputerRegisteredInTopicId_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v2", "reputer_registered", "topic_id", "address"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetNetworkInferencesAtBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5, 2, 6, 1, 0, 4, 1, 5, 7}, []string{"emissions", "v2", "network_inferences", "topic_id", "last_inference", "block_height_last_inference", "last_reward", "block_height_last_reward"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetNetworkInferencesAtBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"emissions", "v2", "network_inferences", "topic_id", "last_inference", "block_height_last_inference"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GetLatestNetworkInference_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v2", "network_inferences", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 

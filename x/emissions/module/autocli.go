@@ -524,12 +524,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetNetworkInferencesAtBlock",
-					Use:       "network-inferences-at-block [topic_id] [block_height_last_inference] [block_height_last_reward]",
-					Short:     "Get the Network Inferences for a topic at a block height where the last inference was made and the last reward was given",
+					Use:       "network-inferences-at-block [topic_id] [block_height_last_inference]",
+					Short:     "Get the Network Inferences for a topic at a block height where the last inference was made",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "block_height_last_inference"},
-						{ProtoField: "block_height_last_reward"},
 					},
 				},
 				{
