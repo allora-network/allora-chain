@@ -7,8 +7,7 @@ name: Build and Push docker image to Docker Hub
 on:
   push:
     tags:
-      - 'v*'
-      - dev-latest
+      - '*upgrader'
 
 concurrency:
   group: ${{ github.ref }}
@@ -29,30 +28,37 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build, tag, and push image to Docker Hub
-        id: build-push-image
+      - name: Build, tag, and push upgrader image to Docker Hub
+        id: build-push-upgrader-image
         env:
           DOCKERHUB_USERNAME: alloranetwork
-          DOCKERHUB_REPOSITORY: ${{github.event.repository.name}} 
+          DOCKERHUB_REPOSITORY: ${{ github.event.repository.name }}
+          ALLORAD_CURRENT_VERSION: "v0.2.14"    # You can update these values as needed
+          ALLORAD_UPGRADE_VERSION: "v0.3.0"     # You can update these values as needed
         run: |
           #! Due to we trigger on push.tags GITHUB_REF - is the tag name
           GIT_TAG="$(echo $GITHUB_REF| sed 's#refs/tags/##')"
-
+      
           IMAGE_TAG="${GITHUB_SHA:0:8}"
           EXTRA_IMAGE_TAGS=$GIT_TAG
-
+      
           #! Add latest tag only if on named releases tag='v*'
           if [[ ${GIT_TAG} == v* ]]; then
             EXTRA_IMAGE_TAGS="${EXTRA_IMAGE_TAGS}"
           fi
-
+      
           # Build a docker container and push it to Docker Hub.
-          docker build --pull --build-arg "GH_TOKEN=${{ secrets.GH_READONLY_PAT }}" -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG .
+          docker build --pull \
+            --build-arg "ALLORAD_CURRENT_VERSION=${ALLORAD_CURRENT_VERSION}" \
+            --build-arg "ALLORAD_UPGRADE_VERSION=${ALLORAD_UPGRADE_VERSION}" \
+            -f Dockerfile.cosmovisor -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG .
+          
           docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG
-
+      
           # Build and PUSH additional tags
-          for tag in $(echo $EXTRA_IMAGE_TAGS| tr ";" "\n"); do
+          for tag in $(echo $EXTRA_IMAGE_TAGS | tr ";" "\n"); do
             docker tag $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$tag
             docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$tag
           done
-          
+      
+        
