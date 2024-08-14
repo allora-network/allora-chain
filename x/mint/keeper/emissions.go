@@ -67,6 +67,33 @@ func GetNumStakedTokens(ctx context.Context, k types.MintKeeper) (math.Int, erro
 	return cosmosValidatorsStaked.Add(reputersStaked), nil
 }
 
+// return the circulating supply of tokens
+func GetCirculatingSupply(
+	ctx context.Context,
+	k Keeper,
+	params types.Params,
+	blockHeight uint64,
+	blocksPerMonth uint64,
+) (math.Int, error) {
+	ecosystemBalance, err := k.GetEcosystemBalance(ctx, params.MintDenom)
+	if err != nil {
+		return math.Int{}, err
+	}
+	totalSupply := params.MaxSupply
+	lockedVestingTokens, _, _, _ := GetLockedVestingTokens(
+		blocksPerMonth,
+		math.NewIntFromUint64(blockHeight),
+		params,
+	)
+	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(ctx, params)
+	if err != nil {
+		return math.Int{}, err
+	}
+	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
+	circulatingSupply := totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
+	return circulatingSupply, nil
+}
+
 // The total amount of tokens emitted for a full month
 // \cal E_i = e_i*N_{staked,i}
 // where e_i is the emission per unit staked token

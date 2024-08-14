@@ -37,6 +37,11 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 	// multiply by the amount of blocks in a year,
 	// then use that relative to the current supply as "inflation"
 	// Inflation Rate = ((B-A)/A) x 100
+	moduleParams, err := q.k.GetParams(ctx)
+	if err != nil {
+		return nil, err
+	}
+	blockHeight := uint64(sdk.UnwrapSDKContext(ctx).BlockHeight())
 	blockEmission, err := q.k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
 		return nil, err
@@ -49,8 +54,11 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 		Mul(math.NewIntFromUint64(blocksPerMonth)).
 		Mul(math.NewInt(12)).
 		ToLegacyDec()
-	totalSupply := q.k.GetTotalCurrTokenSupply(ctx).Amount.ToLegacyDec()
-	inflation := EmissionPerYearAtCurrentBlockEmissionRate.Quo(totalSupply).MulInt64(100)
+	circulatingSupply, err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeight, blocksPerMonth)
+	if err != nil {
+		return nil, err
+	}
+	inflation := EmissionPerYearAtCurrentBlockEmissionRate.QuoInt(circulatingSupply).MulInt64(100)
 	ret := types.QueryInflationResponse{
 		Inflation: inflation,
 	}
