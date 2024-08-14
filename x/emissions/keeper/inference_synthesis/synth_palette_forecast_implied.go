@@ -24,7 +24,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 	for _, forecaster := range p.Forecasters {
 		if p.ForecastByWorker[forecaster] != nil && len(p.ForecastByWorker[forecaster].ForecastElements) > 0 {
 			// Filter away all forecast elements that do not have an associated inference (match by worker)
-			// Will effectively set weight in formulas for forcast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
+			// Will effectively set weight in formulas for forecast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
 			// Map inferer -> forecast element => only one (latest in array) forecast element per inferer
 			forecastElementsByInferer := make(map[Worker]*emissionstypes.ForecastElement, 0)
 			sortedInferersInForecast := make([]Worker, 0)
@@ -39,26 +39,31 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 
 			weightSum := alloraMath.ZeroDec()                 // denominator in calculation of forecast-implied inferences
 			weightInferenceDotProduct := alloraMath.ZeroDec() // numerator in calculation of forecast-implied inferences
-			err := error(nil)
 
 			// Calculate the forecast-implied inferences I_ik
 			if p.AllInferersAreNew {
-				// If all inferers are new, take regular average of inferences
+				// If all inferers are new, calculate the median of the inferences
 				// This means that forecasters won't be able to influence the network inference when all inferers are new
-				// However this seeds losses for forecasters for future rounds
+				// However, this seeds losses for forecasters for future rounds
+
+				inferenceValues := make([]alloraMath.Dec, 0, len(sortedInferersInForecast))
 
 				for _, inferer := range sortedInferersInForecast {
 					if p.InferenceByWorker[inferer] != nil {
-						weightInferenceDotProduct, err = weightInferenceDotProduct.Add(p.InferenceByWorker[inferer].Value)
-						if err != nil {
-							return nil, errorsmod.Wrapf(err, "error adding dot product")
-						}
-						weightSum, err = weightSum.Add(alloraMath.OneDec())
-						if err != nil {
-							return nil, errorsmod.Wrapf(err, "error adding weight")
-						}
+						inferenceValues = append(inferenceValues, p.InferenceByWorker[inferer].Value)
 					}
 				}
+
+				medianValue, err := alloraMath.Median(inferenceValues)
+				if err != nil {
+					return nil, errorsmod.Wrapf(err, "error calculating median of inference values")
+				}
+
+				forecastImpliedInference := emissionstypes.Inference{
+					Inferer: forecaster,
+					Value:   medianValue,
+				}
+				I_i[forecaster] = &forecastImpliedInference
 			} else {
 				// If not all inferers are new, calculate forecast-implied inferences using the previous inferer regrets and previous network loss
 
@@ -113,18 +118,18 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 						}
 					}
 				}
-			}
 
-			if !weightSum.Equal(alloraMath.ZeroDec()) {
-				forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
-				if err != nil {
-					return nil, errorsmod.Wrapf(err, "error calculating forecast value")
+				if !weightSum.Equal(alloraMath.ZeroDec()) {
+					forecastValue, err := weightInferenceDotProduct.Quo(weightSum)
+					if err != nil {
+						return nil, errorsmod.Wrapf(err, "error calculating forecast value")
+					}
+					forecastImpliedInference := emissionstypes.Inference{
+						Inferer: forecaster,
+						Value:   forecastValue,
+					}
+					I_i[forecaster] = &forecastImpliedInference
 				}
-				forecastImpliedInference := emissionstypes.Inference{
-					Inferer: forecaster,
-					Value:   forecastValue,
-				}
-				I_i[forecaster] = &forecastImpliedInference
 			}
 		}
 	}
