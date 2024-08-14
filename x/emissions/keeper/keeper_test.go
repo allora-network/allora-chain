@@ -1294,7 +1294,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 	// Initially, there should be no loss bundle, so we expect a zero result
 	emptyLossBundle, err := keeper.GetLatestNetworkLossBundle(ctx, topicId)
 	s.Require().NoError(err, "Retrieving latest network loss bundle when none exist should not result in an error")
-	s.Require().Equal(&types.ValueBundle{}, emptyLossBundle, "Expected no network loss bundle initially")
+	s.Require().Nil(emptyLossBundle, "Expected no network loss bundle initially")
 
 	// Insert first network loss bundle
 	blockHeight1 := types.BlockHeight(100)
