@@ -63,11 +63,11 @@ func (qs queryServer) GetNetworkInferencesAtBlock(
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	networkInferences, _, _, _, err := synth.GetNetworkInferencesAtBlock(
+	networkInferences, _, _, _, _, _, err := synth.GetNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
-		req.BlockHeightLastInference,
+		&req.BlockHeightLastInference,
 	)
 	if err != nil {
 		return nil, err
@@ -91,10 +91,11 @@ func (qs queryServer) GetLatestNetworkInference(
 		return nil, err
 	}
 
-	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err := synth.GetLatestNetworkInference(
+	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err := synth.GetNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
+		nil,
 	)
 	if err != nil {
 		return nil, err
@@ -152,12 +153,12 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 		return nil, err
 	}
 
-	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err :=
-		synth.GetNetworkInferencesAtBlock(
+	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, _, _, err :=
+		synth.GetNetworkInferences(
 			sdk.UnwrapSDKContext(ctx),
 			qs.k,
 			req.TopicId,
-			lastWorkerCommit.Nonce.BlockHeight,
+			&lastWorkerCommit.Nonce.BlockHeight,
 		)
 	if err != nil {
 		return nil, err

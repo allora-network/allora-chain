@@ -141,12 +141,12 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	s.Require().NoError(err)
 
 	// Calculate
-	valueBundle, _, _, _, err :=
-		inferencesynthesis.GetNetworkInferencesAtBlock(
+	valueBundle, _, _, _, _, _, err :=
+		inferencesynthesis.GetNetworkInferences(
 			s.ctx,
 			s.emissionsKeeper,
 			topicId,
-			blockHeight,
+			&blockHeight,
 		)
 	require.NoError(err)
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
@@ -664,10 +664,11 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 
 	// Calculate
 	valueBundle, _, _, _, _, _, err :=
-		inferencesynthesis.GetLatestNetworkInference(
+		inferencesynthesis.GetNetworkInferences(
 			s.ctx,
 			s.emissionsKeeper,
 			topicId,
+			nil,
 		)
 	require.NoError(err)
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
