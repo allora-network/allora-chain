@@ -22,7 +22,8 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
 	I_i := make(map[Worker]*emissionstypes.Inference, len(p.Forecasters))
 	for _, forecaster := range p.Forecasters {
-		if p.ForecastByWorker[forecaster] != nil && len(p.ForecastByWorker[forecaster].ForecastElements) > 0 {
+		_, ok := p.ForecastByWorker[forecaster]
+		if ok && len(p.ForecastByWorker[forecaster].ForecastElements) > 0 {
 			// Filter away all forecast elements that do not have an associated inference (match by worker)
 			// Will effectively set weight in formulas for forecast-implied inference I_ik and network inference I_i to 0 for forecasts without inferences
 			// Map inferer -> forecast element => only one (latest in array) forecast element per inferer
@@ -48,8 +49,9 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 
 				inferenceValues := make([]alloraMath.Dec, 0, len(sortedInferersInForecast))
 				for _, inferer := range sortedInferersInForecast {
-					if p.InferenceByWorker[inferer] != nil {
-						inferenceValues = append(inferenceValues, p.InferenceByWorker[inferer].Value)
+					inference, ok := p.InferenceByWorker[inferer]
+					if ok {
+						inferenceValues = append(inferenceValues, inference.Value)
 					}
 				}
 
@@ -102,7 +104,8 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 				// Calculate the forecast-implied inferences I_ik
 				for _, j := range sortedInferersInForecast {
 					w_ijk := w_ik[j]
-					if p.InferenceByWorker[j] != nil && !(w_ijk.Equal(alloraMath.ZeroDec())) {
+					_, ok := p.InferenceByWorker[j]
+					if ok && !(w_ijk.Equal(alloraMath.ZeroDec())) {
 						thisDotProduct, err := w_ijk.Mul(p.InferenceByWorker[j].Value)
 						if err != nil {
 							return nil, errorsmod.Wrapf(err, "error calculating dot product")
