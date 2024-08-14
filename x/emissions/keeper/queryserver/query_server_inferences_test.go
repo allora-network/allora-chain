@@ -250,7 +250,6 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 	req := &types.QueryNetworkInferencesAtBlockRequest{
 		TopicId:                  topicId,
 		BlockHeightLastInference: blockHeight,
-		BlockHeightLastReward:    blockHeight,
 	}
 	response, err := queryServer.GetNetworkInferencesAtBlock(s.ctx, req)
 	require.NoError(err)

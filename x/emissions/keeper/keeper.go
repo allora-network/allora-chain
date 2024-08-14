@@ -996,6 +996,26 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 	return &lossBundle, nil
 }
 
+// Returns the latest network loss bundle for a given topic id.
+func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TopicId) (*types.ValueBundle, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
+	iter, err := k.networkLossBundles.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	if iter.Valid() {
+		keyValue, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		return &keyValue.Value, nil
+	}
+
+	return &types.ValueBundle{}, nil
+}
+
 /// STAKING
 
 // Adds stake to the system for a given topic and reputer

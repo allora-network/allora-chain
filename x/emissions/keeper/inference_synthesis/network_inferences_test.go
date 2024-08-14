@@ -147,7 +147,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			s.emissionsKeeper,
 			topicId,
 			blockHeight,
-			blockHeightPreviousLosses,
 		)
 	require.NoError(err)
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())

@@ -21,7 +21,6 @@ func GetNetworkInferencesAtBlock(
 	k keeper.Keeper,
 	topicId TopicId,
 	inferencesNonce BlockHeight,
-	previousLossNonce BlockHeight,
 ) (
 	*emissions.ValueBundle,
 	map[string]*emissions.Inference,
@@ -29,7 +28,7 @@ func GetNetworkInferencesAtBlock(
 	map[string]alloraMath.Dec,
 	error,
 ) {
-	Logger(ctx).Debug(fmt.Sprintf("Calculating network inferences for topic %v at inference nonce %v with previous loss nonce %v", topicId, inferencesNonce, previousLossNonce))
+	Logger(ctx).Debug(fmt.Sprintf("Calculating network inferences for topic %v at inference nonce %v", topicId, inferencesNonce))
 
 	networkInferences := &emissions.ValueBundle{
 		TopicId:          topicId,
@@ -70,9 +69,9 @@ func GetNetworkInferencesAtBlock(
 			return nil, nil, infererWeights, forecasterWeights, err
 		}
 
-		networkLosses, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, previousLossNonce)
+		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
 		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error getting network losses: %s", err.Error()))
+			Logger(ctx).Warn(fmt.Sprintf("Error getting latest network losses: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, nil
 		}
 
@@ -192,13 +191,11 @@ func GetLatestNetworkInference(
 			Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
 		}
-		lossBlockHeight = inferenceBlockHeight - topic.EpochLength
 		if lossBlockHeight < 0 {
 			Logger(ctx).Warn("Network inference is not available for the epoch yet")
 			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
 		}
-		networkLosses, err := k.GetNetworkLossBundleAtBlock(ctx, topicId, lossBlockHeight)
-
+		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
 		if err != nil {
 			Logger(ctx).Warn(fmt.Sprintf("Error getting network losses: %s", err.Error()))
 			return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil

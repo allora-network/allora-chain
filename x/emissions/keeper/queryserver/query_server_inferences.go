@@ -68,7 +68,6 @@ func (qs queryServer) GetNetworkInferencesAtBlock(
 		qs.k,
 		req.TopicId,
 		req.BlockHeightLastInference,
-		req.BlockHeightLastReward,
 	)
 	if err != nil {
 		return nil, err
@@ -159,7 +158,6 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 			qs.k,
 			req.TopicId,
 			lastWorkerCommit.Nonce.BlockHeight,
-			lastReputerCommit.Nonce.BlockHeight,
 		)
 	if err != nil {
 		return nil, err
