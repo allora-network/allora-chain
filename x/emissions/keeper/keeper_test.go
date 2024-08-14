@@ -1286,6 +1286,38 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 	require.Equal(uint64(0), result.TopicId, "Result should be nil for non-existent data")
 }
 
+func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := s.CreateOneTopic()
+
+	// Initially, there should be no loss bundle, so we expect a zero result
+	emptyLossBundle, err := keeper.GetLatestNetworkLossBundle(ctx, topicId)
+	s.Require().NoError(err, "Retrieving latest network loss bundle when none exist should not result in an error")
+	s.Require().Nil(emptyLossBundle, "Expected no network loss bundle initially")
+
+	// Insert first network loss bundle
+	blockHeight1 := types.BlockHeight(100)
+	lossBundle1 := types.ValueBundle{
+		CombinedValue: alloraMath.MustNewDecFromString("123"),
+	}
+	err = keeper.InsertNetworkLossBundleAtBlock(ctx, topicId, blockHeight1, lossBundle1)
+	s.Require().NoError(err, "Inserting first network loss bundle should not fail")
+
+	// Insert second network loss bundle
+	blockHeight2 := types.BlockHeight(200)
+	lossBundle2 := types.ValueBundle{
+		CombinedValue: alloraMath.MustNewDecFromString("456"),
+	}
+	err = keeper.InsertNetworkLossBundleAtBlock(ctx, topicId, blockHeight2, lossBundle2)
+	s.Require().NoError(err, "Inserting second network loss bundle should not fail")
+
+	// Retrieve the latest network loss bundle
+	latestLossBundle, err := keeper.GetLatestNetworkLossBundle(ctx, topicId)
+	s.Require().NoError(err, "Retrieving latest network loss bundle should not fail")
+	s.Require().Equal(&lossBundle2, latestLossBundle, "Latest network loss bundle should match the second inserted set")
+}
+
 // ########################################
 // #           Staking tests              #
 // ########################################
