@@ -35,7 +35,7 @@ func (q queryServer) Params(ctx context.Context, _ *types.QueryParamsRequest) (*
 func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationRequest) (*types.QueryInflationResponse, error) {
 	// as a crude approximation we take the last blockEmission
 	// multiply by the amount of blocks in a year,
-	// then use that relative to the current supply as "inflation"
+	// then use that relative to the current circulating supply as "inflation"
 	// Inflation Rate = ((B-A)/A) x 100
 	moduleParams, err := q.k.GetParams(ctx)
 	if err != nil {
@@ -54,7 +54,7 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 		Mul(math.NewIntFromUint64(blocksPerMonth)).
 		Mul(math.NewInt(12)).
 		ToLegacyDec()
-	circulatingSupply, err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeight, blocksPerMonth)
+	circulatingSupply, _, _, _, err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeight, blocksPerMonth)
 	if err != nil {
 		return nil, err
 	}
@@ -103,13 +103,19 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get number of staked tokens")
 	}
-	lockedVestingTokensTotal, lockedVestingTokensPreseed,
+	_, lockedVestingTokensPreseed,
 		lockedVestingTokensSeed, lockedVestingTokensTeam := GetLockedVestingTokens(
 		blocksPerMonth,
 		math.NewIntFromUint64(blockHeight),
 		moduleParams)
-	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
-	circulatingSupply := moduleParams.MaxSupply.Sub(lockedVestingTokensTotal).Sub(ecosystemLocked)
+	circulatingSupply,
+		totalSupply,
+		lockedVestingTokensTotal,
+		ecosystemLocked,
+		err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeight, blocksPerMonth)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get circulating supply")
+	}
 	targetRewardEmissionPerUnitStakedToken,
 		err := GetTargetRewardEmissionPerUnitStakedToken(
 		moduleParams.FEmission,
@@ -175,7 +181,7 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 		LockedVestingTokensTeam:                  lockedVestingTokensTeam,
 		EcosystemLocked:                          ecosystemLocked,
 		CirculatingSupply:                        circulatingSupply,
-		MaxSupply:                                moduleParams.MaxSupply,
+		MaxSupply:                                totalSupply,
 		TargetEmissionRatePerUnitStakedToken:     targetRewardEmissionPerUnitStakedToken,
 		ReputersPercent:                          reputersPercent,
 		ValidatorsPercent:                        vPercent,

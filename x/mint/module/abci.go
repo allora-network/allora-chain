@@ -28,14 +28,14 @@ func GetEmissionPerMonth(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	totalSupply := params.MaxSupply
-	lockedVestingTokens, _, _, _ := keeper.GetLockedVestingTokens(
-		blocksPerMonth,
-		math.NewIntFromUint64(blockHeight),
-		params,
-	)
-	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
-	circulatingSupply := totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
+	circulatingSupply,
+		totalSupply,
+		lockedVestingTokens,
+		ecosystemLocked,
+		err := keeper.GetCirculatingSupply(ctx, k, params, blockHeight, blocksPerMonth)
+	if err != nil {
+		return math.Int{}, math.LegacyDec{}, err
+	}
 	if circulatingSupply.IsNegative() {
 		ctx.Logger().Error(
 			"Negative circulating supply",

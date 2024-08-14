@@ -69,28 +69,34 @@ func GetNumStakedTokens(ctx context.Context, k types.MintKeeper) (math.Int, erro
 // return the circulating supply of tokens
 func GetCirculatingSupply(
 	ctx context.Context,
-	k Keeper,
+	k types.MintKeeper,
 	params types.Params,
 	blockHeight uint64,
 	blocksPerMonth uint64,
-) (math.Int, error) {
+) (
+	circulatingSupply,
+	totalSupply,
+	lockedVestingTokens,
+	ecosystemLocked math.Int,
+	err error,
+) {
 	ecosystemBalance, err := k.GetEcosystemBalance(ctx, params.MintDenom)
 	if err != nil {
-		return math.Int{}, err
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
 	}
-	totalSupply := params.MaxSupply
-	lockedVestingTokens, _, _, _ := GetLockedVestingTokens(
+	totalSupply = params.MaxSupply
+	lockedVestingTokens, _, _, _ = GetLockedVestingTokens(
 		blocksPerMonth,
 		math.NewIntFromUint64(blockHeight),
 		params,
 	)
 	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(ctx, params)
 	if err != nil {
-		return math.Int{}, err
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
 	}
-	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
-	circulatingSupply := totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
-	return circulatingSupply, nil
+	ecosystemLocked = ecosystemBalance.Add(ecosystemMintSupplyRemaining)
+	circulatingSupply = totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
+	return circulatingSupply, totalSupply, lockedVestingTokens, ecosystemLocked, nil
 }
 
 // The total amount of tokens emitted for a full month
