@@ -692,7 +692,7 @@ message QueryReputerNodeInfoResponse {
 message QueryNetworkInferencesAtBlockRequest {
   reserved 3;
   reserved "block_height_last_reward";
-  
+
   uint64 topic_id = 1;
   int64 block_height_last_inference = 2;
 }
