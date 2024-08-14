@@ -746,3 +746,56 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 		}
 	}
 }
+
+func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculation() {
+	require := s.Require()
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	blockHeight := int64(300)
+
+	inferer1 := "worker1"
+	inferer2 := "worker2"
+	inferer3 := "worker3"
+
+	inferences := emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{
+				TopicId: topicId,
+				Inferer: inferer1,
+				Value:   alloraMath.MustNewDecFromString("10.0"),
+			},
+			{
+				TopicId: topicId,
+				Inferer: inferer2,
+				Value:   alloraMath.MustNewDecFromString("30.0"),
+			},
+			{
+				TopicId: topicId,
+				Inferer: inferer3,
+				Value:   alloraMath.MustNewDecFromString("20.0"),
+			},
+		},
+	}
+
+	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+	err := keeper.InsertInferences(s.ctx, topicId, nonce, inferences)
+	require.NoError(err)
+
+	valueBundle, _, _, _, _, _, err := inferencesynthesis.GetNetworkInferences(s.ctx, keeper, topicId, &blockHeight)
+	require.NoError(err)
+
+	expectedMedian := alloraMath.MustNewDecFromString("20.0")
+	require.Equal(expectedMedian, valueBundle.CombinedValue, "The combined value should be the median of the inferences")
+
+	require.Len(valueBundle.InfererValues, len(inferences.Inferences))
+	for _, infererValue := range valueBundle.InfererValues {
+		found := false
+		for _, inference := range inferences.Inferences {
+			if inference.Inferer == infererValue.Worker {
+				found = true
+				require.Equal(inference.Value, infererValue.Value)
+			}
+		}
+		require.True(found, "Inference not found in the result")
+	}
+}
