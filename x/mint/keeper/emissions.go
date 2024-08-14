@@ -24,8 +24,7 @@ func GetLockedVestingTokens(
 	blocksInThreeYears := blocksInAYear.Mul(math.NewInt(3))
 	maxSupply := params.MaxSupply.ToLegacyDec()
 	percentInvestors := params.InvestorsPercentOfTotalSupply
-	//percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
-	percentPreseedInvestors := math.LegacyNewDec(0)
+	percentPreseedInvestors := params.InvestorsPreseedPercentOfTotalSupply
 	percentTeam := params.TeamPercentOfTotalSupply
 	fullInvestors := percentInvestors.Mul(maxSupply).TruncateInt()
 	fullPreseedInvestors := percentPreseedInvestors.Mul(maxSupply).TruncateInt()
