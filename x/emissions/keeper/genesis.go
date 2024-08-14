@@ -1642,7 +1642,10 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 
 func (k *Keeper) addCoreTeamToWhitelists(ctx context.Context, coreTeamAddresses []string) error {
 	for _, addr := range coreTeamAddresses {
-		k.AddWhitelistAdmin(ctx, addr)
+		err := k.AddWhitelistAdmin(ctx, addr)
+		if err != nil {
+			return errors.Wrap(err, "failed to add core team to whitelist")
+		}
 	}
 	return nil
 }

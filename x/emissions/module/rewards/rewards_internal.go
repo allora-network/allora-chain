@@ -329,18 +329,16 @@ func GetConsensusScore(
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
+	// If consensusNorm is zero, set it to epsilon to avoid division by zero
+	if consensusNorm.IsZero() {
+		consensusNorm = epsilon
+	}
 
 	var distanceSquared alloraMath.Dec
 	for i, rLoss := range reputerLosses {
 		// Attribute most distant value if loss is NaN
 		if rLoss.IsNaN() {
 			rLoss = mostDistantValues[i]
-		}
-		if rLoss.IsZero() {
-			rLoss = epsilon
-		}
-		if consensusLosses[i].IsZero() {
-			consensusLosses[i] = epsilon
 		}
 		// We have the log losses and the identity: log(Loss_im / Loss_i) = log(Loss_im) - log(Loss_i)
 		rLossLessConsensusLoss, err := rLoss.Sub(consensusLosses[i])
@@ -540,8 +538,8 @@ func GetAllReputersOutput(
 			return nil, nil, err
 		}
 		if listenedStakeFraction.Lt(minStakeFraction) {
-			for l := range coefficients {
-				coeffDiff, err := coefficients[l].Sub(oldCoefficients[l])
+			for l := range newCoefficients {
+				coeffDiff, err := newCoefficients[l].Sub(oldCoefficients[l])
 				if err != nil {
 					return nil, nil, err
 				}
