@@ -97,9 +97,7 @@ func GetNetworkInferences(
 
 		// Get latest network loss
 		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
-		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error getting network losses: %s", err.Error()))
-
+		if err != nil || networkLosses == nil {
 			// Fallback to using the median of the inferences
 			inferenceValues := make([]alloraMath.Dec, 0, len(inferences.Inferences))
 			for _, inference := range inferences.Inferences {

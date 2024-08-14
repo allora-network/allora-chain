@@ -1013,7 +1013,7 @@ func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TopicId
 		return &keyValue.Value, nil
 	}
 
-	return &types.ValueBundle{}, nil
+	return nil, nil
 }
 
 /// STAKING

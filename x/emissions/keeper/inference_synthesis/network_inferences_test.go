@@ -779,13 +779,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 
 	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
 	err := keeper.InsertInferences(s.ctx, topicId, nonce, inferences)
-	require.NoError(err)
+	s.Require().NoError(err)
 
 	valueBundle, _, _, _, _, _, err := inferencesynthesis.GetNetworkInferences(s.ctx, keeper, topicId, &blockHeight)
-	require.NoError(err)
+	s.Require().NoError(err)
 
 	expectedMedian := alloraMath.MustNewDecFromString("20.0")
-	require.Equal(expectedMedian, valueBundle.CombinedValue, "The combined value should be the median of the inferences")
+	s.Require().True(expectedMedian.Equal(valueBundle.CombinedValue), "The combined value should be the median of the inferences")
 
 	require.Len(valueBundle.InfererValues, len(inferences.Inferences))
 	for _, infererValue := range valueBundle.InfererValues {
@@ -793,9 +793,9 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 		for _, inference := range inferences.Inferences {
 			if inference.Inferer == infererValue.Worker {
 				found = true
-				require.Equal(inference.Value, infererValue.Value)
+				s.Require().True(inference.Value.Equal(infererValue.Value))
 			}
 		}
-		require.True(found, "Inference not found in the result")
+		s.Require().True(found, "Inference not found in the result")
 	}
 }
