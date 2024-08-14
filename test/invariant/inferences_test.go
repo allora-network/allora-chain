@@ -48,17 +48,17 @@ func doInferenceAndReputation(
 	if len(workers) == 0 {
 		iterFailLog(m.T, iteration, "len of workers in active topic should always be greater than 0 ", topicId)
 	}
-	iterLog(m.T, iteration, " starting worker bulk topic id ", topicId,
+	iterLog(m.T, iteration, " starting worker payload topic id ", topicId,
 		" workers ", workers, "worker nonce ",
 		workerNonce, " block height now ", blockHeightNow)
-	workerBulkErrored := createAndSendWorkerPayloads(m, data, topic, workers, workerNonce)
-	if workerBulkErrored {
-		iterFailLog(m.T, iteration, "worker bulk errored topic ", topicId)
+	workerPayloadFailed := createAndSendWorkerPayloads(m, data, topic, workers, workerNonce)
+	if workerPayloadFailed {
+		iterFailLog(m.T, iteration, "worker payload errored topic ", topicId)
 		return
 	}
 	iterLog(m.T, iteration, "produced worker inference for topic id", topicId)
 	reputerWaitBlocks := blockHeightNow + topic.GroundTruthLag + 1
-	iterLog(m.T, iteration, "waiting for ground truth block height reputer bulk upload block ", reputerWaitBlocks)
+	iterLog(m.T, iteration, "waiting for reputer ground truth block ", reputerWaitBlocks)
 	err = m.Client.WaitForBlockHeight(ctx, reputerWaitBlocks)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -67,11 +67,11 @@ func doInferenceAndReputation(
 		iterFailLog(m.T, iteration, "len of reputers in active topic should always be greater than 0 ", topicId)
 	}
 	iterLog(
-		m.T, iteration, " starting reputer bulk topic id ", topicId,
+		m.T, iteration, " starting reputer payload topic id ", topicId,
 		" workers ", workers, " reputers ", reputers, " worker nonce ", workerNonce,
 		" block height  now ", reputerWaitBlocks,
 	)
-	reputationFailed := createAndSendReputerBundles(m, data, topic, reputers, workers, workerNonce)
+	reputationFailed := createAndSendReputerPayloads(m, data, topic, reputers, workers, workerNonce)
 	if reputationFailed {
 		iterFailLog(m.T, iteration, "reputation flow failed topic id ", topicId)
 		return
@@ -103,7 +103,7 @@ func findActiveTopics(
 	return response.Topics
 }
 
-// Inserts bulk inference and forecast data for a worker
+// Inserts inference and forecast data for each worker
 func createAndSendWorkerPayloads(
 	m *testcommon.TestConfig,
 	data *SimulationData,
@@ -205,7 +205,7 @@ func sendWorkerPayload(
 }
 
 // reputers submit their assessment of the quality of workers' work compared to ground truth
-func createAndSendReputerBundles(
+func createAndSendReputerPayloads(
 	m *testcommon.TestConfig,
 	data *SimulationData,
 	topic *emissionstypes.Topic,

@@ -40,8 +40,8 @@ type StateTransition struct {
 // cancel the removal of stake (as a reputer),
 // cancel the removal of delegated stake (delegator),
 // collect delegator rewards,
-// produce an inference (insert a bulk worker payload),
-// produce reputation scores (insert a bulk reputer payload)
+// produce an inference (insert worker payloads),
+// produce reputation scores (insert reputer payloads)
 func allTransitions() ([]StateTransition, []StateTransition) {
 	// return additive state transitions first
 	// and subtractive state transitions second
