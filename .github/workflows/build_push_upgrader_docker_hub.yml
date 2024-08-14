@@ -1,13 +1,21 @@
-# This workflow will build and push a new container image to Amazon ECR,
-# and then will deploy a new task definition to Amazon ECS which will be run by Fargate when a release is created
-# This workflow will build and push a new container image to Docker Hub
-# when a release is created
 name: Build and Push docker image to Docker Hub
 
+# Trigger the workflow manually
 on:
-  push:
-    tags:
-      - '*upgrader'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag for the Docker image'
+        required: false
+        default: ''
+      allorad_current_version:
+        description: 'Current version of allorad'
+        required: true
+        default: 'v0.2.14'
+      allorad_upgrade_version:
+        description: 'Upgrade version of allorad'
+        required: true
+        default: 'v0.3.0'
 
 concurrency:
   group: ${{ github.ref }}
@@ -33,16 +41,15 @@ jobs:
         env:
           DOCKERHUB_USERNAME: alloranetwork
           DOCKERHUB_REPOSITORY: ${{ github.event.repository.name }}
-          ALLORAD_CURRENT_VERSION: "v0.2.14"    # You can update these values as needed
-          ALLORAD_UPGRADE_VERSION: "v0.3.0"     # You can update these values as needed
         run: |
-          #! Due to we trigger on push.tags GITHUB_REF - is the tag name
-          GIT_TAG="$(echo $GITHUB_REF| sed 's#refs/tags/##')"
+          # Set the tag from the input or default to the SHA of the commit
+          GIT_TAG="${{ github.event.inputs.tag || github.sha }}"
+          ALLORAD_CURRENT_VERSION="${{ github.event.inputs.allorad_current_version }}"
+          ALLORAD_UPGRADE_VERSION="${{ github.event.inputs.allorad_upgrade_version }}"
       
           IMAGE_TAG="${GITHUB_SHA:0:8}"
           EXTRA_IMAGE_TAGS=$GIT_TAG
-      
-          #! Add latest tag only if on named releases tag='v*'
+
           if [[ ${GIT_TAG} == v* ]]; then
             EXTRA_IMAGE_TAGS="${EXTRA_IMAGE_TAGS}"
           fi
@@ -60,5 +67,3 @@ jobs:
             docker tag $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$IMAGE_TAG $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$tag
             docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPOSITORY:$tag
           done
-      
-        

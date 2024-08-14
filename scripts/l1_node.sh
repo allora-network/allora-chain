@@ -21,7 +21,7 @@ fi
 
 BINARY=""
 if [ "$UPGRADE" == "true" ]; then
-    echo "You have set upgrade to true, please nake sure you are running the correct docker image (vx.x.x-upgrader)
+    echo "You have set upgrade to true, please make sure you are running the correct docker image (vx.x.x-upgrader)
     BINARY=/cosmovisor/genesis/bin/allorad
 else
     BINARY=allorad
