@@ -201,7 +201,11 @@ func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context)
 	if err != nil {
 		return math.LegacyDec{}, err
 	}
-	return stakedPercent.SdkLegacyDec(), nil
+	stakedPercentLegacyDec, err := stakedPercent.SdkLegacyDec()
+	if err != nil {
+		return math.LegacyDec{}, err
+	}
+	return stakedPercentLegacyDec, nil
 }
 
 // wrapper around emissions keeper call to get the number of blocks expected in a month
