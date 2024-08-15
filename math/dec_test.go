@@ -2,7 +2,7 @@
 // Their code is under the Apache2.0 License
 // https://github.com/regen-network/regen-ledger/blob/3d818cf6e01af92eed25de5c17728a79070f56a3/types/math/dec_test.go
 
-package math
+package math_test
 
 import (
 	"fmt"
@@ -11,6 +11,8 @@ import (
 	"strings"
 	"testing"
 
+	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/stretchr/testify/require"
 	"pgregory.net/rapid"
 )
@@ -67,27 +69,27 @@ func TestDec(t *testing.T) {
 	t.Run("TestNumDecimalPlaces", rapid.MakeCheck(testNumDecimalPlaces))
 
 	// Unit tests
-	zero := Dec{}
-	one := NewDecFromInt64(1)
-	two := NewDecFromInt64(2)
-	three := NewDecFromInt64(3)
-	four := NewDecFromInt64(4)
-	five := NewDecFromInt64(5)
-	minusOne := NewDecFromInt64(-1)
+	zero := alloraMath.Dec{}
+	one := alloraMath.NewDecFromInt64(1)
+	two := alloraMath.NewDecFromInt64(2)
+	three := alloraMath.NewDecFromInt64(3)
+	four := alloraMath.NewDecFromInt64(4)
+	five := alloraMath.NewDecFromInt64(5)
+	minusOne := alloraMath.NewDecFromInt64(-1)
 
-	onePointOneFive, err := NewDecFromString("1.15")
+	onePointOneFive, err := alloraMath.NewDecFromString("1.15")
 	require.NoError(t, err)
-	twoPointThreeFour, err := NewDecFromString("2.34")
+	twoPointThreeFour, err := alloraMath.NewDecFromString("2.34")
 	require.NoError(t, err)
-	threePointFourNine, err := NewDecFromString("3.49")
+	threePointFourNine, err := alloraMath.NewDecFromString("3.49")
 	require.NoError(t, err)
-	onePointFourNine, err := NewDecFromString("1.49")
+	onePointFourNine, err := alloraMath.NewDecFromString("1.49")
 	require.NoError(t, err)
-	minusFivePointZero, err := NewDecFromString("-5.0")
+	minusFivePointZero, err := alloraMath.NewDecFromString("-5.0")
 	require.NoError(t, err)
 
-	twoThousand := NewDecFinite(2, 3)
-	require.True(t, twoThousand.Equal(NewDecFromInt64(2000)))
+	twoThousand := alloraMath.NewDecFinite(2, 3)
+	require.True(t, twoThousand.Equal(alloraMath.NewDecFromInt64(2000)))
 
 	res, err := two.Add(zero)
 	require.NoError(t, err)
@@ -159,32 +161,32 @@ func TestDec(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, res.Equal(two))
 
-	ten := NewDecFromInt64(10)
-	oneHundred := NewDecFromInt64(100)
-	logTenOneHundred, err := Log10(oneHundred)
+	ten := alloraMath.NewDecFromInt64(10)
+	oneHundred := alloraMath.NewDecFromInt64(100)
+	logTenOneHundred, err := alloraMath.Log10(oneHundred)
 	require.NoError(t, err)
 	require.True(t, two.Equal(logTenOneHundred))
-	logTenTen, err := Log10(ten)
+	logTenTen, err := alloraMath.Log10(ten)
 	require.NoError(t, err)
 	require.True(t, one.Equal(logTenTen))
-	logTenOne, err := Log10(one)
+	logTenOne, err := alloraMath.Log10(one)
 	require.NoError(t, err)
 	require.True(t, zero.Equal(logTenOne))
 
-	logEOne, err := Ln(one)
+	logEOne, err := alloraMath.Ln(one)
 	require.NoError(t, err)
 	require.True(t, zero.Equal(logEOne))
 
-	eight := NewDecFromInt64(8)
-	twoCubed, err := Pow(two, three)
+	eight := alloraMath.NewDecFromInt64(8)
+	twoCubed, err := alloraMath.Pow(two, three)
 	require.NoError(t, err)
 	require.True(t, eight.Equal(twoCubed))
 
-	oneThousand := NewDecFromInt64(1000)
-	tenSquared, err := Exp10(two)
+	oneThousand := alloraMath.NewDecFromInt64(1000)
+	tenSquared, err := alloraMath.Exp10(two)
 	require.NoError(t, err)
 	require.True(t, oneHundred.Equal(tenSquared))
-	tenCubed, err := Exp10(three)
+	tenCubed, err := alloraMath.Exp10(three)
 	require.NoError(t, err)
 	require.True(t, oneThousand.Equal(tenCubed))
 
@@ -192,7 +194,7 @@ func TestDec(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, two.Equal(cielOnePointFourNine))
 
-	onePointFiveOne, err := NewDecFromString("1.51")
+	onePointFiveOne, err := alloraMath.NewDecFromString("1.51")
 	require.NoError(t, err)
 	floorOnePointFiveOne, err := onePointFiveOne.Floor()
 	require.NoError(t, err)
@@ -200,9 +202,9 @@ func TestDec(t *testing.T) {
 }
 
 // generate a dec value on the fly
-var genDec *rapid.Generator[Dec] = rapid.Custom(func(t *rapid.T) Dec {
+var genDec *rapid.Generator[alloraMath.Dec] = rapid.Custom(func(t *rapid.T) alloraMath.Dec {
 	f := rapid.Float64().Draw(t, "f")
-	dec, err := NewDecFromString(fmt.Sprintf("%g", f))
+	dec, err := alloraMath.NewDecFromString(fmt.Sprintf("%g", f))
 	require.NoError(t, err)
 	return dec
 })
@@ -210,30 +212,30 @@ var genDec *rapid.Generator[Dec] = rapid.Custom(func(t *rapid.T) Dec {
 // A Dec value and the float used to create it
 type floatAndDec struct {
 	float float64
-	dec   Dec
+	dec   alloraMath.Dec
 }
 
 // Generate a Dec value along with the float used to create it
 var genFloatAndDec *rapid.Generator[floatAndDec] = rapid.Custom(func(t *rapid.T) floatAndDec {
 	f := rapid.Float64().Draw(t, "f")
-	dec, err := NewDecFromString(fmt.Sprintf("%g", f))
+	dec, err := alloraMath.NewDecFromString(fmt.Sprintf("%g", f))
 	require.NoError(t, err)
 	return floatAndDec{f, dec}
 })
 
-// Property: n == NewDecFromInt64(n).Int64()
+// Property: n == alloraMath.NewDecFromInt64(n).Int64()
 func testDecInt64(t *rapid.T) {
 	nIn := rapid.Int64().Draw(t, "n")
-	nOut, err := NewDecFromInt64(nIn).Int64()
+	nOut, err := alloraMath.NewDecFromInt64(nIn).Int64()
 
 	require.NoError(t, err)
 	require.Equal(t, nIn, nOut)
 }
 
-// Property: invalid_number_string(s) => NewDecFromString(s) == err
+// Property: invalid_number_string(s) => alloraMath.NewDecFromString(s) == err
 func testInvalidNewDecFromString(t *rapid.T) {
 	s := rapid.StringMatching("[[:alpha:]]+").Draw(t, "s")
-	_, err := NewDecFromString(s)
+	_, err := alloraMath.NewDecFromString(s)
 	require.Error(t, err)
 }
 
@@ -246,7 +248,7 @@ func testInvalidNewNonNegativeDecFromString(t *rapid.T) {
 			func(s string) bool { return !strings.HasPrefix(s, "-0") && !strings.HasPrefix(s, "-.0") },
 		),
 	).Draw(t, "s")
-	_, err := NewNonNegativeDecFromString(s)
+	_, err := alloraMath.NewNonNegativeDecFromString(s)
 	require.Error(t, err)
 }
 
@@ -261,7 +263,7 @@ func testInvalidNewNonNegativeFixedDecFromString(t *rapid.T) {
 		),
 		rapid.StringMatching(fmt.Sprintf(`\d*\.\d{%d,}`, n+1)),
 	).Draw(t, "s")
-	_, err := NewNonNegativeFixedDecFromString(s, n)
+	_, err := alloraMath.NewNonNegativeFixedDecFromString(s, n)
 	require.Error(t, err)
 }
 
@@ -272,7 +274,7 @@ func testInvalidNewPositiveDecFromString(t *rapid.T) {
 		rapid.StringMatching("[[:alpha:]]+"),
 		rapid.StringMatching(`^-\d*\.?\d+|0$`),
 	).Draw(t, "s")
-	_, err := NewPositiveDecFromString(s)
+	_, err := alloraMath.NewPositiveDecFromString(s)
 	require.Error(t, err)
 }
 
@@ -285,14 +287,14 @@ func testInvalidNewPositiveFixedDecFromString(t *rapid.T) {
 		rapid.StringMatching(`^-\d*\.?\d+|0$`),
 		rapid.StringMatching(fmt.Sprintf(`\d*\.\d{%d,}`, n+1)),
 	).Draw(t, "s")
-	_, err := NewPositiveFixedDecFromString(s, n)
+	_, err := alloraMath.NewPositiveFixedDecFromString(s, n)
 	require.Error(t, err)
 }
 
 // Property: 0 + a == a
 func testAddLeftIdentity(t *rapid.T) {
 	a := genDec.Draw(t, "a")
-	zero := NewDecFromInt64(0)
+	zero := alloraMath.NewDecFromInt64(0)
 
 	b, err := zero.Add(a)
 	require.NoError(t, err)
@@ -303,7 +305,7 @@ func testAddLeftIdentity(t *rapid.T) {
 // Property: a + 0 == a
 func testAddRightIdentity(t *rapid.T) {
 	a := genDec.Draw(t, "a")
-	zero := NewDecFromInt64(0)
+	zero := alloraMath.NewDecFromInt64(0)
 
 	b, err := a.Add(zero)
 	require.NoError(t, err)
@@ -351,7 +353,7 @@ func testAddAssociative(t *rapid.T) {
 // Property: a - 0 == a
 func testSubRightIdentity(t *rapid.T) {
 	a := genDec.Draw(t, "a")
-	zero := NewDecFromInt64(0)
+	zero := alloraMath.NewDecFromInt64(0)
 
 	b, err := a.Sub(zero)
 	require.NoError(t, err)
@@ -362,7 +364,7 @@ func testSubRightIdentity(t *rapid.T) {
 // Property: a - a == 0
 func testSubZero(t *rapid.T) {
 	a := genDec.Draw(t, "a")
-	zero := NewDecFromInt64(0)
+	zero := alloraMath.NewDecFromInt64(0)
 
 	b, err := a.Sub(a)
 	require.NoError(t, err)
@@ -373,7 +375,7 @@ func testSubZero(t *rapid.T) {
 // Property: 1 * a == a
 func testMulLeftIdentity(t *rapid.T) {
 	a := genDec.Draw(t, "a")
-	one := NewDecFromInt64(1)
+	one := alloraMath.NewDecFromInt64(1)
 
 	b, err := one.Mul(a)
 	require.NoError(t, err)
@@ -384,7 +386,7 @@ func testMulLeftIdentity(t *rapid.T) {
 // Property: a * 1 == a
 func testMulRightIdentity(t *rapid.T) {
 	a := genDec.Draw(t, "a")
-	one := NewDecFromInt64(1)
+	one := alloraMath.NewDecFromInt64(1)
 
 	b, err := a.Mul(one)
 	require.NoError(t, err)
@@ -460,7 +462,7 @@ func testAddSub(t *rapid.T) {
 // Property: a * 0 = 0
 func testMulZero(t *rapid.T) {
 	a := genDec.Draw(t, "a")
-	zero := Dec{}
+	zero := alloraMath.Dec{}
 
 	c, err := a.Mul(zero)
 	require.NoError(t, err)
@@ -469,9 +471,9 @@ func testMulZero(t *rapid.T) {
 
 // Property: a/a = 1
 func testSelfQuo(t *rapid.T) {
-	decNotZero := func(d Dec) bool { return !d.IsZero() }
+	decNotZero := func(d alloraMath.Dec) bool { return !d.IsZero() }
 	a := genDec.Filter(decNotZero).Draw(t, "a")
-	one := NewDecFromInt64(1)
+	one := alloraMath.NewDecFromInt64(1)
 
 	b, err := a.Quo(a)
 	require.NoError(t, err)
@@ -481,7 +483,7 @@ func testSelfQuo(t *rapid.T) {
 // Property: a/1 = a
 func testQuoByOne(t *rapid.T) {
 	a := genDec.Draw(t, "a")
-	one := NewDecFromInt64(1)
+	one := alloraMath.NewDecFromInt64(1)
 
 	b, err := a.Quo(one)
 	require.NoError(t, err)
@@ -490,7 +492,7 @@ func testQuoByOne(t *rapid.T) {
 
 // Property: (a * b) / a == b
 func testMulQuoA(t *rapid.T) {
-	decNotZero := func(d Dec) bool { return !d.IsZero() }
+	decNotZero := func(d alloraMath.Dec) bool { return !d.IsZero() }
 	a := genDec.Filter(decNotZero).Draw(t, "a")
 	b := genDec.Draw(t, "b")
 
@@ -505,7 +507,7 @@ func testMulQuoA(t *rapid.T) {
 
 // Property: (a * b) / b == a
 func testMulQuoB(t *rapid.T) {
-	decNotZero := func(d Dec) bool { return !d.IsZero() }
+	decNotZero := func(d alloraMath.Dec) bool { return !d.IsZero() }
 	a := genDec.Draw(t, "a")
 	b := genDec.Filter(decNotZero).Draw(t, "b")
 
@@ -522,10 +524,10 @@ func testMulQuoB(t *rapid.T) {
 // and a with no more than b decimal places (b <= 32).
 func testMulQuoExact(t *rapid.T) {
 	b := rapid.Uint32Range(0, 32).Draw(t, "b")
-	decPrec := func(d Dec) bool { return d.NumDecimalPlaces() <= b }
+	decPrec := func(d alloraMath.Dec) bool { return d.NumDecimalPlaces() <= b }
 	a := genDec.Filter(decPrec).Draw(t, "a")
 
-	c := NewDecFinite(1, int32(b))
+	c := alloraMath.NewDecFinite(1, int32(b))
 
 	d, err := a.MulExact(c)
 	require.NoError(t, err)
@@ -540,10 +542,10 @@ func testMulQuoExact(t *rapid.T) {
 // a as an integer.
 func testQuoMulExact(t *rapid.T) {
 	a := rapid.Uint64().Draw(t, "a")
-	aDec, err := NewDecFromString(fmt.Sprintf("%d", a))
+	aDec, err := alloraMath.NewDecFromString(fmt.Sprintf("%d", a))
 	require.NoError(t, err)
 	b := rapid.Uint32Range(0, 32).Draw(t, "b")
-	c := NewDecFinite(1, int32(b))
+	c := alloraMath.NewDecFinite(1, int32(b))
 
 	require.NoError(t, err)
 
@@ -645,19 +647,19 @@ func floatDecimalPlaces(t *rapid.T, f float64) uint32 {
 }
 
 func TestIsFinite(t *testing.T) {
-	a, err := NewDecFromString("1.5")
+	a, err := alloraMath.NewDecFromString("1.5")
 	require.NoError(t, err)
 
 	require.True(t, a.IsFinite())
 
-	b, err := NewDecFromString("NaN")
+	b, err := alloraMath.NewDecFromString("NaN")
 	require.NoError(t, err)
 
 	require.False(t, b.IsFinite())
 }
 
 func TestReduce(t *testing.T) {
-	a, err := NewDecFromString("1.30000")
+	a, err := alloraMath.NewDecFromString("1.30000")
 	require.NoError(t, err)
 	b, n := a.Reduce()
 	require.Equal(t, 4, n)
@@ -666,9 +668,9 @@ func TestReduce(t *testing.T) {
 }
 
 func TestMulExactGood(t *testing.T) {
-	a, err := NewDecFromString("1.000001")
+	a, err := alloraMath.NewDecFromString("1.000001")
 	require.NoError(t, err)
-	b := NewDecFinite(1, 6)
+	b := alloraMath.NewDecFinite(1, 6)
 	c, err := a.MulExact(b)
 	require.NoError(t, err)
 	d, err := c.Int64()
@@ -677,17 +679,17 @@ func TestMulExactGood(t *testing.T) {
 }
 
 func TestMulExactBad(t *testing.T) {
-	a, err := NewDecFromString("1.000000000000000000000000000000000000123456789")
+	a, err := alloraMath.NewDecFromString("1.000000000000000000000000000000000000123456789")
 	require.NoError(t, err)
-	b := NewDecFinite(1, 10)
+	b := alloraMath.NewDecFinite(1, 10)
 	_, err = a.MulExact(b)
-	require.ErrorIs(t, err, ErrUnexpectedRounding)
+	require.ErrorIs(t, err, alloraMath.ErrUnexpectedRounding)
 }
 
 func TestQuoExactGood(t *testing.T) {
-	a, err := NewDecFromString("1000001")
+	a, err := alloraMath.NewDecFromString("1000001")
 	require.NoError(t, err)
-	b := NewDecFinite(1, 6)
+	b := alloraMath.NewDecFinite(1, 6)
 	c, err := a.QuoExact(b)
 	require.NoError(t, err)
 	t.Logf("%s\n", c.String())
@@ -695,11 +697,11 @@ func TestQuoExactGood(t *testing.T) {
 }
 
 func TestQuoExactBad(t *testing.T) {
-	a, err := NewDecFromString("1000000000000000000000000000000000000123456789")
+	a, err := alloraMath.NewDecFromString("1000000000000000000000000000000000000123456789")
 	require.NoError(t, err)
-	b := NewDecFinite(1, 10)
+	b := alloraMath.NewDecFinite(1, 10)
 	_, err = a.QuoExact(b)
-	require.ErrorIs(t, err, ErrUnexpectedRounding)
+	require.ErrorIs(t, err, alloraMath.ErrUnexpectedRounding)
 }
 
 func TestToBigInt(t *testing.T) {
@@ -712,10 +714,10 @@ func TestToBigInt(t *testing.T) {
 		{i1, i1, nil},
 		{"1000000000000000000000000000000000000123456789.00000000", i1, nil},
 		{"123.456e6", "123456000", nil},
-		{"12345.6", "", ErrNonIntegeral},
+		{"12345.6", "", alloraMath.ErrNonIntegeral},
 	}
 	for idx, tc := range tcs {
-		a, err := NewDecFromString(tc.intStr)
+		a, err := alloraMath.NewDecFromString(tc.intStr)
 		require.NoError(t, err)
 		b, err := a.BigInt()
 		if tc.isError == nil {
@@ -745,12 +747,22 @@ func TestToSdkInt(t *testing.T) {
 		{"-0.9", "0"},
 	}
 	for idx, tc := range tcs {
-		a, err := NewDecFromString(tc.intStr)
+		a, err := alloraMath.NewDecFromString(tc.intStr)
 		require.NoError(t, err)
 		b, err := a.SdkIntTrim()
 		require.NoError(t, err)
 		require.Equal(t, tc.out, b.String(), "test_%d", idx)
 	}
+}
+
+func TestToSdkIntFail(t *testing.T) {
+	// 2 **256 - 1 (~1.15e77) should be the largest
+	// representable integer in the cosmos SDK Int
+	a, err := alloraMath.NewDecFromString("1.2e77")
+	require.NoError(t, err)
+	b, err := a.SdkIntTrim()
+	require.Error(t, err)
+	require.Equal(t, cosmosMath.Int{}, b)
 }
 
 func TestToSdkLegacy(t *testing.T) {
@@ -771,7 +783,7 @@ func TestToSdkLegacy(t *testing.T) {
 		{"-0.9", "-0.900000000000000000"},
 	}
 	for idx, tc := range tcs {
-		a, err := NewDecFromString(tc.intStr)
+		a, err := alloraMath.NewDecFromString(tc.intStr)
 		require.NoError(t, err)
 		b, err := a.SdkLegacyDec()
 		require.NoError(t, err)
@@ -779,30 +791,30 @@ func TestToSdkLegacy(t *testing.T) {
 	}
 }
 func TestInfDecString(t *testing.T) {
-	_, err := NewDecFromString("iNf")
+	_, err := alloraMath.NewDecFromString("iNf")
 	require.Error(t, err)
-	require.ErrorIs(t, err, ErrInfiniteString)
+	require.ErrorIs(t, err, alloraMath.ErrInfiniteString)
 }
 
 func TestInDelta(t *testing.T) {
 	// Test cases
 	testCases := []struct {
-		expected       Dec
-		result         Dec
-		epsilon        Dec
+		expected       alloraMath.Dec
+		result         alloraMath.Dec
+		epsilon        alloraMath.Dec
 		expectedResult bool
 	}{
-		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(1), true},   // expected == result, within epsilon
-		{NewDecFromInt64(10), NewDecFromInt64(9), NewDecFromInt64(1), true},    // expected != result, but within epsilon
-		{NewDecFromInt64(10), NewDecFromInt64(8), NewDecFromInt64(1), false},   // expected != result, outside epsilon
-		{NewDecFromInt64(10), NewDecFromInt64(10), NewDecFromInt64(0), true},   // expected == result, epsilon is zero
-		{NewDecFromInt64(10), NewDecFromInt64(-10), NewDecFromInt64(1), false}, // expected != result, outside epsilon
-		{NewDecFromInt64(-10), NewDecFromInt64(-10), NewDecFromInt64(0), true}, // expected == result, epsilon is zero
+		{alloraMath.NewDecFromInt64(10), alloraMath.NewDecFromInt64(10), alloraMath.NewDecFromInt64(1), true},   // expected == result, within epsilon
+		{alloraMath.NewDecFromInt64(10), alloraMath.NewDecFromInt64(9), alloraMath.NewDecFromInt64(1), true},    // expected != result, but within epsilon
+		{alloraMath.NewDecFromInt64(10), alloraMath.NewDecFromInt64(8), alloraMath.NewDecFromInt64(1), false},   // expected != result, outside epsilon
+		{alloraMath.NewDecFromInt64(10), alloraMath.NewDecFromInt64(10), alloraMath.NewDecFromInt64(0), true},   // expected == result, epsilon is zero
+		{alloraMath.NewDecFromInt64(10), alloraMath.NewDecFromInt64(-10), alloraMath.NewDecFromInt64(1), false}, // expected != result, outside epsilon
+		{alloraMath.NewDecFromInt64(-10), alloraMath.NewDecFromInt64(-10), alloraMath.NewDecFromInt64(0), true}, // expected == result, epsilon is zero
 	}
 
 	// Run test cases
 	for _, tc := range testCases {
-		result := InDelta(tc.expected, tc.result, tc.epsilon)
+		result := alloraMath.InDelta(tc.expected, tc.result, tc.epsilon)
 		require.Equal(t, tc.expectedResult, result)
 	}
 }
@@ -811,58 +823,58 @@ func TestSlicesInDelta(t *testing.T) {
 	// Test cases
 	testCases := []struct {
 		name     string
-		a        []Dec
-		b        []Dec
-		epsilon  Dec
+		a        []alloraMath.Dec
+		b        []alloraMath.Dec
+		epsilon  alloraMath.Dec
 		expected bool
 	}{
 		{
 			name:     "Equal slices within epsilon",
-			a:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
-			b:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
-			epsilon:  NewDecFromInt64(0),
+			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			epsilon:  alloraMath.NewDecFromInt64(0),
 			expected: true,
 		},
 		{
 			name:     "Equal slices within epsilon",
-			a:        []Dec{NewDecFromInt64(0), NewDecFromInt64(-1), NewDecFromInt64(4)},
-			b:        []Dec{NewDecFromInt64(-1), NewDecFromInt64(-2), NewDecFromInt64(3)},
-			epsilon:  NewDecFromInt64(1),
+			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(0), alloraMath.NewDecFromInt64(-1), alloraMath.NewDecFromInt64(4)},
+			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(-1), alloraMath.NewDecFromInt64(-2), alloraMath.NewDecFromInt64(3)},
+			epsilon:  alloraMath.NewDecFromInt64(1),
 			expected: true,
 		},
 		{
 			name:     "Equal slices NOT within epsilon",
-			a:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(5)},
-			b:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
-			epsilon:  NewDecFromInt64(1),
+			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(5)},
+			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			epsilon:  alloraMath.NewDecFromInt64(1),
 			expected: false,
 		},
 		{
 			name:     "Different slices within epsilon",
-			a:        []Dec{NewDecFromInt64(-1), NewDecFromInt64(2), NewDecFromInt64(3)},
-			b:        []Dec{NewDecFromInt64(2), NewDecFromInt64(5), NewDecFromInt64(6)},
-			epsilon:  NewDecFromInt64(3),
+			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(-1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(5), alloraMath.NewDecFromInt64(6)},
+			epsilon:  alloraMath.NewDecFromInt64(3),
 			expected: true,
 		},
 		{
 			name:     "Different slices outside epsilon",
-			a:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
-			b:        []Dec{NewDecFromInt64(4), NewDecFromInt64(5), NewDecFromInt64(6)},
-			epsilon:  NewDecFromInt64(1),
+			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(4), alloraMath.NewDecFromInt64(5), alloraMath.NewDecFromInt64(6)},
+			epsilon:  alloraMath.NewDecFromInt64(1),
 			expected: false,
 		},
 		{
 			name:     "Different slice lengths",
-			a:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2), NewDecFromInt64(3)},
-			b:        []Dec{NewDecFromInt64(1), NewDecFromInt64(2)},
-			epsilon:  NewDecFromInt64(0),
+			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2)},
+			epsilon:  alloraMath.NewDecFromInt64(0),
 			expected: false,
 		},
 		{
 			name:     "Empty slice",
-			a:        []Dec{},
-			b:        []Dec{},
-			epsilon:  NewDecFromInt64(0),
+			a:        []alloraMath.Dec{},
+			b:        []alloraMath.Dec{},
+			epsilon:  alloraMath.NewDecFromInt64(0),
 			expected: true,
 		},
 	}
@@ -870,7 +882,7 @@ func TestSlicesInDelta(t *testing.T) {
 	// Run test cases
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := SlicesInDelta(tc.a, tc.b, tc.epsilon)
+			result := alloraMath.SlicesInDelta(tc.a, tc.b, tc.epsilon)
 			require.Equal(t, tc.expected, result)
 		})
 	}
@@ -878,109 +890,46 @@ func TestSlicesInDelta(t *testing.T) {
 
 func TestSumDecSlice(t *testing.T) {
 	// Test case 1: Empty slice
-	x := []Dec{}
-	expectedSum := ZeroDec()
+	x := []alloraMath.Dec{}
+	expectedSum := alloraMath.ZeroDec()
 
-	sum, err := SumDecSlice(x)
+	sum, err := alloraMath.SumDecSlice(x)
 	require.NoError(t, err)
 	require.True(t, sum.Equal(expectedSum), "Expected sum to be zero")
 
 	// Test case 2: Slice with positive values
-	x = []Dec{
-		NewDecFromInt64(1),
-		NewDecFromInt64(2),
-		NewDecFromInt64(3),
+	x = []alloraMath.Dec{
+		alloraMath.NewDecFromInt64(1),
+		alloraMath.NewDecFromInt64(2),
+		alloraMath.NewDecFromInt64(3),
 	}
-	expectedSum = NewDecFromInt64(6)
+	expectedSum = alloraMath.NewDecFromInt64(6)
 
-	sum, err = SumDecSlice(x)
+	sum, err = alloraMath.SumDecSlice(x)
 	require.NoError(t, err)
 	require.True(t, sum.Equal(expectedSum), "Expected sum to be 6")
 
 	// Test case 3: Slice with negative values
-	x = []Dec{
-		NewDecFromInt64(-1),
-		NewDecFromInt64(-2),
-		NewDecFromInt64(-3),
+	x = []alloraMath.Dec{
+		alloraMath.NewDecFromInt64(-1),
+		alloraMath.NewDecFromInt64(-2),
+		alloraMath.NewDecFromInt64(-3),
 	}
-	expectedSum = NewDecFromInt64(-6)
+	expectedSum = alloraMath.NewDecFromInt64(-6)
 
-	sum, err = SumDecSlice(x)
+	sum, err = alloraMath.SumDecSlice(x)
 	require.NoError(t, err)
 	require.True(t, sum.Equal(expectedSum), "Expected sum to be -6")
 
 	// Test case 4: Slice with mixed positive and negative values
-	x = []Dec{
-		NewDecFromInt64(1),
-		NewDecFromInt64(-2),
-		NewDecFromInt64(3),
+	x = []alloraMath.Dec{
+		alloraMath.NewDecFromInt64(1),
+		alloraMath.NewDecFromInt64(-2),
+		alloraMath.NewDecFromInt64(3),
 	}
-	expectedSum = NewDecFromInt64(2)
+	expectedSum = alloraMath.NewDecFromInt64(2)
 
-	sum, err = SumDecSlice(x)
+	sum, err = alloraMath.SumDecSlice(x)
 	require.NoError(t, err)
 	require.True(t, sum.Equal(expectedSum), "Expected sum to be 2")
-}
-
-func TestDecReduce(t *testing.T) {
-	// Test case 1
-	x := NewDecFromInt64(12345678900)
-	expectedY := NewDecFromInt64(123456789)
-	expectedN := 2
-
-	y, n := x.Reduce()
-
-	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
-	require.Equal(t, expectedN, n)
-
-	// Test case 2
-	x = NewDecFromInt64(0)
-	expectedY = NewDecFromInt64(0)
-	expectedN = 0
-
-	y, n = x.Reduce()
-
-	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
-	require.Equal(t, expectedN, n)
-
-	// Test case 3
-	x = NewDecFromInt64(10000.000)
-	expectedY = NewDecFromInt64(1)
-	expectedN = 4
-
-	y, n = x.Reduce()
-
-	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
-	require.Equal(t, expectedN, n)
-
-	// Test case 4
-	x = NewDecFromInt64(0000.000)
-	expectedY = NewDecFromInt64(0)
-	expectedN = 0
-
-	y, n = x.Reduce()
-
-	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
-	require.Equal(t, expectedN, n)
-
-	// Test case 5
-	x = NewDecFromInt64(-1234560000.000)
-	expectedY = NewDecFromInt64(123456)
-	expectedN = 4
-
-	y, n = x.Reduce()
-
-	require.Equal(t, expectedY.dec.Coeff, y.dec.Coeff)
-	require.True(t, y.dec.Negative)
-	require.Equal(t, expectedN, n)
-
-	// Test case 6
-	x = NewDecFromInt64(-123456000000.000)
-	expectedN = 6
-	strX := "-123456000000"
-
-	y, n = x.Reduce()
-
-	require.Equal(t, strX, y.String())
-	require.Equal(t, expectedN, n)
 }

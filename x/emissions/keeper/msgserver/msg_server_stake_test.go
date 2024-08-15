@@ -1642,6 +1642,7 @@ func (s *MsgServerTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	s.Require().NoError(err)
 
 	normalizedDelegatorRewardInt, err := normalizedDelegatorReward.SdkIntTrim()
+	s.Require().NoError(err)
 	s.Require().Equal(normalizedDelegatorRewardInt, reputerReward, "Delegator and reputer rewards must be equal")
 }
 
@@ -1711,6 +1712,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	block++
 
 	reputerReward1, err := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)[0].Reward.SdkIntTrim()
+	require.NoError(err)
 
 	_, err = s.msgServer.RewardDelegateStake(ctx, delegateRewardsMsg)
 	require.NoError(err)
