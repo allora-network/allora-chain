@@ -747,7 +747,8 @@ func TestToSdkInt(t *testing.T) {
 	for idx, tc := range tcs {
 		a, err := NewDecFromString(tc.intStr)
 		require.NoError(t, err)
-		b := a.SdkIntTrim()
+		b, err := a.SdkIntTrim()
+		require.NoError(t, err)
 		require.Equal(t, tc.out, b.String(), "test_%d", idx)
 	}
 }
@@ -772,7 +773,8 @@ func TestToSdkLegacy(t *testing.T) {
 	for idx, tc := range tcs {
 		a, err := NewDecFromString(tc.intStr)
 		require.NoError(t, err)
-		b := a.SdkLegacyDec()
+		b, err := a.SdkLegacyDec()
+		require.NoError(t, err)
 		require.Equal(t, tc.out, b.String(), "test_%d", idx)
 	}
 }

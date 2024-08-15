@@ -138,10 +138,14 @@ func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
 	expectedResult := epoch61("ehat_target_i")
 
 	simulatorFEmission := cosmosMath.LegacyMustNewDecFromStr("0.025")
-	networkTokensTotal := epoch("network_tokens_total").SdkIntTrim()
-	ecosystemTokensTotal := epoch("ecosystem_tokens_total").SdkIntTrim()
-	networkTokensCirculating := epoch("network_tokens_circulating").SdkIntTrim()
-	networkTokensStaked := epoch("network_tokens_staked").SdkIntTrim()
+	networkTokensTotal, err := epoch("network_tokens_total").SdkIntTrim()
+	s.Require().NoError(err)
+	ecosystemTokensTotal, err := epoch("ecosystem_tokens_total").SdkIntTrim()
+	s.Require().NoError(err)
+	networkTokensCirculating, err := epoch("network_tokens_circulating").SdkIntTrim()
+	s.Require().NoError(err)
+	networkTokensStaked, err := epoch("network_tokens_staked").SdkIntTrim()
+	s.Require().NoError(err)
 	fmt.Println("f_emission", simulatorFEmission)
 	fmt.Println("ecosystem_tokens_total", ecosystemTokensTotal)
 	fmt.Println("network_tokens_circulating", networkTokensCirculating)
@@ -192,8 +196,10 @@ func (s *IntegrationTestSuite) TestEHatMaxAtGenesisFromCsv() {
 func (s *IntegrationTestSuite) TestEhatIFromCsv() {
 	epoch := s.epochGet[61]
 	expectedResult := epoch("ehat_i")
-	ehatMaxI := epoch("ehat_max_i").SdkLegacyDec()
-	ehatTargetI := epoch("ehat_target_i").SdkLegacyDec()
+	ehatMaxI, err := epoch("ehat_max_i").SdkLegacyDec()
+	s.Require().NoError(err)
+	ehatTargetI, err := epoch("ehat_target_i").SdkLegacyDec()
+	s.Require().NoError(err)
 
 	result := keeper.GetCappedTargetEmissionPerUnitStakedToken(
 		ehatTargetI,
@@ -207,8 +213,10 @@ func (s *IntegrationTestSuite) TestEhatIFromCsv() {
 // calculate e_i for the 61st epoch
 func (s *IntegrationTestSuite) TestESubIFromCsv() {
 	expectedResult := s.epochGet[61]("e_i")
-	targetE_i := s.epochGet[61]("ehat_target_i").SdkLegacyDec()
-	previousE_i := s.epochGet[60]("e_i").SdkLegacyDec()
+	targetE_i, err := s.epochGet[61]("ehat_target_i").SdkLegacyDec()
+	s.Require().NoError(err)
+	previousE_i, err := s.epochGet[60]("e_i").SdkLegacyDec()
+	s.Require().NoError(err)
 
 	// this is taken directly from the python notebook
 	alpha_Emission := cosmosMath.LegacyMustNewDecFromStr("0.1")
@@ -227,10 +235,12 @@ func (s *IntegrationTestSuite) TestESubIFromCsv() {
 // GetTotalEmissionPerMonth
 func (s *IntegrationTestSuite) TestCalEFromCsv() {
 	expectedResult := s.epochGet[61]("ecosystem_tokens_emission")
-	rewardEmissionPerUnitStakedToken := s.epochGet[61]("e_i").SdkLegacyDec()
+	rewardEmissionPerUnitStakedToken, err := s.epochGet[61]("e_i").SdkLegacyDec()
+	s.Require().NoError(err)
 	// use the value from epoch 60 rather than 61 because the python notebook
 	// updates the value AFTER calculating the total emission and handing out rewards
-	numStakedTokens := s.epochGet[60]("network_tokens_staked").SdkIntTrim()
+	numStakedTokens, err := s.epochGet[60]("network_tokens_staked").SdkIntTrim()
+	s.Require().NoError(err)
 	totalEmission := keeper.GetTotalEmissionPerMonth(
 		rewardEmissionPerUnitStakedToken,
 		numStakedTokens,
