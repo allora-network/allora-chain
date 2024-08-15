@@ -268,7 +268,7 @@ func workerReputerLoop(
 		}
 
 		// Generate and insert reputer bundle scoring workers
-		err = generateInsertReputerBulk(
+		err = generateInsertReputerBundle(
 			m,
 			topic,
 			reputers,
