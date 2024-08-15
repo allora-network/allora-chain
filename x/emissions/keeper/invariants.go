@@ -316,7 +316,7 @@ func StakingInvariantSumStakeFromStakeReputerAuthorityEqualTotalStakeAndTopicSta
 
 func StakingInvariantPendingRewardForDelegatorsEqualRewardPerShareMinusRewardDebt(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		// get the sum of all accumulated debts that happend to be staked upon a reputer
+		// get the sum of all accumulated debts that happened to be staked upon a reputer
 		iter, err := k.delegatedStakes.Iterate(ctx, nil)
 		if err != nil {
 			panic("failed to get delegated stakes iterator")

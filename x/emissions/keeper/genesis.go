@@ -74,7 +74,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				}
 			}
 		}
-
 	}
 	//TopicReputers []*TopicAndActorId
 	if len(data.TopicReputers) != 0 {
@@ -85,7 +84,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				}
 			}
 		}
-
 	}
 	//TopicRewardNonce []*TopicIdAndBlockHeight
 	if len(data.TopicRewardNonce) != 0 {
@@ -108,7 +106,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				}
 			}
 		}
-
 	}
 	//ForecasterScoresByBlock []*TopicIdBlockHeightScores
 	if len(data.ForecasterScoresByBlock) != 0 {
@@ -122,7 +119,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				}
 			}
 		}
-
 	}
 	//ReputerScoresByBlock []*TopicIdBlockHeightScores
 	if len(data.ReputerScoresByBlock) != 0 {
@@ -422,7 +418,6 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 				}
 			}
 		}
-
 	}
 
 	// TopicFeeRevenue []*TopicIdAndInt

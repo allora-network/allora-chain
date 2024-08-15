@@ -1,4 +1,4 @@
-package v0_3_0
+package v0_3_0 //nolint:revive // var-naming: don't use an underscore in package name
 
 import (
 	"context"

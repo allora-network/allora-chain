@@ -57,6 +57,7 @@ func NewClient(
 	alloraHomeDir string,
 	seed int64,
 ) Client {
+	t.Helper()
 	client := Client{}
 	ctx := context.Background()
 	client.RpcConnectionType = rpcConnectionType
@@ -74,7 +75,7 @@ func NewClient(
 	if rpcConnectionType == RandomBasedOnDeterministicSeed {
 		client.RpcCounterSeed = seed
 	}
-	client.Rand = rand.New(rand.NewSource(seed))
+	client.Rand = rand.New(rand.NewSource(seed)) //nolint:gosec // G404: Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand)
 
 	for i, rpcAddress := range nodeRpcAddresses {
 		cosmosClient, err := cosmosclient.New(

@@ -236,7 +236,7 @@ func validateRemoveStakeDelayWindow(i int64) error {
 	return nil
 }
 
-// Minumum number of blocks per epoch a topic can set.
+// Minimum number of blocks per epoch a topic can set.
 // Should be >= 0.
 func validateMinEpochLength(i BlockHeight) error {
 	if i < 1 {

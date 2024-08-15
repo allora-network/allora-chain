@@ -136,9 +136,15 @@ func MigrateOffchainStore(workerStore storetypes.KVStore, cdc codec.BinaryCodec)
 
 func MigrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	workerStore := prefix.NewStore(store, types.WorkerNodesKey)
-	MigrateOffchainStore(workerStore, cdc)
+	err := MigrateOffchainStore(workerStore, cdc)
+	if err != nil {
+		return err
+	}
 	reputerStore := prefix.NewStore(store, types.ReputerNodesKey)
-	MigrateOffchainStore(reputerStore, cdc)
+	err = MigrateOffchainStore(reputerStore, cdc)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

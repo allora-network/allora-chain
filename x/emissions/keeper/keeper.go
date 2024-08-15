@@ -194,7 +194,6 @@ func NewKeeper(
 	bk BankKeeper,
 	feeCollectorName string,
 ) Keeper {
-
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
 		cdc:                                      cdc,
@@ -299,8 +298,8 @@ func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, top
 		topicIds = types.TopicIds{}
 	}
 	topicIds.TopicIds = append(topicIds.TopicIds, topicId)
-	k.openWorkerWindows.Set(ctx, height, topicIds)
-	return nil
+	err = k.openWorkerWindows.Set(ctx, height, topicIds)
+	return err
 }
 
 func (k *Keeper) DeleteWorkerWindowBlockheight(ctx sdk.Context, height BlockHeight) error {

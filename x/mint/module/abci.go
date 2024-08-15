@@ -137,7 +137,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		return err
 	}
 	updateEmission := false
-	var e_i math.LegacyDec
+	var e_i math.LegacyDec //nolint:revive // var-naming: don't use underscores in Go names
 	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
 	if err != nil {
 		return err
@@ -175,7 +175,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 			"emissionPerMonth", emissionPerMonth.String(),
 			"blockEmission", blockEmission.String(),
 		)
-
 	}
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
 	if blockEmission.GT(ecosystemBalance) {
@@ -217,8 +216,14 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	if updateEmission {
 		// set the previous emissions to this block's emissions
-		k.PreviousRewardEmissionPerUnitStakedToken.Set(ctx, e_i)
-		k.PreviousBlockEmission.Set(ctx, blockEmission)
+		err = k.PreviousRewardEmissionPerUnitStakedToken.Set(ctx, e_i)
+		if err != nil {
+			return err
+		}
+		err = k.PreviousBlockEmission.Set(ctx, blockEmission)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

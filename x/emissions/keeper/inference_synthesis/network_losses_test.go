@@ -1,51 +1,51 @@
-package inference_synthesis_test
+package inferencesynthesis_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
 func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 	tests := []struct {
 		name                string
-		initialWeightedLoss inference_synthesis.RunningWeightedLoss
-		nextWeight          inference_synthesis.Weight
-		nextValue           inference_synthesis.Weight
-		expectedLoss        inference_synthesis.RunningWeightedLoss
+		initialWeightedLoss inferencesynthesis.RunningWeightedLoss
+		nextWeight          inferencesynthesis.Weight
+		nextValue           inferencesynthesis.Weight
+		expectedLoss        inferencesynthesis.RunningWeightedLoss
 		expectedErr         error
 	}{
 		{
 			name:                "normal operation",
-			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.5"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
+			initialWeightedLoss: inferencesynthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.5"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
 			nextWeight:          alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("2.0"),
-			expectedLoss:        inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("2.5"), SumWeight: alloraMath.MustNewDecFromString("2.0")},
+			expectedLoss:        inferencesynthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("2.5"), SumWeight: alloraMath.MustNewDecFromString("2.0")},
 			expectedErr:         nil,
 		},
 		{
 			name:                "simple example",
-			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
+			initialWeightedLoss: inferencesynthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
 			nextWeight:          alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("0.1"),
-			expectedLoss:        inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.1"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
+			expectedLoss:        inferencesynthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.1"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
 			expectedErr:         nil,
 		},
 		{
 			name:                "simple example2",
-			initialWeightedLoss: inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
+			initialWeightedLoss: inferencesynthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.ZeroDec(), SumWeight: alloraMath.ZeroDec()},
 			nextWeight:          alloraMath.MustNewDecFromString("1.0"),
 			nextValue:           alloraMath.MustNewDecFromString("0.2"),
-			expectedLoss:        inference_synthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.2"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
+			expectedLoss:        inferencesynthesis.RunningWeightedLoss{UnnormalizedWeightedLoss: alloraMath.MustNewDecFromString("0.2"), SumWeight: alloraMath.MustNewDecFromString("1.0")},
 			expectedErr:         nil,
 		},
 	}
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			updatedLoss, err := inference_synthesis.RunningWeightedAvgUpdate(
+			updatedLoss, err := inferencesynthesis.RunningWeightedAvgUpdate(
 				&tc.initialWeightedLoss,
 				tc.nextWeight,
 				tc.nextValue,
@@ -63,7 +63,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 
 func getTestCasesOneWorker() []struct {
 	name            string
-	stakesByReputer map[inference_synthesis.Worker]cosmosMath.Int
+	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
 	reportedLosses  emissions.ReputerValueBundles
 	epsilon         alloraMath.Dec
 	expectedOutput  emissions.ValueBundle
@@ -71,7 +71,7 @@ func getTestCasesOneWorker() []struct {
 } {
 	return []struct {
 		name            string
-		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Int
+		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
 		reportedLosses  emissions.ReputerValueBundles
 		epsilon         alloraMath.Dec
 		expectedOutput  emissions.ValueBundle
@@ -79,8 +79,8 @@ func getTestCasesOneWorker() []struct {
 	}{
 		{
 			name: "simple one reputer combined loss",
-			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Int{
-				"worker1": inference_synthesis.CosmosIntOneE18(), // 1 token
+			stakesByReputer: map[inferencesynthesis.Worker]cosmosMath.Int{
+				"worker1": inferencesynthesis.CosmosIntOneE18(), // 1 token
 			},
 			reportedLosses: emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{
@@ -165,7 +165,7 @@ func getTestCasesOneWorker() []struct {
 
 func getTestCasesTwoWorkers() []struct {
 	name            string
-	stakesByReputer map[inference_synthesis.Worker]cosmosMath.Int
+	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
 	reportedLosses  emissions.ReputerValueBundles
 	epsilon         alloraMath.Dec
 	expectedOutput  emissions.ValueBundle
@@ -173,7 +173,7 @@ func getTestCasesTwoWorkers() []struct {
 } {
 	return []struct {
 		name            string
-		stakesByReputer map[inference_synthesis.Worker]cosmosMath.Int
+		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
 		reportedLosses  emissions.ReputerValueBundles
 		epsilon         alloraMath.Dec
 		expectedOutput  emissions.ValueBundle
@@ -181,9 +181,9 @@ func getTestCasesTwoWorkers() []struct {
 	}{
 		{
 			name: "simple two reputer combined loss",
-			stakesByReputer: map[inference_synthesis.Worker]cosmosMath.Int{
-				"worker1": inference_synthesis.CosmosIntOneE18(),           // 1 token
-				"worker2": inference_synthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
+			stakesByReputer: map[inferencesynthesis.Worker]cosmosMath.Int{
+				"worker1": inferencesynthesis.CosmosIntOneE18(),           // 1 token
+				"worker2": inferencesynthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
 			},
 			reportedLosses: emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{
@@ -370,7 +370,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			output, err := inference_synthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
+			output, err := inferencesynthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
 			if tc.expectedError != nil {
 				require.Error(err)
 				require.EqualError(err, tc.expectedError.Error())
@@ -439,7 +439,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 	forecaster2 := s.addrs[12].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 	cosmosOneE18Dec, err := alloraMath.NewDecFromSdkInt(cosmosOneE18)
 	s.Require().NoError(err)
 
@@ -481,7 +481,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 	)
 	s.Require().NoError(err)
 
-	networkLosses, err := inference_synthesis.CalcNetworkLosses(stakesByReputer, reportedLosses, epsilon)
+	networkLosses, err := inferencesynthesis.CalcNetworkLosses(stakesByReputer, reportedLosses, epsilon)
 	s.Require().NoError(err)
 
 	expectedNetworkLosses, err := testutil.GetNetworkLossFromCsv(
@@ -579,7 +579,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesCombined() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			output, err := inference_synthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
+			output, err := inferencesynthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
 			if tc.expectedError != nil {
 				require.Error(err)
 				require.EqualError(err, tc.expectedError.Error())

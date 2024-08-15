@@ -1,4 +1,4 @@
-package inference_synthesis
+package inferencesynthesis
 
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"

@@ -1,7 +1,8 @@
-package actor_utils
+package actorutils
 
 import (
 	"container/heap"
+	"fmt"
 	"math/rand"
 	"sort"
 
@@ -44,7 +45,11 @@ func (pq PriorityQueue) Swap(i, j int) {
 
 func (pq *PriorityQueue) Push(x any) {
 	n := len(*pq)
-	item := x.(*SortableItem)
+	item, ok := x.(*SortableItem)
+	if !ok {
+		fmt.Println("Error: Could not cast to SortableItem")
+		return
+	}
 	item.index = n
 	*pq = append(*pq, item)
 }
@@ -89,7 +94,10 @@ func FindTopNByScoreDesc(n uint64, scoresByActor map[Actor]Score, randSeed Block
 		if queue.Len() == 0 {
 			break
 		}
-		item := heap.Pop(queue).(*SortableItem)
+		item, ok := heap.Pop(queue).(*SortableItem)
+		if !ok {
+			return nil, fmt.Errorf("could not cast to SortableItem")
+		}
 		topN = append(topN, item.Value)
 		topNBool[item.Value] = true
 	}

@@ -3,6 +3,7 @@ package gmp
 import (
 	"encoding/json"
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -140,7 +141,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		}
 	}
 
-	return im.appOnRecvPacket(ctx, packet, relayer)
+	return im.appOnRecvPacket()
 }
 
 // OnAcknowledgementPacket implements the IBCMiddleware interface
@@ -162,10 +163,6 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	return im.app.OnTimeoutPacket(ctx, packet, relayer)
 }
 
-func (im IBCMiddleware) appOnRecvPacket(
-	ctx sdk.Context,
-	packet channeltypes.Packet,
-	relayer sdk.AccAddress,
-) ibcexported.Acknowledgement {
+func (im IBCMiddleware) appOnRecvPacket() ibcexported.Acknowledgement {
 	return channeltypes.NewResultAcknowledgement([]byte("success"))
 }
