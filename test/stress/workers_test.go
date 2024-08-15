@@ -143,7 +143,7 @@ func insertWorkerPayloads(
 		// serialize workerMsg to json and print
 		senderAcc, err := m.Client.AccountRegistryGetByName(key)
 		if err != nil {
-			m.T.Log(topicLog(topic.Id, "Error getting leader worker account: ", senderAcc, " - ", err))
+			m.T.Log(topicLog(topic.Id, "Error getting worker account: ", senderAcc, " - ", err))
 			return err
 		}
 		ctx := context.Background()

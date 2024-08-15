@@ -31,9 +31,7 @@ func CloseReputerNonce(
 		return sdkerrors.ErrNotFound
 	}
 
-	/// Do filters upon the leader (the sender) first, then do checks on each reputer in the payload
 	/// All filters should be done in order of increasing computational complexity
-
 	// Check if the worker nonce is unfulfilled
 	workerNonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topicId, &nonce)
 	if err != nil {
@@ -61,7 +59,7 @@ func CloseReputerNonce(
 			&nonce.BlockHeight,
 		)
 	}
-	// Check if the window time has passed: if blockheight > nonce.BlockHeight + topic.WorkerSubmissionWindow
+	// Check if the window time has passed
 	blockHeight := ctx.BlockHeight()
 	if blockHeight < nonce.BlockHeight+topic.GroundTruthLag {
 		return types.ErrReputerNonceWindowNotAvailable
@@ -77,7 +75,6 @@ func CloseReputerNonce(
 		return types.ErrNoValidBundles
 	}
 
-	/// Do checks on each reputer in the payload
 	// Iterate through the array to ensure each reputer is in the whitelist
 	// and get get score for each reputer => later we can skim only the top few by score descending
 	lossBundlesByReputer := make([]*types.ReputerValueBundle, 0)
@@ -89,11 +86,11 @@ func CloseReputerNonce(
 
 		reputer := bundle.ValueBundle.Reputer
 
-		// Check that the reputer's value bundle is for a topic matching the leader's given topic
+		// Check that the reputer's value bundle is for a topic matching the given topic
 		if bundle.ValueBundle.TopicId != topicId {
 			continue
 		}
-		// Check that the reputer's value bundle is for a nonce matching the leader's given nonce
+		// Check that the reputer's value bundle is for a nonce matching the given nonce
 		if bundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != nonce.BlockHeight {
 			continue
 		}

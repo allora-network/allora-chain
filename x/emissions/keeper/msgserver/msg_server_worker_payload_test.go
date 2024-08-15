@@ -302,7 +302,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastE
 
 	ctx = ctx.WithBlockHeight(blockHeight)
 	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
-	require.NoError(err, "InsertBulkWorkerPayload should not return an error")
+	require.NoError(err, "InsertWorkerPayload should not return an error")
 
 	// Check the forecast count to ensure duplicates were filtered out
 	forecastsCount1 := s.getCountForecastsAtBlock(topicId, blockHeight)
@@ -321,7 +321,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastE
 	}
 }
 
-func (s *MsgServerTestSuite) TestInsertingHugeBulkWorkerPayloadFails() {
+func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
