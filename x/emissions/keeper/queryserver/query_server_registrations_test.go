@@ -113,8 +113,10 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 		Owner:     workerAddrString,
 	}
 
-	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
-	err := s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	s.Require().NoError(err)
+	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
+	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
@@ -161,8 +163,10 @@ func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 		Owner:     reputerAddr.String(),
 	}
 
-	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
-	err := s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	s.Require().NoError(err)
+	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
+	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, reputerAddr, mintAmount)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")
