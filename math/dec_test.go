@@ -765,7 +765,7 @@ func TestToSdkIntFail(t *testing.T) {
 	require.Equal(t, cosmosMath.Int{}, b)
 }
 
-func TestToSdkLegacy(t *testing.T) {
+func TestToSdkLegacyDec(t *testing.T) {
 	i1 := "1000000000000000000000000000000000000123456789.321000000000000000"
 	tcs := []struct {
 		intStr string
@@ -790,6 +790,14 @@ func TestToSdkLegacy(t *testing.T) {
 		require.Equal(t, tc.out, b.String(), "test_%d", idx)
 	}
 }
+
+func TestToSdkLegacyDecFail(t *testing.T) {
+	a, err := alloraMath.NewDecFromString("1.2e77")
+	require.NoError(t, err)
+	_, err = a.SdkLegacyDec()
+	require.Error(t, err)
+}
+
 func TestInfDecString(t *testing.T) {
 	_, err := alloraMath.NewDecFromString("iNf")
 	require.Error(t, err)
