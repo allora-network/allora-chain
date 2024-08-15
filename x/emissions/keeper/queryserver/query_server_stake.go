@@ -154,7 +154,11 @@ func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context,
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: stake.Amount.SdkIntTrim()}, nil
+	stakeInt, err := stake.Amount.SdkIntTrim()
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: stakeInt}, nil
 }
 
 func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicRequest) (*types.QueryStakeFromDelegatorInTopicResponse, error) {
