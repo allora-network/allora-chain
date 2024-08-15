@@ -1116,11 +1116,15 @@ func (k *Keeper) AddDelegateStake(
 			return err
 		}
 		if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
+			pendingRewardInt, err := pendingReward.SdkIntTrim()
+			if err != nil {
+				return err
+			}
 			err = k.SendCoinsFromModuleToAccount(
 				ctx,
 				types.AlloraPendingRewardForDelegatorAccountName,
 				delegator,
-				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
+				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingRewardInt)),
 			)
 			if err != nil {
 				return err
@@ -1298,11 +1302,15 @@ func (k *Keeper) RemoveDelegateStake(
 		return err
 	}
 	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
+		pendingRewardInt, err := pendingReward.SdkIntTrim()
+		if err != nil {
+			return err
+		}
 		err = k.SendCoinsFromModuleToAccount(
 			ctx,
 			types.AlloraPendingRewardForDelegatorAccountName,
 			delegator,
-			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim())),
+			sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingRewardInt)),
 		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Sending pending reward to delegator failed")
@@ -2037,12 +2045,14 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 		return err
 	}
 
-	newTopicFeeRevenue := cosmosMath.ZeroInt()
 	val, err := alloraMath.CalcExpDecay(topicFeeRevenueDec, topicFeeRevenueDecayRate)
 	if err != nil {
 		return err
 	}
-	newTopicFeeRevenue = val.SdkIntTrim()
+	newTopicFeeRevenue, err := val.SdkIntTrim()
+	if err != nil {
+		return err
+	}
 
 	ctx.Logger().Debug(fmt.Sprintf("Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v", ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue))
 	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)

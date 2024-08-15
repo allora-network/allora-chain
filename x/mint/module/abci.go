@@ -146,7 +146,10 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
-	vPercent := vPercentADec.SdkLegacyDec()
+	vPercent, err := vPercentADec.SdkLegacyDec()
+	if err != nil {
+		return err
+	}
 	// every month on the first block of the month, update the emissions rate
 	if blockHeight%blocksPerMonth == 1 { // easier to test when genesis starts at 1
 		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(

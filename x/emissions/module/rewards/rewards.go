@@ -452,7 +452,11 @@ func payoutRewards(
 			continue
 		}
 
-		rewardInt := reward.Reward.SdkIntTrim()
+		rewardInt, err := reward.Reward.SdkIntTrim()
+		if err != nil {
+			ret = append(ret, errors.Wrapf(err, "failed to convert reward to sdk.Int: %s", reward.Reward.String()))
+			continue
+		}
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
 
 		if reward.Type == types.ReputerAndDelegatorRewardType {

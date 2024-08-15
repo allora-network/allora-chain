@@ -135,7 +135,10 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get validators vs allora percent reward")
 	}
-	vPercent := vPercentADec.SdkLegacyDec()
+	vPercent, err := vPercentADec.SdkLegacyDec()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert validators vs allora percent reward to legacy dec")
+	}
 	maximumMonthlyEmissionPerUnitStakedToken := GetMaximumMonthlyEmissionPerUnitStakedToken(
 		moduleParams.MaximumMonthlyPercentageYield,
 		reputersPercent,
