@@ -1,5 +1,5 @@
 #!/bin/bash
-set -ex
+set -e
 
 NETWORK="${NETWORK:-allora-testnet-1}"                 #! Replace with your network name
 GENESIS_URL="https://raw.githubusercontent.com/allora-network/networks/main/${NETWORK}/genesis.json"
@@ -15,9 +15,18 @@ GENESIS_FILE="${APP_HOME}/config/genesis.json"
 DENOM="uallo"
 RPC_PORT="${RPC_PORT:-26657}"
 
-# uncomment this block if you want to restore from a snapshot
-# SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# "${SCRIPT_DIR}/restore_snapshot.sh"
+if [ "$RESTORE_S3_SNAPSHOT" == "true" ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    "${SCRIPT_DIR}/restore_snapshot.sh"
+fi
+
+BINARY=""
+if [ "$UPGRADE" == "true" ]; then
+    echo "You have set upgrade to true, please make sure you are running the correct docker image (vx.x.x-upgrader)
+    BINARY=/cosmovisor/genesis/bin/allorad
+else
+    BINARY=allorad
+fi
 
 echo "To re-initiate the node, remove the file: ${INIT_FLAG}"
 if [ ! -f $INIT_FLAG ]; then
@@ -28,7 +37,7 @@ if [ ! -f $INIT_FLAG ]; then
     ln -sf ${APP_HOME} ${HOME}/.allorad
 
     #* Init node
-    allorad --home=${APP_HOME} init ${MONIKER} --chain-id=${NETWORK} --default-denom $DENOM
+    $BINARY --home=${APP_HOME} init ${MONIKER} --chain-id=${NETWORK} --default-denom $DENOM
 
     #* Download genesis
     rm -f $GENESIS_FILE
@@ -36,15 +45,15 @@ if [ ! -f $INIT_FLAG ]; then
 
     #* Import allora account, priv_validator_key.json and node_key.json from the vault here
     #* Here create a new allorad account
-    allorad --home $APP_HOME keys add ${MONIKER} --keyring-backend $KEYRING_BACKEND > $APP_HOME/${MONIKER}.account_info 2>&1
+    $BINARY --home $APP_HOME keys add ${MONIKER} --keyring-backend $KEYRING_BACKEND > $APP_HOME/${MONIKER}.account_info 2>&1
 
     #* Adjust configs
     #* Enable prometheus metrics
     #dasel put -t bool -v true 'instrumentation.prometheus' -f ${APP_HOME}/config/config.toml
 
     #* Setup allorad client
-    allorad --home=${APP_HOME} config set client chain-id ${NETWORK}
-    allorad --home=${APP_HOME} config set client keyring-backend $KEYRING_BACKEND
+    $BINARY  --home=${APP_HOME} config set client chain-id ${NETWORK}
+    $BINARY  --home=${APP_HOME} config set client keyring-backend $KEYRING_BACKEND
 
     #* Mitigate mempool spamming attacks
     dasel put mempool.max_txs_bytes -t int -v 2097152 -f ${APP_HOME}/config/config.toml
@@ -76,12 +85,31 @@ if [ "x${STATE_SYNC_RPC1}" != "x" ]; then
     dasel put statesync.trust_hash -t string -v $TRUST_HEIGHT_HASH -f ${APP_HOME}/config/config.toml
 fi
 
-echo "Starting validator node"
-allorad \
-    --home=${APP_HOME} \
-    start \
-    --moniker=${MONIKER} \
-    --minimum-gas-prices=0${DENOM} \
-    --rpc.laddr=tcp://0.0.0.0:${RPC_PORT} \
-    --p2p.seeds=$SEEDS \
-    --p2p.persistent_peers $PEERS
+if [ "$UPGRADE" == "true" ]; then
+    if [ ! -d "/data/cosmovisor" ]; then
+        echo "initialize cosmovisor"
+        cp -R /cosmovisor /data/
+        cosmovisor init /data/cosmovisor/genesis/bin/allorad
+    fi
+
+    echo "Starting validator node with cosmovisor"
+    cosmovisor \
+        run \
+        --home=${APP_HOME} \
+        start \
+        --moniker=${MONIKER} \
+        --minimum-gas-prices=0${DENOM} \
+        --rpc.laddr=tcp://0.0.0.0:26657 \
+        --p2p.seeds=$SEEDS \
+        --p2p.persistent_peers $PEERS
+else
+    echo "Starting validator node without cosmovisor"
+    allorad \
+        --home=${APP_HOME} \
+        start \
+        --moniker=${MONIKER} \
+        --minimum-gas-prices=0${DENOM} \
+        --rpc.laddr=tcp://0.0.0.0:26657 \
+        --p2p.seeds=$SEEDS \
+        --p2p.persistent_peers $PEERS
+fi
