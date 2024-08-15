@@ -483,7 +483,9 @@ func (s *MsgServerTestSuite) TestDelegateStake() {
 
 	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr.String(), reputerAddr.String())
 	require.NoError(err)
-	require.Equal(stakeAmount, amount1.Amount.SdkIntTrim())
+	amountInt, err := amount1.Amount.SdkIntTrim()
+	require.NoError(err)
+	require.Equal(stakeAmount, amountInt)
 }
 
 func (s *MsgServerTestSuite) TestReputerCantSelfDelegateStake() {
@@ -551,7 +553,9 @@ func (s *MsgServerTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
 
 	amount1, err := keeper.GetDelegateStakePlacement(ctx, topicId, delegatorAddr.String(), reputerAddr.String())
 	require.NoError(err)
-	require.Equal(stakeAmount, amount1.Amount.SdkIntTrim())
+	amountInt, err := amount1.Amount.SdkIntTrim()
+	require.NoError(err)
+	require.Equal(stakeAmount, amountInt)
 
 	// Attempt to withdraw the delegated stake
 	removeMsg := &types.MsgRemoveStake{
@@ -1550,7 +1554,8 @@ func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 	s.Require().Greater(delegatorBal1.Amount.Uint64(), delegatorBal0.Amount.Uint64(), "Balance must be increased")
 
 	delegatorReward0 := delegatorBal1.Amount.Sub(delegatorBal0.Amount)
-	reputerReward := reputerRewards[0].Reward.SdkIntTrim()
+	reputerReward, err := reputerRewards[0].Reward.SdkIntTrim()
+	s.Require().NoError(err)
 
 	// in the case where the rewards is an odd number e.g.
 	// 9 / 2 = 4.5
@@ -1633,11 +1638,14 @@ func (s *MsgServerTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	s.Require().NoError(err)
 
 	delegatorRewardRaw := delegatorBal1.Amount.Sub(delegatorBal0.Amount)
-	reputerReward := reputerRewards[0].Reward.SdkIntTrim()
+	reputerReward, err := reputerRewards[0].Reward.SdkIntTrim()
+	s.Require().NoError(err)
 	normalizedDelegatorReward, err := alloraMath.NewDecFromInt64(delegatorRewardRaw.Int64()).Quo(alloraMath.NewDecFromInt64(delegatorRatio.Int64()))
 	s.Require().NoError(err)
 
-	s.Require().Equal(normalizedDelegatorReward.SdkIntTrim(), reputerReward, "Delegator and reputer rewards must be equal")
+	normalizedDelegatorRewardInt, err := normalizedDelegatorReward.SdkIntTrim()
+	s.Require().NoError(err)
+	s.Require().Equal(normalizedDelegatorRewardInt, reputerReward, "Delegator and reputer rewards must be equal")
 }
 
 func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
@@ -1685,7 +1693,8 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	require.NotNil(delegateStakeResponse, "Response should not be nil after successful delegation")
 
 	// STEP 2 Calculate rewards for the first round
-	reputerReward0 := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)[0].Reward.SdkIntTrim()
+	reputerReward0, err := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)[0].Reward.SdkIntTrim()
+	require.NoError(err)
 
 	delegatorBal0 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
 
@@ -1695,7 +1704,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 		Reputer: reputerAddr.String(),
 	}
 	_, err = s.msgServer.RewardDelegateStake(ctx, delegateRewardsMsg)
-	s.Require().NoError(err)
+	require.NoError(err)
 
 	delegatorBal1 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
 
@@ -1704,10 +1713,11 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	// STEP 2 Calculate rewards for the second round
 	block++
 
-	reputerReward1 := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)[0].Reward.SdkIntTrim()
+	reputerReward1, err := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)[0].Reward.SdkIntTrim()
+	require.NoError(err)
 
 	_, err = s.msgServer.RewardDelegateStake(ctx, delegateRewardsMsg)
-	s.Require().NoError(err)
+	require.NoError(err)
 
 	delegatorBal2 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
 
@@ -1729,10 +1739,11 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 
 	// STEP 4 Calculate rewards for the third round
 	block++
-	reputerReward2 := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)[0].Reward.SdkIntTrim()
+	reputerReward2, err := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)[0].Reward.SdkIntTrim()
+	require.NoError(err)
 
 	_, err = s.msgServer.RewardDelegateStake(ctx, delegateRewardsMsg)
-	s.Require().NoError(err)
+	require.NoError(err)
 
 	largeDelegateRewardsMsg := &types.MsgRewardDelegateStake{
 		Sender:  largeDelegatorAddr.String(),
@@ -1740,7 +1751,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 		Reputer: reputerAddr.String(),
 	}
 	_, err = s.msgServer.RewardDelegateStake(ctx, largeDelegateRewardsMsg)
-	s.Require().NoError(err)
+	require.NoError(err)
 
 	delegatorBal3 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
 	largeDelegatorBal3 := s.bankKeeper.GetBalance(ctx, largeDelegatorAddr, params.DefaultBondDenom)
@@ -1749,25 +1760,27 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	largeDelegatorReward2 := largeDelegatorBal3.Amount.Sub(largeDelegatorBal2.Amount)
 
 	condition := delegatorReward0.Equal(reputerReward0) || delegatorReward0.AddRaw(1).Equal(reputerReward0)
-	s.Require().True(condition,
+	require.True(condition,
 		fmt.Sprintf("Delegator and reputer rewards must be equal (or reputer = delegator + 1) in all rounds: %s | %s",
 			delegatorReward0.String(), reputerReward0.String()),
 	)
 	condition = delegatorReward1.Equal(reputerReward1) || delegatorReward1.AddRaw(1).Equal(reputerReward1)
-	s.Require().True(condition, fmt.Sprintf("Delegator and reputer rewards must be equal in all rounds %s | %s",
+	require.True(condition, fmt.Sprintf("Delegator and reputer rewards must be equal in all rounds %s | %s",
 		delegatorReward1.String(), reputerReward1.String()),
 	)
-	s.Require().Equal(reputerReward0, reputerReward1, "Delegator and reputer rewards must be equal from the first to the second round")
+	require.Equal(reputerReward0, reputerReward1, "Delegator and reputer rewards must be equal from the first to the second round")
 	condition = delegatorReward2.Equal(reputerReward2) || delegatorReward2.AddRaw(1).Equal(reputerReward2)
-	s.Require().True(condition, fmt.Sprintf("Delegator and reputer rewards must be equal in all rounds %s | %s",
+	require.True(condition, fmt.Sprintf("Delegator and reputer rewards must be equal in all rounds %s | %s",
 		delegatorReward2.String(), reputerReward2.String()),
 	)
 
 	normalizedLargeDelegatorReward, err := alloraMath.NewDecFromInt64(largeDelegatorReward2.Int64()).Quo(alloraMath.NewDecFromInt64(largeDelegatorRatio.Int64()))
-	s.Require().NoError(err)
+	require.NoError(err)
 
-	s.Require().Equal(normalizedLargeDelegatorReward.SdkIntTrim(), reputerReward2, "Normalized large delegator rewards must be equal to reputer rewards")
-	s.Require().Equal(normalizedLargeDelegatorReward.SdkIntTrim(), delegatorReward2, "Normalized large delegator rewards must be equal to delegator rewards")
+	normalizedLargeDelegatorRewardInt, err := normalizedLargeDelegatorReward.SdkIntTrim()
+	require.NoError(err)
+	require.Equal(normalizedLargeDelegatorRewardInt, reputerReward2, "Normalized large delegator rewards must be equal to reputer rewards")
+	require.Equal(normalizedLargeDelegatorRewardInt, delegatorReward2, "Normalized large delegator rewards must be equal to delegator rewards")
 
 	totalRewardsSecondRound := reputerReward1.Add(delegatorReward1)
 	totalRewardsThirdRound := reputerReward2.Add(delegatorReward2).Add(largeDelegatorReward2)

@@ -41,9 +41,8 @@ jobs:
           IMAGE_TAG="${GITHUB_SHA:0:8}"
           EXTRA_IMAGE_TAGS=$GIT_TAG
 
-          #! Add latest tag only if on named releases tag='v*'
           if [[ ${GIT_TAG} == v* ]]; then
-            EXTRA_IMAGE_TAGS="${EXTRA_IMAGE_TAGS};latest"
+            EXTRA_IMAGE_TAGS="${EXTRA_IMAGE_TAGS}"
           fi
 
           # Build a docker container and push it to Docker Hub.

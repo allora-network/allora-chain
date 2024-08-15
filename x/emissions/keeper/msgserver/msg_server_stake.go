@@ -296,7 +296,11 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 		return nil, err
 	}
 	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
-		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim()))
+		pendingRewardInt, err := pendingReward.SdkIntTrim()
+		if err != nil {
+			return nil, err
+		}
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingRewardInt))
 		err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, msg.Sender, coins)
 		if err != nil {
 			return nil, err

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"math/bits"
 
 	"cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -39,6 +40,7 @@ var (
 	ErrUnexpectedRounding = errors.Register(mathCodespace, 2, "unexpected rounding")
 	ErrNonIntegeral       = errors.Register(mathCodespace, 3, "value is non-integral")
 	ErrInfiniteString     = errors.Register(mathCodespace, 4, "value is infinite")
+	ErrOverflow           = errors.Register(mathCodespace, 5, "overflow")
 )
 
 // The number 0 encoded as Dec
@@ -389,6 +391,7 @@ func (x Dec) BigInt() (*big.Int, error) {
 	return z, nil
 }
 
+// Coeff copies x into a big int while minimizing trailing zeroes
 func (x Dec) Coeff() big.Int {
 	y, _ := x.Reduce()
 	var r = y.dec.Coeff
@@ -408,19 +411,43 @@ func (x Dec) Coeff() big.Int {
 	return *r.MathBigInt()
 }
 
+// MaxBitLen defines the maximum bit length supported bit Int and Uint types.
+const MaxBitLen = 256
+
+// maxWordLen defines the maximum word length supported by Int and Uint types.
+// We check overflow, by first doing a fast check if the word length is below maxWordLen
+// and if not then do the slower full bitlen check.
+// NOTE: If MaxBitLen is not a multiple of bits.UintSize, then we need to edit the used logic slightly.
+const maxWordLen = MaxBitLen / bits.UintSize
+
+// check if the big int is greater than the maximum word length
+// of a sdk int (256 bits)
+func bigIntOverflows(i *big.Int) bool {
+	// overflow is defined as i.BitLen() > MaxBitLen
+	// however this check can be expensive when doing many operations.
+	// So we first check if the word length is greater than maxWordLen.
+	// However the most significant word could be zero, hence we still do the bitlen check.
+	if len(i.Bits()) > maxWordLen {
+		return i.BitLen() > MaxBitLen
+	}
+	return false
+}
+
 // SdkIntTrim rounds decimal number to the integer towards zero and converts it to `sdkmath.Int`.
-// Panics if x is bigger the SDK Int max value
-func (x Dec) SdkIntTrim() sdkmath.Int {
+// returns error if the Dec is not representable in an sdkmath.Int
+func (x Dec) SdkIntTrim() (sdkmath.Int, error) {
 	var r = x.Coeff()
-	return sdkmath.NewIntFromBigInt(&r)
+	if bigIntOverflows(&r) {
+		return sdkmath.Int{}, errors.Wrap(ErrOverflow, "decimal is not representable as an sdkmath.Int")
+	}
+	return sdkmath.NewIntFromBigInt(&r), nil
 }
 
 // SdkLegacyDec converts Dec to `sdkmath.LegacyDec`
 // can return nil if the value is not representable in a LegacyDec
-func (x Dec) SdkLegacyDec() sdkmath.LegacyDec {
+func (x Dec) SdkLegacyDec() (sdkmath.LegacyDec, error) {
 	stringRep := x.dec.Text('f')
-	y, _ := sdkmath.LegacyNewDecFromStr(stringRep)
-	return y
+	return sdkmath.LegacyNewDecFromStr(stringRep)
 }
 
 func (x Dec) String() string {

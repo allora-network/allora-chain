@@ -7,12 +7,12 @@ RED='\033[0;31m'
 NC='\033[0m'
 
 RESTORED_FLAG="${APP_HOME}/snapshot-restored.txt"
-S3_BUCKET="allora-edgenet-backups"
+S3_BUCKET="allora-testnet-1-backups"
 LATEST_BACKUP_FILE_NAME="latest_backup.txt"
 RCLONE_S3_NAME="allora_s3" #! Replace with your rclone S3 name
 
 echo -e "Please ensure ${GREEN}allorad, rclone and zstd${NC} are installed and setup on your machine before running this script."
-echo -e "For rclone, please make sure to set ${GREEN}requester_pays: true${NC} in advance configuration"
+echo -e "For rclone, please make sure to set ${GREEN}requester_pays: true${NC} in advance configuration of rclone config"
 echo "After installing, re-run this script."
 
 read -p "$(echo -e ${YELLOW}'Press [Enter] key to continue if dependencies are already installed... '${NC})"
