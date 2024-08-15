@@ -48,7 +48,6 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 	// Define inferer address as Bob's address
 	InfererAddress1 := m.BobAddr
 
-	// Create a MsgInsertBulkReputerPayload message
 	workerMsg := &types.MsgInsertWorkerPayload{
 		Sender: InfererAddress1,
 		WorkerDataBundle: &types.WorkerDataBundle{
@@ -107,8 +106,8 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 	return nil
 }
 
-// Worker Bob inserts bulk inference and forecast
-func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, error) {
+// Worker Bob inserts inference and forecast
+func InsertWorkerBundle(m testCommon.TestConfig, topic *types.Topic) (int64, error) {
 	ctx := context.Background()
 	currentBlock, err := m.Client.BlockHeight(ctx)
 	if err != nil {
@@ -122,7 +121,7 @@ func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, error
 
 	// Insert and fulfill nonces for the last two epochs
 	blockHeightEval := freshTopic.EpochLastEnded
-	m.T.Log(time.Now(), "Inserting worker bulk for blockHeightEval: ", blockHeightEval, "; Current block: ", currentBlock)
+	m.T.Log(time.Now(), "Inserting worker bundle for blockHeightEval: ", blockHeightEval, "; Current block: ", currentBlock)
 	err = InsertSingleWorkerPayload(m, freshTopic, blockHeightEval)
 	if err != nil {
 		return 0, err
@@ -131,7 +130,7 @@ func InsertWorkerBulk(m testCommon.TestConfig, topic *types.Topic) (int64, error
 }
 
 // register alice as a reputer in topic 1, then check success
-func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightCurrent int64) error {
+func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeightCurrent int64) error {
 	ctx := context.Background()
 	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
@@ -202,7 +201,6 @@ func InsertReputerBulk(m testCommon.TestConfig, topic *types.Topic, BlockHeightC
 	}
 	reputerPublicKeyBytes := pubKey.Bytes()
 
-	// Create a MsgInsertBulkReputerPayload message
 	lossesMsg := &types.MsgInsertReputerPayload{
 		Sender: reputerAddr,
 		ReputerValueBundle: &types.ReputerValueBundle{
@@ -248,16 +246,16 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 		m.T.Log(time.Now(), "--- Failed getting a topic that was ran ---")
 		require.NoError(m.T, err)
 	}
-	m.T.Log(time.Now(), "--- Insert Worker Bulk ---")
+	m.T.Log(time.Now(), "--- Insert Worker Bundle ---")
 	// Waiting for ground truth lag to pass
-	m.T.Log(time.Now(), "--- Waiting to Insert Reputer Bulk ---")
+	m.T.Log(time.Now(), "--- Waiting to Insert Reputer Bundle ---")
 	blockHeightNonce, err := RunWithRetry(m, 3, 2, func() (int64, error) {
 		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topic.Id})
 		if err != nil {
 			return 0, err
 		}
 		topic := topicResponse.Topic
-		_, err = InsertWorkerBulk(m, topic) // Assuming InsertReputerBulk returns (int, error)
+		_, err = InsertWorkerBundle(m, topic) // Assuming InsertReputerBundle returns (int, error)
 		if err != nil {
 			return 0, err
 		}
@@ -274,8 +272,8 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 		require.NoError(m.T, err)
 	}
 
-	m.T.Log(time.Now(), "--- Insert Reputer Bulk ---")
-	err = InsertReputerBulk(m, topic, blockHeightNonce)
+	m.T.Log(time.Now(), "--- Insert Reputer Bundle ---")
+	err = InsertReputerBundle(m, topic, blockHeightNonce)
 	if err != nil {
 		m.T.Log(time.Now(), "--- Failed inserting reputer payload ---")
 		require.NoError(m.T, err)
