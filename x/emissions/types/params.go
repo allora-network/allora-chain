@@ -14,7 +14,7 @@ func DefaultParams() Params {
 		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),        // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:                   uint64(128),                                   // max number of topics to run cadence for per block
 		RequiredMinimumStake:                cosmosMath.NewInt(100),                        // minimum stake required to be a worker or reputer
-		RemoveStakeDelayWindow:              int64((60 * 60 * 24 * 7 * 3) / 5),             // ~approx 3 weeks assuming 5 second block time, number of blocks to wait before finalizing a stake withdrawal
+		RemoveStakeDelayWindow:              int64((60 * 60 * 24 * 7 * 3) / 3),             // ~approx 3 weeks assuming 3 second block time, number of blocks to wait before finalizing a stake withdrawal
 		MinEpochLength:                      12,                                            // shortest number of blocks per epoch topics are allowed to set as their cadence
 		BetaEntropy:                         alloraMath.MustNewDecFromString("0.25"),       // controls resilience of reward payouts against copycat workers
 		LearningRate:                        alloraMath.MustNewDecFromString("0.05"),       // speed of gradient descent
@@ -42,7 +42,7 @@ func DefaultParams() Params {
 		MaxPageLimit:                        uint64(1000),                                  // max limit for pagination
 		MinEpochLengthRecordLimit:           int64(3),                                      // minimum number of epochs to keep records for a topic
 		MaxSerializedMsgLength:              int64(1000 * 1000),                            // maximum size of data to msg and query server in bytes
-		BlocksPerMonth:                      uint64(525960),                                // ~5 seconds block time, 6311520 per year, 525960 per month
+		BlocksPerMonth:                      uint64(864000),                                // ~3 seconds block time, assuming 30 days in a month 60 * 60 * 24 * 30 / 3
 		PRewardInference:                    alloraMath.NewDecFromInt64(1),                 // fiducial value for rewards calculation
 		PRewardForecast:                     alloraMath.NewDecFromInt64(3),                 // fiducial value for rewards calculation
 		PRewardReputer:                      alloraMath.NewDecFromInt64(3),                 // fiducial value for rewards calculation

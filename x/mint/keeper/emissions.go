@@ -66,6 +66,39 @@ func GetNumStakedTokens(ctx context.Context, k types.MintKeeper) (math.Int, erro
 	return cosmosValidatorsStaked.Add(reputersStaked), nil
 }
 
+// return the circulating supply of tokens
+func GetCirculatingSupply(
+	ctx context.Context,
+	k types.MintKeeper,
+	params types.Params,
+	blockHeight uint64,
+	blocksPerMonth uint64,
+) (
+	circulatingSupply,
+	totalSupply,
+	lockedVestingTokens,
+	ecosystemLocked math.Int,
+	err error,
+) {
+	ecosystemBalance, err := k.GetEcosystemBalance(ctx, params.MintDenom)
+	if err != nil {
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
+	}
+	totalSupply = params.MaxSupply
+	lockedVestingTokens, _, _, _ = GetLockedVestingTokens(
+		blocksPerMonth,
+		math.NewIntFromUint64(blockHeight),
+		params,
+	)
+	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(ctx, params)
+	if err != nil {
+		return math.Int{}, math.Int{}, math.Int{}, math.Int{}, err
+	}
+	ecosystemLocked = ecosystemBalance.Add(ecosystemMintSupplyRemaining)
+	circulatingSupply = totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
+	return circulatingSupply, totalSupply, lockedVestingTokens, ecosystemLocked, nil
+}
+
 // The total amount of tokens emitted for a full month
 // \cal E_i = e_i*N_{staked,i}
 // where e_i is the emission per unit staked token
@@ -178,4 +211,20 @@ func GetExponentialMovingAverage(
 	inverseAlpha := math.OneInt().ToLegacyDec().Sub(alphaEmission)
 	secondTerm := inverseAlpha.Mul(previousRewardEmissionPerUnitStakedToken)
 	return firstTerm.Add(secondTerm)
+}
+
+// How many tokens are left that the ecosystem bucket is allowed to mint?
+func (k Keeper) GetEcosystemMintSupplyRemaining(
+	ctx context.Context,
+	params types.Params,
+) (math.Int, error) {
+	// calculate how many tokens left the ecosystem account is allowed to mint
+	ecosystemTokensAlreadyMinted, err := k.EcosystemTokensMinted.Get(ctx)
+	if err != nil {
+		return math.Int{}, err
+	}
+	// check that you are allowed to mint more tokens and we haven't hit the max supply
+	ecosystemMaxSupply := math.LegacyNewDecFromInt(params.MaxSupply).
+		Mul(params.EcosystemTreasuryPercentOfTotalSupply).TruncateInt()
+	return ecosystemMaxSupply.Sub(ecosystemTokensAlreadyMinted), nil
 }
