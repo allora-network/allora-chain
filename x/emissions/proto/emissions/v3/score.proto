@@ -1,0 +1,20 @@
+syntax = "proto3";
+package emissions.v3;
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+message Score {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  string address = 3;
+  string score = 4
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+}
+
+message Scores {
+  repeated Score scores = 1;
+}
