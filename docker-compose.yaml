@@ -8,9 +8,9 @@ services:
       - MONIKER=sample_validator
       - APP_HOME=/data
       - HOME=/data
-      - STATE_SYNC_RPC1=https://allora-rpc.testnet-1.testnet.allora.network:443
-      - STATE_SYNC_RPC2=https://allora-rpc.testnet-1.testnet.allora.network:443
-      - UPGRADE=false # set this to true for chain upgrade runs
+      # - STATE_SYNC_RPC1=https://allora-rpc.testnet-1.testnet.allora.network:443
+      # - STATE_SYNC_RPC2=https://allora-rpc.testnet-1.testnet.allora.network:443
+      - UPGRADE=true # set this to true for chain upgrade runs
     volumes:
       - ./data:/data
       - ./scripts/:/scripts
