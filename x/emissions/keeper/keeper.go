@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"sort"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -995,6 +994,26 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 		return nil, err
 	}
 	return &lossBundle, nil
+}
+
+// Returns the latest network loss bundle for a given topic id.
+func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TopicId) (*types.ValueBundle, error) {
+	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
+	iter, err := k.networkLossBundles.Iterate(ctx, rng)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	if iter.Valid() {
+		keyValue, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
+		}
+		return &keyValue.Value, nil
+	}
+
+	return nil, nil
 }
 
 /// STAKING
@@ -2175,36 +2194,34 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 	}
 	defer iter.Close()
 
-	scores := make([]*types.Score, 0)
-	for ; iter.Valid(); iter.Next() {
-		existingScores, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
-		}
-		scores = append(scores, existingScores.Value.Scores...)
-	}
-
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
-	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
+	maxNumTimeSteps := int(moduleParams.MaxSamplesToScaleScores)
 
-	// Sort blockScores first by BlockHeight in descending order, then by Address
-	sort.SliceStable(scores, func(i, j int) bool {
-		if scores[i].BlockHeight == scores[j].BlockHeight {
-			return scores[i].Address < scores[j].Address
+	scores := make([]*types.Score, 0, maxNumTimeSteps)
+
+	for iter.Valid() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
 		}
-		return scores[i].BlockHeight > scores[j].BlockHeight
-	})
 
-	// Collect the sorted scores up to the maximum number of time steps
-	sortedScores := make([]*types.Score, 0, len(scores))
-	for i := 0; i < len(scores) && i < int(maxNumTimeSteps); i++ {
-		sortedScores = append(sortedScores, scores[i])
+		for _, score := range existingScores.Value.Scores {
+			if len(scores) < maxNumTimeSteps {
+				scores = append(scores, score)
+			} else {
+				break
+			}
+		}
+		if len(scores) >= maxNumTimeSteps {
+			break
+		}
+		iter.Next()
 	}
 
-	return sortedScores, nil
+	return scores, nil
 }
 
 func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
@@ -2254,36 +2271,34 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 	}
 	defer iter.Close()
 
-	scores := make([]*types.Score, 0)
-	for ; iter.Valid(); iter.Next() {
-		existingScores, err := iter.KeyValue()
-		if err != nil {
-			return nil, err
-		}
-		scores = append(scores, existingScores.Value.Scores...)
-	}
-
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return nil, err
 	}
-	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
+	maxNumTimeSteps := int(moduleParams.MaxSamplesToScaleScores)
 
-	// Sort blockScores first by BlockHeight in descending order, then by Address
-	sort.SliceStable(scores, func(i, j int) bool {
-		if scores[i].BlockHeight == scores[j].BlockHeight {
-			return scores[i].Address < scores[j].Address
+	scores := make([]*types.Score, 0, maxNumTimeSteps)
+
+	for iter.Valid() {
+		existingScores, err := iter.KeyValue()
+		if err != nil {
+			return nil, err
 		}
-		return scores[i].BlockHeight > scores[j].BlockHeight
-	})
 
-	// Collect the sorted scores up to the maximum number of time steps
-	sortedScores := make([]*types.Score, 0)
-	for i := 0; i < len(scores) && i < int(maxNumTimeSteps); i++ {
-		sortedScores = append(sortedScores, scores[i])
+		for _, score := range existingScores.Value.Scores {
+			if len(scores) < maxNumTimeSteps {
+				scores = append(scores, score)
+			} else {
+				break
+			}
+		}
+		if len(scores) >= maxNumTimeSteps {
+			break
+		}
+		iter.Next()
 	}
 
-	return sortedScores, nil
+	return scores, nil
 }
 
 func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {

@@ -28,14 +28,14 @@ func GetEmissionPerMonth(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	totalSupply := params.MaxSupply
-	lockedVestingTokens, _, _, _ := keeper.GetLockedVestingTokens(
-		blocksPerMonth,
-		math.NewIntFromUint64(blockHeight),
-		params,
-	)
-	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
-	circulatingSupply := totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
+	circulatingSupply,
+		totalSupply,
+		lockedVestingTokens,
+		ecosystemLocked,
+		err := keeper.GetCirculatingSupply(ctx, k, params, blockHeight, blocksPerMonth)
+	if err != nil {
+		return math.Int{}, math.LegacyDec{}, err
+	}
 	if circulatingSupply.IsNegative() {
 		ctx.Logger().Error(
 			"Negative circulating supply",
@@ -113,23 +113,6 @@ func GetEmissionPerMonth(
 	return emissionPerMonth, emissionPerUnitStakedToken, nil
 }
 
-// How many tokens are left that the ecosystem bucket is allowed to mint?
-func GetEcosystemMintSupplyRemaining(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	params types.Params,
-) (math.Int, error) {
-	// calculate how many tokens left the ecosystem account is allowed to mint
-	ecosystemTokensAlreadyMinted, err := k.EcosystemTokensMinted.Get(ctx)
-	if err != nil {
-		return math.Int{}, err
-	}
-	// check that you are allowed to mint more tokens and we haven't hit the max supply
-	ecosystemMaxSupply := math.LegacyNewDecFromInt(params.MaxSupply).
-		Mul(params.EcosystemTreasuryPercentOfTotalSupply).TruncateInt()
-	return ecosystemMaxSupply.Sub(ecosystemTokensAlreadyMinted), nil
-}
-
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -149,7 +132,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
-	ecosystemMintSupplyRemaining, err := GetEcosystemMintSupplyRemaining(sdkCtx, k, params)
+	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(sdkCtx, params)
 	if err != nil {
 		return err
 	}

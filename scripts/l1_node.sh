@@ -13,6 +13,7 @@ MONIKER="${MONIKER:-$(hostname)}"
 KEYRING_BACKEND=test                              #! Use test for simplicity, you should decide which backend to use !!!
 GENESIS_FILE="${APP_HOME}/config/genesis.json"
 DENOM="uallo"
+RPC_PORT="${RPC_PORT:-26657}"
 
 if [ "$RESTORE_S3_SNAPSHOT" == "true" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -50,4 +50,6 @@ type MintKeeper interface {
 	GetTotalCurrTokenSupply(ctx context.Context) sdk.Coin
 	GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (math.LegacyDec, error)
 	GetPreviousRewardEmissionPerUnitStakedToken(ctx context.Context) (math.LegacyDec, error)
+	GetEcosystemMintSupplyRemaining(ctx context.Context, params Params) (math.Int, error)
+	GetEcosystemBalance(ctx context.Context, mintDenom string) (math.Int, error)
 }

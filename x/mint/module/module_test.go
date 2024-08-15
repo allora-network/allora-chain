@@ -159,7 +159,7 @@ func TestMintModuleTestSuite(t *testing.T) {
 func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown() {
 	params, err := s.mintKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
-	ecosystemMintSupplyRemaining, err := mint.GetEcosystemMintSupplyRemaining(s.ctx, s.mintKeeper, params)
+	ecosystemMintSupplyRemaining, err := s.mintKeeper.GetEcosystemMintSupplyRemaining(s.ctx, params)
 	s.Require().NoError(err)
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("300000000000000000000000000")

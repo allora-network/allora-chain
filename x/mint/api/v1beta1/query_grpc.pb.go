@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName    = "/mint.v1beta1.Query/Params"
-	Query_Inflation_FullMethodName = "/mint.v1beta1.Query/Inflation"
+	Query_Params_FullMethodName       = "/mint.v1beta1.Query/Params"
+	Query_Inflation_FullMethodName    = "/mint.v1beta1.Query/Inflation"
+	Query_EmissionInfo_FullMethodName = "/mint.v1beta1.Query/EmissionInfo"
 )
 
 // QueryClient is the client API for Query service.
@@ -31,6 +32,7 @@ type QueryClient interface {
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
 	// Inflation returns the current minting inflation value.
 	Inflation(ctx context.Context, in *QueryInflationRequest, opts ...grpc.CallOption) (*QueryInflationResponse, error)
+	EmissionInfo(ctx context.Context, in *QueryEmissionInfoRequest, opts ...grpc.CallOption) (*QueryEmissionInfoResponse, error)
 }
 
 type queryClient struct {
@@ -59,6 +61,15 @@ func (c *queryClient) Inflation(ctx context.Context, in *QueryInflationRequest, 
 	return out, nil
 }
 
+func (c *queryClient) EmissionInfo(ctx context.Context, in *QueryEmissionInfoRequest, opts ...grpc.CallOption) (*QueryEmissionInfoResponse, error) {
+	out := new(QueryEmissionInfoResponse)
+	err := c.cc.Invoke(ctx, Query_EmissionInfo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -67,6 +78,7 @@ type QueryServer interface {
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 	// Inflation returns the current minting inflation value.
 	Inflation(context.Context, *QueryInflationRequest) (*QueryInflationResponse, error)
+	EmissionInfo(context.Context, *QueryEmissionInfoRequest) (*QueryEmissionInfoResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -79,6 +91,9 @@ func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*Q
 }
 func (UnimplementedQueryServer) Inflation(context.Context, *QueryInflationRequest) (*QueryInflationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Inflation not implemented")
+}
+func (UnimplementedQueryServer) EmissionInfo(context.Context, *QueryEmissionInfoRequest) (*QueryEmissionInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EmissionInfo not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -129,6 +144,24 @@ func _Query_Inflation_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_EmissionInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryEmissionInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).EmissionInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_EmissionInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).EmissionInfo(ctx, req.(*QueryEmissionInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -143,6 +176,10 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Inflation",
 			Handler:    _Query_Inflation_Handler,
+		},
+		{
+			MethodName: "EmissionInfo",
+			Handler:    _Query_EmissionInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
