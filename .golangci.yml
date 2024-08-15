@@ -69,8 +69,6 @@ issues:
     - linters:
         - stylecheck
       text: "ST1005:" # punctuation in error messages
-
-    #lint:ignore SA1019 deprecated code breaking unit tests
     - linters:
         - staticcheck
       text: "SA1019: \"github.com/cosmos/ibc-go/v8/modules/core/02-client/types\" is deprecated`"

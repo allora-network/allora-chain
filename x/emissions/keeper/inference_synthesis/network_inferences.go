@@ -45,7 +45,7 @@ func GetNetworkInferences(
 		}
 	} else {
 		inferences, err = k.GetInferencesAtBlock(ctx, topicId, *inferencesNonce)
-		inferenceBlockHeight = int64(*inferencesNonce)
+		inferenceBlockHeight = *inferencesNonce
 		if err != nil || len(inferences.Inferences) == 0 {
 			return nil, nil, nil, nil, inferenceBlockHeight, lossBlockHeight, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, *inferencesNonce)
 		}
@@ -70,7 +70,7 @@ func GetNetworkInferences(
 	}
 
 	// Retrieve forecasts
-	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, BlockHeight(inferenceBlockHeight))
+	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferenceBlockHeight)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			forecasts = &emissions.Forecasts{
