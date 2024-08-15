@@ -39,7 +39,7 @@ func TestStressTestSuite(t *testing.T) {
 	topicsPerIteration := testCommon.LookupEnvInt(t, "TOPICS_PER_ITERATION", 1)
 	topicsMax := testCommon.LookupEnvInt(t, "TOPICS_MAX", 100)
 	maxIterations := testCommon.LookupEnvInt(t, "MAX_ITERATIONS", 1000)
-	epochLength := testCommon.LookupEnvInt(t, "EPOCH_LENGTH", 5)
+	epochLength := testCommon.LookupEnvInt(t, "EPOCH_LENGTH", 12)
 	doFinalReport := testCommon.LookupEnvBool(t, "FINAL_REPORT", false)
 
 	t.Log("Reputers per iteration: ", reputersPerIteration)
