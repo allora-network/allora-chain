@@ -152,6 +152,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.EpsilonSafeDiv) == 1 {
 		existingParams.EpsilonSafeDiv = newParams.EpsilonSafeDiv[0]
 	}
+	if len(newParams.MaxElementsPerForecast) == 1 {
+		existingParams.MaxElementsPerForecast = newParams.MaxElementsPerForecast[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err

@@ -3,6 +3,7 @@ package msgserver_test
 import (
 	"errors"
 	"fmt"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -434,7 +435,7 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeNegative() {
 	}
 
 	_, err := s.msgServer.RemoveStake(ctx, msg)
-	require.ErrorIs(err, types.ErrInvalidValue)
+	require.ErrorIs(err, sdkerrors.ErrInvalidCoins)
 }
 
 func (s *MsgServerTestSuite) TestDelegateStake() {
@@ -1791,7 +1792,7 @@ func (s *MsgServerTestSuite) TestCancelRemoveStake() {
 	require := s.Require()
 
 	// Set up test data
-	reputer := "reputer"
+	reputer := getNewAddress()
 	topicID := uint64(123)
 	amount := cosmosMath.NewInt(50)
 
@@ -1826,7 +1827,7 @@ func (s *MsgServerTestSuite) TestCancelRemoveStakeNotExist() {
 	ctx := s.ctx
 	require := s.Require()
 	// Set up test data
-	reputer := "reputer"
+	reputer := getNewAddress()
 	topicID := uint64(123)
 	// Call CancelRemoveDelegateStake
 	msg := &types.MsgCancelRemoveStake{
@@ -1842,8 +1843,8 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
 	// Set up test data
-	delegator := "delegator"
-	reputer := "reputer"
+	delegator := getNewAddress()
+	reputer := getNewAddress()
 	topicID := uint64(123)
 	amount := cosmosMath.NewInt(50)
 
@@ -1879,8 +1880,8 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStakeNotExist() {
 	ctx := s.ctx
 	require := s.Require()
 	// Set up test data
-	delegator := "delegator"
-	reputer := "reputer"
+	delegator := getNewAddress()
+	reputer := getNewAddress()
 	topicID := uint64(123)
 	// Call CancelRemoveDelegateStake
 	msg := &types.MsgCancelRemoveDelegateStake{
