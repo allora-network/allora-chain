@@ -3,6 +3,7 @@ package msgserver_test
 import (
 	"errors"
 	"fmt"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -434,7 +435,7 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeNegative() {
 	}
 
 	_, err := s.msgServer.RemoveStake(ctx, msg)
-	require.ErrorIs(err, types.ErrInvalidValue)
+	require.ErrorIs(err, sdkerrors.ErrInvalidCoins)
 }
 
 func (s *MsgServerTestSuite) TestDelegateStake() {
