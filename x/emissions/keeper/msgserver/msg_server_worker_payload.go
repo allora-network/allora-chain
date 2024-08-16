@@ -121,6 +121,9 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		}
 
 		moduleParams, err := ms.k.GetParams(ctx)
+		if err != nil {
+			return nil, err
+		}
 		_, topNInferer := actor_utils.FindTopNByScoreDesc(moduleParams.MaxTopForecasterElementsToSubmit, latestForecastScores, forecast.BlockHeight)
 
 		for _, el := range forecast.ForecastElements {
