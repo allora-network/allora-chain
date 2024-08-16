@@ -224,7 +224,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	_ = s.emissionsKeeper.AddWhitelistAdmin(s.ctx, adminAddr.String())
 
 	newParams := &types.OptionalParams{
-		MaxElementsPerForecast: []uint64{5},
+		MaxElementsPerForecast: []uint64{3},
 	}
 
 	updateMsg := &types.MsgUpdateParams{

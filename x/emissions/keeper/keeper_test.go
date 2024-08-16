@@ -1003,7 +1003,7 @@ func (s *KeeperTestSuite) TestGetParamsMaxTopForecasterElementToSubmit() {
 	expectedValue := uint64(50) // Example expected value
 
 	// Set the parameter
-	params := types.Params{MaxTopForecasterElementsToSubmit: expectedValue}
+	params := types.Params{MaxElementsPerForecast: expectedValue}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err)
 
@@ -1011,8 +1011,8 @@ func (s *KeeperTestSuite) TestGetParamsMaxTopForecasterElementToSubmit() {
 
 	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
-	actualValue := moduleParams.MaxTopForecasterElementsToSubmit
-	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopForecasterElementsToSubmit should match the expected value")
+	actualValue := moduleParams.MaxElementsPerForecast
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxElementsPerForecast should match the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesWorker() {

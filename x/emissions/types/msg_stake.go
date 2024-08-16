@@ -33,11 +33,11 @@ func (msg *MsgDelegateStake) Validate() error {
 }
 
 func (msg *MsgRemoveDelegateStake) Validate() error {
-	return validateHelper([]string{msg.Sender, msg.Sender}, msg.Amount)
+	return validateHelper([]string{msg.Sender, msg.Reputer}, msg.Amount)
 }
 
 func (msg *MsgCancelRemoveDelegateStake) Validate() error {
-	return validateHelper([]string{msg.Sender, msg.Delegator, msg.Sender}, cosmosMath.ZeroInt())
+	return validateHelper([]string{msg.Sender, msg.Reputer}, cosmosMath.ZeroInt())
 }
 
 func (msg *MsgRewardDelegateStake) Validate() error {
