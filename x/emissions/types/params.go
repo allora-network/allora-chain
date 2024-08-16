@@ -13,7 +13,7 @@ func DefaultParams() Params {
 		Version:                             "v2",                                          // version of the protocol should be in lockstep with github release tag version
 		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),        // total weight for a topic < this => don't run inference solicatation or loss update
 		MaxTopicsPerBlock:                   uint64(128),                                   // max number of topics to run cadence for per block
-		RequiredMinimumStake:                cosmosMath.NewInt(100),                        // minimum stake required to be a worker or reputer
+		RequiredMinimumStake:                cosmosMath.NewInt(10000),                      // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:              int64((60 * 60 * 24 * 7 * 3) / 3),             // ~approx 3 weeks assuming 3 second block time, number of blocks to wait before finalizing a stake withdrawal
 		MinEpochLength:                      12,                                            // shortest number of blocks per epoch topics are allowed to set as their cadence
 		BetaEntropy:                         alloraMath.MustNewDecFromString("0.25"),       // controls resilience of reward payouts against copycat workers
@@ -31,13 +31,13 @@ func DefaultParams() Params {
 		TaskRewardAlpha:                     alloraMath.MustNewDecFromString("0.1"),        // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 		ValidatorsVsAlloraPercentReward:     alloraMath.MustNewDecFromString("0.25"),       // 25% rewards go to cosmos network validators
 		MaxSamplesToScaleScores:             uint64(10),                                    // maximum number of previous scores to store and use for standard deviation calculation
-		MaxTopInferersToReward:              uint64(48),                                    // max this many top inferers by score are rewarded for a topic
+		MaxTopInferersToReward:              uint64(32),                                    // max this many top inferers by score are rewarded for a topic
 		MaxTopForecastersToReward:           uint64(6),                                     // max this many top forecasters by score are rewarded for a topic
-		MaxTopReputersToReward:              uint64(12),                                    // max this many top reputers by score are rewarded for a topic
-		CreateTopicFee:                      cosmosMath.NewInt(10),                         // topic registration fee
+		MaxTopReputersToReward:              uint64(6),                                     // max this many top reputers by score are rewarded for a topic
+		CreateTopicFee:                      cosmosMath.NewInt(75000),                      // topic registration fee
 		MaxRetriesToFulfilNoncesWorker:      int64(1),                                      // max throttle of simultaneous unfulfilled worker requests
 		MaxRetriesToFulfilNoncesReputer:     int64(3),                                      // max throttle of simultaneous unfulfilled reputer requests
-		RegistrationFee:                     cosmosMath.NewInt(10),                         // how much workers and reputers must pay to register per topic
+		RegistrationFee:                     cosmosMath.NewInt(200),                        // how much workers and reputers must pay to register per topic
 		DefaultPageLimit:                    uint64(100),                                   // how many topics to return per page during churn of requests
 		MaxPageLimit:                        uint64(1000),                                  // max limit for pagination
 		MinEpochLengthRecordLimit:           int64(3),                                      // minimum number of epochs to keep records for a topic

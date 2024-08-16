@@ -59,7 +59,7 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 	_, err = msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
-	workerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(1000)))
+	workerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(11000)))
 
 	s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, workerInitialBalanceCoins)
 	s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName, workerInitialBalanceCoins)
@@ -84,7 +84,9 @@ func (s *MsgServerTestSuite) TestMsgAddStake() {
 	reputerAddr := sdk.AccAddress(PKS[0].Address()).String() // delegator
 	workerAddr := sdk.AccAddress(PKS[1].Address()).String()  // target
 	stakeAmount := cosmosMath.NewInt(10)
-	registrationInitialBalance := cosmosMath.NewInt(100)
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	require.NoError(err)
+	registrationInitialBalance := moduleParams.RegistrationFee.Add(stakeAmount)
 
 	topicId := s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialBalance)
 
