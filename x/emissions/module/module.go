@@ -46,8 +46,10 @@ func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
 func (AppModule) Name() string { return types.ModuleName }
 
 // RegisterLegacyAminoCodec registers the state module's types on the LegacyAmino codec.
-// New modules do not need to support Amino.
-func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
+func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	// TODO: Implement full Amino codec registration if needed in the future
+	// types.RegisterLegacyAminoCodec(cdc)
+}
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the state module.
 func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {

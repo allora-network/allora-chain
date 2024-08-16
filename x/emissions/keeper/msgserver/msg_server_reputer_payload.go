@@ -2,7 +2,6 @@ package msgserver
 
 import (
 	"context"
-
 	errorsmod "cosmossdk.io/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -11,7 +10,11 @@ import (
 
 // A tx function that accepts a individual loss and possibly returns an error
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInsertReputerPayload) (*types.MsgInsertReputerPayloadResponse, error) {
-	err := checkInputLength(ctx, ms, msg)
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	err = checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}
