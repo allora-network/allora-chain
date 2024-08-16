@@ -36,9 +36,11 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		return errors.Wrapf(err, "failed to unmarshal old parameters")
 	}
 
+	defaultParams := types.DefaultParams()
+
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
-	// 		N/A
+	//      MaxElementsPerForecast
 	// REMOVED:
 	// 		MinEffectiveTopicRevenue
 	newParams := types.Params{
@@ -84,6 +86,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		HalfMaxProcessStakeRemovalsEndBlock: oldParams.HalfMaxProcessStakeRemovalsEndBlock,
 		EpsilonSafeDiv:                      oldParams.EpsilonSafeDiv,
 		DataSendingFee:                      oldParams.DataSendingFee,
+		MaxElementsPerForecast:              defaultParams.MaxElementsPerForecast,
 	}
 
 	store.Delete(types.ParamsKey)

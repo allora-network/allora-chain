@@ -122,6 +122,8 @@ func (s *MigrationTestSuite) TestMigrate() {
 	err := migrations.MigrateStore(s.ctx, *s.emissionsKeeper)
 	s.Require().NoError(err)
 
+	// TO BE ADDED VIA DEFAULT PARAMS
+	// MaxElementsPerForecast: defaultParams.MaxElementsPerForecast
 	paramsExpected := defaultParams
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -168,5 +170,6 @@ func (s *MigrationTestSuite) TestMigrate() {
 	s.Require().Equal(paramsExpected.HalfMaxProcessStakeRemovalsEndBlock, params.HalfMaxProcessStakeRemovalsEndBlock)
 	s.Require().True(paramsExpected.EpsilonSafeDiv.Equal(params.EpsilonSafeDiv), "%s!=%s", paramsExpected.EpsilonSafeDiv, params.EpsilonSafeDiv)
 	s.Require().True(paramsExpected.DataSendingFee.Equal(params.DataSendingFee), "%s!=%s", paramsExpected.DataSendingFee, params.DataSendingFee)
+	s.Require().Equal(paramsExpected.MaxElementsPerForecast, params.MaxElementsPerForecast)
 	s.Require().Equal(paramsExpected, params)
 }
