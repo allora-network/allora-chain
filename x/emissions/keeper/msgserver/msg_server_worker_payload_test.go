@@ -214,11 +214,26 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredInfe
 	require.Error(err, types.ErrNoValidBundles)
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopForecastElements() {
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerForecast() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	workerPrivateKey := secp256k1.GenPrivKey()
+	adminPrivateKey := secp256k1.GenPrivKey()
+	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
+	_ = s.emissionsKeeper.AddWhitelistAdmin(s.ctx, adminAddr.String())
+
+	newParams := &types.OptionalParams{
+		MaxElementsPerForecast: []uint64{5},
+	}
+
+	updateMsg := &types.MsgUpdateParams{
+		Sender: adminAddr.String(),
+		Params: newParams,
+	}
+
+	_, err := s.msgServer.UpdateParams(s.ctx, updateMsg)
+	require.NoError(err, "UpdateParams should not return an error")
 
 	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
@@ -245,14 +260,14 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopForecastElement
 	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer3, score3)
 	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer4, score4)
 
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
 
 	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
 
 	require.NoError(err)
 
-	require.Equal(len(forecasts.Forecasts[0].ForecastElements), int(param.MaxTopForecasterElementsToSubmit))
+	require.Equal(len(forecasts.Forecasts[0].ForecastElements), int(param.MaxElementsPerForecast))
 	require.Equal(forecasts.Forecasts[0].ForecastElements[0].Inferer, inferer1)
 	require.Equal(forecasts.Forecasts[0].ForecastElements[1].Inferer, inferer2)
 	require.Equal(forecasts.Forecasts[0].ForecastElements[2].Inferer, inferer4)

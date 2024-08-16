@@ -136,5 +136,5 @@ message Params {
     (amino.dont_omitempty) = true
   ];
   // payload sending fee for reputer or worker
-  uint64 max_top_forecaster_elements_to_submit = 45;  // max number of top forecasters by score to reward
+  uint64 max_elements_per_forecast = 45;  // max number of top forecasters by score to reward
 }
