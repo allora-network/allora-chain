@@ -67,6 +67,6 @@ message WorkerDataBundle {
   string pubkey = 6;
 }
 
-message WorkerDataBundles {
+message WorkerDataBundles {  // This will be in the incoming message, sent by leader
   repeated WorkerDataBundle worker_data_bundles = 1;
 }

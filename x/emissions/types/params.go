@@ -52,6 +52,7 @@ func DefaultParams() Params {
 		TopicFeeRevenueDecayRate:            alloraMath.MustNewDecFromString("0.0025"),    // rate at which topic fee revenue decays over time
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                   // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
 		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
+		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
 	}
 }
 
@@ -183,7 +184,9 @@ func (p Params) Validate() error {
 	if err := validateDataSendingFee(p.DataSendingFee); err != nil {
 		return err
 	}
-
+	if err := validateMaxElementsPerForecast(p.MaxElementsPerForecast); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -433,6 +436,12 @@ func validateMaxTopInferersToReward(_ uint64) error {
 // max this many top workers by score are rewarded for a topic
 // Should be zero or positive. Enforced by uint type
 func validateMaxTopForecastersToReward(_ uint64) error {
+	return nil
+}
+
+// max this many top forecast elements per forecast
+// Should be zero or positive. Enforced by uint type
+func validateMaxElementsPerForecast(_ uint64) error {
 	return nil
 }
 

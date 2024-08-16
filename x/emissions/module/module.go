@@ -9,8 +9,8 @@ import (
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
-	v2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
-	v3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
+	migrationV2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
+	migrationV3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -47,8 +47,10 @@ func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
 func (AppModule) Name() string { return types.ModuleName }
 
 // RegisterLegacyAminoCodec registers the state module's types on the LegacyAmino codec.
-// New modules do not need to support Amino.
-func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
+func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	// TODO: Implement full Amino codec registration if needed in the future
+	// types.RegisterLegacyAminoCodec(cdc)
+}
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the state module.
 func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {
@@ -71,12 +73,12 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), queryserver.NewQueryServerImpl(am.keeper))
 
 	if err := cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {
-		return v2.MigrateStore(ctx, am.keeper)
+		return migrationV2.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
 	}
 	if err := cfg.RegisterMigration(types.ModuleName, 2, func(ctx sdk.Context) error {
-		return v3.MigrateStore(ctx, am.keeper)
+		return migrationV3.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 2 to 3: %v", types.ModuleName, err))
 	}
