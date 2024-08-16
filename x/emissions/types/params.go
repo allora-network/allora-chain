@@ -53,6 +53,7 @@ func DefaultParams() Params {
 		MinEffectiveTopicRevenue:            alloraMath.MustNewDecFromString("0.00000001"), // we no stop dripping from the topic's effective revenue when the topic's effective revenue is below this
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                    // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
 		DataSendingFee:                      cosmosMath.NewInt(10),                         // how much workers and reputers must pay to send payload
+		MaxTopForecasterElementsToSubmit:    uint64(3),                                     // top forecast elements by score
 	}
 }
 
@@ -190,7 +191,9 @@ func (p Params) Validate() error {
 	if err := validateDataSendingFee(p.DataSendingFee); err != nil {
 		return err
 	}
-
+	if err := validateMaxTopForecasterElementsToSubmit(p.MaxTopForecasterElementsToSubmit); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -440,6 +443,12 @@ func validateMaxTopInferersToReward(_ uint64) error {
 // max this many top workers by score are rewarded for a topic
 // Should be zero or positive. Enforced by uint type
 func validateMaxTopForecastersToReward(_ uint64) error {
+	return nil
+}
+
+// max this many top forecast elements by score
+// Should be zero or positive. Enforced by uint type
+func validateMaxTopForecasterElementsToSubmit(_ uint64) error {
 	return nil
 }
 

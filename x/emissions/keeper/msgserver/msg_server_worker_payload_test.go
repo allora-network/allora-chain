@@ -33,6 +33,8 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	reputerAddr := getNewAddress()
 	InfererAddr := getNewAddress()
 	Inferer2Addr := getNewAddress()
+	Inferer3Addr := getNewAddress()
+	Inferer4Addr := getNewAddress()
 	ForecasterAddr := getNewAddress()
 
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
@@ -75,6 +77,14 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 						{
 							Inferer: Inferer2Addr,
 							Value:   alloraMath.NewDecFromInt64(101),
+						},
+						{
+							Inferer: Inferer3Addr,
+							Value:   alloraMath.NewDecFromInt64(102),
+						},
+						{
+							Inferer: Inferer4Addr,
+							Value:   alloraMath.NewDecFromInt64(103),
 						},
 					},
 				},
@@ -202,6 +212,50 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredInfe
 
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.Error(err, types.ErrNoValidBundles)
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopForecastElements() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+
+	param, _ := s.emissionsKeeper.GetParams(ctx)
+
+	ctx = ctx.WithBlockHeight(blockHeight)
+
+	inferer1 := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Inferer
+	inferer2 := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[1].Inferer
+	inferer3 := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[2].Inferer
+	inferer4 := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[3].Inferer
+
+	score1 := types.Score{TopicId: topicId, BlockHeight: blockHeight, Address: inferer1, Score: alloraMath.NewDecFromInt64(95)}
+	score2 := types.Score{TopicId: topicId, BlockHeight: blockHeight, Address: inferer2, Score: alloraMath.NewDecFromInt64(90)}
+	score3 := types.Score{TopicId: topicId, BlockHeight: blockHeight, Address: inferer3, Score: alloraMath.NewDecFromInt64(80)}
+	score4 := types.Score{TopicId: topicId, BlockHeight: blockHeight, Address: inferer4, Score: alloraMath.NewDecFromInt64(99)}
+
+	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer1, score1)
+	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer2, score2)
+	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer3, score3)
+	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer4, score4)
+
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
+
+	require.NoError(err)
+
+	require.Equal(len(forecasts.Forecasts[0].ForecastElements), int(param.MaxTopForecasterElementsToSubmit))
+	require.Equal(forecasts.Forecasts[0].ForecastElements[0].Inferer, inferer1)
+	require.Equal(forecasts.Forecasts[0].ForecastElements[1].Inferer, inferer2)
+	require.Equal(forecasts.Forecasts[0].ForecastElements[2].Inferer, inferer4)
 }
 
 func (s *MsgServerTestSuite) getCountForecastsAtBlock(topicId uint64, blockHeight int64) int {

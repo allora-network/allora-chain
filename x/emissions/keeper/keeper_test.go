@@ -997,6 +997,24 @@ func (s *KeeperTestSuite) TestGetParamsMaxTopForecastersToReward() {
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopForecastersToReward should match the expected value")
 }
 
+func (s *KeeperTestSuite) TestGetParamsMaxTopForecasterElementToSubmit() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	expectedValue := uint64(50) // Example expected value
+
+	// Set the parameter
+	params := types.Params{MaxTopForecasterElementsToSubmit: expectedValue}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	// Get the parameter
+
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
+	actualValue := moduleParams.MaxTopForecasterElementsToSubmit
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopForecasterElementsToSubmit should match the expected value")
+}
+
 func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesWorker() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper

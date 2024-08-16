@@ -2,8 +2,8 @@ package msgserver
 
 import (
 	"context"
-
 	errorsmod "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -107,11 +107,24 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 				"Error forecaster address is not registered in this topic")
 		}
 
+		latestForecastScores := make(map[string]types.Score)
 		// Remove duplicate forecast element
 		acceptedForecastElements := make([]*types.ForecastElement, 0)
 		seenInferers := make(map[string]bool)
+
 		for _, el := range forecast.ForecastElements {
-			if !seenInferers[el.Inferer] {
+			score, err := ms.k.GetLatestInfererScore(ctx, forecast.TopicId, el.Inferer)
+			if err != nil {
+				continue
+			}
+			latestForecastScores[el.Inferer] = score
+		}
+
+		moduleParams, err := ms.k.GetParams(ctx)
+		_, topNInferer := actor_utils.FindTopNByScoreDesc(moduleParams.MaxTopForecasterElementsToSubmit, latestForecastScores, forecast.BlockHeight)
+
+		for _, el := range forecast.ForecastElements {
+			if !seenInferers[el.Inferer] && topNInferer[el.Inferer] {
 				acceptedForecastElements = append(acceptedForecastElements, el)
 				seenInferers[el.Inferer] = true
 			}
