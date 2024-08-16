@@ -3,7 +3,6 @@ package msgserver_test
 import (
 	"encoding/hex"
 
-	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
@@ -39,10 +38,11 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
 
-	registrationInitialStake := cosmosMath.NewInt(100)
+	moduleParams, err := keeper.GetParams(ctx)
+	s.Require().NoError(err)
 
 	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
 	keeper.AddWorkerNonce(ctx, topicId, &nonce)
 	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
 	keeper.InsertWorker(ctx, topicId, Inferer2Addr, workerInfo)
@@ -418,10 +418,11 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
 	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
-	registrationInitialStake := cosmosMath.NewInt(100)
+	moduleParams, err := keeper.GetParams(ctx)
+	require.NoError(err)
 
 	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
 	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
@@ -458,7 +459,7 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	}
 
 	src := make([]byte, 0)
-	src, err := workerMsg.WorkerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
+	src, err = workerMsg.WorkerDataBundle.InferenceForecastsBundle.XXX_Marshal(src, true)
 	require.NoError(err, "Marshall reputer value bundle should not return an error")
 
 	sig, err := workerPrivateKey.Sign(src)
@@ -499,10 +500,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	ForecasterPrivateKey := secp256k1.GenPrivKey()
 	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
-	registrationInitialStake := cosmosMath.NewInt(100)
+	moduleParams, err := keeper.GetParams(ctx)
+	require.NoError(err)
 
 	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, registrationInitialStake)
+	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
 	keeper.AddWorkerNonce(ctx, 0, &nonce)
 	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
 	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
@@ -541,6 +543,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 		},
 	}
 
-	_, err := msgServer.InsertWorkerPayload(ctx, workerMsg)
+	_, err = msgServer.InsertWorkerPayload(ctx, workerMsg)
 	require.Error(err, types.ErrNoValidBundles)
 }
