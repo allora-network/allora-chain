@@ -15,6 +15,10 @@ import (
 
 // Function for reputers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*types.MsgAddStakeResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
+
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -60,8 +64,8 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) (*types.MsgRemoveStakeResponse, error) {
-	if msg.Amount.LTE(cosmosMath.ZeroInt()) {
-		return nil, types.ErrInvalidValue
+	if err := msg.Validate(); err != nil {
+		return nil, err
 	}
 
 	// Check the sender has enough stake already placed on the topic to remove the stake
