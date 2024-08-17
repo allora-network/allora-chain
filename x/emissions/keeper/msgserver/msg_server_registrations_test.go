@@ -36,9 +36,12 @@ func (s *MsgServerTestSuite) TestMsgRegisterReputer() {
 		Owner:     reputerAddr.String(),
 	}
 
-	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	require.NoError(err)
+
+	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
 	s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
-	err := s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
 		reputerAddr,
@@ -79,9 +82,11 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistration() {
 		Owner:     reputerAddr.String(),
 	}
 
-	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	require.NoError(err)
+	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
 	s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
-	err := s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
 		reputerAddr,
@@ -131,9 +136,11 @@ func (s *MsgServerTestSuite) TestMsgRegisterWorker() {
 		Owner:     workerAddr.String(),
 	}
 
-	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	require.NoError(err)
+	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
 	s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
-	err := s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
 		workerAddr,
@@ -178,9 +185,11 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistrationWorker() {
 		Owner:     workerAddr.String(),
 	}
 
-	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	require.NoError(err)
+	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
 	s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
-	err := s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
 		minttypes.ModuleName,
 		workerAddr,

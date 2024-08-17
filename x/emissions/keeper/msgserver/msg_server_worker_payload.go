@@ -2,8 +2,8 @@ package msgserver
 
 import (
 	"context"
-
 	errorsmod "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -11,7 +11,11 @@ import (
 // A tx function that accepts a individual inference and forecast and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInsertWorkerPayload) (*types.MsgInsertWorkerPayloadResponse, error) {
-	err := checkInputLength(ctx, ms, msg)
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	err = checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}
@@ -107,11 +111,27 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 				"Error forecaster address is not registered in this topic")
 		}
 
+		latestScoresForForecastedInferers := make(map[string]types.Score)
 		// Remove duplicate forecast element
 		acceptedForecastElements := make([]*types.ForecastElement, 0)
 		seenInferers := make(map[string]bool)
+
 		for _, el := range forecast.ForecastElements {
-			if !seenInferers[el.Inferer] {
+			score, err := ms.k.GetLatestInfererScore(ctx, forecast.TopicId, el.Inferer)
+			if err != nil {
+				continue
+			}
+			latestScoresForForecastedInferers[el.Inferer] = score
+		}
+
+		moduleParams, err := ms.k.GetParams(ctx)
+		if err != nil {
+			return nil, err
+		}
+		_, topNInferer := actor_utils.FindTopNByScoreDesc(moduleParams.MaxElementsPerForecast, latestScoresForForecastedInferers, forecast.BlockHeight)
+
+		for _, el := range forecast.ForecastElements {
+			if !seenInferers[el.Inferer] && topNInferer[el.Inferer] {
 				acceptedForecastElements = append(acceptedForecastElements, el)
 				seenInferers[el.Inferer] = true
 			}
