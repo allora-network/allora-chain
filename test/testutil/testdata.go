@@ -1490,7 +1490,7 @@ func SetRegretsFromPreviousEpoch(
 			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("error setting inferer network regret: %v", err)
 		}
 	}
 
@@ -1508,7 +1508,7 @@ func SetRegretsFromPreviousEpoch(
 			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("error setting forecaster network regret: %v", err)
 		}
 	}
 
@@ -1526,7 +1526,7 @@ func SetRegretsFromPreviousEpoch(
 			emissionstypes.TimestampedValue{BlockHeight: blockHeight, Value: regret},
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("error setting naive inferer network regret: %v", err)
 		}
 	}
 
@@ -1545,7 +1545,7 @@ func SetRegretsFromPreviousEpoch(
 				},
 			)
 			if err != nil {
-				return err
+				return fmt.Errorf("error setting one-out inferer-inferer network regret: %v", err)
 			}
 		}
 	}
@@ -1565,7 +1565,7 @@ func SetRegretsFromPreviousEpoch(
 				},
 			)
 			if err != nil {
-				return err
+				return fmt.Errorf("error setting one-out inferer-forecaster network regret: %v", err)
 			}
 		}
 	}
@@ -1585,7 +1585,7 @@ func SetRegretsFromPreviousEpoch(
 				},
 			)
 			if err != nil {
-				return err
+				return fmt.Errorf("error setting one-out forecaster-inferer network regret: %v", err)
 			}
 		}
 	}
@@ -1605,7 +1605,7 @@ func SetRegretsFromPreviousEpoch(
 				},
 			)
 			if err != nil {
-				return err
+				return fmt.Errorf("error setting one-out forecaster-forecaster network regret: %v", err)
 			}
 		}
 	}
@@ -1624,7 +1624,7 @@ func SetRegretsFromPreviousEpoch(
 			},
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("error setting one-in forecaster network regret: %v", err)
 		}
 		for j := range inferers {
 			headerName := fmt.Sprintf("inference_regret_worker_%v_onein_%v", j, i)
@@ -1639,7 +1639,7 @@ func SetRegretsFromPreviousEpoch(
 				},
 			)
 			if err != nil {
-				return err
+				return fmt.Errorf("error setting one-in forecaster network regret: %v", err)
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package mint
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	"github.com/allora-network/allora-chain/x/mint/types"
@@ -218,11 +219,11 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		// set the previous emissions to this block's emissions
 		err = k.PreviousRewardEmissionPerUnitStakedToken.Set(ctx, e_i)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "error setting previous reward emission per unit staked token")
 		}
 		err = k.PreviousBlockEmission.Set(ctx, blockEmission)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "error setting previous block emission")
 		}
 	}
 	return nil

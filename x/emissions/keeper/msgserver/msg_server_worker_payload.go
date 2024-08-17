@@ -2,8 +2,9 @@ package msgserver
 
 import (
 	"context"
+
 	errorsmod "cosmossdk.io/errors"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -128,7 +129,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		if err != nil {
 			return nil, err
 		}
-		_, topNInferer := actor_utils.FindTopNByScoreDesc(moduleParams.MaxElementsPerForecast, latestScoresForForecastedInferers, forecast.BlockHeight)
+		_, topNInferer := actorutils.FindTopNByScoreDesc(moduleParams.MaxElementsPerForecast, latestScoresForForecastedInferers, forecast.BlockHeight)
 
 		for _, el := range forecast.ForecastElements {
 			if !seenInferers[el.Inferer] && topNInferer[el.Inferer] {

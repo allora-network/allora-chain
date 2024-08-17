@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"sort"
 
+	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -59,7 +60,7 @@ func SkimTopTopicsByWeightDesc(ctx sdk.Context, weights map[TopicId]*alloraMath.
 	})
 	sortedTopicIds, err := SortTopicsByWeightDescWithRandomTiebreaker(topicIds, weights, block)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.Wrap(err, "failed to sort topics by weight desc with random tiebreaker")
 	}
 
 	numberToAdd := N

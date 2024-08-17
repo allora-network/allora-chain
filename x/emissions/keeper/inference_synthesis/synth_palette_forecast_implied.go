@@ -103,7 +103,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 
 				// Calculate the forecast-implied inferences I_ik
 				for _, j := range sortedInferersInForecast {
-					w_ijk := w_ik[j]
+					w_ijk := w_ik[j] //nolint:revive // var-naming: don't use underscores in Go names
 					_, ok := p.InferenceByWorker[j]
 					if ok && !(w_ijk.Equal(alloraMath.ZeroDec())) {
 						thisDotProduct, err := w_ijk.Mul(p.InferenceByWorker[j].Value)

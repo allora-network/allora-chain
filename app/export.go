@@ -29,7 +29,7 @@ func (app *AlloraApp) ExportAppStateAndValidators(
 		height = 0
 		err := app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 		if err != nil {
-			return servertypes.ExportedApp{}, err
+			return servertypes.ExportedApp{}, fmt.Errorf("error preparing for zero height genesis: %w", err)
 		}
 	}
 
@@ -40,7 +40,7 @@ func (app *AlloraApp) ExportAppStateAndValidators(
 
 	appState, err := json.MarshalIndent(genState, "", "  ")
 	if err != nil {
-		return servertypes.ExportedApp{}, err
+		return servertypes.ExportedApp{}, fmt.Errorf("failed to marshal application state: %w", err)
 	}
 
 	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
@@ -67,7 +67,7 @@ func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 	for _, addr := range jailAllowedAddrs {
 		_, err := sdk.ValAddressFromBech32(addr)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to parse address %s: %w", addr, err)
 		}
 		allowedAddrsMap[addr] = true
 	}
@@ -87,7 +87,7 @@ func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 		return err != nil
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to reset redelegation creation heights: %w", err)
 	}
 
 	// iterate through unbonding delegations, reset creation height
@@ -99,7 +99,7 @@ func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 		return err != nil
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to reset unbonding delegation creation heights: %w", err)
 	}
 
 	// Iterate through validators by power descending, reset bond heights, and
@@ -124,7 +124,7 @@ func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 
 		err = app.StakingKeeper.SetValidator(ctx, validator)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to update validator: %w", err)
 		}
 		counter++
 	}
@@ -136,7 +136,7 @@ func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 
 	_, err = app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update validator set: %w", err)
 	}
 	return nil
 }
