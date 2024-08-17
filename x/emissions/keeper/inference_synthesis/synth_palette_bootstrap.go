@@ -1,4 +1,4 @@
-package inference_synthesis
+package inferencesynthesis
 
 import (
 	"fmt"

@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+
 	alloraMath "github.com/allora-network/allora-chain/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	proto "github.com/cosmos/gogoproto/proto"
@@ -12,46 +14,67 @@ func EmitNewInfererScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_INFERER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_INFERER, scores))
+	if err != nil {
+		fmt.Println("Error emitting NewInfererScoresSetEvent: ", err)
+	}
 }
 
 func EmitNewForecasterScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_FORECASTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_FORECASTER, scores))
+	if err != nil {
+		fmt.Println("Error emitting NewForecasterScoresSetEvent: ", err)
+	}
 }
 
 func EmitNewReputerScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_REPUTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_REPUTER, scores))
+	if err != nil {
+		fmt.Println("Error emitting NewReputerScoresSetEvent: ", err)
+	}
 }
 
 func EmitNewNetworkLossSetEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, lossBundle ValueBundle) {
-	ctx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(topicId, blockHeight, lossBundle))
+	err := ctx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(topicId, blockHeight, lossBundle))
+	if err != nil {
+		fmt.Println("Error emitting NewNetworkLossSetEvent: ", err)
+	}
 }
 
 func EmitNewInfererRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_INFERER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_INFERER, blockHeight, rewards))
+	if err != nil {
+		fmt.Println("Error emitting NewInfererRewardsSettledEvent: ", err)
+	}
 }
 
 func EmitNewForecasterRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_FORECASTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_FORECASTER, blockHeight, rewards))
+	if err != nil {
+		fmt.Println("Error emitting NewForecasterRewardsSettledEvent: ", err)
+	}
 }
 
 func EmitNewReputerAndDelegatorRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_REPUTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_REPUTER, blockHeight, rewards))
+	if err != nil {
+		fmt.Println("Error emitting NewReputerAndDelegatorRewardsSettledEvent: ", err)
+	}
 }
 
 /// Utils

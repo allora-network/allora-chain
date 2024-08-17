@@ -85,7 +85,6 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 		if err != nil {
 			return nil, err
 		}
-
 	} else {
 		isRegisteredInTopic, err := ms.k.IsWorkerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 		if err != nil {

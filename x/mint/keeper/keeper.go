@@ -171,7 +171,7 @@ func (k Keeper) GetTotalCurrTokenSupply(ctx context.Context) sdk.Coin {
 	return k.bankKeeper.GetSupply(ctx, params.BaseCoinUnit)
 }
 
-// returns the quantity of tokens currenty stored in the "ecosystem" module account
+// returns the quantity of tokens currently stored in the "ecosystem" module account
 // this module account is paid by inference requests and is drained by this mint module
 // when forwarding rewards to fee collector and allorarewards accounts
 func (k Keeper) GetEcosystemBalance(ctx context.Context, mintDenom string) (math.Int, error) {

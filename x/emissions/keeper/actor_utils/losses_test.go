@@ -1,3 +1,3 @@
-package actor_utils_test
+package actorutils_test
 
 // TODO losses tests

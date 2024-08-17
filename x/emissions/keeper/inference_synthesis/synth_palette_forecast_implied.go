@@ -1,4 +1,4 @@
-package inference_synthesis
+package inferencesynthesis
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ import (
 func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstypes.Inference, error) {
 	// "k" here is the forecaster's address
 	// For each forecast, and for each forecast element, calculate forecast-implied inferences I_ik
-	I_i := make(map[Worker]*emissionstypes.Inference, len(p.Forecasters))
+	I_i := make(map[Worker]*emissionstypes.Inference, len(p.Forecasters)) //nolint:revive // var-naming: don't use underscores in Go names
 	for _, forecaster := range p.Forecasters {
 		_, ok := p.ForecastByWorker[forecaster]
 		if ok && len(p.ForecastByWorker[forecaster].ForecastElements) > 0 {
@@ -70,16 +70,16 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 
 				// Approximate forecast regrets of the network inference
 				// Map inferer -> regret
-				R_ik := make(map[Worker]*alloraMath.Dec, len(forecastElementsByInferer))
+				R_ik := make(map[Worker]*alloraMath.Dec, len(forecastElementsByInferer)) //nolint:revive // var-naming: don't use underscores in Go names
 				// Forecast-regret-informed weights dot product with inferences to yield forecast-implied inferences
 				// Map inferer -> weight
-				w_ik := make(map[Worker]Weight, len(forecastElementsByInferer))
+				w_ik := make(map[Worker]Weight, len(forecastElementsByInferer)) //nolint:revive // var-naming: don't use underscores in Go names
 
 				// Define variable to store maximum regret for forecast k
 				// `j` is the inferer id. The nomenclature of `j` comes from the corresponding regret formulas in the litepaper
 				for _, j := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
-					R_ijk, err := p.NetworkCombinedLoss.Sub(forecastElementsByInferer[j].Value)
+					R_ijk, err := p.NetworkCombinedLoss.Sub(forecastElementsByInferer[j].Value) //nolint:revive // var-naming: don't use underscores in Go names
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating network loss per value")
 					}
@@ -103,7 +103,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 
 				// Calculate the forecast-implied inferences I_ik
 				for _, j := range sortedInferersInForecast {
-					w_ijk := w_ik[j]
+					w_ijk := w_ik[j] //nolint:revive // var-naming: don't use underscores in Go names
 					_, ok := p.InferenceByWorker[j]
 					if ok && !(w_ijk.Equal(alloraMath.ZeroDec())) {
 						thisDotProduct, err := w_ijk.Mul(p.InferenceByWorker[j].Value)
@@ -147,7 +147,7 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 func (p *SynthPalette) UpdateForecastImpliedInferences() error {
 	p.Logger.Debug(fmt.Sprintf("Calculating forecast-implied inferences for topic %v", p.TopicId))
 
-	I_i, err := p.CalcForecastImpliedInferences()
+	I_i, err := p.CalcForecastImpliedInferences() //nolint:revive // var-naming: don't use underscores in Go names
 	if err != nil {
 		return errorsmod.Wrapf(err, "error calculating forecast-implied inferences")
 	}

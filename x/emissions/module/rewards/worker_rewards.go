@@ -8,8 +8,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var TASK_FORECAST = true
-var TASK_INFERENCE = false
+const (
+	taskForecast  = 1
+	taskInference = 2
+)
 
 func GetInferenceTaskRewardFractions(
 	ctx sdk.Context,
@@ -20,7 +22,7 @@ func GetInferenceTaskRewardFractions(
 	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_INFERENCE, pReward, cReward, latestScores)
+	return getWorkersRewardFractions(ctx, k, topicId, blockHeight, taskInference, pReward, cReward, latestScores)
 }
 
 func GetForecastingTaskRewardFractions(
@@ -32,15 +34,15 @@ func GetForecastingTaskRewardFractions(
 	cReward alloraMath.Dec,
 	latestScores []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
-	return GetWorkersRewardFractions(ctx, k, topicId, blockHeight, TASK_FORECAST, pReward, cReward, latestScores)
+	return getWorkersRewardFractions(ctx, k, topicId, blockHeight, taskForecast, pReward, cReward, latestScores)
 }
 
-func GetWorkersRewardFractions(
+func getWorkersRewardFractions(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
 	blockHeight int64,
-	which bool,
+	which int,
 	pReward alloraMath.Dec,
 	cReward alloraMath.Dec,
 	latestScores []types.Score,
@@ -50,7 +52,7 @@ func GetWorkersRewardFractions(
 	scores := make([][]alloraMath.Dec, 0)
 	latestWorkerScores := make([]alloraMath.Dec, 0)
 	workers := make([]string, 0)
-	if which == TASK_INFERENCE {
+	if which == taskInference {
 		// Get latest score for each worker
 		for _, latestScore := range latestScores {
 			workers = append(workers, latestScore.Address)
@@ -67,8 +69,7 @@ func GetWorkersRewardFractions(
 			workerLastScoresDec = append(workerLastScoresDec, score.Score)
 		}
 		scores = append(scores, workerLastScoresDec)
-
-	} else { // TASK_FORECAST
+	} else { // taskForecast
 		// Get latest score for each worker
 		for _, latestScore := range latestScores {
 			workers = append(workers, latestScore.Address)
@@ -111,7 +112,7 @@ func GetInferenceTaskEntropy(
 	entropy alloraMath.Dec,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, betaEntropy, TASK_INFERENCE, workers, workersFractions)
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, betaEntropy, taskInference, workers, workersFractions)
 }
 
 func GetForecastTaskEntropy(
@@ -126,7 +127,7 @@ func GetForecastTaskEntropy(
 	entropy alloraMath.Dec,
 	err error,
 ) {
-	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, betaEntropy, TASK_FORECAST, workers, workersFractions)
+	return getInferenceOrForecastTaskEntropy(ctx, k, topicId, emaAlpha, betaEntropy, taskForecast, workers, workersFractions)
 }
 
 func getInferenceOrForecastTaskEntropy(
@@ -135,7 +136,7 @@ func getInferenceOrForecastTaskEntropy(
 	topicId uint64,
 	emaAlpha alloraMath.Dec,
 	betaEntropy alloraMath.Dec,
-	which bool,
+	which int,
 	workers []string,
 	workersFractions []alloraMath.Dec,
 ) (
@@ -147,12 +148,12 @@ func getInferenceOrForecastTaskEntropy(
 	var previousRewardFraction alloraMath.Dec
 	for i, worker := range workers {
 		noPriorFraction := false
-		if which == TASK_INFERENCE {
+		if which == taskInference {
 			previousRewardFraction, noPriorFraction, err = k.GetPreviousInferenceRewardFraction(ctx, topicId, worker)
 			if err != nil {
 				return alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous inference reward fraction")
 			}
-		} else { // TASK_FORECAST
+		} else { // taskForecast
 			previousRewardFraction, noPriorFraction, err = k.GetPreviousForecastRewardFraction(ctx, topicId, worker)
 			if err != nil {
 				return alloraMath.Dec{}, errors.Wrapf(err, "failed to get previous forecast reward fraction")
@@ -178,14 +179,14 @@ func getInferenceOrForecastTaskEntropy(
 	if err != nil {
 		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate modified reward fractions")
 	}
-	if which == TASK_INFERENCE {
+	if which == taskInference {
 		for i, worker := range workers {
 			err := k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, modifiedRewardFractions[i])
 			if err != nil {
 				return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous inference reward fraction")
 			}
 		}
-	} else { // TASK_FORECAST
+	} else { // taskForecast
 		for i, worker := range workers {
 			err := k.SetPreviousForecastRewardFraction(ctx, topicId, worker, modifiedRewardFractions[i])
 			if err != nil {

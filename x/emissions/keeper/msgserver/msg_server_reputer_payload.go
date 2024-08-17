@@ -2,6 +2,7 @@ package msgserver
 
 import (
 	"context"
+
 	errorsmod "cosmossdk.io/errors"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"

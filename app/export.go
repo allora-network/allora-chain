@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 
 	storetypes "cosmossdk.io/store/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -28,7 +27,10 @@ func (app *AlloraApp) ExportAppStateAndValidators(
 	height := app.LastBlockHeight() + 1
 	if forZeroHeight {
 		height = 0
-		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
+		err := app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
+		if err != nil {
+			return servertypes.ExportedApp{}, fmt.Errorf("error preparing for zero height genesis: %w", err)
+		}
 	}
 
 	genState, err := app.ModuleManager.ExportGenesis(ctx, app.appCodec)
@@ -38,7 +40,7 @@ func (app *AlloraApp) ExportAppStateAndValidators(
 
 	appState, err := json.MarshalIndent(genState, "", "  ")
 	if err != nil {
-		return servertypes.ExportedApp{}, err
+		return servertypes.ExportedApp{}, fmt.Errorf("failed to marshal application state: %w", err)
 	}
 
 	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
@@ -52,7 +54,7 @@ func (app *AlloraApp) ExportAppStateAndValidators(
 
 // prepare for fresh start at zero height
 // NOTE zero height genesis is a temporary feature, which will be deprecated in favour of export at a block height
-func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
+func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) error {
 	applyAllowedAddrs := false
 
 	// check if there is a allowed address list
@@ -65,7 +67,7 @@ func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 	for _, addr := range jailAllowedAddrs {
 		_, err := sdk.ValAddressFromBech32(addr)
 		if err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("failed to parse address %s: %w", addr, err)
 		}
 		allowedAddrsMap[addr] = true
 	}
@@ -77,22 +79,28 @@ func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 	/* Handle staking state. */
 
 	// iterate through redelegations, reset creation height
-	app.StakingKeeper.IterateRedelegations(ctx, func(_ int64, red stakingtypes.Redelegation) (stop bool) {
+	err := app.StakingKeeper.IterateRedelegations(ctx, func(_ int64, red stakingtypes.Redelegation) (stop bool) {
 		for i := range red.Entries {
 			red.Entries[i].CreationHeight = 0
 		}
-		app.StakingKeeper.SetRedelegation(ctx, red)
-		return false
+		err := app.StakingKeeper.SetRedelegation(ctx, red)
+		return err != nil
 	})
+	if err != nil {
+		return fmt.Errorf("failed to reset redelegation creation heights: %w", err)
+	}
 
 	// iterate through unbonding delegations, reset creation height
-	app.StakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
+	err = app.StakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
 		for i := range ubd.Entries {
 			ubd.Entries[i].CreationHeight = 0
 		}
-		app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
-		return false
+		err := app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
+		return err != nil
 	})
+	if err != nil {
+		return fmt.Errorf("failed to reset unbonding delegation creation heights: %w", err)
+	}
 
 	// Iterate through validators by power descending, reset bond heights, and
 	// update bond intra-tx counters.
@@ -114,17 +122,21 @@ func (app *AlloraApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs
 			validator.Jailed = true
 		}
 
-		app.StakingKeeper.SetValidator(ctx, validator)
+		err = app.StakingKeeper.SetValidator(ctx, validator)
+		if err != nil {
+			return fmt.Errorf("failed to update validator: %w", err)
+		}
 		counter++
 	}
 
 	if err := iter.Close(); err != nil {
 		app.Logger().Error("error while closing the key-value store reverse prefix iterator: ", err)
-		return
+		return nil
 	}
 
-	_, err := app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+	_, err = app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to update validator set: %w", err)
 	}
+	return nil
 }

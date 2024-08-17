@@ -142,7 +142,6 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	*emissionstypes.QueryLatestNetworkInferencesResponse,
 	error,
 ) {
-
 	lastWorkerCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, err

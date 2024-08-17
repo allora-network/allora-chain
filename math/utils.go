@@ -103,7 +103,7 @@ func StdDev(data []Dec) (Dec, error) {
 	}
 
 	mean := ZeroDec()
-	var err error = nil
+	var err error
 	for _, v := range data {
 		mean, err = mean.Add(v)
 		if err != nil {

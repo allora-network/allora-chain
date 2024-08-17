@@ -1,9 +1,11 @@
 package rewards_test
 
 import (
-	"github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"testing"
 	"time"
+
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 
 	"cosmossdk.io/core/header"
 	"cosmossdk.io/log"
@@ -12,7 +14,6 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -246,7 +247,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		s.Require().NoError(err)
 	}
 
-	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
 	// Add Stake for reputers
 	var stakes = []cosmosMath.Int{
@@ -376,7 +377,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		s.Require().NoError(err)
 	}
 
-	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
 	// Add Stake for reputers
 	var stakes = []cosmosMath.Int{
@@ -716,7 +717,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 		require.NoError(err)
 	}
 
-	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
@@ -740,7 +741,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 		})
 		require.NoError(err)
 	}
-	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
@@ -813,7 +814,7 @@ func (s *RewardsTestSuite) TestFixingTaskRewardAlphaDoesNotChangePerformanceImpo
 		s.addrs[5],
 	}
 
-	stake := cosmosMath.NewInt(1000000000000000000).Mul(inference_synthesis.CosmosIntOneE18())
+	stake := cosmosMath.NewInt(1000000000000000000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake, alphaRegret)
@@ -924,7 +925,7 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 		s.addrs[5],
 	}
 
-	stake := cosmosMath.NewInt(1000000000000000000).Mul(inference_synthesis.CosmosIntOneE18())
+	stake := cosmosMath.NewInt(1000000000000000000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	topicId := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake, alphaRegret)
@@ -1071,7 +1072,7 @@ func (s *RewardsTestSuite) TestIncreasingAlphaRegretIncreasesPresentEffectOnRegr
 		s.addrs[5],
 	}
 
-	stake := cosmosMath.NewInt(1000000000000000000).Mul(inference_synthesis.CosmosIntOneE18())
+	stake := cosmosMath.NewInt(1000000000000000000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	topicId0 := s.setUpTopic(blockHeight0, workerAddrs, reputerAddrs, stake, alphaRegret)
@@ -1225,7 +1226,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.addrs[9],
 	}
 
-	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
 	stakes := []cosmosMath.Int{
 		cosmosMath.NewInt(1000000000000000000).Mul(cosmosOneE18),
@@ -1565,7 +1566,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		s.Require().NoError(err)
 	}
 
-	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
 	// Add Stake for reputers
 	var stakes = []cosmosMath.Int{
@@ -1628,7 +1629,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		s.Require().NoError(err)
 	}
 
-	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
@@ -1647,7 +1648,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		s.Require().NoError(err)
 	}
 
-	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
 	newBlockheight += epochLength * 3
@@ -1751,7 +1752,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		s.Require().NoError(err)
 	}
 
-	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
 	// Add Stake for reputers
 	var stakes = []cosmosMath.Int{
@@ -1943,7 +1944,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	_, err = s.msgServer.Register(s.ctx, reputerRegMsg)
 	s.Require().NoError(err)
 
-	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
 	s.MintTokensToAddress(reputer, cosmosMath.NewInt(1176644).Mul(cosmosOneE18))
 	// Add Stake for reputer
@@ -2082,7 +2083,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	var reputerAddrs = make([]sdk.AccAddress, 0)
 	var workerAddrs = make([]sdk.AccAddress, 0)
 	var stakes = make([]cosmosMath.Int, 0)
-	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
 	s.SetParamsForTest(24)
 
@@ -2175,7 +2176,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		s.Require().NoError(err)
 	}
 
-	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
@@ -2193,7 +2194,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		})
 		s.Require().NoError(err)
 	}
-	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -2243,7 +2244,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.addrs[9],
 	}
 
-	cosmosOneE18 := inference_synthesis.CosmosIntOneE18()
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
 	stakes := []cosmosMath.Int{
 		cosmosMath.NewInt(1000000000000000000).Mul(cosmosOneE18),
@@ -2336,7 +2337,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	}
 
-	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
@@ -2355,7 +2356,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.Require().NoError(err)
 	}
 
-	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
@@ -2497,7 +2498,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.Require().NoError(err)
 	}
 
-	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	lossBundles = GenerateHugeLossBundles(s, block, topicId, reputerAddrs, newSecondWorkersAddrs)
@@ -2512,7 +2513,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		})
 		s.Require().NoError(err)
 	}
-	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
@@ -2637,7 +2638,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.Require().NoError(err)
 	}
 
-	err = actor_utils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	lossBundles = GenerateHugeLossBundles(s, block, topicId, reputerAddrs, newThirdWorkersAddrs)
@@ -2651,7 +2652,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		})
 		s.Require().NoError(err)
 	}
-	err = actor_utils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
@@ -2699,7 +2700,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	}
 
 	// setup topics
-	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
+	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 1)
 	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 1)
@@ -2908,7 +2909,7 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 		s.addrs[8],
 	}
 
-	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
+	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
 
@@ -3007,7 +3008,7 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 		s.addrs[8],
 	}
 
-	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
+	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 1)
 
@@ -3104,7 +3105,7 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 		s.addrs[5],
 	}
 
-	stake := cosmosMath.NewInt(1000).Mul(inference_synthesis.CosmosIntOneE18())
+	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
 

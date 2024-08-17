@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -29,7 +29,7 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
-	minStakeScaled := params.RequiredMinimumStake.Mul(inference_synthesis.CosmosIntOneE18())
+	minStakeScaled := params.RequiredMinimumStake.Mul(inferencesynthesis.CosmosIntOneE18())
 
 	topicId = s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 	s.MintTokensToAddress(reputerAddr, params.RequiredMinimumStake)

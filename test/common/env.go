@@ -8,6 +8,7 @@ import (
 )
 
 func LookupRpcMode(t *testing.T, key string, defaultValue RpcConnectionType) RpcConnectionType {
+	t.Helper()
 	value, found := os.LookupEnv(key)
 	if !found {
 		return defaultValue
@@ -25,6 +26,7 @@ func LookupRpcMode(t *testing.T, key string, defaultValue RpcConnectionType) Rpc
 }
 
 func LookupEnvInt(t *testing.T, key string, defaultValue int) int {
+	t.Helper()
 	value, found := os.LookupEnv(key)
 	if !found {
 		return defaultValue
@@ -37,6 +39,7 @@ func LookupEnvInt(t *testing.T, key string, defaultValue int) int {
 }
 
 func LookupEnvBool(t *testing.T, key string, defaultValue bool) bool {
+	t.Helper()
 	value, found := os.LookupEnv(key)
 	if !found {
 		return defaultValue

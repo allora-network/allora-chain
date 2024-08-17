@@ -1,4 +1,4 @@
-package inference_synthesis_test
+package inferencesynthesis_test
 
 import (
 	"reflect"

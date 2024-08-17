@@ -2,6 +2,7 @@ package v2
 
 import (
 	"cosmossdk.io/collections"
+	"cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -136,9 +137,15 @@ func MigrateOffchainStore(workerStore storetypes.KVStore, cdc codec.BinaryCodec)
 
 func MigrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	workerStore := prefix.NewStore(store, types.WorkerNodesKey)
-	MigrateOffchainStore(workerStore, cdc)
+	err := MigrateOffchainStore(workerStore, cdc)
+	if err != nil {
+		return errors.Wrap(err, "error migrating worker store")
+	}
 	reputerStore := prefix.NewStore(store, types.ReputerNodesKey)
-	MigrateOffchainStore(reputerStore, cdc)
+	err = MigrateOffchainStore(reputerStore, cdc)
+	if err != nil {
+		return errors.Wrap(err, "error migrating reputer store")
+	}
 	return nil
 }
 
