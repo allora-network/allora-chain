@@ -1,10 +1,10 @@
 syntax = "proto3";
-package emissions.v2;
+package emissions.v3;
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 import "gogoproto/gogo.proto";
-import "emissions/v2/nonce.proto";
+import "emissions/v3/nonce.proto";
 
 message TimestampedValue {
   option (gogoproto.equal) = true;
@@ -67,6 +67,6 @@ message WorkerDataBundle {
   string pubkey = 6;
 }
 
-message WorkerDataBundles {  // This will be in the incoming message, sent by leader
+message WorkerDataBundles {
   repeated WorkerDataBundle worker_data_bundles = 1;
 }
