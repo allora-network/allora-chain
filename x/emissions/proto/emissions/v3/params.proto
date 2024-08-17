@@ -1,0 +1,138 @@
+syntax = "proto3";
+package emissions.v3;
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+// Params defines the parameters of the module.
+message Params {
+  reserved 41;
+  reserved "min_effective_topic_revenue";
+
+  string version = 1;                   // version of the protocol should be in lockstep with
+                                        // github release tag version
+  int64 max_serialized_msg_length = 2;  // max length of input data for msg and query server calls
+  string min_topic_weight = 3 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];                                // total unmet demand for a topic < this => don't run inference
+                                    // solicatation or weight-adjustment
+  uint64 max_topics_per_block = 4;  // max number of topics to run cadence for per block
+  string required_minimum_stake = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];                                    // minimum amount of tokens to send to stake as a reputer or worker
+  int64 remove_stake_delay_window = 6;  // how long to wait (blocks) before allowed to remove stake
+  int64 min_epoch_length = 7;           // fastest allowable topic epoch and cadence of a
+                                        // repeating inference request
+  string beta_entropy = 8 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // controls resilience of reward payouts against copycat workers
+  string learning_rate = 9 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // speed of gradient descent
+  string max_gradient_threshold = 10 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // gradient descent stops when gradient falls below this
+  string min_stake_fraction = 11 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // minimum fraction of stake to listen to when setting consensus listening
+      // coefficients
+  uint64 max_unfulfilled_worker_requests = 13;   // max num worker request nonces to keep track of per topic
+  uint64 max_unfulfilled_reputer_requests = 14;  // max num reputer request nonces to keep track of per topic
+  string topic_reward_stake_importance = 15 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // The exponent μ represents the importance of stake in the reward of a
+      // topic and has a fiducial value of 0.5
+  string topic_reward_fee_revenue_importance = 16 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // The exponent ν represents the importance of fee revenue in the reward of
+      // a topic and has a fiducial value of 0.5
+  string topic_reward_alpha = 17 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // global exponential moving average parameter. Fiducial value of 0.9375 on
+      // a monthly timescale, 0.5 for weekly updates
+  string task_reward_alpha = 18 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // global exponential moving average parameter. Fiducial value of 0.1 used
+      // to calculate ~U_ij, ~V_ik, ~W_im
+  string validators_vs_allora_percent_reward = 19 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];                                        // percent of total supply rewarded to cosmos network validators, rest goes
+                                            // to allora reputers workers etc
+  uint64 max_samples_to_scale_scores = 20;  // number of scores to use for standard deviation calculation
+  uint64 max_top_inferers_to_reward = 21;   // max number of top inferers by score to reward
+  uint64 max_top_forecasters_to_reward = 22;  // max number of top forecasters by score to reward
+  uint64 max_top_reputers_to_reward = 23;     // max number of top reputers by score to reward
+  string create_topic_fee = 24 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];                                                // topic registration fee
+  uint64 gradient_descent_max_iters = 25;           // max number of gradient descent iterations
+  int64 max_retries_to_fulfil_nonces_worker = 26;   // max number of retries to unfulfilled nonces (worker)
+  int64 max_retries_to_fulfil_nonces_reputer = 27;  // max number of retries to unfulfilled nonces (reputer)
+  string registration_fee = 28 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];                               // registration fee for reputer or worker
+  uint64 default_page_limit = 29;  // default limit for pagination
+  uint64 max_page_limit = 30;      // max limit for pagination
+  // min number of epochs to keep network losses, reputer losses, inferences,
+  // forecasts
+  int64 min_epoch_length_record_limit = 31;
+  // block emission rate in number of blocks expected per month
+  uint64 blocks_per_month = 32;
+  string p_reward_inference = 33
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string p_reward_forecast = 34
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string p_reward_reputer = 35
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string c_reward_inference = 36
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string c_reward_forecast = 37
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string c_norm = 38
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string topic_fee_revenue_decay_rate = 39 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // decay rate for topic fee revenue
+  string epsilon_reputer = 40 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];  // a small tolerance quantity used to cap reputer scores at infinitesimally
+      // close proximities
+  uint64 half_max_process_stake_removals_end_block =
+      42;  // max amount of stake removals to process in an ABCI end block. Applied twice once for stakeRemovals and
+           // once for DelegateStakeRemovals, so actual max is this number times two
+  string epsilon_safe_div = 43
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  /// a small tolerance quantity used to cap division by zero
+  string data_sending_fee = 44 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  // payload sending fee for reputer or worker
+  uint64 max_elements_per_forecast = 45;  // max number of top forecasters by score to reward
+}

@@ -2038,7 +2038,6 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	if err != nil {
 		return err
 	}
-	minEffectiveTopicRevenue := moduleParams.MinEffectiveTopicRevenue
 	topicFeeRevenueDecayRate := moduleParams.TopicFeeRevenueDecayRate
 
 	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue)
@@ -2046,16 +2045,13 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 		return err
 	}
 
-	newTopicFeeRevenue := cosmosMath.ZeroInt()
-	if topicFeeRevenueDec.Gte(minEffectiveTopicRevenue) {
-		val, err := alloraMath.CalcExpDecay(topicFeeRevenueDec, topicFeeRevenueDecayRate)
-		if err != nil {
-			return err
-		}
-		newTopicFeeRevenue, err = val.SdkIntTrim()
-		if err != nil {
-			return err
-		}
+	val, err := alloraMath.CalcExpDecay(topicFeeRevenueDec, topicFeeRevenueDecayRate)
+	if err != nil {
+		return err
+	}
+	newTopicFeeRevenue, err := val.SdkIntTrim()
+	if err != nil {
+		return err
 	}
 
 	ctx.Logger().Debug(fmt.Sprintf("Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v", ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue))

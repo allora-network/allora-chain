@@ -78,4 +78,5 @@ var (
 	ErrDataSenderNotEnoughDenom              = errors.Register(ModuleName, 73, "data sender does not have enough denom")
 	ErrGroundTruthLagTooBig                  = errors.Register(ModuleName, 74, "ground truth lag too big for epoch length")
 	ErrUnfulfilledNonceNotFound              = errors.Register(ModuleName, 75, "unfulfilled nonce not found")
+	ErrNotFound                              = errors.Register(ModuleName, 76, "not found")
 )
