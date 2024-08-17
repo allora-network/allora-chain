@@ -9,6 +9,9 @@ import "gogoproto/gogo.proto";
 
 // Params defines the parameters of the module.
 message Params {
+  reserved 41;
+  reserved "min_effective_topic_revenue";
+
   string version = 1;                   // version of the protocol should be in lockstep with
                                         // github release tag version
   int64 max_serialized_msg_length = 2;  // max length of input data for msg and query server calls
@@ -118,11 +121,6 @@ message Params {
     (gogoproto.nullable) = false
   ];  // a small tolerance quantity used to cap reputer scores at infinitesimally
       // close proximities
-  string min_effective_topic_revenue = 41 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];  // we no stop dripping from the topic's effective revenue when the topic's
-      // effective revenue is below this
   uint64 half_max_process_stake_removals_end_block =
       42;  // max amount of stake removals to process in an ABCI end block. Applied twice once for stakeRemovals and
            // once for DelegateStakeRemovals, so actual max is this number times two

@@ -58,6 +58,9 @@ service Msg {
 // optional field and if the repeated field is empty, it is considered to be the
 // same as if the field was not set
 message OptionalParams {
+  reserved 41;
+  reserved "min_effective_topic_revenue";
+
   repeated string version = 1;
   repeated int64 max_serialized_msg_length = 2;
   repeated string min_topic_weight = 3
@@ -129,8 +132,6 @@ message OptionalParams {
   repeated string topic_fee_revenue_decay_rate = 39
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated string epsilon_reputer = 40
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string min_effective_topic_revenue = 41
       [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated uint64 half_max_process_stake_removals_end_block = 42;
   repeated string data_sending_fee = 43 [
