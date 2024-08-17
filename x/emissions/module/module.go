@@ -117,18 +117,18 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 
 // EndBlock returns the end blocker for the emissions module.
 func (am AppModule) EndBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	defer func() {
-		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		if r := recover(); r != nil {
-			err := fmt.Errorf("recovered from panic in EndBlocker: %v", r)
-			sdkCtx.Logger().Error("Error Getting module params", err)
+			err := fmt.Errorf("error: %v", r)
+			sdkCtx.Logger().Error("Recover panic in EndBlocker", err)
 		}
 	}()
 
 	err := EndBlocker(ctx, am)
 	if err != nil {
 		sdkCtx := sdk.UnwrapSDKContext(ctx)
-		sdkCtx.Logger().Error("EnbBlocker error! ", err)
+		sdkCtx.Logger().Error("EndBlocker error! ", err)
 	}
 	return err
 }
