@@ -1,4 +1,4 @@
-package actor_utils
+package actorutils
 
 import (
 	"context"
@@ -24,7 +24,6 @@ func CloseReputerNonce(
 	ctx sdk.Context,
 	topicId keeper.TopicId,
 	nonce types.Nonce) error {
-
 	// Check if the topic exists
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {

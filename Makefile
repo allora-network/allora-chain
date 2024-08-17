@@ -82,5 +82,5 @@ build-local-edits:
 	go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
 
 lint:
-	go vet ./...
-	staticcheck ./...
+	@echo "--> Running linter"
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run --timeout=10m

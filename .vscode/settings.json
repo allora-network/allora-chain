@@ -10,5 +10,9 @@
     "**pb.go": true,
     "**pulsar.go": true,
   },
-  "go.testFlags": ["-v"] 
+  "go.testFlags": ["-v"],
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+        "-c", "${workspaceFolder}/.golangci.yml", "--fast"
+    ],
 }

@@ -13,7 +13,6 @@ func GetLowScoreFromAllLossBundles(
 	topicId TopicId,
 	lossBundles types.ReputerValueBundles,
 ) (types.Score, int, error) {
-
 	lowScoreIndex := 0
 	lowScore, err := k.GetLatestReputerScore(ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.Reputer)
 	if err != nil {
@@ -39,7 +38,6 @@ func GetLowScoreFromAllInferences(
 	topicId TopicId,
 	inferences types.Inferences,
 ) (types.Score, int, error) {
-
 	lowScoreIndex := 0
 	lowScore, err := k.GetLatestInfererScore(ctx, topicId, inferences.Inferences[0].Inferer)
 	if err != nil {
@@ -65,7 +63,6 @@ func GetLowScoreFromAllForecasts(
 	topicId TopicId,
 	forecasts types.Forecasts,
 ) (types.Score, int, error) {
-
 	lowScoreIndex := 0
 	lowScore, err := k.GetLatestForecasterScore(ctx, topicId, forecasts.Forecasts[0].Forecaster)
 	if err != nil {

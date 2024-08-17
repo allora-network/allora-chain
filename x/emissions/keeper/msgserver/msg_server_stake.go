@@ -223,7 +223,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
 	)
 	if err != nil {
-		errorsmod.Wrap(err, "error during finding delegate stake removal")
+		return nil, errorsmod.Wrap(err, "error during finding delegate stake removal")
 	}
 	if found {
 		err = ms.k.DeleteDelegateStakeRemoval(

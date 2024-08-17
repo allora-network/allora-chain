@@ -108,12 +108,15 @@ func PickChurnableActiveTopics(
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max topics per block")
 	}
-	weightsOfTopActiveTopics, sortedTopActiveTopics := SkimTopTopicsByWeightDesc(
+	weightsOfTopActiveTopics, sortedTopActiveTopics, err := SkimTopTopicsByWeightDesc(
 		ctx,
 		weights,
 		moduleParams.MaxTopicsPerBlock,
 		block,
 	)
+	if err != nil {
+		return errors.Wrapf(err, "failed to skim top topics by weight")
+	}
 
 	for _, topicId := range sortedTopActiveTopics {
 		weight := weightsOfTopActiveTopics[topicId]
@@ -203,7 +206,10 @@ func PickChurnableActiveTopics(
 					if err != nil {
 						ctx.Logger().Warn(fmt.Sprintf("Error closing reputer nonce: %s", err.Error()))
 						// Proactively close the nonce to avoid
-						k.FulfillReputerNonce(ctx, topic.Id, nonce.ReputerNonce)
+						_, err = k.FulfillReputerNonce(ctx, topic.Id, nonce.ReputerNonce)
+						if err != nil {
+							ctx.Logger().Warn(fmt.Sprintf("Error fulfilling reputer nonce: %s", err.Error()))
+						}
 					}
 				}
 			}

@@ -7,12 +7,12 @@ import (
 )
 
 // InitGenesis new mint genesis
-func (keeper Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, data *types.GenesisState) {
-	if err := keeper.Params.Set(ctx, data.Params); err != nil {
+func (k Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, data *types.GenesisState) {
+	if err := k.Params.Set(ctx, data.Params); err != nil {
 		panic(err)
 	}
 
-	err := keeper.PreviousRewardEmissionPerUnitStakedToken.Set(
+	err := k.PreviousRewardEmissionPerUnitStakedToken.Set(
 		ctx,
 		data.PreviousRewardEmissionPerUnitStakedToken,
 	)
@@ -20,12 +20,12 @@ func (keeper Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, da
 		panic(err)
 	}
 
-	err = keeper.PreviousBlockEmission.Set(ctx, data.PreviousBlockEmission)
+	err = k.PreviousBlockEmission.Set(ctx, data.PreviousBlockEmission)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := keeper.EcosystemTokensMinted.Set(ctx, data.EcosystemTokensMinted); err != nil {
+	if err := k.EcosystemTokensMinted.Set(ctx, data.EcosystemTokensMinted); err != nil {
 		panic(err)
 	}
 
@@ -33,23 +33,23 @@ func (keeper Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, da
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
-func (keeper Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
-	params, err := keeper.Params.Get(ctx)
+func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
+	params, err := k.Params.Get(ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	previousRewardEmissionPerUnitStakedToken, err := keeper.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
+	previousRewardEmissionPerUnitStakedToken, err := k.PreviousRewardEmissionPerUnitStakedToken.Get(ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	previousBlockEmission, err := keeper.PreviousBlockEmission.Get(ctx)
+	previousBlockEmission, err := k.PreviousBlockEmission.Get(ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	ecosystemTokensMinted, err := keeper.EcosystemTokensMinted.Get(ctx)
+	ecosystemTokensMinted, err := k.EcosystemTokensMinted.Get(ctx)
 	if err != nil {
 		panic(err)
 	}

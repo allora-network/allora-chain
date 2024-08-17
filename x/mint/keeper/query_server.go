@@ -96,8 +96,8 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := uint64(sdkCtx.BlockHeight())
 	numberOfRecalcs := blockHeight / blocksPerMonth
-	blockHeightTarget_e_i_LastCalculated := numberOfRecalcs*blocksPerMonth + 1
-	blockHeightTarget_e_i_Next := blockHeightTarget_e_i_LastCalculated + blocksPerMonth
+	blockHeightTarget_e_i_LastCalculated := numberOfRecalcs*blocksPerMonth + 1          //nolint:revive // var-naming: don't use underscores in Go names
+	blockHeightTarget_e_i_Next := blockHeightTarget_e_i_LastCalculated + blocksPerMonth //nolint:revive // var-naming: don't use underscores in Go names
 
 	networkStakedTokens, err := GetNumStakedTokens(ctx, q.k)
 	if err != nil {

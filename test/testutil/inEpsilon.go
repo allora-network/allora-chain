@@ -8,6 +8,7 @@ import (
 )
 
 func InEpsilon(t *testing.T, value alloraMath.Dec, target alloraMath.Dec, epsilon alloraMath.Dec) {
+	t.Helper()
 	one := alloraMath.MustNewDecFromString("1")
 
 	lowerMultiplier, err := one.Sub(epsilon)
@@ -46,12 +47,14 @@ func InEpsilon(t *testing.T, value alloraMath.Dec, target alloraMath.Dec, epsilo
 }
 
 func InEpsilon2(t *testing.T, value alloraMath.Dec, target string) {
+	t.Helper()
 	epsilonDec := alloraMath.MustNewDecFromString("0.01")
 	targetDec := alloraMath.MustNewDecFromString(target)
 	InEpsilon(t, value, targetDec, epsilonDec)
 }
 
 func InEpsilon3(t *testing.T, value alloraMath.Dec, target string) {
+	t.Helper()
 	epsilonDec := alloraMath.MustNewDecFromString("0.001")
 	targetDec := alloraMath.MustNewDecFromString(target)
 	InEpsilon(t, value, targetDec, epsilonDec)
@@ -63,11 +66,13 @@ func InEpsilon4(t *testing.T, value alloraMath.Dec, target string) {
 }*/
 
 func InEpsilon5(t *testing.T, value alloraMath.Dec, target string) {
+	t.Helper()
 	epsilonDec := alloraMath.MustNewDecFromString("0.00001")
 	targetDec := alloraMath.MustNewDecFromString(target)
 	InEpsilon(t, value, targetDec, epsilonDec)
 }
 
 func InEpsilon5Dec(t *testing.T, value alloraMath.Dec, target alloraMath.Dec) {
+	t.Helper()
 	InEpsilon(t, value, target, alloraMath.MustNewDecFromString("0.00001"))
 }

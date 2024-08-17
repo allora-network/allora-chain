@@ -127,7 +127,7 @@ func GetMaximumMonthlyEmissionPerUnitStakedToken(
 	// e.g. if 1/4 goes to validators, then of the 3/4 that goes to workers and reputers, reputers got 1/3
 	// so you have to do 1/3 *3/4 = ACTUAL percent to reputers of the total emission
 	reputersPercent := math.LegacyOneDec().Sub(validatorsPercent).Mul(reputersPercentOfTopicRewards)
-	f_stakers := reputersPercent.Add(validatorsPercent)
+	f_stakers := reputersPercent.Add(validatorsPercent) //nolint:revive // var-naming: don't use underscores in Go names
 	return maximumMonthlyPercentageYield.Quo(f_stakers)
 }
 

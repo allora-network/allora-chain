@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
@@ -265,7 +266,10 @@ func NewAlloraApp(
 	app.setupUpgradeHandlers()
 
 	app.SetInitChainer(func(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
-		app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
+		err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to set module version map")
+		}
 		return app.App.InitChainer(ctx, req)
 	})
 

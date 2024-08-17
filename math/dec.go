@@ -82,7 +82,7 @@ func NewDecFromString(s string) (Dec, error) {
 
 	d1 := Dec{*d, false}
 	if d1.dec.Form == apd.Infinite {
-		return d1, ErrInfiniteString.Wrapf(s)
+		return d1, ErrInfiniteString.Wrap(s)
 	}
 
 	return d1, nil
@@ -302,7 +302,7 @@ func Exp(x Dec) (Dec, error) {
 
 // Exp10 returns a new Dec with the value of 10^x, without mutating x.
 func Exp10(x Dec) (Dec, error) {
-	var ten Dec = NewDecFromInt64(10)
+	var ten = NewDecFromInt64(10)
 	var z Dec
 	_, err := dec128Context.Pow(&z.dec, &ten.dec, &x.dec)
 	return z, errors.Wrap(err, "decimal 10 to the x exponentiation error")
@@ -455,17 +455,17 @@ func (x Dec) String() string {
 }
 
 // Marshal implements the gogo proto custom type interface.
-func (d Dec) Marshal() ([]byte, error) {
-	return d.dec.MarshalText()
+func (x Dec) Marshal() ([]byte, error) {
+	return x.dec.MarshalText()
 }
 
 // Unmarshal implements the gogo proto custom type interface.
-func (d *Dec) Unmarshal(data []byte) error {
+func (x *Dec) Unmarshal(data []byte) error {
 	if len(data) == 0 {
 		return nil
 	}
 
-	if err := d.dec.UnmarshalText(data); err != nil {
+	if err := x.dec.UnmarshalText(data); err != nil {
 		return err
 	}
 
@@ -473,14 +473,14 @@ func (d *Dec) Unmarshal(data []byte) error {
 }
 
 // Size returns the size of the marshalled Dec type in bytes
-func (d Dec) Size() int {
-	bz, _ := d.Marshal()
+func (x Dec) Size() int {
+	bz, _ := x.Marshal()
 	return len(bz)
 }
 
 // MarshalTo implements the gogo proto custom type interface.
-func (d *Dec) MarshalTo(data []byte) (n int, err error) {
-	bz, err := d.Marshal()
+func (x *Dec) MarshalTo(data []byte) (n int, err error) {
+	bz, err := x.Marshal()
 	if err != nil {
 		return 0, err
 	}
@@ -490,13 +490,12 @@ func (d *Dec) MarshalTo(data []byte) (n int, err error) {
 }
 
 // MarshalJSON marshals the decimal
-func (d Dec) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.String())
+func (x Dec) MarshalJSON() ([]byte, error) {
+	return json.Marshal(x.String())
 }
 
 // UnmarshalJSON defines custom decoding scheme
-func (d *Dec) UnmarshalJSON(bz []byte) error {
-
+func (x *Dec) UnmarshalJSON(bz []byte) error {
 	var text string
 	err := json.Unmarshal(bz, &text)
 	if err != nil {
@@ -508,7 +507,7 @@ func (d *Dec) UnmarshalJSON(bz []byte) error {
 		return err
 	}
 
-	*d = newDec
+	*x = newDec
 
 	return nil
 }
@@ -621,7 +620,7 @@ func SlicesInDelta(a, b []Dec, epsilon Dec) bool {
 // Generic Sum function, given an array of values returns its sum
 func SumDecSlice(x []Dec) (Dec, error) {
 	sum := ZeroDec()
-	var err error = nil
+	var err error
 	for _, v := range x {
 		sum, err = sum.Add(v)
 		if err != nil {
