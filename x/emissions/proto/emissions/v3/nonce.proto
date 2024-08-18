@@ -1,13 +1,13 @@
 syntax = "proto3";
 package emissions.v3;
 
-option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
-
 import "gogoproto/gogo.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 message Nonce {
   option (gogoproto.equal) = true;
-  int64 block_height = 1;  // block height of the request
+  int64 block_height = 1; // block height of the request
 }
 
 message Nonces {

@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-.DEFAULT_GOAL := build
+.DEFAULT_GOAL := proto-all
 
 DOCKER := $(shell which docker)
 
@@ -19,7 +19,7 @@ proto-gen:
 	@go mod tidy
 
 proto-format:
-	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
+	@$(protoImage) buf format proto/ -w
 
 proto-lint:
 	@$(protoImage) buf lint proto/ --error-format=json

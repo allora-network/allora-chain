@@ -1,11 +1,11 @@
 syntax = "proto3";
 package mint.v1beta1;
 
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "mint/v1beta1/types.proto";
-import "amino/amino.proto";
-import "cosmos_proto/cosmos.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/mint/types";
 
@@ -30,7 +30,10 @@ message QueryParamsRequest {}
 // QueryParamsResponse is the response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params defines the parameters of the module.
-  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // QueryInflationRequest is the request type for the Query/Inflation RPC method.
@@ -53,7 +56,10 @@ message QueryEmissionInfoRequest {}
 
 // return information about the emissions rate on query
 message QueryEmissionInfoResponse {
-  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 
   string ecosystem_balance = 2 [
     (cosmos_proto.scalar) = "cosmos.Int",

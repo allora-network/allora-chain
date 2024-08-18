@@ -1,17 +1,20 @@
 syntax = "proto3";
 package mint.v1beta1;
 
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "mint/v1beta1/types.proto";
-import "cosmos_proto/cosmos.proto";
-import "amino/amino.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/mint/types";
 
 // GenesisState defines the mint module's genesis state.
 message GenesisState {
   // params defines all the parameters of the module.
-  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 
   // previous target emission rewards per unit staked token
   string previous_reward_emission_per_unit_staked_token = 2 [
