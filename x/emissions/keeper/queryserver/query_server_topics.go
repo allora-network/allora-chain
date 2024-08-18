@@ -69,23 +69,23 @@ func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiv
 }
 
 // Return last payload timestamp & nonce by worker/reputer
-func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *types.QueryTopicLastCommitRequest) (*types.QueryTopicLastCommitResponse, error) {
+func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *types.QueryTopicLastWorkerCommitInfoRequest) (*types.QueryTopicLastWorkerCommitInfoResponse, error) {
 	lastCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryTopicLastCommitResponse{LastCommit: &lastCommit}, nil
+	return &types.QueryTopicLastWorkerCommitInfoResponse{LastCommit: &lastCommit}, nil
 }
 
 // Return last payload timestamp & nonce by worker/reputer
-func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *types.QueryTopicLastCommitRequest) (*types.QueryTopicLastCommitResponse, error) {
+func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *types.QueryTopicLastReputerCommitInfoRequest) (*types.QueryTopicLastReputerCommitInfoResponse, error) {
 	lastCommit, err := qs.k.GetReputerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryTopicLastCommitResponse{LastCommit: &lastCommit}, nil
+	return &types.QueryTopicLastReputerCommitInfoResponse{LastCommit: &lastCommit}, nil
 }
 
 func (qs queryServer) GetTopicRewardNonce(

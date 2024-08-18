@@ -123,7 +123,7 @@ type QueryClient interface {
 	IsReputerRegisteredInTopicId(ctx context.Context, in *QueryIsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(ctx context.Context, in *QueryNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*QueryNetworkInferencesAtBlockResponse, error)
 	GetLatestNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
-	GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error)
+	GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestAvailableNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestAvailableNetworkInferencesResponse, error)
 	IsWorkerNonceUnfulfilled(ctx context.Context, in *QueryIsWorkerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsWorkerNonceUnfulfilledResponse, error)
 	IsReputerNonceUnfulfilled(ctx context.Context, in *QueryIsReputerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*QueryIsReputerNonceUnfulfilledResponse, error)
 	GetUnfulfilledWorkerNonces(ctx context.Context, in *QueryUnfulfilledWorkerNoncesRequest, opts ...grpc.CallOption) (*QueryUnfulfilledWorkerNoncesResponse, error)
@@ -132,8 +132,8 @@ type QueryClient interface {
 	GetForecasterNetworkRegret(ctx context.Context, in *QueryForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryForecasterNetworkRegretResponse, error)
 	GetOneInForecasterNetworkRegret(ctx context.Context, in *QueryOneInForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneInForecasterNetworkRegretResponse, error)
 	IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelistAdminRequest, opts ...grpc.CallOption) (*QueryIsWhitelistAdminResponse, error)
-	GetTopicLastWorkerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
-	GetTopicLastReputerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error)
+	GetTopicLastWorkerCommitInfo(ctx context.Context, in *QueryTopicLastWorkerCommitInfoRequest, opts ...grpc.CallOption) (*QueryTopicLastWorkerCommitInfoResponse, error)
+	GetTopicLastReputerCommitInfo(ctx context.Context, in *QueryTopicLastReputerCommitInfoRequest, opts ...grpc.CallOption) (*QueryTopicLastReputerCommitInfoResponse, error)
 	GetTopicRewardNonce(ctx context.Context, in *QueryTopicRewardNonceRequest, opts ...grpc.CallOption) (*QueryTopicRewardNonceResponse, error)
 	GetReputerLossBundlesAtBlock(ctx context.Context, in *QueryReputerLossBundlesAtBlockRequest, opts ...grpc.CallOption) (*QueryReputerLossBundlesAtBlockResponse, error)
 	GetStakeReputerAuthority(ctx context.Context, in *QueryStakeReputerAuthorityRequest, opts ...grpc.CallOption) (*QueryStakeReputerAuthorityResponse, error)
@@ -419,8 +419,8 @@ func (c *queryClient) GetLatestNetworkInference(ctx context.Context, in *QueryLa
 	return out, nil
 }
 
-func (c *queryClient) GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestNetworkInferencesResponse, error) {
-	out := new(QueryLatestNetworkInferencesResponse)
+func (c *queryClient) GetLatestAvailableNetworkInference(ctx context.Context, in *QueryLatestAvailableNetworkInferencesRequest, opts ...grpc.CallOption) (*QueryLatestAvailableNetworkInferencesResponse, error) {
+	out := new(QueryLatestAvailableNetworkInferencesResponse)
 	err := c.cc.Invoke(ctx, Query_GetLatestAvailableNetworkInference_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -500,8 +500,8 @@ func (c *queryClient) IsWhitelistAdmin(ctx context.Context, in *QueryIsWhitelist
 	return out, nil
 }
 
-func (c *queryClient) GetTopicLastWorkerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error) {
-	out := new(QueryTopicLastCommitResponse)
+func (c *queryClient) GetTopicLastWorkerCommitInfo(ctx context.Context, in *QueryTopicLastWorkerCommitInfoRequest, opts ...grpc.CallOption) (*QueryTopicLastWorkerCommitInfoResponse, error) {
+	out := new(QueryTopicLastWorkerCommitInfoResponse)
 	err := c.cc.Invoke(ctx, Query_GetTopicLastWorkerCommitInfo_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -509,8 +509,8 @@ func (c *queryClient) GetTopicLastWorkerCommitInfo(ctx context.Context, in *Quer
 	return out, nil
 }
 
-func (c *queryClient) GetTopicLastReputerCommitInfo(ctx context.Context, in *QueryTopicLastCommitRequest, opts ...grpc.CallOption) (*QueryTopicLastCommitResponse, error) {
-	out := new(QueryTopicLastCommitResponse)
+func (c *queryClient) GetTopicLastReputerCommitInfo(ctx context.Context, in *QueryTopicLastReputerCommitInfoRequest, opts ...grpc.CallOption) (*QueryTopicLastReputerCommitInfoResponse, error) {
+	out := new(QueryTopicLastReputerCommitInfoResponse)
 	err := c.cc.Invoke(ctx, Query_GetTopicLastReputerCommitInfo_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -838,7 +838,7 @@ type QueryServer interface {
 	IsReputerRegisteredInTopicId(context.Context, *QueryIsReputerRegisteredInTopicIdRequest) (*QueryIsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(context.Context, *QueryNetworkInferencesAtBlockRequest) (*QueryNetworkInferencesAtBlockResponse, error)
 	GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
-	GetLatestAvailableNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error)
+	GetLatestAvailableNetworkInference(context.Context, *QueryLatestAvailableNetworkInferencesRequest) (*QueryLatestAvailableNetworkInferencesResponse, error)
 	IsWorkerNonceUnfulfilled(context.Context, *QueryIsWorkerNonceUnfulfilledRequest) (*QueryIsWorkerNonceUnfulfilledResponse, error)
 	IsReputerNonceUnfulfilled(context.Context, *QueryIsReputerNonceUnfulfilledRequest) (*QueryIsReputerNonceUnfulfilledResponse, error)
 	GetUnfulfilledWorkerNonces(context.Context, *QueryUnfulfilledWorkerNoncesRequest) (*QueryUnfulfilledWorkerNoncesResponse, error)
@@ -847,8 +847,8 @@ type QueryServer interface {
 	GetForecasterNetworkRegret(context.Context, *QueryForecasterNetworkRegretRequest) (*QueryForecasterNetworkRegretResponse, error)
 	GetOneInForecasterNetworkRegret(context.Context, *QueryOneInForecasterNetworkRegretRequest) (*QueryOneInForecasterNetworkRegretResponse, error)
 	IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error)
-	GetTopicLastWorkerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
-	GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error)
+	GetTopicLastWorkerCommitInfo(context.Context, *QueryTopicLastWorkerCommitInfoRequest) (*QueryTopicLastWorkerCommitInfoResponse, error)
+	GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastReputerCommitInfoRequest) (*QueryTopicLastReputerCommitInfoResponse, error)
 	GetTopicRewardNonce(context.Context, *QueryTopicRewardNonceRequest) (*QueryTopicRewardNonceResponse, error)
 	GetReputerLossBundlesAtBlock(context.Context, *QueryReputerLossBundlesAtBlockRequest) (*QueryReputerLossBundlesAtBlockResponse, error)
 	GetStakeReputerAuthority(context.Context, *QueryStakeReputerAuthorityRequest) (*QueryStakeReputerAuthorityResponse, error)
@@ -969,7 +969,7 @@ func (UnimplementedQueryServer) GetNetworkInferencesAtBlock(context.Context, *Qu
 func (UnimplementedQueryServer) GetLatestNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLatestNetworkInference not implemented")
 }
-func (UnimplementedQueryServer) GetLatestAvailableNetworkInference(context.Context, *QueryLatestNetworkInferencesRequest) (*QueryLatestNetworkInferencesResponse, error) {
+func (UnimplementedQueryServer) GetLatestAvailableNetworkInference(context.Context, *QueryLatestAvailableNetworkInferencesRequest) (*QueryLatestAvailableNetworkInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLatestAvailableNetworkInference not implemented")
 }
 func (UnimplementedQueryServer) IsWorkerNonceUnfulfilled(context.Context, *QueryIsWorkerNonceUnfulfilledRequest) (*QueryIsWorkerNonceUnfulfilledResponse, error) {
@@ -996,10 +996,10 @@ func (UnimplementedQueryServer) GetOneInForecasterNetworkRegret(context.Context,
 func (UnimplementedQueryServer) IsWhitelistAdmin(context.Context, *QueryIsWhitelistAdminRequest) (*QueryIsWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsWhitelistAdmin not implemented")
 }
-func (UnimplementedQueryServer) GetTopicLastWorkerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error) {
+func (UnimplementedQueryServer) GetTopicLastWorkerCommitInfo(context.Context, *QueryTopicLastWorkerCommitInfoRequest) (*QueryTopicLastWorkerCommitInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicLastWorkerCommitInfo not implemented")
 }
-func (UnimplementedQueryServer) GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastCommitRequest) (*QueryTopicLastCommitResponse, error) {
+func (UnimplementedQueryServer) GetTopicLastReputerCommitInfo(context.Context, *QueryTopicLastReputerCommitInfoRequest) (*QueryTopicLastReputerCommitInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicLastReputerCommitInfo not implemented")
 }
 func (UnimplementedQueryServer) GetTopicRewardNonce(context.Context, *QueryTopicRewardNonceRequest) (*QueryTopicRewardNonceResponse, error) {
@@ -1598,7 +1598,7 @@ func _Query_GetLatestNetworkInference_Handler(srv interface{}, ctx context.Conte
 }
 
 func _Query_GetLatestAvailableNetworkInference_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLatestNetworkInferencesRequest)
+	in := new(QueryLatestAvailableNetworkInferencesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1610,7 +1610,7 @@ func _Query_GetLatestAvailableNetworkInference_Handler(srv interface{}, ctx cont
 		FullMethod: Query_GetLatestAvailableNetworkInference_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetLatestAvailableNetworkInference(ctx, req.(*QueryLatestNetworkInferencesRequest))
+		return srv.(QueryServer).GetLatestAvailableNetworkInference(ctx, req.(*QueryLatestAvailableNetworkInferencesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1760,7 +1760,7 @@ func _Query_IsWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _Query_GetTopicLastWorkerCommitInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTopicLastCommitRequest)
+	in := new(QueryTopicLastWorkerCommitInfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1772,13 +1772,13 @@ func _Query_GetTopicLastWorkerCommitInfo_Handler(srv interface{}, ctx context.Co
 		FullMethod: Query_GetTopicLastWorkerCommitInfo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetTopicLastWorkerCommitInfo(ctx, req.(*QueryTopicLastCommitRequest))
+		return srv.(QueryServer).GetTopicLastWorkerCommitInfo(ctx, req.(*QueryTopicLastWorkerCommitInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Query_GetTopicLastReputerCommitInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryTopicLastCommitRequest)
+	in := new(QueryTopicLastReputerCommitInfoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -1790,7 +1790,7 @@ func _Query_GetTopicLastReputerCommitInfo_Handler(srv interface{}, ctx context.C
 		FullMethod: Query_GetTopicLastReputerCommitInfo_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetTopicLastReputerCommitInfo(ctx, req.(*QueryTopicLastCommitRequest))
+		return srv.(QueryServer).GetTopicLastReputerCommitInfo(ctx, req.(*QueryTopicLastReputerCommitInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

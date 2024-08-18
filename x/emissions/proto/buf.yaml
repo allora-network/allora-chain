@@ -8,10 +8,35 @@ lint:
   use:
     - DEFAULT
     - COMMENTS
-    - FILE_LOWER_SNAKE_CASE
   except:
-    - UNARY_RPC
+    - COMMENT_ENUM_VALUE
+    - COMMENT_ENUM
     - COMMENT_FIELD
-    - SERVICE_SUFFIX
-    - PACKAGE_VERSION_SUFFIX
-    - RPC_REQUEST_STANDARD_NAME
+    - COMMENT_MESSAGE
+    - COMMENT_ONEOF
+    - COMMENT_RPC
+  allow_comment_ignores: false
+  ignore:
+    - emissions/v2
+    - emissions/v1
+  ignore_only:
+    FIELD_LOWER_SNAKE_CASE:
+      - emissions/v3/genesis.proto
+      - emissions/v3/query.proto
+    ENUM_VALUE_PREFIX:
+      - emissions/v3/events.proto
+    ENUM_ZERO_VALUE_SUFFIX:
+      - emissions/v3/events.proto
+    RPC_REQUEST_STANDARD_NAME:
+      - emissions/v3/tx.proto
+      - emissions/v3/query.proto
+    RPC_RESPONSE_STANDARD_NAME:
+      - emissions/v3/query.proto
+    SERVICE_SUFFIX:
+      - emissions/v3/query.proto
+      - emissions/v3/tx.proto
+
+breaking:
+  except:
+    - EXTENSION_NO_DELETE
+    - FIELD_SAME_DEFAULT

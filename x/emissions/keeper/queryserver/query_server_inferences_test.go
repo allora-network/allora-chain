@@ -795,7 +795,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	require.NoError(err)
 
 	// Test querying the server
-	req := &types.QueryLatestNetworkInferencesRequest{
+	req := &types.QueryLatestAvailableNetworkInferencesRequest{
 		TopicId: topicId,
 	}
 	response, err := queryServer.GetLatestAvailableNetworkInference(s.ctx, req)
@@ -968,7 +968,7 @@ func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingI
 	require.NoError(err)
 
 	// Test querying the server
-	req := &types.QueryLatestNetworkInferencesRequest{
+	req := &types.QueryLatestAvailableNetworkInferencesRequest{
 		TopicId: topicId,
 	}
 	_, err = queryServer.GetLatestAvailableNetworkInference(s.ctx, req)
