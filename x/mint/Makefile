@@ -3,24 +3,6 @@
 
 DOCKER := $(shell which docker)
 
-#################
-###   Build   ###
-#################
-
-build:
-	@echo "--> Check the code compiles"
-	@go build ./...
-
-test:
-	@echo "--> Running tests"
-	go test -v ./...
-
-test-integration:
-	@echo "--> Running integration tests"
-	cd integration; go test -v ./...
-
-.PHONY: test test-integration
-
 ##################
 ###  Protobuf  ###
 ##################
@@ -42,23 +24,7 @@ proto-format:
 proto-lint:
 	@$(protoImage) buf lint proto/ --error-format=json
 
-.PHONY: proto-all proto-gen proto-format proto-lint
+proto-check-breaking:
+	@$(protoImage) buf breaking proto/ --against $(HTTPS_GIT)#branch=main
 
-#################
-###  Linting  ###
-#################
-
-golangci_lint_cmd=golangci-lint
-golangci_version=v1.51.2
-
-lint:
-	@echo "--> Running linter"
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
-	@$(golangci_lint_cmd) run ./... --timeout 15m
-
-lint-fix:
-	@echo "--> Running linter and fixing issues"
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
-	@$(golangci_lint_cmd) run ./... --fix --timeout 15m
-
-.PHONY: lint lint-fix
+.PHONY: proto-all proto-gen proto-format proto-lint proto-check-breaking

@@ -1,0 +1,27 @@
+name: Buf Linter
+on:
+  pull_request:
+    paths:
+        - '**.proto'
+        - '**/buf.yaml'
+        - '**/buf.lock'  
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  buf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-action@v1
+        with:
+          input: 'x/emissions/proto'
+          format: true
+          lint: true
+          breaking: false
+      - uses: bufbuild/buf-action@v1
+        with:
+          input: 'x/mint/proto'
+          format: true
+          lint: true
+          breaking: false

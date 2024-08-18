@@ -137,9 +137,9 @@ func (qs queryServer) GetLatestNetworkInference(
 
 func (qs queryServer) GetLatestAvailableNetworkInference(
 	ctx context.Context,
-	req *emissionstypes.QueryLatestNetworkInferencesRequest,
+	req *emissionstypes.QueryLatestAvailableNetworkInferencesRequest,
 ) (
-	*emissionstypes.QueryLatestNetworkInferencesResponse,
+	*emissionstypes.QueryLatestAvailableNetworkInferencesResponse,
 	error,
 ) {
 	lastWorkerCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
@@ -185,7 +185,7 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	inferers := alloraMath.GetSortedKeys(infererWeights)
 	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
 
-	return &emissionstypes.QueryLatestNetworkInferencesResponse{
+	return &emissionstypes.QueryLatestAvailableNetworkInferencesResponse{
 		NetworkInferences:                networkInferences,
 		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
 		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),

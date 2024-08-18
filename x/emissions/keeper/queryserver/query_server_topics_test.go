@@ -110,7 +110,7 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 		&nonce,
 	)
 
-	req := &types.QueryTopicLastCommitRequest{
+	req := &types.QueryTopicLastReputerCommitInfoRequest{
 		TopicId: topic.Id,
 	}
 
@@ -133,7 +133,7 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 		&nonce,
 	)
 
-	req2 := &types.QueryTopicLastCommitRequest{
+	req2 := &types.QueryTopicLastWorkerCommitInfoRequest{
 		TopicId: topic2.Id,
 	}
 

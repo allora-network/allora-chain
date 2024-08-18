@@ -1736,7 +1736,7 @@ func local_request_Query_GetLatestNetworkInference_0(ctx context.Context, marsha
 }
 
 func request_Query_GetLatestAvailableNetworkInference_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLatestNetworkInferencesRequest
+	var protoReq QueryLatestAvailableNetworkInferencesRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -1763,7 +1763,7 @@ func request_Query_GetLatestAvailableNetworkInference_0(ctx context.Context, mar
 }
 
 func local_request_Query_GetLatestAvailableNetworkInference_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLatestNetworkInferencesRequest
+	var protoReq QueryLatestAvailableNetworkInferencesRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -2354,7 +2354,7 @@ func local_request_Query_IsWhitelistAdmin_0(ctx context.Context, marshaler runti
 }
 
 func request_Query_GetTopicLastWorkerCommitInfo_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryTopicLastCommitRequest
+	var protoReq QueryTopicLastWorkerCommitInfoRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -2381,7 +2381,7 @@ func request_Query_GetTopicLastWorkerCommitInfo_0(ctx context.Context, marshaler
 }
 
 func local_request_Query_GetTopicLastWorkerCommitInfo_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryTopicLastCommitRequest
+	var protoReq QueryTopicLastWorkerCommitInfoRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -2408,7 +2408,7 @@ func local_request_Query_GetTopicLastWorkerCommitInfo_0(ctx context.Context, mar
 }
 
 func request_Query_GetTopicLastReputerCommitInfo_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryTopicLastCommitRequest
+	var protoReq QueryTopicLastReputerCommitInfoRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -2435,7 +2435,7 @@ func request_Query_GetTopicLastReputerCommitInfo_0(ctx context.Context, marshale
 }
 
 func local_request_Query_GetTopicLastReputerCommitInfo_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryTopicLastCommitRequest
+	var protoReq QueryTopicLastReputerCommitInfoRequest
 	var metadata runtime.ServerMetadata
 
 	var (
