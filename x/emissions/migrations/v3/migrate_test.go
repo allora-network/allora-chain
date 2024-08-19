@@ -93,8 +93,6 @@ func (s *MigrationTestSuite) TestMigrate() {
 		MaxTopReputersToReward:              defaultParams.MaxTopReputersToReward,
 		CreateTopicFee:                      defaultParams.CreateTopicFee,
 		GradientDescentMaxIters:             defaultParams.GradientDescentMaxIters,
-		MaxRetriesToFulfilNoncesWorker:      defaultParams.MaxRetriesToFulfilNoncesWorker,
-		MaxRetriesToFulfilNoncesReputer:     defaultParams.MaxRetriesToFulfilNoncesReputer,
 		RegistrationFee:                     defaultParams.RegistrationFee,
 		DefaultPageLimit:                    defaultParams.DefaultPageLimit,
 		MaxPageLimit:                        defaultParams.MaxPageLimit,
@@ -113,7 +111,9 @@ func (s *MigrationTestSuite) TestMigrate() {
 		DataSendingFee:                      defaultParams.DataSendingFee,
 
 		// TO BE DELETED
-		MinEffectiveTopicRevenue: alloraMath.NewDecFromInt64(1337),
+		MinEffectiveTopicRevenue:        alloraMath.NewDecFromInt64(1337),
+		MaxRetriesToFulfilNoncesWorker:  4242,
+		MaxRetriesToFulfilNoncesReputer: 4243,
 	}
 
 	store.Set(types.ParamsKey, cdc.MustMarshal(&paramsOld))
@@ -152,8 +152,6 @@ func (s *MigrationTestSuite) TestMigrate() {
 	s.Require().Equal(paramsExpected.MaxTopReputersToReward, params.MaxTopReputersToReward)
 	s.Require().True(paramsExpected.CreateTopicFee.Equal(params.CreateTopicFee), "%s!=%s", paramsExpected.CreateTopicFee, params.CreateTopicFee)
 	s.Require().Equal(paramsExpected.GradientDescentMaxIters, params.GradientDescentMaxIters)
-	s.Require().Equal(paramsExpected.MaxRetriesToFulfilNoncesWorker, params.MaxRetriesToFulfilNoncesWorker)
-	s.Require().Equal(paramsExpected.MaxRetriesToFulfilNoncesReputer, params.MaxRetriesToFulfilNoncesReputer)
 	s.Require().True(paramsExpected.RegistrationFee.Equal(params.RegistrationFee), "%s!=%s", paramsExpected.RegistrationFee, params.RegistrationFee)
 	s.Require().Equal(paramsExpected.DefaultPageLimit, params.DefaultPageLimit)
 	s.Require().Equal(paramsExpected.MaxPageLimit, params.MaxPageLimit)

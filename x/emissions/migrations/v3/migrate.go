@@ -43,6 +43,8 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	//      MaxElementsPerForecast
 	// REMOVED:
 	// 		MinEffectiveTopicRevenue
+	//      MaxRetriesToFulfilNoncesWorker
+	// 		MaxRetriesToFulfilNoncesReputer
 	newParams := types.Params{
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
@@ -68,8 +70,6 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		MaxTopReputersToReward:              oldParams.MaxTopReputersToReward,
 		CreateTopicFee:                      oldParams.CreateTopicFee,
 		GradientDescentMaxIters:             oldParams.GradientDescentMaxIters,
-		MaxRetriesToFulfilNoncesWorker:      oldParams.MaxRetriesToFulfilNoncesWorker,
-		MaxRetriesToFulfilNoncesReputer:     oldParams.MaxRetriesToFulfilNoncesReputer,
 		RegistrationFee:                     oldParams.RegistrationFee,
 		DefaultPageLimit:                    oldParams.DefaultPageLimit,
 		MaxPageLimit:                        oldParams.MaxPageLimit,

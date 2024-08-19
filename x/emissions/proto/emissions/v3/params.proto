@@ -9,8 +9,8 @@ import "gogoproto/gogo.proto";
 
 // Params defines the parameters of the module.
 message Params {
-  reserved 41;
-  reserved "min_effective_topic_revenue";
+  reserved 26,27,41;
+  reserved "min_effective_topic_revenue","max_retries_to_fulfil_nonces_worker","max_retries_to_fulfil_nonces_reputer";
 
   string version = 1;                   // version of the protocol should be in lockstep with
                                         // github release tag version
@@ -85,8 +85,6 @@ message Params {
     (amino.dont_omitempty) = true
   ];                                                // topic registration fee
   uint64 gradient_descent_max_iters = 25;           // max number of gradient descent iterations
-  int64 max_retries_to_fulfil_nonces_worker = 26;   // max number of retries to unfulfilled nonces (worker)
-  int64 max_retries_to_fulfil_nonces_reputer = 27;  // max number of retries to unfulfilled nonces (reputer)
   string registration_fee = 28 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
