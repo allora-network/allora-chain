@@ -2109,7 +2109,7 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	}
 	// if we have not yet decayed this epoch, decay and set to decayed
 	// if we have decayed this epoch already, do nothing and continue
-	if lastDripBlock < topic.EpochLastEnded {
+	if lastDripBlock <= topic.EpochLastEnded {
 		newTopicFeeRevenueDec, err := topicFeeRevenueDec.Sub(dripPerEpoch)
 		if err != nil {
 			return err
@@ -2123,9 +2123,10 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 			return err
 		}
 
-		ctx.Logger().Debug(fmt.Sprintf(
+		logMsg := fmt.Sprintf(
 			"Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v",
-			ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue))
+			ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue)
+		ctx.Logger().Debug(logMsg)
 		if err = k.SetLastDripBlock(ctx, topicId, topic.EpochLastEnded); err != nil {
 			return err
 		}
@@ -2171,19 +2172,26 @@ func (k *Keeper) RemoveRewardableTopic(ctx context.Context, topicId TopicId) err
 func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
 	oldScore, err := k.GetLatestInfererScore(ctx, topicId, worker)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting latest inferer score")
 	}
 	if oldScore.BlockHeight >= score.BlockHeight {
 		return nil
 	}
 	key := collections.Join(topicId, worker)
-	return k.latestInfererScoresByWorker.Set(ctx, key, score)
+	err = k.latestInfererScoresByWorker.Set(ctx, key, score)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting latest inferer score")
+	}
+	return nil
 }
 
 func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
 	score, err := k.latestInfererScoresByWorker.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Score{}, nil
+		}
 		return types.Score{}, err
 	}
 	return score, nil
