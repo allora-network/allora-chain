@@ -35,8 +35,6 @@ func DefaultParams() Params {
 		MaxTopForecastersToReward:           uint64(6),                                    // max this many top forecasters by score are rewarded for a topic
 		MaxTopReputersToReward:              uint64(6),                                    // max this many top reputers by score are rewarded for a topic
 		CreateTopicFee:                      cosmosMath.NewInt(75000),                     // topic registration fee
-		MaxRetriesToFulfilNoncesWorker:      int64(1),                                     // max throttle of simultaneous unfulfilled worker requests
-		MaxRetriesToFulfilNoncesReputer:     int64(3),                                     // max throttle of simultaneous unfulfilled reputer requests
 		RegistrationFee:                     cosmosMath.NewInt(200),                       // how much workers and reputers must pay to register per topic
 		DefaultPageLimit:                    uint64(100),                                  // how many topics to return per page during churn of requests
 		MaxPageLimit:                        uint64(1000),                                 // max limit for pagination
@@ -131,12 +129,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateCreateTopicFee(p.CreateTopicFee); err != nil {
-		return err
-	}
-	if err := validateMaxRetriesToFulfilNoncesWorker(p.MaxRetriesToFulfilNoncesWorker); err != nil {
-		return err
-	}
-	if err := validateMaxRetriesToFulfilNoncesReputer(p.MaxRetriesToFulfilNoncesReputer); err != nil {
 		return err
 	}
 	if err := validateRegistrationFee(p.RegistrationFee); err != nil {
@@ -455,24 +447,6 @@ func validateMaxTopReputersToReward(_ uint64) error {
 // must be positive or zero
 func validateCreateTopicFee(i cosmosMath.Int) error {
 	if i.IsNegative() {
-		return ErrValidationMustBeGreaterthanZero
-	}
-	return nil
-}
-
-// max throttle of simultaneous unfulfilled worker requests.
-// Should be non negative.
-func validateMaxRetriesToFulfilNoncesWorker(i int64) error {
-	if i < 0 {
-		return ErrValidationMustBeGreaterthanZero
-	}
-	return nil
-}
-
-// max throttle of simultaneous unfulfilled reputer requests.
-// Should be non negative.
-func validateMaxRetriesToFulfilNoncesReputer(i int64) error {
-	if i < 0 {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil

@@ -1015,40 +1015,6 @@ func (s *KeeperTestSuite) TestGetParamsMaxTopForecasterElementToSubmit() {
 	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxElementsPerForecast should match the expected value")
 }
 
-func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesWorker() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := int64(5) // Example expected value
-
-	// Set the parameter
-	params := types.Params{MaxRetriesToFulfilNoncesWorker: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
-	s.Require().NoError(err)
-	actualValue := moduleParams.MaxRetriesToFulfilNoncesWorker
-	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesWorker should match the expected value")
-}
-
-func (s *KeeperTestSuite) TestGetParamsMaxRetriesToFulfilNoncesReputer() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	expectedValue := int64(5) // Example expected value
-
-	// Set the parameter
-	params := types.Params{MaxRetriesToFulfilNoncesReputer: expectedValue}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err)
-
-	// Get the parameter
-	moduleParams, err := keeper.GetParams(ctx)
-	s.Require().NoError(err)
-	actualValue := moduleParams.MaxRetriesToFulfilNoncesReputer
-	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxRetriesToFulfilNoncesReputer should match the expected value")
-}
-
 func (s *KeeperTestSuite) TestGetMinEpochLengthRecordLimit() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -1983,8 +1949,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 		MaxTopReputersToReward:          10,
 		CreateTopicFee:                  cosmosMath.ZeroInt(),
 		GradientDescentMaxIters:         0,
-		MaxRetriesToFulfilNoncesWorker:  0,
-		MaxRetriesToFulfilNoncesReputer: 0,
 		RegistrationFee:                 cosmosMath.ZeroInt(),
 		DefaultPageLimit:                0,
 		MaxPageLimit:                    0,

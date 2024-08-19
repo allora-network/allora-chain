@@ -79,8 +79,6 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		MaxTopForecastersToReward:       []uint64{1234},
 		MaxTopReputersToReward:          []uint64{1234},
 		CreateTopicFee:                  []cosmosMath.Int{cosmosMath.NewInt(1234)},
-		MaxRetriesToFulfilNoncesWorker:  []int64{1234},
-		MaxRetriesToFulfilNoncesReputer: []int64{1234},
 		RegistrationFee:                 []cosmosMath.Int{cosmosMath.NewInt(1234)},
 		DefaultPageLimit:                []uint64{1234},
 		MaxPageLimit:                    []uint64{1234},
@@ -130,8 +128,6 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxTopReputersToReward[0], updatedParams.MaxTopReputersToReward)
 	require.Equal(newParams.CreateTopicFee[0], updatedParams.CreateTopicFee)
 	require.Equal(newParams.GradientDescentMaxIters[0], updatedParams.GradientDescentMaxIters)
-	require.Equal(newParams.MaxRetriesToFulfilNoncesWorker[0], updatedParams.MaxRetriesToFulfilNoncesWorker)
-	require.Equal(newParams.MaxRetriesToFulfilNoncesReputer[0], updatedParams.MaxRetriesToFulfilNoncesReputer)
 	require.Equal(newParams.RegistrationFee[0], updatedParams.RegistrationFee)
 	require.Equal(newParams.DefaultPageLimit[0], updatedParams.DefaultPageLimit)
 	require.Equal(newParams.MaxPageLimit[0], updatedParams.MaxPageLimit)

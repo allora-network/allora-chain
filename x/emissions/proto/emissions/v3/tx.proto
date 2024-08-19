@@ -56,8 +56,8 @@ service Msg {
 // optional field and if the repeated field is empty, it is considered to be the
 // same as if the field was not set
 message OptionalParams {
-  reserved 41;
-  reserved "min_effective_topic_revenue";
+  reserved 26, 27, 41;
+  reserved "min_effective_topic_revenue", "max_retries_to_fulfil_nonces_worker", "max_retries_to_fulfil_nonces_reputer";
 
   repeated string version = 1;
   repeated int64 max_serialized_msg_length = 2;
@@ -123,8 +123,6 @@ message OptionalParams {
     (amino.dont_omitempty) = true
   ];
   repeated uint64 gradient_descent_max_iters = 25;
-  repeated int64 max_retries_to_fulfil_nonces_worker = 26;
-  repeated int64 max_retries_to_fulfil_nonces_reputer = 27;
   repeated string registration_fee = 28 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
