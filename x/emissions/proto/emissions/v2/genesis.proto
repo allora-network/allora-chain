@@ -1,18 +1,18 @@
 syntax = "proto3";
 package emissions.v2;
 
-import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
-import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "emissions/v2/node.proto";
+import "emissions/v2/nonce.proto";
 import "emissions/v2/params.proto";
+import "emissions/v2/reputer.proto";
 import "emissions/v2/score.proto";
 import "emissions/v2/stake.proto";
-import "emissions/v2/types.proto";
 import "emissions/v2/topic.proto";
+import "emissions/v2/types.proto";
 import "emissions/v2/worker.proto";
-import "emissions/v2/node.proto";
-import "emissions/v2/reputer.proto";
-import "emissions/v2/nonce.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
@@ -22,12 +22,15 @@ message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false];
 
   /// TOPIC
-  // the next topic id to be used, equal to the number of topics that have been created
+  // the next topic id to be used, equal to the number of topics that have been
+  // created
   uint64 nextTopicId = 3;
-  // every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
+  // every topic that has been created indexed by their topicId starting from 1
+  // (0 is reserved for the root network)
   repeated TopicIdAndTopic topics = 4;
   repeated uint64 activeTopics = 5;
-  // every topic that has been churned and ready to be rewarded i.e. reputer losses have been committed
+  // every topic that has been churned and ready to be rewarded i.e. reputer
+  // losses have been committed
   repeated uint64 rewardableTopics = 6;
   // for a topic, what is every worker node that has registered to it?
   repeated TopicAndActorId topicWorkers = 7;
@@ -73,26 +76,34 @@ message GenesisState {
   repeated TopicIdAndInt topicStake = 22;
   // stake reputer placed in topic + delegate stake placed in them,
   // signalling their total authority on the topic
-  // (topic Id, reputer) -> stake from reputer on self + stakeFromDelegatorsUponReputer
+  // (topic Id, reputer) -> stake from reputer on self +
+  // stakeFromDelegatorsUponReputer
   repeated TopicIdActorIdInt stakeReputerAuthority = 23;
-  // map of (topic id, delegator) -> total amount of stake in that topic placed by that delegator
+  // map of (topic id, delegator) -> total amount of stake in that topic placed
+  // by that delegator
   repeated TopicIdActorIdInt stakeSumFromDelegator = 24;
-  // map of (topic id, delegator, reputer) -> amount of stake that has been placed by that delegator on that target
+  // map of (topic id, delegator, reputer) -> amount of stake that has been
+  // placed by that delegator on that target
   repeated TopicIdDelegatorReputerDelegatorInfo delegatedStakes = 25;
-  // map of (topic id, reputer) -> total amount of stake that has been placed on that reputer by delegators
+  // map of (topic id, reputer) -> total amount of stake that has been placed on
+  // that reputer by delegators
   repeated TopicIdActorIdInt stakeFromDelegatorsUponReputer = 26;
   // map of (topicId, reputer) -> share of delegate reward
   repeated TopicIdActorIdDec delegateRewardPerShare = 27;
   // stake removals are double indexed to avoid O(n) lookups when removing stake
-  // map of (blockHeight, topic, reputer) -> removal information for that reputer
+  // map of (blockHeight, topic, reputer) -> removal information for that
+  // reputer
   repeated BlockHeightTopicIdReputerStakeRemovalInfo stakeRemovalsByBlock = 28;
-  // key set of (reputer, topic, blockHeight) to existence of a removal in the forwards map
+  // key set of (reputer, topic, blockHeight) to existence of a removal in the
+  // forwards map
   repeated ActorIdTopicIdBlockHeight stakeRemovalsByActor = 29;
-  // delegate stake removals are double indexed to avoid O(n) lookups when removing stake
-  // map of (blockHeight, topic, delegator, reputer staked upon) -> (list of reputers delegated upon and info) to have
-  // stake removed at that block
+  // delegate stake removals are double indexed to avoid O(n) lookups when
+  // removing stake map of (blockHeight, topic, delegator, reputer staked upon)
+  // -> (list of reputers delegated upon and info) to have stake removed at that
+  // block
   repeated BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo delegateStakeRemovalsByBlock = 30;
-  // key set of (delegator, reputer, topicId, blockHeight) to existence of a removal in the forwards map
+  // key set of (delegator, reputer, topicId, blockHeight) to existence of a
+  // removal in the forwards map
   repeated DelegatorReputerTopicIdBlockHeight delegateStakeRemovalsByActor = 31;
 
   /// MISC GLOBAL STATE
@@ -112,13 +123,18 @@ message GenesisState {
   repeated TopicIdBlockHeightInferences allInferences = 38;
   // map of (topic, block_height) -> Forecast
   repeated TopicIdBlockHeightForecasts allForecasts = 39;
-  // map of (topic, block_height) -> ReputerValueBundles (1 per reputer active at that time)
+  // map of (topic, block_height) -> ReputerValueBundles (1 per reputer active
+  // at that time)
   repeated TopicIdBlockHeightReputerValueBundles allLossBundles = 40;
-  // map of (topic, block_height) -> ValueBundle (1 network wide bundle per timestep)
+  // map of (topic, block_height) -> ValueBundle (1 network wide bundle per
+  // timestep)
   repeated TopicIdBlockHeightValueBundles networkLossBundles = 41;
-  // Percentage of all rewards, paid out to staked reputers, during the previous reward cadence. Used by mint module
-  string previousPercentageRewardToStakedReputers = 42
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  // Percentage of all rewards, paid out to staked reputers, during the previous
+  // reward cadence. Used by mint module
+  string previousPercentageRewardToStakedReputers = 42 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 
   /// NONCES
   // map of (topic) -> unfulfilled nonces
@@ -127,14 +143,18 @@ message GenesisState {
   repeated TopicIdAndReputerRequestNonces unfulfilledReputerNonces = 44;
 
   /// REGRETS
-  // map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other inferers
+  // map of (topic, worker) -> regret of worker from comparing loss of worker
+  // relative to loss of other inferers
   repeated TopicIdActorIdTimeStampedValue latestInfererNetworkRegrets = 45;
-  // map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other forecasters
+  // map of (topic, worker) -> regret of worker from comparing loss of worker
+  // relative to loss of other forecasters
   repeated TopicIdActorIdTimeStampedValue latestForecasterNetworkRegrets = 46;
-  // map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
-  // all network inferer (3rd index) regrets L_ij made under the regime of the one-in forecaster (2nd index)
+  // map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster
+  // loss from comparing one-in loss with all network inferer (3rd index)
+  // regrets L_ij made under the regime of the one-in forecaster (2nd index)
   repeated TopicIdActorIdActorIdTimeStampedValue latestOneInForecasterNetworkRegrets = 47;
-  // the forecaster (2nd index) regrets made under the regime of the same forecaster as a one-in forecaster
+  // the forecaster (2nd index) regrets made under the regime of the same
+  // forecaster as a one-in forecaster
   repeated TopicIdActorIdTimeStampedValue latestNaiveInfererNetworkRegrets = 48;
   repeated TopicIdActorIdActorIdTimeStampedValue latestOneOutInfererInfererNetworkRegrets = 49;
   repeated TopicIdActorIdActorIdTimeStampedValue latestOneOutInfererForecasterNetworkRegrets = 50;
@@ -185,8 +205,10 @@ message TopicIdActorIdListeningCoefficient {
 message TopicIdActorIdDec {
   uint64 TopicId = 1;
   string ActorId = 2;
-  string Dec = 3
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string Dec = 3 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message TopicIdAndInt {
@@ -264,8 +286,10 @@ message LibP2pKeyAndOffchainNode {
 
 message TopicIdAndDec {
   uint64 TopicId = 1;
-  string Dec = 2
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string Dec = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message TopicIdBlockHeightInferences {

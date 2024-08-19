@@ -1,11 +1,11 @@
 syntax = "proto3";
 package emissions.v3;
 
-option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
-
-import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 // Bad naming convention, only used in StakeRemovals
 // DEPRECATED in ConsensusVersion = 2
@@ -80,8 +80,12 @@ message DelegateStakeRemovalInfo {
 }
 
 message DelegatorInfo {
-  string amount = 1
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  string reward_debt = 2
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string amount = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string reward_debt = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }

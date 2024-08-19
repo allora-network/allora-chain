@@ -1,5 +1,5 @@
 #!/usr/bin/make -f
-.DEFAULT_GOAL := build
+.DEFAULT_GOAL := proto-all
 
 DOCKER := $(shell which docker)
 
@@ -15,11 +15,7 @@ test:
 	@echo "--> Running tests"
 	go test -v ./...
 
-test-integration:
-	@echo "--> Running integration tests"
-	cd integration; go test -v ./...
-
-.PHONY: test test-integration
+.PHONY: build test
 
 ##################
 ###  Protobuf  ###
@@ -37,28 +33,12 @@ proto-gen:
 	@go mod tidy
 
 proto-format:
-	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
+	@$(protoImage) buf format proto/ -w
 
 proto-lint:
 	@$(protoImage) buf lint proto/ --error-format=json
 
-.PHONY: proto-all proto-gen proto-format proto-lint
+proto-check-breaking:
+	@$(protoImage) buf breaking proto/ --against $(HTTPS_GIT)#branch=main
 
-#################
-###  Linting  ###
-#################
-
-golangci_lint_cmd=golangci-lint
-golangci_version=v1.51.2
-
-lint:
-	@echo "--> Running linter"
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
-	@$(golangci_lint_cmd) run ./... --timeout 15m
-
-lint-fix:
-	@echo "--> Running linter and fixing issues"
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(golangci_version)
-	@$(golangci_lint_cmd) run ./... --fix --timeout 15m
-
-.PHONY: lint lint-fix
+.PHONY: proto-all proto-gen proto-format proto-lint proto-check-breaking
