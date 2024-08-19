@@ -104,7 +104,6 @@ func (s *MigrationTestSuite) TestMigrate() {
 		CRewardInference:                    defaultParams.CRewardInference,
 		CRewardForecast:                     defaultParams.CRewardForecast,
 		CNorm:                               defaultParams.CNorm,
-		TopicFeeRevenueDecayRate:            defaultParams.TopicFeeRevenueDecayRate,
 		EpsilonReputer:                      defaultParams.EpsilonReputer,
 		HalfMaxProcessStakeRemovalsEndBlock: defaultParams.HalfMaxProcessStakeRemovalsEndBlock,
 		EpsilonSafeDiv:                      defaultParams.EpsilonSafeDiv,
@@ -112,6 +111,7 @@ func (s *MigrationTestSuite) TestMigrate() {
 
 		// TO BE DELETED
 		MinEffectiveTopicRevenue:        alloraMath.NewDecFromInt64(1337),
+		TopicFeeRevenueDecayRate:        alloraMath.NewDecFromInt64(1338),
 		MaxRetriesToFulfilNoncesWorker:  4242,
 		MaxRetriesToFulfilNoncesReputer: 4243,
 	}
@@ -163,7 +163,6 @@ func (s *MigrationTestSuite) TestMigrate() {
 	s.Require().True(paramsExpected.CRewardInference.Equal(params.CRewardInference), "%s!=%s", paramsExpected.CRewardInference, params.CRewardInference)
 	s.Require().True(paramsExpected.CRewardForecast.Equal(params.CRewardForecast), "%s!=%s", paramsExpected.CRewardForecast, params.CRewardForecast)
 	s.Require().True(paramsExpected.CNorm.Equal(params.CNorm), "%s!=%s", paramsExpected.CNorm, params.CNorm)
-	s.Require().True(paramsExpected.TopicFeeRevenueDecayRate.Equal(params.TopicFeeRevenueDecayRate), "%s!=%s", paramsExpected.TopicFeeRevenueDecayRate, params.TopicFeeRevenueDecayRate)
 	s.Require().True(paramsExpected.EpsilonReputer.Equal(params.EpsilonReputer), "%s!=%s", paramsExpected.EpsilonReputer, params.EpsilonReputer)
 	s.Require().Equal(paramsExpected.HalfMaxProcessStakeRemovalsEndBlock, params.HalfMaxProcessStakeRemovalsEndBlock)
 	s.Require().True(paramsExpected.EpsilonSafeDiv.Equal(params.EpsilonSafeDiv), "%s!=%s", paramsExpected.EpsilonSafeDiv, params.EpsilonSafeDiv)
