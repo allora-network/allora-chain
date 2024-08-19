@@ -8,10 +8,24 @@ lint:
   use:
     - DEFAULT
     - COMMENTS
-    - FILE_LOWER_SNAKE_CASE
   except:
-    - UNARY_RPC
+    - COMMENT_ENUM_VALUE
+    - COMMENT_ENUM
     - COMMENT_FIELD
-    - SERVICE_SUFFIX
-    - PACKAGE_VERSION_SUFFIX
-    - RPC_REQUEST_STANDARD_NAME
+    - COMMENT_MESSAGE
+    - COMMENT_ONEOF
+    - COMMENT_RPC
+  allow_comment_ignores: false
+  ignore_only:
+    RPC_REQUEST_STANDARD_NAME:
+      - mint/v1beta1/tx.proto
+    RPC_RESPONSE_STANDARD_NAME:
+      - mint/v1beta1/tx.proto
+    SERVICE_SUFFIX:
+      - mint/v1beta1/query.proto
+      - mint/v1beta1/tx.proto
+
+breaking:
+  except:
+    - EXTENSION_NO_DELETE
+    - FIELD_SAME_DEFAULT

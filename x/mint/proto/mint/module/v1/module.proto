@@ -6,9 +6,7 @@ import "cosmos/app/v1alpha1/module.proto";
 
 // Module is the config object of the mint module.
 message Module {
-  option (cosmos.app.v1alpha1.module) = {
-    go_import: "github.com/allora-network/allora-chain/x/mint"
-  };
+  option (cosmos.app.v1alpha1.module) = {go_import: "github.com/allora-network/allora-chain/x/mint"};
 
   string fee_collector_name = 1;
 }

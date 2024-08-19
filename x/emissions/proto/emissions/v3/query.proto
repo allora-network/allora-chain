@@ -1,24 +1,23 @@
 syntax = "proto3";
 package emissions.v3;
 
-option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
-
-import "cosmos/base/query/v1beta1/pagination.proto";
-import "emissions/v3/types.proto";
-import "google/api/annotations.proto";
-import "cosmos/query/v1/query.proto";
 import "amino/amino.proto";
-import "gogoproto/gogo.proto";
+import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
-import "emissions/v3/params.proto";
-import "emissions/v3/node.proto";
-import "emissions/v3/worker.proto";
-import "emissions/v3/reputer.proto";
-import "emissions/v3/nonce.proto";
-import "emissions/v3/topic.proto";
-import "emissions/v3/stake.proto";
 import "emissions/v3/inference.proto";
+import "emissions/v3/node.proto";
+import "emissions/v3/nonce.proto";
+import "emissions/v3/params.proto";
+import "emissions/v3/reputer.proto";
 import "emissions/v3/score.proto";
+import "emissions/v3/stake.proto";
+import "emissions/v3/topic.proto";
+import "emissions/v3/types.proto";
+import "emissions/v3/worker.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 // Msg defines the module Msg service.
 service Query {
@@ -42,11 +41,11 @@ service Query {
     option (google.api.http).get = "/emissions/v3/active_topics";
   }
 
-  rpc GetWorkerLatestInferenceByTopicId(QueryWorkerLatestInferenceRequest)
-      returns (QueryWorkerLatestInferenceResponse) {
+  rpc GetWorkerLatestInferenceByTopicId(QueryWorkerLatestInferenceRequest) returns (QueryWorkerLatestInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/topics/{topic_id}/"
-                                   "workers/{worker_address}/latest_inference";
+    option (google.api.http).get =
+      "/emissions/v3/topics/{topic_id}/"
+      "workers/{worker_address}/latest_inference";
   }
 
   rpc GetInferencesAtBlock(QueryInferencesAtBlockRequest) returns (QueryInferencesAtBlockResponse) {
@@ -64,8 +63,7 @@ service Query {
     option (google.api.http).get = "/emissions/v3/forecasts/{topic_id}/{block_height}";
   }
 
-  rpc GetNetworkLossBundleAtBlock(QueryNetworkLossBundleAtBlockRequest)
-      returns (QueryNetworkLossBundleAtBlockResponse) {
+  rpc GetNetworkLossBundleAtBlock(QueryNetworkLossBundleAtBlockRequest) returns (QueryNetworkLossBundleAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/network_loss/{topic_id}/{block_height}";
   }
@@ -80,33 +78,29 @@ service Query {
     option (google.api.http).get = "/emissions/v3/reputer_stake/{address}/{topic_id}";
   }
 
-  rpc GetMultiReputerStakeInTopic(QueryMultiReputerStakeInTopicRequest)
-      returns (QueryMultiReputerStakeInTopicResponse) {
+  rpc GetMultiReputerStakeInTopic(QueryMultiReputerStakeInTopicRequest) returns (QueryMultiReputerStakeInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/reputers_stakes/{topic_id}";
   }
 
-  rpc GetStakeFromReputerInTopicInSelf(QueryStakeFromReputerInTopicInSelfRequest)
-      returns (QueryStakeFromReputerInTopicInSelfResponse) {
+  rpc GetStakeFromReputerInTopicInSelf(QueryStakeFromReputerInTopicInSelfRequest) returns (QueryStakeFromReputerInTopicInSelfResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/reputer_stake_self/{reputer_address}/{topic_id}";
   }
 
-  rpc GetDelegateStakeInTopicInReputer(QueryDelegateStakeInTopicInReputerRequest)
-      returns (QueryDelegateStakeInTopicInReputerResponse) {
+  rpc GetDelegateStakeInTopicInReputer(QueryDelegateStakeInTopicInReputerRequest) returns (QueryDelegateStakeInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/reputer_delegate_stake/{reputer_address}/{topic_id}";
   }
 
-  rpc GetStakeFromDelegatorInTopicInReputer(QueryStakeFromDelegatorInTopicInReputerRequest)
-      returns (QueryStakeFromDelegatorInTopicInReputerResponse) {
+  rpc GetStakeFromDelegatorInTopicInReputer(QueryStakeFromDelegatorInTopicInReputerRequest) returns (QueryStakeFromDelegatorInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/delegate_stake/{delegator_address}/{reputer_address}/"
-                                   "{topic_id}";
+    option (google.api.http).get =
+      "/emissions/v3/delegate_stake/{delegator_address}/{reputer_address}/"
+      "{topic_id}";
   }
 
-  rpc GetStakeFromDelegatorInTopic(QueryStakeFromDelegatorInTopicRequest)
-      returns (QueryStakeFromDelegatorInTopicResponse) {
+  rpc GetStakeFromDelegatorInTopic(QueryStakeFromDelegatorInTopicRequest) returns (QueryStakeFromDelegatorInTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/delegate_stake/{delegator_address}/{topic_id}";
   }
@@ -116,14 +110,12 @@ service Query {
     option (google.api.http).get = "/emissions/v3/stake/{topic_id}";
   }
 
-  rpc GetStakeRemovalsUpUntilBlock(QueryStakeRemovalsUpUntilBlockRequest)
-      returns (QueryStakeRemovalsUpUntilBlockResponse) {
+  rpc GetStakeRemovalsUpUntilBlock(QueryStakeRemovalsUpUntilBlockRequest) returns (QueryStakeRemovalsUpUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/stake_removals/{block_height}";
   }
 
-  rpc GetDelegateStakeRemovalsUpUntilBlock(QueryDelegateStakeRemovalsUpUntilBlockRequest)
-      returns (QueryDelegateStakeRemovalsUpUntilBlockResponse) {
+  rpc GetDelegateStakeRemovalsUpUntilBlock(QueryDelegateStakeRemovalsUpUntilBlockRequest) returns (QueryDelegateStakeRemovalsUpUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/delegate_stake_removals/{block_height}";
   }
@@ -133,8 +125,7 @@ service Query {
     option (google.api.http).get = "/emissions/v3/stake_removal/{topic_id}/{reputer}";
   }
 
-  rpc GetDelegateStakeRemovalInfo(QueryDelegateStakeRemovalInfoRequest)
-      returns (QueryDelegateStakeRemovalInfoResponse) {
+  rpc GetDelegateStakeRemovalInfo(QueryDelegateStakeRemovalInfoRequest) returns (QueryDelegateStakeRemovalInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/delegate_stake_removal/{topic_id}/{delegator}/{reputer}";
   }
@@ -149,23 +140,21 @@ service Query {
     option (google.api.http).get = "/emissions/v3/reputer/{address}";
   }
 
-  rpc IsWorkerRegisteredInTopicId(QueryIsWorkerRegisteredInTopicIdRequest)
-      returns (QueryIsWorkerRegisteredInTopicIdResponse) {
+  rpc IsWorkerRegisteredInTopicId(QueryIsWorkerRegisteredInTopicIdRequest) returns (QueryIsWorkerRegisteredInTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/worker_registered/{topic_id}/{address}";
   }
 
-  rpc IsReputerRegisteredInTopicId(QueryIsReputerRegisteredInTopicIdRequest)
-      returns (QueryIsReputerRegisteredInTopicIdResponse) {
+  rpc IsReputerRegisteredInTopicId(QueryIsReputerRegisteredInTopicIdRequest) returns (QueryIsReputerRegisteredInTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/reputer_registered/{topic_id}/{address}";
   }
 
-  rpc GetNetworkInferencesAtBlock(QueryNetworkInferencesAtBlockRequest)
-      returns (QueryNetworkInferencesAtBlockResponse) {
+  rpc GetNetworkInferencesAtBlock(QueryNetworkInferencesAtBlockRequest) returns (QueryNetworkInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/network_inferences/{topic_id}/last_inference/"
-                                   "{block_height_last_inference}";
+    option (google.api.http).get =
+      "/emissions/v3/network_inferences/{topic_id}/last_inference/"
+      "{block_height_last_inference}";
   }
 
   rpc GetLatestNetworkInference(QueryLatestNetworkInferencesRequest) returns (QueryLatestNetworkInferencesResponse) {
@@ -173,8 +162,7 @@ service Query {
     option (google.api.http).get = "/emissions/v3/network_inferences/{topic_id}";
   }
 
-  rpc GetLatestAvailableNetworkInference(QueryLatestNetworkInferencesRequest)
-      returns (QueryLatestNetworkInferencesResponse) {
+  rpc GetLatestAvailableNetworkInference(QueryLatestAvailableNetworkInferencesRequest) returns (QueryLatestAvailableNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/network_inferences/{topic_id}";
   }
@@ -184,8 +172,7 @@ service Query {
     option (google.api.http).get = "/emissions/v3/is_worker_nonce_unfulfilled/{topic_id}/{block_height}";
   }
 
-  rpc IsReputerNonceUnfulfilled(QueryIsReputerNonceUnfulfilledRequest)
-      returns (QueryIsReputerNonceUnfulfilledResponse) {
+  rpc IsReputerNonceUnfulfilled(QueryIsReputerNonceUnfulfilledRequest) returns (QueryIsReputerNonceUnfulfilledResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/is_reputer_nonce_unfulfilled/{topic_id}/{block_height}";
   }
@@ -195,8 +182,7 @@ service Query {
     option (google.api.http).get = "/emissions/v3/unfulfilled_worker_nonces/{topic_id}";
   }
 
-  rpc GetUnfulfilledReputerNonces(QueryUnfulfilledReputerNoncesRequest)
-      returns (QueryUnfulfilledReputerNoncesResponse) {
+  rpc GetUnfulfilledReputerNonces(QueryUnfulfilledReputerNoncesRequest) returns (QueryUnfulfilledReputerNoncesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/unfulfilled_reputer_nonces/{topic_id}";
   }
@@ -211,23 +197,23 @@ service Query {
     option (google.api.http).get = "/emissions/v3/forecaster_network_regret/{topic_id}/{worker}";
   }
 
-  rpc GetOneInForecasterNetworkRegret(QueryOneInForecasterNetworkRegretRequest)
-      returns (QueryOneInForecasterNetworkRegretResponse) {
+  rpc GetOneInForecasterNetworkRegret(QueryOneInForecasterNetworkRegretRequest) returns (QueryOneInForecasterNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/one_in_forecaster_network_regret/{topic_id}/"
-                                   "{forecaster}/{inferer}";
+    option (google.api.http).get =
+      "/emissions/v3/one_in_forecaster_network_regret/{topic_id}/"
+      "{forecaster}/{inferer}";
   }
 
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
     option (google.api.http).get = "/emissions/v3/whitelist_admin/{address}";
   }
 
-  rpc GetTopicLastWorkerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
+  rpc GetTopicLastWorkerCommitInfo(QueryTopicLastWorkerCommitInfoRequest) returns (QueryTopicLastWorkerCommitInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/topic_last_commit/{topic_id}";
   }
 
-  rpc GetTopicLastReputerCommitInfo(QueryTopicLastCommitRequest) returns (QueryTopicLastCommitResponse) {
+  rpc GetTopicLastReputerCommitInfo(QueryTopicLastReputerCommitInfoRequest) returns (QueryTopicLastReputerCommitInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/topic_last_commit/{topic_id}";
   }
@@ -237,8 +223,7 @@ service Query {
     option (google.api.http).get = "/emissions/v3/topic_reward_nonce/{topic_id}";
   }
 
-  rpc GetReputerLossBundlesAtBlock(QueryReputerLossBundlesAtBlockRequest)
-      returns (QueryReputerLossBundlesAtBlockResponse) {
+  rpc GetReputerLossBundlesAtBlock(QueryReputerLossBundlesAtBlockRequest) returns (QueryReputerLossBundlesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/reputer_loss_bundles/{topic_id}/{block_height}";
   }
@@ -250,12 +235,12 @@ service Query {
 
   rpc GetDelegateStakePlacement(QueryDelegateStakePlacementRequest) returns (QueryDelegateStakePlacementResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/delegate_stake_placement/"
-                                   "{topic_id}/{delegator}/{target}";
+    option (google.api.http).get =
+      "/emissions/v3/delegate_stake_placement/"
+      "{topic_id}/{delegator}/{target}";
   }
 
-  rpc GetDelegateStakeUponReputer(QueryDelegateStakeUponReputerRequest)
-      returns (QueryDelegateStakeUponReputerResponse) {
+  rpc GetDelegateStakeUponReputer(QueryDelegateStakeUponReputerRequest) returns (QueryDelegateStakeUponReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/delegate_stake_upon_reputer/{topic_id}/{target}";
   }
@@ -265,16 +250,16 @@ service Query {
     option (google.api.http).get = "/emissions/v3/delegate_reward_per_share/{topic_id}/{reputer}";
   }
 
-  rpc GetStakeRemovalForReputerAndTopicId(QueryStakeRemovalForReputerAndTopicIdRequest)
-      returns (QueryStakeRemovalForReputerAndTopicIdResponse) {
+  rpc GetStakeRemovalForReputerAndTopicId(QueryStakeRemovalForReputerAndTopicIdRequest) returns (QueryStakeRemovalForReputerAndTopicIdResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/stake_removal/{reputer}/{topic_id}";
   }
 
   rpc GetDelegateStakeRemoval(QueryDelegateStakeRemovalRequest) returns (QueryDelegateStakeRemovalResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/delegate_stake_removal/{block_height}/{topic_id}/"
-                                   "{delegator}/{reputer}";
+    option (google.api.http).get =
+      "/emissions/v3/delegate_stake_removal/{block_height}/{topic_id}/"
+      "{delegator}/{reputer}";
   }
 
   rpc GetPreviousTopicWeight(QueryPreviousTopicWeightRequest) returns (QueryPreviousTopicWeightResponse) {
@@ -317,30 +302,28 @@ service Query {
     option (google.api.http).get = "/emissions/v3/latest_reputer_score/{topic_id}/{reputer}";
   }
 
-  rpc GetInferenceScoresUntilBlock(QueryInferenceScoresUntilBlockRequest)
-      returns (QueryInferenceScoresUntilBlockResponse) {
+  rpc GetInferenceScoresUntilBlock(QueryInferenceScoresUntilBlockRequest) returns (QueryInferenceScoresUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/inference_scores_until_block/{topic_id}/{block_height}";
   }
 
-  rpc GetWorkerInferenceScoresAtBlock(QueryWorkerInferenceScoresAtBlockRequest)
-      returns (QueryWorkerInferenceScoresAtBlockResponse) {
+  rpc GetWorkerInferenceScoresAtBlock(QueryWorkerInferenceScoresAtBlockRequest) returns (QueryWorkerInferenceScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/worker_inference_scores_at_block/{topic_id}/"
-                                   "{block_height}";
+    option (google.api.http).get =
+      "/emissions/v3/worker_inference_scores_at_block/{topic_id}/"
+      "{block_height}";
   }
 
-  rpc GetForecastScoresUntilBlock(QueryForecastScoresUntilBlockRequest)
-      returns (QueryForecastScoresUntilBlockResponse) {
+  rpc GetForecastScoresUntilBlock(QueryForecastScoresUntilBlockRequest) returns (QueryForecastScoresUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/forecast_scores_until_block/{topic_id}/{block_height}";
   }
 
-  rpc GetWorkerForecastScoresAtBlock(QueryWorkerForecastScoresAtBlockRequest)
-      returns (QueryWorkerForecastScoresAtBlockResponse) {
+  rpc GetWorkerForecastScoresAtBlock(QueryWorkerForecastScoresAtBlockRequest) returns (QueryWorkerForecastScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/worker_forecast_scores_at_block/{topic_id}/"
-                                   "{block_height}";
+    option (google.api.http).get =
+      "/emissions/v3/worker_forecast_scores_at_block/{topic_id}/"
+      "{block_height}";
   }
 
   rpc GetReputersScoresAtBlock(QueryReputersScoresAtBlockRequest) returns (QueryReputersScoresAtBlockResponse) {
@@ -353,26 +336,22 @@ service Query {
     option (google.api.http).get = "/emissions/v3/listening_coefficient/{topic_id}/{reputer}";
   }
 
-  rpc GetPreviousReputerRewardFraction(QueryPreviousReputerRewardFractionRequest)
-      returns (QueryPreviousReputerRewardFractionResponse) {
+  rpc GetPreviousReputerRewardFraction(QueryPreviousReputerRewardFractionRequest) returns (QueryPreviousReputerRewardFractionResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/previous_reputer_reward_fraction/{topic_id}/{reputer}";
   }
 
-  rpc GetPreviousInferenceRewardFraction(QueryPreviousInferenceRewardFractionRequest)
-      returns (QueryPreviousInferenceRewardFractionResponse) {
+  rpc GetPreviousInferenceRewardFraction(QueryPreviousInferenceRewardFractionRequest) returns (QueryPreviousInferenceRewardFractionResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/previous_inference_reward_fraction/{topic_id}/{worker}";
   }
 
-  rpc GetPreviousForecastRewardFraction(QueryPreviousForecastRewardFractionRequest)
-      returns (QueryPreviousForecastRewardFractionResponse) {
+  rpc GetPreviousForecastRewardFraction(QueryPreviousForecastRewardFractionRequest) returns (QueryPreviousForecastRewardFractionResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/previous_forecast_reward_fraction/{topic_id}/{worker}";
   }
 
-  rpc GetPreviousPercentageRewardToStakedReputers(QueryPreviousPercentageRewardToStakedReputersRequest)
-      returns (QueryPreviousPercentageRewardToStakedReputersResponse) {
+  rpc GetPreviousPercentageRewardToStakedReputers(QueryPreviousPercentageRewardToStakedReputersRequest) returns (QueryPreviousPercentageRewardToStakedReputersResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/previous_percentage_reward_to_staked_reputers";
   }
@@ -382,32 +361,27 @@ service Query {
     option (google.api.http).get = "/emissions/v3/total_reward_to_distribute";
   }
 
-  rpc GetNaiveInfererNetworkRegret(QueryNaiveInfererNetworkRegretRequest)
-      returns (QueryNaiveInfererNetworkRegretResponse) {
+  rpc GetNaiveInfererNetworkRegret(QueryNaiveInfererNetworkRegretRequest) returns (QueryNaiveInfererNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/native_inferer_network_regret";
   }
 
-  rpc GetOneOutInfererInfererNetworkRegret(QueryOneOutInfererInfererNetworkRegretRequest)
-      returns (QueryOneOutInfererInfererNetworkRegretResponse) {
+  rpc GetOneOutInfererInfererNetworkRegret(QueryOneOutInfererInfererNetworkRegretRequest) returns (QueryOneOutInfererInfererNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/one_out_inferer_inferer_network_regret";
   }
 
-  rpc GetOneOutInfererForecasterNetworkRegret(QueryOneOutInfererForecasterNetworkRegretRequest)
-      returns (QueryOneOutInfererForecasterNetworkRegretResponse) {
+  rpc GetOneOutInfererForecasterNetworkRegret(QueryOneOutInfererForecasterNetworkRegretRequest) returns (QueryOneOutInfererForecasterNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/one_out_inferer_forecaster_network_regret";
   }
 
-  rpc GetOneOutForecasterInfererNetworkRegret(QueryOneOutForecasterInfererNetworkRegretRequest)
-      returns (QueryOneOutForecasterInfererNetworkRegretResponse) {
+  rpc GetOneOutForecasterInfererNetworkRegret(QueryOneOutForecasterInfererNetworkRegretRequest) returns (QueryOneOutForecasterInfererNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/one_out_forecaster_inferer_network_regret";
   }
 
-  rpc GetOneOutForecasterForecasterNetworkRegret(QueryOneOutForecasterForecasterNetworkRegretRequest)
-      returns (QueryOneOutForecasterForecasterNetworkRegretResponse) {
+  rpc GetOneOutForecasterForecasterNetworkRegret(QueryOneOutForecasterForecasterNetworkRegretRequest) returns (QueryOneOutForecasterForecasterNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/one_out_forecaster_forecaster_network_regret";
   }
@@ -468,7 +442,10 @@ message QueryParamsRequest {}
 // QueryParamsResponse is the response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params defines the parameters of the module.
-  Params params = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 // Total Stake returns the total amount of stake in the system
@@ -701,6 +678,10 @@ message QueryLatestNetworkInferencesRequest {
   uint64 topic_id = 1;
 }
 
+message QueryLatestAvailableNetworkInferencesRequest {
+  uint64 topic_id = 1;
+}
+
 message QueryIsWorkerNonceUnfulfilledRequest {
   uint64 topic_id = 1;
   int64 block_height = 2;
@@ -774,10 +755,31 @@ message QueryLatestNetworkInferencesResponse {
   repeated WorkerAttributedValue forecastImpliedInferences = 4;
   int64 inference_block_height = 5;
   int64 loss_block_height = 6;
-  repeated string confidence_interval_raw_percentiles = 7
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
-  repeated string confidence_interval_values = 8
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  repeated string confidence_interval_raw_percentiles = 7 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string confidence_interval_values = 8 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryLatestAvailableNetworkInferencesResponse {
+  ValueBundle network_inferences = 1;
+  repeated RegretInformedWeight inferer_weights = 2;
+  repeated RegretInformedWeight forecaster_weights = 3;
+  repeated WorkerAttributedValue forecastImpliedInferences = 4;
+  int64 inference_block_height = 5;
+  int64 loss_block_height = 6;
+  repeated string confidence_interval_raw_percentiles = 7 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated string confidence_interval_values = 8 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message QueryIsWorkerRegisteredInTopicIdRequest {
@@ -841,11 +843,19 @@ message QueryDelegateStakeRemovalInfoResponse {
   DelegateStakeRemovalInfo removal = 1;
 }
 
-message QueryTopicLastCommitRequest {
+message QueryTopicLastWorkerCommitInfoRequest {
   uint64 topic_id = 1;
 }
 
-message QueryTopicLastCommitResponse {
+message QueryTopicLastWorkerCommitInfoResponse {
+  TimestampedActorNonce last_commit = 1;
+}
+
+message QueryTopicLastReputerCommitInfoRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryTopicLastReputerCommitInfoResponse {
   TimestampedActorNonce last_commit = 1;
 }
 
@@ -910,8 +920,10 @@ message QueryDelegateRewardPerShareRequest {
 }
 
 message QueryDelegateRewardPerShareResponse {
-  string reward_per_share = 1
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string reward_per_share = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message QueryStakeRemovalForReputerAndTopicIdRequest {
@@ -939,8 +951,10 @@ message QueryPreviousTopicWeightRequest {
 }
 
 message QueryPreviousTopicWeightResponse {
-  string weight = 1
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string weight = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   bool not_found = 2;
 }
 
@@ -1066,8 +1080,10 @@ message QueryPreviousReputerRewardFractionRequest {
 }
 
 message QueryPreviousReputerRewardFractionResponse {
-  string reward_fraction = 1
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string reward_fraction = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   bool not_found = 2;
 }
 
@@ -1077,8 +1093,10 @@ message QueryPreviousInferenceRewardFractionRequest {
 }
 
 message QueryPreviousInferenceRewardFractionResponse {
-  string reward_fraction = 1
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string reward_fraction = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   bool not_found = 2;
 }
 
@@ -1088,20 +1106,26 @@ message QueryPreviousForecastRewardFractionRequest {
 }
 
 message QueryPreviousForecastRewardFractionResponse {
-  string reward_fraction = 1
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string reward_fraction = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   bool not_found = 2;
 }
 message QueryPreviousPercentageRewardToStakedReputersRequest {}
 
 message QueryPreviousPercentageRewardToStakedReputersResponse {
-  string percentage_reward = 1
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string percentage_reward = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message QueryTotalRewardToDistributeRequest {}
 
 message QueryTotalRewardToDistributeResponse {
-  string total_reward = 1
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string total_reward = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
