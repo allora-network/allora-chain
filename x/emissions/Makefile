@@ -3,6 +3,20 @@
 
 DOCKER := $(shell which docker)
 
+#################
+###   Build   ###
+#################
+
+build:
+	@echo "--> Check the code compiles"
+	@go build ./...
+
+test:
+	@echo "--> Running tests"
+	go test -v ./...
+
+.PHONY: build test
+
 ##################
 ###  Protobuf  ###
 ##################
