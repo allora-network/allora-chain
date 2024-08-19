@@ -2417,7 +2417,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	topicId := uint64(1)
 	block := int64(100)
 
-	newTopic := types.Topic{Id: topicId}
+	newTopic := types.Topic{Id: topicId, EpochLength: 10}
 	err := keeper.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
 	err = keeper.DripTopicFeeRevenue(ctx, topicId, block)
