@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -2702,8 +2703,10 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	// setup topics
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 1)
-	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 1)
+	epochLength := int64(201600) // if every block is 3 seconds
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
+	fmt.Println(s.ctx.BlockHeight())
+	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
 
 	// setup values to be identical for both topics
 	reputerValues := []TestWorkerValue{
@@ -2875,13 +2878,13 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	topic1RewardTotal1 := reputer3_Reward1.Add(reputer4_Reward1).Add(reputer5_Reward1)
 
 	// in the first round, the rewards should be equal for each topic
-	require.True(topic0RewardTotal0.Equal(topic1RewardTotal0))
+	require.True(topic0RewardTotal0.Equal(topic1RewardTotal0), "%s != %s", topic0RewardTotal0, topic1RewardTotal0)
 	// for topic 0, the rewards should be less in the second round
-	require.True(topic0RewardTotal0.GT(topic0RewardTotal1))
+	require.True(topic0RewardTotal0.GT(topic0RewardTotal1), "%s <= %s", topic0RewardTotal0, topic0RewardTotal1)
 	// in the second round, the rewards should be greater for topic 1
-	require.True(topic0RewardTotal1.LT(topic1RewardTotal1))
+	require.True(topic0RewardTotal1.LT(topic1RewardTotal1), "%s >= %s", topic0RewardTotal1, topic1RewardTotal1)
 	// the rewards for topic 1 should be greater in the second round
-	require.True(topic1RewardTotal0.LT(topic1RewardTotal1))
+	require.True(topic1RewardTotal0.LT(topic1RewardTotal1), "%s >= %s", topic1RewardTotal0, topic1RewardTotal1)
 }
 
 func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {

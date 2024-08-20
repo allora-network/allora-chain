@@ -2123,13 +2123,13 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 			return err
 		}
 
+		if err = k.SetLastDripBlock(ctx, topicId, topic.EpochLastEnded); err != nil {
+			return err
+		}
 		logMsg := fmt.Sprintf(
 			"Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v",
 			ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue)
 		ctx.Logger().Debug(logMsg)
-		if err = k.SetLastDripBlock(ctx, topicId, topic.EpochLastEnded); err != nil {
-			return err
-		}
 		return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 	}
 	return nil
