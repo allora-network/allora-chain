@@ -2,7 +2,6 @@ package testing
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"cosmossdk.io/log"
@@ -55,7 +54,6 @@ func alloraAppInitializer() (ibctesting.TestingApp, map[string]json.RawMessage) 
 		simtestutil.EmptyAppOptions{},
 	)
 	if err != nil {
-		fmt.Printf("Initializing app error: %v\n", err)
 		return nil, nil
 	}
 

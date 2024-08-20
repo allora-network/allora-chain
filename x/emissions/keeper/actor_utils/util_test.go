@@ -1,6 +1,7 @@
 package actorutils
 
 import (
+	"context"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -13,6 +14,8 @@ import (
 func TestFindTopNByScoreDesc(t *testing.T) {
 
 	topicId := uint64(0)
+	ctx := context.Background()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	worker1PrivateKey := secp256k1.GenPrivKey()
 	worker2PrivateKey := secp256k1.GenPrivKey()
@@ -33,7 +36,7 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	latestReputerScores[worker4Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker4Addr.String(), Score: alloraMath.NewDecFromInt64(20)}
 	latestReputerScores[worker5Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)}
 
-	topActors, topActorsBool := FindTopNByScoreDesc(3, latestReputerScores, 1)
+	topActors, topActorsBool := FindTopNByScoreDesc(sdkCtx, 3, latestReputerScores, 1)
 	require.Equal(t, worker5Addr.String(), topActors[0])
 	require.Equal(t, worker1Addr.String(), topActors[1])
 	require.Equal(t, worker3Addr.String(), topActors[2])
