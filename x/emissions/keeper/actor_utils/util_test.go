@@ -1,4 +1,4 @@
-package msgserver
+package actorutils
 
 import (
 	"testing"
