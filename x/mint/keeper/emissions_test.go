@@ -1,8 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
-
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
