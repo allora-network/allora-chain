@@ -156,6 +156,9 @@ type Keeper struct {
 	// map of (topic) -> unfulfilled nonces
 	unfulfilledReputerNonces collections.Map[TopicId, types.ReputerRequestNonces]
 
+	// map of (topic) -> last dripped block
+	lastDripBlock collections.Map[TopicId, BlockHeight]
+
 	/// REGRETS
 
 	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other inferers
@@ -253,6 +256,7 @@ func NewKeeper(
 		reputerListeningCoefficient:     collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ListeningCoefficient](cdc)),
 		unfulfilledWorkerNonces:         collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
 		unfulfilledReputerNonces:        collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
+		lastDripBlock:                   collections.NewMap(sb, types.LastDripBlockKey, "last_drip_block", collections.Uint64Key, collections.Int64Value),
 		topicRewardNonce:                collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
 		topicLastWorkerCommit:           collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
 		topicLastReputerCommit:          collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
@@ -2026,35 +2030,109 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 	return k.topicFeeRevenue.Set(ctx, topicId, topicFeeRevenue)
 }
 
+// return the blocks per week
+// defined as the blocks per month divided by 4.345
+func calculateBlocksPerWeek(ctx sdk.Context, k Keeper) (alloraMath.Dec, error) {
+	moduleParams, err := k.GetParams(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	blocksPerMonth, err := alloraMath.NewDecFromUint64(moduleParams.BlocksPerMonth)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	// 4.345 weeks per month on average
+	weeksPerMonth, err := alloraMath.NewDecFromString("4.345")
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	blocksPerWeek, err := blocksPerMonth.Quo(weeksPerMonth)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return blocksPerWeek, nil
+}
+
+// return the last time we dripped the fee revenue for a topic
+func (k *Keeper) GetLastDripBlock(ctx context.Context, topicId TopicId) (BlockHeight, error) {
+	bh, err := k.lastDripBlock.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return bh, nil
+}
+
+// set the last time we dripped the fee revenue for a topic
+func (k *Keeper) SetLastDripBlock(ctx context.Context, topicId TopicId, block BlockHeight) error {
+	return k.lastDripBlock.Set(ctx, topicId, block)
+}
+
 // Drop the fee revenue by the global Ecosystem bucket drip amount
+// in the paper we say that
+// ∆ C_{t,i} = N_{epochs,w} * C_{t,i}
+// where C_{t,i} is the topic fee revenue
+// and N_{epochs,w} is the number of epochs per week
+// and this decay or drip happens each epoch
 func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block BlockHeight) error {
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
 		return err
 	}
-
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return err
-	}
-	topicFeeRevenueDecayRate := moduleParams.TopicFeeRevenueDecayRate
-
 	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue)
 	if err != nil {
 		return err
 	}
-
-	val, err := alloraMath.CalcExpDecay(topicFeeRevenueDec, topicFeeRevenueDecayRate)
+	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	newTopicFeeRevenue, err := val.SdkIntTrim()
+	blocksPerEpoch := alloraMath.NewDecFromInt64(topic.EpochLength)
+	blocksPerWeek, err := calculateBlocksPerWeek(ctx, *k)
 	if err != nil {
 		return err
 	}
+	epochsPerWeek, err := blocksPerWeek.Quo(blocksPerEpoch)
+	if err != nil {
+		return err
+	}
+	// this delta is the drip per epoch
+	dripPerEpoch, err := topicFeeRevenueDec.Mul(epochsPerWeek)
+	if err != nil {
+		return err
+	}
+	lastDripBlock, err := k.GetLastDripBlock(ctx, topicId)
+	if err != nil {
+		return err
+	}
+	// if we have not yet decayed this epoch, decay and set to decayed
+	// if we have decayed this epoch already, do nothing and continue
+	if lastDripBlock <= topic.EpochLastEnded {
+		newTopicFeeRevenueDec, err := topicFeeRevenueDec.Sub(dripPerEpoch)
+		if err != nil {
+			return err
+		}
+		if newTopicFeeRevenueDec.IsNegative() {
+			newTopicFeeRevenueDec = alloraMath.ZeroDec()
+		}
 
-	ctx.Logger().Debug(fmt.Sprintf("Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v", ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue))
-	return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
+		newTopicFeeRevenue, err := newTopicFeeRevenueDec.SdkIntTrim()
+		if err != nil {
+			return err
+		}
+
+		if err = k.SetLastDripBlock(ctx, topicId, topic.EpochLastEnded); err != nil {
+			return err
+		}
+		logMsg := fmt.Sprintf(
+			"Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v",
+			ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue)
+		ctx.Logger().Debug(logMsg)
+		return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
+	}
+	return nil
 }
 
 // REWARDABLE TOPICS
@@ -2094,13 +2172,17 @@ func (k *Keeper) RemoveRewardableTopic(ctx context.Context, topicId TopicId) err
 func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
 	oldScore, err := k.GetLatestInfererScore(ctx, topicId, worker)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting latest inferer score")
 	}
 	if oldScore.BlockHeight >= score.BlockHeight {
 		return nil
 	}
 	key := collections.Join(topicId, worker)
-	return k.latestInfererScoresByWorker.Set(ctx, key, score)
+	err = k.latestInfererScoresByWorker.Set(ctx, key, score)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting latest inferer score")
+	}
+	return nil
 }
 
 func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
