@@ -1356,6 +1356,7 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 	// Attempt to retrieve before insertion
 	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
 	require.NoError(err, "Should return error for non-existent data")
+	require.NotNil(result)
 	require.Equal(uint64(0), result.TopicId, "Result should be nil for non-existent data")
 }
 
@@ -3244,8 +3245,9 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().NoError(err, "Getting inferences should not fail")
 	_, err = s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting forecasts should not fail")
-	_, err = s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
+	lossBundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting reputer loss bundles should not fail")
+	s.Require().NotNil(lossBundles)
 	_, err = s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting network loss bundle should not fail")
 

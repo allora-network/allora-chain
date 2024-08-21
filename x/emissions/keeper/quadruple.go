@@ -59,17 +59,17 @@ func (t Quadruple[K1, K2, K3, K4]) K4() (x K4) {
 
 // QuadrupleSinglePrefix creates a new Quadruple instance composed only of the first part of the key.
 func QuadrupleSinglePrefix[K1, K2, K3, K4 any](k1 K1) Quadruple[K1, K2, K3, K4] {
-	return Quadruple[K1, K2, K3, K4]{k1: &k1}
+	return Quadruple[K1, K2, K3, K4]{k1: &k1} //nolint:exhaustruct
 }
 
 // QuadrupleDoublePrefix creates a new Quadruple instance composed only of the first two parts of the key.
 func QuadrupleDoublePrefix[K1, K2, K3, K4 any](k1 K1, k2 K2) Quadruple[K1, K2, K3, K4] {
-	return Quadruple[K1, K2, K3, K4]{k1: &k1, k2: &k2}
+	return Quadruple[K1, K2, K3, K4]{k1: &k1, k2: &k2} //nolint:exhaustruct
 }
 
 // QuadrupleTriplePrefix creates a new Quadruple instance composed only of the first three parts of the key.
 func QuadrupleTriplePrefix[K1, K2, K3, K4 any](k1 K1, k2 K2, k3 K3) Quadruple[K1, K2, K3, K4] {
-	return Quadruple[K1, K2, K3, K4]{k1: &k1, k2: &k2, k3: &k3}
+	return Quadruple[K1, K2, K3, K4]{k1: &k1, k2: &k2, k3: &k3} //nolint:exhaustruct
 }
 
 // QuadrupleKeyCodec instantiates a new KeyCodec instance that can encode the Quadruple, given

@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ types.QueryServer = queryServer{}
+var _ types.QueryServer = queryServer{} //nolint: exhaustruct
 
 func NewQueryServerImpl(k Keeper) types.QueryServer {
 	return queryServer{k}
