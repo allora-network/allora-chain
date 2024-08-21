@@ -43,6 +43,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	//      MaxElementsPerForecast
 	// REMOVED:
 	// 		MinEffectiveTopicRevenue
+	//      TopicFeeRevenueDecayRate
 	//      MaxRetriesToFulfilNoncesWorker
 	// 		MaxRetriesToFulfilNoncesReputer
 	newParams := types.Params{
@@ -81,12 +82,12 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		CRewardInference:                    oldParams.CRewardInference,
 		CRewardForecast:                     oldParams.CRewardForecast,
 		CNorm:                               oldParams.CNorm,
-		TopicFeeRevenueDecayRate:            oldParams.TopicFeeRevenueDecayRate,
 		EpsilonReputer:                      oldParams.EpsilonReputer,
 		HalfMaxProcessStakeRemovalsEndBlock: oldParams.HalfMaxProcessStakeRemovalsEndBlock,
 		EpsilonSafeDiv:                      oldParams.EpsilonSafeDiv,
 		DataSendingFee:                      oldParams.DataSendingFee,
-		MaxElementsPerForecast:              defaultParams.MaxElementsPerForecast,
+		// NEW PARAMS
+		MaxElementsPerForecast: defaultParams.MaxElementsPerForecast,
 	}
 
 	store.Delete(types.ParamsKey)

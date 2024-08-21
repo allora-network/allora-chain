@@ -104,7 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    * [#409](https://github.com/allora-network/allora-chain/pull/409)
 * Added validations for safer data ingress
    * [#398](https://github.com/allora-network/allora-chain/pull/398)
-* Update forecast utiity function
+* Update forecast utility function
     * [#382](https://github.com/allora-network/allora-chain/pull/382)
 * Automatically expire stake removals instead of requiring a 2nd tx
    * [#362](https://github.com/allora-network/allora-chain/pull/362)

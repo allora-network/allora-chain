@@ -3,15 +3,19 @@ package actorutils
 import (
 	"testing"
 
+	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
+	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
 
 func TestFindTopNByScoreDesc(t *testing.T) {
+	key := storetypes.NewKVStoreKey("test")
 	topicId := uint64(0)
+	testCtx := testutil.DefaultContextWithDB(t, key, storetypes.NewTransientStoreKey("transient_test")).Ctx
 
 	worker1PrivateKey := secp256k1.GenPrivKey()
 	worker2PrivateKey := secp256k1.GenPrivKey()
@@ -32,7 +36,7 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	ReputerScoreEmas[worker4Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker4Addr.String(), Score: alloraMath.NewDecFromInt64(20)}
 	ReputerScoreEmas[worker5Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)}
 
-	topActors, allActorsSorted := FindTopNByScoreDesc(3, ReputerScoreEmas, 1)
+	topActors, allActorsSorted := FindTopNByScoreDesc(testCtx, 3, ReputerScoreEmas, 1)
 	require.Equal(t, 5, len(allActorsSorted))
 	require.Equal(t, 3, len(topActors))
 	require.Equal(t, worker5Addr.String(), topActors[0])

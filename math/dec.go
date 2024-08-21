@@ -228,7 +228,7 @@ func (x Dec) Quo(y Dec) (Dec, error) {
 	return z, errors.Wrap(err, "decimal quotient error")
 }
 
-// MulExact returns a new dec with value x * y. The product must not round or
+// MulExact returns a new dec with value x * y. The product must not be rounded or
 // ErrUnexpectedRounding will be returned.
 func (x Dec) MulExact(y Dec) (Dec, error) {
 	var z Dec

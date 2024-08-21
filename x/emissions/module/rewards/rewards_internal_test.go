@@ -140,7 +140,7 @@ func (s *MathTestSuite) TestInferenceRewardsSimple() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
 	totalReward := alloraMath.MustNewDecFromString("2.0")
-	chi, gamma, err := rewards.GetChiAndGamma(
+	chi, gamma, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -181,7 +181,7 @@ func (s *MathTestSuite) TestInferenceRewardsZero() {
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
-	chi, gamma, err := rewards.GetChiAndGamma(
+	chi, gamma, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -217,7 +217,7 @@ func (s *MathTestSuite) TestForecastRewardsSimple() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
 	totalReward := alloraMath.MustNewDecFromString("2.0")
-	chi, gamma, err := rewards.GetChiAndGamma(
+	chi, gamma, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -263,7 +263,7 @@ func (s *MathTestSuite) TestU_iOverV_i() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
 	totalReward := alloraMath.MustNewDecFromString("2.0")
-	chi, gamma, err := rewards.GetChiAndGamma(
+	chi, gamma, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -316,7 +316,7 @@ func (s *MathTestSuite) TestForecastRewardsZero() {
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
-	chi, gamma, err := rewards.GetChiAndGamma(
+	chi, gamma, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -407,13 +407,13 @@ func (s *MathTestSuite) TestForecastingUtilitySimple() {
 		{Score: alloraMath.MustNewDecFromString("0.5")},
 		{Score: alloraMath.MustNewDecFromString("0.5")},
 	}
-	ret, err := rewards.ForecastingUtility(negativeScore, infererScores, previousForecasterScoreRatio, alpha)
+	ret, _, err := rewards.ForecastingUtility(negativeScore, infererScores, previousForecasterScoreRatio, alpha)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.1"), ret, alloraMath.MustNewDecFromString("0.0001")))
 
 	// Test case where score > 1
 	highScore := alloraMath.MustNewDecFromString("1.1")
-	ret, err = rewards.ForecastingUtility(highScore, infererScores, previousForecasterScoreRatio, alpha)
+	ret, _, err = rewards.ForecastingUtility(highScore, infererScores, previousForecasterScoreRatio, alpha)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(alloraMath.MustNewDecFromString("0.5"), ret, alloraMath.MustNewDecFromString("0.0001")))
 
@@ -421,7 +421,7 @@ func (s *MathTestSuite) TestForecastingUtilitySimple() {
 	forecastingPerformanceScore := alloraMath.MustNewDecFromString("0.125")
 	expectedResult := alloraMath.MustNewDecFromString("0.2")
 
-	ret, err = rewards.ForecastingUtility(forecastingPerformanceScore, infererScores, previousForecasterScoreRatio, alpha)
+	ret, _, err = rewards.ForecastingUtility(forecastingPerformanceScore, infererScores, previousForecasterScoreRatio, alpha)
 	s.Require().NoError(err)
 	s.Require().True(alloraMath.InDelta(expectedResult, ret, alloraMath.MustNewDecFromString("0.0001")))
 }

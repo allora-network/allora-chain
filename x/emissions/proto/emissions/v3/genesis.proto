@@ -137,10 +137,15 @@ message GenesisState {
   ];
 
   /// NONCES
+
+  // map of open worker nonce windows for topics on particular block heights
+  repeated BlockHeightAndTopicIds openWorkerWindows = 55;
   // map of (topic) -> unfulfilled nonces
   repeated TopicIdAndNonces unfulfilledWorkerNonces = 43;
   // map of (topic) -> unfulfilled nonces
   repeated TopicIdAndReputerRequestNonces unfulfilledReputerNonces = 44;
+  // map of (topic) -> last dripped block
+  repeated TopicIdAndBlockHeight lastDripBlock = 56;
 
   /// REGRETS
   // map of (topic, worker) -> regret of worker from comparing loss of worker
@@ -182,6 +187,11 @@ message TopicAndActorId {
 message TopicIdAndBlockHeight {
   uint64 TopicId = 1;
   int64 BlockHeight = 2;
+}
+
+message BlockHeightAndTopicIds {
+  int64 BlockHeight = 1;
+  repeated uint64 TopicIds = 2;
 }
 
 message TopicIdBlockHeightScores {
