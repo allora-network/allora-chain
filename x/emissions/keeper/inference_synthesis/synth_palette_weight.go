@@ -11,7 +11,7 @@ import (
 
 // Given the current set of inferers and forecasters in the palette, calculate their
 // weights using the current regrets
-func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) {
+func CalcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
 	var regrets []alloraMath.Dec
 	infererRegrets := p.GetInfererRegretsSlice()
 	forecasterRegrets := p.GetForecasterRegretsSlice()
@@ -122,7 +122,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 // w_il = φ'_p(\hatR_i-1,l)
 // \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
 // given inferences, forecast-implied inferences, and network regrets
-func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (InferenceValue, error) {
+func CalcWeightedInference(p SynthPalette, weights RegretInformedWeights) (InferenceValue, error) {
 	runningUnnormalizedI_i := alloraMath.ZeroDec() //nolint:revive // var-naming: don't use underscores in Go names
 	sumWeights := alloraMath.ZeroDec()
 	err := error(nil)
@@ -141,21 +141,23 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 		}
 	} else {
 		for _, inferer := range p.Inferers {
-			if _, ok := p.InferenceByWorker[inferer]; !ok {
+			inferenceByWorker, exists := p.InferenceByWorker[inferer]
+			if !exists {
 				p.Logger.Debug(fmt.Sprintf("Cannot find inferer in InferenceByWorker in CalcWeightedInference %v", inferer))
 				continue
 			}
-			if _, ok := weights.inferers[inferer]; !ok {
+			infererWeight, exists := weights.inferers[inferer]
+			if !exists {
 				p.Logger.Debug(fmt.Sprintf("Cannot find inferer in weights.inferers in CalcWeightedInference %v", inferer))
 				continue
 			}
-			if _, ok := p.InfererRegrets[inferer]; !ok {
+			if _, exists := p.InfererRegrets[inferer]; !exists {
 				p.Logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in CalcWeightedInference %v", inferer))
 				continue
 			}
 			runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
-				p.InferenceByWorker[inferer],
-				weights.inferers[inferer],
+				*inferenceByWorker,
+				infererWeight,
 				p.AllInferersAreNew,
 				runningUnnormalizedI_i,
 				sumWeights,
@@ -165,21 +167,23 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 			}
 		}
 		for _, forecaster := range p.Forecasters {
-			if _, ok := p.ForecastImpliedInferenceByWorker[forecaster]; !ok {
+			workerForecastImpliedInference, exists := p.ForecastImpliedInferenceByWorker[forecaster]
+			if !exists {
 				p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in CalcWeightedInference %v", forecaster))
 				continue
 			}
-			if _, ok := weights.forecasters[forecaster]; !ok {
+			forecasterWeight, exists := weights.forecasters[forecaster]
+			if !exists {
 				p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in weights.forecasters in CalcWeightedInference %v", forecaster))
 				continue
 			}
-			if _, ok := p.ForecasterRegrets[forecaster]; !ok {
+			if _, exists := p.ForecasterRegrets[forecaster]; !exists {
 				p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in CalcWeightedInference %v", forecaster))
 				continue
 			}
 			runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
-				p.ForecastImpliedInferenceByWorker[forecaster],
-				weights.forecasters[forecaster],
+				*workerForecastImpliedInference,
+				forecasterWeight,
 				false,
 				runningUnnormalizedI_i,
 				sumWeights,
@@ -289,7 +293,7 @@ func (p *SynthPalette) UpdateForecastersInfo(newForecasters []Worker) error {
 }
 
 func AccumulateWeights(
-	inference *emissionstypes.Inference,
+	inference emissionstypes.Inference,
 	weight alloraMath.Dec,
 	allPeersAreNew bool,
 	runningUnnormalizedI_i alloraMath.Dec, //nolint:revive // var-naming: don't use underscores in Go names
@@ -298,7 +302,7 @@ func AccumulateWeights(
 	err := error(nil)
 
 	// Avoid needless computation if the weight is 0 or if there is no inference
-	if weight.IsNaN() || weight.Equal(alloraMath.ZeroDec()) || inference == nil {
+	if weight.IsNaN() || weight.Equal(alloraMath.ZeroDec()) {
 		return runningUnnormalizedI_i, sumWeights, nil
 	}
 

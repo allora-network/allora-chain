@@ -202,7 +202,7 @@ func (s *InferenceSynthesisTestSuite) mockEmptyValueBundle(
 }
 
 func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int) (
-	*inferencesynthesis.NetworkInferenceBuilder,
+	inferencesynthesis.SynthPalette,
 	map[int]func(header string) alloraMath.Dec,
 ) {
 	k := s.emissionsKeeper
@@ -469,7 +469,8 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		})
 	}
 
-	networkInferenceBuilder, err := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+	paletteFactory := inferencesynthesis.SynthPaletteFactory{}
+	synthPalette, err := paletteFactory.BuildPaletteFromRequest(
 		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
@@ -484,14 +485,14 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 		})
 	s.Require().NoError(err)
 
-	return networkInferenceBuilder, epochGetters
+	return synthPalette, epochGetters
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectCombinedInitialValueForEpoch(epoch int) {
-	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
-	valueBundle := networkInferenceBuilder.SetCombinedValue().Build()
-	s.Require().NotNil(valueBundle.CombinedValue)
-	alloratestutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epochGet[epoch]("network_inference").String())
+	synthPalette, epochGet := s.getEpochValueBundleByEpoch(epoch)
+	_, combinedValue, err := inferencesynthesis.GetCombinedInference(synthPalette)
+	s.Require().NoError(err)
+	alloratestutil.InEpsilon5(s.T(), combinedValue, epochGet[epoch]("network_inference").String())
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectCombinedValueEpoch2() {
@@ -507,10 +508,10 @@ func (s *InferenceSynthesisTestSuite) TestCorrectCombinedValueEpoch4() {
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectNaiveValueForEpoch(epoch int) {
-	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
-	valueBundle := networkInferenceBuilder.SetNaiveValue().Build()
-	s.Require().NotNil(valueBundle.NaiveValue)
-	alloratestutil.InEpsilon5(s.T(), valueBundle.NaiveValue, epochGet[epoch]("network_naive_inference").String())
+	synthPalette, epochGet := s.getEpochValueBundleByEpoch(epoch)
+	naiveValue, err := inferencesynthesis.GetNaiveInference(synthPalette)
+	s.Require().NoError(err)
+	alloratestutil.InEpsilon5(s.T(), naiveValue, epochGet[epoch]("network_naive_inference").String())
 }
 
 func (s *InferenceSynthesisTestSuite) TestCorrectNaiveValueEpoch2() {
@@ -522,7 +523,7 @@ func (s *InferenceSynthesisTestSuite) TestCorrectNaiveValueEpoch3() {
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epoch int) {
-	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
+	synthPalette, epochGet := s.getEpochValueBundleByEpoch(epoch)
 
 	worker0 := s.addrsStr[0]
 	worker1 := s.addrsStr[1]
@@ -538,11 +539,12 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 		worker4: epochGet[epoch]("network_inference_oneout_4"),
 	}
 
-	valueBundle := networkInferenceBuilder.SetOneOutInfererValues().Build()
+	oneOutInfererValues, err := inferencesynthesis.GetOneOutInfererInferences(synthPalette)
+	s.Require().NoError(err)
 
 	for worker, expectedValue := range expectedValues {
 		found := false
-		for _, workerAttributedValue := range valueBundle.OneOutInfererValues {
+		for _, workerAttributedValue := range oneOutInfererValues {
 			if workerAttributedValue.Worker == worker {
 				found = true
 				alloratestutil.InEpsilon5(s.T(), expectedValue, workerAttributedValue.Value.String())
@@ -561,8 +563,9 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneOutInfererValuesEpoch3() {
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(epoch int) {
-	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
-	valueBundle := networkInferenceBuilder.SetOneOutForecasterValues().Build()
+	synthPalette, epochGet := s.getEpochValueBundleByEpoch(epoch)
+	oneOutForecasterValues, err := inferencesynthesis.GetOneOutForecasterInferences(synthPalette)
+	s.Require().NoError(err)
 
 	forecaster0 := s.addrsStr[8]
 	forecaster1 := s.addrsStr[9]
@@ -576,7 +579,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(
 
 	for worker, expectedValue := range expectedValues {
 		found := false
-		for _, workerAttributedValue := range valueBundle.OneOutForecasterValues {
+		for _, workerAttributedValue := range oneOutForecasterValues {
 			if workerAttributedValue.Worker == worker {
 				found = true
 				alloratestutil.InEpsilon5(s.T(), expectedValue, workerAttributedValue.Value.String())
@@ -599,8 +602,9 @@ func (s *InferenceSynthesisTestSuite) TestCorrectOneOutForecasterValuesEpoch4() 
 }
 
 func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(epoch int) {
-	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
-	valueBundle := networkInferenceBuilder.SetOneInValues().Build()
+	synthPalette, epochGet := s.getEpochValueBundleByEpoch(epoch)
+	oneInForecasterValues, err := inferencesynthesis.GetOneInForecasterInferences(synthPalette)
+	s.Require().NoError(err)
 
 	forecaster0 := s.addrsStr[8]
 	forecaster1 := s.addrsStr[9]
@@ -614,7 +618,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(e
 
 	for worker, expectedValue := range expectedValues {
 		found := false
-		for _, workerAttributedValue := range valueBundle.OneInForecasterValues {
+		for _, workerAttributedValue := range oneInForecasterValues {
 			if workerAttributedValue.Worker == worker {
 				found = true
 				alloratestutil.InEpsilon5(s.T(), expectedValue, workerAttributedValue.Value.String())
@@ -678,7 +682,8 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 	}
 
 	// Call the function without setting regrets
-	networkInferenceBuilder, err := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+	paletteFactory := inferencesynthesis.SynthPaletteFactory{}
+	synthPalette, err := paletteFactory.BuildPaletteFromRequest(
 		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
@@ -693,7 +698,8 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 		},
 	)
 	s.Require().NoError(err)
-	valueBundle := networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
+	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(synthPalette)
+	s.Require().NoError(err)
 
 	s.Require().NotNil(valueBundle)
 	s.Require().NotNil(valueBundle.CombinedValue)
@@ -770,7 +776,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker4, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.4")})
 	s.Require().NoError(err)
 
-	networkInferenceBuilder, err := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+	paletteFactory := inferencesynthesis.SynthPaletteFactory{}
+	synthPalette, err := paletteFactory.BuildPaletteFromRequest(
 		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
@@ -785,7 +792,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 		},
 	)
 	s.Require().NoError(err)
-	valueBundle := networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
+	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(synthPalette)
+	s.Require().NoError(err)
 
 	// Check the results
 	s.Require().NotNil(valueBundle)
@@ -895,7 +903,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster3, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.006")})
 	s.Require().NoError(err)
 
-	networkInferenceBuilder, err := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+	paletteFactory := inferencesynthesis.SynthPaletteFactory{}
+	synthPalette, err := paletteFactory.BuildPaletteFromRequest(
 		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
@@ -910,7 +919,8 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 		},
 	)
 	s.Require().NoError(err)
-	valueBundle := networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
+	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(synthPalette)
+	s.Require().NoError(err)
 
 	// Check the results
 	s.Require().NotNil(valueBundle)
@@ -975,7 +985,8 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, worker2, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.008")})
 	s.Require().NoError(err)
 
-	networkInferenceBuilder, err := inferencesynthesis.NewNetworkInferenceBuilderFromSynthRequest(
+	paletteFactory := inferencesynthesis.SynthPaletteFactory{}
+	synthPalette, err := paletteFactory.BuildPaletteFromRequest(
 		inferencesynthesis.SynthRequest{
 			Ctx:                 ctx,
 			K:                   k,
@@ -990,7 +1001,8 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 		},
 	)
 	s.Require().NoError(err)
-	valueBundle := networkInferenceBuilder.SetOneInValues().Build()
+	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(synthPalette)
+	s.Require().NoError(err)
 
 	// Check the results
 	s.Require().NotNil(valueBundle)

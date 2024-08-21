@@ -115,7 +115,8 @@ func GetNetworkInferences(
 		} else {
 			Logger(ctx).Debug(fmt.Sprintf("Creating network inferences for topic %v with %v inferences and %v forecasts", topicId, len(inferences.Inferences), len(forecasts.Forecasts)))
 
-			networkInferenceBuilder, err := NewNetworkInferenceBuilderFromSynthRequest(
+			paletteFactory := SynthPaletteFactory{}
+			synthPalette, err := paletteFactory.BuildPaletteFromRequest(
 				SynthRequest{
 					Ctx:                 ctx,
 					K:                   k,
@@ -133,10 +134,15 @@ func GetNetworkInferences(
 				Logger(ctx).Warn(fmt.Sprintf("Error constructing network inferences builder topic: %s", err.Error()))
 				return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err
 			}
-			networkInferences = networkInferenceBuilder.CalcAndSetNetworkInferences().Build()
-			forecastImpliedInferencesByWorker = networkInferenceBuilder.palette.ForecastImpliedInferenceByWorker
-			infererWeights = networkInferenceBuilder.weights.inferers
-			forecasterWeights = networkInferenceBuilder.weights.forecasters
+			var weights RegretInformedWeights
+			networkInferences, weights, err = CalcNetworkInferences(synthPalette)
+			if err != nil {
+				Logger(ctx).Warn(fmt.Sprintf("Error calculating network inferences: %s", err.Error()))
+				return networkInferences, nil, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
+			}
+			forecastImpliedInferencesByWorker = synthPalette.ForecastImpliedInferenceByWorker
+			infererWeights = weights.inferers
+			forecasterWeights = weights.forecasters
 		}
 	} else {
 		// Single valid inference case
