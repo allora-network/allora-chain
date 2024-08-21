@@ -1,10 +1,67 @@
 package types
 
+import (
+	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
+)
+
 // NewGenesisState creates a new genesis state with default values.
 func NewGenesisState() *GenesisState {
 	return &GenesisState{
-		Params:            DefaultParams(),
-		CoreTeamAddresses: DefaultCoreTeamAddresses(),
+		Params:                                         DefaultParams(),
+		NextTopicId:                                    0,
+		Topics:                                         []*TopicIdAndTopic{},
+		ActiveTopics:                                   []uint64{},
+		RewardableTopics:                               []uint64{},
+		TopicWorkers:                                   []*TopicAndActorId{},
+		TopicReputers:                                  []*TopicAndActorId{},
+		TopicRewardNonce:                               []*TopicIdAndBlockHeight{},
+		InfererScoresByBlock:                           []*TopicIdBlockHeightScores{},
+		ForecasterScoresByBlock:                        []*TopicIdBlockHeightScores{},
+		ReputerScoresByBlock:                           []*TopicIdBlockHeightScores{},
+		InfererScoreEmas:                               []*TopicIdActorIdScore{},
+		ForecasterScoreEmas:                            []*TopicIdActorIdScore{},
+		ReputerScoreEmas:                               []*TopicIdActorIdScore{},
+		ReputerListeningCoefficient:                    []*TopicIdActorIdListeningCoefficient{},
+		PreviousReputerRewardFraction:                  []*TopicIdActorIdDec{},
+		PreviousInferenceRewardFraction:                []*TopicIdActorIdDec{},
+		PreviousForecastRewardFraction:                 []*TopicIdActorIdDec{},
+		PreviousForecasterScoreRatio:                   []*TopicIdAndDec{},
+		TotalStake:                                     cosmosMath.ZeroInt(),
+		TopicStake:                                     []*TopicIdAndInt{},
+		StakeReputerAuthority:                          []*TopicIdActorIdInt{},
+		StakeSumFromDelegator:                          []*TopicIdActorIdInt{},
+		DelegatedStakes:                                []*TopicIdDelegatorReputerDelegatorInfo{},
+		StakeFromDelegatorsUponReputer:                 []*TopicIdActorIdInt{},
+		DelegateRewardPerShare:                         []*TopicIdActorIdDec{},
+		StakeRemovalsByBlock:                           []*BlockHeightTopicIdReputerStakeRemovalInfo{},
+		StakeRemovalsByActor:                           []*ActorIdTopicIdBlockHeight{},
+		DelegateStakeRemovalsByBlock:                   []*BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo{},
+		DelegateStakeRemovalsByActor:                   []*DelegatorReputerTopicIdBlockHeight{},
+		Inferences:                                     []*TopicIdActorIdInference{},
+		Forecasts:                                      []*TopicIdActorIdForecast{},
+		Workers:                                        []*LibP2PKeyAndOffchainNode{},
+		Reputers:                                       []*LibP2PKeyAndOffchainNode{},
+		TopicFeeRevenue:                                []*TopicIdAndInt{},
+		PreviousTopicWeight:                            []*TopicIdAndDec{},
+		AllInferences:                                  []*TopicIdBlockHeightInferences{},
+		AllForecasts:                                   []*TopicIdBlockHeightForecasts{},
+		AllLossBundles:                                 []*TopicIdBlockHeightReputerValueBundles{},
+		NetworkLossBundles:                             []*TopicIdBlockHeightValueBundles{},
+		PreviousPercentageRewardToStakedReputers:       alloraMath.ZeroDec(),
+		UnfulfilledWorkerNonces:                        []*TopicIdAndNonces{},
+		UnfulfilledReputerNonces:                       []*TopicIdAndReputerRequestNonces{},
+		LatestInfererNetworkRegrets:                    []*TopicIdActorIdTimeStampedValue{},
+		LatestForecasterNetworkRegrets:                 []*TopicIdActorIdTimeStampedValue{},
+		LatestOneInForecasterNetworkRegrets:            []*TopicIdActorIdActorIdTimeStampedValue{},
+		LatestNaiveInfererNetworkRegrets:               []*TopicIdActorIdTimeStampedValue{},
+		LatestOneOutInfererInfererNetworkRegrets:       []*TopicIdActorIdActorIdTimeStampedValue{},
+		LatestOneOutInfererForecasterNetworkRegrets:    []*TopicIdActorIdActorIdTimeStampedValue{},
+		LatestOneOutForecasterInfererNetworkRegrets:    []*TopicIdActorIdActorIdTimeStampedValue{},
+		LatestOneOutForecasterForecasterNetworkRegrets: []*TopicIdActorIdActorIdTimeStampedValue{},
+		CoreTeamAddresses:                              DefaultCoreTeamAddresses(),
+		TopicLastWorkerCommit:                          []*TopicIdTimestampedActorNonce{},
+		TopicLastReputerCommit:                         []*TopicIdTimestampedActorNonce{},
 	}
 }
 

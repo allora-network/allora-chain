@@ -2220,6 +2220,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 
 	networkLossBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err)
+	s.Require().NotNil(networkLossBundles)
 
 	infererScores, err := rewards.GenerateInferenceScores(
 		s.ctx,
