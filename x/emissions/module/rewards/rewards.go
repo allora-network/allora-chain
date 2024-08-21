@@ -339,7 +339,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	}
 
 	// Get chi (Forecasting Utility) and gamma (Normalization Factor)
-	chi, gamma, err := GetChiAndGamma(
+	chi, gamma, updatedForecasterScoreRatio, err := GetChiAndGamma(
 		lossBundles.NaiveValue,
 		lossBundles.CombinedValue,
 		inferenceEntropy,
@@ -350,6 +350,12 @@ func GenerateRewardsDistributionByTopicParticipant(
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
+	}
+
+	// Set updated forecaster score ratio
+	err = k.SetPreviousForecasterScoreRatio(ctx, topicId, updatedForecasterScoreRatio)
+	if err != nil {
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous forecast score ratio")
 	}
 
 	// Get Total Rewards for Inference task

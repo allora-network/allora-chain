@@ -242,7 +242,7 @@ func ForecastingUtility(
 	infererScores []types.Score,
 	previousForecasterScoreRatio alloraMath.Dec,
 	alpha alloraMath.Dec,
-) (alloraMath.Dec, error) {
+) (alloraMath.Dec, alloraMath.Dec, error) {
 	zeroPointOne := alloraMath.MustNewDecFromString("0.1")
 	zeroPointFour := alloraMath.MustNewDecFromString("0.4")
 	zeroPointFive := alloraMath.MustNewDecFromString("0.5")
@@ -257,7 +257,7 @@ func ForecastingUtility(
 	scoreDenominator := maxInfererScore.Abs()
 	if maxInfererScore.IsZero() {
 		if forecastingTaskUtilityScore.IsZero() {
-			return zeroPointFive, nil
+			return zeroPointFive, alloraMath.Dec{}, nil
 		} else {
 			scoreDenominator = forecastingTaskUtilityScore.Abs()
 		}
@@ -265,56 +265,56 @@ func ForecastingUtility(
 
 	scoreNumerator, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(alloraMath.ZeroDec(), maxInfererScore))
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 	scoreRatio, err := scoreNumerator.Quo(scoreDenominator)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 
 	// Calculate alpha * (scoreRatio)
 	alphaTimesScoreRatio, err := alpha.Mul(scoreRatio)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 
 	// Calculate (1 - alpha) * previousForecasterScoreRatio
 	oneMinusAlpha, err := alloraMath.OneDec().Sub(alpha)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 	oneMinusAlphaTimesPreviousForecasterScoreRatio, err := oneMinusAlpha.Mul(previousForecasterScoreRatio)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 
-	// Calculate the final tau value
+	// Calculate the updated forecaster score ratio value
 	forecasterScoreRatio, err := alphaTimesScoreRatio.Add(oneMinusAlphaTimesPreviousForecasterScoreRatio)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 
-	// Apply the final tau value based on conditions
+	// Apply the updated forecaster score value based on conditions
 	if forecasterScoreRatio.Lt(alloraMath.ZeroDec()) {
-		return zeroPointOne, nil
+		return zeroPointOne, forecasterScoreRatio, nil
 	}
 
 	if forecasterScoreRatio.Gte(alloraMath.OneDec()) {
-		return zeroPointFive, nil
+		return zeroPointFive, forecasterScoreRatio, nil
 	}
 
-	// For 0 <= finalTau < 1, return 0.4 * finalTau + 0.1
-	finalTauTimesZeroPointFour, err := forecasterScoreRatio.Mul(zeroPointFour)
+	// For 0 <= forecasterScoreRatio < 1, return 0.4 * forecasterScoreRatio + 0.1
+	forecasterScoreRatioTimesZeroPointFour, err := forecasterScoreRatio.Mul(zeroPointFour)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 
-	chiReturnValue, err := finalTauTimesZeroPointFour.Add(zeroPointOne)
+	chiReturnValue, err := forecasterScoreRatioTimesZeroPointFour.Add(zeroPointOne)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, err
 	}
 
-	return chiReturnValue, nil
+	return chiReturnValue, forecasterScoreRatio, nil
 }
 
 // renormalize with a factor γ to ensure that the
@@ -362,32 +362,32 @@ func GetChiAndGamma(
 	infererScores []types.Score,
 	previousForecasterScoreRatio alloraMath.Dec,
 	alpha alloraMath.Dec,
-) (chi alloraMath.Dec, gamma alloraMath.Dec, err error) {
+) (alloraMath.Dec, alloraMath.Dec, alloraMath.Dec, error) {
 	forecastingTaskUtilityScore, err := ForecastingPerformanceScore(
 		naiveNetworkInferenceLoss,
 		networkInferenceLoss,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting performance score")
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting performance score")
 	}
-	chi, err = ForecastingUtility(
+	chi, updatedForecasterScoreRatio, err := ForecastingUtility(
 		forecastingTaskUtilityScore,
 		infererScores,
 		previousForecasterScoreRatio,
 		alpha,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
 	}
-	gamma, err = NormalizationFactor(
+	gamma, err := NormalizationFactor(
 		entropyInference,
 		entropyForecasting,
 		chi,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate normalization factor")
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate normalization factor")
 	}
-	return chi, gamma, nil
+	return chi, gamma, updatedForecasterScoreRatio, nil
 }
 
 // inference rewards calculation
