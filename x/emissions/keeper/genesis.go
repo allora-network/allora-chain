@@ -137,7 +137,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.LatestInfererScoresByWorker) != 0 {
 		for _, topicIdActorIdScore := range data.LatestInfererScoresByWorker {
 			if topicIdActorIdScore != nil {
-				if err := k.latestInfererScoresByWorker.Set(ctx,
+				if err := k.infererScoreEmasByWorker.Set(ctx,
 					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
 					*topicIdActorIdScore.Score); err != nil {
 					return errors.Wrap(err, "error setting latestInfererScoresByWorker")
@@ -149,7 +149,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.LatestForecasterScoresByWorker) != 0 {
 		for _, topicIdActorIdScore := range data.LatestForecasterScoresByWorker {
 			if topicIdActorIdScore != nil {
-				if err := k.latestForecasterScoresByWorker.Set(ctx,
+				if err := k.forecasterScoreEmasByWorker.Set(ctx,
 					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
 					*topicIdActorIdScore.Score); err != nil {
 					return errors.Wrap(err, "error setting latestForecasterScoresByWorker")
@@ -161,7 +161,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.LatestReputerScoresByReputer) != 0 {
 		for _, topicIdActorIdScore := range data.LatestReputerScoresByReputer {
 			if topicIdActorIdScore != nil {
-				if err := k.latestReputerScoresByReputer.Set(ctx,
+				if err := k.reputerScoreEmasByReputer.Set(ctx,
 					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
 					*topicIdActorIdScore.Score); err != nil {
 					return errors.Wrap(err, "error setting latestReputerScoresByReputer")
@@ -842,7 +842,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	}
 
 	latestInfererScoresByWorker := make([]*types.TopicIdActorIdScore, 0)
-	latestInfererScoresByWorkerIter, err := k.latestInfererScoresByWorker.Iterate(ctx, nil)
+	latestInfererScoresByWorkerIter, err := k.infererScoreEmasByWorker.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate latest inferer scores by worker")
 	}
@@ -861,7 +861,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	}
 
 	latestForecasterScoresByWorker := make([]*types.TopicIdActorIdScore, 0)
-	latestForecasterScoresByWorkerIter, err := k.latestForecasterScoresByWorker.Iterate(ctx, nil)
+	latestForecasterScoresByWorkerIter, err := k.forecasterScoreEmasByWorker.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate latest forecaster scores by worker")
 	}
@@ -880,7 +880,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	}
 
 	latestReputerScoresByReputer := make([]*types.TopicIdActorIdScore, 0)
-	latestReputerScoresByReputerIter, err := k.latestReputerScoresByReputer.Iterate(ctx, nil)
+	latestReputerScoresByReputerIter, err := k.reputerScoreEmasByReputer.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate latest reputer scores by reputer")
 	}

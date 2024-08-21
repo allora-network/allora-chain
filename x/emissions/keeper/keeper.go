@@ -797,7 +797,7 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 		return k.allInferences.Set(ctx, key, newInferences)
 	}
 	// get score of current inference and check with
-	score, err := k.GetLatestInfererScore(ctx, topicId, inference.Inferer)
+	score, err := k.GetInfererScoreEma(ctx, topicId, inference.Inferer)
 	if err != nil {
 		return err
 	}
@@ -853,7 +853,7 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 		return k.allForecasts.Set(ctx, key, newForecasts)
 	}
 	// get score of current inference and check with
-	score, err := k.GetLatestForecasterScore(ctx, topicId, forecast.Forecaster)
+	score, err := k.GetForecasterScoreEma(ctx, topicId, forecast.Forecaster)
 	if err != nil {
 		return err
 	}
@@ -945,7 +945,7 @@ func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block B
 	}
 
 	// get score of current inference and check with
-	score, err := k.GetLatestReputerScore(ctx, topicId, reputerLoss.ValueBundle.Reputer)
+	score, err := k.GetReputerScoreEma(ctx, topicId, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
 		return err
 	}
@@ -2203,7 +2203,12 @@ func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker
 	score, err := k.infererScoreEmasByWorker.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, nil
+			return types.Score{
+				TopicId:     topicId,
+				BlockHeight: 0,
+				Address:     worker,
+				Score:       alloraMath.ZeroDec(),
+			}, nil
 		}
 		return types.Score{}, err
 	}

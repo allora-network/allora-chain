@@ -3507,11 +3507,11 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
-	_ = k.SetLatestInfererScore(ctx, topicId, worker1, score1)
-	_ = k.SetLatestInfererScore(ctx, topicId, worker2, score2)
-	_ = k.SetLatestInfererScore(ctx, topicId, worker3, score3)
-	_ = k.SetLatestInfererScore(ctx, topicId, worker4, score4)
-	_ = k.SetLatestInfererScore(ctx, topicId, worker5, score5)
+	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker1, score1)
+	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker2, score2)
+	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker3, score3)
+	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker4, score4)
+	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker5, score5)
 
 	allInferences := types.Inferences{
 		Inferences: []*types.Inference{
@@ -3563,11 +3563,11 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
-	_ = k.SetLatestForecasterScore(ctx, topicId, worker1, score1)
-	_ = k.SetLatestForecasterScore(ctx, topicId, worker2, score2)
-	_ = k.SetLatestForecasterScore(ctx, topicId, worker3, score3)
-	_ = k.SetLatestForecasterScore(ctx, topicId, worker4, score4)
-	_ = k.SetLatestForecasterScore(ctx, topicId, worker5, score5)
+	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker1, score1)
+	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker2, score2)
+	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker3, score3)
+	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker4, score4)
+	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker5, score5)
 
 	allForecasts := types.Forecasts{
 		Forecasts: []*types.Forecast{
@@ -3689,11 +3689,11 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer5, Score: alloraMath.NewDecFromInt64(96)}
-	_ = k.SetLatestReputerScore(ctx, topicId, reputer1, score1)
-	_ = k.SetLatestReputerScore(ctx, topicId, reputer2, score2)
-	_ = k.SetLatestReputerScore(ctx, topicId, reputer3, score3)
-	_ = k.SetLatestReputerScore(ctx, topicId, reputer4, score4)
-	_ = k.SetLatestReputerScore(ctx, topicId, reputer5, score5)
+	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer1, score1)
+	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer2, score2)
+	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer3, score3)
+	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer4, score4)
+	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer5, score5)
 
 	allReputerLosses := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{

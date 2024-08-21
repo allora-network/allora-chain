@@ -288,17 +288,17 @@ service Query {
     option (google.api.http).get = "/emissions/v2/rewardable_topics";
   }
 
-  rpc GetInfererScoreEma(QueryInfererScoreEmaRequest) returns (QueryInfererScoreEmaResponse) {
+  rpc GetLatestInfererScore(QueryLatestInfererScoreRequest) returns (QueryLatestInfererScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v2/latest_inferer_score/{topic_id}/{inferer}";
   }
 
-  rpc GetForecasterScoreEma(QueryForecasterScoreEmaRequest) returns (QueryForecasterScoreEmaResponse) {
+  rpc GetLatestForecasterScore(QueryLatestForecasterScoreRequest) returns (QueryLatestForecasterScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v2/latest_forecaster_score/{topic_id}/{forecaster}";
   }
 
-  rpc GetReputerScoreEma(QueryReputerScoreEmaRequest) returns (QueryReputerScoreEmaResponse) {
+  rpc GetLatestReputerScore(QueryLatestReputerScoreRequest) returns (QueryLatestReputerScoreResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v2/latest_reputer_score/{topic_id}/{reputer}";
   }
@@ -963,30 +963,30 @@ message QueryRewardableTopicsResponse {
   repeated uint64 rewardable_topic_ids = 1;
 }
 
-message QueryInfererScoreEmaRequest {
+message QueryLatestInfererScoreRequest {
   uint64 topic_id = 1;
   string inferer = 2;
 }
 
-message QueryInfererScoreEmaResponse {
+message QueryLatestInfererScoreResponse {
   Score score = 1;
 }
 
-message QueryForecasterScoreEmaRequest {
+message QueryLatestForecasterScoreRequest {
   uint64 topic_id = 1;
   string forecaster = 2;
 }
 
-message QueryForecasterScoreEmaResponse {
+message QueryLatestForecasterScoreResponse {
   Score score = 1;
 }
 
-message QueryReputerScoreEmaRequest {
+message QueryLatestReputerScoreRequest {
   uint64 topic_id = 1;
   string reputer = 2;
 }
 
-message QueryReputerScoreEmaResponse {
+message QueryLatestReputerScoreResponse {
   Score score = 1;
 }
 

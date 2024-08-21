@@ -13,7 +13,7 @@ func (qs queryServer) GetInfererScoreEma(
 	*types.QueryInfererScoreEmaResponse,
 	error,
 ) {
-	InfererScoreEma, err := qs.k.GetInfererScoreEma(ctx, req.TopicId, req.Worker)
+	InfererScoreEma, err := qs.k.GetInfererScoreEma(ctx, req.TopicId, req.Inferer)
 	if err != nil {
 		return nil, err
 	}
