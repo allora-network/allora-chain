@@ -1,8 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
-
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
@@ -146,11 +144,6 @@ func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
 	s.Require().NoError(err)
 	networkTokensStaked, err := epoch("network_tokens_staked").SdkIntTrim()
 	s.Require().NoError(err)
-	fmt.Println("f_emission", simulatorFEmission)
-	fmt.Println("ecosystem_tokens_total", ecosystemTokensTotal)
-	fmt.Println("network_tokens_circulating", networkTokensCirculating)
-	fmt.Println("network_tokens_staked", networkTokensStaked)
-	fmt.Println("network_tokens_total", networkTokensTotal)
 	result, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		simulatorFEmission,
 		ecosystemTokensTotal,
