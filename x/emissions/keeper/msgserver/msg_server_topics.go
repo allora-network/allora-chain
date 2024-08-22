@@ -25,7 +25,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	if msg.EpochLength < params.MinEpochLength {
 		return nil, types.ErrTopicCadenceBelowMinimum
 	}
-	if msg.GroundTruthLag > int64(params.MaxUnfulfilledReputerRequests)*msg.EpochLength {
+	if uint64(msg.GroundTruthLag) > params.MaxUnfulfilledReputerRequests*uint64(msg.EpochLength) {
 		return nil, types.ErrGroundTruthLagTooBig
 	}
 

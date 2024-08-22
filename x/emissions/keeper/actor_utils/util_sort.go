@@ -89,7 +89,7 @@ func FindTopNByScoreDesc(ctx sdk.Context, n uint64, scoresByActor map[Actor]Scor
 
 	topN := make([]Actor, 0)
 	topNBool := make(map[string]bool)
-	for i := 0; i < int(n); i++ {
+	for i := uint64(0); i < n; i++ {
 		if queue.Len() == 0 {
 			break
 		}
