@@ -12,7 +12,7 @@ linters:
     - durationcheck
     - errcheck
     - errname
-    - exportloopref
+    - copyloopvar
     - forcetypeassert
     - goconst
     - gofmt
