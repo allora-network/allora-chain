@@ -46,8 +46,14 @@ type Keeper struct {
 	// the next topic id to be used, equal to the number of topics that have been created
 	nextTopicId collections.Sequence
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
-	topics       collections.Map[TopicId, types.Topic]
-	activeTopics collections.KeySet[TopicId]
+	topics collections.Map[TopicId, types.Topic]
+	// topic to next possible churning block
+	// if topic not included, then the topic is not active
+	topicToNextPossibleChurningBlock collections.Map[TopicId, BlockHeight]
+	// block height to active topics whose epochs reset at that block
+	blockToActiveTopics collections.Map[BlockHeight, types.TopicIds]
+	// block to lowest weight of any topic that is active and whose epoch expires in that block
+	blockToLowestActiveTopicWeight collections.Map[BlockHeight, types.TopicIdWeightPair]
 	// every topic that has been churned and ready to be rewarded i.e. reputer losses have been committed
 	rewardableTopics collections.KeySet[TopicId]
 	// for a topic, what is every worker node that has registered to it?
@@ -207,7 +213,9 @@ func NewKeeper(
 		topicStake:                               collections.NewMap(sb, types.TopicStakeKey, "topic_stake", collections.Uint64Key, sdk.IntValue),
 		nextTopicId:                              collections.NewSequence(sb, types.NextTopicIdKey, "next_TopicId"),
 		topics:                                   collections.NewMap(sb, types.TopicsKey, "topics", collections.Uint64Key, codec.CollValue[types.Topic](cdc)),
-		activeTopics:                             collections.NewKeySet(sb, types.ActiveTopicsKey, "active_topics", collections.Uint64Key),
+		topicToNextPossibleChurningBlock:         collections.NewMap(sb, types.TopicToNextPossibleChurningBlockKey, "topic_to_next_possible_churning_block", collections.Uint64Key, collections.Int64Value),
+		blockToActiveTopics:                      collections.NewMap(sb, types.BlockToActiveTopicsKey, "block_to_active_topics", collections.Int64Key, codec.CollValue[types.TopicIds](cdc)),
+		blockToLowestActiveTopicWeight:           collections.NewMap(sb, types.BlockToLowestActiveTopicWeightKey, "block_to_lowest_active_topic_weight", collections.Int64Key, codec.CollValue[types.TopicIdWeightPair](cdc)),
 		rewardableTopics:                         collections.NewKeySet(sb, types.RewardableTopicsKey, "rewardable_topics", collections.Uint64Key),
 		topicWorkers:                             collections.NewKeySet(sb, types.TopicWorkersKey, "topic_workers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		topicReputers:                            collections.NewKeySet(sb, types.TopicReputersKey, "topic_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
@@ -1862,43 +1870,43 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 }
 
 // Set a topic to inactive if the topic exists and is active, else does nothing
-func (k *Keeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
-	present, err := k.topics.Has(ctx, topicId)
-	if err != nil {
-		return err
-	}
-
-	isActive, err := k.activeTopics.Has(ctx, topicId)
-	if err != nil {
-		return err
-	}
-
-	if present && isActive {
-		err = k.activeTopics.Remove(ctx, topicId)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// Set a topic to active if the topic exists, else does nothing
-func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
-	present, err := k.topics.Has(ctx, topicId)
-	if err != nil {
-		return err
-	}
-
-	if !present {
-		return nil
-	}
-
-	if err := k.activeTopics.Set(ctx, topicId); err != nil {
-		return err
-	}
-	return nil
-}
+//func (k *Keeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
+//	present, err := k.topics.Has(ctx, topicId)
+//	if err != nil {
+//		return err
+//	}
+//
+//	isActive, err := k.activeTopics.Has(ctx, topicId)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if present && isActive {
+//		err = k.activeTopics.Remove(ctx, topicId)
+//		if err != nil {
+//			return err
+//		}
+//	}
+//
+//	return nil
+//}
+//
+//// Set a topic to active if the topic exists, else does nothing
+//func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
+//	present, err := k.topics.Has(ctx, topicId)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if !present {
+//		return nil
+//	}
+//
+//	if err := k.activeTopics.Set(ctx, topicId); err != nil {
+//		return err
+//	}
+//	return nil
+//}
 
 // Gets next topic id
 func (k *Keeper) IncrementTopicId(ctx context.Context) (TopicId, error) {
@@ -1925,50 +1933,50 @@ func (k *Keeper) GetNextTopicId(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)
 }
 
-func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, error) {
-	return k.activeTopics.Has(ctx, topicId)
-}
-
-func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
-	limit, start, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
-	if err != nil {
-		return nil, nil, err
-	}
-	rng := new(collections.Range[uint64]).StartExclusive(start)
-
-	iter, err := k.activeTopics.Iterate(ctx, rng)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer iter.Close()
-
-	activeTopicIds := make([]TopicId, 0)
-	nextKey := make([]byte, binary.MaxVarintLen64)
-	nextTopicId := uint64(0)
-	for ; iter.Valid(); iter.Next() {
-		topicId, err := iter.Key()
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if uint64(len(activeTopicIds)) >= limit {
-			break
-		}
-
-		activeTopicIds = append(activeTopicIds, topicId)
-		nextTopicId = topicId
-	}
-	binary.BigEndian.PutUint64(nextKey, nextTopicId)
-
-	// If there are no topics, we return the nil for next key
-	if len(activeTopicIds) == 0 {
-		nextKey = make([]byte, 0)
-	}
-
-	return activeTopicIds, &types.SimpleCursorPaginationResponse{
-		NextKey: nextKey,
-	}, nil
-}
+//func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, error) {
+//	return k.activeTopics.Has(ctx, topicId)
+//}
+//
+//func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
+//	limit, start, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+//	if err != nil {
+//		return nil, nil, err
+//	}
+//	rng := new(collections.Range[uint64]).StartExclusive(start)
+//
+//	iter, err := k.activeTopics.Iterate(ctx, rng)
+//	if err != nil {
+//		return nil, nil, err
+//	}
+//	defer iter.Close()
+//
+//	activeTopicIds := make([]TopicId, 0)
+//	nextKey := make([]byte, binary.MaxVarintLen64)
+//	nextTopicId := uint64(0)
+//	for ; iter.Valid(); iter.Next() {
+//		topicId, err := iter.Key()
+//		if err != nil {
+//			return nil, nil, err
+//		}
+//
+//		if uint64(len(activeTopicIds)) >= limit {
+//			break
+//		}
+//
+//		activeTopicIds = append(activeTopicIds, topicId)
+//		nextTopicId = topicId
+//	}
+//	binary.BigEndian.PutUint64(nextKey, nextTopicId)
+//
+//	// If there are no topics, we return the nil for next key
+//	if len(activeTopicIds) == 0 {
+//		nextKey = make([]byte, 0)
+//	}
+//
+//	return activeTopicIds, &types.SimpleCursorPaginationResponse{
+//		NextKey: nextKey,
+//	}, nil
+//}
 
 // UpdateTopicInitialRegret updates the InitialRegret for a given topic.
 func (k *Keeper) UpdateTopicInitialRegret(ctx context.Context, topicId TopicId, initialRegret alloraMath.Dec) error {

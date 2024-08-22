@@ -177,6 +177,7 @@ message OptionalParams {
     (gogoproto.nullable) = false
   ];
   repeated uint64 max_elements_per_forecast = 45;
+  repeated uint64 max_active_topics_per_block = 46;
 }
 
 message MsgUpdateParams {
