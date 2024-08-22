@@ -35,12 +35,17 @@ func FindTopNByScoreDesc(
 		}
 	})
 
-	topNActorsSorted = make([]emissionstypes.Score, n)
-	actorIsTop = make(map[string]struct{}, n)
+	// which is bigger, n or the length of the scores?
+	N := int(n)
+	if N > len(scores) {
+		N = len(scores)
+	}
+	topNActorsSorted = make([]emissionstypes.Score, N)
+	actorIsTop = make(map[string]struct{}, N)
 	// populate top n actors sorted with only the top n
 	// populate all with all
 	// actor is top is a map of the top n actors
-	for i := 0; i < int(n); i++ {
+	for i := 0; i < N; i++ {
 		topNActorsSorted[i] = scores[i]
 		actorIsTop[scores[i].Address] = struct{}{}
 	}
