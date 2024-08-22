@@ -29,14 +29,15 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	worker4Addr := sdk.AccAddress(worker4PrivateKey.PubKey().Address())
 	worker5Addr := sdk.AccAddress(worker5PrivateKey.PubKey().Address())
 
-	latestReputerScores := make(map[string]types.Score)
-	latestReputerScores[worker1Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker1Addr.String(), Score: alloraMath.NewDecFromInt64(90)}
-	latestReputerScores[worker2Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker2Addr.String(), Score: alloraMath.NewDecFromInt64(40)}
-	latestReputerScores[worker3Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)}
-	latestReputerScores[worker4Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker4Addr.String(), Score: alloraMath.NewDecFromInt64(20)}
-	latestReputerScores[worker5Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)}
+	latestReputerScores := []types.Score{
+		{TopicId: topicId, BlockHeight: 1, Address: worker1Addr.String(), Score: alloraMath.NewDecFromInt64(90)},
+		{TopicId: topicId, BlockHeight: 1, Address: worker2Addr.String(), Score: alloraMath.NewDecFromInt64(40)},
+		{TopicId: topicId, BlockHeight: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)},
+		{TopicId: topicId, BlockHeight: 1, Address: worker4Addr.String(), Score: alloraMath.NewDecFromInt64(20)},
+		{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)},
+	}
 
-	topActors, topActorsBool := FindTopNByScoreDesc(testCtx, 3, latestReputerScores, 1)
+	topActors, _, topActorsBool := FindTopNByScoreDesc(testCtx, 3, latestReputerScores, 1)
 	require.Equal(t, worker5Addr.String(), topActors[0])
 	require.Equal(t, worker1Addr.String(), topActors[1])
 	require.Equal(t, worker3Addr.String(), topActors[2])
