@@ -1,6 +1,7 @@
 package actorutils
 
 import (
+	"fmt"
 	"math/rand"
 	"slices"
 
@@ -16,6 +17,8 @@ func FindTopNByScoreDesc(
 	scores []emissionstypes.Score,
 	randSeed int64,
 ) (topNActorsSorted []emissionstypes.Score, allActorsSorted []emissionstypes.Score, actorIsTop map[string]struct{}) {
+	fmt.Println("scores: ", scores)
+
 	r := rand.New(rand.NewSource(randSeed)) //nolint:gosec // G404: Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand)
 	// in our tiebreaker, we never return that two elements are equal
 	// so the sort function will never be called with two equal elements
@@ -52,5 +55,8 @@ func FindTopNByScoreDesc(
 		actorIsTop[scores[i].Address] = struct{}{}
 	}
 
+	fmt.Println("topNActorsSorted: ", topNActorsSorted)
+	fmt.Println("scores: ", scores)
+	fmt.Println("actorIsTop", actorIsTop)
 	return topNActorsSorted, scores, actorIsTop
 }

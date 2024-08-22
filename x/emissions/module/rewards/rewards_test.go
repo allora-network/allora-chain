@@ -2674,7 +2674,12 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	}
 	thirdForecasterFraction, err := totalForecastersReward.Quo(totalReward)
 	s.Require().NoError(err)
-	s.Require().True(firstForecasterFraction.Lt(thirdForecasterFraction), "Third forecaster fraction must be bigger than first fraction")
+	s.Require().True(
+		firstForecasterFraction.Lt(thirdForecasterFraction),
+		"Third forecaster fraction must be bigger than first fraction %s > %s",
+		firstForecasterFraction.String(),
+		thirdForecasterFraction.String(),
+	)
 }
 
 func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
