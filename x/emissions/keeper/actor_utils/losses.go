@@ -78,7 +78,7 @@ func CloseReputerNonce(
 	// and get get score for each reputer => later we can skim only the top few by score descending
 	lossBundlesByReputer := make(map[string]*types.ReputerValueBundle)
 	reputerScoreEmas := make(map[string]types.Score)
-	for _, bundle := range msg.ReputerValueBundles {
+	for _, bundle := range reputerLossBundles.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
 			continue
 		}
@@ -94,153 +94,154 @@ func CloseReputerNonce(
 			continue
 		}
 
-		// Check if we've seen this reputer already in this bulk payload
-		if _, ok := lossBundlesByReputer[bundle.ValueBundle.Reputer]; !ok {
-			// Check that the reputer is registered in the topic
-			isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
-			if err != nil {
-				continue
-			}
-			// We'll keep what we can get from the payload, but we'll ignore the rest
-			if !isReputerRegistered {
-				continue
-			}
-
-			// Check that the reputer enough stake in the topic
-			stake, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, reputer)
-			if err != nil {
-				continue
-			}
-			if stake.LT(params.RequiredMinimumStake) {
-				continue
-			}
-
-			// Examine forecast elements to verify that they're for registered inferers in the current set.
-			// A check of their registration and other filters have already been applied when their inferences were inserted.
-			// We keep what we can, ignoring the reputer and their contribution (losses) entirely
-			// if they're left with no valid losses.
-			filteredBundle, err := filterUnacceptedWorkersFromReputerValueBundle(ctx, ms, msg.TopicId, *msg.ReputerRequestNonce, bundle)
-			if err != nil {
-				continue
-			}
-
-			/// If we do PoX-like anti-sybil procedure, would go here
-
-			/// Filtering done now, now write what we must for inclusion
-
-			// Get the latest score for each reputer
-			latestScore, err := ms.k.GetReputerScoreEma(ctx, bundle.ValueBundle.TopicId, reputer)
-			if err != nil {
-				continue
-			}
-			reputerScoreEmas[bundle.ValueBundle.Reputer] = latestScore
-			lossBundlesByReputer[bundle.ValueBundle.Reputer] = filteredBundle
-		}
-
-		// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-		topReputers, allReputersSorted := FindTopNByScoreDesc(params.MaxTopReputersToReward, reputerScoreEmas, msg.ReputerRequestNonce.ReputerNonce.BlockHeight)
-
-		// Check that the reputer in the payload is a top reputer among those who have submitted losses
-		stakesByReputer := make(map[string]cosmosMath.Int)
-		lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
-		reputerIsTop := make(map[string]bool, 0)
-		for _, reputer := range topReputers {
-			stake, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, reputer)
-			if err != nil {
-				continue
-			}
-
-			lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, lossBundlesByReputer[reputer])
-			stakesByReputer[reputer] = stake
-			reputerIsTop[reputer] = true
-		}
-
-		sdkCtx := sdk.UnwrapSDKContext(ctx)
-		blockHeight := sdkCtx.BlockHeight()
-		err = ms.UpdateScoresOfPassiveActorsWithActiveQuantile(
-			sdkCtx,
-			blockHeight,
-			params.MaxTopReputersToReward,
-			topic.Id,
-			topic.AlphaRegret,
-			topic.ActiveReputerQuantile,
-			reputerScoreEmas,
-			topReputers,
-			allReputersSorted,
-			reputerIsTop,
-			types.ActorType_REPUTER,
-		)
-
-		// sort by reputer score descending
-		sort.Slice(lossBundlesByReputer, func(i, j int) bool {
-			return lossBundlesByReputer[i].ValueBundle.Reputer < lossBundlesByReputer[j].ValueBundle.Reputer
-		})
-
-		bundles := types.ReputerValueBundles{
-			ReputerValueBundles: lossBundlesByReputer,
-		}
-		err = k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, bundles)
+		// Check that the reputer is registered in the topic
+		isReputerRegistered, err := k.IsReputerRegisteredInTopic(ctx, bundle.ValueBundle.TopicId, reputer)
 		if err != nil {
-			return err
+			continue
+		}
+		// We'll keep what we can get from the payload, but we'll ignore the rest
+		if !isReputerRegistered {
+			continue
 		}
 
-		networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, topic.Epsilon)
+		// Check that the reputer enough stake in the topic
+		stake, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
 		if err != nil {
-			return err
+			continue
+		}
+		if stake.LT(params.RequiredMinimumStake) {
+			continue
 		}
 
-		sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", msg.ReputerRequestNonce.ReputerNonce.BlockHeight, networkLossBundle))
+		// Examine forecast elements to verify that they're for registered inferers in the current set.
+		// A check of their registration and other filters have already been applied when their inferences were inserted.
+		// We keep what we can, ignoring the reputer and their contribution (losses) entirely
+		// if they're left with no valid losses.
 
-		networkLossBundle.ReputerRequestNonce = &types.ReputerRequestNonce{
-			ReputerNonce: &nonce,
-		}
-
-		err = k.InsertNetworkLossBundleAtBlock(ctx, topicId, nonce.BlockHeight, networkLossBundle)
+		filteredBundle, err := filterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, bundle)
 		if err != nil {
-			return err
+			continue
 		}
 
-		types.EmitNewNetworkLossSetEvent(sdkCtx, topicId, nonce.BlockHeight, networkLossBundle)
+		/// If we do PoX-like anti-sybil procedure, would go here
 
-		err = synth.GetCalcSetNetworkRegrets(
-			sdkCtx,
-			*k,
-			topicId,
-			networkLossBundle,
-			nonce,
-			topic.AlphaRegret,
-			params.CNorm,
-			topic.PNorm,
-			topic.Epsilon)
+		/// Filtering done now, now write what we must for inclusion
+
+		// Get the latest score for each reputer
+		latestScore, err := k.GetReputerScoreEma(ctx, bundle.ValueBundle.TopicId, reputer)
 		if err != nil {
-			return err
+			continue
 		}
-
-		// Update the unfulfilled nonces
-		_, err = k.FulfillReputerNonce(ctx, topicId, &nonce)
-		if err != nil {
-			return err
-		}
-
-		// Update topic reward nonce
-		err = k.SetTopicRewardNonce(ctx, topicId, nonce.BlockHeight)
-		if err != nil {
-			return err
-		}
-
-		err = k.AddRewardableTopic(ctx, topicId)
-		if err != nil {
-			return err
-		}
-
-		err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.ReputerRequestNonce.ReputerNonce, msg.Sender, types.ActorType_REPUTER)
-		if err != nil {
-			return err
-		}
-
-		sdkCtx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topicId, nonce))
-		return nil
+		reputerScoreEmas[bundle.ValueBundle.Reputer] = latestScore
+		lossBundlesByReputer[bundle.ValueBundle.Reputer] = filteredBundle
 	}
+
+	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
+	topReputers, allReputersSorted := FindTopNByScoreDesc(
+		params.MaxTopReputersToReward,
+		reputerScoreEmas,
+		ctx.BlockHeight(),
+		0,
+	)
+
+	// Check that the reputer in the payload is a top reputer among those who have submitted losses
+	stakesByReputer := make(map[string]cosmosMath.Int)
+	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
+	reputerIsTop := make(map[string]bool, 0)
+	for _, reputer := range topReputers {
+		stake, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
+		if err != nil {
+			continue
+		}
+
+		lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, lossBundlesByReputer[reputer])
+		stakesByReputer[reputer] = stake
+		reputerIsTop[reputer] = true
+	}
+
+	err = UpdateScoresOfPassiveActorsWithActiveQuantile(
+		ctx,
+		blockHeight,
+		params.MaxTopReputersToReward,
+		topic.Id,
+		topic.AlphaRegret,
+		topic.ActiveReputerQuantile,
+		reputerScoreEmas,
+		topReputers,
+		allReputersSorted,
+		reputerIsTop,
+		types.ActorType_REPUTER,
+	)
+
+	// sort by reputer score descending
+	sort.Slice(lossBundlesByReputer, func(i, j int) bool {
+		return lossBundlesByReputer[i].ValueBundle.Reputer < lossBundlesByReputer[j].ValueBundle.Reputer
+	})
+
+	bundles := types.ReputerValueBundles{
+		ReputerValueBundles: lossBundlesByReputer,
+	}
+	err = k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, bundles)
+	if err != nil {
+		return err
+	}
+
+	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, topic.Epsilon)
+	if err != nil {
+		return err
+	}
+
+	ctx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", &nonce.BlockHeight, networkLossBundle))
+
+	networkLossBundle.ReputerRequestNonce = &types.ReputerRequestNonce{
+		ReputerNonce: &nonce,
+	}
+
+	err = k.InsertNetworkLossBundleAtBlock(ctx, topicId, nonce.BlockHeight, networkLossBundle)
+	if err != nil {
+		return err
+	}
+
+	types.EmitNewNetworkLossSetEvent(ctx, topicId, nonce.BlockHeight, networkLossBundle)
+
+	err = synth.GetCalcSetNetworkRegrets(
+		ctx,
+		*k,
+		topicId,
+		networkLossBundle,
+		nonce,
+		topic.AlphaRegret,
+		params.CNorm,
+		topic.PNorm,
+		topic.Epsilon)
+	if err != nil {
+		return err
+	}
+
+	// Update the unfulfilled nonces
+	_, err = k.FulfillReputerNonce(ctx, topicId, &nonce)
+	if err != nil {
+		return err
+	}
+
+	// Update topic reward nonce
+	err = k.SetTopicRewardNonce(ctx, topicId, nonce.BlockHeight)
+	if err != nil {
+		return err
+	}
+
+	err = k.AddRewardableTopic(ctx, topicId)
+	if err != nil {
+		return err
+	}
+
+	err = k.SetReputerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
+	if err != nil {
+		return err
+	}
+
+	ctx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topicId, nonce))
+	return nil
 }
 
 // Filter out values of unaccepted workers.
