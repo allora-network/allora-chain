@@ -79,4 +79,5 @@ var (
 	ErrGroundTruthLagTooBig                  = errors.Register(ModuleName, 74, "ground truth lag too big for epoch length")
 	ErrUnfulfilledNonceNotFound              = errors.Register(ModuleName, 75, "unfulfilled nonce not found")
 	ErrNotFound                              = errors.Register(ModuleName, 76, "not found")
+	ErrInvalidActorType                      = errors.Register(ModuleName, 77, "invalid allora actor type")
 )

@@ -1,8 +1,9 @@
-package msgserver
+package actorutils
 
 import (
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/types"
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -13,7 +14,7 @@ func GetQuantileOfDescSliceAsAsc(
 	quantile alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	if len(sortedIdsOfValues) == 0 {
-		return alloraMath.Dec{}, types.ErrEmptyArray
+		return alloraMath.Dec{}, emissionstypes.ErrEmptyArray
 	}
 
 	// position = (1 - q) * (n - 1)
@@ -69,18 +70,19 @@ func GetQuantileOfDescSliceAsAsc(
 	return lowerScore.Add(product)
 }
 
-func (ms msgServer) UpdateScoresOfPassiveActorsWithActiveQuantile(
+func UpdateScoresOfPassiveActorsWithActiveQuantile(
 	ctx sdk.Context,
+	k *emissionskeeper.Keeper,
 	blockHeight int64,
 	maxTopWorkersToReward uint64,
 	topicId TopicId,
 	alphaRegret alloraMath.Dec,
 	topicQuantile alloraMath.Dec,
-	actorScoreEmas map[Actor]types.Score,
+	actorScoreEmas map[Actor]emissionstypes.Score,
 	topActors []Actor,
 	allActorsSorted []Actor,
 	actorIsTop map[Actor]bool,
-	actorType types.ActorType,
+	actorType emissionstypes.ActorType,
 ) error {
 	// if 1/max > topic.quantile, then just use 1/max as the quantile
 	maxNum, err := alloraMath.NewDecFromUint64(maxTopWorkersToReward)
@@ -102,30 +104,30 @@ func (ms msgServer) UpdateScoresOfPassiveActorsWithActiveQuantile(
 	for _, actor := range allActorsSorted {
 		if _, ok := actorIsTop[actor]; !ok {
 			// Update the score EMA
-			newScore := types.Score{
+			newScore := emissionstypes.Score{
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Address:     actor,
 				Score:       quantile,
 			}
 			switch actorType {
-			case types.ActorType_INFERER:
-				err := ms.k.UpdateInfererScoreEma(ctx, topicId, alphaRegret, actor, newScore)
+			case emissionstypes.ActorType_INFERER:
+				err := k.UpdateInfererScoreEma(ctx, topicId, alphaRegret, actor, newScore)
 				if err != nil {
 					return err
 				}
-			case types.ActorType_FORECASTER:
-				err := ms.k.UpdateForecasterScoreEma(ctx, topicId, alphaRegret, actor, newScore)
+			case emissionstypes.ActorType_FORECASTER:
+				err := k.UpdateForecasterScoreEma(ctx, topicId, alphaRegret, actor, newScore)
 				if err != nil {
 					return err
 				}
-			case types.ActorType_REPUTER:
-				err := ms.k.UpdateReputerScoreEma(ctx, topicId, alphaRegret, actor, newScore)
+			case emissionstypes.ActorType_REPUTER:
+				err := k.UpdateReputerScoreEma(ctx, topicId, alphaRegret, actor, newScore)
 				if err != nil {
 					return err
 				}
 			default:
-				return types.ErrInvalidActorType
+				return emissionstypes.ErrInvalidActorType
 			}
 		}
 	}

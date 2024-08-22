@@ -8,7 +8,6 @@ import (
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
-	cosmosMath "cosmossdk.io/math"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -64,21 +63,20 @@ func CloseReputerNonce(
 		return types.ErrReputerNonceWindowNotAvailable
 	}
 
-	params, err := k.GetParams(ctx)
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
 
-	reputerLossBundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
+	reputerLossBundleList, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	if err != nil {
 		return types.ErrNoValidBundles
 	}
 
-	// Iterate through the array to ensure each reputer is in the whitelist
-	// and get get score for each reputer => later we can skim only the top few by score descending
+	// get score for each reputer => later we can skim only the top few by score descending
 	lossBundlesByReputer := make(map[string]*types.ReputerValueBundle)
 	reputerScoreEmas := make(map[string]types.Score)
-	for _, bundle := range reputerLossBundles.ReputerValueBundles {
+	for _, bundle := range reputerLossBundleList.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
 			continue
 		}
@@ -109,7 +107,7 @@ func CloseReputerNonce(
 		if err != nil {
 			continue
 		}
-		if stake.LT(params.RequiredMinimumStake) {
+		if stake.LT(moduleParams.RequiredMinimumStake) {
 			continue
 		}
 
@@ -138,31 +136,21 @@ func CloseReputerNonce(
 
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
 	topReputers, allReputersSorted := FindTopNByScoreDesc(
-		params.MaxTopReputersToReward,
+		ctx,
+		moduleParams.MaxTopReputersToReward,
 		reputerScoreEmas,
-		ctx.BlockHeight(),
-		0,
+		blockHeight,
 	)
 
-	// Check that the reputer in the payload is a top reputer among those who have submitted losses
-	stakesByReputer := make(map[string]cosmosMath.Int)
-	lossBundlesFromTopReputers := make([]*types.ReputerValueBundle, 0)
-	reputerIsTop := make(map[string]bool, 0)
-	for _, reputer := range topReputers {
-		stake, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
-		if err != nil {
-			continue
-		}
-
-		lossBundlesFromTopReputers = append(lossBundlesFromTopReputers, lossBundlesByReputer[reputer])
-		stakesByReputer[reputer] = stake
-		reputerIsTop[reputer] = true
-	}
-
+	// update the scores of reputers that were not in the top N
+	// with scores from the active reputer quantile. This ensures
+	// permeability of the active reputer set by giving less good
+	// reputers a chance to become active by bumping up their scores
 	err = UpdateScoresOfPassiveActorsWithActiveQuantile(
 		ctx,
+		k,
 		blockHeight,
-		params.MaxTopReputersToReward,
+		moduleParams.MaxTopReputersToReward,
 		topic.Id,
 		topic.AlphaRegret,
 		topic.ActiveReputerQuantile,
@@ -211,7 +199,7 @@ func CloseReputerNonce(
 		networkLossBundle,
 		nonce,
 		topic.AlphaRegret,
-		params.CNorm,
+		moduleParams.CNorm,
 		topic.PNorm,
 		topic.Epsilon)
 	if err != nil {
