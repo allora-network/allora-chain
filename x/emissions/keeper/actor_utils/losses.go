@@ -75,7 +75,7 @@ func CloseReputerNonce(
 
 	// get score for each reputer => later we can skim only the top few by score descending
 	lossBundlesByReputer := make(map[string]*types.ReputerValueBundle)
-	reputerScoreEmas := make(map[string]types.Score)
+	reputerScoreEmas := make([]types.Score, 0)
 	for _, bundle := range reputerLossBundleList.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
 			continue
@@ -130,7 +130,7 @@ func CloseReputerNonce(
 		if err != nil {
 			continue
 		}
-		reputerScoreEmas[bundle.ValueBundle.Reputer] = latestScore
+		reputerScoreEmas = append(reputerScoreEmas, latestScore)
 		lossBundlesByReputer[bundle.ValueBundle.Reputer] = filteredBundle
 	}
 
