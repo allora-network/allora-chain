@@ -38,13 +38,18 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	}
 
 	topActors, _, topActorsBool := FindTopNByScoreDesc(testCtx, 3, latestReputerScores, 1)
-	require.Equal(t, worker5Addr.String(), topActors[0])
-	require.Equal(t, worker1Addr.String(), topActors[1])
-	require.Equal(t, worker3Addr.String(), topActors[2])
+	require.Equal(t, worker5Addr.String(), topActors[0].Address)
+	require.Equal(t, worker1Addr.String(), topActors[1].Address)
+	require.Equal(t, worker3Addr.String(), topActors[2].Address)
 
-	require.Equal(t, topActorsBool[worker1Addr.String()], true)
-	require.Equal(t, topActorsBool[worker2Addr.String()], false)
-	require.Equal(t, topActorsBool[worker3Addr.String()], true)
-	require.Equal(t, topActorsBool[worker4Addr.String()], false)
-	require.Equal(t, topActorsBool[worker5Addr.String()], true)
+	_, isTop := topActorsBool[worker1Addr.String()]
+	require.Equal(t, isTop, true)
+	_, isTop = topActorsBool[worker2Addr.String()]
+	require.Equal(t, isTop, false)
+	_, isTop = topActorsBool[worker3Addr.String()]
+	require.Equal(t, isTop, true)
+	_, isTop = topActorsBool[worker4Addr.String()]
+	require.Equal(t, isTop, false)
+	_, isTop = topActorsBool[worker5Addr.String()]
+	require.Equal(t, isTop, true)
 }

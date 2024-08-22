@@ -20,11 +20,13 @@ func FindTopNByScoreDesc(
 	// in our tiebreaker, we never return that two elements are equal
 	// so the sort function will never be called with two equal elements
 	// so we don't care about sort stability because our tiebreaker determines the order
+	// we also sort from largest to smallest so the sort function is inverted
+	// from the usual smallest to largest sort order
 	slices.SortFunc(scores, func(x, y emissionstypes.Score) int {
 		if x.Score.Lt(y.Score) {
-			return -1
-		} else if x.Score.Gt(y.Score) {
 			return 1
+		} else if x.Score.Gt(y.Score) {
+			return -1
 		} else {
 			tiebreaker := r.Intn(2)
 			if tiebreaker == 0 {
