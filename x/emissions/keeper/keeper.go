@@ -2190,7 +2190,12 @@ func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 	score, err := k.latestInfererScoresByWorker.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, nil
+			return types.Score{
+				BlockHeight: 0,
+				Address:     worker,
+				TopicId:     topicId,
+				Score:       alloraMath.ZeroDec(),
+			}, nil
 		}
 		return types.Score{}, err
 	}
