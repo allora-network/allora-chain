@@ -9,7 +9,8 @@ import (
 )
 
 // Sorts the given actors by score, desc, breaking ties randomly
-// Returns the top N actors as a map with the actor as the key and a boolean (True) as the value
+// Returns the top N actors sorted, all actors sorted, and a mapping of actor to whether they are in the top N
+// used for permeability in the merit based sortition of the active set of inferers, forecasters, and reputers
 func FindTopNByScoreDesc(
 	ctx sdk.Context,
 	n uint64,
