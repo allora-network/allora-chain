@@ -24,7 +24,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 
 	if err := msg.ReputerValueBundle.Validate(); err != nil {
 		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
-			"Worker invalid data for block: %d", blockHeight)
+			"Error validating reputer value bundle: %v", err)
 	}
 
 	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
