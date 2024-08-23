@@ -135,7 +135,7 @@ func CloseReputerNonce(
 	}
 
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topReputers, allReputersSorted := FindTopNByScoreDesc(
+	topReputers, allReputersSorted, reputerIsTop := FindTopNByScoreDesc(
 		ctx,
 		moduleParams.MaxTopReputersToReward,
 		reputerScoreEmas,
@@ -146,11 +146,10 @@ func CloseReputerNonce(
 	// with scores from the active reputer quantile. This ensures
 	// permeability of the active reputer set by giving less good
 	// reputers a chance to become active by bumping up their scores
-	err = UpdateScoresOfPassiveActorsWithActiveQuantile(
+	err = UpdateScoresOfPassiveActorsWithActivePercentile(
 		ctx,
 		k,
 		blockHeight,
-		moduleParams.MaxTopReputersToReward,
 		topic.Id,
 		topic.AlphaRegret,
 		topic.ActiveReputerQuantile,

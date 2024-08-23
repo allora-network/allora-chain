@@ -7,11 +7,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// Returns the quantile of the given slice of scores inputted in descending order
-func GetQuantileOfDescSliceAsAsc(
-	scoresByActor map[Actor]Score,
-	sortedIdsOfValues []Actor,
-	quantile alloraMath.Dec,
+// Returns the percentile-ith value of the given sorted scores
+// e.g. if percentile is 25%, for all the scores sorted from greatest to smallest
+// give me the value that is greater than 25% of the values and less than 75% of the values
+func GetPercentileOfScores(
+	sortedScores []emissionstypes.Score,
+	percentile alloraMath.Dec,
 ) (alloraMath.Dec, error) {
 	if len(sortedIdsOfValues) == 0 {
 		return alloraMath.Dec{}, emissionstypes.ErrEmptyArray
@@ -70,59 +71,52 @@ func GetQuantileOfDescSliceAsAsc(
 	return lowerScore.Add(product)
 }
 
-func UpdateScoresOfPassiveActorsWithActiveQuantile(
+func UpdateScoresOfPassiveActorsWithActivePercentile(
 	ctx sdk.Context,
 	k *emissionskeeper.Keeper,
 	blockHeight int64,
-	maxTopWorkersToReward uint64,
-	topicId TopicId,
+	topicId uint64,
 	alphaRegret alloraMath.Dec,
-	topicQuantile alloraMath.Dec,
-	actorScoreEmas map[Actor]emissionstypes.Score,
-	topActors []Actor,
-	allActorsSorted []Actor,
-	actorIsTop map[Actor]bool,
+	topicPercentile alloraMath.Dec,
+	topScoresSorted []emissionstypes.Score,
+	allScoresSorted []emissionstypes.Score,
+	actorIsTop map[string]struct{},
 	actorType emissionstypes.ActorType,
 ) error {
-	// if 1/max > topic.quantile, then just use 1/max as the quantile
-	maxNum, err := alloraMath.NewDecFromUint64(maxTopWorkersToReward)
-	if err != nil {
-		return err
+	// if the length of topScoresSorted is the
+	// same as allScoresSorted, then all actors are top actors
+	// and we don't have to do anything
+	if len(topScoresSorted) == len(allScoresSorted) {
+		return nil
 	}
-	oneOverMax, err := alloraMath.OneDec().Quo(maxNum)
-	if err != nil {
-		return err
-	}
-	if oneOverMax.Gt(topicQuantile) {
-		topicQuantile = oneOverMax
-	}
-	quantile, err := GetQuantileOfDescSliceAsAsc(actorScoreEmas, topActors, topicQuantile)
+
+	percentile, err := GetPercentileOfScores(topScoresSorted, topicPercentile)
 	if err != nil {
 		return err
 	}
 	// Update score EMAs of all actors not in topActors
 	for _, actor := range allActorsSorted {
-		if _, ok := actorIsTop[actor]; !ok {
+		if _, ok := actorIsTop[actor.Address]; !ok {
 			// Update the score EMA
 			newScore := emissionstypes.Score{
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
-				Address:     actor,
-				Score:       quantile,
+				Address:     actor.Address,
+				Score:       percentile,
 			}
 			switch actorType {
 			case emissionstypes.ActorType_INFERER:
-				err := k.UpdateInfererScoreEma(ctx, topicId, alphaRegret, actor, newScore)
+				err := k.UpdateInfererScoreEma(ctx, topicId, alphaRegret, actor.Address, newScore)
 				if err != nil {
 					return err
 				}
 			case emissionstypes.ActorType_FORECASTER:
-				err := k.UpdateForecasterScoreEma(ctx, topicId, alphaRegret, actor, newScore)
+				err := k.UpdateForecasterScoreEma(ctx, topicId, alphaRegret, actor.Address, newScore)
 				if err != nil {
 					return err
 				}
 			case emissionstypes.ActorType_REPUTER:
-				err := k.UpdateReputerScoreEma(ctx, topicId, alphaRegret, actor, newScore)
+				err := k.UpdateReputerScoreEma(ctx, topicId, alphaRegret, actor.Address, newScore)
 				if err != nil {
 					return err
 				}
