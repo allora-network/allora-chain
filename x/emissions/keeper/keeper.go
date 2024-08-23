@@ -2204,9 +2204,9 @@ func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Score{
-				TopicId:     topicId,
 				BlockHeight: 0,
 				Address:     worker,
+				TopicId:     topicId,
 				Score:       alloraMath.ZeroDec(),
 			}, nil
 		}
