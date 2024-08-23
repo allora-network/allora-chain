@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 
 	"cosmossdk.io/errors"
 
@@ -94,4 +95,30 @@ func (k *Keeper) GetCurrentTopicWeight(
 	}
 
 	return alloraMath.ZeroDec(), topicFeeRevenue, nil
+}
+
+func (k *Keeper) GetTopicWeightFromTopicId(ctx context.Context, topicId types.TopicId) (alloraMath.Dec, error) {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	newTopicWeight, _, err := k.GetCurrentTopicWeight(
+		ctx,
+		topicId,
+		topic.EpochLength,
+		params.TopicRewardAlpha,
+		params.TopicRewardStakeImportance,
+		params.TopicRewardFeeRevenueImportance,
+	)
+
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	return newTopicWeight, nil
 }

@@ -12,18 +12,9 @@ import (
 
 const RESERVED_BLOCK = 0
 
-// TODO
-// * Implement GetTopicWeight() + cascade its usage + possibly should couple with topic weight-related corrections from Sherlock
-// * Finish propagating per global param checklist
-// * Error msgs + logging
-
-func (k *Keeper) GetTopicWeight(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
-
-	return alloraMath.ZeroDec(), nil
-}
-
 // Boolean true if topic is active, else false
 func (k *Keeper) GetNextPossibleChurningBlockByTopicId(ctx context.Context, topicId TopicId) (BlockHeight, bool, error) {
+	currentBlock := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	block, err := k.topicToNextPossibleChurningBlock.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -31,7 +22,7 @@ func (k *Keeper) GetNextPossibleChurningBlockByTopicId(ctx context.Context, topi
 		}
 		return RESERVED_BLOCK, false, err
 	}
-	return block, block > RESERVED_BLOCK, nil
+	return block, block >= currentBlock, nil
 }
 
 // It is assumed the size of the outputted array has been bounded as it was constructed
@@ -92,12 +83,10 @@ func (k *Keeper) ResetLowestActiveTopicWeightAtBlock(ctx context.Context, block 
 	lowestWeight := alloraMath.NewDecFromInt64(0)
 	idOfLowestWeightTopic := uint64(0)
 	for _, topicId := range activeTopicIds.TopicIds {
-
-		weight, err := k.GetTopicWeight(ctx, topicId)
+		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
 		if err != nil {
-			return err
+			continue
 		}
-
 		if weight.Lt(lowestWeight) || firstIter {
 			lowestWeight = weight
 			idOfLowestWeightTopic = topicId
@@ -153,32 +142,6 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 	return block, nil
 }
 
-// Avoids O(num_topics^2) complexity otherwise due to resetting lowest weight for each topic
-func (k *Keeper) InactivateManyTopics(ctx context.Context, topicIds []TopicId) error {
-	uniqueBlocksOfNextEpochEnding := map[BlockHeight]bool{}
-	blocksOfNextEpochEnding := []BlockHeight{}
-	for _, id := range topicIds {
-		block, err := k.inactivateTopicWithoutMinWeightReset(ctx, id)
-		if err != nil {
-			return err
-		}
-
-		if _, ok := uniqueBlocksOfNextEpochEnding[block]; !ok && block != RESERVED_BLOCK {
-			uniqueBlocksOfNextEpochEnding[block] = true
-			blocksOfNextEpochEnding = append(blocksOfNextEpochEnding, block)
-		}
-	}
-
-	for _, block := range blocksOfNextEpochEnding {
-		err := k.ResetLowestActiveTopicWeightAtBlock(ctx, block)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	ctx context.Context,
 	topicId TopicId,
@@ -210,6 +173,14 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 			return err
 		}
 
+		weight, err := k.GetTopicWeightFromTopicId(ctx, topicId)
+		if err != nil {
+			return err
+		}
+
+		if weight.Lt(lowestWeight.Weight) {
+			return errors.New("Topic weight is lower than lowest")
+		}
 		_, err = k.inactivateTopicWithoutMinWeightReset(ctx, lowestWeight.TopicId)
 		if err != nil {
 			return err
@@ -230,7 +201,6 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -244,7 +214,7 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 		return nil
 	}
 
-	block, topicIsActive, err := k.GetNextPossibleChurningBlockByTopicId(ctx, topicId)
+	_, topicIsActive, err := k.GetNextPossibleChurningBlockByTopicId(ctx, topicId)
 	if err != nil {
 		return err
 	}
@@ -252,53 +222,35 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 		return nil
 	}
 
-	err = k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, block)
-	if err != nil {
-		return err
-	}
-
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
 		return err
 	}
 	currentBlock := sdk.UnwrapSDKContext(ctx).BlockHeight()
-	err = k.topicToNextPossibleChurningBlock.Set(ctx, topicId, currentBlock+topic.EpochLength)
+	epochEndBlock := currentBlock + topic.EpochLastEnded
+
+	err = k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock)
 	if err != nil {
 		return err
 	}
 
-	err = k.ResetLowestActiveTopicWeightAtBlock(ctx, block)
+	err = k.topicToNextPossibleChurningBlock.Set(ctx, topicId, epochEndBlock)
+	if err != nil {
+		return err
+	}
+
+	err = k.ResetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
+	if err != nil {
+		return err
+	}
+
+	err = k.activeTopics.Set(ctx, topicId)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
-
-// func (k *Keeper) ActivateManyTopics(ctx context.Context, topicIds []TopicId) error {
-// 	uniqueBlocksOfNextEpochEnding := map[BlockHeight]bool{}
-// 	blocksOfNextEpochEnding := []BlockHeight{}
-// 	for _, id := range topicIds {
-// 		block, err := k.activateTopicWithoutMinWeightReset(ctx, id)
-// 		if err != nil {
-// 			return err
-// 		}
-
-//		 if _, ok := uniqueBlocksOfNextEpochEnding[block]; !ok && block != RESERVED_BLOCK {
-// 			uniqueBlocksOfNextEpochEnding[block] = true
-// 			blocksOfNextEpochEnding = append(blocksOfNextEpochEnding, block)
-// 		}
-// 	}
-
-// 	for _, block := range blocksOfNextEpochEnding {
-// 		err := k.ResetLowestActiveTopicWeightAtBlock(ctx, block)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
 
 func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, error) {
 	_, active, err := k.GetNextPossibleChurningBlockByTopicId(ctx, topicId)
@@ -307,4 +259,8 @@ func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, erro
 	}
 
 	return active, nil
+}
+func (k *Keeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
+	_, err := k.inactivateTopicWithoutMinWeightReset(ctx, topicId)
+	return err
 }

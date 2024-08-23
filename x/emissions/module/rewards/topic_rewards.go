@@ -1,10 +1,8 @@
 package rewards
 
 import (
-	"fmt"
-	"sort"
-
 	"cosmossdk.io/errors"
+	"fmt"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -47,52 +45,6 @@ func GetTopicRewardFraction(
 		return alloraMath.ZeroDec(), types.ErrInvalidValue
 	}
 	return (*topicWeight).Quo(totalWeight)
-}
-
-// Get all active topics that have ended their epoch
-func GetAllActiveEpochEndingTopics(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	block BlockHeight,
-	topicPageLimit uint64,
-	maxTopicPages uint64,
-) []types.Topic {
-	var epochEndingTopics []types.Topic
-	topicPageKey := make([]byte, 0)
-	pageIterationCounter := uint64(0)
-	for {
-		topicPageRequest := &types.SimpleCursorPaginationRequest{Limit: topicPageLimit, Key: topicPageKey}
-		topicsActive, topicPageResponse, err := k.GetIdsOfActiveTopics(ctx, topicPageRequest)
-		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error getting ids of active topics: %s", err.Error()))
-			break
-		}
-		for _, topicId := range topicsActive {
-			topic, err := k.GetTopic(ctx, topicId)
-			if err != nil {
-				Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
-				continue
-			}
-
-			if k.CheckWorkerOpenCadence(block, topic) {
-				epochEndingTopics = append(epochEndingTopics, topic)
-			}
-		}
-
-		// if pageResponse.NextKey is empty then we have reached the end of the list
-		topicPageKey = topicPageResponse.NextKey
-		pageIterationCounter++
-		if len(topicsActive) == 0 || pageIterationCounter >= maxTopicPages {
-			break
-		}
-	}
-
-	// Sort topics by ID
-	sort.Slice(epochEndingTopics, func(i, j int) bool {
-		return epochEndingTopics[i].Id < epochEndingTopics[j].Id
-	})
-
-	return epochEndingTopics
 }
 
 // "Churn-ready topic" is active, has an epoch that ended, and is in top N by weights, has non-zero weight.
@@ -243,14 +195,20 @@ func GetAndUpdateActiveTopicWeights(
 	// Retrieve and sort all active topics with epoch ending at this block
 	// default page limit for the max because default is 100 and max is 1000
 	// 1000 is excessive for the topic query
-	sortedEpochEndingTopics := GetAllActiveEpochEndingTopics(ctx, k, block, moduleParams.DefaultPageLimit, moduleParams.DefaultPageLimit)
-
+	topics, err := k.GetActiveTopicsAtBlock(ctx, block)
+	if err != nil {
+		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get active topics")
+	}
 	totalRevenue = cosmosMath.ZeroInt()
 	sumWeight = alloraMath.ZeroDec()
 	weights = make(map[TopicId]*alloraMath.Dec)
 
 	// Apply the function on all sorted topics
-	for _, topic := range sortedEpochEndingTopics {
+	for _, topicId := range topics.TopicIds {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			continue
+		}
 		// Calc weight and related data per topic
 		weight, topicFeeRevenue, err := k.GetCurrentTopicWeight(
 			ctx,
