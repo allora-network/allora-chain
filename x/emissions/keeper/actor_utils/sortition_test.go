@@ -178,3 +178,40 @@ func TestGetQuantileOfScores(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, expectedInt, actualInt)
 }
+
+func TestGetQuantileOfScoresCsv(t *testing.T) {
+	for epoch := 301; epoch < 302; epoch++ {
+		epochGet := alloratestutil.GetSortitionSimulatorValuesGetterForEpochs()[epoch]
+		topicId := uint64(0)
+
+		nParticipants, err := epochGet("n_participants").UInt64()
+		require.NoError(t, err)
+		nParticipantsDrawn, err := epochGet("n_participants_drawn").UInt64()
+		require.NoError(t, err)
+
+		// populate the data from the csv
+		scoresSorted := make([]emissionstypes.Score, nParticipantsDrawn)
+		for i := 0; i < int(nParticipants); i++ {
+			participantName := strconv.Itoa(i)
+			active := epochGet(fmt.Sprintf("%s_active", participantName))
+			if active.Equal(alloraMath.OneDec()) {
+				sortPosition := epochGet(fmt.Sprintf("%s_sort_position", participantName))
+				sortPos, err := sortPosition.UInt64()
+				require.NoError(t, err)
+				scoresSorted[sortPos] = emissionstypes.Score{
+					TopicId:     topicId,
+					Address:     participantName,
+					BlockHeight: int64(epoch),
+					Score:       epochGet(fmt.Sprintf("%s_quality_metric", participantName)),
+				}
+			}
+		}
+		for _, score := range scoresSorted {
+			require.NotEmpty(t, score)
+		}
+		fmt.Println("scoresSorted", scoresSorted)
+		expected := epochGet("quality_percentile")
+		result, err := actorutils.GetQuantileOfScores(scoresSorted, expected)
+		require.True(t, expected.Equal(result), "expected %s, got %s", expected.String(), result.String())
+	}
+}
