@@ -28,10 +28,10 @@ func (msg *MsgCreateNewTopic) Validate() error {
 	if msg.WorkerSubmissionWindow > msg.EpochLength {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window cannot be higher than epoch length")
 	}
-	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) || msg.AlphaRegret.Gt(alloraMath.OneDec()) || msg.AlphaRegret.IsNaN() || !msg.AlphaRegret.IsFinite() {
+	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) || msg.AlphaRegret.Gt(alloraMath.OneDec()) || ValidateDec(msg.AlphaRegret) != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
 	}
-	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) || msg.PNorm.IsNaN() || !msg.PNorm.IsFinite() {
+	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) || msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) || ValidateDec(msg.PNorm) != nil {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
 	}
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
