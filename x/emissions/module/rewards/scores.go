@@ -78,7 +78,7 @@ func GenerateReputerScores(
 		params.LearningRate,
 		params.GradientDescentMaxIters,
 		params.EpsilonReputer,
-		topic.Epsilon,
+		params.EpsilonSafeDiv,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
 	)
