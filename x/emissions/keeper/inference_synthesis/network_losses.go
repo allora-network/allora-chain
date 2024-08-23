@@ -39,7 +39,6 @@ func RunningWeightedAvgUpdate(
 func convertMapOfRunningWeightedLossesToWorkerAttributedValue[T emissions.WorkerAttributedValue | emissions.WithheldWorkerAttributedValue](
 	runningWeightedLosses map[Worker]*RunningWeightedLoss,
 	sortedWorkers []Worker,
-	epsilon alloraMath.Dec,
 ) []*T {
 	weightedLosses := make([]*T, 0)
 	for _, worker := range sortedWorkers {
@@ -47,7 +46,7 @@ func convertMapOfRunningWeightedLossesToWorkerAttributedValue[T emissions.Worker
 		if !ok {
 			continue
 		}
-		normalizedWeightedLoss, err := normalizeWeightedLoss(runningLoss, epsilon)
+		normalizedWeightedLoss, err := normalizeWeightedLoss(runningLoss)
 		if err != nil {
 			continue
 		}
@@ -63,7 +62,6 @@ func convertMapOfRunningWeightedLossesToWorkerAttributedValue[T emissions.Worker
 func CalcNetworkLosses(
 	stakesByReputer map[Worker]Stake,
 	reputerReportedLosses emissions.ReputerValueBundles,
-	epsilon alloraMath.Dec,
 ) (emissions.ValueBundle, error) {
 	// Make map from inferer to their running weighted-average loss
 	runningWeightedCombinedLoss := RunningWeightedLoss{alloraMath.ZeroDec(), alloraMath.ZeroDec()}
@@ -202,30 +200,30 @@ func CalcNetworkLosses(
 	sortedForecasters := alloraMath.GetSortedKeys(runningWeightedForecasterLosses)
 
 	// Normalize the combined loss
-	combinedValue, err := normalizeWeightedLoss(&runningWeightedCombinedLoss, epsilon)
+	combinedValue, err := normalizeWeightedLoss(&runningWeightedCombinedLoss)
 	if err != nil {
 		return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error normalizing combined loss")
 	}
 
 	// Normalize the naive loss
-	naiveValue, err := normalizeWeightedLoss(&runningWeightedNaiveLoss, epsilon)
+	naiveValue, err := normalizeWeightedLoss(&runningWeightedNaiveLoss)
 	if err != nil {
 		return emissions.ValueBundle{}, errorsmod.Wrapf(err, "Error normalizing naive loss")
 	}
 
 	// Convert the running weighted averages to WorkerAttributedValue/WithheldWorkerAttributedValue for inferers and forecasters
-	infererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedInfererLosses, sortedInferers, epsilon)
-	forecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedForecasterLosses, sortedForecasters, epsilon)
-	oneOutInfererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutInfererLosses, sortedInferers, epsilon)
-	oneOutForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutForecasterLosses, sortedForecasters, epsilon)
-	oneInForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedOneInForecasterLosses, sortedForecasters, epsilon)
+	infererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedInfererLosses, sortedInferers)
+	forecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedForecasterLosses, sortedForecasters)
+	oneOutInfererLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutInfererLosses, sortedInferers)
+	oneOutForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](runningWeightedOneOutForecasterLosses, sortedForecasters)
+	oneInForecasterLosses := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WorkerAttributedValue](runningWeightedOneInForecasterLosses, sortedForecasters)
 	oneOutInfererForecasterLosses := make([]*emissions.OneOutInfererForecasterValues, 0)
 	for _, forecaster := range sortedForecasters {
 		innerMap, ok := runningWeightedOneOutInfererForecasterLosses[forecaster]
 		if !ok {
 			continue
 		}
-		oneOutInfererValues := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](innerMap, sortedInferers, epsilon)
+		oneOutInfererValues := convertMapOfRunningWeightedLossesToWorkerAttributedValue[emissions.WithheldWorkerAttributedValue](innerMap, sortedInferers)
 		oneOutInfererForecasterLosses = append(oneOutInfererForecasterLosses, &emissions.OneOutInfererForecasterValues{
 			Forecaster:          forecaster,
 			OneOutInfererValues: oneOutInfererValues,
@@ -248,19 +246,14 @@ func CalcNetworkLosses(
 
 func normalizeWeightedLoss(
 	runningWeightedLossData *RunningWeightedLoss,
-	epsilon alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	if runningWeightedLossData.SumWeight.Lt(epsilon) {
+	if runningWeightedLossData.SumWeight.IsZero() {
 		return alloraMath.Dec{}, errorsmod.Wrapf(emissions.ErrFractionDivideByZero, "Sum weight for combined naive loss is 0")
 	}
 
 	normalizedWeightedLoss, err := runningWeightedLossData.UnnormalizedWeightedLoss.Quo(runningWeightedLossData.SumWeight)
 	if err != nil {
 		return alloraMath.Dec{}, err
-	}
-
-	if normalizedWeightedLoss.IsZero() {
-		normalizedWeightedLoss = epsilon
 	}
 
 	return normalizedWeightedLoss, nil
