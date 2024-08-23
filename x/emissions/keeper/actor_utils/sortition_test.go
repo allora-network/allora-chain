@@ -9,7 +9,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
-	"github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/testutil"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -53,7 +53,7 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 		worker4Addr,
 		worker5Addr := setUpSomeWorkers(t)
 
-	reputerScoreEmas := []types.Score{
+	reputerScoreEmas := []emissionstypes.Score{
 		{TopicId: topicId, BlockHeight: 1, Address: worker1Addr.String(), Score: alloraMath.NewDecFromInt64(90)},
 		{TopicId: topicId, BlockHeight: 1, Address: worker2Addr.String(), Score: alloraMath.NewDecFromInt64(40)},
 		{TopicId: topicId, BlockHeight: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)},
@@ -97,10 +97,10 @@ func TestFindTopNByScoreDescCsv(t *testing.T) {
 		topicId := uint64(0)
 
 		nParticipants, err := epochGet("n_participants").UInt64()
-		reputerScoreEmas := make([]types.Score, 0)
+		reputerScoreEmas := make([]emissionstypes.Score, 0)
 		for i := 0; uint64(i) < nParticipants; i++ {
 			participantName := strconv.Itoa(i)
-			reputerScoreEmas = append(reputerScoreEmas, types.Score{
+			reputerScoreEmas = append(reputerScoreEmas, emissionstypes.Score{
 				TopicId:     topicId,
 				BlockHeight: int64(epoch),
 				Address:     participantName,
@@ -134,7 +134,7 @@ func TestFindTopNByScoreDescWithNils(t *testing.T) {
 	topicId := uint64(0)
 	testCtx, _, _, worker3Addr, _, worker5Addr := setUpSomeWorkers(t)
 
-	reputerScoreEmas := []types.Score{
+	reputerScoreEmas := []emissionstypes.Score{
 		{TopicId: topicId, BlockHeight: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)},
 		{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)},
 		{}, //nolint:exhaustruct
@@ -151,30 +151,26 @@ func TestFindTopNByScoreDescWithNils(t *testing.T) {
 	require.Equal(t, 3, len(allActorsSorted))
 }
 
-/*
-
-func TestGetQuantileOfDescSliceAsAsc(t *testing.T) {
-	scoresByActor := map[Actor]Score{
-		"w1": types.Score{Score: alloraMath.NewDecFromInt64(90)},
-		"w2": types.Score{Score: alloraMath.NewDecFromInt64(80)},
-		"w3": types.Score{Score: alloraMath.NewDecFromInt64(70)},
-		"w4": types.Score{Score: alloraMath.NewDecFromInt64(60)},
-		"w5": types.Score{Score: alloraMath.NewDecFromInt64(50)},
+func TestGetQuantileOfScores(t *testing.T) {
+	scoresSorted := []emissionstypes.Score{
+		{TopicId: 0, BlockHeight: 0, Address: "w1", Score: alloraMath.NewDecFromInt64(90)},
+		{TopicId: 0, BlockHeight: 0, Address: "w2", Score: alloraMath.NewDecFromInt64(80)},
+		{TopicId: 0, BlockHeight: 0, Address: "w3", Score: alloraMath.NewDecFromInt64(70)},
+		{TopicId: 0, BlockHeight: 0, Address: "w4", Score: alloraMath.NewDecFromInt64(60)},
+		{TopicId: 0, BlockHeight: 0, Address: "w5", Score: alloraMath.NewDecFromInt64(50)},
 	}
-
-	sortedSlice := []Actor{"w1", "w2", "w3", "w4", "w5"}
 
 	quantile := alloraMath.MustNewDecFromString("0.5")
 	expectedResult := alloraMath.NewDecFromInt64(70)
 
-	result, err := actorutils.GetQuantileOfDescSliceAsAsc(scoresByActor, sortedSlice, quantile)
+	result, err := actorutils.GetQuantileOfScores(scoresSorted, quantile)
 	require.NoError(t, err)
 	require.Equal(t, expectedResult, result)
 
 	quantile = alloraMath.MustNewDecFromString("0.2")
 	expectedResult = alloraMath.NewDecFromInt64(58)
 
-	result, err = actorutils.GetQuantileOfDescSliceAsAsc(scoresByActor, sortedSlice, quantile)
+	result, err = actorutils.GetQuantileOfScores(scoresSorted, quantile)
 	require.NoError(t, err)
 	expectedInt, err := expectedResult.Int64()
 	require.NoError(t, err)
@@ -182,4 +178,3 @@ func TestGetQuantileOfDescSliceAsAsc(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, expectedInt, actualInt)
 }
-*/

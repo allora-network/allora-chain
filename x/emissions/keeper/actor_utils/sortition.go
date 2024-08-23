@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"slices"
 
+	alloraMath "github.com/allora-network/allora-chain/math"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -56,20 +57,20 @@ func FindTopNByScoreDesc(
 	return topNActorsSorted, scores, actorIsTop
 }
 
-/*
-// Returns the percentile-ith value of the given sorted scores
-// e.g. if percentile is 25%, for all the scores sorted from greatest to smallest
+// Returns the quantile value of the given sorted scores
+// e.g. if quantile is 0.25 (25%), for all the scores sorted from greatest to smallest
 // give me the value that is greater than 25% of the values and less than 75% of the values
-func GetPercentileOfScores(
+// the domain of this quantile is assumed to be between 0 and 1
+func GetQuantileOfScores(
 	sortedScores []emissionstypes.Score,
-	percentile alloraMath.Dec,
+	quantile alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	if len(sortedIdsOfValues) == 0 {
+	if len(sortedScores) == 0 {
 		return alloraMath.Dec{}, emissionstypes.ErrEmptyArray
 	}
-
+	// n elements, q quantile
 	// position = (1 - q) * (n - 1)
-	nLessOne, err := alloraMath.NewDecFromUint64(uint64(len(sortedIdsOfValues) - 1))
+	nLessOne, err := alloraMath.NewDecFromUint64(uint64(len(sortedScores) - 1))
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -100,17 +101,18 @@ func GetPercentileOfScores(
 	}
 
 	if lowerIndex == upperIndex {
-		return scoresByActor[sortedIdsOfValues[lowerIndexInt]].Score, nil
+		return sortedScores[lowerIndexInt].Score, nil
 	}
 
-	// return lowerValue + (upperValue-lowerValue)*(position-float64(lowerIndex))
-	lowerScore := scoresByActor[sortedIdsOfValues[lowerIndexInt]].Score
-	upperScore := scoresByActor[sortedIdsOfValues[upperIndexInt]].Score
+	// in cases where the quantile is between two values
+	// return lowerValue + (upperValue-lowerValue)*(position-lowerIndex)
+	lowerScore := sortedScores[lowerIndexInt]
+	upperScore := sortedScores[upperIndexInt]
 	positionMinusLowerIndex, err := position.Sub(lowerIndex)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	upperMinusLower, err := upperScore.Sub(lowerScore)
+	upperMinusLower, err := upperScore.Score.Sub(lowerScore.Score)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -118,9 +120,14 @@ func GetPercentileOfScores(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	return lowerScore.Add(product)
+	ret, err := lowerScore.Score.Add(product)
+	if err != nil {
+		return alloraMath.Dec{}, err
+	}
+	return ret, nil
 }
 
+/*
 func UpdateScoresOfPassiveActorsWithActivePercentile(
 	ctx sdk.Context,
 	k *emissionskeeper.Keeper,
