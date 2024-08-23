@@ -250,7 +250,7 @@ func normalizeWeightedLoss(
 	runningWeightedLossData *RunningWeightedLoss,
 	epsilon alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	if runningWeightedLossData.SumWeight.Lt(epsilon) {
+	if runningWeightedLossData.SumWeight.IsZero() {
 		return alloraMath.Dec{}, errorsmod.Wrapf(emissions.ErrFractionDivideByZero, "Sum weight for combined naive loss is 0")
 	}
 
