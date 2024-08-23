@@ -2476,7 +2476,12 @@ func (s *KeeperTestSuite) TestGetScoreEmas() {
 	// Test getting latest scores when none are set
 	infererScore, err := keeper.GetInfererScoreEma(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching latest inferer score should not fail")
-	s.Require().Equal(types.Score{}, infererScore, "Inferer score should be empty if not set")
+	s.Require().Equal(types.Score{
+		TopicId:     topicId,
+		BlockHeight: 0,
+		Address:     worker,
+		Score:       alloraMath.ZeroDec(),
+	}, infererScore, "Inferer score should be zero if not set")
 
 	forecasterScore, err := keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
 	s.Require().NoError(err, "Fetching latest forecaster score should not fail")

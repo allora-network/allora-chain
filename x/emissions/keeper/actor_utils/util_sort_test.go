@@ -1,10 +1,11 @@
-package actorutils
+package actorutils_test
 
 import (
 	"testing"
 
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -29,20 +30,29 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	worker4Addr := sdk.AccAddress(worker4PrivateKey.PubKey().Address())
 	worker5Addr := sdk.AccAddress(worker5PrivateKey.PubKey().Address())
 
-	ReputerScoreEmas := make(map[string]types.Score)
-	ReputerScoreEmas[worker1Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker1Addr.String(), Score: alloraMath.NewDecFromInt64(90)}
-	ReputerScoreEmas[worker2Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker2Addr.String(), Score: alloraMath.NewDecFromInt64(40)}
-	ReputerScoreEmas[worker3Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)}
-	ReputerScoreEmas[worker4Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker4Addr.String(), Score: alloraMath.NewDecFromInt64(20)}
-	ReputerScoreEmas[worker5Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)}
+	latestReputerScores := []types.Score{
+		{TopicId: topicId, BlockHeight: 1, Address: worker1Addr.String(), Score: alloraMath.NewDecFromInt64(90)},
+		{TopicId: topicId, BlockHeight: 1, Address: worker2Addr.String(), Score: alloraMath.NewDecFromInt64(40)},
+		{TopicId: topicId, BlockHeight: 1, Address: worker3Addr.String(), Score: alloraMath.NewDecFromInt64(80)},
+		{TopicId: topicId, BlockHeight: 1, Address: worker4Addr.String(), Score: alloraMath.NewDecFromInt64(20)},
+		{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)},
+	}
 
-	topActors, allActorsSorted := FindTopNByScoreDesc(testCtx, 3, ReputerScoreEmas, 1)
-	require.Equal(t, 5, len(allActorsSorted))
-	require.Equal(t, 3, len(topActors))
-	require.Equal(t, worker5Addr.String(), topActors[0])
-	require.Equal(t, worker1Addr.String(), topActors[1])
-	require.Equal(t, worker3Addr.String(), topActors[2])
+	topActors, _, topActorsBool := actorutils.FindTopNByScoreDesc(testCtx, 3, latestReputerScores, 1)
+	require.Equal(t, worker5Addr.String(), topActors[0].Address)
+	require.Equal(t, worker1Addr.String(), topActors[1].Address)
+	require.Equal(t, worker3Addr.String(), topActors[2].Address)
 
+	_, isTop := topActorsBool[worker1Addr.String()]
+	require.Equal(t, isTop, true)
+	_, isTop = topActorsBool[worker2Addr.String()]
+	require.Equal(t, isTop, false)
+	_, isTop = topActorsBool[worker3Addr.String()]
+	require.Equal(t, isTop, true)
+	_, isTop = topActorsBool[worker4Addr.String()]
+	require.Equal(t, isTop, false)
+	_, isTop = topActorsBool[worker5Addr.String()]
+	require.Equal(t, isTop, true)
 }
 
 func TestFindTopNByScoreDescWithNils(t *testing.T) {
@@ -62,7 +72,7 @@ func TestFindTopNByScoreDescWithNils(t *testing.T) {
 	ReputerScoreEmas[worker5Addr.String()] = types.Score{TopicId: topicId, BlockHeight: 1, Address: worker5Addr.String(), Score: alloraMath.NewDecFromInt64(100)}
 
 	// Actors with nil scores sent to the end
-	topActors, allActorsSorted := FindTopNByScoreDesc(3, ReputerScoreEmas, 1)
+	topActors, allActorsSorted := actorutils.FindTopNByScoreDesc(3, ReputerScoreEmas, 1)
 	require.Equal(t, 3, len(topActors))
 	require.Equal(t, worker5Addr.String(), topActors[0])
 	require.Equal(t, worker3Addr.String(), topActors[1])
@@ -84,14 +94,14 @@ func TestGetQuantileOfDescSliceAsAsc(t *testing.T) {
 	quantile := alloraMath.MustNewDecFromString("0.5")
 	expectedResult := alloraMath.NewDecFromInt64(70)
 
-	result, err := GetQuantileOfDescSliceAsAsc(scoresByActor, sortedSlice, quantile)
+	result, err := actorutils.GetQuantileOfDescSliceAsAsc(scoresByActor, sortedSlice, quantile)
 	require.NoError(t, err)
 	require.Equal(t, expectedResult, result)
 
 	quantile = alloraMath.MustNewDecFromString("0.2")
 	expectedResult = alloraMath.NewDecFromInt64(58)
 
-	result, err = GetQuantileOfDescSliceAsAsc(scoresByActor, sortedSlice, quantile)
+	result, err = actorutils.GetQuantileOfDescSliceAsAsc(scoresByActor, sortedSlice, quantile)
 	require.NoError(t, err)
 	expectedInt, err := expectedResult.Int64()
 	require.NoError(t, err)

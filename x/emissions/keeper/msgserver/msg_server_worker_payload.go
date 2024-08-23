@@ -399,27 +399,33 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 				"Error forecaster address is not registered in this topic")
 		}
 
-		latestScoresForForecastedInferers := make(map[string]types.Score)
-		// Remove duplicate forecast element
-		acceptedForecastElements := make([]*types.ForecastElement, 0)
-		seenInferers := make(map[string]bool)
-
+		latestScoresForForecastedInferers := make([]types.Score, 0)
 		for _, el := range forecast.ForecastElements {
 			score, err := ms.k.GetLatestInfererScore(ctx, forecast.TopicId, el.Inferer)
 			if err != nil {
 				continue
 			}
-			latestScoresForForecastedInferers[el.Inferer] = score
+			latestScoresForForecastedInferers = append(latestScoresForForecastedInferers, score)
 		}
 
 		moduleParams, err := ms.k.GetParams(ctx)
 		if err != nil {
 			return nil, err
 		}
-		_, topNInferer := actorutils.FindTopNByScoreDesc(sdkCtx, moduleParams.MaxElementsPerForecast, latestScoresForForecastedInferers, forecast.BlockHeight)
+		_, _, topNInferer := actorutils.FindTopNByScoreDesc(
+			sdkCtx,
+			moduleParams.MaxElementsPerForecast,
+			latestScoresForForecastedInferers,
+			forecast.BlockHeight,
+		)
 
+		// Remove duplicate forecast element
+		acceptedForecastElements := make([]*types.ForecastElement, 0)
+		seenInferers := make(map[string]bool)
 		for _, el := range forecast.ForecastElements {
-			if !seenInferers[el.Inferer] && topNInferer[el.Inferer] {
+			notAlreadySeen := !seenInferers[el.Inferer]
+			_, isTopInferer := topNInferer[el.Inferer]
+			if notAlreadySeen && isTopInferer {
 				acceptedForecastElements = append(acceptedForecastElements, el)
 				seenInferers[el.Inferer] = true
 			}

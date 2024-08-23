@@ -792,7 +792,7 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 		}
 	}
 	// append inference if not reached out topN
-	if len(newInferences.Inferences) < int(moduleParams.MaxTopInferersToReward) {
+	if uint64(len(newInferences.Inferences)) < moduleParams.MaxTopInferersToReward {
 		newInferences.Inferences = append(newInferences.Inferences, inference)
 		return k.allInferences.Set(ctx, key, newInferences)
 	}
@@ -848,7 +848,7 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 			newForecasts.Forecasts = append(newForecasts.Forecasts, exForecast)
 		}
 	}
-	if len(newForecasts.Forecasts) < int(moduleParams.MaxTopForecastersToReward) {
+	if uint64(len(newForecasts.Forecasts)) < moduleParams.MaxTopForecastersToReward {
 		newForecasts.Forecasts = append(newForecasts.Forecasts, forecast)
 		return k.allForecasts.Set(ctx, key, newForecasts)
 	}
@@ -939,7 +939,7 @@ func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block B
 			newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, exReputation)
 		}
 	}
-	if len(newReputerLossBundles.ReputerValueBundles) < int(moduleParams.MaxTopReputersToReward) {
+	if uint64(len(newReputerLossBundles.ReputerValueBundles)) < moduleParams.MaxTopReputersToReward {
 		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerLoss)
 		return k.allLossBundles.Set(ctx, key, newReputerLossBundles)
 	}
@@ -2244,7 +2244,12 @@ func (k *Keeper) GetForecasterScoreEma(ctx context.Context, topicId TopicId, wor
 	score, err := k.forecasterScoreEmasByWorker.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, nil
+			return types.Score{
+				BlockHeight: 0,
+				Address:     worker,
+				TopicId:     topicId,
+				Score:       alloraMath.ZeroDec(),
+			}, nil
 		}
 		return types.Score{}, err
 	}
@@ -2326,7 +2331,7 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 	if err != nil {
 		return nil, err
 	}
-	maxNumTimeSteps := int(moduleParams.MaxSamplesToScaleScores)
+	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
 	scores := make([]*types.Score, 0, maxNumTimeSteps)
 
@@ -2337,13 +2342,13 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 		}
 
 		for _, score := range existingScores.Value.Scores {
-			if len(scores) < maxNumTimeSteps {
+			if uint64(len(scores)) < maxNumTimeSteps {
 				scores = append(scores, score)
 			} else {
 				break
 			}
 		}
-		if len(scores) >= maxNumTimeSteps {
+		if uint64(len(scores)) >= maxNumTimeSteps {
 			break
 		}
 		iter.Next()
@@ -2403,7 +2408,7 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 	if err != nil {
 		return nil, err
 	}
-	maxNumTimeSteps := int(moduleParams.MaxSamplesToScaleScores)
+	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
 	scores := make([]*types.Score, 0, maxNumTimeSteps)
 
@@ -2414,13 +2419,13 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 		}
 
 		for _, score := range existingScores.Value.Scores {
-			if len(scores) < maxNumTimeSteps {
+			if uint64(len(scores)) < maxNumTimeSteps {
 				scores = append(scores, score)
 			} else {
 				break
 			}
 		}
-		if len(scores) >= maxNumTimeSteps {
+		if uint64(len(scores)) >= maxNumTimeSteps {
 			break
 		}
 		iter.Next()
