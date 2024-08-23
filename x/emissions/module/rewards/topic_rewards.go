@@ -238,7 +238,10 @@ func GetAndUpdateActiveTopicWeights(
 		// If the topic is inactive, inactivate it
 		if weight.Lt(moduleParams.MinTopicWeight) {
 			err := k.InactivateTopic(ctx, topic.Id)
-			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
+			if err != nil {
+				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
+			}
+			continue
 		}
 
 		// Update topic active status
