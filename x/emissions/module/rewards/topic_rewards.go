@@ -195,7 +195,7 @@ func GetAndUpdateActiveTopicWeights(
 	// Retrieve and sort all active topics with epoch ending at this block
 	// default page limit for the max because default is 100 and max is 1000
 	// 1000 is excessive for the topic query
-	topics, err := k.GetActiveTopicsAtBlock(ctx, block)
+	topicids, err := k.GetActiveTopicIdsAtBlock(ctx, block)
 	if err != nil {
 		return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get active topics")
 	}
@@ -204,7 +204,7 @@ func GetAndUpdateActiveTopicWeights(
 	weights = make(map[TopicId]*alloraMath.Dec)
 
 	// Apply the function on all sorted topics
-	for _, topicId := range topics.TopicIds {
+	for _, topicId := range topicids.TopicIds {
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
 			continue
@@ -241,6 +241,11 @@ func GetAndUpdateActiveTopicWeights(
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 		}
 
+		// Update topic active status
+		err = k.UpdateActiveTopic(ctx, topicId)
+		if err != nil {
+			continue
+		}
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)
 		weights[topic.Id] = &weight
 		sumWeight, err = sumWeight.Add(weight)

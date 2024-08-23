@@ -1937,6 +1937,16 @@ func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.Simp
 	}, nil
 }
 
+// Check if the topic is activated or not
+func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, error) {
+	_, active, err := k.GetNextPossibleChurningBlockByTopicId(ctx, topicId)
+	if err != nil {
+		return false, err
+	}
+
+	return active, nil
+}
+
 // UpdateTopicInitialRegret updates the InitialRegret for a given topic.
 func (k *Keeper) UpdateTopicInitialRegret(ctx context.Context, topicId TopicId, initialRegret alloraMath.Dec) error {
 	topic, err := k.topics.Get(ctx, topicId)

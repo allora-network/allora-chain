@@ -2137,13 +2137,19 @@ func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(3)
+	topicEpochLength := 5
+
+	maxActiveTopicsNum := uint64(5)
+	params := types.Params{MaxActiveTopicsPerBlock: maxActiveTopicsNum}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Assume topic initially active
-	initialTopic := types.Topic{Id: topicId}
+	initialTopic := types.Topic{Id: topicId, EpochLength: int64(topicEpochLength)}
 	_ = keeper.SetTopic(ctx, topicId, initialTopic)
 
 	// Activate the topic
-	err := keeper.ActivateTopic(ctx, topicId)
+	err = keeper.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active
@@ -2174,9 +2180,14 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
-	topic1 := types.Topic{Id: 1}
-	topic2 := types.Topic{Id: 2}
-	topic3 := types.Topic{Id: 3}
+	maxActiveTopicsNum := uint64(5)
+	params := types.Params{MaxActiveTopicsPerBlock: maxActiveTopicsNum, MaxPageLimit: 100}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	topic1 := types.Topic{Id: 1, EpochLength: 5}
+	topic2 := types.Topic{Id: 2, EpochLength: 5}
+	topic3 := types.Topic{Id: 3, EpochLength: 15}
 
 	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
 	_ = keeper.ActivateTopic(ctx, topic1.Id)
@@ -2213,12 +2224,17 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
+	maxActiveTopicsNum := uint64(5)
+	params := types.Params{MaxActiveTopicsPerBlock: maxActiveTopicsNum, MaxPageLimit: 100}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
 	topics := []types.Topic{
-		{Id: 1},
-		{Id: 2},
-		{Id: 3},
-		{Id: 4},
-		{Id: 5},
+		{Id: 1, EpochLength: 5},
+		{Id: 2, EpochLength: 5},
+		{Id: 3, EpochLength: 5},
+		{Id: 4, EpochLength: 15},
+		{Id: 5, EpochLength: 15},
 	}
 	isActive := []bool{true, false, true, false, true}
 
@@ -2280,6 +2296,72 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	s.Require().NotNil(pageRes, "Next key should not be nil")
 }
 
+func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	params := types.Params{
+		MaxActiveTopicsPerBlock:         uint64(2),
+		MaxPageLimit:                    uint64(100),
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),
+		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("1"),
+		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("3"),
+	}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	topic1 := types.Topic{Id: 1, EpochLength: 15}
+	topic2 := types.Topic{Id: 2, EpochLength: 15}
+	topic3 := types.Topic{Id: 3, EpochLength: 5}
+	topic4 := types.Topic{Id: 4, EpochLength: 5}
+
+	setTopicWeight := func(topicId uint64, revenue, stake int64) error {
+		_ = keeper.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue))
+		_ = keeper.SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake))
+		return nil
+	}
+
+	_ = setTopicWeight(topic1.Id, 10, 10)
+	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
+	_ = keeper.ActivateTopic(ctx, topic1.Id)
+
+	_ = setTopicWeight(topic2.Id, 20, 10)
+	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
+	_ = keeper.ActivateTopic(ctx, topic2.Id)
+
+	// Fetch next page -- should only return topic 5
+	pagination := &types.SimpleCursorPaginationRequest{
+		Key:   nil,
+		Limit: 2,
+	}
+	activeTopics, _, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
+
+	ctx = s.ctx.WithBlockHeight(10)
+	_ = setTopicWeight(topic3.Id, 50, 10)
+	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
+	_ = keeper.ActivateTopic(ctx, topic3.Id)
+
+	pagination = &types.SimpleCursorPaginationRequest{
+		Key:   nil,
+		Limit: 2,
+	}
+	activeTopics, _, err = keeper.GetIdsOfActiveTopics(ctx, pagination)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
+	s.Require().Equal(activeTopics[0], uint64(2), "Should be second topic")
+	s.Require().Equal(activeTopics[1], uint64(3), "Should be third topic")
+
+	ctx = s.ctx.WithBlockHeight(10)
+	_ = setTopicWeight(topic4.Id, 1, 1)
+	_ = keeper.SetTopic(ctx, topic4.Id, topic4)
+	_ = keeper.ActivateTopic(ctx, topic4.Id)
+	isActive, err := keeper.IsTopicActive(ctx, topic4.Id)
+	s.Require().NoError(err, "Is topic active should not produce an error")
+	s.Require().Equal(isActive, false, "Topic4 should not be activated")
+
+}
 func (s *KeeperTestSuite) TestIncrementTopicId() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
