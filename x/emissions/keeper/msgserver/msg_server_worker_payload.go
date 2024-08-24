@@ -2,10 +2,12 @@ package msgserver
 
 import (
 	"context"
+	"fmt"
+	"sort"
 
 	errorsmod "cosmossdk.io/errors"
-	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -272,8 +274,11 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 			"Worker invalid data for block: %d", blockHeight)
 	}
 
+	nonce := msg.WorkerDataBundle.Nonce
+	topicId := msg.WorkerDataBundle.TopicId
+
 	// Check if the topic exists and get its parameters
-	topic, err := ms.k.GetTopic(ctx, msg.TopicId)
+	topic, err := ms.k.GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
@@ -301,14 +306,13 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	blockHeight := sdkCtx.BlockHeight()
+	blockHeight = sdkCtx.BlockHeight()
 
 	acceptedInferers, err := verifyAndInsertInferencesFromTopInferers(
 		sdkCtx,
 		ms,
 		blockHeight,
-		msg.TopicId,
+		topicId,
 		moduleParams.MaxTopInferersToReward,
 		topic.ActiveInfererQuantile,
 		topic.AlphaRegret,
@@ -377,65 +381,66 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
-	err = ms.k.SetTopicLastCommit(ctx, topic.Id, blockHeight, msg.Nonce, msg.Sender, types.ActorType_INFERER)
-	if err != nil {
-		return nil, err
-	}
-
-	// Append this individual inference to all inferences
-	if msg.WorkerDataBundle.InferenceForecastsBundle.Forecast != nil {
-		forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
-		if forecast.TopicId != msg.WorkerDataBundle.TopicId {
-			return nil, errorsmod.Wrapf(err,
-				"Error forecaster not use same topic")
-		}
-		isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
-		if err != nil {
-			return nil, errorsmod.Wrapf(err,
-				"Error forecaster address is not registered in this topic")
-		}
-		if !isForecasterRegistered {
-			return nil, errorsmod.Wrapf(err,
-				"Error forecaster address is not registered in this topic")
-		}
-
-		latestScoresForForecastedInferers := make([]types.Score, 0)
-		for _, el := range forecast.ForecastElements {
-			score, err := ms.k.GetLatestInfererScore(ctx, forecast.TopicId, el.Inferer)
-			if err != nil {
-				continue
-			}
-			latestScoresForForecastedInferers = append(latestScoresForForecastedInferers, score)
-		}
-
-		moduleParams, err := ms.k.GetParams(ctx)
+		err = ms.k.SetWorkerTopicLastCommit(ctx, topic.Id, blockHeight, msg.Nonce, msg.Sender, types.ActorType_INFERER)
 		if err != nil {
 			return nil, err
 		}
-		_, _, topNInferer := actorutils.FindTopNByScoreDesc(
-			sdkCtx,
-			moduleParams.MaxElementsPerForecast,
-			latestScoresForForecastedInferers,
-			forecast.BlockHeight,
-		)
 
-		// Remove duplicate forecast element
-		acceptedForecastElements := make([]*types.ForecastElement, 0)
-		seenInferers := make(map[string]bool)
-		for _, el := range forecast.ForecastElements {
-			notAlreadySeen := !seenInferers[el.Inferer]
-			_, isTopInferer := topNInferer[el.Inferer]
-			if notAlreadySeen && isTopInferer {
-				acceptedForecastElements = append(acceptedForecastElements, el)
-				seenInferers[el.Inferer] = true
+		// Append this individual inference to all inferences
+		if msg.WorkerDataBundle.InferenceForecastsBundle.Forecast != nil {
+			forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
+			if forecast.TopicId != msg.WorkerDataBundle.TopicId {
+				return nil, errorsmod.Wrapf(err,
+					"Error forecaster not use same topic")
+			}
+			isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
+			if err != nil {
+				return nil, errorsmod.Wrapf(err,
+					"Error forecaster address is not registered in this topic")
+			}
+			if !isForecasterRegistered {
+				return nil, errorsmod.Wrapf(err,
+					"Error forecaster address is not registered in this topic")
+			}
+
+			latestScoresForForecastedInferers := make([]types.Score, 0)
+			for _, el := range forecast.ForecastElements {
+				score, err := ms.k.GetInfererScoreEma(ctx, forecast.TopicId, el.Inferer)
+				if err != nil {
+					continue
+				}
+				latestScoresForForecastedInferers = append(latestScoresForForecastedInferers, score)
+			}
+
+			moduleParams, err := ms.k.GetParams(ctx)
+			if err != nil {
+				return nil, err
+			}
+			_, _, topNInferer := actorutils.FindTopNByScoreDesc(
+				sdkCtx,
+				moduleParams.MaxElementsPerForecast,
+				latestScoresForForecastedInferers,
+				forecast.BlockHeight,
+			)
+
+			// Remove duplicate forecast element
+			acceptedForecastElements := make([]*types.ForecastElement, 0)
+			seenInferers := make(map[string]bool)
+			for _, el := range forecast.ForecastElements {
+				notAlreadySeen := !seenInferers[el.Inferer]
+				_, isTopInferer := topNInferer[el.Inferer]
+				if notAlreadySeen && isTopInferer {
+					acceptedForecastElements = append(acceptedForecastElements, el)
+					seenInferers[el.Inferer] = true
+				}
+			}
+			forecast.ForecastElements = acceptedForecastElements
+			err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
+			if err != nil {
+				return nil, errorsmod.Wrapf(err,
+					"Error appending forecast")
 			}
 		}
-		forecast.ForecastElements = acceptedForecastElements
-		err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
-		if err != nil {
-			return nil, errorsmod.Wrapf(err,
-				"Error appending forecast")
-		}
+		return &types.MsgInsertWorkerPayloadResponse{}, nil
 	}
-	return &types.MsgInsertWorkerPayloadResponse{}, nil
 }
