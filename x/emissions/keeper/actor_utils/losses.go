@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"sort"
 
+	cosmosMath "cosmossdk.io/math"
+
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -68,15 +70,16 @@ func CloseReputerNonce(
 		return err
 	}
 
-	reputerLossBundleList, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
+	reputerLossBundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	if err != nil {
 		return types.ErrNoValidBundles
 	}
 
 	// get score for each reputer => later we can skim only the top few by score descending
-	lossBundlesByReputer := make(map[string]*types.ReputerValueBundle)
+	lossBundlesByReputer := make([]*types.ReputerValueBundle, 0)
+	stakesByReputer := make(map[string]cosmosMath.Int)
 	reputerScoreEmas := make([]types.Score, 0)
-	for _, bundle := range reputerLossBundleList.ReputerValueBundles {
+	for _, bundle := range reputerLossBundles.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
 			continue
 		}
@@ -126,39 +129,26 @@ func CloseReputerNonce(
 		/// Filtering done now, now write what we must for inclusion
 
 		// Get the latest score for each reputer
+		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
 		latestScore, err := k.GetReputerScoreEma(ctx, bundle.ValueBundle.TopicId, reputer)
 		if err != nil {
 			continue
 		}
 		reputerScoreEmas = append(reputerScoreEmas, latestScore)
-		lossBundlesByReputer[bundle.ValueBundle.Reputer] = filteredBundle
+		stake, err = k.GetStakeReputerAuthority(ctx, topicId, reputer)
+		if err != nil {
+			continue
+		}
+		stakesByReputer[bundle.ValueBundle.Reputer] = stake
 	}
 
 	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topReputers, allReputersSorted, reputerIsTop := FindTopNByScoreDesc(
-		ctx,
-		moduleParams.MaxTopReputersToReward,
-		reputerScoreEmas,
-		blockHeight,
-	)
-
-	// update the scores of reputers that were not in the top N
-	// with scores from the active reputer quantile. This ensures
-	// permeability of the active reputer set by giving less good
-	// reputers a chance to become active by bumping up their scores
-	err = UpdateScoresOfPassiveActorsWithActivePercentile(
-		ctx,
-		k,
-		blockHeight,
-		topic.Id,
-		topic.AlphaRegret,
-		topic.ActiveReputerQuantile,
-		reputerScoreEmas,
-		topReputers,
-		allReputersSorted,
-		reputerIsTop,
-		types.ActorType_REPUTER,
-	)
+	// topReputers, allReputersSorted, reputerIsTop := FindTopNByScoreDesc(
+	// 	ctx,
+	// 	moduleParams.MaxTopReputersToReward,
+	// 	reputerScoreEmas,
+	// 	blockHeight,
+	// )
 
 	// sort by reputer score descending
 	sort.Slice(lossBundlesByReputer, func(i, j int) bool {
