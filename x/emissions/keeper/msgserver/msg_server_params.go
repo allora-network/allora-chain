@@ -92,15 +92,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MaxTopReputersToReward) == 1 {
 		existingParams.MaxTopReputersToReward = newParams.MaxTopReputersToReward[0]
 	}
-	if len(newParams.MaxActiveInferersQuantile) == 1 {
-		existingParams.MaxActiveInferersQuantile = newParams.MaxActiveInferersQuantile[0]
-	}
-	if len(newParams.MaxActiveForecastersQuantile) == 1 {
-		existingParams.MaxActiveForecastersQuantile = newParams.MaxActiveForecastersQuantile[0]
-	}
-	if len(newParams.MaxActiveReputersQuantile) == 1 {
-		existingParams.MaxActiveReputersQuantile = newParams.MaxActiveReputersQuantile[0]
-	}
 	if len(newParams.CreateTopicFee) == 1 {
 		existingParams.CreateTopicFee = newParams.CreateTopicFee[0]
 	}
