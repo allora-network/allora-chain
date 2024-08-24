@@ -181,43 +181,45 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 
 func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
-	epoch3Get := epochGet[300]
-	topicId := uint64(1)
-	block := int64(1003)
+	for i := 300; i < 305; i++ {
+		epoch3Get := epochGet[i]
+		topicId := uint64(1)
+		block := int64(i)
 
-	inferer0 := s.addrs[5].String()
-	inferer1 := s.addrs[6].String()
-	inferer2 := s.addrs[7].String()
-	inferer3 := s.addrs[8].String()
-	inferer4 := s.addrs[9].String()
-	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+		inferer0 := s.addrs[5].String()
+		inferer1 := s.addrs[6].String()
+		inferer2 := s.addrs[7].String()
+		inferer3 := s.addrs[8].String()
+		inferer4 := s.addrs[9].String()
+		infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := s.addrs[10].String()
-	forecaster1 := s.addrs[11].String()
-	forecaster2 := s.addrs[12].String()
-	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+		forecaster0 := s.addrs[10].String()
+		forecaster1 := s.addrs[11].String()
+		forecaster2 := s.addrs[12].String()
+		forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
-	reportedLosses, err := testutil.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
-	s.Require().NoError(err)
+		reportedLosses, err := testutil.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
+		s.Require().NoError(err)
 
-	scores, err := rewards.GenerateInferenceScores(
-		s.ctx,
-		s.emissionsKeeper,
-		topicId,
-		block,
-		reportedLosses,
-	)
-	s.Require().NoError(err)
+		scores, err := rewards.GenerateInferenceScores(
+			s.ctx,
+			s.emissionsKeeper,
+			topicId,
+			block,
+			reportedLosses,
+		)
+		s.Require().NoError(err)
 
-	expectedScores := []alloraMath.Dec{
-		epoch3Get("inferer_score_0"),
-		epoch3Get("inferer_score_1"),
-		epoch3Get("inferer_score_2"),
-		epoch3Get("inferer_score_3"),
-		epoch3Get("inferer_score_4"),
-	}
-	for i, infererScore := range scores {
-		testutil.InEpsilon5(s.T(), infererScore.Score, expectedScores[i].String())
+		expectedScores := []alloraMath.Dec{
+			epoch3Get("inferer_score_0"),
+			epoch3Get("inferer_score_1"),
+			epoch3Get("inferer_score_2"),
+			epoch3Get("inferer_score_3"),
+			epoch3Get("inferer_score_4"),
+		}
+		for i, infererScore := range scores {
+			testutil.InEpsilon5(s.T(), infererScore.Score, expectedScores[i].String())
+		}
 	}
 }
 
