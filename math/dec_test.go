@@ -941,3 +941,29 @@ func TestSumDecSlice(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, sum.Equal(expectedSum), "Expected sum to be 2")
 }
+
+func TestIsBetweenZeroAndOneInclusive(t *testing.T) {
+	d := alloraMath.NewDecFromInt64(0)
+	require.True(t, d.IsBetweenZeroAndOneInclusive())
+	d = alloraMath.MustNewDecFromString("0.5")
+	require.True(t, d.IsBetweenZeroAndOneInclusive())
+	d = alloraMath.NewDecFromInt64(1)
+	require.True(t, d.IsBetweenZeroAndOneInclusive())
+	d = alloraMath.NewDecFromInt64(-1)
+	require.False(t, d.IsBetweenZeroAndOneInclusive())
+	d = alloraMath.NewDecFromInt64(2)
+	require.False(t, d.IsBetweenZeroAndOneInclusive())
+}
+
+func TestIsBetweenZeroAndOneExclusive(t *testing.T) {
+	d := alloraMath.NewDecFromInt64(0)
+	require.False(t, d.IsBetweenZeroAndOneExclusive())
+	d = alloraMath.MustNewDecFromString("0.5")
+	require.True(t, d.IsBetweenZeroAndOneExclusive())
+	d = alloraMath.NewDecFromInt64(1)
+	require.False(t, d.IsBetweenZeroAndOneExclusive())
+	d = alloraMath.NewDecFromInt64(-1)
+	require.False(t, d.IsBetweenZeroAndOneExclusive())
+	d = alloraMath.NewDecFromInt64(2)
+	require.False(t, d.IsBetweenZeroAndOneExclusive())
+}

@@ -555,6 +555,16 @@ func (x Dec) IsNegative() bool {
 	return x.dec.Negative && !x.dec.IsZero()
 }
 
+// Whether an alloraDec is between the value of [0, 1] inclusive
+func (x Dec) IsBetweenZeroAndOneInclusive() bool {
+	return x.Gte(ZeroDec()) && x.Lte(OneDec())
+}
+
+// Whether an alloraDec is between the value of (0, 1) exclusive
+func (x Dec) IsBetweenZeroAndOneExclusive() bool {
+	return x.Gt(ZeroDec()) && x.Lt(OneDec())
+}
+
 // IsPositive returns true if the decimal is positive.
 func (x Dec) IsPositive() bool {
 	return !x.dec.Negative && !x.dec.IsZero()

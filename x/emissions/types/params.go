@@ -236,7 +236,7 @@ func validateMinEpochLength(i BlockHeight) error {
 // controls resilience of reward payouts against copycat workers
 // Should be 0 <= i <= 1
 func validateBetaEntropy(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	if !i.IsBetweenZeroAndOneInclusive() {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -245,7 +245,7 @@ func validateBetaEntropy(i alloraMath.Dec) error {
 // Speed of gradient descent.
 // Should be 0 < x < 1
 func validateLearningRate(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+	if !i.IsBetweenZeroAndOneExclusive() {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -263,7 +263,7 @@ func validateGradientDescentMaxIters(i uint64) error {
 // Gradient descent stops when gradient falls below this.
 // Should be 0 < i < 1
 func validateMaxGradientThreshold(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+	if !i.IsBetweenZeroAndOneExclusive() {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -272,7 +272,7 @@ func validateMaxGradientThreshold(i alloraMath.Dec) error {
 // minimum fraction of stake that should be listened to when setting consensus listening coefficients.
 // Should be between 0 and 1.
 func validateMinStakeFraction(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	if !i.IsBetweenZeroAndOneInclusive() {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -364,7 +364,7 @@ func validateMaxUnfulfilledReputerRequests(_ uint64) error {
 // importance of stake in determining rewards for a topic.
 // should be between 0 and 1.
 func validateTopicRewardStakeImportance(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	if !i.IsBetweenZeroAndOneInclusive() {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -373,7 +373,7 @@ func validateTopicRewardStakeImportance(i alloraMath.Dec) error {
 // importance of fee revenue in determining rewards for a topic.
 // should be between 0 and 1.
 func validateTopicRewardFeeRevenueImportance(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	if !i.IsBetweenZeroAndOneInclusive() {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -382,7 +382,7 @@ func validateTopicRewardFeeRevenueImportance(i alloraMath.Dec) error {
 // alpha for topic reward calculation; coupled with blocktime, or how often rewards are calculated
 // should be 0 < x < 1
 func validateTopicRewardAlpha(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+	if !i.IsBetweenZeroAndOneExclusive() {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -400,7 +400,7 @@ func validateTaskRewardAlpha(i alloraMath.Dec) error {
 // percent reward to go to cosmos network validators.
 // Should be a value between 0 and 1.
 func validateValidatorsVsAlloraPercentReward(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	if !i.IsBetweenZeroAndOneInclusive() {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -502,16 +502,6 @@ func validateHalfMaxProcessStakeRemovalsEndBlock(i uint64) error {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
-}
-
-// Whether an alloraDec is between the value of [0, 1] inclusive
-func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
-	return a.Gte(alloraMath.ZeroDec()) && a.Lte(alloraMath.OneDec())
-}
-
-// Whether an alloraDec is between the value of (0, 1) exclusive
-func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
-	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
 }
 
 // How much workers and reputers must pay to send data.
