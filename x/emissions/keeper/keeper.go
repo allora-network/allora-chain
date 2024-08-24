@@ -79,7 +79,8 @@ type Keeper struct {
 	previousInferenceRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 	// map of (topic, worker) -> previous reward for forecast (used for EMA)
 	previousForecastRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
-	previousForecasterScoreRatio   collections.Map[TopicId, alloraMath.Dec]
+	// map of topic -> previous forecaster score ratio
+	previousForecasterScoreRatio collections.Map[TopicId, alloraMath.Dec]
 
 	/// STAKING
 
