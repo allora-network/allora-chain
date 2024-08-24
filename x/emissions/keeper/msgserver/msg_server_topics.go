@@ -3,13 +3,55 @@ package msgserver
 import (
 	"context"
 
+	"cosmossdk.io/errors"
+
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
-	if err := msg.Validate(); err != nil {
+func validateNewTopic(msg *emissionstypes.MsgCreateNewTopic) error {
+	_, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+	}
+
+	if len(msg.LossMethod) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method cannot be empty")
+	}
+	if msg.EpochLength <= 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epoch length must be greater than zero")
+	}
+	if msg.WorkerSubmissionWindow == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window must be greater than zero")
+	}
+	if msg.GroundTruthLag < msg.EpochLength {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "ground truth lag cannot be lower than epoch length")
+	}
+	if msg.WorkerSubmissionWindow > msg.EpochLength {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker submission window cannot be higher than epoch length")
+	}
+	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) ||
+		msg.AlphaRegret.Gt(alloraMath.OneDec()) ||
+		emissionstypes.ValidateDec(msg.AlphaRegret) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
+	}
+	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) ||
+		msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) ||
+		emissionstypes.ValidateDec(msg.PNorm) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
+	}
+	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
+	}
+
+	return nil
+}
+
+func (ms msgServer) CreateNewTopic(ctx context.Context, msg *emissionstypes.MsgCreateNewTopic) (*emissionstypes.MsgCreateNewTopicResponse, error) {
+	if err := validateNewTopic(msg); err != nil {
 		return nil, err
 	}
 
@@ -23,20 +65,10 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
 	}
 	if msg.EpochLength < params.MinEpochLength {
-		return nil, types.ErrTopicCadenceBelowMinimum
+		return nil, emissionstypes.ErrTopicCadenceBelowMinimum
 	}
 	if uint64(msg.GroundTruthLag) > params.MaxUnfulfilledReputerRequests*uint64(msg.EpochLength) {
-		return nil, types.ErrGroundTruthLagTooBig
-	}
-
-	if err := params.ValidateTopicActiveInfererQuantile(msg.ActiveInfererQuantile); err != nil {
-		return nil, err
-	}
-	if err := params.ValidateTopicActiveForecasterQuantile(msg.ActiveForecasterQuantile); err != nil {
-		return nil, err
-	}
-	if err := params.ValidateTopicActiveReputerQuantile(msg.ActiveReputerQuantile); err != nil {
-		return nil, err
+		return nil, emissionstypes.ErrGroundTruthLagTooBig
 	}
 
 	// Before creating topic, transfer fee amount from creator to ecosystem bucket
@@ -45,7 +77,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 		return nil, err
 	}
 
-	topic := types.Topic{
+	topic := emissionstypes.Topic{
 		Id:                     topicId,
 		Creator:                msg.Creator,
 		Metadata:               msg.Metadata,
@@ -71,5 +103,5 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	// we do nothing, since no value in the map means zero
 
 	err = ms.k.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
-	return &types.MsgCreateNewTopicResponse{TopicId: topicId}, err
+	return &emissionstypes.MsgCreateNewTopicResponse{TopicId: topicId}, err
 }
