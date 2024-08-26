@@ -41,9 +41,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) for all versions `v1.0.0` and beyond (still considered experimental prior to v1.0.0).
 
-## [Unreleased]
-<!-- ## v0.3.0 -->
-* Refactors to adapt to single transaction insertions from workers and reputers.
+## [Unreleased] -- will be v0.4.0
+
+### Summary
+
+Implements merit based sortition for top N inferers, forecasters, and reputers. Implements fixes for our [June 2024](https://github.com/sherlock-audit/2024-06-allora-judging) Sherlock.xyz audit, including important fixes for determining which topics are considered active.
+
+### Added
+
+* To be filled in before release of v0.4.0
+
+### Removed
+
+* To be filled in before release of v0.4.0
+
+
+### Fixed
+
+* [#544](https://github.com/allora-network/allora-chain/pull/544) Added check against zero-rewards after conversion to cosmosInt
+
+### Security
+
+* See our recent [June 2024](https://github.com/sherlock-audit/2024-06-allora-judging) security audit for a full description of bugs found during that audit.
+
+
+## v0.3.0
+
+Refactors to adapt to single transaction insertions from workers and reputers.
 
 ### Added
 
@@ -58,11 +82,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 * [#458](https://github.com/allora-network/allora-chain/pull/458) Removal of Blockless and batch processing; Introduction of online, individual payload processing. This resolves many security, performance, and scalability issues.
-   * A number of PRs were merged prior to v0.3.0 that improved upon our usage of Blockless, however that has been removed in favor of its removal in #458. Hence, we are not listing those PRs here.
-   * [#462](https://github.com/allora-network/allora-chain/pull/462) Add individual payload processing
-   * [#470](https://github.com/allora-network/allora-chain/pull/470) Skim of top performers per topic as they submit payloads ("online skimming")
-   * [#464](https://github.com/allora-network/allora-chain/pull/464) Remove libp2p peer ids from chain
-   * [#459](https://github.com/allora-network/allora-chain/pull/459) Revamp nonce management
+* A number of PRs were merged prior to v0.3.0 that improved upon our usage of Blockless, however that has been removed in favor of its removal in #458. Hence, we are not listing those PRs here.
+* [#462](https://github.com/allora-network/allora-chain/pull/462) Add individual payload processing
+* [#470](https://github.com/allora-network/allora-chain/pull/470) Skim of top performers per topic as they submit payloads ("online skimming")
+* [#464](https://github.com/allora-network/allora-chain/pull/464) Remove libp2p peer ids from chain
+* [#459](https://github.com/allora-network/allora-chain/pull/459) Revamp nonce management
 
 ### Fixed
 
@@ -75,7 +99,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#484](https://github.com/allora-network/allora-chain/pull/484) Fix issue with permissions within Docker container
 * [#477](https://github.com/allora-network/allora-chain/pull/477) Fix issue arising from no forecasts being sent in worker payload
 * [#436](https://github.com/allora-network/allora-chain/pull/436/files) Fix bug related to excessive usage of topic ground truth lag and misleading error message
-* [#544](https://github.com/allora-network/allora-chain/pull/544) Added check against zero-rewards after conversion to cosmosInt
 * Additional bugfixes and improvements
 * [#547](https://github.com/allora-network/allora-chain/pull/547) Improve error handling on InsertPayload, fixed/added tests err handling
 
