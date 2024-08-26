@@ -697,3 +697,42 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithInferencesRepeatedlyO
 	require.Equal(len(inferences.Inferences), 1)
 	require.Equal(inferences.Inferences[0].Value, alloraMath.NewDecFromInt64(200))
 }
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithForecastRepeatedlyOverwritesPreviousValue() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	// BEGIN MODIFICATION
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Value = alloraMath.NewDecFromInt64(100)
+	// END MODIFICATION
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	ctx = ctx.WithBlockHeight(blockHeight)
+
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	forecasts, err := keeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
+	require.NoError(err)
+	require.Equal(len(forecasts.Forecasts[0].ForecastElements), 4)
+	require.Equal(forecasts.Forecasts[0].ForecastElements[0].Value, alloraMath.NewDecFromInt64(100))
+
+	// Repeat the same forecast with a different forecast value and check if it overwrites the previous value
+	// BEGIN MODIFICATION
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Value = alloraMath.NewDecFromInt64(200)
+	// END MODIFICATION
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	forecasts, err = keeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
+	require.NoError(err)
+	require.Equal(len(forecasts.Forecasts[0].ForecastElements), 4)
+	require.Equal(forecasts.Forecasts[0].ForecastElements[0].Value, alloraMath.NewDecFromInt64(200))
+}
