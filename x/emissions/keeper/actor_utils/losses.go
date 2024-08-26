@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"sort"
 
-	cosmosMath "cosmossdk.io/math"
-
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
+	cosmosMath "cosmossdk.io/math"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -65,7 +64,7 @@ func CloseReputerNonce(
 		return types.ErrReputerNonceWindowNotAvailable
 	}
 
-	moduleParams, err := k.GetParams(ctx)
+	params, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
@@ -75,10 +74,10 @@ func CloseReputerNonce(
 		return types.ErrNoValidBundles
 	}
 
-	// get score for each reputer => later we can skim only the top few by score descending
+	// Iterate through the array to ensure each reputer is in the whitelist
+	// and get score for each reputer => later we can skim only the top few by score descending
 	lossBundlesByReputer := make([]*types.ReputerValueBundle, 0)
 	stakesByReputer := make(map[string]cosmosMath.Int)
-	reputerScoreEmas := make([]types.Score, 0)
 	for _, bundle := range reputerLossBundles.ReputerValueBundles {
 		if err := bundle.Validate(); err != nil {
 			continue
@@ -110,7 +109,7 @@ func CloseReputerNonce(
 		if err != nil {
 			continue
 		}
-		if stake.LT(moduleParams.RequiredMinimumStake) {
+		if stake.LT(params.RequiredMinimumStake) {
 			continue
 		}
 
@@ -126,32 +125,16 @@ func CloseReputerNonce(
 
 		/// If we do PoX-like anti-sybil procedure, would go here
 
-		// now that we have a filtered value bundle for this reputation epoch, generate scores
-		GenerateReputerScores
-
 		/// Filtering done now, now write what we must for inclusion
 
-		// Get the latest score for each reputer
 		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
-		latestScore, err := k.GetReputerScoreEma(ctx, bundle.ValueBundle.TopicId, reputer)
-		if err != nil {
-			continue
-		}
-		reputerScoreEmas = append(reputerScoreEmas, latestScore)
+
 		stake, err = k.GetStakeReputerAuthority(ctx, topicId, reputer)
 		if err != nil {
 			continue
 		}
 		stakesByReputer[bundle.ValueBundle.Reputer] = stake
 	}
-
-	// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	// topReputers, allReputersSorted, reputerIsTop := FindTopNByScoreDesc(
-	// 	ctx,
-	// 	moduleParams.MaxTopReputersToReward,
-	// 	reputerScoreEmas,
-	// 	blockHeight,
-	// )
 
 	// sort by reputer score descending
 	sort.Slice(lossBundlesByReputer, func(i, j int) bool {
@@ -171,7 +154,8 @@ func CloseReputerNonce(
 		return err
 	}
 
-	ctx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", &nonce.BlockHeight, networkLossBundle))
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", &nonce.BlockHeight, networkLossBundle))
 
 	networkLossBundle.ReputerRequestNonce = &types.ReputerRequestNonce{
 		ReputerNonce: &nonce,
@@ -182,16 +166,16 @@ func CloseReputerNonce(
 		return err
 	}
 
-	types.EmitNewNetworkLossSetEvent(ctx, topicId, nonce.BlockHeight, networkLossBundle)
+	types.EmitNewNetworkLossSetEvent(sdkCtx, topicId, nonce.BlockHeight, networkLossBundle)
 
 	err = synth.GetCalcSetNetworkRegrets(
-		ctx,
+		sdkCtx,
 		*k,
 		topicId,
 		networkLossBundle,
 		nonce,
 		topic.AlphaRegret,
-		moduleParams.CNorm,
+		params.CNorm,
 		topic.PNorm,
 		topic.Epsilon)
 	if err != nil {
@@ -220,13 +204,12 @@ func CloseReputerNonce(
 		return err
 	}
 
-	ctx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topicId, nonce))
+	sdkCtx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topicId, nonce))
 	return nil
 }
 
 // Filter out values of unaccepted workers.
 // It is assumed that the work of inferers and forecasters stored at the nonce is already filtered for acceptance.
-// TODO where is filtering for inferences.Inferences and forecasts.Forecasts done? Probably need to edit that
 // This also removes duplicate values of the same worker.
 func filterUnacceptedWorkersFromReputerValueBundle(
 	k *keeper.Keeper,
