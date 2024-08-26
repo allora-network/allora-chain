@@ -1518,22 +1518,24 @@ func (s *MsgServerTestSuite) TestRewardConversionsOverInt64Limit() {
 
 func (s *MsgServerTestSuite) TestRewardConversionsZeroIntWithDecimals() {
 	// Initialize with a value > int64 max (9223372036854775807)
-	intValueAsString := "0"
-	newDec := alloraMath.MustNewDecFromString(intValueAsString + ".000000000001")
+	zeroStr := "0"
+	newDec := alloraMath.MustNewDecFromString(zeroStr + ".000000000001")
 	s.Require().Equal(newDec.IsZero(), false)
-	rewardInt, err := newDec.SdkIntTrim()
+	decTrimmedToInt, err := newDec.SdkIntTrim()
 	s.Require().NoError(err)
-	s.Require().Equal(intValueAsString, rewardInt.String(), "SdkIntTrim with zero-int should return int part")
+	s.Require().Equal(zeroStr, decTrimmedToInt.String(), "SdkIntTrim with zero-int should return int part")
 
 	// Create cosmos int from string
-	cosmosIntFromString, ok := cosmosMath.NewIntFromString(intValueAsString)
+	intFromStr, ok := cosmosMath.NewIntFromString(zeroStr)
 	s.Require().Equal(true, ok)
 	// Assert the expected result
-	s.Require().Equal(cosmosIntFromString, rewardInt, "The cosmos zero-ints created from string or Dec should match")
+	s.Require().True(intFromStr.Equal(decTrimmedToInt), "Trimming a decimal 1 > dec > 0 to int should return 0")
 
 	// Create cosmos int from cosmos int
-	cosmosInt := cosmosMath.Int(cosmosIntFromString)
-	s.Require().Equal(cosmosInt, rewardInt, "The cosmos zero-ints created from string or Dec should match")
+	intCreatedFromInt := cosmosMath.Int(intFromStr)
+	s.Require().True(
+		intCreatedFromInt.Equal(decTrimmedToInt),
+		"A cosmos zero-ints created from another int should still equal a dec trimmed to zero")
 }
 
 func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
