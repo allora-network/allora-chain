@@ -776,10 +776,6 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 // Append individual inference for a topic/block
 func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
 	block := nonce.BlockHeight
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return err
-	}
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if err != nil {
@@ -815,10 +811,6 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 // Append individual forecast for a topic/block
 func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
 	block := nonce.BlockHeight
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return err
-	}
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)
 	if err != nil {
