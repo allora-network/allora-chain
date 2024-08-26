@@ -277,8 +277,8 @@ func (k *Keeper) InactivateTopic(ctx context.Context, topicId TopicId) error {
 }
 
 // If the topic weight is not less than lowest weight keep it as activated
-func (k *Keeper) UpdateActiveTopic(ctx context.Context, topicId TopicId) error {
-
+func (k *Keeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
 		return err
@@ -286,8 +286,17 @@ func (k *Keeper) UpdateActiveTopic(ctx context.Context, topicId TopicId) error {
 	currentBlock := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
 
+	// Remove current active topic from block
+	err = k.removeCurrentTopicFromBlock(ctx, topicId, currentBlock)
+	if err != nil {
+		sdkCtx.Logger().Warn(fmt.Sprintf("Failed to remove current active topic from block %d", topicId))
+		return err
+	}
+
+	// Add to next epoch end block if greater than lowest weight
 	isAdded, err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock)
 	if err != nil {
+		sdkCtx.Logger().Warn(fmt.Sprintf("Failed to add topic at next epoch %d, %d", topicId, epochEndBlock))
 		return err
 	}
 	if !isAdded {
@@ -299,7 +308,37 @@ func (k *Keeper) UpdateActiveTopic(ctx context.Context, topicId TopicId) error {
 		return err
 	}
 
+	// Reset lowest weight
 	err = k.ResetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
+	if err != nil {
+		sdkCtx.Logger().Warn(fmt.Sprintf("Failed to reset lowest weight at next epoch %d, %d", topicId, epochEndBlock))
+		return err
+	}
+
+	sdkCtx.Logger().Debug(fmt.Sprintf("Topic %d reactivated at next epoch %d", topicId, epochEndBlock))
+	return nil
+}
+
+func (k *Keeper) removeCurrentTopicFromBlock(ctx context.Context, topicId TopicId, block BlockHeight) error {
+
+	activeTopicIds, err := k.GetActiveTopicIdsAtBlock(ctx, block)
+	if err != nil {
+		return err
+	}
+	existingActiveTopics := activeTopicIds.TopicIds
+	// Remove the lowest weight topic from the active topics at the block
+	for i, id := range existingActiveTopics {
+		if id == topicId {
+			existingActiveTopics = append(existingActiveTopics[:i], existingActiveTopics[i+1:]...)
+			break
+		}
+	}
+	newActiveTopicIds := types.TopicIds{TopicIds: existingActiveTopics}
+	err = k.blockToActiveTopics.Set(ctx, block, newActiveTopicIds)
+	if err != nil {
+		return err
+	}
+	err = k.topicToNextPossibleChurningBlock.Remove(ctx, topicId)
 	if err != nil {
 		return err
 	}

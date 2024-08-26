@@ -49,8 +49,8 @@ func EmitRewards(
 	}
 
 	// Top `N=MaxTopicsPerBlock` active topics of this block => the *actually* rewardable topics
-	if uint64(len(sortedRewardableTopics)) > moduleParams.MaxTopicsPerBlock {
-		sortedRewardableTopics = sortedRewardableTopics[:moduleParams.MaxTopicsPerBlock]
+	if uint64(len(sortedRewardableTopics)) > moduleParams.MaxActiveTopicsPerBlock {
+		sortedRewardableTopics = sortedRewardableTopics[:moduleParams.MaxActiveTopicsPerBlock]
 	}
 
 	// Get total weight of rewardable topics

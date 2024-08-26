@@ -177,3 +177,34 @@ func (qs queryServer) GetRewardableTopics(
 
 	return &types.QueryRewardableTopicsResponse{RewardableTopicIds: rewardableTopics}, nil
 }
+
+func (qs queryServer) GetActiveTopicsAtBlock(
+	ctx context.Context,
+	req *types.QueryActiveTopicsAtBlockRequest,
+) (*types.QueryActiveTopicsAtBlockResponse, error) {
+	activeTopicIds, pageRes, err := qs.k.GetIdsActiveTopicAtBlock(ctx, req.BlockHeight, req.Pagination)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	topics := make([]*types.Topic, 0)
+	for _, topicId := range activeTopicIds {
+		topic, err := qs.k.GetTopic(ctx, topicId)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		topics = append(topics, &topic)
+	}
+
+	return &types.QueryActiveTopicsAtBlockResponse{Topics: topics, Pagination: pageRes}, nil
+}
+
+func (qs queryServer) GetNextChurningBlockByTopicId(
+	ctx context.Context,
+	req *types.QueryNextChurningBlockByTopicIdRequest,
+) (*types.QueryNextChurningBlockByTopicIdResponse, error) {
+	blockHeight, _, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
+	if err != nil {
+		return &types.QueryNextChurningBlockByTopicIdResponse{BlockHeight: 0}, err
+	}
+	return &types.QueryNextChurningBlockByTopicIdResponse{BlockHeight: blockHeight}, nil
+}

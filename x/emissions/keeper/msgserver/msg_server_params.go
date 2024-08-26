@@ -29,9 +29,6 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if len(newParams.MinTopicWeight) == 1 {
 		existingParams.MinTopicWeight = newParams.MinTopicWeight[0]
 	}
-	if len(newParams.MaxTopicsPerBlock) == 1 {
-		existingParams.MaxTopicsPerBlock = newParams.MaxTopicsPerBlock[0]
-	}
 	if len(newParams.RequiredMinimumStake) == 1 {
 		existingParams.RequiredMinimumStake = newParams.RequiredMinimumStake[0]
 	}
@@ -145,6 +142,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	}
 	if len(newParams.MaxElementsPerForecast) == 1 {
 		existingParams.MaxElementsPerForecast = newParams.MaxElementsPerForecast[0]
+	}
+	if len(newParams.MaxActiveTopicsPerBlock) == 1 {
+		existingParams.MaxActiveTopicsPerBlock = newParams.MaxActiveTopicsPerBlock[0]
 	}
 	err = existingParams.Validate()
 	if err != nil {

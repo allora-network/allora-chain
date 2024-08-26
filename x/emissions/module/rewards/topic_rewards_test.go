@@ -54,7 +54,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 		Key:   nil,
 		Limit: 2,
 	}
-	activeTopics, _, err := s.emissionsKeeper.GetIdsOfActiveTopics(ctx, pagination)
+	activeTopics, _, err := s.emissionsKeeper.GetIdsActiveTopicAtBlock(ctx, 31, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly one active topics")
 
@@ -76,7 +76,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 		Key:   nil,
 		Limit: 2,
 	}
-	activeTopics, _, err = s.emissionsKeeper.GetIdsOfActiveTopics(ctx, pagination)
+	activeTopics, _, err = s.emissionsKeeper.GetIdsActiveTopicAtBlock(ctx, 46, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Equal(1, len(activeTopics), "Should retrieve exactly one active topics")
 }

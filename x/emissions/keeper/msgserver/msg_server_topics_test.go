@@ -40,7 +40,7 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 	pagination := &types.SimpleCursorPaginationRequest{
 		Limit: 100,
 	}
-	activeTopics, _, err := s.emissionsKeeper.GetIdsOfActiveTopics(s.ctx, pagination)
+	activeTopics, _, err := s.emissionsKeeper.GetIdsActiveTopicAtBlock(s.ctx, 10800, pagination)
 	require.NoError(err)
 	found := false
 	for _, topicId := range activeTopics {

@@ -8,42 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *MsgServerTestSuite) TestUpdateParams() {
-	ctx, msgServer := s.ctx, s.msgServer
-	keeper := s.emissionsKeeper
-	require := s.Require()
-
-	// Setup a sender address
-	adminPrivateKey := secp256k1.GenPrivKey()
-	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
-
-	keeper.AddWhitelistAdmin(ctx, adminAddr.String())
-
-	existingParams, err := keeper.GetParams(ctx)
-	require.NoError(err)
-
-	// New parameters to update
-	newParams := &types.OptionalParams{
-		MaxTopicsPerBlock: []uint64{20},
-	}
-
-	updateMsg := &types.MsgUpdateParams{
-		Sender: adminAddr.String(),
-		Params: newParams,
-	}
-
-	response, err := msgServer.UpdateParams(ctx, updateMsg)
-	require.NoError(err)
-	require.NotNil(response)
-
-	updatedParams, err := keeper.GetParams(ctx)
-	require.NoError(err)
-
-	require.Equal(uint64(20), updatedParams.MaxTopicsPerBlock)
-
-	require.Equal(existingParams.Version, updatedParams.Version)
-}
-
 func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	ctx, msgServer := s.ctx, s.msgServer
 	keeper := s.emissionsKeeper
@@ -57,7 +21,6 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	newParams := &types.OptionalParams{
 		Version:                         []string{"1234"},
 		MinTopicWeight:                  []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		MaxTopicsPerBlock:               []uint64{1234},
 		RequiredMinimumStake:            []cosmosMath.Int{cosmosMath.NewInt(1234)},
 		RemoveStakeDelayWindow:          []int64{1234},
 		MinEpochLength:                  []int64{1234},
@@ -106,7 +69,6 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 
 	require.Equal(newParams.Version[0], updatedParams.Version)
 	require.Equal(newParams.MinTopicWeight[0], updatedParams.MinTopicWeight)
-	require.Equal(newParams.MaxTopicsPerBlock[0], updatedParams.MaxTopicsPerBlock)
 	require.Equal(newParams.RequiredMinimumStake[0], updatedParams.RequiredMinimumStake)
 	require.Equal(newParams.RemoveStakeDelayWindow[0], updatedParams.RemoveStakeDelayWindow)
 	require.Equal(newParams.MinEpochLength[0], updatedParams.MinEpochLength)

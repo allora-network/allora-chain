@@ -652,6 +652,39 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
+
+	//TopicToNextPossibleChurningBlock []*topicBlock
+	if len(data.TopicToNextPossibleChurningBlock) != 0 {
+		for _, topicBlock := range data.TopicToNextPossibleChurningBlock {
+			if err := k.topicToNextPossibleChurningBlock.Set(ctx,
+				topicBlock.TopicId,
+				topicBlock.BlockHeight); err != nil {
+				return errors.Wrap(err, "error setting topicToNextPossibleChurningBlock")
+			}
+		}
+	}
+
+	//BlockToActiveTopics []*blockToActiveTopics
+	if len(data.BlockToActiveTopics) != 0 {
+		for _, blockToActiveTopics := range data.BlockToActiveTopics {
+			if err := k.blockToActiveTopics.Set(ctx,
+				blockToActiveTopics.BlockHeight,
+				*blockToActiveTopics.TopicIds); err != nil {
+				return errors.Wrap(err, "error setting blockToActiveTopics")
+			}
+		}
+	}
+
+	//BlockToLowestActiveTopicWeight []*blockToLowestActiveTopicWeight
+	if len(data.BlockToLowestActiveTopicWeight) != 0 {
+		for _, lowestActiveTopicWeight := range data.BlockToLowestActiveTopicWeight {
+			if err := k.blockToLowestActiveTopicWeight.Set(ctx,
+				lowestActiveTopicWeight.BlockHeight,
+				*lowestActiveTopicWeight.TopicWeight); err != nil {
+				return errors.Wrap(err, "error setting blockToLowestActiveTopicWeight")
+			}
+		}
+	}
 	return nil
 }
 
@@ -696,6 +729,60 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			return nil, errors.Wrap(err, "failed to get key: activeTopicsIter")
 		}
 		activeTopics = append(activeTopics, key)
+	}
+
+	topicNextChurningBlock, err := k.topicToNextPossibleChurningBlock.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate topicToNextPossibleChurningBlock")
+	}
+	topicToNextPossibleChurningBlock := make([]*types.TopicIdAndBlockHeight, 0)
+	for ; topicNextChurningBlock.Valid(); topicNextChurningBlock.Next() {
+		keyValue, err := topicNextChurningBlock.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: topicToNextPossibleChurningBlock")
+		}
+		value := keyValue.Value
+		topic := types.TopicIdAndBlockHeight{
+			TopicId:     keyValue.Key,
+			BlockHeight: value,
+		}
+		topicToNextPossibleChurningBlock = append(topicToNextPossibleChurningBlock, &topic)
+	}
+
+	blockActiveTopics, err := k.blockToActiveTopics.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate blockActiveTopics")
+	}
+	blockHeightTopicIds := make([]*types.BlockHeightTopicIds, 0)
+	for ; blockActiveTopics.Valid(); blockActiveTopics.Next() {
+		keyValue, err := blockActiveTopics.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: blockActiveTopics")
+		}
+		value := keyValue.Value
+		topic := types.BlockHeightTopicIds{
+			BlockHeight: keyValue.Key,
+			TopicIds:    &value,
+		}
+		blockHeightTopicIds = append(blockHeightTopicIds, &topic)
+	}
+
+	lowestActiveTopic, err := k.blockToLowestActiveTopicWeight.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate blockActiveTopics")
+	}
+	blockHeightTopicIdWeight := make([]*types.BlockHeightTopicIdWeightPair, 0)
+	for ; lowestActiveTopic.Valid(); lowestActiveTopic.Next() {
+		keyValue, err := lowestActiveTopic.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: blockActiveTopics")
+		}
+		value := keyValue.Value
+		topic := types.BlockHeightTopicIdWeightPair{
+			BlockHeight: keyValue.Key,
+			TopicWeight: &value,
+		}
+		blockHeightTopicIdWeight = append(blockHeightTopicIdWeight, &topic)
 	}
 
 	rewardableTopics := make([]uint64, 0)
@@ -1632,6 +1719,9 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		LatestOneOutForecasterInfererNetworkRegrets:    latestOneOutForecasterInfererNetworkRegrets,
 		LatestOneOutInfererForecasterNetworkRegrets:    latestOneOutInfererForecasterNetworkRegrets,
 		LatestOneOutForecasterForecasterNetworkRegrets: latestOneOutForecasterForecasterNetworkRegrets,
+		TopicToNextPossibleChurningBlock:               topicToNextPossibleChurningBlock,
+		BlockToActiveTopics:                            blockHeightTopicIds,
+		BlockToLowestActiveTopicWeight:                 blockHeightTopicIdWeight,
 	}, nil
 }
 

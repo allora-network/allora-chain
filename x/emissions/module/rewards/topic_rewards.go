@@ -63,7 +63,7 @@ func PickChurnableActiveTopics(
 	weightsOfTopActiveTopics, sortedTopActiveTopics, err := SkimTopTopicsByWeightDesc(
 		ctx,
 		weights,
-		moduleParams.MaxTopicsPerBlock,
+		moduleParams.MaxActiveTopicsPerBlock,
 		block,
 	)
 	if err != nil {
@@ -245,7 +245,7 @@ func GetAndUpdateActiveTopicWeights(
 		}
 
 		// Update topic active status
-		err = k.UpdateActiveTopic(ctx, topicId)
+		err = k.AttemptTopicReactivation(ctx, topicId)
 		if err != nil {
 			continue
 		}

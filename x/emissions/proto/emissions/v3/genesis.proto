@@ -167,6 +167,11 @@ message GenesisState {
   /// RECORD COMMITS
   repeated TopicIdTimestampedActorNonce topicLastWorkerCommit = 53;
   repeated TopicIdTimestampedActorNonce topicLastReputerCommit = 54;
+
+  // ACTIVE TOPIC
+  repeated TopicIdAndBlockHeight topicToNextPossibleChurningBlock = 55;
+  repeated BlockHeightTopicIds blockToActiveTopics = 56;
+  repeated BlockHeightTopicIdWeightPair blockToLowestActiveTopicWeight = 57;
 }
 
 message TopicIdAndTopic {
@@ -342,4 +347,14 @@ message TopicIdActorIdActorIdTimeStampedValue {
 message TopicIdTimestampedActorNonce {
   uint64 TopicId = 1;
   TimestampedActorNonce TimestampedActorNonce = 2;
+}
+
+message BlockHeightTopicIds {
+  int64 BlockHeight = 1;
+  TopicIds TopicIds = 2;
+}
+
+message BlockHeightTopicIdWeightPair {
+  int64 BlockHeight = 1;
+  TopicIdWeightPair TopicWeight = 2;
 }

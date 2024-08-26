@@ -1937,6 +1937,48 @@ func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.Simp
 	}, nil
 }
 
+func (k Keeper) GetIdsActiveTopicAtBlock(ctx context.Context, blockHeight int64, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
+	limit, start, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	end := start + limit
+	topicIds, err := k.GetActiveTopicIdsAtBlock(ctx, blockHeight)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(topicIds.TopicIds) <= int(start) {
+		return nil, nil, err
+	}
+
+	if len(topicIds.TopicIds) < int(end) {
+		end = uint64(len(topicIds.TopicIds))
+	}
+
+	activeTopicIds := make([]TopicId, 0)
+	nextKey := make([]byte, binary.MaxVarintLen64)
+	nextTopicId := uint64(0)
+	for index := start; index < end; index++ {
+		id := topicIds.TopicIds[index]
+
+		activeTopicIds = append(activeTopicIds, id)
+		nextTopicId = index + 1
+	}
+
+	binary.BigEndian.PutUint64(nextKey, nextTopicId)
+
+	// If there are no topics, we return the nil for next key
+	if len(activeTopicIds) == 0 {
+		nextKey = make([]byte, 0)
+	}
+
+	return activeTopicIds, &types.SimpleCursorPaginationResponse{
+		NextKey: nextKey,
+	}, nil
+}
+
 // Check if the topic is activated or not
 func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, error) {
 	_, active, err := k.GetNextPossibleChurningBlockByTopicId(ctx, topicId)

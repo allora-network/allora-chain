@@ -9,8 +9,8 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 // Params defines the parameters of the module.
 message Params {
-  reserved 26, 27, 41;
-  reserved "min_effective_topic_revenue", "max_retries_to_fulfil_nonces_worker", "max_retries_to_fulfil_nonces_reputer";
+  reserved 4, 26, 27, 41;
+  reserved "max_topics_per_block", "min_effective_topic_revenue", "max_retries_to_fulfil_nonces_worker", "max_retries_to_fulfil_nonces_reputer";
 
   string version = 1; // version of the protocol should be in lockstep with
   // github release tag version
@@ -20,7 +20,6 @@ message Params {
     (gogoproto.nullable) = false
   ]; // total unmet demand for a topic < this => don't run inference
   // solicatation or weight-adjustment
-  uint64 max_topics_per_block = 4; // max number of topics to run cadence for per block
   string required_minimum_stake = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
