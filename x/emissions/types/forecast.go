@@ -24,9 +24,8 @@ func (forecast *Forecast) Validate() error {
 		if err != nil {
 			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid inferer address (%s)", err)
 		}
-
-		if elem.Value.IsNaN() {
-			return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast element value cannot be NaN")
+		if err := ValidateDec(elem.Value); err != nil {
+			return err
 		}
 	}
 

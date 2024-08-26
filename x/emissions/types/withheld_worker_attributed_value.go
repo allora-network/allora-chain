@@ -12,8 +12,8 @@ func (withheldWorkerValue *WithheldWorkerAttributedValue) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
 	}
 
-	if withheldWorkerValue.Value.IsNaN() {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value cannot be NaN")
+	if err := ValidateDec(withheldWorkerValue.Value); err != nil {
+		return err
 	}
 
 	return nil

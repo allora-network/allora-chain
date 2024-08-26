@@ -370,7 +370,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			output, err := inferencesynthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
+			output, err := inferencesynthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses)
 			if tc.expectedError != nil {
 				require.Error(err)
 				require.EqualError(err, tc.expectedError.Error())
@@ -418,7 +418,6 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch301Get := epochGet[301]
 	topicId := uint64(1)
-	epsilon := alloraMath.MustNewDecFromString("1e-4")
 
 	reputer0 := s.addrs[0].String()
 	reputer1 := s.addrs[1].String()
@@ -481,7 +480,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 	)
 	s.Require().NoError(err)
 
-	networkLosses, err := inferencesynthesis.CalcNetworkLosses(stakesByReputer, reportedLosses, epsilon)
+	networkLosses, err := inferencesynthesis.CalcNetworkLosses(stakesByReputer, reportedLosses)
 	s.Require().NoError(err)
 
 	expectedNetworkLosses, err := testutil.GetNetworkLossFromCsv(
@@ -579,7 +578,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesCombined() {
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			output, err := inferencesynthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses, tc.epsilon)
+			output, err := inferencesynthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses)
 			if tc.expectedError != nil {
 				require.Error(err)
 				require.EqualError(err, tc.expectedError.Error())

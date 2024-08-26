@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#478](https://github.com/allora-network/allora-chain/pull/478) Create and apply abstraction for augmenting topic fee revenue that is sure to check for topic activation criteria for both funding events, fee payments, and stake additions
 * [#482](https://github.com/allora-network/allora-chain/pull/482) Creation of an official Upgrade Flow
 
+
 ### Removed
 
 * [#458](https://github.com/allora-network/allora-chain/pull/458) Removal of Blockless and batch processing; Introduction of online, individual payload processing. This resolves many security, performance, and scalability issues.
@@ -74,6 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#484](https://github.com/allora-network/allora-chain/pull/484) Fix issue with permissions within Docker container
 * [#477](https://github.com/allora-network/allora-chain/pull/477) Fix issue arising from no forecasts being sent in worker payload
 * [#436](https://github.com/allora-network/allora-chain/pull/436/files) Fix bug related to excessive usage of topic ground truth lag and misleading error message
+* [#544](https://github.com/allora-network/allora-chain/pull/544) Added check against zero-rewards after conversion to cosmosInt
 * Additional bugfixes and improvements
 
 ### Security
