@@ -7588,9 +7588,9 @@ var (
 
 	pattern_Query_GetNetworkInferencesAtBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"emissions", "v3", "network_inferences", "topic_id", "last_inference", "block_height_last_inference"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetLatestNetworkInference_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "network_inferences", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetLatestNetworkInference_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "latest_network_inferences", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetLatestAvailableNetworkInference_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "network_inferences", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetLatestAvailableNetworkInference_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "latest_available_network_inferences", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_IsWorkerNonceUnfulfilled_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "is_worker_nonce_unfulfilled", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
 
@@ -7608,9 +7608,9 @@ var (
 
 	pattern_Query_IsWhitelistAdmin_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "whitelist_admin", "address"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetTopicLastWorkerCommitInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "topic_last_commit", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetTopicLastWorkerCommitInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "topic_last_worker_commit_info", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetTopicLastReputerCommitInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "topic_last_commit", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetTopicLastReputerCommitInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "topic_last_reputer_commit_info", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GetTopicRewardNonce_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "topic_reward_nonce", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
