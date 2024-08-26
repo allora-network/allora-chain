@@ -6,7 +6,7 @@ import (
 	"time"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	"github.com/allora-network/allora-chain/app/upgrades/v0_3_0"
+	"github.com/allora-network/allora-chain/app/upgrades/v0_4_0"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -51,10 +51,10 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 	}
 }
 
-// propose an upgrade to the v0.3.0 software version
+// propose an upgrade to the v0.4.0 software version
 func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight int64) {
 	ctx := context.Background()
-	name := v0_3_0.UpgradeName
+	name := v0_4_0.UpgradeName
 	summary := "Upgrade to " + name + " software version"
 
 	currHeight, err := m.Client.BlockHeight(ctx)
@@ -141,7 +141,7 @@ func waitForUpgrade(m testCommon.TestConfig, proposalHeight int64) {
 }
 
 func UpgradeChecks(m testCommon.TestConfig) {
-	versionName := v0_3_0.UpgradeName
+	versionName := v0_4_0.UpgradeName
 	m.T.Log("--- Getting Emissions Module Version Before Upgrade ---")
 	emissionsVersionBefore := getEmissionsVersion(m)
 	m.T.Logf("--- Propose Upgrade to %s software version from v0 ---", versionName)

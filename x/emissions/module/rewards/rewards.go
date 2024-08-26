@@ -339,7 +339,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	}
 
 	// Get chi (Forecasting Utility) and gamma (Normalization Factor)
-	chi, gamma, err := GetChiAndGamma(
+	chi, gamma, updatedForecasterScoreRatio, err := GetChiAndGamma(
 		lossBundles.NaiveValue,
 		lossBundles.CombinedValue,
 		inferenceEntropy,
@@ -350,6 +350,12 @@ func GenerateRewardsDistributionByTopicParticipant(
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
+	}
+
+	// Set updated forecaster score ratio
+	err = k.SetPreviousForecasterScoreRatio(ctx, topicId, updatedForecasterScoreRatio)
+	if err != nil {
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous forecast score ratio")
 	}
 
 	// Get Total Rewards for Inference task
@@ -455,6 +461,9 @@ func payoutRewards(
 		rewardInt, err := reward.Reward.SdkIntTrim()
 		if err != nil {
 			ret = append(ret, errors.Wrapf(err, "failed to convert reward to sdk.Int: %s", reward.Reward.String()))
+			continue
+		}
+		if rewardInt.IsZero() {
 			continue
 		}
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))

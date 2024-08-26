@@ -46,7 +46,6 @@ func DefaultParams() Params {
 		CRewardInference:                    alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
 		CRewardForecast:                     alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
 		CNorm:                               alloraMath.MustNewDecFromString("0.75"),      // fiducial value for inference synthesis
-		TopicFeeRevenueDecayRate:            alloraMath.MustNewDecFromString("0.0025"),    // rate at which topic fee revenue decays over time
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                   // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
 		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
 		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
@@ -162,9 +161,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateCNorm(p.CNorm); err != nil {
-		return err
-	}
-	if err := validateTopicFeeRevenueDecayRate(p.TopicFeeRevenueDecayRate); err != nil {
 		return err
 	}
 	if err := validateHalfMaxProcessStakeRemovalsEndBlock(p.HalfMaxProcessStakeRemovalsEndBlock); err != nil {
@@ -500,15 +496,6 @@ func validateMaxSerializedMsgLength(i int64) error {
 func validateBlocksPerMonth(i uint64) error {
 	if i == 0 {
 		return fmt.Errorf("blocks per month must be positive: %d", i)
-	}
-	return nil
-}
-
-// Percent by which effecive topic fee used in weight calculation drips
-// Should be a value between 0 and 1.
-func validateTopicFeeRevenueDecayRate(i alloraMath.Dec) error {
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
-		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
 }

@@ -83,4 +83,4 @@ build-local-edits:
 
 lint:
 	@echo "--> Running linter"
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run --timeout=10m
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m

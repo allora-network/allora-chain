@@ -59,6 +59,9 @@ if [ ! -f $INIT_FLAG ]; then
     dasel put mempool.max_txs_bytes -t int -v 2097152 -f ${APP_HOME}/config/config.toml
     dasel put mempool.size -t int -v 1000 -f ${APP_HOME}/config/config.toml
 
+    #* Enable telemetry
+    dasel put telemetry.enabled -t bool -v true -f ${APP_HOME}/config/app.toml
+
     touch $INIT_FLAG
 fi
 echo "Node is initialized"

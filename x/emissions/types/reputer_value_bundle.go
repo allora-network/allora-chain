@@ -10,8 +10,6 @@ import (
 )
 
 func (bundle *ReputerValueBundle) Validate() error {
-	// Validate top level, then validate all the values within bundle
-
 	if bundle.ValueBundle == nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
 	}
@@ -25,7 +23,13 @@ func (bundle *ReputerValueBundle) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle's reputer request nonce cannot be nil")
 	}
 
-	// Validate all the values within bundle
+	if err := ValidateDec(bundle.ValueBundle.CombinedValue); err != nil {
+		return err
+	}
+
+	if err := ValidateDec(bundle.ValueBundle.NaiveValue); err != nil {
+		return err
+	}
 
 	for _, infererValue := range bundle.ValueBundle.InfererValues {
 		if err := infererValue.Validate(); err != nil {
@@ -57,7 +61,18 @@ func (bundle *ReputerValueBundle) Validate() error {
 		}
 	}
 
-	// Check signature from the bundle, throw if invalid!
+	for _, oneOutInfererForecaster := range bundle.ValueBundle.OneOutInfererForecasterValues {
+		_, err := sdk.AccAddressFromBech32(oneOutInfererForecaster.Forecaster)
+		if err != nil {
+			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid forecaster address in OneOutInfererForecasterValues (%s)", err)
+		}
+		for _, oneOutInfererValue := range oneOutInfererForecaster.OneOutInfererValues {
+			if err := oneOutInfererValue.Validate(); err != nil {
+				return err
+			}
+		}
+	}
+
 	pk, err := hex.DecodeString(bundle.Pubkey)
 	if err != nil || len(pk) != secp256k1.PubKeySize {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")

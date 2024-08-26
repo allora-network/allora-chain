@@ -320,7 +320,6 @@ func GetCalcSetNetworkRegrets(
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error computing and building one-in forecaster regret")
 			}
-			// fmt.Printf("regret %v, forecaster %s, inferer %s, value %s\n", newOneInForecasterRegret.Value, oneInForecasterLoss.Worker, infererLoss.Worker, newOneInForecasterRegret.Value.String())
 			err = k.SetOneInForecasterNetworkRegret(ctx, topicId, oneInForecasterLoss.Worker, infererLoss.Worker, newOneInForecasterRegret)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error setting one-in forecaster regret")

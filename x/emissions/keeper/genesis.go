@@ -496,6 +496,20 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			return errors.Wrap(err, "error setting previousPercentageRewardToStakedReputers to 0.3")
 		}
 	}
+	//openWorkerWindows []*BlockHeightAndListOfTopicIds
+	if len(data.OpenWorkerWindows) != 0 {
+		for _, blockHeightAndListOfTopicIds := range data.OpenWorkerWindows {
+			topicIds := types.TopicIds{}
+			topicIds.TopicIds = blockHeightAndListOfTopicIds.TopicIds
+			if err := k.openWorkerWindows.Set(
+				ctx,
+				blockHeightAndListOfTopicIds.BlockHeight,
+				topicIds,
+			); err != nil {
+				return errors.Wrap(err, "error setting openWorkerWindows")
+			}
+		}
+	}
 	//UnfulfilledWorkerNonces []*TopicIdAndNonces
 	if len(data.UnfulfilledWorkerNonces) != 0 {
 		for _, topicIdAndNonces := range data.UnfulfilledWorkerNonces {
@@ -509,6 +523,14 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		for _, topicIdAndReputerRequestNonces := range data.UnfulfilledReputerNonces {
 			if err := k.unfulfilledReputerNonces.Set(ctx, topicIdAndReputerRequestNonces.TopicId, *topicIdAndReputerRequestNonces.ReputerRequestNonces); err != nil {
 				return errors.Wrap(err, "error setting unfulfilledReputerNonces")
+			}
+		}
+	}
+	//lastDripBlock []*TopicIdAndBlockHeight
+	if len(data.LastDripBlock) != 0 {
+		for _, topicIdAndBlockHeight := range data.LastDripBlock {
+			if err := k.lastDripBlock.Set(ctx, topicIdAndBlockHeight.TopicId, topicIdAndBlockHeight.BlockHeight); err != nil {
+				return errors.Wrap(err, "error setting lastDripBlock")
 			}
 		}
 	}
@@ -1432,6 +1454,25 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		return nil, errors.Wrap(err, "failed to get previous percentage reward to staked reputers")
 	}
 
+	// openWorkerWindows
+	openWorkerWindows := make([]*types.BlockHeightAndTopicIds, 0)
+	openWorkerWindowsIter, err := k.openWorkerWindows.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate open worker windows")
+	}
+	for ; openWorkerWindowsIter.Valid(); openWorkerWindowsIter.Next() {
+		keyValue, err := openWorkerWindowsIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: openWorkerWindowsIter")
+		}
+		blockHeight := keyValue.Key
+		topicIds := keyValue.Value.TopicIds
+		openWorkerWindows = append(openWorkerWindows, &types.BlockHeightAndTopicIds{
+			BlockHeight: blockHeight,
+			TopicIds:    topicIds,
+		})
+	}
+
 	// unfulfilledWorkerNonces
 	unfulfilledWorkerNonces := make([]*types.TopicIdAndNonces, 0)
 	unfulfilledWorkerNoncesIter, err := k.unfulfilledWorkerNonces.Iterate(ctx, nil)
@@ -1467,6 +1508,24 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			ReputerRequestNonces: &value,
 		}
 		unfulfilledReputerNonces = append(unfulfilledReputerNonces, &topicIdAndReputerRequestNonces)
+	}
+
+	// lastDripBlock
+	lastDripBlock := make([]*types.TopicIdAndBlockHeight, 0)
+	lastDripBlockIter, err := k.lastDripBlock.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate last drip block")
+	}
+	for ; lastDripBlockIter.Valid(); lastDripBlockIter.Next() {
+		keyValue, err := lastDripBlockIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: lastDripBlockIter")
+		}
+		topicIdAndBlockHeight := types.TopicIdAndBlockHeight{
+			TopicId:     keyValue.Key,
+			BlockHeight: keyValue.Value,
+		}
+		lastDripBlock = append(lastDripBlock, &topicIdAndBlockHeight)
 	}
 
 	latestInfererNetworkRegrets := make([]*types.TopicIdActorIdTimeStampedValue, 0)
@@ -1706,8 +1765,10 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		AllLossBundles:                                 allLossBundles,
 		NetworkLossBundles:                             networkLossBundles,
 		PreviousPercentageRewardToStakedReputers:       previousPercentageRewardToStakedReputers,
+		OpenWorkerWindows:                              openWorkerWindows,
 		UnfulfilledWorkerNonces:                        unfulfilledWorkerNonces,
 		UnfulfilledReputerNonces:                       unfulfilledReputerNonces,
+		LastDripBlock:                                  lastDripBlock,
 		LatestInfererNetworkRegrets:                    latestInfererNetworkRegrets,
 		LatestForecasterNetworkRegrets:                 latestForecasterNetworkRegrets,
 		LatestOneInForecasterNetworkRegrets:            latestOneInForecasterNetworkRegrets,

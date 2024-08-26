@@ -119,7 +119,7 @@ func PickChurnableActiveTopics(
 				MaxUnfulfilledReputerRequests = moduleParams.MaxUnfulfilledReputerRequests
 			}
 			// Adding one to cover for one extra epochLength
-			reputerPruningBlock := block - (int64(MaxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag)
+			reputerPruningBlock := block - (int64(MaxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag) //nolint:gosec // G115: integer overflow conversion uint64 -> int64 (gosec)
 			if reputerPruningBlock > 0 {
 				ctx.Logger().Debug(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, block))
 				err = k.PruneReputerNonces(ctx, topic.Id, reputerPruningBlock)

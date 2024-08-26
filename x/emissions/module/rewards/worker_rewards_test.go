@@ -491,7 +491,7 @@ func (s *RewardsTestSuite) TestInferenceRewardsFromCsv() {
 		{Score: epoch3Get("inferer_score_3")},
 		{Score: epoch3Get("inferer_score_4")},
 	}
-	chi, gamma, err := rewards.GetChiAndGamma(
+	chi, gamma, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
 		epoch3Get("network_loss"),
 		epoch3Get("inferers_entropy"),
@@ -529,7 +529,7 @@ func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
 		{Score: epoch3Get("inferer_score_3")},
 		{Score: epoch3Get("inferer_score_4")},
 	}
-	chi, gamma, err := rewards.GetChiAndGamma(
+	chi, gamma, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
 		epoch3Get("network_loss"),
 		epoch3Get("inferers_entropy"),

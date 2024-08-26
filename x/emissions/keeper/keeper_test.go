@@ -2518,7 +2518,7 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	topicId := uint64(1)
 	block := int64(100)
 
-	newTopic := types.Topic{Id: topicId}
+	newTopic := types.Topic{Id: topicId, EpochLength: 10}
 	err := keeper.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
 	err = keeper.DripTopicFeeRevenue(ctx, topicId, block)
@@ -2577,7 +2577,12 @@ func (s *KeeperTestSuite) TestGetLatestScores() {
 	// Test getting latest scores when none are set
 	infererScore, err := keeper.GetLatestInfererScore(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching latest inferer score should not fail")
-	s.Require().Equal(types.Score{}, infererScore, "Inferer score should be empty if not set")
+	s.Require().Equal(types.Score{
+		TopicId:     topicId,
+		BlockHeight: 0,
+		Address:     worker,
+		Score:       alloraMath.ZeroDec(),
+	}, infererScore, "Inferer score should be zero if not set")
 
 	forecasterScore, err := keeper.GetLatestForecasterScore(ctx, topicId, forecaster)
 	s.Require().NoError(err, "Fetching latest forecaster score should not fail")

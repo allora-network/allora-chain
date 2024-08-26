@@ -1,11 +1,13 @@
 package v3
 
 import (
+	"encoding/json"
+	"strconv"
+
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
-	"encoding/json"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
@@ -14,7 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
-	"strconv"
 )
 
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
@@ -51,6 +52,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	//      MaxElementsPerForecast
 	// REMOVED:
 	// 		MinEffectiveTopicRevenue
+	//      TopicFeeRevenueDecayRate
 	//      MaxRetriesToFulfilNoncesWorker
 	// 		MaxRetriesToFulfilNoncesReputer
 	newParams := types.Params{
@@ -88,7 +90,6 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		CRewardInference:                    oldParams.CRewardInference,
 		CRewardForecast:                     oldParams.CRewardForecast,
 		CNorm:                               oldParams.CNorm,
-		TopicFeeRevenueDecayRate:            oldParams.TopicFeeRevenueDecayRate,
 		EpsilonReputer:                      oldParams.EpsilonReputer,
 		HalfMaxProcessStakeRemovalsEndBlock: oldParams.HalfMaxProcessStakeRemovalsEndBlock,
 		EpsilonSafeDiv:                      oldParams.EpsilonSafeDiv,

@@ -82,4 +82,5 @@ var (
 	TopicToNextPossibleChurningBlockKey               = collections.NewPrefix(67)
 	BlockToActiveTopicsKey                            = collections.NewPrefix(68)
 	BlockToLowestActiveTopicWeightKey                 = collections.NewPrefix(69)
+	LastDripBlockKey                                  = collections.NewPrefix(70)
 )

@@ -149,7 +149,7 @@ func CloseReputerNonce(
 		return err
 	}
 
-	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles, topic.Epsilon)
+	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles)
 	if err != nil {
 		return err
 	}

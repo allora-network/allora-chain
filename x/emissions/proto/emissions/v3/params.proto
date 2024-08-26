@@ -9,8 +9,8 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 // Params defines the parameters of the module.
 message Params {
-  reserved 4, 26, 27, 41;
-  reserved "max_topics_per_block", "min_effective_topic_revenue", "max_retries_to_fulfil_nonces_worker", "max_retries_to_fulfil_nonces_reputer";
+  reserved 4, 26, 27, 39, 41;
+  reserved "max_topics_per_block", "min_effective_topic_revenue", "max_retries_to_fulfil_nonces_worker", "topic_fee_revenue_decay_rate", "max_retries_to_fulfil_nonces_reputer";
 
   string version = 1; // version of the protocol should be in lockstep with
   // github release tag version
@@ -121,10 +121,6 @@ message Params {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  string topic_fee_revenue_decay_rate = 39 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ]; // decay rate for topic fee revenue
   string epsilon_reputer = 40 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
