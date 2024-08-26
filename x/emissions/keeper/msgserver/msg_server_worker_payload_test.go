@@ -658,3 +658,42 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 	require.Equal(forecastsAtBlock.Forecasts[0].ForecastElements[1].Inferer, inferer2)
 	require.Equal(forecastsAtBlock.Forecasts[0].ForecastElements[2].Inferer, inferer3)
 }
+
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithInferencesRepeatedlyOverwritesPreviousValue() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	// BEGIN MODIFICATION
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Value = alloraMath.NewDecFromInt64(100)
+	// END MODIFICATION
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight
+	ctx = ctx.WithBlockHeight(blockHeight)
+
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	inferences, err := keeper.GetInferencesAtBlock(ctx, topicId, blockHeight)
+	require.NoError(err)
+	require.Equal(len(inferences.Inferences), 1)
+	require.Equal(inferences.Inferences[0].Value, alloraMath.NewDecFromInt64(100))
+
+	// Repeat the same inference with a different inference value and check if it overwrites the previous value
+	// BEGIN MODIFICATION
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Value = alloraMath.NewDecFromInt64(200)
+	// END MODIFICATION
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	inferences, err = keeper.GetInferencesAtBlock(ctx, topicId, blockHeight)
+	require.NoError(err)
+	require.Equal(len(inferences.Inferences), 1)
+	require.Equal(inferences.Inferences[0].Value, alloraMath.NewDecFromInt64(200))
+}
