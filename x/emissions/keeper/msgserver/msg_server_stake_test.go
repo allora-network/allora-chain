@@ -1506,14 +1506,14 @@ func (s *MsgServerTestSuite) TestRewardConversionsOverInt64Limit() {
 	cosmosIntFromString, ok := cosmosMath.NewIntFromString(intValueAsString)
 	s.Require().Equal(true, ok)
 	// Assert the expected result
-	s.Require().Equal(cosmosIntFromString, rewardInt, "The cosmos ints created from string or Dec should match")
+	s.Require().True(rewardInt.Equal(cosmosIntFromString), "The cosmos ints created from string or Dec should match: %s = %s", rewardInt.String(), cosmosIntFromString.String())
 
 	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosIntFromString))
 	s.Require().Equal(intValueAsString+"uallo", coins.String(), "The sdk.Coins object should be created with the correct amount")
 
 	// Create cosmos int from cosmos int
 	cosmosInt := cosmosMath.Int(cosmosIntFromString)
-	s.Require().Equal(cosmosInt, rewardInt, "The cosmos ints created from string or Dec should match")
+	s.Require().True(rewardInt.Equal(cosmosInt), "The cosmos ints created from ints should match: %s = %s", rewardInt.String(), cosmosInt.String())
 }
 
 func (s *MsgServerTestSuite) TestRewardConversionsZeroIntWithDecimals() {
