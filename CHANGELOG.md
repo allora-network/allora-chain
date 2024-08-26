@@ -43,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] -- will be v0.4.0
 
+### Summary
+
 Implements merit based sortition for top N inferers, forecasters, and reputers. Implements fixes for our [June 2024](https://github.com/sherlock-audit/2024-06-allora-judging) Sherlock.xyz audit, including important fixes for determining which topics are considered active.
 
 ### Added
