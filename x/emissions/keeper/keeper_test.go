@@ -2465,15 +2465,13 @@ func (s *KeeperTestSuite) TestRewardableTopics() {
 
 /// SCORES
 
-func (s *KeeperTestSuite) TestGetScoreEmas() {
+func (s *KeeperTestSuite) TestGetInfererScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 	worker := "worker1"
-	forecaster := "forecaster1"
-	reputer := "reputer1"
 
-	// Test getting latest scores when none are set
+	// Test getting latest score when none is set
 	infererScore, err := keeper.GetInfererScoreEma(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching latest inferer score should not fail")
 	s.Require().Equal(types.Score{
@@ -2482,14 +2480,40 @@ func (s *KeeperTestSuite) TestGetScoreEmas() {
 		Address:     worker,
 		Score:       alloraMath.ZeroDec(),
 	}, infererScore, "Inferer score should be zero if not set")
+}
 
+func (s *KeeperTestSuite) TestGetForecasterScoreEma() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	forecaster := "forecaster1"
+
+	// Test getting latest score when none is set
 	forecasterScore, err := keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
 	s.Require().NoError(err, "Fetching latest forecaster score should not fail")
-	s.Require().Equal(types.Score{}, forecasterScore, "Forecaster score should be empty if not set")
+	s.Require().Equal(types.Score{
+		TopicId:     topicId,
+		BlockHeight: 0,
+		Address:     forecaster,
+		Score:       alloraMath.ZeroDec(),
+	}, forecasterScore, "Forecaster score should be empty if not set")
+}
 
+func (s *KeeperTestSuite) TestGetReputerScoreEma() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer := "reputer1"
+
+	// Test getting latest score when none is set
 	reputerScore, err := keeper.GetReputerScoreEma(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching latest reputer score should not fail")
-	s.Require().Equal(types.Score{}, reputerScore, "Reputer score should be empty if not set")
+	s.Require().Equal(types.Score{
+		TopicId:     topicId,
+		BlockHeight: 0,
+		Address:     reputer,
+		Score:       alloraMath.ZeroDec(),
+	}, reputerScore, "Reputer score should be empty if not set")
 }
 
 func scoresToCompare(s1, s2 types.Score) bool {
@@ -2544,6 +2568,21 @@ func (s *KeeperTestSuite) TestUpdateScoreEmas() {
 	_ = keeper.UpdateReputerScoreEma(ctx, topicId, alpha, reputer, newScore)
 	reputerScore, _ = keeper.GetReputerScoreEma(ctx, topicId, reputer)
 	s.Require().True(scoresToCompare(newEmaScore, reputerScore), "Newer reputer score should be set using EMA")
+}
+
+func (s *KeeperTestSuite) TestGetInfererScoreEmasFromValueBundle() {
+	// todo
+	s.T().Fail()
+}
+
+func (s *KeeperTestSuite) TestGetForecasterScoreEmasFromValueBundle() {
+	// todo
+	s.T().Fail()
+}
+
+func (s *KeeperTestSuite) TestGetReputerScoreEmasFromValueBundle() {
+	// todo
+	s.T().Fail()
 }
 
 func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {

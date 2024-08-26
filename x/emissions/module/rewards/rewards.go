@@ -221,20 +221,18 @@ func GenerateRewardsDistributionByTopicParticipant(
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get network loss bundle at block %d", blockHeight)
 	}
 
-	// Calculate and Set the reputer scores
-	reputerScores, err := GenerateReputerScores(ctx, k, topicId, blockHeight, *bundles)
+	// during rewards calculation, we just get the already previously calculated scores
+	// scores are calculated when the reputer nonce closes (for reputers)
+	// and when the worker nonce closes (for inferers and forecasters)
+	reputerScores, err := k.GetReputerScoreEmasFromValueBundles(ctx, topicId, bundles.ReputerValueBundles)
 	if err != nil {
 		return nil, alloraMath.Dec{}, err
 	}
-
-	// Calculate and Set the worker scores for their inference work
-	infererScores, err := GenerateInferenceScores(ctx, k, topicId, blockHeight, *lossBundles)
+	infererScores, err := k.GetInfererScoreEmasFromValueBundle(ctx, *lossBundles)
 	if err != nil {
 		return nil, alloraMath.Dec{}, err
 	}
-
-	// Calculate and Set the worker scores for their forecast work
-	forecasterScores, err := GenerateForecastScores(ctx, k, topicId, blockHeight, *lossBundles)
+	forecasterScores, err := k.GetForecasterScoreEmasFromValueBundle(ctx, *lossBundles)
 	if err != nil {
 		return nil, alloraMath.Dec{}, err
 	}

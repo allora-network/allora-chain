@@ -2199,6 +2199,7 @@ func (k *Keeper) UpdateInfererScoreEma(
 	return nil
 }
 
+// for a particular inferer, get their score exponential moving average
 func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
 	score, err := k.infererScoreEmasByWorker.Get(ctx, key)
@@ -2214,6 +2215,23 @@ func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker
 		return types.Score{}, err
 	}
 	return score, nil
+}
+
+// for a list of inferers and a topic id, get a list of their score exponential moving averages
+func (k *Keeper) GetInfererScoreEmasFromValueBundle(
+	ctx context.Context,
+	bundle types.ValueBundle,
+) ([]types.Score, error) {
+	inferers := bundle.InfererValues
+	scores := make([]types.Score, 0, len(inferers))
+	for _, inferer := range inferers {
+		score, err := k.GetInfererScoreEma(ctx, bundle.TopicId, inferer.Worker)
+		if err != nil {
+			return nil, err
+		}
+		scores = append(scores, score)
+	}
+	return scores, nil
 }
 
 // If the new score is older than the current score, don't update
@@ -2240,6 +2258,7 @@ func (k *Keeper) UpdateForecasterScoreEma(
 	return k.forecasterScoreEmasByWorker.Set(ctx, key, score)
 }
 
+// for this particular forecaster, get their score exponential moving average
 func (k *Keeper) GetForecasterScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
 	score, err := k.forecasterScoreEmasByWorker.Get(ctx, key)
@@ -2255,6 +2274,23 @@ func (k *Keeper) GetForecasterScoreEma(ctx context.Context, topicId TopicId, wor
 		return types.Score{}, err
 	}
 	return score, nil
+}
+
+// for a list of forecasters and a topic id, get a list of their score exponential moving averages
+func (k *Keeper) GetForecasterScoreEmasFromValueBundle(
+	ctx context.Context,
+	bundle types.ValueBundle,
+) ([]types.Score, error) {
+	forecasters := bundle.ForecasterValues
+	scores := make([]types.Score, 0, len(forecasters))
+	for _, forecaster := range forecasters {
+		score, err := k.GetForecasterScoreEma(ctx, bundle.TopicId, forecaster.Worker)
+		if err != nil {
+			return nil, err
+		}
+		scores = append(scores, score)
+	}
+	return scores, nil
 }
 
 // If the new score is older than the current score, don't update
@@ -2281,16 +2317,43 @@ func (k *Keeper) UpdateReputerScoreEma(
 	return k.reputerScoreEmasByReputer.Set(ctx, key, score)
 }
 
+// for a particular topic and reputer, get their score exponential moving average
 func (k *Keeper) GetReputerScoreEma(ctx context.Context, topicId TopicId, reputer ActorId) (types.Score, error) {
 	key := collections.Join(topicId, reputer)
 	score, err := k.reputerScoreEmasByReputer.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, nil
+			return types.Score{
+				BlockHeight: 0,
+				Address:     reputer,
+				TopicId:     topicId,
+				Score:       alloraMath.ZeroDec(),
+			}, nil
 		}
 		return types.Score{}, err
 	}
 	return score, nil
+}
+
+// for a list of reputers and a topic id, get a list of their score exponential moving averages
+func (k *Keeper) GetReputerScoreEmasFromValueBundles(
+	ctx context.Context,
+	topicId uint64,
+	valueBundles []*types.ReputerValueBundle,
+) ([]types.Score, error) {
+	scores := make([]types.Score, 0, len(valueBundles))
+	for _, bundle := range valueBundles {
+		if bundle.ValueBundle.TopicId != topicId {
+			return nil, errorsmod.Wrapf(types.ErrInvariantFailure, "topic id mismatch from reputer bundle and topic id")
+		}
+		reputer := bundle.ValueBundle.Reputer
+		score, err := k.GetReputerScoreEma(ctx, topicId, reputer)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "error getting reputer score ema for reputer %s", reputer)
+		}
+		scores = append(scores, score)
+	}
+	return scores, nil
 }
 
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockHeight BlockHeight, score types.Score) error {

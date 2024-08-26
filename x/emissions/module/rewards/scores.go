@@ -104,6 +104,10 @@ func GenerateReputerScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
+		topic, err := keeper.GetTopic(ctx, topicId)
+		if err != nil {
+			return []types.Score{}, errors.Wrapf(err, "Error getting topic %v", topicId)
+		}
 		err = keeper.UpdateReputerScoreEma(ctx, topicId, topic.AlphaRegret, reputer, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error setting latest reputer score")
