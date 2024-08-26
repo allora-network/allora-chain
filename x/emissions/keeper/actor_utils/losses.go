@@ -126,6 +126,9 @@ func CloseReputerNonce(
 
 		/// If we do PoX-like anti-sybil procedure, would go here
 
+		// now that we have a filtered value bundle for this reputation epoch, generate scores
+		GenerateReputerScores
+
 		/// Filtering done now, now write what we must for inclusion
 
 		// Get the latest score for each reputer
@@ -223,6 +226,7 @@ func CloseReputerNonce(
 
 // Filter out values of unaccepted workers.
 // It is assumed that the work of inferers and forecasters stored at the nonce is already filtered for acceptance.
+// TODO where is filtering for inferences.Inferences and forecasts.Forecasts done? Probably need to edit that
 // This also removes duplicate values of the same worker.
 func filterUnacceptedWorkersFromReputerValueBundle(
 	k *keeper.Keeper,

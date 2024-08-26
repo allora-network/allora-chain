@@ -255,10 +255,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 	score3 := types.Score{TopicId: topicId, BlockHeight: blockHeight, Address: inferer3, Score: alloraMath.NewDecFromInt64(80)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: blockHeight, Address: inferer4, Score: alloraMath.NewDecFromInt64(99)}
 
-	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer1, score1)
-	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer2, score2)
-	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer3, score3)
-	_ = s.emissionsKeeper.SetLatestInfererScore(ctx, topicId, inferer4, score4)
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	_ = s.emissionsKeeper.UpdateInfererScoreEma(ctx, topicId, alpha, inferer1, score1)
+	_ = s.emissionsKeeper.UpdateInfererScoreEma(ctx, topicId, alpha, inferer2, score2)
+	_ = s.emissionsKeeper.UpdateInfererScoreEma(ctx, topicId, alpha, inferer3, score3)
+	_ = s.emissionsKeeper.UpdateInfererScoreEma(ctx, topicId, alpha, inferer4, score4)
 
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")

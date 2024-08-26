@@ -3,6 +3,8 @@ package msgserver_test
 import (
 	"errors"
 	"fmt"
+
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	cosmosMath "cosmossdk.io/math"
@@ -1335,7 +1337,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Generate rewards
@@ -1391,7 +1393,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, newBlock, newReputerValueBundles)
 
 	// Calculate and Set the reputer scores
-	scores, err = rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err = actorutils.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Generate new rewards
@@ -1467,7 +1469,7 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Generate rewards

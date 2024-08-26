@@ -7,6 +7,7 @@ import (
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -359,7 +360,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -431,7 +432,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	)
 
 	// Calculate and Set the reputer scores
-	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Get reputer rewards

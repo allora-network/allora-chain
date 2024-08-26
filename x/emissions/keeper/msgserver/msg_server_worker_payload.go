@@ -81,7 +81,7 @@ func verifyAndInsertInferencesFromTopInferers(
 	}
 
 	/// If we pseudo-random sample from the non-sybil set of reputers, we would do it here
-	topInferers, allInferersSorted := FindTopNByScoreDesc(maxTopWorkersToReward, infererScoreEmas, nonce.BlockHeight)
+	topInferers, allInferersSorted, _ := actorutils.FindTopNByScoreDesc(maxTopWorkersToReward, infererScoreEmas, nonce.BlockHeight)
 	// There is an edge case when all reputers are random.
 	// Technically we should sort by stake with pseudo-random tiebreaker, however this adds unnecessary complexity
 	// given how rare this possibility is. Futhermore, score ultimately may matter more than stake.

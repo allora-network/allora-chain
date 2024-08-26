@@ -1,4 +1,4 @@
-package rewards
+package actorutils
 
 import (
 	"cosmossdk.io/errors"
@@ -8,14 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-/*
- These functions will be used immediately after the network loss for the relevant time step has been generated.
- Using the network loss and the sets of losses reported by each reputer, the scores are calculated. In the case
- of workers (who perform the forecast task and network task), the last 10 previous scores will also be taken into
- consideration to generate the score at the most recent time step.
-*/
-
 // GenerateReputerScores calculates and persists scores for reputers based on their reported losses.
+// this is called at time of reputer nonce closing
 func GenerateReputerScores(
 	ctx sdk.Context,
 	keeper keeper.Keeper,
@@ -55,7 +49,7 @@ func GenerateReputerScores(
 		reputerListeningCoefficients = append(reputerListeningCoefficients, res.Coefficient)
 
 		// Get all reported losses from bundle
-		reputerLosses := ExtractValues(reportedLoss.ValueBundle)
+		reputerLosses := extractValues(reportedLoss.ValueBundle)
 		losses = append(losses, reputerLosses)
 	}
 
@@ -308,32 +302,6 @@ func EnsureAllWorkersPresent(
 	for _, worker := range sortedWorkers {
 		if !foundWorkers[worker] {
 			values = append(values, &types.WorkerAttributedValue{
-				Worker: worker,
-				Value:  alloraMath.NewNaN(),
-			})
-		}
-	}
-
-	return values
-}
-
-// ensureAllWorkersPresentWithheld checks and adds missing
-// workers with NaN values for a given slice of WithheldWorkerAttributedValue
-func EnsureAllWorkersPresentWithheld(
-	values []*types.WithheldWorkerAttributedValue,
-	allWorkers map[string]struct{},
-) []*types.WithheldWorkerAttributedValue {
-	foundWorkers := make(map[string]bool)
-	for _, value := range values {
-		foundWorkers[value.Worker] = true
-	}
-
-	// Need to sort here and not in encapsulating scope because of edge cases e.g. if 1 forecaster => there's 1-in but not 1-out
-	sortedWorkers := alloraMath.GetSortedKeys(allWorkers)
-
-	for _, worker := range sortedWorkers {
-		if !foundWorkers[worker] {
-			values = append(values, &types.WithheldWorkerAttributedValue{
 				Worker: worker,
 				Value:  alloraMath.NewNaN(),
 			})

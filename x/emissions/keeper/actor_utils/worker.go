@@ -53,6 +53,9 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return types.ErrNoValidInferences
 	}
 
+	// todo here
+	// generate scores for inferers
+
 	acceptedInferers, err := insertInferencesFromTopInferers(
 		ctx,
 		k,
@@ -105,7 +108,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 // Output a new set of inferences where only 1 inference per registered inferer is kept,
 // ignore the rest. In particular, take the first inference from each registered inferer
 // and none from any unregistered inferer.
-// Signatures, anti-synil procedures, and "skimming of only the top few workers by score
+// Signatures, anti-sybil procedures, and "skimming of only the top few workers by score
 // descending" should be done here.
 func insertInferencesFromTopInferers(
 	ctx sdk.Context,
