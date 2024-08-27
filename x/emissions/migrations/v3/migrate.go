@@ -127,17 +127,17 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 		}
 
 		var feeRevenue = cosmosMath.NewInt(0)
-		err = json.Unmarshal(topicFeeRevStore.Get([]byte(strconv.Itoa(int(oldMsg.Id)))), &feeRevenue)
+		err = json.Unmarshal(topicFeeRevStore.Get([]byte(strconv.FormatUint(oldMsg.Id, 10))), &feeRevenue)
 		if err != nil {
 			continue
 		}
 		var stake = cosmosMath.NewInt(0)
-		err = json.Unmarshal(topicStakeStore.Get([]byte(strconv.Itoa(int(oldMsg.Id)))), &stake)
+		err = json.Unmarshal(topicStakeStore.Get([]byte(strconv.FormatUint(oldMsg.Id, 10))), &stake)
 		if err != nil {
 			continue
 		}
 		var previousWeight = alloraMath.NewDecFromInt64(0)
-		err = json.Unmarshal(topicPreviousWeightStore.Get([]byte(strconv.Itoa(int(oldMsg.Id)))), &previousWeight)
+		err = json.Unmarshal(topicPreviousWeightStore.Get([]byte(strconv.FormatUint(oldMsg.Id, 10))), &previousWeight)
 		if err != nil {
 			continue
 		}
@@ -173,8 +173,9 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 		}
 
 		churningBlock[oldMsg.Id] = blockHeight
+
 		blockToActiveTopics[blockHeight] =
-			types.TopicIds{append(blockToActiveTopics[blockHeight].TopicIds, oldMsg.Id)}
+			types.TopicIds{TopicIds: append(blockToActiveTopics[blockHeight].TopicIds, oldMsg.Id)}
 
 		// If number of active topic is over global param then remove lowest topic
 		if uint64(len(blockToActiveTopics[blockHeight].TopicIds)) > params.MaxActiveTopicsPerBlock {
@@ -189,7 +190,7 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 				}
 			}
 			// Reset active topics per block
-			blockToActiveTopics[blockHeight] = types.TopicIds{newActiveTopicIds}
+			blockToActiveTopics[blockHeight] = types.TopicIds{TopicIds: newActiveTopicIds}
 			// Reset lowest weight per block
 			lowestWeight[blockHeight] = getLowestTopicIdWeightPair(topicWeightData, blockToActiveTopics[blockHeight])
 		}

@@ -261,6 +261,5 @@ func (s *MigrationTestSuite) setUpOldTopicsData(store storetypes.KVStore, topicC
 		previousTopicWeight, err := json.Marshal(alloraMath.NewDecFromInt64(int64(50 + i*10)))
 		s.Require().NoError(err)
 		previousTopicWeightStore.Set([]byte(strconv.Itoa(i)), previousTopicWeight)
-
 	}
 }
