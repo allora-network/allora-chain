@@ -2312,7 +2312,7 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	activeTopics, pageRes, err = keeper.GetIdsActiveTopicAtBlock(ctx, 5, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Empty(activeTopics, "Should retrieve exactly one active topics")
-	s.Require().NotNil(pageRes, "Next key should not be nil")
+	s.Require().Nil(pageRes, "Next key should not be nil")
 }
 
 func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {

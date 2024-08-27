@@ -12,7 +12,6 @@ func TestDefaultParams(t *testing.T) {
 	expectedParams := Params{
 		Version:                             "v2",
 		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),
-		MaxTopicsPerBlock:                   uint64(128),
 		RequiredMinimumStake:                cosmosMath.NewInt(10000),
 		RemoveStakeDelayWindow:              int64((60 * 60 * 24 * 7 * 3) / 3),
 		MinEpochLength:                      12,
