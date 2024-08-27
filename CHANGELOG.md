@@ -59,6 +59,7 @@ Implements merit based sortition for top N inferers, forecasters, and reputers. 
 ### Fixed
 
 * [#544](https://github.com/allora-network/allora-chain/pull/544) Added check against zero-rewards after conversion to cosmosInt
+* [#550](https://github.com/allora-network/allora-chain/pull/550) Fix reputer window upper limit
 
 ### Security
 
