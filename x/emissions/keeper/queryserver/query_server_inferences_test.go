@@ -18,20 +18,20 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 		Inferences: []*types.Inference{
 			{
 				TopicId:     topicId,
-				BlockHeight: int64(blockHeight),
+				BlockHeight: blockHeight,
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 				Value:       alloraMath.NewDecFromInt64(1),
 			},
 			{
 				TopicId:     topicId,
-				BlockHeight: int64(blockHeight),
+				BlockHeight: blockHeight,
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 				Value:       alloraMath.NewDecFromInt64(2),
 			},
 		},
 	}
 
-	nonce := types.Nonce{BlockHeight: int64(blockHeight)}
+	nonce := types.Nonce{BlockHeight: blockHeight}
 	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
 	s.Require().NoError(err)
 
@@ -39,7 +39,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 		ctx,
 		&types.QueryInferencesAtBlockRequest{
 			TopicId:     topicId,
-			BlockHeight: int64(blockHeight),
+			BlockHeight: blockHeight,
 		},
 	)
 
@@ -268,8 +268,8 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	epochLength := topic.EpochLength
 	epochLastEnded := topic.EpochLastEnded
 
-	lossBlockHeight := int64(epochLastEnded)
-	inferenceBlockHeight := int64(epochLastEnded + epochLength)
+	lossBlockHeight := epochLastEnded
+	inferenceBlockHeight := epochLastEnded + epochLength
 
 	lossNonce := types.Nonce{BlockHeight: lossBlockHeight}
 	inferenceNonce := types.Nonce{BlockHeight: inferenceBlockHeight}
@@ -306,15 +306,23 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	forecaster1 := "allo1nxqgvyt6ggu3dz7uwe8p22sac6v2v8sayhwqvz"
 	forecaster2 := "allo1a0sc83cls78g4j5qey5er9zzpjpva4x935aajk"
 
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	require.NoError(err)
 
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
 
 	inferences := types.Inferences{
 		Inferences: []*types.Inference{
@@ -584,7 +592,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	// Insert first set of inferences
 	blockHeight1 := types.BlockHeight(12345)
 	newInference1 := types.Inference{
-		TopicId:     uint64(topicId),
+		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     "worker1",
 		Value:       alloraMath.MustNewDecFromString("10"),
@@ -601,7 +609,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	// Insert second set of inferences
 	blockHeight2 := types.BlockHeight(12346)
 	newInference2 := types.Inference{
-		TopicId:     uint64(topicId),
+		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     "worker2",
 		Value:       alloraMath.MustNewDecFromString("20"),
@@ -637,9 +645,9 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	epochLength := topic.EpochLength
 	epochLastEnded := topic.EpochLastEnded
 
-	lossBlockHeight := int64(epochLastEnded + epochLength)
-	inferenceBlockHeight := int64(lossBlockHeight + epochLength)
-	inferenceBlockHeight2 := int64(inferenceBlockHeight + epochLength)
+	lossBlockHeight := epochLastEnded + epochLength
+	inferenceBlockHeight := lossBlockHeight + epochLength
+	inferenceBlockHeight2 := inferenceBlockHeight + epochLength
 
 	lossNonce := types.Nonce{BlockHeight: lossBlockHeight}
 	inferenceNonce := types.Nonce{BlockHeight: inferenceBlockHeight}
@@ -680,15 +688,23 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	forecaster1 := "allo1nxqgvyt6ggu3dz7uwe8p22sac6v2v8sayhwqvz"
 	forecaster2 := "allo1a0sc83cls78g4j5qey5er9zzpjpva4x935aajk"
 
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	require.NoError(err)
 
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
 
 	getInferencesForBlockHeight := func(blockHeight int64) types.Inferences {
 		return types.Inferences{
@@ -825,9 +841,9 @@ func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingI
 	epochLength := topic.EpochLength
 	epochLastEnded := topic.EpochLastEnded
 
-	lossBlockHeight := int64(epochLastEnded)
-	inferenceBlockHeight := int64(epochLastEnded + epochLength)
-	inferenceBlockHeight2 := int64(inferenceBlockHeight + epochLength)
+	lossBlockHeight := epochLastEnded
+	inferenceBlockHeight := epochLastEnded + epochLength
+	inferenceBlockHeight2 := inferenceBlockHeight + epochLength
 
 	lossNonce := types.Nonce{BlockHeight: lossBlockHeight}
 	// inferenceNonce := types.Nonce{BlockHeight: inferenceBlockHeight}
@@ -865,15 +881,23 @@ func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingI
 	forecaster1 := "allo1nxqgvyt6ggu3dz7uwe8p22sac6v2v8sayhwqvz"
 	forecaster2 := "allo1a0sc83cls78g4j5qey5er9zzpjpva4x935aajk"
 
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	require.NoError(err)
 
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
 
 	getInferencesForBlockHeight := func(blockHeight int64) types.Inferences {
 		return types.Inferences{

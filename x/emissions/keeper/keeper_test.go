@@ -104,8 +104,8 @@ func (s *KeeperTestSuite) SetupTest() {
 		authtypes.NewModuleAddress("gov").String(),
 	)
 
-	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
-	var addrsStr []string = make([]string, 0)
+	var addrs = make([]sdk.AccAddress, 0)
+	var addrsStr = make([]string, 0)
 	pubkeys := simtestutil.CreateTestPubKeys(5)
 	for i := 0; i < 5; i++ {
 		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
@@ -143,7 +143,8 @@ func (s *KeeperTestSuite) SetupTest() {
 
 	// Add all tests addresses in whitelists
 	for _, addr := range addrsStr {
-		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		s.Require().NoError(err)
 	}
 }
 func GeneratePrivateKeys(numKeys int) []ChainKey {
@@ -166,8 +167,10 @@ func TestKeeperTestSuite(t *testing.T) {
 func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	err := s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
 }
 
 func (s *KeeperTestSuite) CreateOneTopic() uint64 {
@@ -210,7 +213,7 @@ func (s *KeeperTestSuite) TestAddWorkerNonce() {
 	unfulfilledNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
 
-	s.Require().Len(unfulfilledNonces.Nonces, 0, "Unfulfilled nonces should be empty")
+	s.Require().Empty(unfulfilledNonces.Nonces, "Unfulfilled nonces should be empty")
 
 	// Set worker nonce
 	newNonce := &types.Nonce{BlockHeight: 42}
@@ -278,7 +281,7 @@ func (s *KeeperTestSuite) TestGetMultipleUnfulfilledWorkerNonces() {
 	// Initially, ensure no unfulfilled nonces exist
 	initialNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
-	s.Require().Len(initialNonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
+	s.Require().Empty(initialNonces.Nonces, "Initial unfulfilled nonces should be empty")
 
 	// Set multiple worker nonces
 	nonceValues := []int64{42, 43, 44}
@@ -306,7 +309,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledWorkerNonces() {
 	// Initially, ensure no unfulfilled nonces exist
 	initialNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
-	s.Require().Len(initialNonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
+	s.Require().Empty(initialNonces.Nonces, "Initial unfulfilled nonces should be empty")
 
 	// Set multiple worker nonces
 	nonceValues := []int64{42, 43, 44, 45, 46}
@@ -343,10 +346,10 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	maxUnfulfilledRequests := uint64(3)
+	maxUnfulfilledRequests := 3
 	// Set the maximum number of unfulfilled worker nonces
 	params := types.Params{
-		MaxUnfulfilledWorkerRequests: maxUnfulfilledRequests,
+		MaxUnfulfilledWorkerRequests: uint64(maxUnfulfilledRequests),
 	}
 
 	// Set the maximum number of unfulfilled worker nonces via the SetParams method
@@ -363,7 +366,7 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	// Retrieve and verify the nonces to check if only the last 'maxUnfulfilledRequests' are retained
 	unfulfilledNonces, err := keeper.GetUnfulfilledWorkerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after addition")
-	s.Require().Len(unfulfilledNonces.Nonces, int(maxUnfulfilledRequests), "Should only contain max unfulfilled nonces")
+	s.Require().Len(unfulfilledNonces.Nonces, maxUnfulfilledRequests, "Should only contain max unfulfilled nonces")
 
 	// Check that the nonces are the most recent ones
 	expectedNonces := []int64{50, 40, 30} // These should be the last three nonces added
@@ -382,7 +385,7 @@ func (s *KeeperTestSuite) TestAddReputerNonce() {
 	unfulfilledNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
 
-	s.Require().Len(unfulfilledNonces.Nonces, 0, "Unfulfilled nonces should be empty")
+	s.Require().Empty(unfulfilledNonces.Nonces, "Unfulfilled nonces should be empty")
 
 	// Set reputer nonce
 	newReputerNonce := &types.Nonce{BlockHeight: 42}
@@ -454,7 +457,7 @@ func (s *KeeperTestSuite) TestGetAndFulfillMultipleUnfulfilledReputerNonces() {
 	// Initially, ensure no unfulfilled nonces exist
 	initialNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces")
-	s.Require().Len(initialNonces.Nonces, 0, "Initial unfulfilled nonces should be empty")
+	s.Require().Empty(initialNonces.Nonces, "Initial unfulfilled nonces should be empty")
 
 	// Set multiple reputer nonces
 	nonceValues := []int64{42, 43, 44, 45, 46}
@@ -487,11 +490,11 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	maxUnfulfilledRequests := uint64(3)
+	maxUnfulfilledRequests := 3
 
 	// Set the maximum number of unfulfilled reputer nonces
 	params := types.Params{
-		MaxUnfulfilledReputerRequests: maxUnfulfilledRequests,
+		MaxUnfulfilledReputerRequests: uint64(maxUnfulfilledRequests),
 	}
 
 	// Set the maximum number of unfulfilled reputer nonces via the SetParams method
@@ -508,7 +511,7 @@ func (s *KeeperTestSuite) TestReputerNonceLimitEnforcement() {
 	// Retrieve and verify the nonces to check if only the last 'maxUnfulfilledRequests' are retained
 	unfulfilledNonces, err := keeper.GetUnfulfilledReputerNonces(ctx, topicId)
 	s.Require().NoError(err, "Error retrieving nonces after addition")
-	s.Require().Len(unfulfilledNonces.Nonces, int(maxUnfulfilledRequests), "Should only contain max unfulfilled nonces")
+	s.Require().Len(unfulfilledNonces.Nonces, maxUnfulfilledRequests, "Should only contain max unfulfilled nonces")
 
 	// Check that the nonces are the most recent ones
 	expectedNonces := []int64{50, 40, 30} // These should be the last three nonces added
@@ -1095,7 +1098,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	// Insert first set of inferences
 	blockHeight1 := types.BlockHeight(12345)
 	newInference1 := types.Inference{
-		TopicId:     uint64(topicId),
+		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     "worker1",
 		Value:       alloraMath.MustNewDecFromString("10"),
@@ -1112,7 +1115,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	// Insert second set of inferences
 	blockHeight2 := types.BlockHeight(12346)
 	newInference2 := types.Inference{
-		TopicId:     uint64(topicId),
+		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     "worker2",
 		Value:       alloraMath.MustNewDecFromString("20"),
@@ -1145,7 +1148,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 
 	blockHeight1 := int64(12345)
 	newInference1 := types.Inference{
-		TopicId:     uint64(topicId),
+		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     workerAccStr,
 		Value:       alloraMath.MustNewDecFromString("10"),
@@ -1161,7 +1164,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 
 	blockHeight2 := int64(12346)
 	newInference2 := types.Inference{
-		TopicId:     uint64(topicId),
+		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     workerAccStr,
 		Value:       alloraMath.MustNewDecFromString("10"),
@@ -1199,7 +1202,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 	}
 
 	// Assume InsertForecasts correctly sets up forecasts
-	nonce := types.Nonce{BlockHeight: int64(block)}
+	nonce := types.Nonce{BlockHeight: block}
 	err := keeper.InsertForecasts(ctx, topicId, nonce, expectedForecasts)
 	s.Require().NoError(err)
 
@@ -1643,7 +1646,7 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	s.Require().NoError(err)
 	removals, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
-	s.Require().Len(removals, 0)
+	s.Require().Empty(removals)
 	s.Require().False(limitHit, "The limit should not be hit")
 
 	// delete 102
@@ -1651,7 +1654,7 @@ func (s *KeeperTestSuite) TestSetGetDeleteStakeRemovalByAddressWithDetailedPlace
 	s.Require().NoError(err)
 	removals, limitHit, err = keeper.GetStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
-	s.Require().Len(removals, 0)
+	s.Require().Empty(removals)
 	s.Require().False(limitHit, "The limit should not be hit")
 }
 
@@ -1662,7 +1665,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockNotFound() {
 	// Attempt to retrieve stake removal info for an address with no set info
 	removals, limitHit, err := keeper.GetStakeRemovalsUpUntilBlock(ctx, 202, 100)
 	s.Require().NoError(err)
-	s.Require().Len(removals, 0)
+	s.Require().Empty(removals)
 	s.Require().False(limitHit, "The limit should not be hit")
 }
 
@@ -1674,7 +1677,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitPreviousBlocks() 
 	blockRemovalsEnd := int64(13)
 
 	topicId := topicIdStart
-	reputer := "reputer" + strconv.Itoa(int(topicId))
+	reputer := "reputer" + strconv.FormatUint(topicId, 10)
 	removalInfo := types.StakeRemovalInfo{
 		BlockRemovalStarted:   blockRemovalsStart,
 		BlockRemovalCompleted: blockRemovalsEnd,
@@ -1703,7 +1706,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitExactBlock() {
 	blockRemovalsEnd := int64(13)
 
 	topicId := topicIdStart
-	reputer := "reputer" + strconv.Itoa(int(topicId))
+	reputer := "reputer" + strconv.FormatUint(topicId, 10)
 	removalInfo := types.StakeRemovalInfo{
 		BlockRemovalStarted:   blockRemovalsStart,
 		BlockRemovalCompleted: blockRemovalsEnd,
@@ -1734,7 +1737,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitGreaterThanNumRem
 
 	for i := int64(0); i < numRemovals; i++ {
 		topicId := topicIdStart + uint64(i)
-		reputer := "reputer" + strconv.Itoa(int(topicId))
+		reputer := "reputer" + strconv.FormatUint(topicId, 10)
 		// Create a sample stake removal information
 		removalInfo := types.StakeRemovalInfo{
 			BlockRemovalStarted:   blockRemovalsStart + i,
@@ -1767,7 +1770,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsUpUntilBlockLimitLessThanNumRemova
 
 	for i := int64(0); i < numRemovals; i++ {
 		topicId := topicIdStart + uint64(i)
-		reputer := "reputer" + strconv.Itoa(int(topicId))
+		reputer := "reputer" + strconv.FormatUint(topicId, 10)
 		// Create a sample stake removal information
 		removalInfo := types.StakeRemovalInfo{
 			BlockRemovalStarted:   blockRemovalsStart + i,
@@ -1856,7 +1859,7 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	s.Require().NoError(err)
 	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo0.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
-	s.Require().Len(removals, 0)
+	s.Require().Empty(removals)
 	s.Require().False(limitHit)
 
 	// delete 102
@@ -1864,7 +1867,7 @@ func (s *KeeperTestSuite) TestSetGetDeleteDelegateStakeRemovalByAddress() {
 	s.Require().NoError(err)
 	removals, limitHit, err = keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, removalInfo1.BlockRemovalCompleted, 100)
 	s.Require().NoError(err)
-	s.Require().Len(removals, 0)
+	s.Require().Empty(removals)
 	s.Require().False(limitHit)
 }
 
@@ -1886,7 +1889,7 @@ func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
 	err := keeper.SetDelegateStakeRemoval(ctx, removalInfo)
 	s.Require().NoError(err)
 
-	retrievedInfo, err := keeper.GetDelegateStakeRemoval(ctx,
+	_, err = keeper.GetDelegateStakeRemoval(ctx,
 		removalInfo.BlockRemovalStarted,
 		removalInfo.TopicId,
 		removalInfo.Delegator,
@@ -1895,7 +1898,7 @@ func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
 	// index is on BlockRemovalCompleted not BlockRemovalStarted
 	s.Require().Error(err)
 
-	retrievedInfo, err = keeper.GetDelegateStakeRemoval(ctx,
+	retrievedInfo, err := keeper.GetDelegateStakeRemoval(ctx,
 		removalInfo.BlockRemovalCompleted,
 		removalInfo.TopicId,
 		removalInfo.Delegator,
@@ -1917,7 +1920,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalByAddressNotFound() {
 	// Attempt to retrieve delegate stake removal info for an address with no set info
 	removals, limitHit, err := keeper.GetDelegateStakeRemovalsUpUntilBlock(ctx, 201, 100)
 	s.Require().NoError(err)
-	s.Require().Len(removals, 0)
+	s.Require().Empty(removals)
 	s.Require().False(limitHit, "The limit should not be hit")
 }
 
@@ -2192,7 +2195,7 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	activeTopics, _, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 
-	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
+	s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
 
 	for _, topicId := range activeTopics {
 		isActive, err := keeper.IsTopicActive(ctx, topicId)
@@ -2237,7 +2240,7 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	activeTopics, pageRes, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 
-	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
+	s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
 
 	for _, topicId := range activeTopics {
 		isActive, err := keeper.IsTopicActive(ctx, topicId)
@@ -2260,7 +2263,7 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	}
 	activeTopics, pageRes, err = keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(1, len(activeTopics), "Should retrieve exactly one active topics")
+	s.Require().Len(activeTopics, 1, "Should retrieve exactly one active topics")
 	s.Require().NotNil(pageRes, "Next key should not be nil")
 	for _, topicId := range activeTopics {
 		isActive, err := keeper.IsTopicActive(ctx, topicId)
@@ -2276,7 +2279,7 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	}
 	activeTopics, pageRes, err = keeper.GetIdsOfActiveTopics(ctx, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(0, len(activeTopics), "Should retrieve exactly one active topics")
+	s.Require().Empty(activeTopics, "Should retrieve exactly one active topics")
 	s.Require().NotNil(pageRes, "Next key should not be nil")
 }
 
@@ -2403,7 +2406,8 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	// Setup a topic with some revenue
 	initialRevenue := cosmosMath.NewInt(100)
 	initialRevenueInt := cosmosMath.NewInt(100)
-	keeper.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+	err = keeper.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+	s.Require().NoError(err, "Adding initial revenue should not fail")
 
 	// Test getting revenue for a topic with existing revenue
 	feeRev, err = keeper.GetTopicFeeRevenue(ctx, topicId)
@@ -2598,13 +2602,13 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
 	}
 
 	// Set the maximum number of scores using system parameters
-	maxNumScores := uint64(5)
-	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	maxNumScores := 5
+	params := types.Params{MaxSamplesToScaleScores: uint64(maxNumScores)}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
-	for i := 0; i < int(maxNumScores+2); i++ {
+	for i := 0; i < maxNumScores+2; i++ {
 		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
 		s.Require().NoError(err, "Inserting worker inference score should not fail")
 	}
@@ -2612,7 +2616,7 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
 	// Fetch scores to check if trimming happened
 	scores, err := keeper.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching scores at block should not fail")
-	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 }
 
 func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
@@ -2622,13 +2626,13 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 	blockHeight := int64(100)
 
 	// Set the maximum number of scores using system parameters
-	maxNumScores := uint64(5)
-	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	maxNumScores := 5
+	params := types.Params{MaxSamplesToScaleScores: uint64(maxNumScores)}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
-	for i := 0; i < int(maxNumScores+2); i++ { // Inserting 7 scores where the limit is 5
+	for i := 0; i < maxNumScores+2; i++ { // Inserting 7 scores where the limit is 5
 		scoreValue := alloraMath.NewDecFromInt64(int64(90 + i)) // Increment score value to simulate variation
 		score := types.Score{
 			TopicId:     topicId,
@@ -2643,7 +2647,7 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 	// Fetch scores to check if trimming happened
 	scores, err := keeper.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching scores at block should not fail")
-	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 
 	// Check that the retained scores are the last five inserted
 	for idx, score := range scores.Scores {
@@ -2693,13 +2697,13 @@ func (s *KeeperTestSuite) TestInsertWorkerForecastScore() {
 	blockHeight := int64(100)
 
 	// Set the maximum number of scores using system parameters
-	maxNumScores := uint64(5)
-	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	maxNumScores := 5
+	params := types.Params{MaxSamplesToScaleScores: uint64(maxNumScores)}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
-	for i := 0; i < int(maxNumScores+2); i++ { // Inserting 7 scores where the limit is 5
+	for i := 0; i < maxNumScores+2; i++ { // Inserting 7 scores where the limit is 5
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
@@ -2713,7 +2717,7 @@ func (s *KeeperTestSuite) TestInsertWorkerForecastScore() {
 	// Fetch scores to check if trimming happened
 	scores, err := keeper.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching forecast scores at block should not fail")
-	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 }
 
 func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
@@ -2768,13 +2772,13 @@ func (s *KeeperTestSuite) TestInsertReputerScore() {
 	blockHeight := int64(100)
 
 	// Set the maximum number of scores using system parameters
-	maxNumScores := uint64(5)
-	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	maxNumScores := 5
+	params := types.Params{MaxSamplesToScaleScores: uint64(maxNumScores)}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
-	for i := 0; i < int(maxNumScores+2); i++ { // Inserting 7 scores where the limit is 5
+	for i := 0; i < maxNumScores+2; i++ { // Inserting 7 scores where the limit is 5
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
@@ -2788,7 +2792,7 @@ func (s *KeeperTestSuite) TestInsertReputerScore() {
 	// Fetch scores to check if trimming happened
 	scores, err := keeper.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
 	s.Require().NoError(err, "Fetching reputer scores at block should not fail")
-	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 }
 
 func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
@@ -3172,13 +3176,13 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	// Check if the records are pruned
 	inferences, err := s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting inferences should not fail")
-	s.Require().Equal(len(inferences.Inferences), 0, "Must be pruned")
+	s.Require().Empty(inferences.Inferences, "Must be pruned")
 	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting forecasts should not fail")
-	s.Require().Equal(len(forecasts.Forecasts), 0, "Must be pruned")
+	s.Require().Empty(forecasts.Forecasts, "Must be pruned")
 	lossbundles, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting reputer loss bundles should not fail")
-	s.Require().Equal(len(lossbundles.ReputerValueBundles), 0, "Must be pruned")
+	s.Require().Empty(lossbundles.ReputerValueBundles, "Must be pruned")
 	networkBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting network loss bundle should not fail but be empty")
 	s.Require().Equal(uint64(0), networkBundles.TopicId, "Must be pruned as evidenced by nil topic id")
@@ -3227,7 +3231,8 @@ func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {
 	topicId1 := uint64(1)
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			keeper.DeleteUnfulfilledWorkerNonces(s.ctx, topicId1)
+			err := keeper.DeleteUnfulfilledWorkerNonces(s.ctx, topicId1)
+			s.Require().NoError(err, "Failed to delete unfulfilled worker nonces, topicId1")
 			// Set multiple worker nonces
 			for _, val := range tt.nonces {
 				err := keeper.AddWorkerNonce(s.ctx, topicId1, val)
@@ -3235,7 +3240,7 @@ func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {
 			}
 
 			// Call pruneWorkerNonces
-			err := s.emissionsKeeper.PruneWorkerNonces(s.ctx, topicId1, tt.blockHeightThreshold)
+			err = s.emissionsKeeper.PruneWorkerNonces(s.ctx, topicId1, tt.blockHeightThreshold)
 			s.Require().NoError(err)
 
 			// Check remaining nonces
@@ -3248,7 +3253,6 @@ func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicCorrectness() {
 			for _, nonce := range tt.expectedNonces {
 				s.Require().Contains(nonces.Nonces, nonce)
 			}
-
 		})
 	}
 }
@@ -3310,7 +3314,8 @@ func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
 	topicId1 := uint64(1)
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			keeper.DeleteUnfulfilledReputerNonces(s.ctx, topicId1)
+			err := keeper.DeleteUnfulfilledReputerNonces(s.ctx, topicId1)
+			s.Require().NoError(err, "Failed to delete unfulfilled reputer nonces, topicId1")
 			// Set multiple reputer nonces
 			for _, val := range tt.nonces {
 				err := keeper.AddReputerNonce(s.ctx, topicId1, val.ReputerNonce)
@@ -3318,7 +3323,7 @@ func (s *KeeperTestSuite) TestPruneReputerNoncesLogicCorrectness() {
 			}
 
 			// Call PruneReputerNonces
-			err := s.emissionsKeeper.PruneReputerNonces(s.ctx, topicId1, tt.blockHeightThreshold)
+			err = s.emissionsKeeper.PruneReputerNonces(s.ctx, topicId1, tt.blockHeightThreshold)
 			s.Require().NoError(err)
 
 			// Check remaining nonces
@@ -3551,11 +3556,16 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
-	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker1, score1)
-	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker2, score2)
-	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker3, score3)
-	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker4, score4)
-	_ = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker5, score5)
+	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker1, score1)
+	s.Require().NoError(err)
+	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker2, score2)
+	s.Require().NoError(err)
+	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker3, score3)
+	s.Require().NoError(err)
+	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker4, score4)
+	s.Require().NoError(err)
+	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker5, score5)
+	s.Require().NoError(err)
 
 	allInferences := types.Inferences{
 		Inferences: []*types.Inference{
@@ -3564,12 +3574,13 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.71")},
 		},
 	}
-	_ = k.InsertInferences(ctx, topicId, nonce, allInferences)
+	err = k.InsertInferences(ctx, topicId, nonce, allInferences)
+	s.Require().NoError(err)
 
 	newInference := types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
-	err := k.AppendInference(ctx, topicId, nonce, &newInference)
+	err = k.AppendInference(ctx, topicId, nonce, &newInference)
 	s.Require().NoError(err)
 	newAllInferences, err := k.GetInferencesAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
@@ -3577,7 +3588,8 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	params := types.Params{
 		MaxTopInferersToReward: 4,
 	}
-	k.SetParams(ctx, params)
+	err = k.SetParams(ctx, params)
+	s.Require().NoError(err)
 	newInference2 := types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
@@ -3585,7 +3597,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	s.Require().NoError(err)
 	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
-	s.Require().Equal(len(newAllInferences.Inferences), int(params.MaxTopInferersToReward))
+	s.Require().Equal(uint64(len(newAllInferences.Inferences)), params.MaxTopInferersToReward)
 	s.Require().Equal(newAllInferences.Inferences[1].Inferer, worker3)
 }
 
@@ -3607,11 +3619,16 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
-	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker1, score1)
-	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker2, score2)
-	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker3, score3)
-	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker4, score4)
-	_ = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker5, score5)
+	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker1, score1)
+	s.Require().NoError(err)
+	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker2, score2)
+	s.Require().NoError(err)
+	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker3, score3)
+	s.Require().NoError(err)
+	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker4, score4)
+	s.Require().NoError(err)
+	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker5, score5)
+	s.Require().NoError(err)
 
 	allForecasts := types.Forecasts{
 		Forecasts: []*types.Forecast{
@@ -3662,7 +3679,8 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			},
 		},
 	}
-	_ = k.InsertForecasts(ctx, topicId, nonce, allForecasts)
+	err = k.InsertForecasts(ctx, topicId, nonce, allForecasts)
+	s.Require().NoError(err)
 
 	newForecast := types.Forecast{
 		TopicId:     topicId,
@@ -3679,7 +3697,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			},
 		},
 	}
-	err := k.AppendForecast(ctx, topicId, nonce, &newForecast)
+	err = k.AppendForecast(ctx, topicId, nonce, &newForecast)
 	s.Require().NoError(err)
 	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
@@ -3687,7 +3705,8 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	params := types.Params{
 		MaxTopInferersToReward: 4,
 	}
-	k.SetParams(ctx, params)
+	err = k.SetParams(ctx, params)
+	s.Require().NoError(err)
 	newInference2 := types.Forecast{
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
@@ -3707,12 +3726,11 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().NoError(err)
 	newAllForecasts, err = k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
-	s.Require().Equal(len(newAllForecasts.Forecasts), int(params.MaxTopInferersToReward))
+	s.Require().Equal(uint64(len(newAllForecasts.Forecasts)), params.MaxTopInferersToReward)
 	s.Require().Equal(newAllForecasts.Forecasts[1].Forecaster, worker3)
 }
 
 func (s *KeeperTestSuite) TestAppendReputerLoss() {
-
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := uint64(1)
@@ -3733,11 +3751,16 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer5, Score: alloraMath.NewDecFromInt64(96)}
-	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer1, score1)
-	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer2, score2)
-	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer3, score3)
-	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer4, score4)
-	_ = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer5, score5)
+	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer1, score1)
+	s.Require().NoError(err)
+	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer2, score2)
+	s.Require().NoError(err)
+	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer3, score3)
+	s.Require().NoError(err)
+	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer4, score4)
+	s.Require().NoError(err)
+	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer5, score5)
+	s.Require().NoError(err)
 
 	allReputerLosses := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{
@@ -3767,7 +3790,8 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			},
 		},
 	}
-	_ = k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, allReputerLosses)
+	err = k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, allReputerLosses)
+	s.Require().NoError(err)
 
 	newReputerLoss := types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
@@ -3777,7 +3801,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			TopicId:             topicId,
 		},
 	}
-	err := k.AppendReputerLoss(ctx, topicId, nonce.BlockHeight, &newReputerLoss)
+	err = k.AppendReputerLoss(ctx, topicId, nonce.BlockHeight, &newReputerLoss)
 	s.Require().NoError(err)
 	newAllReputerLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3785,7 +3809,8 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	params := types.Params{
 		MaxTopReputersToReward: 4,
 	}
-	k.SetParams(ctx, params)
+	err = k.SetParams(ctx, params)
+	s.Require().NoError(err)
 
 	newReputerLoss2 := types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
@@ -3799,6 +3824,6 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().NoError(err)
 	newAllReputerLosses, err = k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
-	s.Require().Equal(len(newAllReputerLosses.ReputerValueBundles), int(params.MaxTopReputersToReward))
+	s.Require().Equal(uint64(len(newAllReputerLosses.ReputerValueBundles)), params.MaxTopReputersToReward)
 	s.Require().Equal(newAllReputerLosses.ReputerValueBundles[1].ValueBundle.Reputer, reputer3)
 }

@@ -38,7 +38,7 @@ func RegisterReputerForTopic(
 	return nil
 }
 
-// register bob as worker in topic 1, then check sucess
+// register bob as worker in topic 1, then check success
 func RegisterWorkerForTopic(
 	m testCommon.TestConfig,
 	worker NameAccountAndAddress,

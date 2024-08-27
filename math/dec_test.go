@@ -18,7 +18,6 @@ import (
 )
 
 func TestDec(t *testing.T) {
-
 	// Property tests
 	t.Run("TestNewDecFromInt64", rapid.MakeCheck(testDecInt64))
 
@@ -523,11 +522,11 @@ func testMulQuoB(t *rapid.T) {
 // Property: (a * 10^b) / 10^b == a using MulExact and QuoExact
 // and a with no more than b decimal places (b <= 32).
 func testMulQuoExact(t *rapid.T) {
-	b := rapid.Uint32Range(0, 32).Draw(t, "b")
-	decPrec := func(d alloraMath.Dec) bool { return d.NumDecimalPlaces() <= b }
+	b := rapid.Int32Range(0, 32).Draw(t, "b")
+	decPrec := func(d alloraMath.Dec) bool { return d.NumDecimalPlaces() <= uint32(b) }
 	a := genDec.Filter(decPrec).Draw(t, "a")
 
-	c := alloraMath.NewDecFinite(1, int32(b))
+	c := alloraMath.NewDecFinite(1, b)
 
 	d, err := a.MulExact(c)
 	require.NoError(t, err)
@@ -544,8 +543,8 @@ func testQuoMulExact(t *rapid.T) {
 	a := rapid.Uint64().Draw(t, "a")
 	aDec, err := alloraMath.NewDecFromString(fmt.Sprintf("%d", a))
 	require.NoError(t, err)
-	b := rapid.Uint32Range(0, 32).Draw(t, "b")
-	c := alloraMath.NewDecFinite(1, int32(b))
+	b := rapid.Int32Range(0, 32).Draw(t, "b")
+	c := alloraMath.NewDecFinite(1, b)
 
 	require.NoError(t, err)
 
@@ -580,7 +579,6 @@ func testIsZero(t *rapid.T) {
 	f, dec := floatAndDec.float, floatAndDec.dec
 
 	require.Equal(t, f == 0, dec.IsZero())
-
 }
 
 // Property: isNegative(f) == isNegative(NewDecFromString(f.String()))
@@ -643,7 +641,7 @@ func floatDecimalPlaces(t *rapid.T, f float64) uint32 {
 		return 0
 	}
 
-	return uint32(res)
+	return uint32(res) //nolint:gosec //G115: integer overflow conversion int -> uint32
 }
 
 func TestIsFinite(t *testing.T) {

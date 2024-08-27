@@ -300,7 +300,6 @@ func GenerateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64,
 }
 
 func GenerateHugeLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputers []sdk.AccAddress, workers []sdk.AccAddress) types.ReputerValueBundles {
-
 	var (
 		reputersLosses,
 		reputersInfererLosses,
@@ -858,10 +857,8 @@ func GenerateSimpleLossBundles(
 	workerZeroOneOutInfererValue string,
 	workerZeroInfererValue string,
 ) types.ReputerValueBundles {
-
 	var reputerValueBundles types.ReputerValueBundles
 	for _, reputer := range reputerValues {
-
 		var countValues int
 		if len(workerValues) < len(reputerValues) {
 			countValues = len(workerValues)

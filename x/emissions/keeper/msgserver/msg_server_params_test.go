@@ -17,7 +17,8 @@ func (s *MsgServerTestSuite) TestUpdateParams() {
 	adminPrivateKey := secp256k1.GenPrivKey()
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
 
-	keeper.AddWhitelistAdmin(ctx, adminAddr.String())
+	err := keeper.AddWhitelistAdmin(ctx, adminAddr.String())
+	require.NoError(err)
 
 	existingParams, err := keeper.GetParams(ctx)
 	require.NoError(err)
@@ -52,7 +53,8 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	adminPrivateKey := secp256k1.GenPrivKey()
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
 
-	keeper.AddWhitelistAdmin(ctx, adminAddr.String())
+	err := keeper.AddWhitelistAdmin(ctx, adminAddr.String())
+	require.NoError(err)
 
 	newParams := &types.OptionalParams{
 		Version:                         []string{"1234"},

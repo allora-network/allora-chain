@@ -50,7 +50,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.False(m.T, aliceNotRegisteredAsWorker.IsRegistered)
 }
 
-// register bob as worker in topic 1, then check sucess
+// register bob as worker in topic 1, then check success
 func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
 	registerBobRequest := &emissionstypes.MsgRegister{

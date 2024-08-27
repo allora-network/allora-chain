@@ -261,7 +261,6 @@ func (s *SimulationData) pickPercentOfStakeByDelegator(
 		return cosmossdk_io_math.ZeroInt()
 	}
 	return pickPercentOf(rand, stake)
-
 }
 
 // addDelegatorStake adds a delegator stake to the simulation data
@@ -312,7 +311,6 @@ func (s *SimulationData) pickRandomReputerRegisteredInTopic(rand *rand.Rand, top
 	})
 	if len(reputers) == 0 {
 		return Actor{}, fmt.Errorf("no reputers in topic %d", topicId)
-
 	}
 	randIndex := rand.Intn(len(reputers))
 	return reputers[randIndex].Actor, nil
@@ -386,7 +384,7 @@ func (s *SimulationData) getActorFromAddr(addr string) (Actor, bool) {
 	return Actor{}, false
 }
 
-// randomly flip the fail on err case to decide whether to be aggresive and fuzzy or
+// randomly flip the fail on err case to decide whether to be aggressive and fuzzy or
 // behaved state transitions
 func (s *SimulationData) randomlyFlipFailOnErr(m *testcommon.TestConfig, iteration int) {
 	if iteration < 20 { // first 20 iterations be behaved

@@ -50,9 +50,12 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 		BlockHeight: block,
 	}
 
-	keeper.AddWorkerNonce(ctx, topicId, &workerNonce)
-	keeper.FulfillWorkerNonce(ctx, topicId, &workerNonce)
-	keeper.AddReputerNonce(ctx, topicId, &reputerNonce)
+	err = keeper.AddWorkerNonce(ctx, topicId, &workerNonce)
+	require.NoError(err)
+	_, err = keeper.FulfillWorkerNonce(ctx, topicId, &workerNonce)
+	require.NoError(err)
+	err = keeper.AddReputerNonce(ctx, topicId, &reputerNonce)
+	require.NoError(err)
 
 	// add in inference and forecast data
 	expectedInferences = types.Inferences{
@@ -162,7 +165,7 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayload() {
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId, _, _ := s.setUpMsgReputerPayload(reputerAddr, workerAddr, block)
 
-	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: int64(block)}, expectedForecasts)
+	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
 	require.NoError(err)
 
 	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)

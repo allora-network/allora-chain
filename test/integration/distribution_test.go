@@ -34,7 +34,7 @@ func GetValidatorAddressesFromGenesisFile(m testCommon.TestConfig) ([]string, er
 		line := scanner.Text()
 		if strings.Contains(line, "\"validator_address\":") {
 			splitted := strings.Split(line, ":")
-			require.Equal(m.T, len(splitted), 2)
+			require.Len(m.T, splitted, 2)
 			trimmed := strings.TrimSpace(splitted[1])
 			trimmed = strings.Trim(trimmed, ",")
 			trimmed = strings.Trim(trimmed, "\"")

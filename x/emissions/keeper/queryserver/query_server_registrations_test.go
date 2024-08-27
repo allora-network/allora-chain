@@ -103,8 +103,10 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	topic1 := types.Topic{Id: topicId, Creator: creatorAddress}
 
 	// Topic register
-	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
-	s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	err := s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	require.NoError(err, "SetTopic should not return an error")
+	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	require.NoError(err, "ActivateTopic should not return an error")
 	// Worker register
 	registerMsg := &types.MsgRegister{
 		Sender:    workerAddrString,
@@ -153,8 +155,10 @@ func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
 
 	// Topic register
-	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
-	s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	err := s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	require.NoError(err, "SetTopic should not return an error")
+	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	require.NoError(err, "ActivateTopic should not return an error")
 	// Register reputer
 	registerMsg := &types.MsgRegister{
 		Sender:    reputerAddr.String(),
