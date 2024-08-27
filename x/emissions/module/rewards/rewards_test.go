@@ -725,6 +725,9 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+
 	// Insert loss bundle from reputers
 	lossBundles := GenerateSimpleLossBundles(
 		s,
@@ -3224,8 +3227,6 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	block = s.ctx.BlockHeight()
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
-	err = s.emissionsAppModule.EndBlock(s.ctx)
-	require.NoError(err)
 	// do work on the current block, but with one less reputer
 	s.getRewardsDistribution(
 		topic.Id,
