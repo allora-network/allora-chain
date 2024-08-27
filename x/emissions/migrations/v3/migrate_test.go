@@ -74,7 +74,7 @@ func (s *MigrationTestSuite) TestMigrate() {
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 	defaultParams := types.DefaultParams()
 	paramsOld := oldparams.Params{
-		Version:                             "Test",
+		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,
 		RequiredMinimumStake:                defaultParams.RequiredMinimumStake,

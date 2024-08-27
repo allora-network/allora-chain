@@ -2483,6 +2483,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
 
+	block += newTopicMsg.EpochLength
+	s.ctx = s.ctx.WithBlockHeight(block)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
@@ -2631,6 +2633,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
 
+	block += newTopicMsg.EpochLength
+	s.ctx = s.ctx.WithBlockHeight(block)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -3179,6 +3183,8 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	// create tokens to reward with
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
+	newBlockheight := block + 1
+	s.ctx = s.ctx.WithBlockHeight(newBlockheight)
 	// force rewards to be distributed
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
@@ -3216,8 +3222,10 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 
 	// increase the block height
 	block = s.ctx.BlockHeight()
-	block++
+	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	require.NoError(err)
 	// do work on the current block, but with one less reputer
 	s.getRewardsDistribution(
 		topic.Id,
