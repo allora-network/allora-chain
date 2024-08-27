@@ -1,13 +1,12 @@
 package v3
 
 import (
-	"encoding/json"
-	"strconv"
-
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
+	"encoding/binary"
+	"fmt"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
@@ -104,11 +103,16 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 }
 
 func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.Logger().Warn("MigrateActiveTopics")
 	topicStore := prefix.NewStore(store, types.TopicsKey)
 	topicFeeRevStore := prefix.NewStore(store, types.TopicFeeRevenueKey)
 	topicStakeStore := prefix.NewStore(store, types.TopicStakeKey)
 	topicPreviousWeightStore := prefix.NewStore(store, types.PreviousTopicWeightKey)
 	iterator := topicStore.Iterator(nil, nil)
+	churningBlockStore := prefix.NewStore(store, types.TopicToNextPossibleChurningBlockKey)
+	blockToActiveStore := prefix.NewStore(store, types.BlockToActiveTopicsKey)
+	blockLowestWeightStore := prefix.NewStore(store, types.BlockToLowestActiveTopicWeightKey)
 	params, err := emissionsKeeper.GetParams(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get params for active topic migration")
@@ -125,19 +129,20 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 		if err != nil {
 			continue
 		}
-
 		var feeRevenue = cosmosMath.NewInt(0)
-		err = json.Unmarshal(topicFeeRevStore.Get([]byte(strconv.FormatUint(oldMsg.Id, 10))), &feeRevenue)
+		idArray := make([]byte, 8)
+		binary.BigEndian.PutUint64(idArray, oldMsg.Id)
+		err = feeRevenue.Unmarshal(topicFeeRevStore.Get(idArray))
 		if err != nil {
 			continue
 		}
 		var stake = cosmosMath.NewInt(0)
-		err = json.Unmarshal(topicStakeStore.Get([]byte(strconv.FormatUint(oldMsg.Id, 10))), &stake)
+		err = stake.Unmarshal(topicStakeStore.Get(idArray))
 		if err != nil {
 			continue
 		}
 		var previousWeight = alloraMath.NewDecFromInt64(0)
-		err = json.Unmarshal(topicPreviousWeightStore.Get([]byte(strconv.FormatUint(oldMsg.Id, 10))), &previousWeight)
+		err = previousWeight.Unmarshal(topicPreviousWeightStore.Get(idArray))
 		if err != nil {
 			continue
 		}
@@ -157,16 +162,17 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 		}
 		topicWeightData[oldMsg.Id] = weight
 		blockHeight := oldMsg.EpochLastEnded + oldMsg.EpochLength
-
+		sdkCtx.Logger().Warn(fmt.Sprintf("update blockHeight %d", blockHeight))
 		// If the weight less than minimum weight then skip this topic
 		if weight.Lt(params.MinTopicWeight) {
 			continue
 		}
 
+		cuLowestWeight := lowestWeight[blockHeight]
 		// Update lowest weight of topic per block
-		if lowestWeight[blockHeight].Weight.Equal(alloraMath.ZeroDec()) ||
+		if cuLowestWeight.Weight.Equal(alloraMath.ZeroDec()) ||
 			weight.Lt(lowestWeight[blockHeight].Weight) {
-			lowestWeight[blockHeight] = types.TopicIdWeightPair{
+			cuLowestWeight = types.TopicIdWeightPair{
 				Weight:  weight,
 				TopicId: oldMsg.Id,
 			}
@@ -174,8 +180,8 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 
 		churningBlock[oldMsg.Id] = blockHeight
 
-		blockToActiveTopics[blockHeight] =
-			types.TopicIds{TopicIds: append(blockToActiveTopics[blockHeight].TopicIds, oldMsg.Id)}
+		activeTopicIds := blockToActiveTopics[blockHeight]
+		activeTopicIds.TopicIds = append(activeTopicIds.TopicIds, oldMsg.Id)
 
 		// If number of active topic is over global param then remove lowest topic
 		if uint64(len(blockToActiveTopics[blockHeight].TopicIds)) > params.MaxActiveTopicsPerBlock {
@@ -190,27 +196,27 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 				}
 			}
 			// Reset active topics per block
-			blockToActiveTopics[blockHeight] = types.TopicIds{TopicIds: newActiveTopicIds}
+			activeTopicIds.TopicIds = newActiveTopicIds
+			//blockToActiveTopics[blockHeight] = types.TopicIds{TopicIds: newActiveTopicIds}
 			// Reset lowest weight per block
-			lowestWeight[blockHeight] = getLowestTopicIdWeightPair(topicWeightData, blockToActiveTopics[blockHeight])
+			cuLowestWeight = getLowestTopicIdWeightPair(topicWeightData, blockToActiveTopics[blockHeight])
 		}
+		blockToActiveTopics[blockHeight] = activeTopicIds
+		blockHeightBytes := make([]byte, 8)
+		binary.BigEndian.PutUint64(blockHeightBytes, uint64(blockHeight))
+		churningBlockStore.Set(idArray, blockHeightBytes)
+		activeTopicsBytes, err := activeTopicIds.Marshal()
+		if err != nil {
+			continue
+		}
+		lowestWeightBytes, err := cuLowestWeight.Marshal()
+		if err != nil {
+			continue
+		}
+		blockToActiveStore.Set(blockHeightBytes, activeTopicsBytes)
+		blockLowestWeightStore.Set(blockHeightBytes, lowestWeightBytes)
 	}
 	_ = iterator.Close()
-	data, err := json.Marshal(churningBlock)
-	if err != nil {
-		return err
-	}
-	store.Set(types.TopicToNextPossibleChurningBlockKey, data)
-	data, err = json.Marshal(blockToActiveTopics)
-	if err != nil {
-		return err
-	}
-	store.Set(types.BlockToActiveTopicsKey, data)
-	data, err = json.Marshal(lowestWeight)
-	if err != nil {
-		return err
-	}
-	store.Set(types.BlockToLowestActiveTopicWeightKey, data)
 	return nil
 }
 

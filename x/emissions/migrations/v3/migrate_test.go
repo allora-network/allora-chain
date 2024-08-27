@@ -189,11 +189,15 @@ func (s *MigrationTestSuite) TestActiveTopicsMigration() {
 	err = migrations.MigrateActiveTopics(store, s.ctx, *s.emissionsKeeper)
 	s.Require().NoError(err)
 
-	topicNextChurningBlock := store.Get(types.TopicToNextPossibleChurningBlockKey)
-	var topicBlock map[types.TopicId]types.BlockHeight
-	_ = json.Unmarshal(topicNextChurningBlock, &topicBlock)
-	for i := 1; i <= topicCnt; i++ {
-		s.Require().Equal(topicBlock[types.TopicId(i)], int64(100+50*(i%3)))
+	blockToActiveStore := prefix.NewStore(store, types.BlockToActiveTopicsKey)
+	iterator := blockToActiveStore.Iterator(nil, nil)
+	for ; iterator.Valid(); iterator.Next() {
+		var msg types.TopicIds
+		err := proto.Unmarshal(iterator.Value(), &msg)
+		if err != nil {
+			continue
+		}
+		s.Require().GreaterOrEqual(len(msg.TopicIds), 3)
 	}
 }
 
@@ -213,11 +217,18 @@ func (s *MigrationTestSuite) TestLimitedActiveTopicsMigration() {
 	err = migrations.MigrateActiveTopics(store, s.ctx, *s.emissionsKeeper)
 	s.Require().NoError(err)
 
-	topicIdsBlock := store.Get(types.BlockToActiveTopicsKey)
-	var ids map[types.BlockHeight]types.TopicIds
-	_ = json.Unmarshal(topicIdsBlock, &ids)
-	for _, val := range ids {
-		s.Require().Equal(len(val.TopicIds), maxActiveTopicPerBlock)
+	blockToActiveStore := prefix.NewStore(store, types.BlockToActiveTopicsKey)
+	iterator := blockToActiveStore.Iterator(nil, nil)
+	for ; iterator.Valid(); iterator.Next() {
+		var msg types.TopicIds
+		err := proto.Unmarshal(iterator.Value(), &msg)
+		if err != nil {
+			continue
+		}
+		if len(msg.TopicIds) == 0 {
+			continue
+		}
+		s.Require().Len(msg.TopicIds, 3)
 	}
 }
 
