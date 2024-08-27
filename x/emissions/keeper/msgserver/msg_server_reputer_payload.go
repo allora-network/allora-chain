@@ -62,7 +62,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	}
 
 	// Check if the ground truth lag has passed: if blockheight > nonce.BlockHeight + topic.GroundTruthLag
-	if blockHeight < nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag {
+	if blockHeight < nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag ||
+		blockHeight > nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag*2 {
 		return nil, types.ErrReputerNonceWindowNotAvailable
 	}
 
