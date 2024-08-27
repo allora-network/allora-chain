@@ -840,7 +840,7 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 	if forecast == nil || forecast.Forecaster == "" {
 		return errors.New("invalid forecast: forecaster is empty or nil")
 	}
-	if forecast.ForecastElements == nil || len(forecast.ForecastElements) == 0 {
+	if len(forecast.ForecastElements) == 0 {
 		return errors.New("invalid forecast: forecast elements are empty")
 	}
 	block := nonce.BlockHeight
