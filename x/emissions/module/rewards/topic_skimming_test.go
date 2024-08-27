@@ -7,9 +7,9 @@ import (
 )
 
 func (s *RewardsTestSuite) TestSortTopicsByWeightDescWithRandomTiebreakerSimple() {
-	var unsortedTopicIds []uint64 = []uint64{1, 2, 3, 4, 5}
-	var weightsPerTopic []int64 = []int64{100, 300, 700, 400, 200}
-	var weights map[uint64]*alloraMath.Dec = map[uint64]*alloraMath.Dec{}
+	var unsortedTopicIds = []uint64{1, 2, 3, 4, 5}
+	var weightsPerTopic = []int64{100, 300, 700, 400, 200}
+	var weights = map[uint64]*alloraMath.Dec{}
 	for i, topicId := range unsortedTopicIds {
 		weight := alloraMath.NewDecFromInt64(weightsPerTopic[i])
 		weights[topicId] = &weight
@@ -26,9 +26,9 @@ func (s *RewardsTestSuite) TestSortTopicsByWeightDescWithRandomTiebreakerSimple(
 }
 
 func (s *RewardsTestSuite) TestSkimTopTopicsByWeightDescSimple() {
-	var unsortedTopicIds []uint64 = []uint64{1, 2, 3, 4, 5}
-	var weightsPerTopic []int64 = []int64{100, 300, 700, 400, 200}
-	var weights map[uint64]*alloraMath.Dec = map[uint64]*alloraMath.Dec{}
+	var unsortedTopicIds = []uint64{1, 2, 3, 4, 5}
+	var weightsPerTopic = []int64{100, 300, 700, 400, 200}
+	var weights = map[uint64]*alloraMath.Dec{}
 	for i, topicId := range unsortedTopicIds {
 		weight := alloraMath.NewDecFromInt64(weightsPerTopic[i])
 		weights[topicId] = &weight

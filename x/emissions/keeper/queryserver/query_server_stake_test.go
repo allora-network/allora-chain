@@ -373,7 +373,8 @@ func (s *KeeperTestSuite) TestGetDelegateStakePlacement() {
 		NodeAddress: "reputer-node-address-sample",
 	}
 
-	keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
+	err := keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
+	require.NoError(err)
 
 	msg := &types.MsgDelegateStake{
 		Sender:  delegatorAddr.String(),

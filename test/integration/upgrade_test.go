@@ -81,7 +81,8 @@ func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight 
 			getDepositRequired(m),
 		),
 	}
-	msgSubmitProposal.SetMsgs([]sdktypes.Msg{msgSoftwareUpgrade})
+	err = msgSubmitProposal.SetMsgs([]sdktypes.Msg{msgSoftwareUpgrade})
+	require.NoError(m.T, err)
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, msgSubmitProposal)
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
@@ -133,11 +134,12 @@ func getEmissionsVersion(m testCommon.TestConfig) uint64 {
 // the cosmovisor time to reboot the node software
 func waitForUpgrade(m testCommon.TestConfig, proposalHeight int64) {
 	ctx := context.Background()
-	var timeToSleep time.Duration = 15
-	m.Client.WaitForBlockHeight(ctx, proposalHeight-1)
+	var timeToSleep = 15 * time.Second
+	err := m.Client.WaitForBlockHeight(ctx, proposalHeight-1)
+	require.NoError(m.T, err)
 	m.T.Logf("--- Block Height %d Reached, Preparing to Sleep %d while Upgrade Happens ---",
 		proposalHeight-1, timeToSleep)
-	time.Sleep(timeToSleep * time.Second)
+	time.Sleep(timeToSleep)
 }
 
 func UpgradeChecks(m testCommon.TestConfig) {

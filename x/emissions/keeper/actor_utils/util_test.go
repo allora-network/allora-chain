@@ -43,13 +43,13 @@ func TestFindTopNByScoreDesc(t *testing.T) {
 	require.Equal(t, worker3Addr.String(), topActors[2].Address)
 
 	_, isTop := topActorsBool[worker1Addr.String()]
-	require.Equal(t, isTop, true)
+	require.True(t, isTop)
 	_, isTop = topActorsBool[worker2Addr.String()]
-	require.Equal(t, isTop, false)
+	require.False(t, isTop)
 	_, isTop = topActorsBool[worker3Addr.String()]
-	require.Equal(t, isTop, true)
+	require.True(t, isTop)
 	_, isTop = topActorsBool[worker4Addr.String()]
-	require.Equal(t, isTop, false)
+	require.False(t, isTop)
 	_, isTop = topActorsBool[worker5Addr.String()]
-	require.Equal(t, isTop, true)
+	require.True(t, isTop)
 }
