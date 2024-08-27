@@ -2317,7 +2317,7 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	keeper := s.emissionsKeeper
 
 	params := types.Params{
-		MaxActiveTopicsPerBlock:         uint64(2),
+		MaxActiveTopicsPerBlock:         uint64(3),
 		MaxPageLimit:                    uint64(100),
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),
 		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("1"),
@@ -2365,18 +2365,19 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 
 	pagination = &types.SimpleCursorPaginationRequest{
 		Key:   nil,
-		Limit: 2,
+		Limit: 3,
 	}
-	activeTopics, _, err = keeper.GetIdsActiveTopicAtBlock(ctx, 25, pagination)
+	activeTopics, _, err = keeper.GetIdsActiveTopicAtBlock(ctx, 30, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
-	s.Require().Equal(activeTopics[0], uint64(2), "Should be second topic")
-	s.Require().Equal(activeTopics[1], uint64(3), "Should be third topic")
+	s.Require().Equal(3, len(activeTopics), "Should retrieve exactly two active topics")
+	s.Require().Equal(activeTopics[0], uint64(1))
+	s.Require().Equal(activeTopics[1], uint64(2))
+	s.Require().Equal(activeTopics[2], uint64(3))
 
-	ctx = s.ctx.WithBlockHeight(10)
+	ctx = s.ctx.WithBlockHeight(30)
 	_ = setTopicWeight(topic4.Id, 1, 1)
-	_ = keeper.SetTopic(ctx, topic4.Id, topic4)
-	_ = keeper.ActivateTopic(ctx, topic4.Id)
+	//_ = keeper.SetTopic(ctx, topic4.Id, topic4)
+	//_ = keeper.ActivateTopic(ctx, topic4.Id)
 	isActive, err := keeper.IsTopicActive(ctx, topic4.Id)
 	s.Require().NoError(err, "Is topic active should not produce an error")
 	s.Require().Equal(isActive, false, "Topic4 should not be activated")

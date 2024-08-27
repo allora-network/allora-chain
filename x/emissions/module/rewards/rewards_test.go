@@ -441,6 +441,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	newBlockheight := block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
@@ -554,8 +558,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// mint some rewards to give out
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
-	block += 1
-	s.ctx = s.ctx.WithBlockHeight(block)
+	newBlockheight += topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Trigger end block - rewards distribution
 	err = s.emissionsAppModule.EndBlock(s.ctx)
@@ -1321,6 +1325,9 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	newBlockheight := block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
@@ -1459,8 +1466,11 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.Require().NoError(err)
 	}
 
-	newBlockheight = block + topic.GroundTruthLag
+	newBlockheight += topic.GroundTruthLag - 1
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
 	lossBundles = GenerateLossBundles(s, block, topicId, reputerAddrs)
@@ -1639,6 +1649,10 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	newBlockheight := block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
@@ -1652,13 +1666,12 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
-	newBlockheight += epochLength * 3
-	s.ctx = s.ctx.WithBlockHeight(newBlockheight)
-
 	// mint some rewards to give out
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
 	// Trigger end block - rewards distribution
+	newBlockheight += epochLength
+	s.ctx = s.ctx.WithBlockHeight(newBlockheight)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -2349,6 +2362,11 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	block = block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
 			Sender:             payload.ValueBundle.Reputer,
@@ -2498,7 +2516,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		})
 		s.Require().NoError(err)
 	}
-
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
@@ -2506,6 +2525,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	block = block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+
 	// Insert loss bundle from reputers
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
@@ -2645,6 +2665,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	lossBundles = GenerateHugeLossBundles(s, block, topicId, reputerAddrs, newThirdWorkersAddrs)
 	block = block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+
 	// Insert loss bundle from reputers
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{

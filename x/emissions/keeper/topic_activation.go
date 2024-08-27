@@ -240,23 +240,7 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 	currentBlock := sdk.UnwrapSDKContext(ctx).BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
 
-	// Add this topic with epochend block
-	// If the topic of the epochend block exceeds the limit, remove topic with lowest weight
-	isAdded, err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock)
-	if err != nil {
-		return err
-	}
-	if !isAdded {
-		return nil
-	}
-
-	err = k.topicToNextPossibleChurningBlock.Set(ctx, topicId, epochEndBlock)
-	if err != nil {
-		return err
-	}
-
-	// Update lowest topic weight of the block
-	err = k.ResetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
+	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
 	if err != nil {
 		return err
 	}
@@ -293,25 +277,8 @@ func (k *Keeper) AttemptTopicReactivation(ctx context.Context, topicId TopicId) 
 		return err
 	}
 
-	// Add to next epoch end block if greater than lowest weight
-	isAdded, err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock)
+	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
 	if err != nil {
-		sdkCtx.Logger().Warn(fmt.Sprintf("Failed to add topic at next epoch %d, %d", topicId, epochEndBlock))
-		return err
-	}
-	if !isAdded {
-		return nil
-	}
-
-	err = k.topicToNextPossibleChurningBlock.Set(ctx, topicId, epochEndBlock)
-	if err != nil {
-		return err
-	}
-
-	// Reset lowest weight
-	err = k.ResetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
-	if err != nil {
-		sdkCtx.Logger().Warn(fmt.Sprintf("Failed to reset lowest weight at next epoch %d, %d", topicId, epochEndBlock))
 		return err
 	}
 
@@ -342,5 +309,33 @@ func (k *Keeper) removeCurrentTopicFromBlock(ctx context.Context, topicId TopicI
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (k *Keeper) activateTopicAndResetLowestWeightAtBlock(ctx context.Context, topicId TopicId, epochEndBlock BlockHeight) error {
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	// Add to next epoch end block if greater than lowest weight
+	isAdded, err := k.addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(ctx, topicId, epochEndBlock)
+	if err != nil {
+		sdkCtx.Logger().Warn(fmt.Sprintf("Failed to add topic at next epoch %d, %d", topicId, epochEndBlock))
+		return err
+	}
+	if !isAdded {
+		return nil
+	}
+
+	err = k.topicToNextPossibleChurningBlock.Set(ctx, topicId, epochEndBlock)
+	if err != nil {
+		return err
+	}
+
+	// Reset lowest weight
+	err = k.ResetLowestActiveTopicWeightAtBlock(ctx, epochEndBlock)
+	if err != nil {
+		sdkCtx.Logger().Warn(fmt.Sprintf("Failed to reset lowest weight at next epoch %d, %d", topicId, epochEndBlock))
+		return err
+	}
+
 	return nil
 }
