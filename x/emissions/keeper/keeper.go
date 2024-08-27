@@ -776,6 +776,12 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 // Upsert/Append individual inference for a topic/block into the chain's state
 // If the inference already exists, it will be overwritten
 func (k *Keeper) UpsertInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
+	if inference == nil {
+		return errors.New("invalid inference: inferer is empty or nil")
+	}
+	if inference.Inferer == "" {
+		return errors.New("invalid inference: inferer is empty")
+	}
 	block := nonce.BlockHeight
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
@@ -812,6 +818,12 @@ func (k *Keeper) SetInferences(ctx context.Context, topicId TopicId, nonce types
 // Upsert/Append individual forecast for a topic/block into the chain's state
 // If the forecast already exists, it will be overwritten
 func (k *Keeper) UpsertForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
+	if forecast == nil || forecast.Forecaster == "" {
+		return errors.New("invalid forecast: forecaster is empty or nil")
+	}
+	if len(forecast.ForecastElements) == 0 {
+		return errors.New("invalid forecast: forecast elements are empty")
+	}
 	block := nonce.BlockHeight
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)

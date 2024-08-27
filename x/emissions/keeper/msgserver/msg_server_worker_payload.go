@@ -76,23 +76,24 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
+	// Inferences
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
 		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
 		if inference == nil {
-			return nil, errorsmod.Wrapf(err, "Inference not found")
+			return nil, errorsmod.Wrapf(types.ErrNoValidInferences, "Inference not found")
 		}
 		if inference.TopicId != msg.WorkerDataBundle.TopicId {
-			return nil, errorsmod.Wrapf(err,
-				"Error inferer not use same topic")
+			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId,
+				"inferer not using the same topic as bundle")
 		}
 		isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err,
-				"Error inferer address is not registered in this topic")
+				"error checking if inferer address is registered in this topic")
 		}
 		if !isInfererRegistered {
-			return nil, errorsmod.Wrapf(err,
-				"Error inferer address is not registered in this topic")
+			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered,
+				"inferer address is not registered in this topic")
 		}
 		err = ms.k.UpsertInference(ctx, topicId, *nonce, inference)
 		if err != nil {
@@ -100,21 +101,23 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		}
 	}
 
-	// Append this individual inference to all inferences
+	// Forecasts
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Forecast != nil {
 		forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
+		if len(forecast.ForecastElements) == 0 {
+			return nil, errorsmod.Wrapf(types.ErrNoValidForecastElements, "No valid forecast elements found in Forecast")
+		}
 		if forecast.TopicId != msg.WorkerDataBundle.TopicId {
-			return nil, errorsmod.Wrapf(err,
-				"Error forecaster not use same topic")
+			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "forecaster not using the same topic as bundle")
 		}
 		isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err,
-				"Error forecaster address is not registered in this topic")
+				"error checking if forecaster address is registered in this topic")
 		}
 		if !isForecasterRegistered {
-			return nil, errorsmod.Wrapf(err,
-				"Error forecaster address is not registered in this topic")
+			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered,
+				"forecaster address is not registered in this topic")
 		}
 
 		// Remove duplicate forecast element
@@ -127,11 +130,14 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 				seenInferers[el.Inferer] = true
 			}
 		}
-		forecast.ForecastElements = acceptedForecastElements
-		err = ms.k.UpsertForecast(ctx, topicId, *nonce, forecast)
-		if err != nil {
-			return nil, errorsmod.Wrapf(err,
-				"Error appending forecast")
+
+		if len(acceptedForecastElements) > 0 {
+			forecast.ForecastElements = acceptedForecastElements
+			err = ms.k.UpsertForecast(ctx, topicId, *nonce, forecast)
+			if err != nil {
+				return nil, errorsmod.Wrapf(err,
+					"Error appending forecast")
+			}
 		}
 	}
 	return &types.MsgInsertWorkerPayloadResponse{}, nil
