@@ -67,7 +67,7 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensBeforeVest() {
 	s.Require().NoError(err)
 	result, _, _, _ := keeper.GetLockedVestingTokens(
 		bpm,
-		cosmosMath.NewInt(int64(bpm*2)),
+		cosmosMath.NewIntFromUint64(bpm*2),
 		defaultParams,
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
@@ -93,7 +93,7 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
 	s.Require().NoError(err)
 	result, _, _, _ := keeper.GetLockedVestingTokens(
 		bpm,
-		cosmosMath.NewInt(int64(bpm*13+1)),
+		cosmosMath.NewIntFromUint64(bpm*13+1),
 		defaultParams,
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
@@ -106,7 +106,7 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensAfterVest() {
 	s.Require().NoError(err)
 	result, _, _, _ := keeper.GetLockedVestingTokens(
 		bpm,
-		cosmosMath.NewInt(int64(bpm*40)),
+		cosmosMath.NewIntFromUint64(bpm*40),
 		defaultParams,
 	)
 	s.Require().True(result.Equal(cosmosMath.ZeroInt()))
@@ -254,11 +254,11 @@ func (s *IntegrationTestSuite) TestGetLockedVestingTokens() {
 	preseedAccumulated := alloraMath.ZeroDec()
 	seedAccumulated := alloraMath.ZeroDec()
 	teamAccumulated := alloraMath.ZeroDec()
-	for i := uint64(0); i < 96; i++ {
-		epoch := s.epochGet[int(i)]
+	for i := 0; i < 96; i++ {
+		epoch := s.epochGet[i]
 		result, resultPreseed, resultSeed, resultTeam := keeper.GetLockedVestingTokens(
 			blocksPerMonth,
-			cosmosMath.NewIntFromUint64(blocksPerMonth*i),
+			cosmosMath.NewIntFromUint64(blocksPerMonth*uint64(i)),
 			types.DefaultParams(),
 		)
 		resultPreseedDec, err := alloraMath.NewDecFromSdkInt(resultPreseed)

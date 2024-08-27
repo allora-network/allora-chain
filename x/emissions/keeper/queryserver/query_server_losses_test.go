@@ -27,7 +27,7 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 		ctx,
 		&types.QueryNetworkLossBundleAtBlockRequest{
 			TopicId:     topicId,
-			BlockHeight: int64(blockHeight),
+			BlockHeight: blockHeight,
 		},
 	)
 
@@ -102,7 +102,7 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 
 	req := &types.QueryReputerLossBundlesAtBlockRequest{
 		TopicId:     topicId,
-		BlockHeight: int64(block),
+		BlockHeight: block,
 	}
 	response, err := s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
 	require.NoError(err)

@@ -130,13 +130,13 @@ func (s *KeeperTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	}
 
 	// Set the maximum number of scores using system parameters
-	maxNumScores := uint64(5)
-	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	maxNumScores := 5
+	params := types.Params{MaxSamplesToScaleScores: uint64(maxNumScores)}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
-	for i := 0; i < int(maxNumScores+2); i++ {
+	for i := 0; i < maxNumScores+2; i++ {
 		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
 		s.Require().NoError(err, "Inserting worker inference score should not fail")
 	}
@@ -150,7 +150,7 @@ func (s *KeeperTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	scores := response.Scores
 
 	s.Require().NoError(err, "Fetching scores at block should not fail")
-	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 }
 
 func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {

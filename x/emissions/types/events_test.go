@@ -77,7 +77,7 @@ func TestEmitNewInfererScoresSetEventWithNoScores(t *testing.T) {
 	types.EmitNewInfererScoresSetEvent(ctx, scores)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
@@ -136,7 +136,7 @@ func TestEmitNewForecasterScoresSetEventWithNoScores(t *testing.T) {
 	types.EmitNewForecasterScoresSetEvent(ctx, scores)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
@@ -195,7 +195,7 @@ func TestEmitNewReputerScoresSetEventWithNoScores(t *testing.T) {
 	types.EmitNewReputerScoresSetEvent(ctx, scores)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
@@ -252,7 +252,7 @@ func TestEmitNewInfererRewardsSettledEventWithNoRewards(t *testing.T) {
 	types.EmitNewInfererRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
@@ -309,7 +309,7 @@ func TestEmitNewForecasterRewardsSettledEventWithNoRewards(t *testing.T) {
 	types.EmitNewForecasterRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) {
@@ -366,7 +366,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithNoRewards(t *testing.T
 	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewNetworkLossSetEvent(t *testing.T) {

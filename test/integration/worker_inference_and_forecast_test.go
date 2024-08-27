@@ -249,7 +249,7 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	m.T.Log(time.Now(), "--- Insert Worker Bundle ---")
 	// Waiting for ground truth lag to pass
 	m.T.Log(time.Now(), "--- Waiting to Insert Reputer Bundle ---")
-	blockHeightNonce, err := RunWithRetry(m, 3, 2, func() (int64, error) {
+	blockHeightNonce, err := RunWithRetry(m, 3, 2*time.Second, func() (int64, error) {
 		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topic.Id})
 		if err != nil {
 			return 0, err
@@ -280,7 +280,11 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	}
 
 	m.T.Log(time.Now(), fmt.Sprintf("--- Waiting for block %d ---", blockHeightNonce+topic.GroundTruthLag+topic.EpochLength))
-	m.Client.WaitForBlockHeight(ctx, blockHeightNonce+topic.GroundTruthLag+topic.EpochLength)
+	err = m.Client.WaitForBlockHeight(ctx, blockHeightNonce+topic.GroundTruthLag+topic.EpochLength)
+	if err != nil {
+		m.T.Log(time.Now(), "--- Failed waiting for epoch length ---")
+		require.NoError(m.T, err)
+	}
 
 	ValidateQueryNetworkLossBundle(m, topic.Id, blockHeightNonce)
 	m.T.Log(time.Now(), "--- END  Worker Inference, Forecast and Reputation test ---")
@@ -295,7 +299,7 @@ func RunWithRetry(m testCommon.TestConfig, retryCount int, sleep time.Duration, 
 			return val, nil // Success, no need to retry
 		}
 		m.T.Log(time.Now(), fmt.Sprintf("Attempt %d/%d failed, error: %s\n", i+1, retryCount, err))
-		time.Sleep(sleep * time.Second) // Optional: wait before retrying
+		time.Sleep(sleep) // Optional: wait before retrying
 	}
 	return 0, fmt.Errorf("after %d attempts, last error: %s", retryCount, err)
 }
