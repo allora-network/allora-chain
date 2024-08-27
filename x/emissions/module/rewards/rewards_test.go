@@ -1729,17 +1729,19 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	topicId2 := res.TopicId
 
 	// Register 5 workers, first 3 for topic 1 and last 2 for topic 2
-	for i, addr := range workerAddrs {
+	for _, addr := range workerAddrs {
 		workerRegMsg := &types.MsgRegister{
 			Sender:    addr.String(),
 			TopicId:   topicId1,
 			IsReputer: false,
 			Owner:     addr.String(),
 		}
-		if i > 2 {
-			workerRegMsg.TopicId = topicId2
-		}
+		// Full registration of all workers in both topics.
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
+		s.Require().NoError(err)
+
+		workerRegMsg.TopicId = topicId2
+		_, err = s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
 	}
 
