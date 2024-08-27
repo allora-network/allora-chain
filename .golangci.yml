@@ -1,5 +1,4 @@
 run:
-  tests: false
   timeout: 5m
 
 linters:
@@ -42,6 +41,7 @@ linters:
     - unparam
     - revive
     - gosec
+    - testifylint
 
 linters-settings:
   revive:
@@ -72,7 +72,17 @@ issues:
     - linters:
         - staticcheck
       text: "SA1019: \"github.com/cosmos/ibc-go/v8/modules/core/02-client/types\" is deprecated`"
-
+    - path: _test\.go
+      text: "var-naming: don't use underscores in Go names;"
+      linters:
+        - revive
+    - path: _test\.go
+      linters:
+        - goconst
+    - path: _test\.go
+      text: "G404: Use of weak random number generator"
+      linters:
+        - gosec
       
   max-issues-per-linter: 10000
   max-same-issues: 10000

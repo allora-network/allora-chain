@@ -86,7 +86,7 @@ func fundAccounts(
 	}
 	// pass zero for topic id if we're funding the funders themselves
 	if topicId != 0 {
-		m.T.Log(topicLog(uint64(topicId),
+		m.T.Log(topicLog(topicId,
 			"Funded ", len(targets), " accounts from ", sender.name,
 			" with ", amount, " coins:", " ", names,
 		))

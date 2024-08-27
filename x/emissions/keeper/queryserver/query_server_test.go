@@ -100,8 +100,8 @@ func (s *KeeperTestSuite) SetupTest() {
 		authtypes.NewModuleAddress("gov").String(),
 	)
 
-	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
-	var addrsStr []string = make([]string, 0)
+	var addrs = make([]sdk.AccAddress, 0)
+	var addrsStr = make([]string, 0)
 	pubkeys := simtestutil.CreateTestPubKeys(5)
 	for i := 0; i < 5; i++ {
 		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
@@ -140,7 +140,8 @@ func (s *KeeperTestSuite) SetupTest() {
 
 	// Add all tests addresses in whitelists
 	for _, addr := range addrsStr {
-		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		s.Require().NoError(err)
 	}
 }
 
@@ -160,8 +161,10 @@ func GeneratePrivateKeys(numKeys int) []ChainKey {
 func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	err := s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
 }
 
 func (s *KeeperTestSuite) CreateOneTopic() uint64 {
@@ -218,8 +221,10 @@ func (s *KeeperTestSuite) TestCreateSeveralTopics() {
 	creatorInitialBalance := types.DefaultParams().CreateTopicFee.Mul(cosmosMath.NewInt(3))
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, creatorInitialBalance))
 
-	s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, creator, creatorInitialBalanceCoins)
+	err := s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, creator, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
 
 	initialTopicId, err := s.emissionsKeeper.GetNextTopicId(s.ctx)
 	s.Require().NoError(err)

@@ -57,8 +57,10 @@ func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopicsActiveTopicsExistBut
 	})
 	s.Require().NoError(err)
 
-	s.emissionsKeeper.ActivateTopic(s.ctx, id1)
-	s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+	err = s.emissionsKeeper.ActivateTopic(s.ctx, id1)
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+	s.Require().NoError(err)
 
 	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
 	s.Require().Len(result, 0)
@@ -103,8 +105,10 @@ func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopicsActiveTopicsExistAnd
 	})
 	s.Require().NoError(err)
 
-	s.emissionsKeeper.ActivateTopic(s.ctx, id1)
-	s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+	err = s.emissionsKeeper.ActivateTopic(s.ctx, id1)
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+	s.Require().NoError(err)
 
 	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
 	s.Require().Len(result, 2)
@@ -122,8 +126,10 @@ func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopicsActiveTopicsExistAnd
 	id1 := createNewTopic(s)
 	id3 := createNewTopic(s)
 
-	s.emissionsKeeper.ActivateTopic(s.ctx, id1)
-	s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+	err := s.emissionsKeeper.ActivateTopic(s.ctx, id1)
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+	s.Require().NoError(err)
 
 	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
 	s.Require().Len(result, 1)

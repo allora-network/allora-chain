@@ -748,7 +748,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require.NoError(err)
 
 	// Assumes that the inputs are of the same length
-	getAdjustedStakes := func(coefficients []alloraMath.Dec) ([]alloraMath.Dec, error) {
+	getAdjustedStakes := func(coefficients []alloraMath.Dec) []alloraMath.Dec {
 		N_r := alloraMath.NewDecFromInt64(int64(len(stakes)))
 		adjustedStakes := make([]alloraMath.Dec, len(stakes))
 		adjustedStakeNumerators := make([]alloraMath.Dec, len(stakes))
@@ -767,12 +767,12 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 			require.NoError(err)
 			adjustedStakes[i] = alloraMath.Min(alloraMath.OneDec(), adjustedStake)
 		}
-		return adjustedStakes, nil
+		return adjustedStakes
 	}
 
 	// Assumes that the inputs are the same length as the `stakes` array
-	getTotalConsensusScore := func(scores []alloraMath.Dec, coefficients []alloraMath.Dec) (float64, error) {
-		adjustedStakes, err := getAdjustedStakes(coefficients)
+	getTotalConsensusScore := func(scores []alloraMath.Dec, coefficients []alloraMath.Dec) float64 {
+		adjustedStakes := getAdjustedStakes(coefficients)
 		require.NoError(err)
 		require.Len(adjustedStakes, len(stakes))
 		totalScore := alloraMath.ZeroDec()
@@ -789,7 +789,7 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		require.NoError(err)
 		output, err := strconv.ParseFloat(totalScore.String(), 64)
 		require.NoError(err)
-		return output, nil
+		return output
 	}
 
 	startCoefficients := []alloraMath.Dec{
@@ -800,25 +800,25 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 		alloraMath.OneDec(),
 	}
 
-	require.True(len(gotCoefficients0) == len(stakes))
-	require.True(len(gotCoefficients1) == len(stakes))
-	require.True(len(gotCoefficients2) == len(stakes))
-	require.True(len(gotCoefficients3) == len(stakes))
+	require.Equal(len(gotCoefficients0), len(stakes))
+	require.Equal(len(gotCoefficients1), len(stakes))
+	require.Equal(len(gotCoefficients2), len(stakes))
+	require.Equal(len(gotCoefficients3), len(stakes))
 
 	// Check that the total consensus score improves with successive invocations of the function with more iterations
-	totalScore0, _ := getTotalConsensusScore(gotScores0, startCoefficients)
-	totalScore1, _ := getTotalConsensusScore(gotScores1, gotCoefficients1)
-	totalScore2, _ := getTotalConsensusScore(gotScores2, gotCoefficients2)
-	totalScore3, _ := getTotalConsensusScore(gotScores3, gotCoefficients3)
+	totalScore0 := getTotalConsensusScore(gotScores0, startCoefficients)
+	totalScore1 := getTotalConsensusScore(gotScores1, gotCoefficients1)
+	totalScore2 := getTotalConsensusScore(gotScores2, gotCoefficients2)
+	totalScore3 := getTotalConsensusScore(gotScores3, gotCoefficients3)
 
 	require.LessOrEqual(totalScore0, totalScore1)
 	require.LessOrEqual(totalScore1, totalScore2)
 	require.LessOrEqual(totalScore2, totalScore3)
 
 	// Some simple checks of the scores
-	require.True(len(gotScores1) == len(wantScores))
-	require.True(len(gotScores2) == len(wantScores))
-	require.True(len(gotScores3) == len(wantScores))
+	require.Equal(len(gotScores1), len(wantScores))
+	require.Equal(len(gotScores2), len(wantScores))
+	require.Equal(len(gotScores3), len(wantScores))
 
 	// Verify score output matches that of GetAllConsensusScores()
 	wantScores3, err := rewards.GetAllConsensusScores(allLosses, stakes, gotCoefficients3, numReputers, params.EpsilonReputer, epsilon)

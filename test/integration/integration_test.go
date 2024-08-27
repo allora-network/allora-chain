@@ -65,5 +65,4 @@ func TestUpgradeTestSuite(t *testing.T) {
 
 	t.Log(">>> Test Upgrading Emissions Module Version")
 	UpgradeChecks(testConfig)
-
 }

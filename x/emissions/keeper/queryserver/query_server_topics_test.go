@@ -291,7 +291,8 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	// Setup a topic with some revenue
 	initialRevenue := cosmosMath.NewInt(100)
 	initialRevenueInt := cosmosMath.NewInt(100)
-	keeper.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+	err = keeper.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+	s.Require().NoError(err, "Adding revenue should not fail")
 
 	// Test getting revenue for a topic with existing revenue
 	req = &types.QueryTopicFeeRevenueRequest{TopicId: topicId}

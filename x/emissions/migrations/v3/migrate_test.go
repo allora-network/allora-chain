@@ -62,7 +62,6 @@ func (s *MigrationTestSuite) SetupTest() {
 }
 
 func (s *MigrationTestSuite) TestMigrate() {
-
 	storageService := s.emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()

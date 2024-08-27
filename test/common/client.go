@@ -99,7 +99,7 @@ func NewClient(
 		client.QueryUpgrades[i] = upgradetypes.NewQueryClient(ccCtx)
 
 		// this is terrible, no isConnected as part of this code path
-		require.NotEqual(t, ccCtx.ChainID, "")
+		require.NotEqual(t, "", ccCtx.ChainID)
 	}
 
 	var err error
