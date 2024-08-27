@@ -150,7 +150,8 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.NotNil(m.T, stakeRemoval)
 	require.NotZero(m.T, stakeRemoval.Removal.BlockRemovalCompleted)
 	m.T.Log("--- Unstake removal is queued, waiting for block ", stakeRemoval.Removal.BlockRemovalCompleted, " ---")
-	m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
+	err = m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
+	require.NoError(m.T, err)
 	blockHeight, err := m.Client.BlockHeight(ctx)
 	require.NoError(m.T, err)
 	require.Greater(m.T, blockHeight, stakeRemoval.Removal.BlockRemovalCompleted)
@@ -218,7 +219,8 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	require.NotNil(m.T, stakeRemoval)
 	require.NotZero(m.T, stakeRemoval.Removal.BlockRemovalCompleted)
 	m.T.Log("--- Unstake removal is queued, waiting for block ", stakeRemoval.Removal.BlockRemovalCompleted, " ---")
-	m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
+	err = m.Client.WaitForBlockHeight(ctx, stakeRemoval.Removal.BlockRemovalCompleted+1)
+	require.NoError(m.T, err)
 
 	// Check Bob has zero stake left
 	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(

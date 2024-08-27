@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
 	"math/rand"
 	"strconv"
 	"time"
@@ -33,7 +34,7 @@ type AccountAndAddress struct {
 }
 
 // maps of worker and reputer names to their account and address information
-type NameToAccountMap map[NAME]AccountAndAddress
+type NameToAccountMap map[Name]AccountAndAddress
 
 // simple wrapper around topicLog
 func topicLog(topicId uint64, a ...any) string {
@@ -42,24 +43,28 @@ func topicLog(topicId uint64, a ...any) string {
 
 // return standardized account name for funders
 func getTopicFunderAccountName(seed int, topicFunderIndex int) string {
-	return "stress" + strconv.Itoa(seed) + "_topic_funder" + strconv.Itoa(int(topicFunderIndex))
+	return "stress" + strconv.Itoa(seed) + "_topic_funder" + strconv.Itoa(topicFunderIndex)
 }
 
 // return standardized account name for workers
 func getWorkerAccountName(seed int, workerIndex int, topicId uint64) string {
-	return "stress" + strconv.Itoa(seed) + "_topic" + strconv.Itoa(int(topicId)) + "_worker" + strconv.Itoa(workerIndex)
+	return "stress" + strconv.Itoa(seed) + "_topic" + strconv.FormatUint(topicId, 10) + "_worker" + strconv.Itoa(workerIndex)
 }
 
 // return standardized account name for reputers
 func getReputerAccountName(seed int, reputerIndex int, topicId uint64) string {
-	return "stress" + strconv.Itoa(seed) + "_topic" + strconv.Itoa(int(topicId)) + "_reputer" + strconv.Itoa(reputerIndex)
+	return "stress" + strconv.Itoa(seed) + "_topic" + strconv.FormatUint(topicId, 10) + "_reputer" + strconv.Itoa(reputerIndex)
 }
 
 // return the approximate block time in seconds
 func getApproximateBlockTimeSeconds(m testCommon.TestConfig) time.Duration {
 	emissionsParams := GetEmissionsParams(m)
 	blocksPerMonth := emissionsParams.GetBlocksPerMonth()
-	return time.Duration(secondsInAMonth/blocksPerMonth) * time.Second
+
+	blocks := new(big.Int).SetUint64(blocksPerMonth)
+	seconds := big.NewInt(secondsInAMonth)
+	seconds.Div(seconds, blocks)
+	return time.Duration(seconds.Int64()) * time.Second
 }
 
 // Get the most recent topic
@@ -116,12 +121,12 @@ func getReputerStake(
 }
 
 // return from the emissions module what the maximum amount of rewarded workers and reporters should be
-func getMaxTopWorkersReputersToReward(m testCommon.TestConfig) (uint64, uint64, uint64, error) {
+func getMaxTopWorkersReputersToReward(m testCommon.TestConfig) (uint64, uint64, uint64) {
 	emissionsParams := GetEmissionsParams(m)
 	topInferersCount := emissionsParams.GetMaxTopInferersToReward()
 	topForecastersCount := emissionsParams.GetMaxTopForecastersToReward()
 	topReputersCount := emissionsParams.GetMaxTopReputersToReward()
-	return topInferersCount, topForecastersCount, topReputersCount, nil
+	return topInferersCount, topForecastersCount, topReputersCount
 }
 
 // This function gets the topic checking activity.
@@ -157,7 +162,7 @@ func getNonZeroTopicEpochLastRan(
 		}
 		// Sleep for a while before retrying
 		m.T.Log(topicLog(topicId, "Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks, " blocks"))
-		time.Sleep(time.Duration(sleepingTimeBlocks) * approximateSecondsPerBlock * time.Second)
+		time.Sleep(time.Duration(sleepingTimeBlocks) * approximateSecondsPerBlock)
 	}
 
 	return nil, errors.New("topicEpochLastRan is still 0 after retrying")

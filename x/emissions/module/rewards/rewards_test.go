@@ -139,8 +139,8 @@ func (s *RewardsTestSuite) SetupTest() {
 	s.mintAppModule = mintAppModule
 
 	// Create accounts and fund it
-	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
-	var addrsStr []string = make([]string, 0)
+	var addrs = make([]sdk.AccAddress, 0)
+	var addrsStr = make([]string, 0)
 	var privKeys = make(map[string]secp256k1.PrivKey)
 	for i := 0; i < 50; i++ {
 		senderPrivKey := secp256k1.GenPrivKey()
@@ -158,14 +158,17 @@ func (s *RewardsTestSuite) SetupTest() {
 
 	// Add all tests addresses in whitelists
 	for _, addr := range s.addrsStr {
-		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		s.Require().NoError(err)
 	}
 }
 
 func (s *RewardsTestSuite) FundAccount(amount int64, accAddress sdk.AccAddress) {
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(amount)))
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, accAddress, initialStakeCoins)
+	err := s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, accAddress, initialStakeCoins)
+	s.Require().NoError(err)
 }
 
 func TestModuleTestSuite(t *testing.T) {
@@ -175,13 +178,16 @@ func TestModuleTestSuite(t *testing.T) {
 func (s *RewardsTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	err := s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
 }
 
 func (s *RewardsTestSuite) MintTokensToModule(moduleName string, amount cosmosMath.Int) {
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
-	s.bankKeeper.MintCoins(s.ctx, moduleName, creatorInitialBalanceCoins)
+	err := s.bankKeeper.MintCoins(s.ctx, moduleName, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
 }
 
 func (s *RewardsTestSuite) TestStandardRewardEmission() {
@@ -1735,7 +1741,6 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		}
 		_, err := s.msgServer.Register(s.ctx, workerRegMsg)
 		s.Require().NoError(err)
-
 	}
 
 	// Register 5 reputers, first 3 for topic 1 and last 2 for topic 2
@@ -1780,8 +1785,10 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	// fund topic 1
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	err = s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	s.Require().NoError(err)
 	fundTopicMessage := types.MsgFundTopic{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId1,
@@ -1791,8 +1798,10 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	s.Require().NoError(err)
 
 	// fund topic 2
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	err = s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
+	s.Require().NoError(err)
 	fundTopicMessage.TopicId = topicId2
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
@@ -1958,8 +1967,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputer, initialStakeCoins)
+	err = s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputer, initialStakeCoins)
+	s.Require().NoError(err)
 	fundTopicMessage := types.MsgFundTopic{
 		Sender:  reputer.String(),
 		TopicId: topicId,
@@ -2057,7 +2068,8 @@ func (s *RewardsTestSuite) SetParamsForTest(numInferers uint64) {
 	// Setup a sender address
 	adminPrivateKey := secp256k1.GenPrivKey()
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
-	s.emissionsKeeper.AddWhitelistAdmin(s.ctx, adminAddr.String())
+	err := s.emissionsKeeper.AddWhitelistAdmin(s.ctx, adminAddr.String())
+	s.Require().NoError(err)
 
 	newParams := &types.OptionalParams{
 		MaxTopInferersToReward: []uint64{24},
@@ -2223,8 +2235,8 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		*networkLossBundles)
 	s.Require().NoError(err)
 
-	s.Require().Equal(len(infererScores), int(params.GetMaxTopInferersToReward()), "Only few Top inferers can get reward")
-	s.Require().Equal(len(forecasterScores), int(params.GetMaxTopForecastersToReward()), "Only few Top forecasters can get reward")
+	s.Require().Equal(uint64(len(infererScores)), params.GetMaxTopInferersToReward(), "Only few Top inferers can get reward")
+	s.Require().Equal(uint64(len(forecasterScores)), params.GetMaxTopForecastersToReward(), "Only few Top forecasters can get reward")
 }
 
 func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers() {
@@ -2335,7 +2347,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 			WorkerDataBundle: payload,
 		})
 		s.Require().NoError(err)
-
 	}
 
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)

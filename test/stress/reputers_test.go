@@ -283,13 +283,12 @@ func checkReputersReceivedRewards(
 	maxIterations int,
 	makeReport bool,
 ) (rewardedReputersCount uint64, err error) {
-	rewardedReputersCount = 0
-	err = nil
 	for reputerIndex := 0; reputerIndex < countReputers; reputerIndex++ {
 		reputerName := getReputerAccountName(m.Seed, reputerIndex, topicId)
 		reputer := reputers[reputerName]
 		ctx := context.Background()
-		reputerStake, err := getReputerStake(
+		var reputerStake alloraMath.Dec
+		reputerStake, err = getReputerStake(
 			ctx,
 			m.Client.QueryEmissions(),
 			topicId,
