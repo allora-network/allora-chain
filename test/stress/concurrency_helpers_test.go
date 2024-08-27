@@ -6,20 +6,20 @@ import (
 )
 
 // convenience type aliases
-type TOPIC_ID = uint64
-type NAME = string
+type TopicID = uint64
+type Name = string
 
 // global variables for the final summary report
 var (
-	workerErrors = make(map[TOPIC_ID][]struct {
-		name NAME
+	workerErrors = make(map[TopicID][]struct {
+		name Name
 		err  string
 	})
-	reputerErrors = make(map[TOPIC_ID][]struct {
-		name NAME
+	reputerErrors = make(map[TopicID][]struct {
+		name Name
 		err  string
 	})
-	topicErrors   = make(map[TOPIC_ID]string)
+	topicErrors   = make(map[TopicID]string)
 	countTopics   = 0
 	countWorkers  = 0
 	countReputers = 0
@@ -33,27 +33,27 @@ var (
 )
 
 // save a worker error into the global map
-func saveWorkerError(topic TOPIC_ID, name NAME, err error) {
+func saveWorkerError(topic TopicID, name Name, err error) {
 	mutexWorkerErrors.Lock()
 	workerErrors[topic] = append(workerErrors[topic], struct {
-		name NAME
+		name Name
 		err  string
 	}{name, err.Error()})
 	mutexWorkerErrors.Unlock()
 }
 
 // save a reputer error into the global map
-func saveReputerError(topic TOPIC_ID, name NAME, err error) {
+func saveReputerError(topic TopicID, name Name, err error) {
 	mutexReputerErrors.Lock()
 	reputerErrors[topic] = append(reputerErrors[topic], struct {
-		name NAME
+		name Name
 		err  string
 	}{name, err.Error()})
 	mutexReputerErrors.Unlock()
 }
 
 // save a topic error into the global map
-func saveTopicError(topic TOPIC_ID, err error) {
+func saveTopicError(topic TopicID, err error) {
 	mutexTopicErrors.Lock()
 	topicErrors[topic] = err.Error()
 	mutexTopicErrors.Unlock()
@@ -81,6 +81,7 @@ func incrementCountWorkers() {
 }
 
 func reportShortStatistics(t *testing.T) {
+	t.Helper()
 	mutexTopicErrors.Lock()
 	countTopicErrors := len(topicErrors)
 	mutexTopicErrors.Unlock()
@@ -107,6 +108,7 @@ func reportShortStatistics(t *testing.T) {
 
 // report the final summary statistics
 func reportSummaryStatistics(t *testing.T) {
+	t.Helper()
 	mutexTopicErrors.Lock()
 	countTopicErrors := len(topicErrors)
 	t.Logf("Total topics with errors: %d %v", countTopicErrors, topicErrors)

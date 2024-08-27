@@ -14,11 +14,14 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 	// put some stake in the topic
 	err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
+	err = s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
+	s.Require().NoError(err)
 	var initialStake int64 = 1000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake)))
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	err = s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	s.Require().NoError(err)
 	r := types.MsgFundTopic{
 		Sender:  sender,
 		TopicId: topicId,
@@ -65,15 +68,19 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	// put some stake in the topic
 	err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
+	err = s.emissionsKeeper.InactivateTopic(s.ctx, topicId)
+	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId2, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)
-	s.emissionsKeeper.InactivateTopic(s.ctx, topicId2)
+	err = s.emissionsKeeper.InactivateTopic(s.ctx, topicId2)
+	s.Require().NoError(err)
 	var initialStake int64 = 1000
 	var initialStake2 int64 = 10000
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(initialStake+initialStake2)))
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	err = s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
+	s.Require().NoError(err)
 	r := types.MsgFundTopic{
 		Sender:  sender,
 		TopicId: topicId,

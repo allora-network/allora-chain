@@ -142,7 +142,7 @@ func isValidTransition(m *testcommon.TestConfig, transition StateTransition, act
 	switch transition.name {
 	case "collectDelegatorRewards":
 		// if the reputer unregisters before the delegator withdraws stake, it can be invalid for a
-		// validator to collecte rewards
+		// validator to collective rewards
 		if !data.isReputerRegistered(topicId, actor2) {
 			iterLog(m.T, iteration, "Transition not valid: ", transition.name, actor1, actor2, amount, topicId)
 			return false

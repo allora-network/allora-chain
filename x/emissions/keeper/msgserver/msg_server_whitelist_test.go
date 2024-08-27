@@ -11,7 +11,7 @@ func (s *MsgServerTestSuite) TestAddWhitelistAdmin() {
 	msgServer := s.msgServer
 
 	adminAddr := sdk.AccAddress(PKS[0].Address()).String()
-	newAdminAddr := sdk.AccAddress(nonAdminAccounts[0]).String()
+	newAdminAddr := nonAdminAccounts[0].String()
 
 	// Verify that newAdminAddr is not a whitelist admin
 	isWhitelistAdmin, err := s.emissionsKeeper.IsWhitelistAdmin(ctx, newAdminAddr)

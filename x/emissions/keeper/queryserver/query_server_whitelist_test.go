@@ -13,7 +13,8 @@ func (s *KeeperTestSuite) TestIsWhitelistAdmin() {
 	testAddress := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
 	antitestAddress := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
 
-	keeper.AddWhitelistAdmin(ctx, testAddress)
+	err := keeper.AddWhitelistAdmin(ctx, testAddress)
+	s.Require().NoError(err, "AddWhitelistAdmin should not produce an error")
 
 	req := &types.QueryIsWhitelistAdminRequest{
 		Address: testAddress,

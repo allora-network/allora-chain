@@ -644,7 +644,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 
 func mockSimpleNetworkLosses(
 	s *RewardsTestSuite,
-	topicId uint64,
+	topicId uint64, // nolint: unparam
 	block int64,
 	worker0Value string,
 ) (types.ValueBundle, error) {

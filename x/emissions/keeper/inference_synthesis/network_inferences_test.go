@@ -156,7 +156,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	for _, inference := range inferences.Inferences {
 		found := false
 		for _, infererValue := range valueBundle.InfererValues {
-			if string(inference.Inferer) == infererValue.Worker {
+			if inference.Inferer == infererValue.Worker {
 				found = true
 				require.Equal(inference.Value, infererValue.Value)
 			}
@@ -166,7 +166,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	s.Require().Len(valueBundle.ForecasterValues, 3)
 	for _, forecasterValue := range valueBundle.ForecasterValues {
-		switch string(forecasterValue.Worker) {
+		switch forecasterValue.Worker {
 		case forecaster0:
 			testutil.InEpsilon5(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_0").String())
 		case forecaster1:
@@ -180,7 +180,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	s.Require().Len(valueBundle.OneOutInfererValues, 5)
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
-		switch string(oneOutInfererValue.Worker) {
+		switch oneOutInfererValue.Worker {
 		case inferer0:
 			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_0").String())
 		case inferer1:
@@ -198,7 +198,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	s.Require().Len(valueBundle.OneOutForecasterValues, 3)
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
-		switch string(oneOutForecasterValue.Worker) {
+		switch oneOutForecasterValue.Worker {
 		case forecaster0:
 			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_5").String())
 		case forecaster1:
@@ -212,7 +212,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 
 	s.Require().Len(valueBundle.OneInForecasterValues, 3)
 	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
-		switch string(oneInForecasterValue.Worker) {
+		switch oneInForecasterValue.Worker {
 		case forecaster0:
 			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_0").String())
 		case forecaster1:
@@ -678,7 +678,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	for _, inference := range inferences.Inferences {
 		found := false
 		for _, infererValue := range valueBundle.InfererValues {
-			if string(inference.Inferer) == infererValue.Worker {
+			if inference.Inferer == infererValue.Worker {
 				found = true
 				require.Equal(inference.Value, infererValue.Value)
 			}
@@ -688,7 +688,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 
 	s.Require().Len(valueBundle.ForecasterValues, 3)
 	for _, forecasterValue := range valueBundle.ForecasterValues {
-		switch string(forecasterValue.Worker) {
+		switch forecasterValue.Worker {
 		case forecaster0:
 			testutil.InEpsilon5(s.T(), forecasterValue.Value, epoch3Get("forecast_implied_inference_0").String())
 		case forecaster1:
@@ -702,7 +702,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 
 	s.Require().Len(valueBundle.OneOutInfererValues, 5)
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
-		switch string(oneOutInfererValue.Worker) {
+		switch oneOutInfererValue.Worker {
 		case inferer0:
 			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, epoch3Get("network_inference_oneout_0").String())
 		case inferer1:
@@ -720,7 +720,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 
 	s.Require().Len(valueBundle.OneOutForecasterValues, 3)
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
-		switch string(oneOutForecasterValue.Worker) {
+		switch oneOutForecasterValue.Worker {
 		case forecaster0:
 			testutil.InEpsilon5(s.T(), oneOutForecasterValue.Value, epoch3Get("network_inference_oneout_5").String())
 		case forecaster1:
@@ -734,7 +734,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 
 	s.Require().Len(valueBundle.OneInForecasterValues, 3)
 	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
-		switch string(oneInForecasterValue.Worker) {
+		switch oneInForecasterValue.Worker {
 		case forecaster0:
 			testutil.InEpsilon5(s.T(), oneInForecasterValue.Value, epoch3Get("network_naive_inference_onein_0").String())
 		case forecaster1:

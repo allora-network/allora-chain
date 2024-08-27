@@ -95,10 +95,10 @@ func (s *IntegrationTestSuite) TestAliasFunctions() {
 
 	coins := sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000000)))
 	s.bankKeeper.EXPECT().MintCoins(s.ctx, types.ModuleName, coins).Return(nil)
-	s.Require().Equal(s.mintKeeper.MintCoins(s.ctx, sdk.NewCoins()), nil)
-	s.Require().Nil(s.mintKeeper.MintCoins(s.ctx, coins))
+	s.Require().NoError(s.mintKeeper.MintCoins(s.ctx, sdk.NewCoins()))
+	s.Require().NoError(s.mintKeeper.MintCoins(s.ctx, coins))
 
 	fees := sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000)))
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToModule(s.ctx, types.EcosystemModuleName, emissionstypes.AlloraRewardsAccountName, fees).Return(nil)
-	s.Require().Nil(s.mintKeeper.PayAlloraRewardsFromEcosystem(s.ctx, fees))
+	s.Require().NoError(s.mintKeeper.PayAlloraRewardsFromEcosystem(s.ctx, fees))
 }

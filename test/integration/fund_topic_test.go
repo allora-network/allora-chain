@@ -42,7 +42,7 @@ func CheckTopic1Activated(m testCommon.TestConfig) {
 	require.NoError(m.T, err, "Fetching active topics should not produce an error")
 
 	// Verify the correct number of active topics is retrieved
-	require.Equal(m.T, len(activeTopics.Topics), 1, "Should retrieve exactly one active topics")
+	require.Len(m.T, activeTopics.Topics, 1, "Should retrieve exactly one active topics")
 }
 
 // Must come after a reputer is registered and staked in topic 1

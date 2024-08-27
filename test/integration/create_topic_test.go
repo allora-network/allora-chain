@@ -17,7 +17,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		&emissionstypes.QueryNextTopicIdRequest{},
 	)
 	require.NoError(m.T, err)
-	require.Greater(m.T, topicIdStart.NextTopicId, uint64(0))
+	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
 		Creator:                m.AliceAddr,

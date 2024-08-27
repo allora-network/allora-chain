@@ -43,13 +43,18 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
-	keeper.AddWorkerNonce(ctx, topicId, &nonce)
-	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
-	keeper.InsertWorker(ctx, topicId, Inferer2Addr, workerInfo)
-	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
+	err = keeper.AddWorkerNonce(ctx, topicId, &nonce)
+	s.Require().NoError(err)
+	err = keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
+	s.Require().NoError(err)
+	err = keeper.InsertWorker(ctx, topicId, Inferer2Addr, workerInfo)
+	s.Require().NoError(err)
+	err = keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
+	s.Require().NoError(err)
 
 	topic, _ := s.emissionsKeeper.GetTopic(ctx, topicId)
-	s.emissionsKeeper.SetTopic(ctx, topicId, topic)
+	err = s.emissionsKeeper.SetTopic(ctx, topicId, topic)
+	s.Require().NoError(err)
 
 	// Create a MsgInsertWorkerPayload message
 	workerMsg := types.MsgInsertWorkerPayload{
@@ -318,7 +323,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 
 	require.NoError(err)
 
-	require.Equal(len(forecasts.Forecasts[0].ForecastElements), int(param.MaxElementsPerForecast))
+	require.Equal(uint64(len(forecasts.Forecasts[0].ForecastElements)), param.MaxElementsPerForecast)
 	require.Equal(forecasts.Forecasts[0].ForecastElements[0].Inferer, inferer1)
 	require.Equal(forecasts.Forecasts[0].ForecastElements[1].Inferer, inferer2)
 	require.Equal(forecasts.Forecasts[0].ForecastElements[2].Inferer, inferer4)
@@ -332,7 +337,6 @@ func (s *MsgServerTestSuite) getCountForecastsAtBlock(topicId uint64, blockHeigh
 		return 0
 	}
 	return len(forecastsAtBlock.Forecasts)
-
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedForecastTopicId() {
@@ -479,10 +483,14 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
-	keeper.AddWorkerNonce(ctx, 0, &nonce)
-	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
-	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
-	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
+	err = keeper.AddWorkerNonce(ctx, 0, &nonce)
+	require.NoError(err)
+	err = keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
+	require.NoError(err)
+	err = keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
+	require.NoError(err)
+	err = s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
+	require.NoError(err)
 
 	forecastElements := []*types.ForecastElement{}
 	for i := 0; i < 1000000; i++ {
@@ -560,10 +568,14 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 
 	// Create topic 0 and register reputer in it
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
-	keeper.AddWorkerNonce(ctx, 0, &nonce)
-	keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
-	keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
-	s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
+	err = keeper.AddWorkerNonce(ctx, 0, &nonce)
+	require.NoError(err)
+	err = keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
+	require.NoError(err)
+	err = keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
+	require.NoError(err)
+	err = s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
+	require.NoError(err)
 
 	// Create a MsgInsertWorkerPayload message
 	workerMsg := &types.MsgInsertWorkerPayload{

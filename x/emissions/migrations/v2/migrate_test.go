@@ -201,7 +201,6 @@ func (s *MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc c
 	s.Require().NoError(err)
 	s.Require().Equal(oldOffchainNode2.Owner, newMsg.Owner)
 	s.Require().Equal(oldOffchainNode2.NodeAddress, newMsg.NodeAddress)
-
 }
 
 func (s *MigrationsTestSuite) TestMigrateOffchainNodeWorkers() {
@@ -320,7 +319,7 @@ func (s *MigrationsTestSuite) TestMigrateValueBundle() {
 	s.Require().True(areWithHeldArraysEqual(oldValueBundle.OneOutForecasterValues, newMsg.OneOutForecasterValues))
 	s.Require().True(areAttributedArraysEqual(oldValueBundle.OneInForecasterValues, newMsg.OneInForecasterValues))
 
-	s.Require().Equal(0, len(newMsg.OneOutInfererForecasterValues))
+	s.Require().Empty(newMsg.OneOutInfererForecasterValues)
 }
 
 func (s *MigrationsTestSuite) TestMigrateAllLossBundles() {
@@ -487,7 +486,8 @@ func (s *MigrationsTestSuite) TestMigrateParams() {
 	s.Require().NoError(err)
 
 	// Run migration
-	v2.MigrateParams(s.ctx, s.emissionsKeeper)
+	err = v2.MigrateParams(s.ctx, s.emissionsKeeper)
+	s.Require().NoError(err)
 	newParams, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
