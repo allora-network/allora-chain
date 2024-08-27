@@ -22,6 +22,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 
 	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
 
+	// Call the bundles self validation method
 	if err := msg.ReputerValueBundle.Validate(); err != nil {
 		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
 			"Error validating reputer value bundle: %v", err)
@@ -29,11 +30,28 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 
 	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
 	topicId := msg.ReputerValueBundle.ValueBundle.TopicId
+	reputer := msg.Sender
+
+	// the reputer in the bundle must match the sender of this transaction
+	if reputer != msg.ReputerValueBundle.ValueBundle.Reputer {
+		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
+			"Reputer cannot upload value bundle for another reputer")
+	}
 
 	// Check if the topic exists
 	topicExists, err := ms.k.TopicExists(ctx, topicId)
 	if err != nil || !topicExists {
 		return nil, types.ErrInvalidTopicId
+	}
+
+	// Check that the reputer is registered in the topic
+	isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, topicId, reputer)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error checking if reputer is registered in topic")
+	}
+	if !isReputerRegistered {
+		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
+			"Reputer not registered in topic")
 	}
 
 	// Check if the worker nonce is fulfilled
@@ -66,17 +84,28 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, types.ErrReputerNonceWindowNotAvailable
 	}
 
-	// Before creating topic, transfer fee amount from creator to ecosystem bucket
-	params, err := ms.k.GetParams(ctx)
+	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee)
+
+	// reputer must have minimum stake in order to participate in topic
+	reputerStake, err := ms.k.GetStakeReputerAuthority(ctx, topicId, reputer)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting reputer stake for sender: %v", &msg.Sender)
+	}
+	if reputerStake.LT(moduleParams.RequiredMinimumStake) {
+		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
+			"Reputer must have minimum stake in order to participate in topic")
+	}
+
+	// Before activating topic, transfer fee amount from creator to ecosystem bucket
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
 
-	err = ms.k.AppendReputerLoss(ctx, topicId, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
+	err = ms.k.UpsertReputerLoss(ctx, topicId, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
 	if err != nil {
 		return nil, err
 	}

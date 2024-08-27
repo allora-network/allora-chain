@@ -2207,7 +2207,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	networkLossBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err)
 
-	infererScores, err := actorutils.GenerateInferenceScores(
+	infererScores, err := actorutils.CalcInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -2215,7 +2215,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		*networkLossBundles)
 	s.Require().NoError(err)
 
-	forecasterScores, err := actorutils.GenerateForecastScores(
+	forecasterScores, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,

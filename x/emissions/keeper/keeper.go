@@ -773,8 +773,9 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 	return &forecasts, nil
 }
 
-// Append individual inference for a topic/block
-func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
+// Upsert/Append individual inference for a topic/block into the chain's state
+// If the inference already exists, it will be overwritten
+func (k *Keeper) UpsertInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
 	block := nonce.BlockHeight
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
@@ -793,7 +794,7 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
-func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
+func (k *Keeper) SetInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
 	block := nonce.BlockHeight
 
 	for _, inference := range inferences.Inferences {
@@ -808,8 +809,9 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 	return k.allInferences.Set(ctx, key, inferences)
 }
 
-// Append individual forecast for a topic/block
-func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
+// Upsert/Append individual forecast for a topic/block into the chain's state
+// If the forecast already exists, it will be overwritten
+func (k *Keeper) UpsertForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
 	block := nonce.BlockHeight
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)
@@ -828,7 +830,7 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
-func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce types.Nonce, forecasts types.Forecasts) error {
+func (k *Keeper) SetForecasts(ctx context.Context, topicId TopicId, nonce types.Nonce, forecasts types.Forecasts) error {
 	block := nonce.BlockHeight
 
 	for _, forecast := range forecasts.Forecasts {
@@ -879,7 +881,7 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 /// LOSS BUNDLES
 
 // Append loss bundle for a topoic and blockheight
-func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
+func (k *Keeper) UpsertReputerLoss(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
 	key := collections.Join(topicId, block)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
 	if err != nil {
@@ -914,6 +916,17 @@ func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId Topic
 		return nil, err
 	}
 	return &reputerLossBundles, nil
+}
+
+// overwrite the reputer loss bundles at a given block
+func (k *Keeper) SetReputerLossBundlesAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+	reputerLossBundles types.ReputerValueBundles,
+) error {
+	key := collections.Join(topicId, block)
+	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
 }
 
 // Insert a network loss bundle for a topic and block.
@@ -2105,32 +2118,10 @@ func (k *Keeper) RemoveRewardableTopic(ctx context.Context, topicId TopicId) err
 
 /// SCORES
 
-// If the new score is older than the current score, don't update
-func (k *Keeper) UpdateInfererScoreEma(
-	ctx context.Context,
-	topicId TopicId,
-	alpha alloraMath.Dec,
-	worker ActorId,
-	score types.Score,
-) error {
-	oldScore, err := k.GetInfererScoreEma(ctx, topicId, worker)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting latest inferer score")
-	}
-	if oldScore.BlockHeight >= score.BlockHeight {
-		return nil
-	}
-	newScore, err := alloraMath.CalcEma(alpha, score.Score, oldScore.Score, oldScore.TopicId == 0)
-	if err != nil {
-		return err
-	}
-	score.Score = newScore
+// directly set the inferer score ema
+func (k *Keeper) SetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
 	key := collections.Join(topicId, worker)
-	err = k.infererScoreEmasByWorker.Set(ctx, key, score)
-	if err != nil {
-		return errorsmod.Wrap(err, "error setting latest inferer score")
-	}
-	return nil
+	return k.infererScoreEmasByWorker.Set(ctx, key, score)
 }
 
 // for a particular inferer, get their score exponential moving average
@@ -2168,26 +2159,8 @@ func (k *Keeper) GetInfererScoreEmasFromValueBundle(
 	return scores, nil
 }
 
-// If the new score is older than the current score, don't update
-func (k *Keeper) UpdateForecasterScoreEma(
-	ctx context.Context,
-	topicId TopicId,
-	alpha alloraMath.Dec,
-	worker ActorId,
-	score types.Score,
-) error {
-	oldScore, err := k.GetForecasterScoreEma(ctx, topicId, worker)
-	if err != nil {
-		return err
-	}
-	if oldScore.BlockHeight >= score.BlockHeight {
-		return nil
-	}
-	newScore, err := alloraMath.CalcEma(alpha, score.Score, oldScore.Score, oldScore.TopicId == 0)
-	if err != nil {
-		return err
-	}
-	score.Score = newScore
+// directly set the forecaster score ema
+func (k *Keeper) SetForecasterScoreEma(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
 	key := collections.Join(topicId, worker)
 	return k.forecasterScoreEmasByWorker.Set(ctx, key, score)
 }
@@ -2227,26 +2200,8 @@ func (k *Keeper) GetForecasterScoreEmasFromValueBundle(
 	return scores, nil
 }
 
-// If the new score is older than the current score, don't update
-func (k *Keeper) UpdateReputerScoreEma(
-	ctx context.Context,
-	topicId TopicId,
-	alpha alloraMath.Dec,
-	reputer ActorId,
-	score types.Score,
-) error {
-	oldScore, err := k.GetReputerScoreEma(ctx, topicId, reputer)
-	if err != nil {
-		return err
-	}
-	if oldScore.BlockHeight >= score.BlockHeight {
-		return nil
-	}
-	newScore, err := alloraMath.CalcEma(alpha, score.Score, oldScore.Score, oldScore.TopicId == 0)
-	if err != nil {
-		return err
-	}
-	score.Score = newScore
+// directly set the reputer score ema
+func (k *Keeper) SetReputerScoreEma(ctx context.Context, topicId TopicId, reputer ActorId, score types.Score) error {
 	key := collections.Join(topicId, reputer)
 	return k.reputerScoreEmasByReputer.Set(ctx, key, score)
 }

@@ -120,7 +120,7 @@ func (s *ActorUtilsTestSuite) TestGetReputersScoresFromCsv() {
 	s.Require().NoError(err)
 
 	// Generate new reputer scores
-	scores, err := actorutils.GenerateReputerScores(
+	scores, err := actorutils.CalcReputerScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -238,7 +238,7 @@ func (s *ActorUtilsTestSuite) TestGetInferenceScores() {
 	s.Require().NoError(err)
 
 	// Get inference scores
-	scores, err := actorutils.GenerateInferenceScores(
+	scores, err := actorutils.CalcInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -287,7 +287,7 @@ func (s *ActorUtilsTestSuite) TestGetInferenceScoresFromCsv() {
 		reportedLosses, err := testutil.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
 		s.Require().NoError(err)
 
-		scores, err := actorutils.GenerateInferenceScores(
+		scores, err := actorutils.CalcInferenceScores(
 			s.ctx,
 			s.emissionsKeeper,
 			topicId,
@@ -373,7 +373,7 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
 	require.NoError(err)
 
-	scores0, err := actorutils.GenerateInferenceScores(
+	scores0, err := actorutils.CalcInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -387,7 +387,7 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	networkLosses1, err := mockSimpleNetworkLosses(s, topicId, block1, "0.2")
 	require.NoError(err)
 
-	scores1, err := actorutils.GenerateInferenceScores(
+	scores1, err := actorutils.CalcInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -407,7 +407,7 @@ func (s *ActorUtilsTestSuite) TestGetForecastScores() {
 	reportedLosses, err := mockNetworkLosses(s, topicId, block)
 	s.Require().NoError(err)
 
-	scores, err := actorutils.GenerateForecastScores(
+	scores, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -454,7 +454,7 @@ func (s *ActorUtilsTestSuite) TestGetForecasterScoresFromCsv() {
 	reportedLosses, err := testutil.GetNetworkLossFromCsv(topicId, infererAddresses, forecasterAddresses, epoch3Get)
 	s.Require().NoError(err)
 
-	scores, err := actorutils.GenerateForecastScores(
+	scores, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -485,7 +485,7 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
 	require.NoError(err)
 
-	scores0, err := actorutils.GenerateForecastScores(
+	scores0, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
@@ -500,7 +500,7 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 	require.NoError(err)
 
 	// Get inference scores
-	scores1, err := actorutils.GenerateForecastScores(
+	scores1, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,

@@ -8,15 +8,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// GenerateReputerScores calculates and persists scores for reputers based on their reported losses.
+// CalcReputerScores calculates and persists scores for reputers based on their reported losses.
 // this is called at time of reputer nonce closing
-func GenerateReputerScores(
+func CalcReputerScoresSetListeningCoefficients(
 	ctx sdk.Context,
 	keeper keeper.Keeper,
 	topicId uint64,
+	moduleParams types.Params,
 	block int64,
 	reportedLosses types.ReputerValueBundles,
-) ([]types.Score, error) {
+) (reputerScores []types.Score, err error) {
 	// Ensure all workers are present in the reported losses
 	// This is necessary to ensure that all workers are accounted for in the final scores
 	// If a worker is missing from the reported losses, it will be added with a NaN value
@@ -53,30 +54,25 @@ func GenerateReputerScores(
 		losses = append(losses, reputerLosses)
 	}
 
-	params, err := keeper.GetParams(ctx)
-	if err != nil {
-		return []types.Score{}, errors.Wrapf(err, "Error getting GetParams")
-	}
-
 	// Get reputer output
 	scores, newCoefficients, err := GetAllReputersOutput(
 		losses,
 		reputerStakes,
 		reputerListeningCoefficients,
 		int64(len(reputerStakes)),
-		params.LearningRate,
-		params.GradientDescentMaxIters,
-		params.EpsilonReputer,
-		params.EpsilonSafeDiv,
-		params.MinStakeFraction,
-		params.MaxGradientThreshold,
+		moduleParams.LearningRate,
+		moduleParams.GradientDescentMaxIters,
+		moduleParams.EpsilonReputer,
+		moduleParams.EpsilonSafeDiv,
+		moduleParams.MinStakeFraction,
+		moduleParams.MaxGradientThreshold,
 	)
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting GetAllReputersOutput")
 	}
 
 	// Insert new coeffients and scores
-	var newScores []types.Score
+	reputerScores = make([]types.Score, 0)
 	for i, reputer := range reputers {
 		err := keeper.SetListeningCoefficient(
 			ctx,
@@ -94,109 +90,72 @@ func GenerateReputerScores(
 			Address:     reputer,
 			Score:       scores[i],
 		}
-		err = keeper.InsertReputerScore(ctx, topicId, block, newScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
-		}
-		topic, err := keeper.GetTopic(ctx, topicId)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error getting topic %v", topicId)
-		}
-		err = keeper.UpdateReputerScoreEma(ctx, topicId, topic.AlphaRegret, reputer, newScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error setting latest reputer score")
-		}
-		newScores = append(newScores, newScore)
+		reputerScores = append(reputerScores, newScore)
 	}
 
-	types.EmitNewReputerScoresSetEvent(ctx, newScores)
-	return newScores, nil
+	return reputerScores, nil
 }
 
-// GenerateInferenceScores calculates and persists scores for workers based on their inference task performance.
-func GenerateInferenceScores(
+// CalcInferenceScores calculates scores for workers based on their inference task performance.
+func CalcInferenceScores(
 	ctx sdk.Context,
 	keeper keeper.Keeper,
-	topicId uint64,
+	topic types.Topic,
 	block int64,
 	networkLosses types.ValueBundle,
-) ([]types.Score, error) {
-	var newScores []types.Score
+) (inferenceScores []types.Score, err error) {
+	inferenceScores = make([]types.Score, 0)
 
 	// If there is only one inferer, set score to 0
 	// More than one inferer is required to have one-out losses
 	if len(networkLosses.InfererValues) == 1 {
 		newScore := types.Score{
-			TopicId:     topicId,
+			TopicId:     topic.Id,
 			BlockHeight: block,
 			Address:     networkLosses.InfererValues[0].Worker,
 			Score:       alloraMath.ZeroDec(),
 		}
-		err := keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
-		}
-		newScores = append(newScores, newScore)
-		return newScores, nil
-	}
-
-	topic, err := keeper.GetTopic(ctx, topicId)
-	if err != nil {
-		return []types.Score{}, errors.Wrapf(err, "Error getting topic %v", topicId)
+		inferenceScores = append(inferenceScores, newScore)
+		return inferenceScores, nil
 	}
 
 	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
-		workerNewScore, err := oneOutLoss.Value.Sub(networkLosses.CombinedValue)
+		workerScore, err := oneOutLoss.Value.Sub(networkLosses.CombinedValue)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
 
-		newScore := types.Score{
-			TopicId:     topicId,
+		score := types.Score{
+			TopicId:     topic.Id,
 			BlockHeight: block,
 			Address:     oneOutLoss.Worker,
-			Score:       workerNewScore,
+			Score:       workerScore,
 		}
-		err = keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
-		}
-		err = keeper.UpdateInfererScoreEma(ctx, topicId, topic.AlphaRegret, oneOutLoss.Worker, newScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "error setting latest inferer score")
-		}
-		newScores = append(newScores, newScore)
+		inferenceScores = append(inferenceScores, score)
 	}
 
-	types.EmitNewInfererScoresSetEvent(ctx, newScores)
-	return newScores, nil
+	return inferenceScores, nil
 }
 
-// GenerateForecastScores calculates and persists scores for workers based on their forecast task performance.
-func GenerateForecastScores(
+// CalcForecasterScores calculates scores for workers based on their forecast task performance.
+func CalcForecasterScores(
 	ctx sdk.Context,
 	keeper keeper.Keeper,
-	topicId uint64,
+	topic types.Topic,
 	block int64,
 	networkLosses types.ValueBundle,
-) ([]types.Score, error) {
-	var newScores []types.Score
-
+) (forecasterScores []types.Score, err error) {
 	// If there is only one forecaster, set score to 0
 	// More than one forecaster is required to have one-out losses
 	if len(networkLosses.ForecasterValues) == 1 {
 		newScore := types.Score{
-			TopicId:     topicId,
+			TopicId:     topic.Id,
 			BlockHeight: block,
-			Address:     networkLosses.InfererValues[0].Worker,
+			Address:     networkLosses.ForecasterValues[0].Worker,
 			Score:       alloraMath.ZeroDec(),
 		}
-		err := keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
-		}
-		newScores = append(newScores, newScore)
-		return newScores, nil
+		forecasterScores = append(forecasterScores, newScore)
+		return forecasterScores, nil
 	}
 
 	// Get worker scores for one out loss
@@ -216,11 +175,6 @@ func GenerateForecastScores(
 		return []types.Score{}, errors.Wrapf(err, "Error getting fUniqueAgg")
 	}
 
-	topic, err := keeper.GetTopic(ctx, topicId)
-	if err != nil {
-		return []types.Score{}, errors.Wrapf(err, "Error getting topic %v", topicId)
-	}
-
 	for i, oneInNaiveLoss := range networkLosses.OneInForecasterValues {
 		// Get worker score for one in loss
 		workerScoreOneIn, err := networkLosses.NaiveValue.Sub(oneInNaiveLoss.Value)
@@ -235,24 +189,15 @@ func GenerateForecastScores(
 		}
 
 		newScore := types.Score{
-			TopicId:     topicId,
+			TopicId:     topic.Id,
 			BlockHeight: block,
 			Address:     oneInNaiveLoss.Worker,
 			Score:       workerFinalScore,
 		}
-		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
-		}
-		err = keeper.UpdateForecasterScoreEma(ctx, topicId, topic.AlphaRegret, oneInNaiveLoss.Worker, newScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error setting latest forecaster score")
-		}
-		newScores = append(newScores, newScore)
+		forecasterScores = append(forecasterScores, newScore)
 	}
 
-	types.EmitNewForecasterScoresSetEvent(ctx, newScores)
-	return newScores, nil
+	return forecasterScores, nil
 }
 
 // Check if all workers are present in the reported losses and add NaN values for missing workers

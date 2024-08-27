@@ -88,7 +88,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 			return nil, errorsmod.Wrapf(err,
 				"Error inferer address is not registered in this topic")
 		}
-		err = ms.k.AppendInference(ctx, topicId, *nonce, inference)
+		err = ms.k.UpsertInference(ctx, topicId, *nonce, inference)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
@@ -122,7 +122,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 			}
 		}
 		forecast.ForecastElements = acceptedForecastElements
-		err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
+		err = ms.k.UpsertForecast(ctx, topicId, *nonce, forecast)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err,
 				"Error appending forecast")

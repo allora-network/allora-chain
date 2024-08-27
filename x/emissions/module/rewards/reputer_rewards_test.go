@@ -360,7 +360,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := actorutils.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.CalcReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -432,7 +432,7 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	)
 
 	// Calculate and Set the reputer scores
-	scores, err := actorutils.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.CalcReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
