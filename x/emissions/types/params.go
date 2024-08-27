@@ -200,12 +200,6 @@ func validateMinTopicWeight(i alloraMath.Dec) error {
 	return nil
 }
 
-// Max number of topics to run cadence for per block.
-// Should be >= 0, uint enforces this.
-func validateMaxTopicsPerBlock(_ uint64) error {
-	return nil
-}
-
 // Minimum stake required to be a worker or reputer.
 // Should be >= 0.
 func validateRequiredMinimumStake(i cosmosMath.Int) error {

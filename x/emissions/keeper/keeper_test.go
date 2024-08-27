@@ -2205,7 +2205,7 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	}
 	activeTopics, _, err := keeper.GetIdsActiveTopicAtBlock(ctx, 5, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(1, len(activeTopics), "Should retrieve exactly two active topics")
+	s.Require().Len(activeTopics, 1, "Should retrieve exactly two active topics")
 
 	pagination = &types.SimpleCursorPaginationRequest{
 		Key:   nil,
@@ -2213,7 +2213,7 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	}
 	activeTopics, _, err = keeper.GetIdsActiveTopicAtBlock(ctx, 15, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(1, len(activeTopics), "Should retrieve exactly two active topics")
+	s.Require().Len(activeTopics, 1, "Should retrieve exactly two active topics")
 
 	for _, topicId := range activeTopics {
 		isActive, err := keeper.IsTopicActive(ctx, topicId)
@@ -2288,7 +2288,7 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	}
 	activeTopics, pageRes, err = keeper.GetIdsActiveTopicAtBlock(ctx, 5, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly one active topics")
+	s.Require().Len(activeTopics, 2, "Should retrieve exactly one active topics")
 	s.Require().NotNil(pageRes, "Next key should not be nil")
 	for _, topicId := range activeTopics {
 		isActive, err := keeper.IsTopicActive(ctx, topicId)
@@ -2334,17 +2334,16 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	topic3 := types.Topic{Id: 3, EpochLength: 5}
 	topic4 := types.Topic{Id: 4, EpochLength: 5}
 
-	setTopicWeight := func(topicId uint64, revenue, stake int64) error {
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
 		_ = keeper.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue))
 		_ = keeper.SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake))
-		return nil
 	}
 
-	_ = setTopicWeight(topic1.Id, 10, 10)
+	setTopicWeight(topic1.Id, 10, 10)
 	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
 	_ = keeper.ActivateTopic(ctx, topic1.Id)
 
-	_ = setTopicWeight(topic2.Id, 20, 10)
+	setTopicWeight(topic2.Id, 20, 10)
 	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
 	_ = keeper.ActivateTopic(ctx, topic2.Id)
 
@@ -2355,14 +2354,14 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	}
 	activeTopics, _, err := keeper.GetIdsActiveTopicAtBlock(ctx, 15, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
+	s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
 
 	ctx = s.ctx.WithBlockHeight(15)
 	_ = keeper.AttemptTopicReactivation(ctx, topic1.Id)
 	_ = keeper.AttemptTopicReactivation(ctx, topic2.Id)
 
 	ctx = s.ctx.WithBlockHeight(25)
-	_ = setTopicWeight(topic3.Id, 50, 10)
+	setTopicWeight(topic3.Id, 50, 10)
 	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
 	_ = keeper.ActivateTopic(ctx, topic3.Id)
 
@@ -2372,18 +2371,16 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	}
 	activeTopics, _, err = keeper.GetIdsActiveTopicAtBlock(ctx, 30, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(3, len(activeTopics), "Should retrieve exactly two active topics")
-	s.Require().Equal(activeTopics[0], uint64(1))
-	s.Require().Equal(activeTopics[1], uint64(2))
-	s.Require().Equal(activeTopics[2], uint64(3))
+	s.Require().Len(activeTopics, 3, "Should retrieve exactly two active topics")
+	s.Require().Equal(uint64(1), activeTopics[0])
+	s.Require().Equal(uint64(2), activeTopics[1])
+	s.Require().Equal(uint64(3), activeTopics[2])
 
 	ctx = s.ctx.WithBlockHeight(30)
-	_ = setTopicWeight(topic4.Id, 1, 1)
-	//_ = keeper.SetTopic(ctx, topic4.Id, topic4)
-	//_ = keeper.ActivateTopic(ctx, topic4.Id)
+	setTopicWeight(topic4.Id, 1, 1)
 	isActive, err := keeper.IsTopicActive(ctx, topic4.Id)
 	s.Require().NoError(err, "Is topic active should not produce an error")
-	s.Require().Equal(isActive, false, "Topic4 should not be activated")
+	s.Require().False(isActive, "Topic4 should not be activated")
 }
 func (s *KeeperTestSuite) TestIncrementTopicId() {
 	ctx := s.ctx

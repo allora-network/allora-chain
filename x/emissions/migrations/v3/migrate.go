@@ -177,7 +177,7 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 			types.TopicIds{append(blockToActiveTopics[blockHeight].TopicIds, oldMsg.Id)}
 
 		// If number of active topic is over global param then remove lowest topic
-		if len(blockToActiveTopics[blockHeight].TopicIds) > int(params.MaxActiveTopicsPerBlock) {
+		if uint64(len(blockToActiveTopics[blockHeight].TopicIds)) > params.MaxActiveTopicsPerBlock {
 			// Remove from topicToNextPossibleChurningBlock
 			delete(churningBlock, lowestWeight[blockHeight].TopicId)
 			newActiveTopicIds := []types.TopicId{}
@@ -242,6 +242,9 @@ func getTopicWeight(
 			return alloraMath.ZeroDec(), err
 		}
 		weight, err := alloraMath.CalcEma(topicRewardAlpha, targetWeight, previousWeight, false)
+		if err != nil {
+			return alloraMath.ZeroDec(), err
+		}
 		return weight, nil
 	}
 	return alloraMath.ZeroDec(), nil

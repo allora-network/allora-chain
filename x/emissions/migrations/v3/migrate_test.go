@@ -178,13 +178,15 @@ func (s *MigrationTestSuite) TestActiveTopicsMigration() {
 	storageService := s.emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
 
-	s.emissionsKeeper.SetParams(s.ctx, types.Params{
+	err := s.emissionsKeeper.SetParams(s.ctx, types.Params{
 		MinTopicWeight:          alloraMath.MustNewDecFromString("0"),
 		MaxActiveTopicsPerBlock: uint64(4),
 	})
+	s.Require().NoError(err)
+
 	topicCnt := 10
 	s.setUpOldTopicsData(store, topicCnt)
-	err := migrations.MigrateActiveTopics(store, s.ctx, *s.emissionsKeeper)
+	err = migrations.MigrateActiveTopics(store, s.ctx, *s.emissionsKeeper)
 	s.Require().NoError(err)
 
 	topicNextChurningBlock := store.Get(types.TopicToNextPossibleChurningBlockKey)
@@ -200,13 +202,15 @@ func (s *MigrationTestSuite) TestLimitedActiveTopicsMigration() {
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
 
 	maxActiveTopicPerBlock := 2
-	s.emissionsKeeper.SetParams(s.ctx, types.Params{
+	err := s.emissionsKeeper.SetParams(s.ctx, types.Params{
 		MinTopicWeight:          alloraMath.MustNewDecFromString("0"),
 		MaxActiveTopicsPerBlock: uint64(maxActiveTopicPerBlock),
 	})
+	s.Require().NoError(err)
+
 	topicCnt := 10
 	s.setUpOldTopicsData(store, topicCnt)
-	err := migrations.MigrateActiveTopics(store, s.ctx, *s.emissionsKeeper)
+	err = migrations.MigrateActiveTopics(store, s.ctx, *s.emissionsKeeper)
 	s.Require().NoError(err)
 
 	topicIdsBlock := store.Get(types.BlockToActiveTopicsKey)

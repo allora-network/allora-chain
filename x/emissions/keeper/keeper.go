@@ -1952,12 +1952,12 @@ func (k Keeper) GetIdsActiveTopicAtBlock(ctx context.Context, blockHeight int64,
 	if err != nil {
 		return nil, nil, err
 	}
-
-	if len(topicIds.TopicIds) <= int(start) {
+	topicIdsCnt := uint64(len(topicIds.TopicIds))
+	if topicIdsCnt <= start {
 		return nil, nil, err
 	}
 
-	if len(topicIds.TopicIds) < int(end) {
+	if topicIdsCnt < end {
 		end = uint64(len(topicIds.TopicIds))
 	}
 

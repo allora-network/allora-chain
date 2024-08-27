@@ -58,6 +58,8 @@ message TopicIds {
 
 message TopicIdWeightPair {
   uint64 topic_id = 1;
-  string weight = 2
-  [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string weight = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
