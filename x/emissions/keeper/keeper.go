@@ -774,6 +774,12 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 
 // Append individual inference for a topic/block
 func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
+	if inference == nil {
+		return errors.New("invalid inference: inferer is empty or nil")
+	}
+	if inference.Inferer == "" {
+		return errors.New("invalid inference: inferer is empty")
+	}
 	block := nonce.BlockHeight
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
@@ -831,6 +837,12 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 
 // Append individual forecast for a topic/block
 func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
+	if forecast == nil || forecast.Forecaster == "" {
+		return errors.New("invalid forecast: forecaster is empty or nil")
+	}
+	if len(forecast.ForecastElements) == 0 {
+		return errors.New("invalid forecast: forecast elements are empty")
+	}
 	block := nonce.BlockHeight
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
@@ -921,6 +933,15 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 
 // Append loss bundle for a topoic and blockheight
 func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
+	if reputerLoss == nil {
+		return errors.New("invalid reputerLoss bundle: inferer is empty or nil")
+	}
+	if reputerLoss.ValueBundle == nil {
+		return errors.New("reputerLoss bundle is nil")
+	}
+	if reputerLoss.ValueBundle.Reputer == "" {
+		return errors.New("invalid reputerLoss bundle: reputer is empty")
+	}
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
