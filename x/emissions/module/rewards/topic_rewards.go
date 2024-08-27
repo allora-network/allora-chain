@@ -85,7 +85,8 @@ func PickChurnableActiveTopics(
 		// Loop over and run epochs on topics whose inferences are demanded enough to be served
 		// Check the cadence of inferences, and just in case also check multiples of epoch lengths
 		// to avoid potential situations where the block is missed
-		if k.CheckWorkerOpenCadence(block, topic) {
+		//if k.CheckWorkerOpenCadence(block, topic)
+		{
 			ctx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker open cadence met for topic: %v metadata: %s . \n",
 				topic.Id,
 				topic.Metadata))
@@ -140,7 +141,8 @@ func PickChurnableActiveTopics(
 			}
 		}
 		// Check Reputer Close Cadence
-		if k.CheckReputerCloseCadence(block, topic) {
+		//if k.CheckReputerCloseCadence(block, topic)
+		{
 			// Check if there is an unfulfilled nonce
 			nonces, err := k.GetUnfulfilledReputerNonces(ctx, topic.Id)
 			if err != nil {

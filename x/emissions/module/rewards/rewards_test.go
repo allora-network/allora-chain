@@ -312,7 +312,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		s.Require().NoError(err)
 	}
 
-	block += 1
+	block = 600 + 10800
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	// Trigger end block - rewards distribution
