@@ -894,6 +894,15 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 
 // Append loss bundle for a topoic and blockheight
 func (k *Keeper) UpsertReputerLoss(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
+	if reputerLoss == nil {
+		return errors.New("invalid reputerLoss bundle: inferer is empty or nil")
+	}
+	if reputerLoss.ValueBundle == nil {
+		return errors.New("reputerLoss bundle is nil")
+	}
+	if reputerLoss.ValueBundle.Reputer == "" {
+		return errors.New("invalid reputerLoss bundle: reputer is empty")
+	}
 	key := collections.Join(topicId, block)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
 	if err != nil {
