@@ -2,6 +2,8 @@ package types
 
 import alloraMath "github.com/allora-network/allora-chain/math"
 
+type BlockHeight = int64
+type TopicId = uint64
 type TaskRewardType string
 
 const (

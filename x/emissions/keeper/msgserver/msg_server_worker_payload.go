@@ -3,9 +3,15 @@ package msgserver
 import (
 	"context"
 
+	"encoding/hex"
+
 	errorsmod "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"cosmossdk.io/errors"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // A tx function that accepts a individual inference and forecast and possibly returns an error
@@ -22,7 +28,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
-	if err := msg.WorkerDataBundle.Validate(); err != nil {
+	if err := validateWorkerDataBundle(msg.WorkerDataBundle); err != nil {
 		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
 			"Worker invalid data for block: %d", blockHeight)
 	}
@@ -129,4 +135,101 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		}
 	}
 	return &types.MsgInsertWorkerPayloadResponse{}, nil
+}
+
+// Validate top level then elements of the bundle
+func validateWorkerDataBundle(bundle *types.WorkerDataBundle) error {
+	if bundle == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle cannot be nil")
+	}
+	if bundle.Nonce == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle nonce cannot be nil")
+	}
+	if len(bundle.Worker) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "worker cannot be empty")
+	}
+	if len(bundle.Pubkey) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "public key cannot be empty")
+	}
+	if len(bundle.InferencesForecastsBundleSignature) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "signature cannot be empty")
+	}
+	if bundle.InferenceForecastsBundle == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference forecasts bundle cannot be nil")
+	}
+
+	// Validate the inference and forecast of the bundle
+	if bundle.InferenceForecastsBundle.Inference == nil && bundle.InferenceForecastsBundle.Forecast == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference and forecast cannot both be nil")
+	}
+	if bundle.InferenceForecastsBundle.Inference != nil {
+		if err := validateInference(bundle.InferenceForecastsBundle.Inference); err != nil {
+			return err
+		}
+	}
+	if bundle.InferenceForecastsBundle.Forecast != nil {
+		if err := validateForecast(bundle.InferenceForecastsBundle.Forecast); err != nil {
+			return err
+		}
+	}
+
+	// Check signature from the bundle, throw if invalid!
+	pk, err := hex.DecodeString(bundle.Pubkey)
+	if err != nil || len(pk) != secp256k1.PubKeySize {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "signature verification failed")
+	}
+	pubkey := secp256k1.PubKey(pk)
+
+	src := make([]byte, 0)
+	src, _ = bundle.InferenceForecastsBundle.XXX_Marshal(src, true)
+	if !pubkey.VerifySignature(src, bundle.InferencesForecastsBundleSignature) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "signature verification failed")
+	}
+
+	return nil
+}
+
+// Validate forecast
+func validateForecast(forecast *types.Forecast) error {
+	if forecast == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast cannot be nil")
+	}
+	if forecast.BlockHeight < 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecast block height cannot be negative")
+	}
+	if len(forecast.Forecaster) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "forecaster cannot be empty")
+	}
+	if len(forecast.ForecastElements) == 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "at least one forecast element must be provided")
+	}
+	for _, elem := range forecast.ForecastElements {
+		_, err := sdk.AccAddressFromBech32(elem.Inferer)
+		if err != nil {
+			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid inferer address (%s)", err)
+		}
+		if err := validateDec(elem.Value); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Validate inference
+func validateInference(inference *types.Inference) error {
+	if inference == nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference cannot be nil")
+	}
+	_, err := sdk.AccAddressFromBech32(inference.Inferer)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid inferer address (%s)", err)
+	}
+	if inference.BlockHeight < 0 {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference block height cannot be negative")
+	}
+	if err := validateDec(inference.Value); err != nil {
+		return err
+	}
+	return nil
 }

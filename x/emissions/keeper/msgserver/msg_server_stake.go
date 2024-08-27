@@ -6,6 +6,8 @@ import (
 	"errors"
 
 	errorsmod "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -15,7 +17,7 @@ import (
 
 // Function for reputers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*types.MsgAddStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+	if err := validateStakeMsg(*msg); err != nil {
 		return nil, err
 	}
 
@@ -64,7 +66,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) (*types.MsgRemoveStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+	if err := validateRemoveStakeMsg(*msg); err != nil {
 		return nil, err
 	}
 
@@ -118,7 +120,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 
 // cancel a request to remove your stake, during the delay window
 func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelRemoveStake) (*types.MsgCancelRemoveStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+	if err := validateCancelRemoveStakeMsg(*msg); err != nil {
 		return nil, err
 	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -141,7 +143,7 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelR
 
 // Delegates a stake to a reputer. Sender does not have to be registered to delegate stake.
 func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateStake) (*types.MsgDelegateStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+	if err := validateDelegateStakeMsg(*msg); err != nil {
 		return nil, err
 	}
 	if msg.Amount.IsZero() {
@@ -184,7 +186,7 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemoveDelegateStake) (*types.MsgRemoveDelegateStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+	if err := validateRemoveDelegateStakeMsg(*msg); err != nil {
 		return nil, err
 	}
 	if msg.Amount.LTE(cosmosMath.ZeroInt()) {
@@ -256,7 +258,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 
 // cancel an ongoing stake removal request during the delay period
 func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.MsgCancelRemoveDelegateStake) (*types.MsgCancelRemoveDelegateStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+	if err := validateCancelRemoveDelegateStakeMsg(*msg); err != nil {
 		return nil, err
 	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -286,7 +288,7 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ms
 }
 
 func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+	if err := validateRewardDelegateStakeMsg(*msg); err != nil {
 		return nil, err
 	}
 	// Check the target reputer exists and is registered
@@ -334,4 +336,45 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 		}
 	}
 	return &types.MsgRewardDelegateStakeResponse{}, nil
+}
+
+func stakeMsgValidateHelper(addr []string, amount cosmosMath.Int) error {
+	for _, ad := range addr {
+		_, err := sdk.AccAddressFromBech32(ad)
+		if err != nil {
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid address (%s)", ad)
+		}
+	}
+	if amount.LT(cosmosMath.ZeroInt()) {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidCoins, "invalid amount (%s)", amount.String())
+	}
+	return nil
+}
+
+func validateStakeMsg(msg types.MsgAddStake) error {
+	return stakeMsgValidateHelper([]string{msg.Sender}, msg.Amount)
+}
+
+func validateRemoveStakeMsg(msg types.MsgRemoveStake) error {
+	return stakeMsgValidateHelper([]string{msg.Sender}, msg.Amount)
+}
+
+func validateDelegateStakeMsg(msg types.MsgDelegateStake) error {
+	return stakeMsgValidateHelper([]string{msg.Sender, msg.Reputer}, msg.Amount)
+}
+
+func validateRemoveDelegateStakeMsg(msg types.MsgRemoveDelegateStake) error {
+	return stakeMsgValidateHelper([]string{msg.Sender, msg.Reputer}, msg.Amount)
+}
+
+func validateCancelRemoveDelegateStakeMsg(msg types.MsgCancelRemoveDelegateStake) error {
+	return stakeMsgValidateHelper([]string{msg.Sender, msg.Reputer}, cosmosMath.ZeroInt())
+}
+
+func validateRewardDelegateStakeMsg(msg types.MsgRewardDelegateStake) error {
+	return stakeMsgValidateHelper([]string{msg.Sender, msg.Reputer}, cosmosMath.ZeroInt())
+}
+
+func validateCancelRemoveStakeMsg(msg types.MsgCancelRemoveStake) error {
+	return stakeMsgValidateHelper([]string{msg.Sender}, cosmosMath.ZeroInt())
 }

@@ -33,12 +33,12 @@ func validateNewTopic(msg *emissionstypes.MsgCreateNewTopic) error {
 	}
 	if msg.AlphaRegret.Lte(alloraMath.ZeroDec()) ||
 		msg.AlphaRegret.Gt(alloraMath.OneDec()) ||
-		emissionstypes.ValidateDec(msg.AlphaRegret) != nil {
+		validateDec(msg.AlphaRegret) != nil {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "alpha regret must be greater than 0 and less than or equal to 1")
 	}
 	if msg.PNorm.Lt(alloraMath.MustNewDecFromString("2.5")) ||
 		msg.PNorm.Gt(alloraMath.MustNewDecFromString("4.5")) ||
-		emissionstypes.ValidateDec(msg.PNorm) != nil {
+		validateDec(msg.PNorm) != nil {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "p-norm must be between 2.5 and 4.5")
 	}
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {

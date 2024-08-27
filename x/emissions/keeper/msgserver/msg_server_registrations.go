@@ -4,14 +4,31 @@ import (
 	"context"
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
+
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
+
+// validateMsgRegister validates a MsgRegister message
+func validateMsgRegister(msg *types.MsgRegister) error {
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address (%s)", err)
+	}
+	_, err = sdk.AccAddressFromBech32(msg.Owner)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid owner address (%s)", err)
+	}
+
+	return nil
+}
 
 // Registers a new network participant to the network for the first time for worker or reputer
 func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*types.MsgRegisterResponse, error) {
-	if err := msg.Validate(); err != nil {
+	if err := validateMsgRegister(msg); err != nil {
 		return nil, err
 	}
 
@@ -55,9 +72,18 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 	}, nil
 }
 
+// ValidateMsgRemoveRegistration validates a MsgRemoveRegistration message
+func validateMsgRemoveRegistration(msg *types.MsgRemoveRegistration) error {
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address (%s)", err)
+	}
+	return nil
+}
+
 // Remove registration from a topic for worker or reputer
 func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemoveRegistration) (*types.MsgRemoveRegistrationResponse, error) {
-	if err := msg.Validate(); err != nil {
+	if err := validateMsgRemoveRegistration(msg); err != nil {
 		return nil, err
 	}
 	// Check if topic exists
