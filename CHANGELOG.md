@@ -59,6 +59,7 @@ Implements merit based sortition for top N inferers, forecasters, and reputers. 
 ### Fixed
 
 * [#544](https://github.com/allora-network/allora-chain/pull/544) Added check against zero-rewards after conversion to cosmosInt
+* [#547](https://github.com/allora-network/allora-chain/pull/547) Improve error handling on InsertPayload, fixed/added tests err handling
 
 ### Security
 
@@ -100,7 +101,6 @@ Refactors to adapt to single transaction insertions from workers and reputers.
 * [#477](https://github.com/allora-network/allora-chain/pull/477) Fix issue arising from no forecasts being sent in worker payload
 * [#436](https://github.com/allora-network/allora-chain/pull/436/files) Fix bug related to excessive usage of topic ground truth lag and misleading error message
 * Additional bugfixes and improvements
-* [#547](https://github.com/allora-network/allora-chain/pull/547) Improve error handling on InsertPayload, fixed/added tests err handling
 
 ### Security
 
