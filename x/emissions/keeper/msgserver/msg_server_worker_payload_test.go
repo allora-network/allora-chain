@@ -161,7 +161,6 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilInference(
 	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
 	require.NoError(err)
 	require.Equal(len(forecasts.Forecasts[0].ForecastElements), 4)
-
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilForecast() {
