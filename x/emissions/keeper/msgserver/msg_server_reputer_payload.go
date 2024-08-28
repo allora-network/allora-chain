@@ -34,8 +34,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 
 	// Call the bundles self validation method
 	if err := validateReputerValueBundle(msg.Sender, msg.ReputerValueBundle); err != nil {
-		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
-			"Error validating reputer value bundle: %v", err)
+		return nil, errorsmod.Wrapf(err,
+			"Error validating reputer value bundle for block height %d", blockHeight)
 	}
 
 	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
