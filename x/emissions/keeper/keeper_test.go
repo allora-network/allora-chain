@@ -2560,14 +2560,6 @@ func (s *KeeperTestSuite) TestGetReputerScoreEma() {
 		Score:       alloraMath.ZeroDec(),
 	}, reputerScore, "Reputer score should be empty if not set")
 }
-
-func scoresToCompare(s1, s2 types.Score) bool {
-	return s1.TopicId == s2.TopicId &&
-		s1.BlockHeight == s2.BlockHeight &&
-		s1.Address == s2.Address &&
-		s1.Score.Equal(s2.Score)
-}
-
 func (s *KeeperTestSuite) TestGetInfererScoreEmasFromValueBundle() {
 	// todo
 	s.T().Fail()

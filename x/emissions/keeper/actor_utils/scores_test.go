@@ -393,7 +393,7 @@ func mockSimpleNetworkLosses(
 // and the second with higher one out losses.
 // We then compare the resulting scores and check that the higher one out losses result in higher scores.
 func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
-	topicId := uint64(1)
+	topicId := uint64(2)
 	block0 := int64(1003)
 	require := s.Require()
 	topic := types.Topic{

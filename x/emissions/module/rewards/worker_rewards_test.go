@@ -554,6 +554,8 @@ func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
 	testutil.InEpsilon5(s.T(), result, expectedTotalForecasterReward.String())
 }
 
+// todo why is this test not used, should it be used or can it be deleted
+/*
 func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.ValueBundle, error) {
 	oneOutInfererLosses := []*types.WithheldWorkerAttributedValue{
 		{
@@ -642,6 +644,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	return networkLosses, nil
 }
 
+// todo why was this commented out, what is this pr missing
 func mockSimpleNetworkLosses(
 	s *RewardsTestSuite,
 	topicId uint64, // nolint: unparam
@@ -694,6 +697,7 @@ func mockSimpleNetworkLosses(
 
 	return networkLosses, nil
 }
+*/
 
 func mockWorkerLastScores(s *RewardsTestSuite, topicId uint64) ([]types.Score, error) {
 	workerAddrs := []sdk.AccAddress{

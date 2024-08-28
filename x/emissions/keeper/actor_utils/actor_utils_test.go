@@ -130,9 +130,9 @@ func (s *ActorUtilsTestSuite) SetupTest() {
 	s.mintAppModule = mintAppModule
 
 	// Create accounts and fund it
-	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
-	var addrsStr []string = make([]string, 0)
-	var privKeys = make(map[string]secp256k1.PrivKey)
+	addrs := make([]sdk.AccAddress, 0)
+	addrsStr := make([]string, 0)
+	privKeys := make(map[string]secp256k1.PrivKey)
 	for i := 0; i < 50; i++ {
 		senderPrivKey := secp256k1.GenPrivKey()
 		pubkey := senderPrivKey.PubKey().Address()
@@ -149,21 +149,26 @@ func (s *ActorUtilsTestSuite) SetupTest() {
 
 	// Add all tests addresses in whitelists
 	for _, addr := range s.addrsStr {
-		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		s.Require().NoError(err)
 	}
 }
 
 func (s *ActorUtilsTestSuite) FundAccount(amount int64, accAddress sdk.AccAddress) {
 	initialStakeCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(amount)))
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, accAddress, initialStakeCoins)
+	err := s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, initialStakeCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, accAddress, initialStakeCoins)
+	s.Require().NoError(err)
 }
 
 func (s *ActorUtilsTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 
-	s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
-	s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	err := s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, address, creatorInitialBalanceCoins)
+	s.Require().NoError(err)
 }
 
 func TestModuleTestSuite(t *testing.T) {

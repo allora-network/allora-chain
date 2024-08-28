@@ -25,6 +25,7 @@ func setUpSomeWorkers(t *testing.T) (
 	worker4Addr sdk.AccAddress,
 	worker5Addr sdk.AccAddress,
 ) {
+	t.Helper()
 	worker1PrivateKey := secp256k1.GenPrivKey()
 	worker2PrivateKey := secp256k1.GenPrivKey()
 	worker3PrivateKey := secp256k1.GenPrivKey()
@@ -97,6 +98,7 @@ func TestFindTopNByScoreDescCsv(t *testing.T) {
 		topicId := uint64(0)
 
 		nParticipants, err := epochGet("n_participants").UInt64()
+		require.NoError(t, err)
 		reputerScoreEmas := make([]emissionstypes.Score, 0)
 		for i := 0; uint64(i) < nParticipants; i++ {
 			participantName := strconv.Itoa(i)
@@ -142,13 +144,13 @@ func TestFindTopNByScoreDescWithNils(t *testing.T) {
 
 	// Actors with nil scores sent to the end
 	topActors, allActorsSorted, actorIsTop := actorutils.FindTopNByScoreDesc(testCtx, 3, reputerScoreEmas, 1)
-	require.Equal(t, 3, len(topActors))
+	require.Len(t, topActors, 3)
 	require.Equal(t, worker5Addr.String(), topActors[0].Address)
 	require.Equal(t, struct{}{}, actorIsTop[worker5Addr.String()])
 	require.Equal(t, worker3Addr.String(), topActors[1].Address)
 	require.Equal(t, struct{}{}, actorIsTop[worker3Addr.String()])
 	require.Equal(t, "", topActors[2].Address)
-	require.Equal(t, 3, len(allActorsSorted))
+	require.Len(t, allActorsSorted, 3)
 }
 
 func TestGetQuantileOfScores(t *testing.T) {
@@ -212,8 +214,8 @@ func TestGetQuantileOfScoresCsv(t *testing.T) {
 
 		// populate the data from the csv
 		scoresSorted := make([]emissionstypes.Score, nParticipantsDrawn)
-		for i := 0; i < int(nParticipants); i++ {
-			participantName := strconv.Itoa(i)
+		for i := uint64(0); i < nParticipants; i++ {
+			participantName := strconv.FormatUint(i, 10)
 			active := epochGet(fmt.Sprintf("%s_active", participantName))
 			if active.Equal(alloraMath.OneDec()) {
 				sortPosition := epochGet(fmt.Sprintf("%s_sort_position_quality_metrics", participantName))

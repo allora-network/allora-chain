@@ -176,6 +176,9 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 				*existingReputerLossBundles,
 				lowScoreIndex,
 				*filteredLossBundle)
+			if err != nil {
+				return nil, errorsmod.Wrap(err, "error replacing reputer value bundles")
+			}
 		}
 	}
 

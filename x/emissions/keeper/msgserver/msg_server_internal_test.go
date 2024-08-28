@@ -44,10 +44,9 @@ type ChainKey struct {
 }
 
 var (
-	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
-	PKS              = simtestutil.CreateTestPubKeys(10)
-	Addr             = sdk.AccAddress(PKS[0].Address())
-	ValAddr          = generatePrivateKeys(10)
+	PKS     = simtestutil.CreateTestPubKeys(10)
+	Addr    = sdk.AccAddress(PKS[0].Address())
+	ValAddr = generatePrivateKeys(10)
 )
 
 type MsgServerInternalTestSuite struct {
