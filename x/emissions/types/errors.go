@@ -81,4 +81,5 @@ var (
 	ErrNotFound                              = errors.Register(ModuleName, 76, "not found")
 	ErrNoValidForecastElements               = errors.Register(ModuleName, 77, "no valid forecast elements found")
 	ErrInvalidActorType                      = errors.Register(ModuleName, 78, "invalid allora actor type")
+	ErrUnauthorized                          = errors.Register(ModuleName, 79, "unauthorized")
 )

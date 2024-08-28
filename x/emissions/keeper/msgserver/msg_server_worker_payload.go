@@ -22,18 +22,20 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 	forecastChange := false
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	blockHeight := sdkCtx.BlockHeight()
 
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
+
 	err = checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := validateWorkerDataBundle(msg.WorkerDataBundle); err != nil {
+	if err := validateWorkerDataBundle(msg.Sender, msg.WorkerDataBundle); err != nil {
 		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
 			"Worker invalid data for block: %d", blockHeight)
 	}
@@ -274,7 +276,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 }
 
 // Validate top level then elements of the bundle
-func validateWorkerDataBundle(bundle *types.WorkerDataBundle) error {
+func validateWorkerDataBundle(msgSender string, bundle *types.WorkerDataBundle) error {
 	if bundle == nil {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle cannot be nil")
 	}
@@ -302,10 +304,18 @@ func validateWorkerDataBundle(bundle *types.WorkerDataBundle) error {
 		if err := validateInference(bundle.InferenceForecastsBundle.Inference); err != nil {
 			return err
 		}
+		if bundle.InferenceForecastsBundle.Inference.Inferer != msgSender {
+			return errorsmod.Wrapf(types.ErrUnauthorized,
+				"Inference.Inferer does not match transaction sender")
+		}
 	}
 	if bundle.InferenceForecastsBundle.Forecast != nil {
 		if err := validateForecast(bundle.InferenceForecastsBundle.Forecast); err != nil {
 			return err
+		}
+		if bundle.InferenceForecastsBundle.Forecast.Forecaster != msgSender {
+			return errorsmod.Wrapf(types.ErrUnauthorized,
+				"Forecast.Forecaster does not match transaction sender")
 		}
 	}
 
