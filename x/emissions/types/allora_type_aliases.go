@@ -18,11 +18,3 @@ type TaskReward struct {
 	TopicId TopicId
 	Type    TaskRewardType
 }
-
-// contains a score and a pointer to the
-// actor with the next lowest score,
-// for updating the lowest scores in the keeper
-type ScoreAndNextLowest struct {
-	Score      Score
-	NextLowest string
-}
