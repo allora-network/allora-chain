@@ -54,7 +54,6 @@ linters-settings:
           - ["ID", "RPC", "IDS", "JSON"] # AllowList
           - [] # DenyList
           - - upperCaseConst: true
-
 issues:
   exclude-rules:
     - linters:
