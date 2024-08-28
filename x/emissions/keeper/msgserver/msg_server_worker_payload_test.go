@@ -100,6 +100,50 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	return workerMsg, topicId
 }
 
+// deep copy a set up msgInsertWorkerPayload
+func copyWorkerMsg(workerMsg types.MsgInsertWorkerPayload) (copy types.MsgInsertWorkerPayload) {
+	copy = types.MsgInsertWorkerPayload{
+		Sender: workerMsg.Sender,
+		WorkerDataBundle: &types.WorkerDataBundle{
+			Worker:  workerMsg.WorkerDataBundle.Worker,
+			Nonce:   workerMsg.WorkerDataBundle.Nonce,
+			TopicId: workerMsg.WorkerDataBundle.TopicId,
+			InferenceForecastsBundle: &types.InferenceForecastBundle{
+				Inference: &types.Inference{
+					TopicId:     workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId,
+					BlockHeight: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight,
+					Inferer:     workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Inferer,
+					Value:       workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Value,
+				},
+				Forecast: &types.Forecast{
+					TopicId:     workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId,
+					BlockHeight: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight,
+					Forecaster:  workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.Forecaster,
+					ForecastElements: []*types.ForecastElement{
+						{
+							Inferer: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Inferer,
+							Value:   workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Value,
+						},
+						{
+							Inferer: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[1].Inferer,
+							Value:   workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[1].Value,
+						},
+						{
+							Inferer: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[2].Inferer,
+							Value:   workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[2].Value,
+						},
+						{
+							Inferer: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[3].Inferer,
+							Value:   workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[3].Value,
+						},
+					},
+				},
+			},
+		},
+	}
+	return copy
+}
+
 // sign the MsgInsertWorkerPayload message with
 // the private key of the worker
 func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(
@@ -152,20 +196,29 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilInference(
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 
-	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	workerMsgForecast, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
-	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference = nil
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
-
-	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	// in order for the insertion to do something, there need to be some actual
+	// inferences in place to forecast upon
+	workerInferenceMsg := copyWorkerMsg(workerMsgForecast)
+	workerInferenceMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
+	workerMsgInference := s.signMsgInsertWorkerPayload(workerMsgForecast, workerPrivateKey)
+	blockHeight := workerMsgForecast.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsgInference)
+	require.NoError(err)
 
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	// remove the inferences from this workerMsg
+	workerMsgForecast.WorkerDataBundle.InferenceForecastsBundle.Inference = nil
+	workerMsgForecast = s.signMsgInsertWorkerPayload(workerMsgForecast, workerPrivateKey)
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsgForecast)
 	require.NoError(err)
 
 	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
 	require.NoError(err)
-	require.Equal(len(forecasts.Forecasts[0].ForecastElements), 4)
+	require.Greater(len(forecasts.Forecasts), 0)
+	require.Len(forecasts.Forecasts[0].ForecastElements, 4)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilForecast() {

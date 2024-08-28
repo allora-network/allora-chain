@@ -18,6 +18,9 @@ import (
 // A tx function that accepts a individual inference and forecast and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInsertWorkerPayload) (*types.MsgInsertWorkerPayloadResponse, error) {
+	inferenceChange := false
+	forecastChange := false
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 
@@ -118,6 +121,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 			if err != nil {
 				return nil, errorsmod.Wrapf(err, "Error upserting inference")
 			}
+			inferenceChange = true
 		} else {
 			lowestInfererScore,
 				indexOfLowestScoreInExistingInferences,
@@ -156,6 +160,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 				if err != nil {
 					return nil, errorsmod.Wrapf(err, "Error replacing inference")
 				}
+				inferenceChange = true
 			}
 		}
 	}
@@ -213,6 +218,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 					return nil, errorsmod.Wrapf(err,
 						"Error upserting forecast")
 				}
+				forecastChange = true
 			}
 		} else {
 			// if we have hit the maximum number of forecasters for the topic,
@@ -255,8 +261,14 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 				if err != nil {
 					return nil, errorsmod.Wrap(err, "error replacing forecasts")
 				}
+				forecastChange = true
 			}
 		}
+	}
+
+	if !inferenceChange && !forecastChange {
+		return nil, errorsmod.Wrap(types.ErrNoValidBundles,
+			"Worker bundle did not have any inferences or forecasts that were high enough score to change state")
 	}
 	return &types.MsgInsertWorkerPayloadResponse{}, nil
 }
