@@ -4,7 +4,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *KeeperTestSuite) TestIsWhitelistAdmin() {
+func (s *QueryServerTestSuite) TestIsWhitelistAdmin() {
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper

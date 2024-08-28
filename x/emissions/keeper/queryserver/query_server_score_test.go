@@ -8,17 +8,15 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestGetInfererScoreEma() {
+func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 	worker := "worker1"
-	oldScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: worker, Score: alloraMath.NewDecFromInt64(90)}
-	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
+	expected := types.Score{TopicId: topicId, BlockHeight: 1, Address: worker, Score: alloraMath.NewDecFromInt64(90)}
 
 	// Set an initial score for inferer and attempt to update with an older score
-	_ = keeper.SetInfererScoreEma(ctx, topicId, worker, newScore)
-	err := keeper.SetInfererScoreEma(ctx, topicId, worker, oldScore)
+	err := keeper.SetInfererScoreEma(ctx, topicId, worker, expected)
 	s.Require().NoError(err, "Setting an older inferer score should not fail but should not update")
 
 	req := &types.QueryInfererScoreEmaRequest{
@@ -28,11 +26,11 @@ func (s *KeeperTestSuite) TestGetInfererScoreEma() {
 	response, err := s.queryServer.GetInfererScoreEma(ctx, req)
 	s.Require().NoError(err)
 
-	updatedScore := response.Score
-	s.Require().NotEqual(oldScore.Score, updatedScore.Score, "Older score should not replace newer score")
+	result := response.Score
+	s.Require().NotEqual(expected.Score, result.Score, "Retrieved data should match inserted data")
 }
 
-func (s *KeeperTestSuite) TestGetForecasterScoreEma() {
+func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -54,7 +52,7 @@ func (s *KeeperTestSuite) TestGetForecasterScoreEma() {
 	s.Require().Equal(newScore.Score, forecasterScore.Score, "Newer forecaster score should be set")
 }
 
-func (s *KeeperTestSuite) TestGetReputerScoreEma() {
+func (s *QueryServerTestSuite) TestGetReputerScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -76,7 +74,7 @@ func (s *KeeperTestSuite) TestGetReputerScoreEma() {
 	s.Require().Equal(newScore.Score, reputerScore.Score, "Newer reputer score should be set")
 }
 
-func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
+func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -117,7 +115,7 @@ func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
 	}
 }
 
-func (s *KeeperTestSuite) TestGetWorkerInferenceScoresAtBlock() {
+func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -153,7 +151,7 @@ func (s *KeeperTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 }
 
-func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
+func (s *QueryServerTestSuite) TestGetForecastScoresUntilBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -179,7 +177,7 @@ func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
 	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
 }
 
-func (s *KeeperTestSuite) TestGetWorkerForecastScoresAtBlock() {
+func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -208,7 +206,7 @@ func (s *KeeperTestSuite) TestGetWorkerForecastScoresAtBlock() {
 	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
 
-func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
+func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -238,7 +236,7 @@ func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
 	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
 
-func (s *KeeperTestSuite) TestGetListeningCoefficient() {
+func (s *QueryServerTestSuite) TestGetListeningCoefficient() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)

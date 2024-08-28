@@ -5,7 +5,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *KeeperTestSuite) TestGetPreviousReputerRewardFraction() {
+func (s *QueryServerTestSuite) TestGetPreviousReputerRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -39,7 +39,7 @@ func (s *KeeperTestSuite) TestGetPreviousReputerRewardFraction() {
 	s.Require().False(notFound, "Should not return no prior value after setting")
 }
 
-func (s *KeeperTestSuite) TestGetPreviousInferenceRewardFraction() {
+func (s *QueryServerTestSuite) TestGetPreviousInferenceRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -72,7 +72,7 @@ func (s *KeeperTestSuite) TestGetPreviousInferenceRewardFraction() {
 	s.Require().True(response.RewardFraction.Equal(setReward), "The fetched reward fraction should match the set value")
 }
 
-func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
+func (s *QueryServerTestSuite) TestGetPreviousForecastRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -106,7 +106,7 @@ func (s *KeeperTestSuite) TestGetPreviousForecastRewardFraction() {
 	s.Require().False(noPrior, "Should not return no prior value after setting")
 }
 
-func (s *KeeperTestSuite) TestGetPreviousPercentageRewardToStakedReputers() {
+func (s *QueryServerTestSuite) TestGetPreviousPercentageRewardToStakedReputers() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	previousPercentageReward := alloraMath.NewDecFromInt64(50)

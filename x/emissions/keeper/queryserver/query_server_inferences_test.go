@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
+func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -47,7 +47,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	s.Require().Equal(&expectedInferences, results.Inferences)
 }
 
-func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
+func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
@@ -107,7 +107,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	s.Require().Equal(&inference, response.LatestInference, "The latest inference should match the expected data")
 }
 
-func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
+func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -259,7 +259,7 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 	require.NotNil(response, "Response should not be nil")
 }
 
-func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -427,7 +427,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	require.Equal(len(response.ForecastImpliedInferences), 3)
 }
 
-func (s *KeeperTestSuite) TestIsWorkerNonceUnfulfilled() {
+func (s *QueryServerTestSuite) TestIsWorkerNonceUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -452,7 +452,7 @@ func (s *KeeperTestSuite) TestIsWorkerNonceUnfulfilled() {
 	s.Require().True(response.IsWorkerNonceUnfulfilled)
 }
 
-func (s *KeeperTestSuite) TestGetUnfulfilledWorkerNonces() {
+func (s *QueryServerTestSuite) TestGetUnfulfilledWorkerNonces() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -484,7 +484,7 @@ func (s *KeeperTestSuite) TestGetUnfulfilledWorkerNonces() {
 	}
 }
 
-func (s *KeeperTestSuite) TestGetInfererNetworkRegret() {
+func (s *QueryServerTestSuite) TestGetInfererNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := s.CreateOneTopic()
@@ -513,7 +513,7 @@ func (s *KeeperTestSuite) TestGetInfererNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 }
 
-func (s *KeeperTestSuite) TestGetForecasterNetworkRegret() {
+func (s *QueryServerTestSuite) TestGetForecasterNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := s.CreateOneTopic()
@@ -542,7 +542,7 @@ func (s *KeeperTestSuite) TestGetForecasterNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 }
 
-func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
+func (s *QueryServerTestSuite) TestGetOneInForecasterNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := s.CreateOneTopic()
@@ -573,7 +573,7 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 }
 
-func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
+func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
@@ -636,7 +636,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
 }
 
-func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
+func (s *QueryServerTestSuite) TestGetLatestAvailableNetworkInference() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -832,7 +832,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	require.Equal(response.LossBlockHeight, lossBlockHeight)
 }
 
-func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingInferences() {
+func (s *QueryServerTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingInferences() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 

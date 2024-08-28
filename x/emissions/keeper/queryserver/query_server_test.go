@@ -50,7 +50,7 @@ var (
 	ValAddr = GeneratePrivateKeys(10)
 )
 
-type KeeperTestSuite struct {
+type QueryServerTestSuite struct {
 	suite.Suite
 
 	ctx             sdk.Context
@@ -66,10 +66,10 @@ type KeeperTestSuite struct {
 }
 
 func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(KeeperTestSuite))
+	suite.Run(t, new(QueryServerTestSuite))
 }
 
-func (s *KeeperTestSuite) SetupTest() {
+func (s *QueryServerTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
@@ -158,7 +158,7 @@ func GeneratePrivateKeys(numKeys int) []ChainKey {
 	return testAddrs
 }
 
-func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
+func (s *QueryServerTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cosmosMath.Int) {
 	creatorInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, amount))
 
 	err := s.bankKeeper.MintCoins(s.ctx, types.AlloraStakingAccountName, creatorInitialBalanceCoins)
@@ -167,7 +167,7 @@ func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cos
 	s.Require().NoError(err)
 }
 
-func (s *KeeperTestSuite) CreateOneTopic() uint64 {
+func (s *QueryServerTestSuite) CreateOneTopic() uint64 {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -197,7 +197,7 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 	return result.TopicId
 }
 
-func (s *KeeperTestSuite) TestCreateSeveralTopics() {
+func (s *QueryServerTestSuite) TestCreateSeveralTopics() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	// Mock setup for metadata and validation steps
