@@ -159,12 +159,12 @@ service Query {
 
   rpc GetLatestNetworkInference(QueryLatestNetworkInferencesRequest) returns (QueryLatestNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/network_inferences/{topic_id}";
+    option (google.api.http).get = "/emissions/v3/latest_network_inferences/{topic_id}";
   }
 
   rpc GetLatestAvailableNetworkInference(QueryLatestAvailableNetworkInferencesRequest) returns (QueryLatestAvailableNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/network_inferences/{topic_id}";
+    option (google.api.http).get = "/emissions/v3/latest_available_network_inferences/{topic_id}";
   }
 
   rpc IsWorkerNonceUnfulfilled(QueryIsWorkerNonceUnfulfilledRequest) returns (QueryIsWorkerNonceUnfulfilledResponse) {
@@ -210,12 +210,12 @@ service Query {
 
   rpc GetTopicLastWorkerCommitInfo(QueryTopicLastWorkerCommitInfoRequest) returns (QueryTopicLastWorkerCommitInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/topic_last_commit/{topic_id}";
+    option (google.api.http).get = "/emissions/v3/topic_last_worker_commit_info/{topic_id}";
   }
 
   rpc GetTopicLastReputerCommitInfo(QueryTopicLastReputerCommitInfoRequest) returns (QueryTopicLastReputerCommitInfoResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/topic_last_commit/{topic_id}";
+    option (google.api.http).get = "/emissions/v3/topic_last_reputer_commit_info/{topic_id}";
   }
 
   rpc GetTopicRewardNonce(QueryTopicRewardNonceRequest) returns (QueryTopicRewardNonceResponse) {

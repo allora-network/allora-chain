@@ -38,5 +38,6 @@ coverage_raw.lcov
 coverage.lcov
 
 build/
+bin/
 
 tokenomics_output.csv
