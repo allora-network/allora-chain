@@ -1074,7 +1074,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 
 	// Assume InsertInferences correctly sets up inferences
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
-	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
+	err := keeper.SetInferences(ctx, topicId, nonce, expectedInferences)
 	s.Require().NoError(err)
 
 	// Retrieve inferences
@@ -1109,7 +1109,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference1},
 	}
 	nonce1 := types.Nonce{BlockHeight: blockHeight1}
-	err = keeper.InsertInferences(ctx, topicId, nonce1, inferences1)
+	err = keeper.SetInferences(ctx, topicId, nonce1, inferences1)
 	s.Require().NoError(err, "Inserting first set of inferences should not fail")
 
 	// Insert second set of inferences
@@ -1126,7 +1126,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference2},
 	}
 	nonce2 := types.Nonce{BlockHeight: blockHeight2}
-	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	err = keeper.SetInferences(ctx, topicId, nonce2, inferences2)
 	s.Require().NoError(err, "Inserting second set of inferences should not fail")
 
 	// Retrieve the latest inferences
@@ -1159,7 +1159,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		Inferences: []*types.Inference{&newInference1},
 	}
 	nonce := types.Nonce{BlockHeight: blockHeight1}
-	err = keeper.InsertInferences(ctx, topicId, nonce, inferences1)
+	err = keeper.SetInferences(ctx, topicId, nonce, inferences1)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	blockHeight2 := int64(12346)
@@ -1175,7 +1175,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		Inferences: []*types.Inference{&newInference2},
 	}
 	nonce2 := types.Nonce{BlockHeight: blockHeight2}
-	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	err = keeper.SetInferences(ctx, topicId, nonce2, inferences2)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	retrievedInference, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
@@ -1203,7 +1203,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 
 	// Assume InsertForecasts correctly sets up forecasts
 	nonce := types.Nonce{BlockHeight: block}
-	err := keeper.InsertForecasts(ctx, topicId, nonce, expectedForecasts)
+	err := keeper.SetForecasts(ctx, topicId, nonce, expectedForecasts)
 	s.Require().NoError(err)
 
 	// Retrieve forecasts
@@ -1212,7 +1212,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 	s.Require().Equal(&expectedForecasts, actualForecasts)
 }
 
-func (s *KeeperTestSuite) TestInsertReputerLossBundlesAtBlock() {
+func (s *KeeperTestSuite) TestReplaceReputerValueBundles() {
 	ctx := s.ctx
 	require := s.Require()
 	topicId := uint64(1)
@@ -1220,8 +1220,8 @@ func (s *KeeperTestSuite) TestInsertReputerLossBundlesAtBlock() {
 	reputerLossBundles := types.ReputerValueBundles{}
 
 	// Test inserting data
-	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
-	require.NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
+	err := s.emissionsKeeper.ReplaceReputerValueBundles(ctx, topicId, block, reputerLossBundles)
+	require.NoError(err, "ReplaceReputerValueBundles should not return an error")
 
 	// Retrieve data to verify insertion
 	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
@@ -2527,53 +2527,6 @@ func scoresToCompare(s1, s2 types.Score) bool {
 		s1.Score.Equal(s2.Score)
 }
 
-func (s *KeeperTestSuite) TestUpdateScoreEmas() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(1)
-	inferer := "worker1"
-	forecaster := "forecaster1"
-	reputer := "reputer1"
-	shabbyScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(1000)}
-	oldScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: inferer, Score: alloraMath.NewDecFromInt64(10)}
-	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: inferer, Score: alloraMath.NewDecFromInt64(100)}
-	newEmaScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: inferer, Score: alloraMath.MustNewDecFromString("28")}
-	alpha := alloraMath.MustNewDecFromString("0.2")
-
-	// Set an initial score for inferer and attempt to update with an older score or score at same block height does nothing
-	_ = keeper.UpdateInfererScoreEma(ctx, topicId, alpha, inferer, oldScore)
-	infererScore, _ := keeper.GetInfererScoreEma(ctx, topicId, inferer)
-	s.Require().True(scoresToCompare(oldScore, infererScore), "Newer inferer score should be set exactly")
-
-	err := keeper.UpdateInfererScoreEma(ctx, topicId, alpha, inferer, shabbyScore)
-	s.Require().NoError(err, "Setting an older inferer score should not fail but should not update")
-	updatedScore, _ := keeper.GetInfererScoreEma(ctx, topicId, inferer)
-	s.Require().True(scoresToCompare(oldScore, updatedScore), "Older score should not replace newer score")
-
-	_ = keeper.UpdateInfererScoreEma(ctx, topicId, alpha, inferer, newScore)
-	infererScore, _ = keeper.GetInfererScoreEma(ctx, topicId, inferer)
-	s.Require().True(scoresToCompare(newEmaScore, infererScore), "Newer inferer score should be set using EMA")
-
-	// Set a new score for forecaster for the first time => exact score saved
-	_ = keeper.UpdateForecasterScoreEma(ctx, topicId, alpha, forecaster, oldScore)
-	forecasterScore, _ := keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
-	s.Require().True(scoresToCompare(oldScore, forecasterScore), "Newer forecaster score should be set exactly")
-
-	// Set a new score for forecaster *not* for the first time => EMA saved
-	_ = keeper.UpdateForecasterScoreEma(ctx, topicId, alpha, forecaster, newScore)
-	forecasterScore, _ = keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
-	s.Require().True(scoresToCompare(newEmaScore, forecasterScore), "Newer forecaster score should be set using EMA")
-
-	// And now for reputers...
-	_ = keeper.UpdateReputerScoreEma(ctx, topicId, alpha, reputer, oldScore)
-	reputerScore, _ := keeper.GetReputerScoreEma(ctx, topicId, reputer)
-	s.Require().True(scoresToCompare(oldScore, reputerScore), "Newer reputer score should be set using EMA")
-
-	_ = keeper.UpdateReputerScoreEma(ctx, topicId, alpha, reputer, newScore)
-	reputerScore, _ = keeper.GetReputerScoreEma(ctx, topicId, reputer)
-	s.Require().True(scoresToCompare(newEmaScore, reputerScore), "Newer reputer score should be set using EMA")
-}
-
 func (s *KeeperTestSuite) TestGetInfererScoreEmasFromValueBundle() {
 	// todo
 	s.T().Fail()
@@ -3133,7 +3086,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 		},
 	}
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
-	err := s.emissionsKeeper.InsertInferences(s.ctx, topicId, nonce, expectedInferences)
+	err := s.emissionsKeeper.SetInferences(s.ctx, topicId, nonce, expectedInferences)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	expectedForecasts := types.Forecasts{
@@ -3148,12 +3101,12 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 			},
 		},
 	}
-	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, nonce, expectedForecasts)
+	err = s.emissionsKeeper.SetForecasts(s.ctx, topicId, nonce, expectedForecasts)
 	s.Require().NoError(err)
 
 	reputerLossBundles := types.ReputerValueBundles{}
-	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerLossBundles)
-	s.Require().NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
+	err = s.emissionsKeeper.ReplaceReputerValueBundles(s.ctx, topicId, block, reputerLossBundles)
+	s.Require().NoError(err, "ReplaceReputerValueBundles should not return an error")
 
 	networkLosses := types.ValueBundle{}
 	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
@@ -3614,20 +3567,21 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	worker4 := "worker4"
 	worker5 := "worker5"
 
+	var err error
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
-	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker1, score1)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker1, score1)
 	s.Require().NoError(err)
-	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker2, score2)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker2, score2)
 	s.Require().NoError(err)
-	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker3, score3)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker3, score3)
 	s.Require().NoError(err)
-	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker4, score4)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker4, score4)
 	s.Require().NoError(err)
-	err = k.UpdateForecasterScoreEma(ctx, topicId, alloraMath.OneDec(), worker5, score5)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker5, score5)
 	s.Require().NoError(err)
 
 	allForecasts := types.Forecasts{
@@ -3790,7 +3744,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			},
 		},
 	}
-	err = k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, allReputerLosses)
+	err = k.ReplaceReputerValueBundles(ctx, topicId, nonce.BlockHeight, allReputerLosses)
 	s.Require().NoError(err)
 
 	newReputerLoss := types.ReputerValueBundle{

@@ -2,7 +2,11 @@ package msgserver
 
 import (
 	"context"
+	"fmt"
 
+	"errors"
+
+	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 
 	"encoding/hex"
@@ -11,6 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -24,8 +29,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	if err != nil {
 		return nil, err
 	}
-
-	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockHeight := sdkCtx.BlockHeight()
 
 	// Call the bundles self validation method
 	if err := validateReputerValueBundle(msg.ReputerValueBundle); err != nil {
@@ -108,12 +113,70 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	// Before activating topic, transfer fee amount from creator to ecosystem bucket
 	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error sending effective revenue")
 	}
 
-	err = ms.k.UpsertReputerLoss(ctx, topicId, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
+	// active set management: now we decide if we will accept this reputer payload
+	// based on whether this reputer is in the active set or not
+	// get all the current reputer loss bundles we've accepted at this nonce epoch
+	existingReputerLossBundles, err := ms.k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.ReputerNonce.BlockHeight)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting existing reputer loss bundles")
+	}
+
+	// if the number of reputer loss bundles is less than the max number of reputers to reward,
+	// we can just accept this reputer payload straight away
+	if uint64(len(existingReputerLossBundles.ReputerValueBundles)) < moduleParams.MaxTopReputersToReward {
+		filteredLossBundle, err := filterReputerBundle(ctx, ms.k, topicId, *nonce, *msg.ReputerValueBundle)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error filtering reputer bundle")
+		}
+		err = ms.k.UpsertReputerBundle(ctx, topicId, nonce.ReputerNonce.BlockHeight, filteredLossBundle)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error upserting reputer loss bundle")
+		}
+	} else {
+		// find the lowest scored reputer currently in this epoch
+		// and see if our score is higher than theirs, if so we can replace them
+
+		// get the lowest reputer score and index from all of the loss bundles this epoch
+		lowScore, lowScoreIndex, err := getLowScoreFromAllLossBundles(ctx, ms.k, topicId, *existingReputerLossBundles)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error getting low score from all loss bundles")
+		}
+		// get score of current reputer
+		reputerScore, err := ms.k.GetReputerScoreEma(ctx, topicId, msg.ReputerValueBundle.ValueBundle.Reputer)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error getting reputer score ema")
+		}
+		if lowScore.Score.Gt(reputerScore.Score) && lowScore.Address != msg.ReputerValueBundle.ValueBundle.Reputer {
+			sdkCtx.Logger().Debug(
+				fmt.Sprintf(
+					"Reputer does not meet threshold for active set inclusion, ignoring.\n"+
+						" Reputer: %s\nScore Ema %s\nThreshold %s\nTopicId: %d\nNonce: %d",
+					msg.ReputerValueBundle.ValueBundle.Reputer,
+					reputerScore.Score.String(),
+					lowScore.Score.String(),
+					topicId,
+					nonce.ReputerNonce.BlockHeight))
+		} else {
+			// limit reputation loss bundles to only those that describe
+			// the top inferers and forecasters
+			// also remove duplicate loss bundles
+			filteredLossBundle, err := filterReputerBundle(ctx, ms.k, topicId, *nonce, *msg.ReputerValueBundle)
+			if err != nil {
+				return nil, errorsmod.Wrap(err, "error filtering reputer bundle")
+			}
+
+			// we are kicking out the lowest scoring forecaster and replacing them with the new forecaster
+			err = ms.k.ReplaceReputerValueBundles(
+				ctx,
+				topicId,
+				*nonce.ReputerNonce,
+				*existingReputerLossBundles,
+				lowScoreIndex,
+				*filteredLossBundle)
+		}
 	}
 
 	return &types.MsgInsertReputerPayloadResponse{}, nil
@@ -225,4 +288,147 @@ func validateReputerValueBundle(bundle *types.ReputerValueBundle) error {
 	}
 
 	return nil
+}
+
+// gets the lowest reputer score from all of the loss bundles
+// no validation is done that the loss bundles are of len > 0
+// because by the time this is called, that should be guaranteed
+// by the caller
+func getLowScoreFromAllLossBundles(
+	ctx context.Context,
+	k keeper.Keeper,
+	topicId TopicId,
+	lossBundles types.ReputerValueBundles,
+) (types.Score, int, error) {
+	lowScoreIndex := 0
+	lowScore, err := k.GetReputerScoreEma(ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.Reputer)
+	if err != nil {
+		return types.Score{}, lowScoreIndex, err
+	}
+	for index, extLossBundle := range lossBundles.ReputerValueBundles {
+		extScore, err := k.GetReputerScoreEma(ctx, topicId, extLossBundle.ValueBundle.Reputer)
+		if err != nil {
+			continue
+		}
+		if lowScore.Score.Gt(extScore.Score) {
+			lowScore = extScore
+			lowScoreIndex = index
+		}
+	}
+	return lowScore, lowScoreIndex, nil
+}
+
+// filter loss bundles
+// remove duplicates
+// remove any loss bundles that describe reputation for
+// any inferer a forecaster that is not in the active set
+func filterReputerBundle(
+	ctx context.Context,
+	k keeper.Keeper,
+	topicId TopicId,
+	reputerRequestNonce types.ReputerRequestNonce,
+	reputerValueBundle types.ReputerValueBundle,
+) (*types.ReputerValueBundle, error) {
+	// Get the accepted inferers of the associated worker response payload
+	inferences, err := k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "no inferences found at block height")
+		} else {
+			return nil, err
+		}
+	}
+	activeInferers := make(map[string]struct{})
+	for _, inference := range inferences.Inferences {
+		activeInferers[inference.Inferer] = struct{}{}
+	}
+
+	// Get the accepted forecasters of the associated worker response payload
+	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	activeForecasters := make(map[string]struct{})
+	for _, forecast := range forecasts.Forecasts {
+		activeForecasters[forecast.Forecaster] = struct{}{}
+	}
+
+	// Filter out values submitted by unaccepted workers
+
+	acceptedInfererValues := make([]*types.WorkerAttributedValue, 0)
+	infererSeen := make(map[string]struct{})
+	for _, workerVal := range reputerValueBundle.ValueBundle.InfererValues {
+		if _, isActive := activeInferers[workerVal.Worker]; isActive {
+			if _, seen := infererSeen[workerVal.Worker]; !seen {
+				acceptedInfererValues = append(acceptedInfererValues, workerVal)
+				infererSeen[workerVal.Worker] = struct{}{} // Mark as seen => no duplicates
+			}
+		}
+	}
+
+	acceptedForecasterValues := make([]*types.WorkerAttributedValue, 0)
+	forecasterSeen := make(map[string]struct{})
+	for _, workerVal := range reputerValueBundle.ValueBundle.ForecasterValues {
+		if _, isActive := activeForecasters[workerVal.Worker]; isActive {
+			if _, seen := forecasterSeen[workerVal.Worker]; !seen {
+				acceptedForecasterValues = append(acceptedForecasterValues, workerVal)
+				forecasterSeen[workerVal.Worker] = struct{}{} // Mark as seen => no duplicates
+			}
+		}
+	}
+
+	acceptedOneOutInfererValues := make([]*types.WithheldWorkerAttributedValue, 0)
+	// If 1 or fewer inferers, there's no one-out inferer data to receive
+	if len(acceptedInfererValues) > 1 {
+		oneOutInfererSeen := make(map[string]struct{})
+		for _, workerVal := range reputerValueBundle.ValueBundle.OneOutInfererValues {
+			if _, isActive := activeInferers[workerVal.Worker]; isActive {
+				if _, seen := oneOutInfererSeen[workerVal.Worker]; !seen {
+					acceptedOneOutInfererValues = append(acceptedOneOutInfererValues, workerVal)
+					oneOutInfererSeen[workerVal.Worker] = struct{}{} // Mark as seen => no duplicates
+				}
+			}
+		}
+	}
+
+	acceptedOneOutForecasterValues := make([]*types.WithheldWorkerAttributedValue, 0)
+	oneOutForecasterSeen := make(map[string]struct{})
+	for _, workerVal := range reputerValueBundle.ValueBundle.OneOutForecasterValues {
+		if _, isActive := activeForecasters[workerVal.Worker]; isActive {
+			if _, seen := oneOutForecasterSeen[workerVal.Worker]; !seen {
+				acceptedOneOutForecasterValues = append(acceptedOneOutForecasterValues, workerVal)
+				oneOutForecasterSeen[workerVal.Worker] = struct{}{} // Mark as seen => no duplicates
+			}
+		}
+	}
+
+	acceptedOneInForecasterValues := make([]*types.WorkerAttributedValue, 0)
+	oneInForecasterSeen := make(map[string]struct{})
+	for _, workerVal := range reputerValueBundle.ValueBundle.OneInForecasterValues {
+		if _, isActive := activeForecasters[workerVal.Worker]; isActive {
+			if _, seen := oneInForecasterSeen[workerVal.Worker]; !seen {
+				acceptedOneInForecasterValues = append(acceptedOneInForecasterValues, workerVal)
+				oneInForecasterSeen[workerVal.Worker] = struct{}{} // Mark as seen => no duplicates
+			}
+		}
+	}
+
+	acceptedReputerValueBundle := &types.ReputerValueBundle{
+		ValueBundle: &types.ValueBundle{
+			TopicId:                reputerValueBundle.ValueBundle.TopicId,
+			ReputerRequestNonce:    reputerValueBundle.ValueBundle.ReputerRequestNonce,
+			Reputer:                reputerValueBundle.ValueBundle.Reputer,
+			ExtraData:              reputerValueBundle.ValueBundle.ExtraData,
+			InfererValues:          acceptedInfererValues,
+			ForecasterValues:       acceptedForecasterValues,
+			OneOutInfererValues:    acceptedOneOutInfererValues,
+			OneOutForecasterValues: acceptedOneOutForecasterValues,
+			OneInForecasterValues:  acceptedOneInForecasterValues,
+			NaiveValue:             reputerValueBundle.ValueBundle.NaiveValue,
+			CombinedValue:          reputerValueBundle.ValueBundle.CombinedValue,
+		},
+		Signature: reputerValueBundle.Signature,
+	}
+
+	return acceptedReputerValueBundle, nil
 }

@@ -109,8 +109,8 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 	require.Nil(response.LossBundles.ReputerValueBundles)
 
 	// Test inserting data
-	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
-	require.NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
+	err = s.emissionsKeeper.ReplaceReputerValueBundles(ctx, topicId, block, reputerLossBundles)
+	require.NoError(err, "ReplaceReputerValueBundles should not return an error")
 
 	response, err = s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
 	require.NotNil(response)

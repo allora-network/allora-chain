@@ -1360,7 +1360,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 		},
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
+	_ = s.emissionsKeeper.ReplaceReputerValueBundles(s.ctx, topicId, block, reputerValueBundles)
 
 	// Calculate and Set the reputer scores
 	scores, err := actorutils.CalcReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
@@ -1416,7 +1416,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 		},
 	}
 	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
-	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, newBlock, newReputerValueBundles)
+	_ = s.emissionsKeeper.ReplaceReputerValueBundles(s.ctx, topicId, newBlock, newReputerValueBundles)
 
 	// Calculate and Set the reputer scores
 	scores, err = actorutils.CalcReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
@@ -1491,7 +1491,7 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 		},
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	err = keeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
+	err = keeper.ReplaceReputerValueBundles(s.ctx, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores

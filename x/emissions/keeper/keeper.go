@@ -773,14 +773,22 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 	return &forecasts, nil
 }
 
-// Upsert/Append individual inference for a topic/block into the chain's state
-// If the inference already exists, it will be overwritten
-func (k *Keeper) UpsertInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
+// do some checks on the inference before inserting it
+func inferenceInsertionChecks(inference *types.Inference) error {
 	if inference == nil {
 		return errors.New("invalid inference: inferer is empty or nil")
 	}
 	if inference.Inferer == "" {
 		return errors.New("invalid inference: inferer is empty")
+	}
+	return nil
+}
+
+// Upsert/Append individual inference for a topic/block into the chain's state
+// If the inference already exists, it will be overwritten
+func (k *Keeper) UpsertInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
+	if err := inferenceInsertionChecks(inference); err != nil {
+		return err
 	}
 	block := nonce.BlockHeight
 	key := collections.Join(topicId, block)
@@ -815,14 +823,40 @@ func (k *Keeper) SetInferences(ctx context.Context, topicId TopicId, nonce types
 	return k.allInferences.Set(ctx, key, inferences)
 }
 
-// Upsert/Append individual forecast for a topic/block into the chain's state
-// If the forecast already exists, it will be overwritten
-func (k *Keeper) UpsertForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
+// Replace an inference stored at this worker nonce
+// e.g. when someone joins the active set and boots out
+// the lowest currently scoring inferer
+func (k *Keeper) ReplaceInference(
+	ctx context.Context,
+	topicId TopicId,
+	block types.Nonce,
+	existingInferences types.Inferences,
+	indexOfLowestScoreInExistingInferences int,
+	newInference types.Inference,
+) error {
+	if err := inferenceInsertionChecks(&newInference); err != nil {
+		return err
+	}
+	existingInferences.Inferences[indexOfLowestScoreInExistingInferences] = &newInference
+	return k.SetInferences(ctx, topicId, block, existingInferences)
+}
+
+// do some checks on the forecast before inserting it
+func forecastInsertionChecks(forecast *types.Forecast) error {
 	if forecast == nil || forecast.Forecaster == "" {
 		return errors.New("invalid forecast: forecaster is empty or nil")
 	}
 	if len(forecast.ForecastElements) == 0 {
 		return errors.New("invalid forecast: forecast elements are empty")
+	}
+	return nil
+}
+
+// Upsert/Append individual forecast for a topic/block into the chain's state
+// If the forecast already exists, it will be overwritten
+func (k *Keeper) UpsertForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
+	if err := forecastInsertionChecks(forecast); err != nil {
+		return err
 	}
 	block := nonce.BlockHeight
 	key := collections.Join(topicId, block)
@@ -855,6 +889,22 @@ func (k *Keeper) SetForecasts(ctx context.Context, topicId TopicId, nonce types.
 
 	key := collections.Join(topicId, block)
 	return k.allForecasts.Set(ctx, key, forecasts)
+}
+
+// Replace an existing forecast in the current set of forecasts for this epoch
+func (k *Keeper) ReplaceForecast(
+	ctx context.Context,
+	topicId TopicId,
+	block types.Nonce,
+	existingForecasts types.Forecasts,
+	indexOfLowestScoreInExistingForecasts int,
+	newForecast types.Forecast,
+) error {
+	if err := forecastInsertionChecks(&newForecast); err != nil {
+		return err
+	}
+	existingForecasts.Forecasts[indexOfLowestScoreInExistingForecasts] = &newForecast
+	return k.SetForecasts(ctx, topicId, block, existingForecasts)
 }
 
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(
@@ -892,16 +942,29 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 
 /// LOSS BUNDLES
 
-// Append loss bundle for a topoic and blockheight
-func (k *Keeper) UpsertReputerLoss(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
-	if reputerLoss == nil {
+// do some checks on the reputer bundle before inserting it
+func reputerBundleInsertionChecks(reputerBundle *types.ReputerValueBundle) error {
+	if reputerBundle == nil {
 		return errors.New("invalid reputerLoss bundle: inferer is empty or nil")
 	}
-	if reputerLoss.ValueBundle == nil {
+	if reputerBundle.ValueBundle == nil {
 		return errors.New("reputerLoss bundle is nil")
 	}
-	if reputerLoss.ValueBundle.Reputer == "" {
+	if reputerBundle.ValueBundle.Reputer == "" {
 		return errors.New("invalid reputerLoss bundle: reputer is empty")
+	}
+	return nil
+}
+
+// Append loss bundle for a topoic and blockheight
+func (k *Keeper) UpsertReputerBundle(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+	reputerBundle *types.ReputerValueBundle,
+) error {
+	if err := reputerBundleInsertionChecks(reputerBundle); err != nil {
+		return err
 	}
 	key := collections.Join(topicId, block)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
@@ -912,18 +975,12 @@ func (k *Keeper) UpsertReputerLoss(ctx context.Context, topicId TopicId, block B
 	var newReputerLossBundles types.ReputerValueBundles
 	// remove reputation if this reputer already submitted
 	for _, exReputation := range reputerLossBundles.ReputerValueBundles {
-		if exReputation.ValueBundle.Reputer != reputerLoss.ValueBundle.Reputer {
+		if exReputation.ValueBundle.Reputer != reputerBundle.ValueBundle.Reputer {
 			newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, exReputation)
 		}
 	}
-	newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerLoss)
+	newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerBundle)
 	return k.allLossBundles.Set(ctx, key, newReputerLossBundles)
-}
-
-// Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
-func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLossBundles types.ReputerValueBundles) error {
-	key := collections.Join(topicId, block)
-	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
 }
 
 // Get loss bundles for a topic/timestamp
@@ -948,6 +1005,22 @@ func (k *Keeper) SetReputerLossBundlesAtBlock(
 ) error {
 	key := collections.Join(topicId, block)
 	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
+}
+
+// Replaces a value bundle in the set and then uploads it into the db
+func (k *Keeper) ReplaceReputerValueBundles(
+	ctx context.Context,
+	topicId TopicId,
+	block types.Nonce,
+	existingBundles types.ReputerValueBundles,
+	replacementIndex int,
+	newBundle types.ReputerValueBundle,
+) error {
+	if err := reputerBundleInsertionChecks(&newBundle); err != nil {
+		return err
+	}
+	existingBundles.ReputerValueBundles[replacementIndex] = &newBundle
+	return k.SetReputerLossBundlesAtBlock(ctx, topicId, block.BlockHeight, existingBundles)
 }
 
 // Insert a network loss bundle for a topic and block.

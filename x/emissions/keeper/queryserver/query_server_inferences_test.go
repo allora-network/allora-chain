@@ -174,7 +174,7 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 		},
 	}
 
-	err := keeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, blockHeight, reputerLossBundles)
+	err := keeper.ReplaceReputerValueBundles(s.ctx, topicId, blockHeight, reputerLossBundles)
 	require.NoError(err)
 
 	// Set Stake
