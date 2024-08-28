@@ -20,6 +20,7 @@ import (
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInsertWorkerPayload) (*types.MsgInsertWorkerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
+
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -77,15 +78,6 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
-	// get the existing inferences at this block height already
-	// we'll use this later for both inferences
-	// and for filtering forecasts about inferences we're
-	// currently including at this moment
-	existingInferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error getting existing inferences at block")
-	}
-
 	// Inferences
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
 		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
@@ -114,6 +106,12 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		// if they do not their inference is not accepted
 		// if they do, their inference is accepted, and they replace the person with the lowest score
 
+		// get the existing inferences at this block height already
+		existingInferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "Error getting existing inferences at block")
+		}
+
 		// if we haven't yet reached the cap of inferers, we can upsert
 		if uint64(len(existingInferences.Inferences)) < moduleParams.MaxTopInferersToReward {
 			err = ms.k.UpsertInference(ctx, topicId, *nonce, inference)
@@ -131,6 +129,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 			if err != nil {
 				return nil, errorsmod.Wrapf(err, "Error getting inferer score ema")
 			}
+
 			// if the new inference is the lowest score and it's the same as this Inferer, we allow the inferer
 			// to edit their inference via upsert.
 			// if the lowest score is greater than this candidate inference,
@@ -190,6 +189,13 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		existingForecasts, err := ms.k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error getting existing forecasts at block")
+		}
+
+		// get the existing inferences at this block height
+		// this should now include the inferences we just inserted
+		existingInferences, err := ms.k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
+		if err != nil {
+			return nil, errorsmod.Wrapf(err, "Error getting existing inferences at block")
 		}
 
 		// if we have not yet hit the maximum number of forecasters for the topic,

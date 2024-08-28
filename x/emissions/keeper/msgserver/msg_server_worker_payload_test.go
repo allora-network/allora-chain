@@ -100,7 +100,12 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	return workerMsg, topicId
 }
 
-func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(workerMsg types.MsgInsertWorkerPayload, workerPrivateKey secp256k1.PrivKey) types.MsgInsertWorkerPayload {
+// sign the MsgInsertWorkerPayload message with
+// the private key of the worker
+func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(
+	workerMsg types.MsgInsertWorkerPayload,
+	workerPrivateKey secp256k1.PrivKey,
+) types.MsgInsertWorkerPayload {
 	require := s.Require()
 
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
