@@ -55,7 +55,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	}
 	activeTopics, _, err := s.emissionsKeeper.GetIdsActiveTopicAtBlock(ctx, 31, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly one active topics")
+	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
 
 	params = types.Params{
 		MaxActiveTopicsPerBlock:         maxActiveTopicsNum,

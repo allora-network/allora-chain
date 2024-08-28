@@ -228,11 +228,6 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	ctx := context.Background()
 	m.T.Log(time.Now(), "--- START  Worker Inference, Forecast and Reputation test ---")
 	// Nonce: calculate from EpochLastRan + EpochLength
-	//topic, err := getNonZeroTopicEpochLastRan(m, 1, 5)
-	//if err != nil {
-	//	m.T.Log(time.Now(), "--- Failed getting a topic that was ran ---")
-	//	require.NoError(m.T, err)
-	//}
 
 	topic, err := waitForNextChurningBlock(m, 1)
 	if err != nil {
@@ -240,7 +235,7 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	}
 	m.T.Log(time.Now(), "--- Insert Worker Bundle ---")
 	// Waiting for ground truth lag to pass
-	m.T.Log(time.Now(), "--- Waiting to Insert Reputer Bundle ---")
+	m.T.Log(time.Now(), "--- Waiting to Insert Worker Bundle ---")
 	blockHeightNonce, err := RunWithRetry(m, 3, 2*time.Second, func() (int64, error) {
 		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topic.Id})
 		if err != nil {

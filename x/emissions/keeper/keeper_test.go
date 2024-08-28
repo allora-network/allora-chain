@@ -2205,7 +2205,7 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	}
 	activeTopics, _, err := keeper.GetIdsActiveTopicAtBlock(ctx, 5, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Len(activeTopics, 1, "Should retrieve exactly two active topics")
+	s.Require().Len(activeTopics, 1, "Should retrieve exactly one active topic")
 
 	pagination = &types.SimpleCursorPaginationRequest{
 		Key:   nil,
@@ -2213,21 +2213,8 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	}
 	activeTopics, _, err = keeper.GetIdsActiveTopicAtBlock(ctx, 15, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Len(activeTopics, 1, "Should retrieve exactly two active topics")
-
-	for _, topicId := range activeTopics {
-		isActive, err := keeper.IsTopicActive(ctx, topicId)
-		s.Require().NoError(err, "Checking topic activity should not fail")
-		s.Require().True(isActive, "Only active topics should be returned")
-		switch topicId {
-		case 1:
-			s.Require().Equal(topic1.Id, topicId, "The details of topic 1 should match")
-		case 3:
-			s.Require().Equal(topic3.Id, topicId, "The details of topic 3 should match")
-		default:
-			s.Fail("Unexpected topic ID retrieved")
-		}
-	}
+	s.Require().Len(activeTopics, 1, "Should retrieve exactly one active topic")
+	s.Require().Equal(activeTopics[0], topic3.Id, "The details of topic 1 should match")
 }
 
 func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {

@@ -49,7 +49,7 @@ func DefaultParams() Params {
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                   // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
 		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
 		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
-		MaxActiveTopicsPerBlock:             uint64(100),                                  // maximum number of active topics per block
+		MaxActiveTopicsPerBlock:             uint64(1),                                    // maximum number of active topics per block
 	}
 }
 

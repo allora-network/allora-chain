@@ -194,9 +194,7 @@ func (s *MigrationTestSuite) TestActiveTopicsMigration() {
 	for ; iterator.Valid(); iterator.Next() {
 		var msg types.TopicIds
 		err := proto.Unmarshal(iterator.Value(), &msg)
-		if err != nil {
-			continue
-		}
+		s.Require().NoError(err)
 		s.Require().GreaterOrEqual(len(msg.TopicIds), 3)
 	}
 }
@@ -222,9 +220,7 @@ func (s *MigrationTestSuite) TestLimitedActiveTopicsMigration() {
 	for ; iterator.Valid(); iterator.Next() {
 		var msg types.TopicIds
 		err := proto.Unmarshal(iterator.Value(), &msg)
-		if err != nil {
-			continue
-		}
+		s.Require().NoError(err)
 		if len(msg.TopicIds) == 0 {
 			continue
 		}

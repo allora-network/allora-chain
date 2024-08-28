@@ -207,11 +207,11 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 		churningBlockStore.Set(idArray, blockHeightBytes)
 		activeTopicsBytes, err := activeTopicIds.Marshal()
 		if err != nil {
-			continue
+			return err
 		}
 		lowestWeightBytes, err := cuLowestWeight.Marshal()
 		if err != nil {
-			continue
+			return err
 		}
 		blockToActiveStore.Set(blockHeightBytes, activeTopicsBytes)
 		blockLowestWeightStore.Set(blockHeightBytes, lowestWeightBytes)
