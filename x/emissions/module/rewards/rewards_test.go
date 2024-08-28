@@ -2224,7 +2224,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	infererScores, err := actorutils.CalcInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topicId,
+		topic,
 		block,
 		*networkLossBundles)
 	s.Require().NoError(err)
@@ -2232,7 +2232,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	forecasterScores, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topicId,
+		topic,
 		block,
 		*networkLossBundles)
 	s.Require().NoError(err)

@@ -50,7 +50,7 @@ var (
 	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
 	PKS              = simtestutil.CreateTestPubKeys(10)
 	Addr             = sdk.AccAddress(PKS[0].Address())
-	ValAddr          = GeneratePrivateKeys(10)
+	ValAddr          = generatePrivateKeys(10)
 )
 
 type MsgServerTestSuite struct {
@@ -152,7 +152,7 @@ func (s *MsgServerTestSuite) SetupTest() {
 	}
 }
 
-func GeneratePrivateKeys(numKeys int) []ChainKey {
+func generatePrivateKeys(numKeys int) []ChainKey {
 	testAddrs := make([]ChainKey, numKeys)
 	for i := 0; i < numKeys; i++ {
 		pk, prk, _ := ed25519.GenerateKey(nil)

@@ -159,10 +159,10 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
 
-	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
+	err := keeper.SetForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
 	require.NoError(err)
 
-	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
+	err = keeper.SetInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)

@@ -140,7 +140,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		// and see if our score is higher than theirs, if so we can replace them
 
 		// get the lowest reputer score and index from all of the loss bundles this epoch
-		lowScore, lowScoreIndex, err := getLowScoreFromAllLossBundles(ctx, ms.k, topicId, *existingReputerLossBundles)
+		lowScore, lowScoreIndex, err := lowestReputerScoreEma(ctx, ms.k, topicId, *existingReputerLossBundles)
 		if err != nil {
 			return nil, errorsmod.Wrap(err, "error getting low score from all loss bundles")
 		}
@@ -294,21 +294,21 @@ func validateReputerValueBundle(bundle *types.ReputerValueBundle) error {
 // no validation is done that the loss bundles are of len > 0
 // because by the time this is called, that should be guaranteed
 // by the caller
-func getLowScoreFromAllLossBundles(
+func lowestReputerScoreEma(
 	ctx context.Context,
 	k keeper.Keeper,
 	topicId TopicId,
 	lossBundles types.ReputerValueBundles,
-) (types.Score, int, error) {
-	lowScoreIndex := 0
-	lowScore, err := k.GetReputerScoreEma(ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.Reputer)
+) (lowScore types.Score, lowScoreIndex int, err error) {
+	lowScoreIndex = 0
+	lowScore, err = k.GetReputerScoreEma(ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.Reputer)
 	if err != nil {
 		return types.Score{}, lowScoreIndex, err
 	}
 	for index, extLossBundle := range lossBundles.ReputerValueBundles {
 		extScore, err := k.GetReputerScoreEma(ctx, topicId, extLossBundle.ValueBundle.Reputer)
 		if err != nil {
-			continue
+			return types.Score{}, lowScoreIndex, err
 		}
 		if lowScore.Score.Gt(extScore.Score) {
 			lowScore = extScore

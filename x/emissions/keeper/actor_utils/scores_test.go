@@ -119,11 +119,15 @@ func (s *ActorUtilsTestSuite) TestGetReputersScoresFromCsv() {
 	)
 	s.Require().NoError(err)
 
+	moduleParams, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+
 	// Generate new reputer scores
-	scores, err := actorutils.CalcReputerScores(
+	scores, err := actorutils.CalcReputerScoresSetListeningCoefficients(
 		s.ctx,
 		s.emissionsKeeper,
 		topicId,
+		moduleParams,
 		block,
 		reportedLosses,
 	)
@@ -237,11 +241,25 @@ func (s *ActorUtilsTestSuite) TestGetInferenceScores() {
 	reportedLosses, err := mockNetworkLosses(s, topicId, block)
 	s.Require().NoError(err)
 
+	topic := types.Topic{
+		Id:                     topicId,
+		Creator:                s.addrs[0].String(),
+		Metadata:               "test",
+		LossMethod:             "mse",
+		EpochLength:            10800,
+		GroundTruthLag:         10800,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:          true,
+		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+	}
+
 	// Get inference scores
 	scores, err := actorutils.CalcInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topicId,
+		topic,
 		block,
 		reportedLosses,
 	)
@@ -267,6 +285,15 @@ func (s *ActorUtilsTestSuite) TestGetInferenceScores() {
 
 func (s *ActorUtilsTestSuite) TestGetInferenceScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	topic := types.Topic{
+		Id:                     1,
+		Creator:                s.addrs[0].String(),
+		Metadata:               "test",
+		LossMethod:             "mse",
+		EpochLength:            10800,
+		GroundTruthLag:         10800,
+		WorkerSubmissionWindow: 10,
+	}
 	for i := 300; i < 305; i++ {
 		epoch3Get := epochGet[i]
 		topicId := uint64(1)
@@ -290,7 +317,7 @@ func (s *ActorUtilsTestSuite) TestGetInferenceScoresFromCsv() {
 		scores, err := actorutils.CalcInferenceScores(
 			s.ctx,
 			s.emissionsKeeper,
-			topicId,
+			topic,
 			block,
 			reportedLosses,
 		)
@@ -369,6 +396,15 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	topicId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
+	topic := types.Topic{
+		Id:                     1,
+		Creator:                s.addrs[0].String(),
+		Metadata:               "test",
+		LossMethod:             "mse",
+		EpochLength:            10800,
+		GroundTruthLag:         10800,
+		WorkerSubmissionWindow: 10,
+	}
 
 	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
 	require.NoError(err)
@@ -376,7 +412,7 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	scores0, err := actorutils.CalcInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topicId,
+		topic,
 		block0,
 		networkLosses0,
 	)
@@ -390,7 +426,7 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 	scores1, err := actorutils.CalcInferenceScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topicId,
+		topic,
 		block1,
 		networkLosses1,
 	)
@@ -402,6 +438,15 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 func (s *ActorUtilsTestSuite) TestGetForecastScores() {
 	topicId := uint64(1)
 	block := int64(1003)
+	topic := types.Topic{
+		Id:                     topicId,
+		Creator:                s.addrs[0].String(),
+		Metadata:               "test",
+		LossMethod:             "mse",
+		EpochLength:            10800,
+		GroundTruthLag:         10800,
+		WorkerSubmissionWindow: 10,
+	}
 
 	// Generate workers data for tests
 	reportedLosses, err := mockNetworkLosses(s, topicId, block)
@@ -410,7 +455,7 @@ func (s *ActorUtilsTestSuite) TestGetForecastScores() {
 	scores, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topicId,
+		topic,
 		block,
 		reportedLosses,
 	)
@@ -438,6 +483,15 @@ func (s *ActorUtilsTestSuite) TestGetForecasterScoresFromCsv() {
 	epoch3Get := epochGet[300]
 	topicId := uint64(1)
 	block := int64(1003)
+	topic := types.Topic{
+		Id:                     topicId,
+		Creator:                s.addrs[0].String(),
+		Metadata:               "test",
+		LossMethod:             "mse",
+		EpochLength:            10800,
+		GroundTruthLag:         10800,
+		WorkerSubmissionWindow: 10,
+	}
 
 	inferer0 := s.addrs[5].String()
 	inferer1 := s.addrs[6].String()
@@ -457,7 +511,7 @@ func (s *ActorUtilsTestSuite) TestGetForecasterScoresFromCsv() {
 	scores, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topicId,
+		topic,
 		block,
 		reportedLosses,
 	)
@@ -481,14 +535,22 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 	topicId := uint64(1)
 	block0 := int64(1003)
 	require := s.Require()
-
+	topic := types.Topic{
+		Id:                     topicId,
+		Creator:                s.addrs[0].String(),
+		Metadata:               "test",
+		LossMethod:             "mse",
+		EpochLength:            10800,
+		GroundTruthLag:         10800,
+		WorkerSubmissionWindow: 10,
+	}
 	networkLosses0, err := mockSimpleNetworkLosses(s, topicId, block0, "0.1")
 	require.NoError(err)
 
 	scores0, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topicId,
+		topic,
 		block0,
 		networkLosses0,
 	)
@@ -503,7 +565,7 @@ func (s *ActorUtilsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 	scores1, err := actorutils.CalcForecasterScores(
 		s.ctx,
 		s.emissionsKeeper,
-		topicId,
+		topic,
 		block1,
 		networkLosses1,
 	)

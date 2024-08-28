@@ -2,6 +2,7 @@ package queryserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -98,7 +99,28 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
-	reputerLossBundles := types.ReputerValueBundles{}
+	reputerLossBundle := types.ReputerValueBundle{
+		ValueBundle: &types.ValueBundle{
+			TopicId:                topicId,
+			ReputerRequestNonce:    nil,
+			Reputer:                "reputer1",
+			ExtraData:              []byte{},
+			CombinedValue:          alloraMath.ZeroDec(),
+			InfererValues:          nil,
+			ForecasterValues:       nil,
+			NaiveValue:             alloraMath.ZeroDec(),
+			OneOutInfererValues:    nil,
+			OneInForecasterValues:  nil,
+			OneOutForecasterValues: nil,
+		},
+		Signature: []byte{},
+		Pubkey:    "",
+	}
+	reputerLossBundles := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			&reputerLossBundle,
+		},
+	}
 
 	req := &types.QueryReputerLossBundlesAtBlockRequest{
 		TopicId:     topicId,
@@ -109,7 +131,8 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 	require.Nil(response.LossBundles.ReputerValueBundles)
 
 	// Test inserting data
-	err = s.emissionsKeeper.ReplaceReputerValueBundles(ctx, topicId, block, reputerLossBundles)
+	err = s.emissionsKeeper.ReplaceReputerValueBundles(
+		ctx, topicId, types.Nonce{BlockHeight: block}, reputerLossBundles, 0, reputerLossBundle)
 	require.NoError(err, "ReplaceReputerValueBundles should not return an error")
 
 	response, err = s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)

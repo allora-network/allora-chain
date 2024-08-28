@@ -26,7 +26,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 
 	// Assume InsertForecasts correctly sets up forecasts
 	nonce := types.Nonce{BlockHeight: blockHeight}
-	err := keeper.InsertForecasts(ctx, topicId, nonce, expectedForecasts)
+	err := keeper.SetForecasts(ctx, topicId, nonce, expectedForecasts)
 	s.Require().NoError(err)
 
 	results, err := queryserver.GetForecastsAtBlock(

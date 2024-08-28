@@ -1072,7 +1072,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 		},
 	}
 
-	// Assume InsertInferences correctly sets up inferences
+	// Assume SetInferences correctly sets up inferences
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
 	err := keeper.SetInferences(ctx, topicId, nonce, expectedInferences)
 	s.Require().NoError(err)
@@ -1201,7 +1201,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 		},
 	}
 
-	// Assume InsertForecasts correctly sets up forecasts
+	// Assume SetForecasts correctly sets up forecasts
 	nonce := types.Nonce{BlockHeight: block}
 	err := keeper.SetForecasts(ctx, topicId, nonce, expectedForecasts)
 	s.Require().NoError(err)
@@ -1217,10 +1217,51 @@ func (s *KeeperTestSuite) TestReplaceReputerValueBundles() {
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
-	reputerLossBundles := types.ReputerValueBundles{}
+	reputerLossBundles := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			{
+				Signature: []byte{},
+				Pubkey:    "",
+				ValueBundle: &types.ValueBundle{
+					TopicId:                       topicId,
+					ReputerRequestNonce:           nil,
+					Reputer:                       "first",
+					ExtraData:                     nil,
+					CombinedValue:                 alloraMath.ZeroDec(),
+					InfererValues:                 nil,
+					ForecasterValues:              nil,
+					NaiveValue:                    alloraMath.ZeroDec(),
+					OneOutInfererValues:           nil,
+					OneOutForecasterValues:        nil,
+					OneInForecasterValues:         nil,
+					OneOutInfererForecasterValues: nil,
+				},
+			},
+		},
+	}
+
+	newBundle := types.ReputerValueBundle{
+		Signature: []byte{},
+		Pubkey:    "",
+		ValueBundle: &types.ValueBundle{
+			TopicId:                       uint64(2),
+			ReputerRequestNonce:           nil,
+			Reputer:                       "second",
+			ExtraData:                     nil,
+			CombinedValue:                 alloraMath.ZeroDec(),
+			InfererValues:                 nil,
+			ForecasterValues:              nil,
+			NaiveValue:                    alloraMath.ZeroDec(),
+			OneOutInfererValues:           nil,
+			OneOutForecasterValues:        nil,
+			OneInForecasterValues:         nil,
+			OneOutInfererForecasterValues: nil,
+		},
+	}
 
 	// Test inserting data
-	err := s.emissionsKeeper.ReplaceReputerValueBundles(ctx, topicId, block, reputerLossBundles)
+	err := s.emissionsKeeper.ReplaceReputerValueBundles(
+		ctx, topicId, types.Nonce{BlockHeight: block}, reputerLossBundles, 0, newBundle)
 	require.NoError(err, "ReplaceReputerValueBundles should not return an error")
 
 	// Retrieve data to verify insertion
@@ -3105,7 +3146,8 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().NoError(err)
 
 	reputerLossBundles := types.ReputerValueBundles{}
-	err = s.emissionsKeeper.ReplaceReputerValueBundles(s.ctx, topicId, block, reputerLossBundles)
+	err = s.emissionsKeeper.ReplaceReputerValueBundles(
+		s.ctx, topicId, types.Nonce{BlockHeight: block}, reputerLossBundles, 0, types.ReputerValueBundle{})
 	s.Require().NoError(err, "ReplaceReputerValueBundles should not return an error")
 
 	networkLosses := types.ValueBundle{}
@@ -3491,7 +3533,7 @@ func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAnd
 	s.Require().False(found)
 }
 
-func (s *KeeperTestSuite) TestAppendForecast() {
+func (s *KeeperTestSuite) TestUpsertForecast() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := uint64(1)
@@ -3509,15 +3551,15 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
-	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker1, score1)
+	err := k.SetInfererScoreEma(ctx, topicId, worker1, score1)
 	s.Require().NoError(err)
-	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker2, score2)
+	err = k.SetInfererScoreEma(ctx, topicId, worker2, score2)
 	s.Require().NoError(err)
-	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker3, score3)
+	err = k.SetInfererScoreEma(ctx, topicId, worker3, score3)
 	s.Require().NoError(err)
-	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker4, score4)
+	err = k.SetInfererScoreEma(ctx, topicId, worker4, score4)
 	s.Require().NoError(err)
-	err = k.UpdateInfererScoreEma(ctx, topicId, alloraMath.OneDec(), worker5, score5)
+	err = k.SetInfererScoreEma(ctx, topicId, worker5, score5)
 	s.Require().NoError(err)
 
 	allInferences := types.Inferences{
@@ -3527,13 +3569,13 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.71")},
 		},
 	}
-	err = k.InsertInferences(ctx, topicId, nonce, allInferences)
+	err = k.SetInferences(ctx, topicId, nonce, allInferences)
 	s.Require().NoError(err)
 
 	newInference := types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
-	err = k.AppendInference(ctx, topicId, nonce, &newInference)
+	err = k.UpsertInference(ctx, topicId, nonce, &newInference)
 	s.Require().NoError(err)
 	newAllInferences, err := k.GetInferencesAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
@@ -3546,7 +3588,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	newInference2 := types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
-	err = k.AppendInference(ctx, topicId, nonce, &newInference2)
+	err = k.UpsertInference(ctx, topicId, nonce, &newInference2)
 	s.Require().NoError(err)
 	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
@@ -3554,7 +3596,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	s.Require().Equal(newAllInferences.Inferences[1].Inferer, worker3)
 }
 
-func (s *KeeperTestSuite) TestAppendInference() {
+func (s *KeeperTestSuite) TestUpsertInference() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := uint64(1)
@@ -3633,7 +3675,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			},
 		},
 	}
-	err = k.InsertForecasts(ctx, topicId, nonce, allForecasts)
+	err = k.SetForecasts(ctx, topicId, nonce, allForecasts)
 	s.Require().NoError(err)
 
 	newForecast := types.Forecast{
@@ -3651,7 +3693,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			},
 		},
 	}
-	err = k.AppendForecast(ctx, topicId, nonce, &newForecast)
+	err = k.UpsertForecast(ctx, topicId, nonce, &newForecast)
 	s.Require().NoError(err)
 	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
@@ -3676,7 +3718,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			},
 		},
 	}
-	err = k.AppendForecast(ctx, topicId, nonce, &newInference2)
+	err = k.UpsertForecast(ctx, topicId, nonce, &newInference2)
 	s.Require().NoError(err)
 	newAllForecasts, err = k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
@@ -3705,15 +3747,15 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer5, Score: alloraMath.NewDecFromInt64(96)}
-	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer1, score1)
+	err := k.SetReputerScoreEma(ctx, topicId, reputer1, score1)
 	s.Require().NoError(err)
-	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer2, score2)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer2, score2)
 	s.Require().NoError(err)
-	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer3, score3)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer3, score3)
 	s.Require().NoError(err)
-	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer4, score4)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer4, score4)
 	s.Require().NoError(err)
-	err = k.UpdateReputerScoreEma(ctx, topicId, alloraMath.OneDec(), reputer5, score5)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer5, score5)
 	s.Require().NoError(err)
 
 	allReputerLosses := types.ReputerValueBundles{
@@ -3744,7 +3786,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			},
 		},
 	}
-	err = k.ReplaceReputerValueBundles(ctx, topicId, nonce.BlockHeight, allReputerLosses)
+	err = k.ReplaceReputerValueBundles(ctx, topicId, nonce, allReputerLosses, 0, types.ReputerValueBundle{})
 	s.Require().NoError(err)
 
 	newReputerLoss := types.ReputerValueBundle{
@@ -3755,7 +3797,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			TopicId:             topicId,
 		},
 	}
-	err = k.AppendReputerLoss(ctx, topicId, nonce.BlockHeight, &newReputerLoss)
+	err = k.UpsertReputerBundle(ctx, topicId, nonce.BlockHeight, &newReputerLoss)
 	s.Require().NoError(err)
 	newAllReputerLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3774,7 +3816,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			TopicId:             topicId,
 		},
 	}
-	err = k.AppendReputerLoss(ctx, topicId, nonce.BlockHeight, &newReputerLoss2)
+	err = k.UpsertReputerBundle(ctx, topicId, nonce.BlockHeight, &newReputerLoss2)
 	s.Require().NoError(err)
 	newAllReputerLosses, err = k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)

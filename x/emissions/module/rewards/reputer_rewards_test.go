@@ -356,12 +356,16 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldIncreaseFractionO
 	s.Require().NoError(err)
 	block := int64(1003)
 
+	moduleParams, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+
 	// Generate reputers data for tests
 	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := actorutils.CalcReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.CalcReputerScoresSetListeningCoefficients(
+		s.ctx, s.emissionsKeeper, topicId, moduleParams, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -408,6 +412,9 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	topicId, err := CreateTopic(s.ctx, s.msgServer, s.addrs[0].String())
 	s.Require().NoError(err)
 
+	moduleParams, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+
 	// Generate reputers data for tests
 	reputerValueBundles, err := mockReputersData(s, topicId, block, reputerAddrs)
 	s.Require().NoError(err)
@@ -433,7 +440,8 @@ func (s *RewardsTestSuite) TestGetReputersRewardFractionsShouldOutputZeroForRepu
 	)
 
 	// Calculate and Set the reputer scores
-	scores, err := actorutils.CalcReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.CalcReputerScoresSetListeningCoefficients(
+		s.ctx, s.emissionsKeeper, topicId, moduleParams, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Get reputer rewards
@@ -620,6 +628,7 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 	}
 
 	var reputerValueBundles types.ReputerValueBundles
+	var firstBundle *types.ReputerValueBundle
 	for i, reputerAddr := range reputerAddrs {
 		err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, reputerAddr, stakes[i])
 		if err != nil {
@@ -645,10 +654,14 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 				NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
 			},
 		}
+		if i == 0 {
+			firstBundle = reputerValueBundle
+		}
 		reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
 	}
 
-	err := s.emissionsKeeper.ReplaceReputerValueBundles(s.ctx, topicId, block, reputerValueBundles)
+	err := s.emissionsKeeper.ReplaceReputerValueBundles(
+		s.ctx, topicId, types.Nonce{BlockHeight: block}, reputerValueBundles, 0, *firstBundle)
 	if err != nil {
 		return types.ReputerValueBundles{}, err
 	}

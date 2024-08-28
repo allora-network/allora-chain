@@ -8,7 +8,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	cosmosMath "cosmossdk.io/math"
-	"github.com/allora-network/allora-chain/app/params"
+	chainParams "github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
@@ -42,7 +42,7 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	reputerInitialBalance := types.DefaultParams().CreateTopicFee.Add(reputerInitialBalanceUint)
 
-	reputerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reputerInitialBalance))
+	reputerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, reputerInitialBalance))
 
 	err := s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, reputerInitialBalanceCoins)
 	require.NoError(err, "Minting coins should not return an error")
@@ -63,7 +63,7 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 	_, err = msgServer.Register(ctx, reputerRegMsg)
 	require.NoError(err, "Registering reputer should not return an error")
 
-	workerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(11000)))
+	workerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosMath.NewInt(11000)))
 
 	err = s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, workerInitialBalanceCoins)
 	require.NoError(err, "Minting coins should not return an error")
@@ -1206,9 +1206,9 @@ func (s *MsgServerTestSuite) TestRemoveMultipleDelegatesDifferentTargetsSameBloc
 	topicId := s.CreateOneTopic()
 	stakeAmount := cosmosMath.NewInt(50)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	params, err := keeper.GetParams(ctx)
+	moduleParams, err := keeper.GetParams(ctx)
 	require.NoError(err)
-	removalDelay := params.RemoveStakeDelayWindow
+	removalDelay := moduleParams.RemoveStakeDelayWindow
 	startBlock := sdkCtx.BlockHeight()
 	endBlock := startBlock + removalDelay
 	s.MintTokensToAddress(delegators[0], cosmosMath.NewInt(1000))
@@ -1300,6 +1300,9 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(delegator2Addr, cosmosMath.NewInt(1000000))
 
+	moduleParams, err := keeper.GetParams(ctx)
+	require.NoError(err)
+
 	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
 		TopicId: topicId,
@@ -1360,10 +1363,13 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 		},
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	_ = s.emissionsKeeper.ReplaceReputerValueBundles(s.ctx, topicId, block, reputerValueBundles)
+	_ = s.emissionsKeeper.ReplaceReputerValueBundles(
+		s.ctx, topicId, types.Nonce{BlockHeight: block},
+		reputerValueBundles, 0, *reputerValueBundle)
 
 	// Calculate and Set the reputer scores
-	scores, err := actorutils.CalcReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.CalcReputerScoresSetListeningCoefficients(
+		s.ctx, s.emissionsKeeper, topicId, moduleParams, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Generate rewards
@@ -1416,10 +1422,12 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 		},
 	}
 	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
-	_ = s.emissionsKeeper.ReplaceReputerValueBundles(s.ctx, topicId, newBlock, newReputerValueBundles)
+	_ = s.emissionsKeeper.ReplaceReputerValueBundles(
+		s.ctx, topicId, types.Nonce{BlockHeight: newBlock}, newReputerValueBundles, 0, *newReputerValueBundle)
 
 	// Calculate and Set the reputer scores
-	scores, err = actorutils.CalcReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err = actorutils.CalcReputerScoresSetListeningCoefficients(
+		s.ctx, s.emissionsKeeper, topicId, moduleParams, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Generate new rewards
@@ -1442,25 +1450,25 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	s.Require().NoError(err)
 	s.Require().Equal(1, len(newReputerRewards))
 
-	beforeBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	beforeBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 	rewardMsg := &types.MsgRewardDelegateStake{
 		Sender:  delegatorAddr.String(),
 		TopicId: topicId,
 		Reputer: reputerAddr.String(),
 	}
 	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg)
-	afterBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	afterBalance := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 	s.Require().NoError(err)
 	s.Require().Greater(afterBalance.Amount.Uint64(), beforeBalance.Amount.Uint64(), "Balance must be increased")
 
-	beforeBalance2 := s.bankKeeper.GetBalance(ctx, delegator2Addr, params.DefaultBondDenom)
+	beforeBalance2 := s.bankKeeper.GetBalance(ctx, delegator2Addr, chainParams.DefaultBondDenom)
 	rewardMsg2 := &types.MsgRewardDelegateStake{
 		Sender:  delegator2Addr.String(),
 		TopicId: topicId,
 		Reputer: reputerAddr.String(),
 	}
 	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg2)
-	afterBalance2 := s.bankKeeper.GetBalance(ctx, delegator2Addr, params.DefaultBondDenom)
+	afterBalance2 := s.bankKeeper.GetBalance(ctx, delegator2Addr, chainParams.DefaultBondDenom)
 	s.Require().NoError(err)
 	s.Require().Greater(afterBalance2.Amount.Uint64(), beforeBalance2.Amount.Uint64(), "Balance must be increased")
 }
@@ -1472,6 +1480,8 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 	score alloraMath.Dec,
 ) []types.TaskReward {
 	keeper := s.emissionsKeeper
+	moduleParams, err := keeper.GetParams(s.ctx)
+	s.Require().NoError(err)
 	var reputerValueBundles types.ReputerValueBundles
 	scoreToAdd := types.Score{
 		TopicId:     topicId,
@@ -1479,7 +1489,7 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 		Address:     reputerAddr.String(),
 		Score:       score,
 	}
-	err := keeper.InsertReputerScore(s.ctx, topicId, block, scoreToAdd)
+	err = keeper.InsertReputerScore(s.ctx, topicId, block, scoreToAdd)
 	s.Require().NoError(err)
 
 	reputerValueBundle := &types.ReputerValueBundle{
@@ -1491,11 +1501,12 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 		},
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	err = keeper.ReplaceReputerValueBundles(s.ctx, topicId, block, reputerValueBundles)
+	err = keeper.ReplaceReputerValueBundles(
+		s.ctx, topicId, types.Nonce{BlockHeight: block}, reputerValueBundles, 0, *reputerValueBundle)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
-	scores, err := actorutils.CalcReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
+	scores, err := actorutils.CalcReputerScoresSetListeningCoefficients(s.ctx, s.emissionsKeeper, topicId, moduleParams, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Generate rewards
@@ -1535,7 +1546,7 @@ func (s *MsgServerTestSuite) TestRewardConversionsOverInt64Limit() {
 	// Assert the expected result
 	s.Require().True(rewardInt.Equal(cosmosIntFromString), "The cosmos ints created from string or Dec should match: %s = %s", rewardInt.String(), cosmosIntFromString.String())
 
-	coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosIntFromString))
+	coins := sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosIntFromString))
 	s.Require().Equal(intValueAsString+"uallo", coins.String(), "The sdk.Coins object should be created with the correct amount")
 
 	// Create cosmos int from cosmos int
@@ -1612,7 +1623,7 @@ func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 
 	reputerRewards := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)
 
-	delegatorBal0 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	delegatorBal0 := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 	rewardMsg := &types.MsgRewardDelegateStake{
 		Sender:  delegatorAddr.String(),
 		TopicId: topicId,
@@ -1621,7 +1632,7 @@ func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg)
 	s.Require().NoError(err)
 
-	delegatorBal1 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	delegatorBal1 := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 	s.Require().NoError(err)
 
 	s.Require().Greater(delegatorBal1.Amount.Uint64(), delegatorBal0.Amount.Uint64(), "Balance must be increased")
@@ -1647,7 +1658,7 @@ func (s *MsgServerTestSuite) TestEqualStakeRewardsToDelegatorAndReputer() {
 	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg)
 	s.Require().NoError(err)
 
-	delegatorBal2 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	delegatorBal2 := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 
 	delegatorReward1 := delegatorBal2.Amount.Sub(delegatorBal1.Amount)
 
@@ -1673,7 +1684,7 @@ func (s *MsgServerTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	topicId := s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), registrationInitialBalance)
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
-	err := s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName, sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(1000000))))
+	err := s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName, sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosMath.NewInt(1000000))))
 	require.NoError(err)
 
 	addStakeMsg := &types.MsgAddStake{
@@ -1700,7 +1711,7 @@ func (s *MsgServerTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 
 	reputerRewards := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)
 
-	delegatorBal0 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	delegatorBal0 := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 	rewardMsg := &types.MsgRewardDelegateStake{
 		Sender:  delegatorAddr.String(),
 		TopicId: topicId,
@@ -1708,7 +1719,7 @@ func (s *MsgServerTestSuite) Test1000xDelegatorStakeVsReputerStake() {
 	}
 	_, err = s.msgServer.RewardDelegateStake(ctx, rewardMsg)
 
-	delegatorBal1 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	delegatorBal1 := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 	s.Require().NoError(err)
 
 	delegatorRewardRaw := delegatorBal1.Amount.Sub(delegatorBal0.Amount)
@@ -1742,7 +1753,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000000))
 	s.MintTokensToAddress(largeDelegatorAddr, cosmosMath.NewInt(1000000))
-	err := s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName, sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, cosmosMath.NewInt(1000000))))
+	err := s.bankKeeper.MintCoins(ctx, types.AlloraRewardsAccountName, sdk.NewCoins(sdk.NewCoin(chainParams.DefaultBondDenom, cosmosMath.NewInt(1000000))))
 	require.NoError(err)
 
 	// STEP 1 stake equal amount for reputer and delegator
@@ -1771,7 +1782,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	reputerReward0, err := s.insertValueBundlesAndGetRewards(reputerAddr, topicId, block, score)[0].Reward.SdkIntTrim()
 	require.NoError(err)
 
-	delegatorBal0 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	delegatorBal0 := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 
 	delegateRewardsMsg := &types.MsgRewardDelegateStake{
 		Sender:  delegatorAddr.String(),
@@ -1781,7 +1792,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	_, err = s.msgServer.RewardDelegateStake(ctx, delegateRewardsMsg)
 	require.NoError(err)
 
-	delegatorBal1 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	delegatorBal1 := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 
 	delegatorReward0 := delegatorBal1.Amount.Sub(delegatorBal0.Amount)
 
@@ -1794,7 +1805,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	_, err = s.msgServer.RewardDelegateStake(ctx, delegateRewardsMsg)
 	require.NoError(err)
 
-	delegatorBal2 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
+	delegatorBal2 := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
 
 	delegatorReward1 := delegatorBal2.Amount.Sub(delegatorBal1.Amount)
 
@@ -1810,7 +1821,7 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	require.NoError(err)
 	require.NotNil(largeDelegateStakeResponse, "Response should not be nil after successful delegation")
 
-	largeDelegatorBal2 := s.bankKeeper.GetBalance(ctx, largeDelegatorAddr, params.DefaultBondDenom)
+	largeDelegatorBal2 := s.bankKeeper.GetBalance(ctx, largeDelegatorAddr, chainParams.DefaultBondDenom)
 
 	// STEP 4 Calculate rewards for the third round
 	block++
@@ -1828,8 +1839,8 @@ func (s *MsgServerTestSuite) TestMultiRoundReputerStakeVs1000xDelegatorStake() {
 	_, err = s.msgServer.RewardDelegateStake(ctx, largeDelegateRewardsMsg)
 	require.NoError(err)
 
-	delegatorBal3 := s.bankKeeper.GetBalance(ctx, delegatorAddr, params.DefaultBondDenom)
-	largeDelegatorBal3 := s.bankKeeper.GetBalance(ctx, largeDelegatorAddr, params.DefaultBondDenom)
+	delegatorBal3 := s.bankKeeper.GetBalance(ctx, delegatorAddr, chainParams.DefaultBondDenom)
+	largeDelegatorBal3 := s.bankKeeper.GetBalance(ctx, largeDelegatorAddr, chainParams.DefaultBondDenom)
 
 	delegatorReward2 := delegatorBal3.Amount.Sub(delegatorBal2.Amount)
 	largeDelegatorReward2 := largeDelegatorBal3.Amount.Sub(largeDelegatorBal2.Amount)
