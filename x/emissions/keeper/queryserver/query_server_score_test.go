@@ -27,7 +27,7 @@ func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 	s.Require().NoError(err)
 
 	result := response.Score
-	s.Require().NotEqual(expected.Score, result.Score, "Retrieved data should match inserted data")
+	s.Require().Equal(expected.Score, result.Score, "Retrieved data should match inserted data")
 }
 
 func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {

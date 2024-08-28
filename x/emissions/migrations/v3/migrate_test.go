@@ -123,6 +123,7 @@ func (s *MigrationTestSuite) TestMigrate() {
 
 	// TO BE ADDED VIA DEFAULT PARAMS
 	// MaxElementsPerForecast: defaultParams.MaxElementsPerForecast
+	// MeritSortitionAlpha: defaultParams.MeritSortitionAlpha
 	paramsExpected := defaultParams
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -167,5 +168,6 @@ func (s *MigrationTestSuite) TestMigrate() {
 	s.Require().True(paramsExpected.EpsilonSafeDiv.Equal(params.EpsilonSafeDiv), "%s!=%s", paramsExpected.EpsilonSafeDiv, params.EpsilonSafeDiv)
 	s.Require().True(paramsExpected.DataSendingFee.Equal(params.DataSendingFee), "%s!=%s", paramsExpected.DataSendingFee, params.DataSendingFee)
 	s.Require().Equal(paramsExpected.MaxElementsPerForecast, params.MaxElementsPerForecast)
+	s.Require().True(paramsExpected.MeritSortitionAlpha.Equal(params.MeritSortitionAlpha), "%s!=%s", paramsExpected.MeritSortitionAlpha, params.MeritSortitionAlpha)
 	s.Require().Equal(paramsExpected, params)
 }

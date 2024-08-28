@@ -21,6 +21,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	if err := MigrateParams(store, cdc); err != nil {
 		return err
 	}
+	// todo migrate topics to add the quantile parameter
 
 	return nil
 }
@@ -88,6 +89,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		DataSendingFee:                      oldParams.DataSendingFee,
 		// NEW PARAMS
 		MaxElementsPerForecast: defaultParams.MaxElementsPerForecast,
+		MeritSortitionAlpha:    defaultParams.MeritSortitionAlpha,
 	}
 
 	store.Delete(types.ParamsKey)
