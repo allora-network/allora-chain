@@ -136,36 +136,31 @@ func PickChurnableActiveTopics(
 			}
 		}
 
-		// Loop over and run epochs on topics whose inferences are demanded enough to be served
-		// Check the cadence of inferences, and just in case also check multiples of epoch lengths
-		// to avoid potential situations where the block is missed
-		// Check Reputer Close Cadence
-		if k.CheckReputerCloseCadence(block, topic) {
-			// Check if there is an unfulfilled nonce
-			nonces, err := k.GetUnfulfilledReputerNonces(ctx, topic.Id)
-			if err != nil {
-				ctx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
-				continue
-			}
-			for _, nonce := range nonces.Nonces {
-				// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
-				// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
-				closingReputerNonceMinBlockHeight := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
-				if block >= closingReputerNonceMinBlockHeight {
-					ctx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Closing reputer nonce for topic: %v nonce: %v, min: %d. \n",
-						topic.Id, nonce, closingReputerNonceMinBlockHeight))
-					err = allorautils.CloseReputerNonce(&k, ctx, topic.Id, *nonce.ReputerNonce)
+		// Check if there is an unfulfilled nonce
+		nonces, err := k.GetUnfulfilledReputerNonces(ctx, topic.Id)
+		if err != nil {
+			ctx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+			continue
+		}
+		for _, nonce := range nonces.Nonces {
+			// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
+			// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
+			closingReputerNonceMinBlockHeight := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
+			if block >= closingReputerNonceMinBlockHeight {
+				ctx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Closing reputer nonce for topic: %v nonce: %v, min: %d. \n",
+					topic.Id, nonce, closingReputerNonceMinBlockHeight))
+				err = allorautils.CloseReputerNonce(&k, ctx, topic.Id, *nonce.ReputerNonce)
+				if err != nil {
+					ctx.Logger().Warn(fmt.Sprintf("Error closing reputer nonce: %s", err.Error()))
+					// Proactively close the nonce to avoid
+					_, err = k.FulfillReputerNonce(ctx, topic.Id, nonce.ReputerNonce)
 					if err != nil {
-						ctx.Logger().Warn(fmt.Sprintf("Error closing reputer nonce: %s", err.Error()))
-						// Proactively close the nonce to avoid
-						_, err = k.FulfillReputerNonce(ctx, topic.Id, nonce.ReputerNonce)
-						if err != nil {
-							ctx.Logger().Warn(fmt.Sprintf("Error fulfilling reputer nonce: %s", err.Error()))
-						}
+						ctx.Logger().Warn(fmt.Sprintf("Error fulfilling reputer nonce: %s", err.Error()))
 					}
 				}
 			}
 		}
+
 		if err != nil {
 			Logger(ctx).Debug("Error applying function on topic: ", err)
 			continue
