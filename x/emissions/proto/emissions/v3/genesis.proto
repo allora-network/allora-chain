@@ -18,7 +18,7 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 // GenesisState is the state that must be provided at genesis.
 message GenesisState {
-  reserved 13,14,15;
+  reserved 13, 14, 15;
   reserved "latestInfererScoresByWorker", "latestForecasterScoresByWorker", "latestReputerScoresByReputer";
 
   // params defines all the parameters of the module.
