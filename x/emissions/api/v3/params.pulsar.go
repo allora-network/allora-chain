@@ -2787,8 +2787,8 @@ type Params struct {
 	// / a small tolerance quantity used to cap division by zero
 	DataSendingFee string `protobuf:"bytes,44,opt,name=data_sending_fee,json=dataSendingFee,proto3" json:"data_sending_fee,omitempty"`
 	// payload sending fee for reputer or worker
-	MaxElementsPerForecast  uint64 `protobuf:"varint,45,opt,name=max_elements_per_forecast,json=maxElementsPerForecast,proto3" json:"max_elements_per_forecast,omitempty"` // max number of top forecasters by score to reward
-	MaxActiveTopicsPerBlock uint64 `protobuf:"varint,46,opt,name=max_active_topics_per_block,json=maxActiveTopicsPerBlock,proto3" json:"max_active_topics_per_block,omitempty"`
+	MaxElementsPerForecast  uint64 `protobuf:"varint,45,opt,name=max_elements_per_forecast,json=maxElementsPerForecast,proto3" json:"max_elements_per_forecast,omitempty"`      // max number of top forecasters by score to reward
+	MaxActiveTopicsPerBlock uint64 `protobuf:"varint,46,opt,name=max_active_topics_per_block,json=maxActiveTopicsPerBlock,proto3" json:"max_active_topics_per_block,omitempty"` // max number of active topics per block
 }
 
 func (x *Params) Reset() {

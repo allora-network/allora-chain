@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"cosmossdk.io/errors"
-	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	cosmosMath "cosmossdk.io/math"
@@ -84,16 +83,13 @@ func PickChurnableActiveTopics(
 			continue
 		}
 
-		ctx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Worker open cadence met for topic: %v metadata: %s . \n",
-			topic.Id,
-			topic.Metadata))
-
 		// Update the last inference ran
 		err = k.UpdateTopicEpochLastEnded(ctx, topic.Id, block)
 		if err != nil {
 			ctx.Logger().Warn(fmt.Sprintf("Error updating last inference ran: %s", err.Error()))
 			continue
 		}
+
 		// Add Worker Nonces
 		nextNonce := types.Nonce{BlockHeight: block}
 		err = k.AddWorkerNonce(ctx, topic.Id, &nextNonce)
@@ -109,62 +105,15 @@ func PickChurnableActiveTopics(
 			continue
 		}
 
-		MaxUnfulfilledReputerRequests := types.DefaultParams().MaxUnfulfilledReputerRequests
-		moduleParams, err := k.GetParams(ctx)
+		err = PruneReputerAndWorkerNonces(ctx, k, topic, block)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error getting max retries to fulfil nonces for worker requests (using default), err: %s", err.Error()))
-		} else {
-			MaxUnfulfilledReputerRequests = moduleParams.MaxUnfulfilledReputerRequests
-		}
-		// Adding one to cover for one extra epochLength
-		reputerPruningBlock := block - (int64(MaxUnfulfilledReputerRequests+1)*topic.EpochLength + topic.GroundTruthLag) //nolint:gosec // G115: integer overflow conversion uint64 -> int64 (gosec)
-		if reputerPruningBlock > 0 {
-			ctx.Logger().Debug(fmt.Sprintf("Pruning reputer nonces before block: %v for topic: %d on block: %v", reputerPruningBlock, topic.Id, block))
-			err = k.PruneReputerNonces(ctx, topic.Id, reputerPruningBlock)
-			if err != nil {
-				ctx.Logger().Warn(fmt.Sprintf("Error pruning reputer nonces: %s", err.Error()))
-			}
-
-			// Reputer nonces need to check worker nonces from one epoch before
-			workerPruningBlock := reputerPruningBlock - topic.EpochLength
-			if workerPruningBlock > 0 {
-				ctx.Logger().Debug("Pruning worker nonces before block: ", workerPruningBlock, " for topic: ", topic.Id)
-				// Prune old worker nonces previous to current block to avoid inserting inferences after its time has passed
-				err = k.PruneWorkerNonces(ctx, topic.Id, workerPruningBlock)
-				if err != nil {
-					ctx.Logger().Warn(fmt.Sprintf("Error pruning worker nonces: %s", err.Error()))
-				}
-			}
-		}
-
-		// Check if there is an unfulfilled nonce
-		nonces, err := k.GetUnfulfilledReputerNonces(ctx, topic.Id)
-		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error getting unfulfilled worker nonces: %s", err.Error()))
+			Logger(ctx).Warn("Error pruning reputer and worker nonces: ", err)
 			continue
 		}
-		for _, nonce := range nonces.Nonces {
-			// Check if current blockheight has reached the blockheight of the nonce + groundTruthLag + epochLength
-			// This means one epochLength is allowed for reputation responses to be sent since ground truth is revealed.
-			closingReputerNonceMinBlockHeight := nonce.ReputerNonce.BlockHeight + topic.GroundTruthLag + topic.EpochLength
-			if block >= closingReputerNonceMinBlockHeight {
-				ctx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker: Closing reputer nonce for topic: %v nonce: %v, min: %d. \n",
-					topic.Id, nonce, closingReputerNonceMinBlockHeight))
-				err = allorautils.CloseReputerNonce(&k, ctx, topic.Id, *nonce.ReputerNonce)
-				if err != nil {
-					ctx.Logger().Warn(fmt.Sprintf("Error closing reputer nonce: %s", err.Error()))
-					// Proactively close the nonce to avoid
-					_, err = k.FulfillReputerNonce(ctx, topic.Id, nonce.ReputerNonce)
-					if err != nil {
-						ctx.Logger().Warn(fmt.Sprintf("Error fulfilling reputer nonce: %s", err.Error()))
-					}
-				}
-			}
-		}
 
+		err = UpdateReputerNonce(ctx, k, topic, block)
 		if err != nil {
-			Logger(ctx).Debug("Error applying function on topic: ", err)
-			continue
+			Logger(ctx).Warn("Error updating reputer nonce: ", err)
 		}
 	}
 	return nil

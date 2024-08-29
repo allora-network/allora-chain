@@ -142,5 +142,5 @@ message Params {
   ];
   // payload sending fee for reputer or worker
   uint64 max_elements_per_forecast = 45; // max number of top forecasters by score to reward
-  uint64 max_active_topics_per_block = 46;
+  uint64 max_active_topics_per_block = 46; // max number of active topics per block
 }
