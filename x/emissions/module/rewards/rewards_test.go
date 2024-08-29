@@ -1,7 +1,6 @@
 package rewards_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -612,15 +611,19 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                reputerAddrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            epochLength,
-		GroundTruthLag:         epochLength,
-		WorkerSubmissionWindow: epochLength,
-		AlphaRegret:            alphaRegret,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              epochLength,
+		GroundTruthLag:           epochLength,
+		WorkerSubmissionWindow:   epochLength,
+		AlphaRegret:              alphaRegret,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	require.NoError(err)
@@ -716,6 +719,19 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight)
 	// Insert inference from workers
 	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, blockHeight, workerValues, workerAddrs)
+	for _, payload := range inferenceBundles {
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+			Sender:           payload.Worker,
+			WorkerDataBundle: payload,
+		})
+		require.NoError(err)
+	}
+	// as a workaround to make the forecasts save,
+	// submit all the payloads again, so that the
+	// inferences are saved the first time around
+	// and the forecasts are saved the second time around
+	// this is because we don't save forecasts for
+	// inferences that aren't saved already
 	for _, payload := range inferenceBundles {
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
 			Sender:           payload.Worker,
@@ -2727,7 +2743,6 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	epochLength := int64(201600) // if every block is 3 seconds
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
-	fmt.Println(s.ctx.BlockHeight())
 	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
 
 	// setup values to be identical for both topics
