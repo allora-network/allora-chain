@@ -1217,34 +1217,35 @@ func (s *KeeperTestSuite) TestReplaceReputerValueBundles() {
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
+	firstBundle := types.ReputerValueBundle{
+		Signature: nil,
+		Pubkey:    "",
+		ValueBundle: &types.ValueBundle{
+			TopicId:                       topicId,
+			ReputerRequestNonce:           nil,
+			Reputer:                       "first",
+			ExtraData:                     nil,
+			CombinedValue:                 alloraMath.ZeroDec(),
+			InfererValues:                 nil,
+			ForecasterValues:              nil,
+			NaiveValue:                    alloraMath.ZeroDec(),
+			OneOutInfererValues:           nil,
+			OneOutForecasterValues:        nil,
+			OneInForecasterValues:         nil,
+			OneOutInfererForecasterValues: nil,
+		},
+	}
 	reputerLossBundles := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				Signature: []byte{},
-				Pubkey:    "",
-				ValueBundle: &types.ValueBundle{
-					TopicId:                       topicId,
-					ReputerRequestNonce:           nil,
-					Reputer:                       "first",
-					ExtraData:                     nil,
-					CombinedValue:                 alloraMath.ZeroDec(),
-					InfererValues:                 nil,
-					ForecasterValues:              nil,
-					NaiveValue:                    alloraMath.ZeroDec(),
-					OneOutInfererValues:           nil,
-					OneOutForecasterValues:        nil,
-					OneInForecasterValues:         nil,
-					OneOutInfererForecasterValues: nil,
-				},
-			},
+			&firstBundle,
 		},
 	}
 
 	newBundle := types.ReputerValueBundle{
-		Signature: []byte{},
+		Signature: nil,
 		Pubkey:    "",
 		ValueBundle: &types.ValueBundle{
-			TopicId:                       uint64(2),
+			TopicId:                       topicId,
 			ReputerRequestNonce:           nil,
 			Reputer:                       "second",
 			ExtraData:                     nil,
@@ -1259,16 +1260,29 @@ func (s *KeeperTestSuite) TestReplaceReputerValueBundles() {
 		},
 	}
 
-	// Test inserting data
+	// inserting the first list
 	err := s.emissionsKeeper.ReplaceReputerValueBundles(
+		ctx, topicId, types.Nonce{BlockHeight: block}, reputerLossBundles, 0, firstBundle)
+	require.NoError(err, "ReplaceReputerValueBundles should not return an error")
+
+	// At the start, reputer one should be in the list
+	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
+	require.NoError(err)
+	require.NotNil(result)
+	require.Len(result.ReputerValueBundles, 1)
+	require.Equal(result.ReputerValueBundles[0], &firstBundle, "Retrieved data should match inserted data")
+
+	// Test inserting data
+	err = s.emissionsKeeper.ReplaceReputerValueBundles(
 		ctx, topicId, types.Nonce{BlockHeight: block}, reputerLossBundles, 0, newBundle)
 	require.NoError(err, "ReplaceReputerValueBundles should not return an error")
 
 	// Retrieve data to verify insertion
-	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
+	result, err = s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
 	require.NoError(err)
 	require.NotNil(result)
-	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
+	require.Len(result.ReputerValueBundles, 1)
+	require.Equal(result.ReputerValueBundles[0], &newBundle, "Retrieved data should match inserted data")
 }
 
 func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
@@ -3296,11 +3310,6 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	}
 	err = s.emissionsKeeper.SetForecasts(s.ctx, topicId, nonce, expectedForecasts)
 	s.Require().NoError(err)
-
-	reputerLossBundles := types.ReputerValueBundles{}
-	err = s.emissionsKeeper.ReplaceReputerValueBundles(
-		s.ctx, topicId, types.Nonce{BlockHeight: block}, reputerLossBundles, 0, types.ReputerValueBundle{})
-	s.Require().NoError(err, "ReplaceReputerValueBundles should not return an error")
 
 	networkLosses := types.ValueBundle{}
 	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
