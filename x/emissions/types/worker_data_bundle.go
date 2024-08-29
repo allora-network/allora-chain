@@ -46,11 +46,13 @@ func (bundle *WorkerDataBundle) Validate() error {
 		}
 		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
 			return errorsmod.Wrapf(ErrUnauthorized,
-				"Inference.Inferer does not match pubkey")
+				"Inference.Inferer %s does not match pubkey %s",
+				bundle.InferenceForecastsBundle.Inference.Inferer, pubKeyConvertedToAddress)
 		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Inference.Inferer {
 			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
-				"Inference.Inferer does not match worker address")
+				"Inference.Inferer %s does not match worker address %s",
+				bundle.InferenceForecastsBundle.Inference.Inferer, bundle.Worker)
 		}
 	}
 	if bundle.InferenceForecastsBundle.Forecast != nil {
@@ -59,11 +61,13 @@ func (bundle *WorkerDataBundle) Validate() error {
 		}
 		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
 			return errorsmod.Wrapf(ErrUnauthorized,
-				"Forecast.Forecaster does not match pubkey")
+				"Forecast.Forecaster %s does not match pubkey %s",
+				bundle.InferenceForecastsBundle.Forecast.Forecaster, pubKeyConvertedToAddress)
 		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Forecast.Forecaster {
 			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
-				"Forecast.Forecaster does not match worker address")
+				"Forecast.Forecaster %s does not match worker address %s",
+				bundle.InferenceForecastsBundle.Forecast.Forecaster, bundle.Worker)
 		}
 	}
 
