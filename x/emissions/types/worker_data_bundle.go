@@ -45,12 +45,12 @@ func (bundle *WorkerDataBundle) Validate() error {
 			return err
 		}
 		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
-			return errorsmod.Wrapf(ErrUnauthorized,
+			return errorsmod.Wrapf(sdkerrors.ErrUnauthorized,
 				"Inference.Inferer %s does not match pubkey %s",
 				bundle.InferenceForecastsBundle.Inference.Inferer, pubKeyConvertedToAddress)
 		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Inference.Inferer {
-			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
+			return errorsmod.Wrapf(sdkerrors.ErrUnauthorized,
 				"Inference.Inferer %s does not match worker address %s",
 				bundle.InferenceForecastsBundle.Inference.Inferer, bundle.Worker)
 		}
@@ -60,12 +60,12 @@ func (bundle *WorkerDataBundle) Validate() error {
 			return err
 		}
 		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
-			return errorsmod.Wrapf(ErrUnauthorized,
+			return errorsmod.Wrapf(sdkerrors.ErrUnauthorized,
 				"Forecast.Forecaster %s does not match pubkey %s",
 				bundle.InferenceForecastsBundle.Forecast.Forecaster, pubKeyConvertedToAddress)
 		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Forecast.Forecaster {
-			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
+			return errorsmod.Wrapf(sdkerrors.ErrUnauthorized,
 				"Forecast.Forecaster %s does not match worker address %s",
 				bundle.InferenceForecastsBundle.Forecast.Forecaster, bundle.Worker)
 		}
@@ -75,11 +75,11 @@ func (bundle *WorkerDataBundle) Validate() error {
 	src := make([]byte, 0)
 	src, _ = bundle.InferenceForecastsBundle.XXX_Marshal(src, true)
 	if !pubkey.VerifySignature(src, bundle.InferencesForecastsBundleSignature) {
-		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "signature verification failed")
+		return errorsmod.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed")
 	}
 	// Source: https://docs.cosmos.network/v0.46/basics/accounts.html#addresses
 	if sdk.AccAddress(pubkey.Address().Bytes()).String() != bundle.Worker {
-		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "worker address does not match signature")
+		return errorsmod.Wrap(sdkerrors.ErrUnauthorized, "worker address does not match signature")
 	}
 
 	return nil

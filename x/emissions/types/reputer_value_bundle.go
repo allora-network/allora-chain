@@ -27,7 +27,7 @@ func (bundle *ReputerValueBundle) Validate() error {
 	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
 
 	if bundle.ValueBundle.Reputer != pubKeyConvertedToAddress {
-		return errorsmod.Wrapf(ErrUnauthorized, "Reputer does not match pubkey")
+		return errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "Reputer does not match pubkey")
 	}
 
 	if bundle.ValueBundle.ReputerRequestNonce == nil {
