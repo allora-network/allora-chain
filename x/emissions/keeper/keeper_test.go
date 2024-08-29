@@ -3306,11 +3306,6 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	err = s.emissionsKeeper.SetForecasts(s.ctx, topicId, nonce, expectedForecasts)
 	s.Require().NoError(err)
 
-	reputerLossBundles := types.ReputerValueBundles{}
-	err = s.emissionsKeeper.ReplaceReputerValueBundles(
-		s.ctx, topicId, types.Nonce{BlockHeight: block}, reputerLossBundles, 0, types.ReputerValueBundle{})
-	s.Require().NoError(err, "ReplaceReputerValueBundles should not return an error")
-
 	networkLosses := types.ValueBundle{}
 	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
 	s.Require().NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
