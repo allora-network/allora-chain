@@ -2630,13 +2630,14 @@ func (s *KeeperTestSuite) TestGetInfererScoreEmasFromValueBundle() {
 		Address:     "inferer1",
 		Score:       alloraMath.NewDecFromInt64(100),
 	}
-	s.emissionsKeeper.SetInfererScoreEma(ctx, bundle.TopicId, "inferer1", score)
+	err := s.emissionsKeeper.SetInfererScoreEma(ctx, bundle.TopicId, "inferer1", score)
+	s.Require().NoError(err, "SetInfererScoreEma should not return an error")
 
 	// call GetInfererScoreEmasFromValueBundle
 	scores, err := s.emissionsKeeper.GetInfererScoreEmasFromValueBundle(ctx, bundle)
 	s.Require().NoError(err, "GetInfererScoreEmasFromValueBundle should not return an error")
 	s.Require().Len(scores, 1, "Should retrieve correct number of scores")
-	s.Require().Equal(scores[0].Address, "inferer1", "Should retrieve correct inferer")
+	s.Require().Equal("inferer1", scores[0].Address, "Should retrieve correct inferer")
 
 	// check that the returned scores are the same as the sample scores
 	s.Require().Equal(scores[0].Score, alloraMath.NewDecFromInt64(100), "Should retrieve correct score")
@@ -2654,16 +2655,17 @@ func (s *KeeperTestSuite) TestGetForecasterScoreEmasFromValueBundle() {
 		Address:     "forecaster1",
 		Score:       alloraMath.NewDecFromInt64(100),
 	}
-	s.emissionsKeeper.SetForecasterScoreEma(ctx, bundle.TopicId, "forecaster1", score)
+	err := s.emissionsKeeper.SetForecasterScoreEma(ctx, bundle.TopicId, "forecaster1", score)
+	s.Require().NoError(err, "SetForecasterScoreEma should not return an error")
 
 	// call GetForecasterScoreEmasFromValueBundle
 	scores, err := s.emissionsKeeper.GetForecasterScoreEmasFromValueBundle(ctx, bundle)
 	s.Require().NoError(err, "GetForecasterScoreEmasFromValueBundle should not return an error")
 	s.Require().Len(scores, 1, "Should retrieve correct number of scores")
-	s.Require().Equal(scores[0].Address, "forecaster1", "Should retrieve correct forecaster")
+	s.Require().Equal("forecaster1", scores[0].Address, "Should retrieve correct forecaster")
 
 	// check that the returned scores are the same as the sample scores
-	s.Require().Equal(scores[0].Score, alloraMath.NewDecFromInt64(100), "Should retrieve correct score")
+	s.Require().Equal(alloraMath.NewDecFromInt64(100), scores[0].Score, "Should retrieve correct score")
 }
 
 func (s *KeeperTestSuite) TestGetReputerScoreEmasFromValueBundles() {
@@ -2700,33 +2702,36 @@ func (s *KeeperTestSuite) TestGetReputerScoreEmasFromValueBundles() {
 		TopicId:     1,
 		BlockHeight: 100,
 		Address:     "reputer1",
-		Score:       alloraMath.NewDecFromInt64(100),
+		Score:       alloraMath.MustNewDecFromString("100"),
 	}
-	s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer1", score)
+	err := s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer1", score)
+	s.Require().NoError(err, "SetReputerScoreEma should not return an error")
 	score2 := types.Score{
 		TopicId:     1,
 		BlockHeight: 100,
 		Address:     "reputer2",
-		Score:       alloraMath.NewDecFromInt64(200),
+		Score:       alloraMath.MustNewDecFromString("200"),
 	}
-	s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer2", score2)
+	err = s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer2", score2)
+	s.Require().NoError(err, "SetReputerScoreEma should not return an error")
 	score3 := types.Score{
 		TopicId:     1,
 		BlockHeight: 100,
 		Address:     "reputer3",
-		Score:       alloraMath.NewDecFromInt64(300),
+		Score:       alloraMath.MustNewDecFromString("300"),
 	}
-	s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer3", score3)
+	err = s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer3", score3)
+	s.Require().NoError(err, "SetReputerScoreEma should not return an error")
 
 	// call GetReputerScoreEmasFromValueBundle
 	scores, err := s.emissionsKeeper.GetReputerScoreEmasFromValueBundles(ctx, bundle.TopicId, bundles.ReputerValueBundles)
 	s.Require().NoError(err, "GetReputerScoreEmasFromValueBundle should not return an error")
 	s.Require().Len(scores, 3, "Should retrieve correct number of scores")
-	s.Require().Equal(scores[0].Address, "reputer1", "Should retrieve correct reputer")
+	s.Require().Equal("reputer1", scores[0].Address, "Should retrieve correct reputer")
 	s.Require().True(scores[0].Score.Equal(alloraMath.NewDecFromInt64(100)), "Should retrieve correct score")
-	s.Require().Equal(scores[1].Address, "reputer2", "Should retrieve correct reputer")
+	s.Require().Equal("reputer2", scores[1].Address, "Should retrieve correct reputer")
 	s.Require().True(scores[1].Score.Equal(alloraMath.NewDecFromInt64(200)), "Should retrieve correct score")
-	s.Require().Equal(scores[2].Address, "reputer3", "Should retrieve correct reputer")
+	s.Require().Equal("reputer3", scores[2].Address, "Should retrieve correct reputer")
 	s.Require().True(scores[2].Score.Equal(alloraMath.NewDecFromInt64(300)), "Should retrieve correct score")
 }
 
@@ -3755,7 +3760,6 @@ func (s *KeeperTestSuite) TestUpsertInference() {
 			s.Require().True(inference.Value.Equal(defaultValue))
 		}
 	}
-
 }
 
 func (s *KeeperTestSuite) TestUpsertForecast() {
