@@ -1338,9 +1338,11 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 			ReputerValueBundle: payload,
 		})
 		s.Require().NoError(err)
-		err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, *payload.ValueBundle)
-		s.Require().NoError(err)
 	}
+
+	err = actorutils.CloseReputerNonce(
+		&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
+	s.Require().NoError(err)
 
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -1478,9 +1480,11 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 			ReputerValueBundle: payload,
 		})
 		s.Require().NoError(err)
-		err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, *payload.ValueBundle)
-		s.Require().NoError(err)
 	}
+
+	err = actorutils.CloseReputerNonce(
+		&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
+	s.Require().NoError(err)
 
 	secondRewardsDistribution, secondTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)

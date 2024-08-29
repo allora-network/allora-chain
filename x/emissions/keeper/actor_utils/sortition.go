@@ -65,8 +65,9 @@ func GetQuantileOfScores(
 	sortedScores []emissionstypes.Score,
 	quantile alloraMath.Dec,
 ) (alloraMath.Dec, error) {
+	// if there are no scores then the quantile of scores is 0
 	if len(sortedScores) == 0 {
-		return alloraMath.Dec{}, emissionstypes.ErrEmptyArray
+		return alloraMath.ZeroDec(), nil
 	}
 	// n elements, q quantile
 	// position = (1 - q) * (n - 1)
