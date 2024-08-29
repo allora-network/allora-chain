@@ -17,8 +17,8 @@ func (s *QueryServerTestSuite) TestGetLatestInfererScore() {
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set an initial score for inferer and attempt to update with an older score
-	_ = keeper.SetLatestInfererScore(ctx, topicId, worker, newScore)
-	err := keeper.SetLatestInfererScore(ctx, topicId, worker, oldScore)
+	_ = keeper.SetInfererScoreEma(ctx, topicId, worker, newScore)
+	err := keeper.SetInfererScoreEma(ctx, topicId, worker, oldScore)
 	s.Require().NoError(err, "Setting an older inferer score should not fail but should not update")
 
 	req := &types.QueryLatestInfererScoreRequest{
@@ -41,7 +41,7 @@ func (s *QueryServerTestSuite) TestGetLatestForecasterScore() {
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set a new score for forecaster
-	_ = keeper.SetLatestForecasterScore(ctx, topicId, forecaster, newScore)
+	_ = keeper.SetForecasterScoreEma(ctx, topicId, forecaster, newScore)
 
 	req := &types.QueryLatestForecasterScoreRequest{
 		TopicId:    topicId,
@@ -63,7 +63,7 @@ func (s *QueryServerTestSuite) TestGetLatestReputerScore() {
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set a new score for reputer
-	_ = keeper.SetLatestReputerScore(ctx, topicId, reputer, newScore)
+	_ = keeper.SetReputerScoreEma(ctx, topicId, reputer, newScore)
 
 	req := &types.QueryLatestReputerScoreRequest{
 		TopicId: topicId,

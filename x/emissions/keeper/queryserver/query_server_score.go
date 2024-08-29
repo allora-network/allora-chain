@@ -13,7 +13,7 @@ func (qs queryServer) GetLatestInfererScore(
 	*types.QueryLatestInfererScoreResponse,
 	error,
 ) {
-	latestInfererScore, err := qs.k.GetLatestInfererScore(ctx, req.TopicId, req.Inferer)
+	latestInfererScore, err := qs.k.GetInfererScoreEma(ctx, req.TopicId, req.Inferer)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (qs queryServer) GetLatestForecasterScore(
 	*types.QueryLatestForecasterScoreResponse,
 	error,
 ) {
-	latestForecasterScore, err := qs.k.GetLatestForecasterScore(ctx, req.TopicId, req.Forecaster)
+	latestForecasterScore, err := qs.k.GetForecasterScoreEma(ctx, req.TopicId, req.Forecaster)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (qs queryServer) GetLatestReputerScore(
 	*types.QueryLatestReputerScoreResponse,
 	error,
 ) {
-	latestReputerScore, err := qs.k.GetLatestReputerScore(ctx, req.TopicId, req.Reputer)
+	latestReputerScore, err := qs.k.GetReputerScoreEma(ctx, req.TopicId, req.Reputer)
 	if err != nil {
 		return nil, err
 	}
