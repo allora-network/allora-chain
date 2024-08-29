@@ -173,7 +173,7 @@ func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cos
 	s.Require().NoError(err)
 }
 
-func (s *KeeperTestSuite) CreateOneTopic() uint64 {
+func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -187,9 +187,9 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 		Creator:                creator.String(),
 		Metadata:               metadata,
 		LossMethod:             "method",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10800,
+		EpochLength:            epochLen,
+		GroundTruthLag:         epochLen,
+		WorkerSubmissionWindow: epochLen,
 		AlphaRegret:            alloraMath.NewDecFromInt64(1),
 		PNorm:                  alloraMath.NewDecFromInt64(3),
 		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
@@ -584,8 +584,8 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 	worker := "worker-address"
 
 	// Topic IDs
-	topicId1 := s.CreateOneTopic()
-	topicId2 := s.CreateOneTopic()
+	topicId1 := s.CreateOneTopic(10800)
+	topicId2 := s.CreateOneTopic(10800)
 
 	// Zero regret for initial check
 	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
@@ -629,8 +629,8 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 	worker := "forecaster-address"
 
 	// Topic IDs
-	topicId1 := s.CreateOneTopic()
-	topicId2 := s.CreateOneTopic()
+	topicId1 := s.CreateOneTopic(10800)
+	topicId2 := s.CreateOneTopic(10800)
 
 	// Regrets
 	noRagret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
@@ -663,8 +663,8 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetworkRegrets() {
 	ctx := s.ctx
-	s.CreateOneTopic() // Topic 1
-	s.CreateOneTopic() // Topic 2
+	s.CreateOneTopic(10800) // Topic 1
+	s.CreateOneTopic(10800) // Topic 2
 	keeper := s.emissionsKeeper
 	forecaster := "forecaster-address"
 	inferer := "inferer-address"
@@ -1276,7 +1276,7 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
+	topicId := s.CreateOneTopic(10800)
 
 	// Initially, there should be no loss bundle, so we expect a zero result
 	emptyLossBundle, err := keeper.GetLatestNetworkLossBundle(ctx, topicId)
@@ -2183,7 +2183,7 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
-	maxActiveTopicsNum := uint64(5)
+	maxActiveTopicsNum := uint64(2)
 	params := types.Params{MaxActiveTopicsPerBlock: maxActiveTopicsNum, MaxPageLimit: 100}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")

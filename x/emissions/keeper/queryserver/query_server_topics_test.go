@@ -63,6 +63,10 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
+	params := types.Params{MaxActiveTopicsPerBlock: uint64(2), MaxPageLimit: 100}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
 	topic1 := types.Topic{Id: 1}
 	topic2 := types.Topic{Id: 2}
 	topic3 := types.Topic{Id: 3}
