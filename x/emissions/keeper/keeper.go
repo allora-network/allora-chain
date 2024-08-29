@@ -1921,6 +1921,7 @@ func (k *Keeper) GetNextTopicId(ctx context.Context) (TopicId, error) {
 	return k.nextTopicId.Peek(ctx)
 }
 
+// Returns all active topic ids using pagination
 func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
 	limit, start, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	if err != nil {
@@ -1962,6 +1963,7 @@ func (k Keeper) GetIdsOfActiveTopics(ctx context.Context, pagination *types.Simp
 	}, nil
 }
 
+// Returns active topic ids at block using pagination
 func (k Keeper) GetIdsActiveTopicAtBlock(ctx context.Context, blockHeight int64, pagination *types.SimpleCursorPaginationRequest) ([]TopicId, *types.SimpleCursorPaginationResponse, error) {
 	limit, start, err := k.CalcAppropriatePaginationForUint64Cursor(ctx, pagination)
 	if err != nil {
