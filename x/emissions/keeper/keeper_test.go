@@ -2560,19 +2560,174 @@ func (s *KeeperTestSuite) TestGetReputerScoreEma() {
 		Score:       alloraMath.ZeroDec(),
 	}, reputerScore, "Reputer score should be empty if not set")
 }
+
+func constructSampleValueBundle() types.ValueBundle {
+	bundle := types.ValueBundle{
+		TopicId: 1,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: 100,
+			},
+		},
+		Reputer: "reputer1",
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "inferer1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		ForecasterValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "forecaster1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		ExtraData:     []byte("extra data"),
+		CombinedValue: alloraMath.NewDecFromInt64(100),
+		NaiveValue:    alloraMath.NewDecFromInt64(100),
+		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+			{
+				Worker: "inferer1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+			{
+				Worker: "forecaster1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		OneInForecasterValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "forecaster1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+			{
+				Forecaster: "forecaster1",
+				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+					{
+						Worker: "inferer1",
+						Value:  alloraMath.NewDecFromInt64(100),
+					},
+				},
+			},
+		},
+	}
+	return bundle
+}
+
 func (s *KeeperTestSuite) TestGetInfererScoreEmasFromValueBundle() {
-	// todo
-	s.T().Fail()
+	ctx := s.ctx
+	// construct a sample value bundle
+	bundle := constructSampleValueBundle()
+
+	// put in sample scores tied to the inferers in that value bundle
+	score := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "inferer1",
+		Score:       alloraMath.NewDecFromInt64(100),
+	}
+	s.emissionsKeeper.SetInfererScoreEma(ctx, bundle.TopicId, "inferer1", score)
+
+	// call GetInfererScoreEmasFromValueBundle
+	scores, err := s.emissionsKeeper.GetInfererScoreEmasFromValueBundle(ctx, bundle)
+	s.Require().NoError(err, "GetInfererScoreEmasFromValueBundle should not return an error")
+	s.Require().Len(scores, 1, "Should retrieve correct number of scores")
+	s.Require().Equal(scores[0].Address, "inferer1", "Should retrieve correct inferer")
+
+	// check that the returned scores are the same as the sample scores
+	s.Require().Equal(scores[0].Score, alloraMath.NewDecFromInt64(100), "Should retrieve correct score")
 }
 
 func (s *KeeperTestSuite) TestGetForecasterScoreEmasFromValueBundle() {
-	// todo
-	s.T().Fail()
+	ctx := s.ctx
+	// construct a sample value bundle
+	bundle := constructSampleValueBundle()
+
+	// put in sample scores tied to the forecasters in that value bundle
+	score := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "forecaster1",
+		Score:       alloraMath.NewDecFromInt64(100),
+	}
+	s.emissionsKeeper.SetForecasterScoreEma(ctx, bundle.TopicId, "forecaster1", score)
+
+	// call GetForecasterScoreEmasFromValueBundle
+	scores, err := s.emissionsKeeper.GetForecasterScoreEmasFromValueBundle(ctx, bundle)
+	s.Require().NoError(err, "GetForecasterScoreEmasFromValueBundle should not return an error")
+	s.Require().Len(scores, 1, "Should retrieve correct number of scores")
+	s.Require().Equal(scores[0].Address, "forecaster1", "Should retrieve correct forecaster")
+
+	// check that the returned scores are the same as the sample scores
+	s.Require().Equal(scores[0].Score, alloraMath.NewDecFromInt64(100), "Should retrieve correct score")
 }
 
-func (s *KeeperTestSuite) TestGetReputerScoreEmasFromValueBundle() {
-	// todo
-	s.T().Fail()
+func (s *KeeperTestSuite) TestGetReputerScoreEmasFromValueBundles() {
+	ctx := s.ctx
+	// construct a sample value bundle
+	bundle := constructSampleValueBundle()
+	bundle2 := constructSampleValueBundle()
+	bundle2.Reputer = "reputer2"
+	bundle3 := constructSampleValueBundle()
+	bundle3.Reputer = "reputer3"
+
+	bundles := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			{
+				ValueBundle: &bundle,
+				Signature:   []byte("signature1"),
+				Pubkey:      "pubkey1",
+			},
+			{
+				ValueBundle: &bundle2,
+				Signature:   []byte("signature2"),
+				Pubkey:      "pubkey2",
+			},
+			{
+				ValueBundle: &bundle3,
+				Signature:   []byte("signature3"),
+				Pubkey:      "pubkey3",
+			},
+		},
+	}
+
+	// put in sample scores tied to the reputers in that value bundle
+	score := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "reputer1",
+		Score:       alloraMath.NewDecFromInt64(100),
+	}
+	s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer1", score)
+	score2 := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "reputer2",
+		Score:       alloraMath.NewDecFromInt64(200),
+	}
+	s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer2", score2)
+	score3 := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "reputer3",
+		Score:       alloraMath.NewDecFromInt64(300),
+	}
+	s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer3", score3)
+
+	// call GetReputerScoreEmasFromValueBundle
+	scores, err := s.emissionsKeeper.GetReputerScoreEmasFromValueBundles(ctx, bundle.TopicId, bundles.ReputerValueBundles)
+	s.Require().NoError(err, "GetReputerScoreEmasFromValueBundle should not return an error")
+	s.Require().Len(scores, 3, "Should retrieve correct number of scores")
+	s.Require().Equal(scores[0].Address, "reputer1", "Should retrieve correct reputer")
+	s.Require().True(scores[0].Score.Equal(alloraMath.NewDecFromInt64(100)), "Should retrieve correct score")
+	s.Require().Equal(scores[1].Address, "reputer2", "Should retrieve correct reputer")
+	s.Require().True(scores[1].Score.Equal(alloraMath.NewDecFromInt64(200)), "Should retrieve correct score")
+	s.Require().Equal(scores[2].Address, "reputer3", "Should retrieve correct reputer")
+	s.Require().True(scores[2].Score.Equal(alloraMath.NewDecFromInt64(300)), "Should retrieve correct score")
 }
 
 func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
