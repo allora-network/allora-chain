@@ -497,30 +497,47 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilInference(
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
-	workerPrivateKey := secp256k1.GenPrivKey()
+	worker1PrivateKey := secp256k1.GenPrivKey()
+	worker2PrivateKey := secp256k1.GenPrivKey()
+	worker3PrivateKey := secp256k1.GenPrivKey()
+	worker4PrivateKey := secp256k1.GenPrivKey()
 
-	workerMsgForecast, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	inferMsgs, forecastMsgs, topicId := s.setUpMsgInsertWorkerPayloadFourWorkers(
+		worker1PrivateKey, worker2PrivateKey, worker3PrivateKey, worker4PrivateKey)
 
 	// in order for the insertion to do something, there need to be some actual
 	// inferences in place to forecast upon
-	workerInferenceMsg := copyWorkerMsg(workerMsgForecast)
-	workerInferenceMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast = nil
-	workerMsgInference := s.signMsgInsertWorkerPayload(workerMsgForecast, workerPrivateKey)
-	blockHeight := workerMsgForecast.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	worker1MsgInference := s.signMsgInsertWorkerPayload(inferMsgs[0], worker1PrivateKey)
+	blockHeight := forecastMsgs[0].WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsgInference)
+	_, err := msgServer.InsertWorkerPayload(ctx, &worker1MsgInference)
+	require.NoError(err)
+	worker2MsgInference := s.signMsgInsertWorkerPayload(inferMsgs[1], worker2PrivateKey)
+	_, err = msgServer.InsertWorkerPayload(ctx, &worker2MsgInference)
+	require.NoError(err)
+	worker3MsgInference := s.signMsgInsertWorkerPayload(inferMsgs[2], worker3PrivateKey)
+	_, err = msgServer.InsertWorkerPayload(ctx, &worker3MsgInference)
+	require.NoError(err)
+	worker4MsgInference := s.signMsgInsertWorkerPayload(inferMsgs[3], worker4PrivateKey)
+	_, err = msgServer.InsertWorkerPayload(ctx, &worker4MsgInference)
 	require.NoError(err)
 
-	// remove the inferences from this workerMsg
-	workerMsgForecast.WorkerDataBundle.InferenceForecastsBundle.Inference = nil
-	workerMsgForecast = s.signMsgInsertWorkerPayload(workerMsgForecast, workerPrivateKey)
-
-	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsgForecast)
+	worker1MsgForecast := s.signMsgInsertWorkerPayload(forecastMsgs[0], worker1PrivateKey)
+	_, err = msgServer.InsertWorkerPayload(ctx, &worker1MsgForecast)
+	require.NoError(err)
+	worker2MsgForecast := s.signMsgInsertWorkerPayload(forecastMsgs[1], worker2PrivateKey)
+	_, err = msgServer.InsertWorkerPayload(ctx, &worker2MsgForecast)
+	require.NoError(err)
+	worker3MsgForecast := s.signMsgInsertWorkerPayload(forecastMsgs[2], worker3PrivateKey)
+	_, err = msgServer.InsertWorkerPayload(ctx, &worker3MsgForecast)
+	require.NoError(err)
+	worker4MsgForecast := s.signMsgInsertWorkerPayload(forecastMsgs[3], worker4PrivateKey)
+	_, err = msgServer.InsertWorkerPayload(ctx, &worker4MsgForecast)
 	require.NoError(err)
 
 	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
 	require.NoError(err)
-	require.Greater(len(forecasts.Forecasts), 0)
+	require.Len(forecasts.Forecasts, 4)
 	require.Len(forecasts.Forecasts[0].ForecastElements, 4)
 }
 
@@ -562,7 +579,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithNilInferenceAndF
 	// END MODIFICATION
 
 	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
-	require.ErrorIs(err, types.ErrInvalidWorkerData)
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithoutSignature() {
@@ -729,7 +746,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerActiveSetBounds() {
 	forecasts, err = s.emissionsKeeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
 	require.NoError(err)
 
-	require.Len(forecasts.Forecasts[0].ForecastElements, int(param.MaxTopForecastersToReward))
+	require.Len(forecasts.Forecasts, int(param.MaxTopForecastersToReward)) //nolint:gosec //G115: integer overflow conversion uint64 -> int
 	require.Equal(forecasts.Forecasts[0].ForecastElements[0].Inferer, inferer1)
 	require.Equal(forecasts.Forecasts[0].ForecastElements[1].Inferer, inferer2)
 	require.Equal(forecasts.Forecasts[0].ForecastElements[2].Inferer, inferer4)
@@ -1145,36 +1162,33 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithForecastRepeatedlyOve
 	require := s.Require()
 	keeper := s.emissionsKeeper
 
-	workerPrivateKey := secp256k1.GenPrivKey()
+	worker1PrivateKey := secp256k1.GenPrivKey()
+	worker2PrivateKey := secp256k1.GenPrivKey()
+	worker3PrivateKey := secp256k1.GenPrivKey()
+	worker4PrivateKey := secp256k1.GenPrivKey()
 
-	workerMsg, topicId := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
-	// BEGIN MODIFICATION
-	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Value = alloraMath.NewDecFromInt64(100)
-	// END MODIFICATION
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	inferMsgs, forecastMsgs, topicId := s.setUpMsgInsertWorkerPayloadFourWorkers(worker1PrivateKey, worker2PrivateKey, worker3PrivateKey, worker4PrivateKey)
 
-	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	// upload an inference so forecasts can be created
+	infer1Msg := s.signMsgInsertWorkerPayload(inferMsgs[0], worker1PrivateKey)
+	blockHeight := infer1Msg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
+	_, err := msgServer.InsertWorkerPayload(ctx, &infer1Msg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
 
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	// upload a forecast to later overwrite
+	forecast1Msg := s.signMsgInsertWorkerPayload(forecastMsgs[0], worker1PrivateKey)
+	_, err = msgServer.InsertWorkerPayload(ctx, &forecast1Msg)
+	require.NoError(err, "InsertWorkerPayload should not return an error")
+
+	// upload the same forecast again with a different value
+	forecast1Msg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Value = alloraMath.NewDecFromInt64(200)
+	forecast1Msg = s.signMsgInsertWorkerPayload(forecast1Msg, worker1PrivateKey)
+	_, err = msgServer.InsertWorkerPayload(ctx, &forecast1Msg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
 
 	forecasts, err := keeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
 	require.NoError(err)
-	require.Equal(len(forecasts.Forecasts[0].ForecastElements), 4)
-	require.Equal(forecasts.Forecasts[0].ForecastElements[0].Value, alloraMath.NewDecFromInt64(100))
-
-	// Repeat the same forecast with a different forecast value and check if it overwrites the previous value
-	// BEGIN MODIFICATION
-	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Value = alloraMath.NewDecFromInt64(200)
-	// END MODIFICATION
-	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
-
-	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
-	require.NoError(err, "InsertWorkerPayload should not return an error")
-
-	forecasts, err = keeper.GetForecastsAtBlock(ctx, topicId, blockHeight)
-	require.NoError(err)
-	require.Equal(len(forecasts.Forecasts[0].ForecastElements), 4)
+	require.Len(forecasts.Forecasts[0].ForecastElements, 1)
 	require.Equal(forecasts.Forecasts[0].ForecastElements[0].Value, alloraMath.NewDecFromInt64(200))
 }
