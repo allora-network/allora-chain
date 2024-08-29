@@ -12,7 +12,6 @@ import (
 
 	"cosmossdk.io/store/prefix"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	migrations "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
 	v3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
 	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
@@ -28,7 +27,6 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 
 	storetypes "cosmossdk.io/store/types"
-	oldparams "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
 	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
 )
 
@@ -74,7 +72,7 @@ func (s *MigrationTestSuite) TestMigrate() {
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
 	defaultParams := types.DefaultParams()
-	paramsOld := oldparams.Params{
+	paramsOld := oldtypes.Params{
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,
@@ -125,7 +123,7 @@ func (s *MigrationTestSuite) TestMigrate() {
 	store.Set(types.ParamsKey, cdc.MustMarshal(&paramsOld))
 
 	// Run migration
-	err := migrations.MigrateStore(s.ctx, *s.emissionsKeeper)
+	err := v3.MigrateStore(s.ctx, *s.emissionsKeeper)
 	s.Require().NoError(err)
 
 	// TO BE ADDED VIA DEFAULT PARAMS
@@ -228,12 +226,12 @@ func (s *MigrationTestSuite) TestMigrateTopics() {
 	s.Require().Equal(oldTopic.AllowNegative, newMsg.AllowNegative)
 	s.Require().Equal(oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
 	// New props are imputed with defaults
-	s.Require().Equal(newMsg.MeritSortitionAlpha.String(), "0.1")
-	s.Require().Equal(newMsg.ActiveInfererQuantile.String(), "0.25")
-	s.Require().Equal(newMsg.ActiveForecasterQuantile.String(), "0.25")
-	s.Require().Equal(newMsg.ActiveReputerQuantile.String(), "0.25")
+	s.Require().Equal("0.1", newMsg.MeritSortitionAlpha.String())
+	s.Require().Equal("0.25", newMsg.ActiveInfererQuantile.String())
+	s.Require().Equal("0.25", newMsg.ActiveForecasterQuantile.String())
+	s.Require().Equal("0.25", newMsg.ActiveReputerQuantile.String())
 	// InitialRegret is reset to 0
-	s.Require().Equal(newMsg.InitialRegret.String(), "0")
+	s.Require().Equal("0", newMsg.InitialRegret.String())
 }
 
 func (s *MigrationTestSuite) TestResetMapsWithNonNumericValues() {
