@@ -19,16 +19,20 @@ func (s *ActorUtilsTestSuite) TestGetReputersScoresFromCsv() {
 	block := int64(1003)
 
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                s.addrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          true,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)

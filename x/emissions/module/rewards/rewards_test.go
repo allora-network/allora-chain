@@ -213,15 +213,19 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                reputerAddrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -343,15 +347,19 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                reputerAddrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -479,15 +487,19 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Create topic
 	newTopicMsg = &types.MsgCreateNewTopic{
-		Creator:                reputerAddrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1259,15 +1271,19 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                reputerAddrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1404,15 +1420,19 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Create new topic
 	newTopicMsg = &types.MsgCreateNewTopic{
-		Creator:                reputerAddrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err = s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1553,15 +1573,19 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                reputerAddrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            epochLength,
-		GroundTruthLag:         epochLength,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              epochLength,
+		GroundTruthLag:           epochLength,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1730,15 +1754,19 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	// Create first topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                reputerAddrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            epochLength,
-		GroundTruthLag:         epochLength,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              epochLength,
+		GroundTruthLag:           epochLength,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1889,8 +1917,8 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	newBlockheight := block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
-	// Insert loss bundle from reputers
-	lossBundles := GenerateLossBundles(s, block, topicId1, reputerAddrs)
+	// Insert loss bundle from relevant reputers per topic
+	lossBundles := GenerateLossBundles(s, block, topicId1, reputerAddrs[:3])
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
@@ -1907,7 +1935,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	newBlockheight = block + topic2.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
-	lossBundles2 := GenerateLossBundles(s, block, topicId2, reputerAddrs)
+	lossBundles2 := GenerateLossBundles(s, block, topicId2, reputerAddrs[3:])
 	for _, payload := range lossBundles2.ReputerValueBundles {
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
@@ -1941,15 +1969,19 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                reputer.String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            epochLength,
-		GroundTruthLag:         epochLength,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputer.String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              epochLength,
+		GroundTruthLag:           epochLength,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -2130,15 +2162,19 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 
 	// Create topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                reputerAddrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            epochLength,
-		GroundTruthLag:         epochLength,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              epochLength,
+		GroundTruthLag:           epochLength,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)

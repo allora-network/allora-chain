@@ -33,20 +33,14 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	blockHeight := sdkCtx.BlockHeight()
 
 	// Call the bundles self validation method
-	if err := validateReputerValueBundle(msg.Sender, msg.ReputerValueBundle); err != nil {
+	if err := validateReputerValueBundle(msg.ReputerValueBundle); err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Error validating reputer value bundle for block height %d", blockHeight)
 	}
 
 	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
 	topicId := msg.ReputerValueBundle.ValueBundle.TopicId
-	reputer := msg.Sender
-
-	// the reputer in the bundle must match the sender of this transaction
-	if reputer != msg.ReputerValueBundle.ValueBundle.Reputer {
-		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
-			"Reputer cannot upload value bundle for another reputer")
-	}
+	reputer := msg.ReputerValueBundle.ValueBundle.Reputer
 
 	// Check if the topic exists
 	topicExists, err := ms.k.TopicExists(ctx, topicId)
@@ -60,8 +54,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, errorsmod.Wrapf(err, "Error checking if reputer is registered in topic")
 	}
 	if !isReputerRegistered {
-		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
-			"Reputer not registered in topic")
+		return nil, errorsmod.Wrapf(types.ErrInvalidReputerData, "Reputer not registered in topic")
 	}
 
 	// Check if the worker nonce is fulfilled
@@ -106,7 +99,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, errorsmod.Wrapf(err, "Error getting reputer stake for sender: %v", &msg.Sender)
 	}
 	if reputerStake.LT(moduleParams.RequiredMinimumStake) {
-		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
+		return nil, errorsmod.Wrapf(types.ErrInvalidReputerData,
 			"Reputer must have minimum stake in order to participate in topic")
 	}
 
@@ -214,7 +207,7 @@ func validateWithheldWorkerAttributedValue(withheldWorkerValue *types.WithheldWo
 }
 
 // validateReputerValueBundle validates a ReputerValueBundle
-func validateReputerValueBundle(msgSender string, bundle *types.ReputerValueBundle) error {
+func validateReputerValueBundle(bundle *types.ReputerValueBundle) error {
 	if bundle.ValueBundle == nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
 	}
@@ -224,9 +217,15 @@ func validateReputerValueBundle(msgSender string, bundle *types.ReputerValueBund
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid reputer address (%s)", err)
 	}
 
-	if bundle.ValueBundle.Reputer != msgSender {
-		return errorsmod.Wrapf(types.ErrUnauthorized,
-			"Reputer does not match transaction sender")
+	pk, err := hex.DecodeString(bundle.Pubkey)
+	if err != nil || len(pk) != secp256k1.PubKeySize {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid pubkey")
+	}
+	pubkey := secp256k1.PubKey(pk)
+	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
+
+	if bundle.ValueBundle.Reputer != pubKeyConvertedToAddress {
+		return errorsmod.Wrapf(types.ErrUnauthorized, "Reputer does not match pubkey")
 	}
 
 	if bundle.ValueBundle.ReputerRequestNonce == nil {
@@ -282,12 +281,6 @@ func validateReputerValueBundle(msgSender string, bundle *types.ReputerValueBund
 			}
 		}
 	}
-
-	pk, err := hex.DecodeString(bundle.Pubkey)
-	if err != nil || len(pk) != secp256k1.PubKeySize {
-		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")
-	}
-	pubkey := secp256k1.PubKey(pk)
 
 	src := make([]byte, 0)
 	src, _ = bundle.ValueBundle.XXX_Marshal(src, true)

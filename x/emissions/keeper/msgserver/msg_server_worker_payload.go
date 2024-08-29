@@ -35,7 +35,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, err
 	}
 
-	if err := validateWorkerDataBundle(msg.Sender, msg.WorkerDataBundle); err != nil {
+	if err := validateWorkerDataBundle(msg.WorkerDataBundle); err != nil {
 		return nil, errorsmod.Wrapf(err, "Worker invalid data for block: %d", blockHeight)
 	}
 
@@ -275,7 +275,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 }
 
 // Validate top level then elements of the bundle
-func validateWorkerDataBundle(msgSender string, bundle *types.WorkerDataBundle) error {
+func validateWorkerDataBundle(bundle *types.WorkerDataBundle) error {
 	if bundle == nil {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle cannot be nil")
 	}
@@ -288,6 +288,13 @@ func validateWorkerDataBundle(msgSender string, bundle *types.WorkerDataBundle) 
 	if len(bundle.Pubkey) == 0 {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "public key cannot be empty")
 	}
+	pk, err := hex.DecodeString(bundle.Pubkey)
+	if err != nil || len(pk) != secp256k1.PubKeySize {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid pubkey")
+	}
+	pubkey := secp256k1.PubKey(pk)
+	pubKeyConvertedToAddress := sdk.AccAddress(pubkey.Address().Bytes()).String()
+
 	if len(bundle.InferencesForecastsBundleSignature) == 0 {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "signature cannot be empty")
 	}
@@ -303,9 +310,9 @@ func validateWorkerDataBundle(msgSender string, bundle *types.WorkerDataBundle) 
 		if err := validateInference(bundle.InferenceForecastsBundle.Inference); err != nil {
 			return err
 		}
-		if bundle.InferenceForecastsBundle.Inference.Inferer != msgSender {
+		if bundle.InferenceForecastsBundle.Inference.Inferer != pubKeyConvertedToAddress {
 			return errorsmod.Wrapf(types.ErrUnauthorized,
-				"Inference.Inferer does not match transaction sender")
+				"Inference.Inferer does not match pubkey")
 		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Inference.Inferer {
 			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
@@ -316,9 +323,9 @@ func validateWorkerDataBundle(msgSender string, bundle *types.WorkerDataBundle) 
 		if err := validateForecast(bundle.InferenceForecastsBundle.Forecast); err != nil {
 			return err
 		}
-		if bundle.InferenceForecastsBundle.Forecast.Forecaster != msgSender {
+		if bundle.InferenceForecastsBundle.Forecast.Forecaster != pubKeyConvertedToAddress {
 			return errorsmod.Wrapf(types.ErrUnauthorized,
-				"Forecast.Forecaster does not match transaction sender")
+				"Forecast.Forecaster does not match pubkey")
 		}
 		if bundle.Worker != bundle.InferenceForecastsBundle.Forecast.Forecaster {
 			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
@@ -327,16 +334,14 @@ func validateWorkerDataBundle(msgSender string, bundle *types.WorkerDataBundle) 
 	}
 
 	// Check signature from the bundle, throw if invalid!
-	pk, err := hex.DecodeString(bundle.Pubkey)
-	if err != nil || len(pk) != secp256k1.PubKeySize {
-		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "signature verification failed")
-	}
-	pubkey := secp256k1.PubKey(pk)
-
 	src := make([]byte, 0)
 	src, _ = bundle.InferenceForecastsBundle.XXX_Marshal(src, true)
 	if !pubkey.VerifySignature(src, bundle.InferencesForecastsBundleSignature) {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "signature verification failed")
+	}
+	// Source: https://docs.cosmos.network/v0.46/basics/accounts.html#addresses
+	if sdk.AccAddress(pubkey.Address().Bytes()).String() != bundle.Worker {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "worker address does not match signature")
 	}
 
 	return nil

@@ -184,15 +184,19 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 	creator := sdk.AccAddress(PKS[0].Address())
 
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                creator.String(),
-		Metadata:               metadata,
-		LossMethod:             "method",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10800,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  creator.String(),
+		Metadata:                 metadata,
+		LossMethod:               "method",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10800,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 	}
 
 	s.MintTokensToAddress(creator, types.DefaultParams().CreateTopicFee)
