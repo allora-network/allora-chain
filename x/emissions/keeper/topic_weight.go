@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+
 	"github.com/allora-network/allora-chain/x/emissions/types"
 
 	"cosmossdk.io/errors"

@@ -1,12 +1,13 @@
 package v3_test
 
 import (
-	cosmosMath "cosmossdk.io/math"
-	"cosmossdk.io/store/prefix"
 	"encoding/json"
-	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/types"
 	"strconv"
 	"testing"
+
+	cosmosMath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 

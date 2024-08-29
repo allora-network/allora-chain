@@ -2,9 +2,10 @@ package keeper
 
 import (
 	"context"
+	"fmt"
+
 	"cosmossdk.io/collections"
 	"cosmossdk.io/errors"
-	"fmt"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

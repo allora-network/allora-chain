@@ -1,8 +1,9 @@
 package rewards
 
 import (
-	"cosmossdk.io/errors"
 	"fmt"
+
+	"cosmossdk.io/errors"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 

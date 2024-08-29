@@ -1,12 +1,13 @@
 package v3
 
 import (
+	"encoding/binary"
+	"fmt"
+
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
-	"encoding/binary"
-	"fmt"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
