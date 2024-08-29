@@ -22,20 +22,21 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 	forecastChange := false
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
 	blockHeight := sdkCtx.BlockHeight()
 
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
+
 	err = checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := validateWorkerDataBundle(msg.WorkerDataBundle); err != nil {
-		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
-			"Worker invalid data for block: %d", blockHeight)
+	if err := validateWorkerDataBundle(msg.Sender, msg.WorkerDataBundle); err != nil {
+		return nil, errorsmod.Wrapf(err, "Worker invalid data for block: %d", blockHeight)
 	}
 
 	nonce := msg.WorkerDataBundle.Nonce
@@ -210,7 +211,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 			// note that this is the current top inferers, which could change before
 			// the worker nonce is done
 			// also remove duplicate forecast elements
-			forecast = filterForecastElementsToTopInferers(forecast, existingInferences)
+			forecast = filterForecastElementsToTopInferers(forecast, moduleParams.MaxElementsPerForecast, existingInferences)
 
 			if len(forecast.ForecastElements) > 0 {
 				err = ms.k.UpsertForecast(ctx, topicId, *nonce, forecast)
@@ -248,7 +249,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 				// note that this is the current top inferers, which could change before
 				// the worker nonce is done
 				// also remove duplicate forecast elements
-				forecast = filterForecastElementsToTopInferers(forecast, existingInferences)
+				forecast = filterForecastElementsToTopInferers(forecast, moduleParams.MaxElementsPerForecast, existingInferences)
 
 				// we are kicking out the lowest scoring forecaster and replacing them with the new forecaster
 				err = ms.k.ReplaceForecast(
@@ -274,7 +275,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 }
 
 // Validate top level then elements of the bundle
-func validateWorkerDataBundle(bundle *types.WorkerDataBundle) error {
+func validateWorkerDataBundle(msgSender string, bundle *types.WorkerDataBundle) error {
 	if bundle == nil {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "worker data bundle cannot be nil")
 	}
@@ -302,10 +303,26 @@ func validateWorkerDataBundle(bundle *types.WorkerDataBundle) error {
 		if err := validateInference(bundle.InferenceForecastsBundle.Inference); err != nil {
 			return err
 		}
+		if bundle.InferenceForecastsBundle.Inference.Inferer != msgSender {
+			return errorsmod.Wrapf(types.ErrUnauthorized,
+				"Inference.Inferer does not match transaction sender")
+		}
+		if bundle.Worker != bundle.InferenceForecastsBundle.Inference.Inferer {
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
+				"Inference.Inferer does not match worker address")
+		}
 	}
 	if bundle.InferenceForecastsBundle.Forecast != nil {
 		if err := validateForecast(bundle.InferenceForecastsBundle.Forecast); err != nil {
 			return err
+		}
+		if bundle.InferenceForecastsBundle.Forecast.Forecaster != msgSender {
+			return errorsmod.Wrapf(types.ErrUnauthorized,
+				"Forecast.Forecaster does not match transaction sender")
+		}
+		if bundle.Worker != bundle.InferenceForecastsBundle.Forecast.Forecaster {
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
+				"Forecast.Forecaster does not match worker address")
 		}
 	}
 
@@ -416,9 +433,11 @@ func getTopInferersFromExistingInferences(existingInferences *types.Inferences) 
 }
 
 // filterForecastElementsToTopInferers filters the forecast elements to only include the top inferers
+// caps the number of forecast elements to maxElementsPerForecast, just taking the first N blindly
 // and also removes duplicate forecast elements
 func filterForecastElementsToTopInferers(
 	forecast *types.Forecast,
+	maxElementsPerForecast uint64,
 	existingInferences *types.Inferences,
 ) (filteredForecast *types.Forecast) {
 	filteredForecast = &types.Forecast{
@@ -437,6 +456,9 @@ func filterForecastElementsToTopInferers(
 		if !alreadySeen && isTopInferer {
 			acceptedForecastElements = append(acceptedForecastElements, el)
 			seenInferers[el.Inferer] = struct{}{}
+		}
+		if uint64(len(acceptedForecastElements)) >= maxElementsPerForecast {
+			break
 		}
 	}
 	filteredForecast.ForecastElements = acceptedForecastElements

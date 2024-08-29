@@ -33,9 +33,9 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	blockHeight := sdkCtx.BlockHeight()
 
 	// Call the bundles self validation method
-	if err := validateReputerValueBundle(msg.ReputerValueBundle); err != nil {
-		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
-			"Error validating reputer value bundle: %v", err)
+	if err := validateReputerValueBundle(msg.Sender, msg.ReputerValueBundle); err != nil {
+		return nil, errorsmod.Wrapf(err,
+			"Error validating reputer value bundle for block height %d", blockHeight)
 	}
 
 	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
@@ -214,7 +214,7 @@ func validateWithheldWorkerAttributedValue(withheldWorkerValue *types.WithheldWo
 }
 
 // validateReputerValueBundle validates a ReputerValueBundle
-func validateReputerValueBundle(bundle *types.ReputerValueBundle) error {
+func validateReputerValueBundle(msgSender string, bundle *types.ReputerValueBundle) error {
 	if bundle.ValueBundle == nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle cannot be nil")
 	}
@@ -222,6 +222,11 @@ func validateReputerValueBundle(bundle *types.ReputerValueBundle) error {
 	_, err := sdk.AccAddressFromBech32(bundle.ValueBundle.Reputer)
 	if err != nil {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid reputer address (%s)", err)
+	}
+
+	if bundle.ValueBundle.Reputer != msgSender {
+		return errorsmod.Wrapf(types.ErrUnauthorized,
+			"Reputer does not match transaction sender")
 	}
 
 	if bundle.ValueBundle.ReputerRequestNonce == nil {
