@@ -88,19 +88,23 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *emissionstypes.MsgC
 	}
 
 	topic := emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                msg.Creator,
-		Metadata:               msg.Metadata,
-		LossMethod:             msg.LossMethod,
-		EpochLastEnded:         0,
-		EpochLength:            msg.EpochLength,
-		GroundTruthLag:         msg.GroundTruthLag,
-		WorkerSubmissionWindow: msg.WorkerSubmissionWindow,
-		PNorm:                  msg.PNorm,
-		AlphaRegret:            msg.AlphaRegret,
-		AllowNegative:          msg.AllowNegative,
-		Epsilon:                msg.Epsilon,
-		InitialRegret:          alloraMath.ZeroDec(),
+		Id:                       topicId,
+		Creator:                  msg.Creator,
+		Metadata:                 msg.Metadata,
+		LossMethod:               msg.LossMethod,
+		EpochLastEnded:           0,
+		EpochLength:              msg.EpochLength,
+		GroundTruthLag:           msg.GroundTruthLag,
+		WorkerSubmissionWindow:   msg.WorkerSubmissionWindow,
+		PNorm:                    msg.PNorm,
+		AlphaRegret:              msg.AlphaRegret,
+		AllowNegative:            msg.AllowNegative,
+		Epsilon:                  msg.Epsilon,
+		InitialRegret:            alloraMath.ZeroDec(),
+		MeritSortitionAlpha:      msg.MeritSortitionAlpha,
+		ActiveInfererQuantile:    msg.ActiveInfererQuantile,
+		ActiveForecasterQuantile: msg.ActiveForecasterQuantile,
+		ActiveReputerQuantile:    msg.ActiveReputerQuantile,
 	}
 	_, err = ms.k.IncrementTopicId(ctx)
 	if err != nil {
