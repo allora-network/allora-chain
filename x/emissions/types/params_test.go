@@ -49,7 +49,7 @@ func TestDefaultParams(t *testing.T) {
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),
 		DataSendingFee:                      cosmosMath.NewInt(10),
 		MaxElementsPerForecast:              uint64(12),
-		MaxActiveTopicsPerBlock:             uint64(100),
+		MaxActiveTopicsPerBlock:             uint64(1),
 	}
 
 	params := DefaultParams()
