@@ -144,7 +144,7 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 	s.Require().NoError(err)
 }
 
-func TestModuleTestSuite(t *testing.T) {
+func TestInferenceSynthesisTestSuite(t *testing.T) {
 	suite.Run(t, new(InferenceSynthesisTestSuite))
 }
 

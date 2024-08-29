@@ -5,7 +5,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
+func (s *QueryServerTestSuite) TestGetNetworkLossBundleAtBlock() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -36,7 +36,7 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 	s.Require().Equal(expectedBundle, response.LossBundle, "Retrieved loss bundle should match the expected bundle")
 }
 
-func (s *KeeperTestSuite) TestIsReputerNonceUnfulfilled() {
+func (s *QueryServerTestSuite) TestIsReputerNonceUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -61,7 +61,7 @@ func (s *KeeperTestSuite) TestIsReputerNonceUnfulfilled() {
 	s.Require().True(response.IsReputerNonceUnfulfilled)
 }
 
-func (s *KeeperTestSuite) TestGetUnfulfilledReputerNonces() {
+func (s *QueryServerTestSuite) TestGetUnfulfilledReputerNonces() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -93,7 +93,7 @@ func (s *KeeperTestSuite) TestGetUnfulfilledReputerNonces() {
 	}
 }
 
-func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
+func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 	ctx := s.ctx
 	require := s.Require()
 	topicId := uint64(1)
@@ -121,7 +121,7 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
 }
 
-func (s *KeeperTestSuite) TestGetDeleteDelegateStake() {
+func (s *QueryServerTestSuite) TestGetDeleteDelegateStake() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 

@@ -4,7 +4,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
+func (s *QueryServerTestSuite) TestGetForecastsAtBlock() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	keeper := s.emissionsKeeper

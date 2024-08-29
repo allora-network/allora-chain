@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestGetWorkerNodeInfo() {
+func (s *QueryServerTestSuite) TestGetWorkerNodeInfo() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
@@ -40,7 +40,7 @@ func (s *KeeperTestSuite) TestGetWorkerNodeInfo() {
 	s.Require().Error(err, "Expected an error for nonexistent key")
 }
 
-func (s *KeeperTestSuite) TestGetReputerNodeInfo() {
+func (s *QueryServerTestSuite) TestGetReputerNodeInfo() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
@@ -73,7 +73,7 @@ func (s *KeeperTestSuite) TestGetReputerNodeInfo() {
 	s.Require().Error(err, "Expected an error for nonexistent key")
 }
 
-func (s *KeeperTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
+func (s *QueryServerTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -91,7 +91,7 @@ func (s *KeeperTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
 	s.Require().False(invalidResponse.IsRegistered, "The worker should not be registered for the topic")
 }
 
-func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
+func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -144,7 +144,7 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	require.True(queryResp.IsRegistered, "Query response should confirm worker is registered")
 }
 
-func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
+func (s *QueryServerTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
