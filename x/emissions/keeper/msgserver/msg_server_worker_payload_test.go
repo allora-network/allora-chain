@@ -403,50 +403,6 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadFourWorkers(
 	return inferencePayloads, forecastPayloads, topicId
 }
 
-// deep copy a set up msgInsertWorkerPayload
-func copyWorkerMsg(workerMsg types.MsgInsertWorkerPayload) (copy types.MsgInsertWorkerPayload) {
-	copy = types.MsgInsertWorkerPayload{
-		Sender: workerMsg.Sender,
-		WorkerDataBundle: &types.WorkerDataBundle{
-			Worker:  workerMsg.WorkerDataBundle.Worker,
-			Nonce:   workerMsg.WorkerDataBundle.Nonce,
-			TopicId: workerMsg.WorkerDataBundle.TopicId,
-			InferenceForecastsBundle: &types.InferenceForecastBundle{
-				Inference: &types.Inference{
-					TopicId:     workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId,
-					BlockHeight: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight,
-					Inferer:     workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Inferer,
-					Value:       workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Value,
-				},
-				Forecast: &types.Forecast{
-					TopicId:     workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId,
-					BlockHeight: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight,
-					Forecaster:  workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.Forecaster,
-					ForecastElements: []*types.ForecastElement{
-						{
-							Inferer: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Inferer,
-							Value:   workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[0].Value,
-						},
-						{
-							Inferer: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[1].Inferer,
-							Value:   workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[1].Value,
-						},
-						{
-							Inferer: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[2].Inferer,
-							Value:   workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[2].Value,
-						},
-						{
-							Inferer: workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[3].Inferer,
-							Value:   workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.ForecastElements[3].Value,
-						},
-					},
-				},
-			},
-		},
-	}
-	return copy
-}
-
 // sign the MsgInsertWorkerPayload message with
 // the private key of the worker
 func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(

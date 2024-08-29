@@ -50,7 +50,6 @@ func TestDefaultParams(t *testing.T) {
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),
 		DataSendingFee:                      cosmosMath.NewInt(10),
 		MaxElementsPerForecast:              uint64(12),
-		MeritSortitionAlpha:                 alloraMath.MustNewDecFromString("0.1"),
 	}
 
 	params := DefaultParams()
