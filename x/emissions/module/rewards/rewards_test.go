@@ -1,8 +1,6 @@
 package rewards_test
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 	"time"
 
@@ -757,22 +755,6 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
-	inferencesAccepted, err := s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, blockHeight)
-	require.NoError(err)
-	for _, inference := range inferencesAccepted.Inferences {
-		if inference.Inferer == workerZeroAddress.String() {
-			fmt.Printf("Inference accepted worker zero block %d\n%v\n", inference.BlockHeight, inference)
-		}
-	}
-
-	forecastsAccepted, err := s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, blockHeight)
-	require.NoError(err)
-	for _, forecast := range forecastsAccepted.Forecasts {
-		if forecast.Forecaster == workerZeroAddress.String() {
-			fmt.Printf("Forecast accepted worker zero block %d\n%v\n", forecast.BlockHeight, forecast)
-		}
-	}
-
 	// Insert loss bundle from reputers
 	lossBundles := GenerateSimpleLossBundles(
 		s,
@@ -796,24 +778,6 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	}
 	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
-
-	reputerBundlesAccepted, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(s.ctx, topicId, blockHeight)
-	require.NoError(err)
-	for _, reputerBundle := range reputerBundlesAccepted.ReputerValueBundles {
-		if reputerBundle.ValueBundle.Reputer == workerZeroAddress.String() {
-			fmt.Printf("Reputer bundle accepted block %d\n%v\n", reputerBundle.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight, reputerBundle)
-		}
-	}
-
-	worker0InfererScoreEma, err := s.emissionsKeeper.GetInfererScoreEma(s.ctx, topicId, workerZeroAddress.String())
-	require.NoError(err)
-	fmt.Printf("Worker0 inferer score ema block %d\n%v\n", blockHeight, worker0InfererScoreEma)
-	worker0ForecasterScoreEma, err := s.emissionsKeeper.GetForecasterScoreEma(s.ctx, topicId, workerZeroAddress.String())
-	require.NoError(err)
-	fmt.Printf("Worker0 forecaster score ema block %d\n%v\n", blockHeight, worker0ForecasterScoreEma)
-	worker0ReputerScoreEma, err := s.emissionsKeeper.GetReputerScoreEma(s.ctx, topicId, workerZeroAddress.String())
-	require.NoError(err)
-	fmt.Printf("Worker0 reputer score ema block %d\n%v\n", blockHeight, worker0ReputerScoreEma)
 
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
 
@@ -1085,36 +1049,12 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 	require.True(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_0, rewardsDistribution1_0))
 	require.False(areTaskRewardsEqualIgnoringTopicId(s, rewardsDistribution0_1, rewardsDistribution1_1))
 
-	fmt.Println("worker0: ", workerAddrs[0].String())
-	found := false
-	for _, reward := range rewardsDistribution0_0 {
-		if reward.Address == workerAddrs[0].String() && reward.Type == types.WorkerInferenceRewardType {
-			found = true
-			fmt.Println("block height 0: ", PrettyPrint(reward))
-		}
-	}
-	if !found {
-		require.Fail("Worker not found")
-	}
-
 	var workerReward_0_0_1_Reward alloraMath.Dec
-	found = false
+	found := false
 	for _, reward := range rewardsDistribution0_1 {
 		if reward.Address == workerAddrs[0].String() && reward.Type == types.WorkerInferenceRewardType {
 			found = true
 			workerReward_0_0_1_Reward = reward.Reward
-			fmt.Println("block height 1: ", PrettyPrint(reward))
-		}
-	}
-	if !found {
-		require.Fail("Worker not found")
-	}
-
-	found = false
-	for _, reward := range rewardsDistribution1_0 {
-		if reward.Address == workerAddrs[0].String() && reward.Type == types.WorkerInferenceRewardType {
-			found = true
-			fmt.Println("block height 2: ", PrettyPrint(reward))
 		}
 	}
 	if !found {
@@ -1127,24 +1067,13 @@ func (s *RewardsTestSuite) TestIncreasingTaskRewardAlphaIncreasesImportanceOfPre
 		if reward.Address == workerAddrs[0].String() && reward.Type == types.WorkerInferenceRewardType {
 			found = true
 			workerReward_0_1_1_Reward = reward.Reward
-			fmt.Println("block height 3: ", PrettyPrint(reward))
 		}
 	}
 	if !found {
 		require.Fail("Worker not found")
 	}
 
-	//fmt.Printf("rewardsDistribution0_0:\n %v\n", PrettyPrint(rewardsDistribution0_0))
-	//fmt.Printf("rewardsDistribution0_1:\n %v\n", PrettyPrint(rewardsDistribution0_1))
-	//fmt.Printf("rewardsDistribution1_0:\n %v\n", PrettyPrint(rewardsDistribution1_0))
-	//fmt.Printf("rewardsDistribution1_1:\n %v\n", PrettyPrint(rewardsDistribution1_1))
 	require.True(workerReward_0_0_1_Reward.Lt(workerReward_0_1_1_Reward))
-}
-
-func PrettyPrint(i interface{}) string {
-	s, _ := json.MarshalIndent(i, "", "\t")
-	fmt.Println(string(s))
-	return string(s)
 }
 
 // We have 2 trials with 2 epochs each, and the first worker does worse in 2nd epoch in both trials,

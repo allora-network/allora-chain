@@ -793,16 +793,16 @@ func GenerateSimpleWorkerDataBundles(
 
 	var inferences []*types.WorkerDataBundle
 
-	//infererIndex := 0
+	infererIndex := 0
 
-	//getInfererIndex := func() int {
-	//	if infererIndex >= len(infererAddrs) {
-	//		infererIndex = 0
-	//	}
-	//	currentInfererIndex := infererIndex
-	//	infererIndex++
-	//	return currentInfererIndex
-	//}
+	getInfererIndex := func() int {
+		if infererIndex >= len(infererAddrs) {
+			infererIndex = 0
+		}
+		currentInfererIndex := infererIndex
+		infererIndex++
+		return currentInfererIndex
+	}
 
 	for i, workerValue := range workerValues {
 		newWorkerInferenceForecastBundle := &types.InferenceForecastBundle{
@@ -812,7 +812,7 @@ func GenerateSimpleWorkerDataBundles(
 				Inferer:     workerValue.Address.String(),
 				Value:       alloraMath.MustNewDecFromString(workerValues[i].Value),
 			},
-			Forecast: nil, /*&types.Forecast{
+			Forecast: &types.Forecast{
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Forecaster:  workerValue.Address.String(),
@@ -826,7 +826,7 @@ func GenerateSimpleWorkerDataBundles(
 						Value:   alloraMath.MustNewDecFromString(workerValues[i].Value),
 					},
 				},
-			},*/
+			},
 		}
 		workerSig, err := GenerateWorkerSignature(s, newWorkerInferenceForecastBundle, workerValue.Address)
 		s.Require().NoError(err)
