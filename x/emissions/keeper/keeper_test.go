@@ -2560,19 +2560,174 @@ func (s *KeeperTestSuite) TestGetReputerScoreEma() {
 		Score:       alloraMath.ZeroDec(),
 	}, reputerScore, "Reputer score should be empty if not set")
 }
+
+func constructSampleValueBundle() types.ValueBundle {
+	bundle := types.ValueBundle{
+		TopicId: 1,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: 100,
+			},
+		},
+		Reputer: "reputer1",
+		InfererValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "inferer1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		ForecasterValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "forecaster1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		ExtraData:     []byte("extra data"),
+		CombinedValue: alloraMath.NewDecFromInt64(100),
+		NaiveValue:    alloraMath.NewDecFromInt64(100),
+		OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+			{
+				Worker: "inferer1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+			{
+				Worker: "forecaster1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		OneInForecasterValues: []*types.WorkerAttributedValue{
+			{
+				Worker: "forecaster1",
+				Value:  alloraMath.NewDecFromInt64(100),
+			},
+		},
+		OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+			{
+				Forecaster: "forecaster1",
+				OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+					{
+						Worker: "inferer1",
+						Value:  alloraMath.NewDecFromInt64(100),
+					},
+				},
+			},
+		},
+	}
+	return bundle
+}
+
 func (s *KeeperTestSuite) TestGetInfererScoreEmasFromValueBundle() {
-	// todo
-	s.T().Fail()
+	ctx := s.ctx
+	// construct a sample value bundle
+	bundle := constructSampleValueBundle()
+
+	// put in sample scores tied to the inferers in that value bundle
+	score := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "inferer1",
+		Score:       alloraMath.NewDecFromInt64(100),
+	}
+	s.emissionsKeeper.SetInfererScoreEma(ctx, bundle.TopicId, "inferer1", score)
+
+	// call GetInfererScoreEmasFromValueBundle
+	scores, err := s.emissionsKeeper.GetInfererScoreEmasFromValueBundle(ctx, bundle)
+	s.Require().NoError(err, "GetInfererScoreEmasFromValueBundle should not return an error")
+	s.Require().Len(scores, 1, "Should retrieve correct number of scores")
+	s.Require().Equal(scores[0].Address, "inferer1", "Should retrieve correct inferer")
+
+	// check that the returned scores are the same as the sample scores
+	s.Require().Equal(scores[0].Score, alloraMath.NewDecFromInt64(100), "Should retrieve correct score")
 }
 
 func (s *KeeperTestSuite) TestGetForecasterScoreEmasFromValueBundle() {
-	// todo
-	s.T().Fail()
+	ctx := s.ctx
+	// construct a sample value bundle
+	bundle := constructSampleValueBundle()
+
+	// put in sample scores tied to the forecasters in that value bundle
+	score := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "forecaster1",
+		Score:       alloraMath.NewDecFromInt64(100),
+	}
+	s.emissionsKeeper.SetForecasterScoreEma(ctx, bundle.TopicId, "forecaster1", score)
+
+	// call GetForecasterScoreEmasFromValueBundle
+	scores, err := s.emissionsKeeper.GetForecasterScoreEmasFromValueBundle(ctx, bundle)
+	s.Require().NoError(err, "GetForecasterScoreEmasFromValueBundle should not return an error")
+	s.Require().Len(scores, 1, "Should retrieve correct number of scores")
+	s.Require().Equal(scores[0].Address, "forecaster1", "Should retrieve correct forecaster")
+
+	// check that the returned scores are the same as the sample scores
+	s.Require().Equal(scores[0].Score, alloraMath.NewDecFromInt64(100), "Should retrieve correct score")
 }
 
-func (s *KeeperTestSuite) TestGetReputerScoreEmasFromValueBundle() {
-	// todo
-	s.T().Fail()
+func (s *KeeperTestSuite) TestGetReputerScoreEmasFromValueBundles() {
+	ctx := s.ctx
+	// construct a sample value bundle
+	bundle := constructSampleValueBundle()
+	bundle2 := constructSampleValueBundle()
+	bundle2.Reputer = "reputer2"
+	bundle3 := constructSampleValueBundle()
+	bundle3.Reputer = "reputer3"
+
+	bundles := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			{
+				ValueBundle: &bundle,
+				Signature:   []byte("signature1"),
+				Pubkey:      "pubkey1",
+			},
+			{
+				ValueBundle: &bundle2,
+				Signature:   []byte("signature2"),
+				Pubkey:      "pubkey2",
+			},
+			{
+				ValueBundle: &bundle3,
+				Signature:   []byte("signature3"),
+				Pubkey:      "pubkey3",
+			},
+		},
+	}
+
+	// put in sample scores tied to the reputers in that value bundle
+	score := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "reputer1",
+		Score:       alloraMath.NewDecFromInt64(100),
+	}
+	s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer1", score)
+	score2 := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "reputer2",
+		Score:       alloraMath.NewDecFromInt64(200),
+	}
+	s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer2", score2)
+	score3 := types.Score{
+		TopicId:     1,
+		BlockHeight: 100,
+		Address:     "reputer3",
+		Score:       alloraMath.NewDecFromInt64(300),
+	}
+	s.emissionsKeeper.SetReputerScoreEma(ctx, bundle.TopicId, "reputer3", score3)
+
+	// call GetReputerScoreEmasFromValueBundle
+	scores, err := s.emissionsKeeper.GetReputerScoreEmasFromValueBundles(ctx, bundle.TopicId, bundles.ReputerValueBundles)
+	s.Require().NoError(err, "GetReputerScoreEmasFromValueBundle should not return an error")
+	s.Require().Len(scores, 3, "Should retrieve correct number of scores")
+	s.Require().Equal(scores[0].Address, "reputer1", "Should retrieve correct reputer")
+	s.Require().True(scores[0].Score.Equal(alloraMath.NewDecFromInt64(100)), "Should retrieve correct score")
+	s.Require().Equal(scores[1].Address, "reputer2", "Should retrieve correct reputer")
+	s.Require().True(scores[1].Score.Equal(alloraMath.NewDecFromInt64(200)), "Should retrieve correct score")
+	s.Require().Equal(scores[2].Address, "reputer3", "Should retrieve correct reputer")
+	s.Require().True(scores[2].Score.Equal(alloraMath.NewDecFromInt64(300)), "Should retrieve correct score")
 }
 
 func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
@@ -3525,7 +3680,7 @@ func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAnd
 	s.Require().False(found)
 }
 
-func (s *KeeperTestSuite) TestUpsertForecast() {
+func (s *KeeperTestSuite) TestUpsertInference() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := uint64(1)
@@ -3554,41 +3709,56 @@ func (s *KeeperTestSuite) TestUpsertForecast() {
 	err = k.SetInfererScoreEma(ctx, topicId, worker5, score5)
 	s.Require().NoError(err)
 
+	worker1Value := alloraMath.MustNewDecFromString("0.11")
+	defaultValue := alloraMath.MustNewDecFromString("0.52")
+
 	allInferences := types.Inferences{
 		Inferences: []*types.Inference{
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.52")},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.71")},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.71")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Value: defaultValue},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: defaultValue},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: defaultValue},
 		},
 	}
 	err = k.SetInferences(ctx, topicId, nonce, allInferences)
 	s.Require().NoError(err)
 
+	// test adding a new inference adds it to the list
 	newInference := types.Inference{
-		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.52"),
+		TopicId:     topicId,
+		BlockHeight: blockHeightInferences,
+		Inferer:     worker4,
+		Value:       defaultValue,
 	}
 	err = k.UpsertInference(ctx, topicId, nonce, &newInference)
 	s.Require().NoError(err)
 	newAllInferences, err := k.GetInferencesAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
 	s.Require().Equal(len(newAllInferences.Inferences), len(allInferences.Inferences)+1)
-	params := types.Params{
-		MaxTopInferersToReward: 4,
-	}
-	err = k.SetParams(ctx, params)
-	s.Require().NoError(err)
+
+	// test adding a new inference from the same actor does not add a duplicate
+	// but rather updates the existing inference
 	newInference2 := types.Inference{
-		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.52"),
+		TopicId:     topicId,
+		BlockHeight: blockHeightInferences,
+		Inferer:     worker1,
+		Value:       worker1Value,
 	}
 	err = k.UpsertInference(ctx, topicId, nonce, &newInference2)
 	s.Require().NoError(err)
 	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(len(newAllInferences.Inferences)), params.MaxTopInferersToReward)
-	s.Require().Equal(newAllInferences.Inferences[1].Inferer, worker3)
+	s.Require().Equal(len(newAllInferences.Inferences), len(allInferences.Inferences)+1)
+	for _, inference := range newAllInferences.Inferences {
+		if inference.Inferer == worker1 {
+			s.Require().True(inference.Value.Equal(worker1Value))
+		} else {
+			s.Require().True(inference.Value.Equal(defaultValue))
+		}
+	}
+
 }
 
-func (s *KeeperTestSuite) TestUpsertInference() {
+func (s *KeeperTestSuite) TestUpsertForecast() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := uint64(1)
@@ -3618,6 +3788,8 @@ func (s *KeeperTestSuite) TestUpsertInference() {
 	err = k.SetForecasterScoreEma(ctx, topicId, worker5, score5)
 	s.Require().NoError(err)
 
+	defaultValue := alloraMath.MustNewDecFromString("0.52")
+
 	allForecasts := types.Forecasts{
 		Forecasts: []*types.Forecast{
 			{
@@ -3627,11 +3799,11 @@ func (s *KeeperTestSuite) TestUpsertInference() {
 				ForecastElements: []*types.ForecastElement{
 					{
 						Inferer: worker1,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
+						Value:   defaultValue,
 					},
 					{
 						Inferer: worker2,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
+						Value:   defaultValue,
 					},
 				},
 			},
@@ -3642,11 +3814,11 @@ func (s *KeeperTestSuite) TestUpsertInference() {
 				ForecastElements: []*types.ForecastElement{
 					{
 						Inferer: worker1,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
+						Value:   defaultValue,
 					},
 					{
 						Inferer: worker2,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
+						Value:   defaultValue,
 					},
 				},
 			},
@@ -3657,11 +3829,11 @@ func (s *KeeperTestSuite) TestUpsertInference() {
 				ForecastElements: []*types.ForecastElement{
 					{
 						Inferer: worker1,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
+						Value:   defaultValue,
 					},
 					{
 						Inferer: worker2,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
+						Value:   defaultValue,
 					},
 				},
 			},
@@ -3677,48 +3849,53 @@ func (s *KeeperTestSuite) TestUpsertInference() {
 		ForecastElements: []*types.ForecastElement{
 			{
 				Inferer: worker1,
-				Value:   alloraMath.MustNewDecFromString("0.52"),
+				Value:   defaultValue,
 			},
 			{
 				Inferer: worker2,
-				Value:   alloraMath.MustNewDecFromString("0.52"),
+				Value:   defaultValue,
 			},
 		},
 	}
+	// upserting a new forecast should add it to the list
 	err = k.UpsertForecast(ctx, topicId, nonce, &newForecast)
 	s.Require().NoError(err)
 	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
 	s.Require().Equal(len(newAllForecasts.Forecasts), len(allForecasts.Forecasts)+1)
-	params := types.Params{
-		MaxTopInferersToReward: 4,
-	}
-	err = k.SetParams(ctx, params)
-	s.Require().NoError(err)
-	newInference2 := types.Forecast{
+
+	// upserting from an existing forecaster should update their existing forecast
+	newValue := alloraMath.MustNewDecFromString("0.11")
+	newForecast2 := types.Forecast{
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
-		Forecaster:  worker5,
+		Forecaster:  worker1,
 		ForecastElements: []*types.ForecastElement{
 			{
 				Inferer: worker1,
-				Value:   alloraMath.MustNewDecFromString("0.52"),
+				Value:   newValue,
 			},
 			{
 				Inferer: worker2,
-				Value:   alloraMath.MustNewDecFromString("0.52"),
+				Value:   newValue,
 			},
 		},
 	}
-	err = k.UpsertForecast(ctx, topicId, nonce, &newInference2)
+	err = k.UpsertForecast(ctx, topicId, nonce, &newForecast2)
 	s.Require().NoError(err)
 	newAllForecasts, err = k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(len(newAllForecasts.Forecasts)), params.MaxTopInferersToReward)
-	s.Require().Equal(newAllForecasts.Forecasts[1].Forecaster, worker3)
+	s.Require().Equal(len(newAllForecasts.Forecasts), len(allForecasts.Forecasts)+1)
+	for _, forecast := range newAllForecasts.Forecasts {
+		if forecast.Forecaster == worker1 {
+			s.Require().True(forecast.ForecastElements[0].Value.Equal(newValue))
+		} else {
+			s.Require().True(forecast.ForecastElements[0].Value.Equal(defaultValue))
+		}
+	}
 }
 
-func (s *KeeperTestSuite) TestAppendReputerLoss() {
+func (s *KeeperTestSuite) TestUpsertReputerLoss() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := uint64(1)
@@ -3750,16 +3927,19 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	err = k.SetReputerScoreEma(ctx, topicId, reputer5, score5)
 	s.Require().NoError(err)
 
+	firstBundle := types.ReputerValueBundle{
+		ValueBundle: &types.ValueBundle{
+			Reputer:             reputer1,
+			CombinedValue:       alloraMath.MustNewDecFromString(".0000117005278862668"),
+			ReputerRequestNonce: reputerRequestNonce,
+			TopicId:             topicId,
+		},
+		Signature: []byte("test"),
+		Pubkey:    "test",
+	}
 	allReputerLosses := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:             reputer1,
-					CombinedValue:       alloraMath.MustNewDecFromString(".0000117005278862668"),
-					ReputerRequestNonce: reputerRequestNonce,
-					TopicId:             topicId,
-				},
-			},
+			&firstBundle,
 			{
 				ValueBundle: &types.ValueBundle{
 					Reputer:             reputer2,
@@ -3778,9 +3958,10 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			},
 		},
 	}
-	err = k.ReplaceReputerValueBundles(ctx, topicId, nonce, allReputerLosses, 0, types.ReputerValueBundle{})
+	err = k.ReplaceReputerValueBundles(ctx, topicId, nonce, allReputerLosses, 0, firstBundle)
 	s.Require().NoError(err)
 
+	// upserting a new bundle should add it to the list
 	newReputerLoss := types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
 			Reputer:             reputer4,
@@ -3794,16 +3975,11 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	newAllReputerLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
 	s.Require().Equal(len(newAllReputerLosses.ReputerValueBundles), len(allReputerLosses.ReputerValueBundles)+1)
-	params := types.Params{
-		MaxTopReputersToReward: 4,
-	}
-	err = k.SetParams(ctx, params)
-	s.Require().NoError(err)
-
+	// upserting a bundle from an existing member of the set should update the existing bundle
 	newReputerLoss2 := types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
-			Reputer:             reputer5,
-			CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
+			Reputer:             reputer1,
+			CombinedValue:       alloraMath.MustNewDecFromString(".0001337"),
 			ReputerRequestNonce: reputerRequestNonce,
 			TopicId:             topicId,
 		},
@@ -3812,6 +3988,10 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().NoError(err)
 	newAllReputerLosses, err = k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(len(newAllReputerLosses.ReputerValueBundles)), params.MaxTopReputersToReward)
-	s.Require().Equal(newAllReputerLosses.ReputerValueBundles[1].ValueBundle.Reputer, reputer3)
+	s.Require().Equal(len(newAllReputerLosses.ReputerValueBundles), len(allReputerLosses.ReputerValueBundles)+1)
+	for _, bundle := range newAllReputerLosses.ReputerValueBundles {
+		if bundle.ValueBundle.Reputer == reputer1 {
+			s.Require().True(bundle.ValueBundle.CombinedValue.Equal(alloraMath.MustNewDecFromString(".0001337")))
+		}
+	}
 }
