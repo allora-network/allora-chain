@@ -17,7 +17,7 @@ func (inference *Inference) Validate() error {
 	if inference.BlockHeight < 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "inference block height cannot be negative")
 	}
-	if err := ValidateDec(inference.Value); err != nil {
+	if err := validateDec(inference.Value); err != nil {
 		return err
 	}
 	return nil
