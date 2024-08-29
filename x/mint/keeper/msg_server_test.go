@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *IntegrationTestSuite) TestUpdateParams() {
+func (s *MintKeeperTestSuite) TestUpdateParams() {
 	params := types.DefaultParams()
 	params.MintDenom = "testcoin"
 
@@ -24,7 +24,7 @@ func (s *IntegrationTestSuite) TestUpdateParams() {
 	s.Require().Equal(&types.MsgUpdateParamsResponse{}, resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidSigner() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidSigner() {
 	// Setup a non-whitelisted sender address
 	nonAdminPrivateKey := secp256k1.GenPrivKey()
 	nonAdminAddr := sdk.AccAddress(nonAdminPrivateKey.PubKey().Address()).String()
@@ -44,7 +44,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidSigner() {
 	s.Require().Nil(resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsNonAddressSigner() {
+func (s *MintKeeperTestSuite) TestUpdateParamsNonAddressSigner() {
 	defaultParams := types.DefaultParams()
 
 	notAnAddress := "not an address lol"
@@ -58,7 +58,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsNonAddressSigner() {
 	s.Require().Nil(resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsMintDenom() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMintDenom() {
 	params := types.DefaultParams()
 	params.MintDenom = ""
 	request := &types.MsgUpdateParams{
@@ -71,7 +71,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsMintDenom() {
 	s.Require().Nil(resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsMaxSupply() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMaxSupply() {
 	params := types.DefaultParams()
 	params.MaxSupply = sdkmath.NewIntFromUint64(0)
 	request := &types.MsgUpdateParams{
@@ -84,7 +84,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsMaxSupply() {
 	s.Require().Nil(resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsFEmission() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsFEmission() {
 	params := types.DefaultParams()
 	params.FEmission = sdkmath.LegacyNewDec(205)
 	request := &types.MsgUpdateParams{
@@ -97,7 +97,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsFEmission() {
 	s.Require().Nil(resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsOneMonthSmoothingDegree() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsOneMonthSmoothingDegree() {
 	params := types.DefaultParams()
 	params.OneMonthSmoothingDegree = sdkmath.LegacyNewDec(15)
 	request := &types.MsgUpdateParams{
@@ -110,7 +110,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsOneMonthSmoothingDeg
 	s.Require().Nil(resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsEcosystemTreasuryPercentOfTotalSupply() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsEcosystemTreasuryPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.EcosystemTreasuryPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.MsgUpdateParams{
@@ -123,7 +123,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsEcosystemTreasuryPer
 	s.Require().Nil(resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsFoundationTreasuryPercentOfTotalSupply() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsFoundationTreasuryPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.FoundationTreasuryPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.MsgUpdateParams{
@@ -136,7 +136,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsFoundationTreasuryPe
 	s.Require().Nil(resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsParticipantsPercentOfTotalSupply() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsParticipantsPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.ParticipantsPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.MsgUpdateParams{
@@ -149,7 +149,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsParticipantsPercentO
 	s.Require().Nil(resp)
 }
 
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsInvestorsPercentOfTotalSupply() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsInvestorsPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.ParticipantsPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.MsgUpdateParams{
@@ -161,7 +161,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsInvestorsPercentOfTo
 	s.Require().Error(err)
 	s.Require().Nil(resp)
 }
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsTeamPercentOfTotalSupply() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsTeamPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.TeamPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.MsgUpdateParams{
@@ -173,7 +173,7 @@ func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsTeamPercentOfTotalSu
 	s.Require().Error(err)
 	s.Require().Nil(resp)
 }
-func (s *IntegrationTestSuite) TestUpdateParamsInvalidParamsMaximumMonthlyPercentageYield() {
+func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMaximumMonthlyPercentageYield() {
 	params := types.DefaultParams()
 	params.MaximumMonthlyPercentageYield = sdkmath.LegacyNewDec(101)
 	request := &types.MsgUpdateParams{

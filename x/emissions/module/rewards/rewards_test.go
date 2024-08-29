@@ -171,7 +171,7 @@ func (s *RewardsTestSuite) FundAccount(amount int64, accAddress sdk.AccAddress) 
 	s.Require().NoError(err)
 }
 
-func TestModuleTestSuite(t *testing.T) {
+func TestRewardsTestSuite(t *testing.T) {
 	suite.Run(t, new(RewardsTestSuite))
 }
 
