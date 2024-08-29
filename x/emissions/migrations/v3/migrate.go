@@ -101,7 +101,6 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		DataSendingFee:                      oldParams.DataSendingFee,
 		// NEW PARAMS
 		MaxElementsPerForecast: defaultParams.MaxElementsPerForecast,
-		MeritSortitionAlpha:    defaultParams.MeritSortitionAlpha,
 	}
 
 	store.Delete(types.ParamsKey)
@@ -134,8 +133,10 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 			AllowNegative:  oldMsg.AllowNegative,
 			Epsilon:        alloraMath.MustNewDecFromString("0.01"),
 			// InitialRegret is being reset to account for NaNs that were previously stored due to insufficient validation
-			InitialRegret:            alloraMath.MustNewDecFromString("0"),
-			WorkerSubmissionWindow:   oldMsg.WorkerSubmissionWindow,
+			InitialRegret:          alloraMath.MustNewDecFromString("0"),
+			WorkerSubmissionWindow: oldMsg.WorkerSubmissionWindow,
+			// These are new fields
+			MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
 			ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
 			ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
 			ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),

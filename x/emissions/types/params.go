@@ -50,7 +50,6 @@ func DefaultParams() Params {
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                   // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
 		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
 		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
-		MeritSortitionAlpha:                 alloraMath.MustNewDecFromString("0.1"),       // alpha for score EMA merit sortition
 	}
 }
 
@@ -174,9 +173,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateMaxElementsPerForecast(p.MaxElementsPerForecast); err != nil {
-		return err
-	}
-	if err := validateMeritSortitionAlpha(p.MeritSortitionAlpha); err != nil {
 		return err
 	}
 	return nil
@@ -513,15 +509,6 @@ func validateHalfMaxProcessStakeRemovalsEndBlock(i uint64) error {
 func validateDataSendingFee(i cosmosMath.Int) error {
 	if i.IsNegative() {
 		return ErrValidationMustBeGreaterthanZero
-	}
-	return nil
-}
-
-// alpha for score EMA merit sortition
-// should be 0 < x < 1
-func validateMeritSortitionAlpha(i alloraMath.Dec) error {
-	if !i.IsBetweenZeroAndOneInclusive() {
-		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
 }

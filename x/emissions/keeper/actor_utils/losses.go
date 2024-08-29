@@ -128,7 +128,7 @@ func CloseReputerNonce(
 		*k,
 		topic,
 		nonce,
-		moduleParams.MeritSortitionAlpha,
+		topic.MeritSortitionAlpha,
 		moduleParams.MaxTopInferersToReward,
 		networkLossBundle,
 	)
@@ -143,7 +143,7 @@ func CloseReputerNonce(
 		*k,
 		topic,
 		nonce,
-		moduleParams.MeritSortitionAlpha,
+		topic.MeritSortitionAlpha,
 		moduleParams.MaxTopForecastersToReward,
 		networkLossBundle,
 	)
@@ -463,7 +463,7 @@ func filterActiveReputersUpdateScoreEmas(
 		}
 		// if we have no historical EMA to work off of, then just assign the new score as the EMA
 		newEmaScore, err := alloraMath.CalcEma(
-			moduleParams.MeritSortitionAlpha,
+			topic.MeritSortitionAlpha,
 			score.Score,
 			previousEma.Score,
 			previousEma.BlockHeight == 0 && previousEma.Score.IsZero(), // first time or not

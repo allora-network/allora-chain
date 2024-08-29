@@ -130,7 +130,6 @@ func (s *MigrationTestSuite) TestMigrate() {
 
 	// TO BE ADDED VIA DEFAULT PARAMS
 	// MaxElementsPerForecast: defaultParams.MaxElementsPerForecast
-	// MeritSortitionAlpha: defaultParams.MeritSortitionAlpha
 	paramsExpected := defaultParams
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -175,7 +174,6 @@ func (s *MigrationTestSuite) TestMigrate() {
 	s.Require().True(paramsExpected.EpsilonSafeDiv.Equal(params.EpsilonSafeDiv), "%s!=%s", paramsExpected.EpsilonSafeDiv, params.EpsilonSafeDiv)
 	s.Require().True(paramsExpected.DataSendingFee.Equal(params.DataSendingFee), "%s!=%s", paramsExpected.DataSendingFee, params.DataSendingFee)
 	s.Require().Equal(paramsExpected.MaxElementsPerForecast, params.MaxElementsPerForecast)
-	s.Require().True(paramsExpected.MeritSortitionAlpha.Equal(params.MeritSortitionAlpha), "%s!=%s", paramsExpected.MeritSortitionAlpha, params.MeritSortitionAlpha)
 	s.Require().Equal(paramsExpected, params)
 }
 
@@ -230,6 +228,7 @@ func (s *MigrationTestSuite) TestMigrateTopics() {
 	s.Require().Equal(oldTopic.AllowNegative, newMsg.AllowNegative)
 	s.Require().Equal(oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
 	// New props are imputed with defaults
+	s.Require().Equal(newMsg.MeritSortitionAlpha.String(), "0.1")
 	s.Require().Equal(newMsg.ActiveInfererQuantile.String(), "0.25")
 	s.Require().Equal(newMsg.ActiveForecasterQuantile.String(), "0.25")
 	s.Require().Equal(newMsg.ActiveReputerQuantile.String(), "0.25")

@@ -44,6 +44,9 @@ func validateNewTopic(msg *emissionstypes.MsgCreateNewTopic) error {
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
+	if !msg.MeritSortitionAlpha.IsBetweenZeroAndOneInclusive() {
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "max active inferer quantile must be between 0 and 1")
+	}
 	if !msg.ActiveInfererQuantile.IsBetweenZeroAndOneInclusive() {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "max active inferer quantile must be between 0 and 1")
 	}
