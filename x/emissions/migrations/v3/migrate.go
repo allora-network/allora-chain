@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
@@ -203,8 +204,10 @@ func MigrateActiveTopics(store storetypes.KVStore, ctx sdk.Context, emissionsKee
 			cuLowestWeight = getLowestTopicIdWeightPair(topicWeightData, blockToActiveTopics[blockHeight])
 		}
 		blockToActiveTopics[blockHeight] = activeTopicIds
-		blockHeightBytes := make([]byte, 8)
-		binary.BigEndian.PutUint64(blockHeightBytes, uint64(blockHeight))
+		blockHeightBytes, err := collections.Int64Value.Encode(blockHeight)
+		if err != nil {
+			return err
+		}
 		churningBlockStore.Set(idArray, blockHeightBytes)
 		activeTopicsBytes, err := activeTopicIds.Marshal()
 		if err != nil {
