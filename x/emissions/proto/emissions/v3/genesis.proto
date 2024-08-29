@@ -18,6 +18,9 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 // GenesisState is the state that must be provided at genesis.
 message GenesisState {
+  reserved 13,14,15;
+  reserved "latestInfererScoresByWorker", "latestForecasterScoresByWorker", "latestReputerScoresByReputer";
+
   // params defines all the parameters of the module.
   Params params = 1 [(gogoproto.nullable) = false];
 
@@ -47,11 +50,11 @@ message GenesisState {
   // map of (topic, block_height, reputer) -> score
   repeated TopicIdBlockHeightScores reputerScoresByBlock = 12;
   // map of (topic, block_height, worker) -> score
-  repeated TopicIdActorIdScore latestInfererScoresByWorker = 13;
+  repeated TopicIdActorIdScore infererScoreEmas = 60;
   // map of (topic, block_height, worker) -> score
-  repeated TopicIdActorIdScore latestForecasterScoresByWorker = 14;
+  repeated TopicIdActorIdScore forecasterScoreEmas = 61;
   // map of (topic, block_height, reputer) -> score
-  repeated TopicIdActorIdScore latestReputerScoresByReputer = 15;
+  repeated TopicIdActorIdScore reputerScoreEmas = 62;
   // map of (topic, reputer) -> listening coefficient
   repeated TopicIdActorIdListeningCoefficient reputerListeningCoefficient = 16;
   // map of (topic, reputer) -> previous reward (used for EMA)
