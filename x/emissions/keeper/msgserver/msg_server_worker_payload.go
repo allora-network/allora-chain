@@ -83,8 +83,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		}
 		isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
 		if err != nil {
-			return nil, errorsmod.Wrapf(err,
-				"error checking if inferer address is registered in this topic")
+			return nil, err
 		}
 		if !isInfererRegistered {
 			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered,
@@ -140,6 +139,16 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		acceptedForecastElements := make([]*types.ForecastElement, 0)
 		seenInferers := make(map[string]bool)
 		for _, el := range forecast.ForecastElements {
+			// Check if the forecasted inferer is registered in the topic
+			isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, el.Inferer)
+			if err != nil {
+				return nil, err
+			}
+			if !isInfererRegistered {
+				return nil, errorsmod.Wrapf(err,
+					"Error forecasted inferer address is not registered in this topic")
+			}
+
 			notAlreadySeen := !seenInferers[el.Inferer]
 			_, isTopInferer := topNInferer[el.Inferer]
 			if notAlreadySeen && isTopInferer {

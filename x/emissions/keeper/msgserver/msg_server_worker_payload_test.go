@@ -47,6 +47,10 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	s.Require().NoError(err)
 	err = keeper.InsertWorker(ctx, topicId, Inferer2Addr, workerInfo)
 	s.Require().NoError(err)
+	err = keeper.InsertWorker(ctx, topicId, Inferer3Addr, workerInfo)
+	s.Require().NoError(err)
+	err = keeper.InsertWorker(ctx, topicId, Inferer4Addr, workerInfo)
+	s.Require().NoError(err)
 
 	topic, _ := s.emissionsKeeper.GetTopic(ctx, topicId)
 	err = s.emissionsKeeper.SetTopic(ctx, topicId, topic)
