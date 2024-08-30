@@ -34,7 +34,7 @@ import (
 	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
 )
 
-type MigrationTestSuite struct {
+type EmissionsV3MigrationTestSuite struct {
 	suite.Suite
 	ctrl *gomock.Controller
 
@@ -42,11 +42,11 @@ type MigrationTestSuite struct {
 	emissionsKeeper *keeper.Keeper
 }
 
-func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(MigrationTestSuite))
+func TestEmissionsV3MigrationTestSuite(t *testing.T) {
+	suite.Run(t, new(EmissionsV3MigrationTestSuite))
 }
 
-func (s *MigrationTestSuite) SetupTest() {
+func (s *EmissionsV3MigrationTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
@@ -68,7 +68,7 @@ func (s *MigrationTestSuite) SetupTest() {
 	s.emissionsKeeper = &emissionsKeeper
 }
 
-func (s *MigrationTestSuite) TestMigrate() {
+func (s *EmissionsV3MigrationTestSuite) TestMigrate() {
 	storageService := s.emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
@@ -175,7 +175,7 @@ func (s *MigrationTestSuite) TestMigrate() {
 	s.Require().Equal(paramsExpected, params)
 }
 
-func (s *MigrationTestSuite) TestActiveTopicsMigration() {
+func (s *EmissionsV3MigrationTestSuite) TestActiveTopicsMigration() {
 	storageService := s.emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
 
@@ -200,7 +200,7 @@ func (s *MigrationTestSuite) TestActiveTopicsMigration() {
 	}
 }
 
-func (s *MigrationTestSuite) TestLimitedActiveTopicsMigration() {
+func (s *EmissionsV3MigrationTestSuite) TestLimitedActiveTopicsMigration() {
 	storageService := s.emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
 
@@ -229,7 +229,7 @@ func (s *MigrationTestSuite) TestLimitedActiveTopicsMigration() {
 	}
 }
 
-func (s *MigrationTestSuite) setUpOldTopicsData(store storetypes.KVStore, topicCnt int) {
+func (s *EmissionsV3MigrationTestSuite) setUpOldTopicsData(store storetypes.KVStore, topicCnt int) {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
 	topicFeeRevenueStore := prefix.NewStore(store, types.TopicFeeRevenueKey)
 	topicStakeStore := prefix.NewStore(store, types.TopicStakeKey)

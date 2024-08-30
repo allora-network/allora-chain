@@ -6,7 +6,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *KeeperTestSuite) TestGetNextTopicId() {
+func (s *QueryServerTestSuite) TestGetNextTopicId() {
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -34,7 +34,7 @@ func (s *KeeperTestSuite) TestGetNextTopicId() {
 	s.Require().Equal(expectedNextTopicId, response.NextTopicId, "The next topic ID should match the expected value after topic creation")
 }
 
-func (s *KeeperTestSuite) TestGetTopic() {
+func (s *QueryServerTestSuite) TestGetTopic() {
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -58,7 +58,7 @@ func (s *KeeperTestSuite) TestGetTopic() {
 	s.Require().Equal(metadata, response.Topic.Metadata, "The metadata of the retrieved topic should match")
 }
 
-func (s *KeeperTestSuite) TestGetActiveTopics() {
+func (s *QueryServerTestSuite) TestGetActiveTopics() {
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -97,7 +97,7 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	}
 }
 
-func (s *KeeperTestSuite) TestGetLatestCommit() {
+func (s *QueryServerTestSuite) TestGetLatestCommit() {
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -148,7 +148,7 @@ func (s *KeeperTestSuite) TestGetLatestCommit() {
 	s.Require().Equal(&nonce, response2.LastCommit.Nonce, "The metadata of the retrieved nonce should match")
 }
 
-func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
+func (s *QueryServerTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -184,7 +184,7 @@ func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	s.Require().Equal(int64(0), nonce, "Nonce should be 0 after deletion")
 }
 
-func (s *KeeperTestSuite) TestGetPreviousTopicWeight() {
+func (s *QueryServerTestSuite) TestGetPreviousTopicWeight() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -203,7 +203,7 @@ func (s *KeeperTestSuite) TestGetPreviousTopicWeight() {
 	s.Require().Equal(weightToSet, retrievedWeight, "Retrieved weight should match the set weight")
 }
 
-func (s *KeeperTestSuite) TestTopicExists() {
+func (s *QueryServerTestSuite) TestTopicExists() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
@@ -232,7 +232,7 @@ func (s *KeeperTestSuite) TestTopicExists() {
 	s.Require().True(exists, "Topic should exist for a newly created topic ID")
 }
 
-func (s *KeeperTestSuite) TestIsTopicActive() {
+func (s *QueryServerTestSuite) TestIsTopicActive() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(3)
@@ -276,7 +276,7 @@ func (s *KeeperTestSuite) TestIsTopicActive() {
 	s.Require().True(topicActive, "Topic should be active again")
 }
 
-func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
+func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -306,7 +306,7 @@ func (s *KeeperTestSuite) TestGetTopicFeeRevenue() {
 	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }
 
-func (s *KeeperTestSuite) TestGetRewardableTopics() {
+func (s *QueryServerTestSuite) TestGetRewardableTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(789)

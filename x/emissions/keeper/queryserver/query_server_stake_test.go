@@ -9,7 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestGetTotalStake() {
+func (s *QueryServerTestSuite) TestGetTotalStake() {
 	ctx := s.ctx
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
@@ -25,7 +25,7 @@ func (s *KeeperTestSuite) TestGetTotalStake() {
 	s.Require().Equal(expectedTotalStake, response.Amount, "The retrieved total stake should match the expected value")
 }
 
-func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
+func (s *QueryServerTestSuite) TestGetReputerStakeInTopic() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -50,7 +50,7 @@ func (s *KeeperTestSuite) TestGetReputerStakeInTopic() {
 	s.Require().Equal(initialStake, response.Amount, "The retrieved stake should match the initial stake set for the reputer in the topic")
 }
 
-func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
+func (s *QueryServerTestSuite) TestGetMultiReputerStakeInTopic() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -83,7 +83,7 @@ func (s *KeeperTestSuite) TestGetMultiReputerStakeInTopic() {
 	s.Require().Equal(initialStake2, response.Amounts[1].Amount, "The retrieved stake should match the initial stake set for the second reputer in the topic")
 }
 
-func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
+func (s *QueryServerTestSuite) TestGetDelegateStakeInTopicInReputer() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -111,7 +111,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakeInTopicInReputer() {
 	s.Require().Equal(initialStakeAmount, response.Amount, "The retrieved delegate stake should match the initial stake set for the reputer in the topic")
 }
 
-func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
+func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -141,7 +141,7 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 	s.Require().Equal(stakeAmount, response.Amount, "The retrieved stake amount should match the delegated stake")
 }
 
-func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
+func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopic() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -172,7 +172,7 @@ func (s *KeeperTestSuite) TestGetStakeFromDelegatorInTopic() {
 	s.Require().Equal(expectedTotalStake, response.Amount, "The retrieved stake amount should match the total delegated stake")
 }
 
-func (s *KeeperTestSuite) TestGetTopicStake() {
+func (s *QueryServerTestSuite) TestGetTopicStake() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -195,7 +195,7 @@ func (s *KeeperTestSuite) TestGetTopicStake() {
 	s.Require().Equal(stakeAmount, response.Amount, "The retrieved topic stake should match the stake amount added")
 }
 
-func (s *KeeperTestSuite) TestGetStakeRemovalInfo() {
+func (s *QueryServerTestSuite) TestGetStakeRemovalInfo() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -222,7 +222,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalInfo() {
 	s.Require().Equal(removal, *response.Removal, "The retrieved stake removal info should match the expected value")
 }
 
-func (s *KeeperTestSuite) TestGetDelegateStakeRemovalInfo() {
+func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalInfo() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -255,7 +255,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalInfo() {
 	require.Equal(&expectedRemoval, response.Removal, "The retrieved stake removal info should match the expected value")
 }
 
-func (s *KeeperTestSuite) TestGetStakeRemovalsForBlock() {
+func (s *QueryServerTestSuite) TestGetStakeRemovalsForBlock() {
 	ctx := s.ctx
 	qs := s.queryServer
 	keeper := s.emissionsKeeper
@@ -294,7 +294,7 @@ func (s *KeeperTestSuite) TestGetStakeRemovalsForBlock() {
 	require.Equal(expecteds[1], *response.Removals[1], "The retrieved stake removals should match the expected stake removals")
 }
 
-func (s *KeeperTestSuite) TestGetDelegateStakeRemovalsForBlock() {
+func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 	ctx := s.ctx
 	qs := s.queryServer
 	keeper := s.emissionsKeeper
@@ -335,7 +335,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 	require.Equal(expecteds[1], *response.Removals[1], "The retrieved stake removals should match the expected stake removals")
 }
 
-func (s *KeeperTestSuite) TestGetStakeReputerAuthority() {
+func (s *QueryServerTestSuite) TestGetStakeReputerAuthority() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -357,7 +357,7 @@ func (s *KeeperTestSuite) TestGetStakeReputerAuthority() {
 	s.Require().Equal(stakeAmount, stakeAuthority, "Delegator stake should be equal to stake amount after addition")
 }
 
-func (s *KeeperTestSuite) TestGetDelegateStakePlacement() {
+func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -417,7 +417,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakePlacement() {
 	require.Equal(value0, value1)
 }
 
-func (s *KeeperTestSuite) TestGetDelegateStakeUponReputer() {
+func (s *QueryServerTestSuite) TestGetDelegateStakeUponReputer() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -469,7 +469,7 @@ func (s *KeeperTestSuite) TestGetDelegateStakeUponReputer() {
 	s.Require().Equal(expected, stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
 }
 
-func (s *KeeperTestSuite) TestGetStakeRemovalForReputerAndTopicId() {
+func (s *QueryServerTestSuite) TestGetStakeRemovalForReputerAndTopicId() {
 	k := s.emissionsKeeper
 	ctx := s.ctx
 	reputer := "reputer"
