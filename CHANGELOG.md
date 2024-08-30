@@ -49,7 +49,7 @@ Implements merit based sortition for top N inferers, forecasters, and reputers. 
 
 ### Added
 
-* To be filled in before release of v0.4.0
+* [#556](https://github.com/allora-network/allora-chain/pull/556) Scores now take an exponential moving average of the score rather than using the instantaneous score value from this epoch.
 
 ### Removed
 
