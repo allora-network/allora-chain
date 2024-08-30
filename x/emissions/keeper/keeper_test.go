@@ -3764,3 +3764,47 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().Equal(uint64(len(newAllReputerLosses.ReputerValueBundles)), params.MaxTopReputersToReward)
 	s.Require().Equal(newAllReputerLosses.ReputerValueBundles[1].ValueBundle.Reputer, reputer3)
 }
+
+func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
+	// Initialize the test environment
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	require := s.Require()
+
+	// Define test data
+	topicId := uint64(1)
+	epochLength := int64(5)
+	block := int64(100)
+	// Calculated expected drip with these values: 26
+	expectedDrip := cosmosMath.NewInt(26)
+	initialRevenue := cosmosMath.NewInt(1000000) // 0.001 in Int representation (assuming 6 decimal places)
+
+	// Create and activate a topic
+	topic := types.Topic{Id: topicId, EpochLength: epochLength}
+	err := k.SetTopic(ctx, topicId, topic)
+	require.NoError(err, "Setting a new topic should not fail")
+
+	err = k.ActivateTopic(ctx, topicId)
+	require.NoError(err, "Activating the topic should not fail")
+
+	// Set up initial topic fee revenue
+	err = k.AddTopicFeeRevenue(ctx, topicId, initialRevenue)
+	require.NoError(err, "Setting initial topic fee revenue should not fail")
+
+	// Call the function under test
+	err = k.DripTopicFeeRevenue(ctx, topicId, block)
+	require.NoError(err, "DripTopicFeeRevenue should not return an error")
+
+	// Retrieve the updated topic fee revenue
+	updatedTopicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
+	require.NoError(err, "Getting topic fee revenue should not fail")
+
+	// Assert the expected results
+	require.True(updatedTopicFeeRevenue.LT(initialRevenue),
+		"The topic fee revenue should have decreased after dripping")
+
+	// Calculate expected revenue (this may need adjustment based on your actual implementation)
+	expectedRevenue := initialRevenue.Sub(expectedDrip)
+	require.Equal(expectedRevenue.String(), updatedTopicFeeRevenue.String(),
+		"The topic fee revenue should match the expected value after dripping")
+}
