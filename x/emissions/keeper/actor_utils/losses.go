@@ -122,7 +122,7 @@ func CloseReputerNonce(
 		// We keep what we can, ignoring the reputer and their contribution (losses) entirely
 		// if they're left with no valid losses.
 
-		filteredBundle, err := filterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, bundle)
+		filteredBundle, err := FilterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, bundle)
 		if err != nil {
 			continue
 		}
@@ -215,7 +215,7 @@ func CloseReputerNonce(
 // Filter out values of unaccepted workers.
 // It is assumed that the work of inferers and forecasters stored at the nonce is already filtered for acceptance.
 // This also removes duplicate values of the same worker.
-func filterUnacceptedWorkersFromReputerValueBundle(
+func FilterUnacceptedWorkersFromReputerValueBundle(
 	k *keeper.Keeper,
 	ctx context.Context,
 	topicId uint64,
