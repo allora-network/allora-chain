@@ -4,6 +4,8 @@ import (
 	"errors"
 	"io"
 
+	"github.com/cometbft/cometbft/crypto"
+	"github.com/cometbft/cometbft/libs/bytes"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -37,6 +39,8 @@ func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager 
 	)
 
 	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, func(startCmd *cobra.Command) {})
+
+	server.AddTestnetCreatorCommand(rootCmd, newTestnetApp, func(startCmd *cobra.Command) {})
 
 	// add keybase, auxiliary RPC, query, genesis, and tx child commands
 	rootCmd.AddCommand(
@@ -154,4 +158,35 @@ func appExport(
 	}
 
 	return alloraApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+}
+
+// newTestnetApp starts by running the normal newApp method. From there, the app interface returned is modified in order
+// for a testnet to be created from the provided app.
+func newTestnetApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts servertypes.AppOptions) servertypes.Application {
+	// Create an app and type cast to an simApp
+	newApp := newApp(logger, db, traceStore, appOpts)
+
+	newValAddr, ok := appOpts.Get(server.KeyNewValAddr).(bytes.HexBytes)
+	if !ok {
+		panic("newValAddr is not of type bytes.HexBytes")
+	}
+	newValPubKey, ok := appOpts.Get(server.KeyUserPubKey).(crypto.PubKey)
+	if !ok {
+		panic("newValPubKey is not of type crypto.PubKey")
+	}
+	newOperatorAddress, ok := appOpts.Get(server.KeyNewOpAddr).(string)
+	if !ok {
+		panic("newOperatorAddress is not of type string")
+	}
+	upgradeToTrigger, ok := appOpts.Get(server.KeyTriggerTestnetUpgrade).(string)
+	if !ok {
+		panic("upgradeToTrigger is not of type string")
+	}
+
+	// Make modifications to the normal SimApp required to run the network locally
+	testnetApp, err := app.InitAppForTestnet(newApp.(*app.AlloraApp), newValAddr, newValPubKey, newOperatorAddress, upgradeToTrigger)
+	if err != nil {
+		panic(err)
+	}
+	return testnetApp
 }

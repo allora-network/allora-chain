@@ -12,6 +12,9 @@ import (
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/crypto"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
 	dbm "github.com/cosmos/cosmos-db"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
@@ -35,12 +38,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/cosmos/cosmos-sdk/codec/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -69,6 +74,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 
+	"cosmossdk.io/api/cosmos/crypto/ed25519"
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	_ "cosmossdk.io/x/circuit"               // import for side-effects
 	_ "cosmossdk.io/x/upgrade"
@@ -379,4 +385,168 @@ func (app *AlloraApp) LastCommitID() storetypes.CommitID {
 // ibctesting.TestingApp compatibility
 func (app *AlloraApp) LastBlockHeight() int64 {
 	return app.BaseApp.LastBlockHeight()
+}
+
+// InitAppForTestnet initializes the app for testnet
+func InitAppForTestnet(app *AlloraApp, newValAddr []byte, newValPubKey crypto.PubKey, newOperatorAddress, upgradeToTrigger string) (*AlloraApp, error) {
+	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+
+	// Implement the required changes
+	err := initStaking(app, ctx, newValPubKey, newOperatorAddress)
+	if err != nil {
+		return nil, err
+	}
+	err = initDistribution(app, ctx, newOperatorAddress)
+	if err != nil {
+		return nil, err
+	}
+	err = initSlashing(app, ctx, newValAddr)
+	if err != nil {
+		return nil, err
+	}
+	err = initBank(app, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return app, nil
+}
+
+func initStaking(app *AlloraApp, ctx sdk.Context, newValPubKey crypto.PubKey, newOperatorAddress string) error {
+	// Create Validator struct for our new validator
+	pubkey := &ed25519.PubKey{Key: newValPubKey.Bytes()}
+	pubkeyAny, err := types.NewAnyWithValue(pubkey)
+	if err != nil {
+		return err
+	}
+	_, bz, err := bech32.DecodeAndConvert(newOperatorAddress)
+	if err != nil {
+		return err
+	}
+	bech32Addr, err := bech32.ConvertAndEncode("alloravaloper", bz)
+	if err != nil {
+		return err
+	}
+
+	newVal := stakingtypes.Validator{
+		OperatorAddress: bech32Addr,
+		ConsensusPubkey: pubkeyAny,
+		Jailed:          false,
+		Status:          stakingtypes.Bonded,
+		Tokens:          math.NewInt(900000000000000),
+		DelegatorShares: math.LegacyNewDec(10000000),
+		Description:     stakingtypes.Description{Moniker: "Devnet Validator"},
+		Commission: stakingtypes.Commission{
+			CommissionRates: stakingtypes.CommissionRates{
+				Rate:          math.LegacyNewDec(5),
+				MaxRate:       math.LegacyNewDec(10),
+				MaxChangeRate: math.LegacyNewDec(5),
+			},
+		},
+		MinSelfDelegation: math.OneInt(),
+	}
+
+	// Remove all validators from power store
+	stakingKey := app.GetKey(stakingtypes.ModuleName)
+	stakingStore := ctx.KVStore(stakingKey)
+	iterator, err := app.StakingKeeper.ValidatorsPowerStoreIterator(ctx)
+	if err != nil {
+		return err
+	}
+	for ; iterator.Valid(); iterator.Next() {
+		stakingStore.Delete(iterator.Key())
+	}
+	iterator.Close()
+
+	// Remove all valdiators from last validators store
+	iterator, err = app.StakingKeeper.LastValidatorsIterator(ctx)
+	if err != nil {
+		return err
+	}
+	for ; iterator.Valid(); iterator.Next() {
+		addr := sdk.ValAddress(stakingtypes.AddressFromLastValidatorPowerKey(iterator.Key()))
+		app.StakingKeeper.DeleteLastValidatorPower(ctx, addr)
+	}
+	iterator.Close()
+
+	// Add our validator to power and last validators store
+	err = app.StakingKeeper.SetValidator(ctx, newVal)
+	if err != nil {
+		return err
+	}
+	err = app.StakingKeeper.SetValidatorByConsAddr(ctx, newVal)
+	if err != nil {
+		return err
+	}
+	err = app.StakingKeeper.SetValidatorByPowerIndex(ctx, newVal)
+	if err != nil {
+		return err
+	}
+	err = app.StakingKeeper.SetLastValidatorPower(ctx, sdk.ValAddress(newVal.GetOperator()), 0)
+	if err != nil {
+		return err
+	}
+	err = app.StakingKeeper.Hooks().AfterValidatorCreated(ctx, sdk.ValAddress(newVal.GetOperator()))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func initDistribution(app *AlloraApp, ctx sdk.Context, newOperatorAddress string) error {
+	err := app.DistrKeeper.SetValidatorHistoricalRewards(ctx, sdk.ValAddress(newOperatorAddress), 0, distrtypes.NewValidatorHistoricalRewards(sdk.DecCoins{}, 1))
+	if err != nil {
+		return err
+	}
+	err = app.DistrKeeper.SetValidatorCurrentRewards(ctx, sdk.ValAddress(newOperatorAddress), distrtypes.NewValidatorCurrentRewards(sdk.DecCoins{}, 1))
+	if err != nil {
+		return err
+	}
+	err = app.DistrKeeper.SetValidatorAccumulatedCommission(ctx, sdk.ValAddress(newOperatorAddress), distrtypes.InitialValidatorAccumulatedCommission())
+	if err != nil {
+		return err
+	}
+	err = app.DistrKeeper.SetValidatorOutstandingRewards(ctx, sdk.ValAddress(newOperatorAddress), distrtypes.ValidatorOutstandingRewards{Rewards: sdk.DecCoins{}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func initSlashing(app *AlloraApp, ctx sdk.Context, newValAddr []byte) error {
+	newConsAddr := sdk.ConsAddress(newValAddr)
+	signingInfo := slashingtypes.ValidatorSigningInfo{
+		Address:     newConsAddr.String(),
+		StartHeight: ctx.BlockHeight(),
+		Tombstoned:  false,
+	}
+	err := app.SlashingKeeper.SetValidatorSigningInfo(ctx, newConsAddr, signingInfo)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func initBank(app *AlloraApp, ctx sdk.Context) error {
+	defaultCoins := sdk.NewCoins(sdk.NewInt64Coin("uallo", 1000000000000))
+	testAccounts := []string{
+		"allo1cyyzpxplxdzkeea7kwsydadg87357qnahakaks",
+		// Add more test accounts as needed
+	}
+	for _, accAddr := range testAccounts {
+		addr, err := sdk.AccAddressFromBech32(accAddr)
+		if err != nil {
+			return err
+		}
+		err = app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, defaultCoins)
+		if err != nil {
+			return err
+		}
+		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, addr, defaultCoins)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
