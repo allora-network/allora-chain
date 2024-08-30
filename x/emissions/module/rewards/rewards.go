@@ -42,6 +42,7 @@ func EmitRewards(
 	}
 	// Sorted, active topics by weight descending. Still need skim top N to truly be the rewardable topics
 	sortedRewardableTopics := alloraMath.GetSortedElementsByDecWeightDesc(rewardableTopics, weights)
+	Logger(ctx).Debug(fmt.Sprintf("Rewardable topics: %v", sortedRewardableTopics))
 
 	if len(sortedRewardableTopics) == 0 {
 		Logger(ctx).Warn("No rewardable topics found")
@@ -72,6 +73,8 @@ func EmitRewards(
 	// Calculate then pay out topic rewards to topic participants
 	totalRewardToStakedReputers := alloraMath.ZeroDec() // This is used to communicate with the mint module
 	for _, topicId := range sortedRewardableTopics {
+		Logger(ctx).Debug(fmt.Sprintf("Distributing rewards for topic %d", topicId))
+
 		topicReward := topicRewards[topicId]
 		if topicReward == nil {
 			Logger(ctx).Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
