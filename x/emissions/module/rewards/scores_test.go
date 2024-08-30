@@ -1091,7 +1091,6 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 
 func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
 	var newInferences []*types.WorkerDataBundle
-	oldForecaster := s.addrs[5]
 	worker1Addr := s.addrs[10]
 	worker2Addr := s.addrs[11]
 
@@ -1105,7 +1104,7 @@ func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Forecaster:  oldForecaster.String(),
+			Forecaster:  worker1Addr.String(),
 			ForecastElements: []*types.ForecastElement{
 				{
 					Inferer: s.addrs[7].String(),
@@ -1140,7 +1139,7 @@ func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Forecaster:  oldForecaster.String(),
+			Forecaster:  worker2Addr.String(),
 			ForecastElements: []*types.ForecastElement{
 				{
 					Inferer: s.addrs[5].String(),
@@ -1172,8 +1171,6 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 	var newForecasts []*types.WorkerDataBundle
 	oldInferencer1 := s.addrs[5]
 	oldInferencer2 := s.addrs[6]
-	worker1Addr := s.addrs[10]
-	worker2Addr := s.addrs[11]
 
 	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
 		Inference: &types.Inference{
@@ -1185,7 +1182,7 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Forecaster:  worker1Addr.String(),
+			Forecaster:  oldInferencer1.String(),
 			ForecastElements: []*types.ForecastElement{
 				{
 					Inferer: s.addrs[7].String(),
@@ -1220,7 +1217,7 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Forecaster:  worker2Addr.String(),
+			Forecaster:  oldInferencer2.String(),
 			ForecastElements: []*types.ForecastElement{
 				{
 					Inferer: s.addrs[5].String(),
