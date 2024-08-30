@@ -46,14 +46,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetActiveTopics",
-					Use:       "active-topics [pagination]",
-					Short:     "Get Active Topics",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "pagination"},
-					},
-				},
-				{
 					RpcMethod: "GetRewardableTopics",
 					Use:       "rewardable-topics",
 					Short:     "Get Rewardable Topics",
@@ -609,11 +601,10 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetActiveTopicsAtBlock",
-					Use:       "active-topics-at-block [block_height] [pagination]",
+					Use:       "active-topics-at-block [block_height]",
 					Short:     "Get active topics at block",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "block_height"},
-						{ProtoField: "pagination"},
 					},
 				},
 				{
