@@ -2048,6 +2048,10 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 		return err
 	}
 	blocksPerEpoch := alloraMath.NewDecFromInt64(topic.EpochLength)
+	if blocksPerEpoch.IsZero() {
+		ctx.Logger().Warn(fmt.Sprintf("Blocks per epoch is zero for topic %d. Skipping fee revenue drip.", topicId))
+		return nil
+	}
 	blocksPerWeek, err := calculateBlocksPerWeek(ctx, *k)
 	if err != nil {
 		return err
@@ -2055,6 +2059,11 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	epochsPerWeek, err := blocksPerWeek.Quo(blocksPerEpoch)
 	if err != nil {
 		return err
+	}
+	if epochsPerWeek.IsZero() {
+		// Log a warning
+		ctx.Logger().Warn(fmt.Sprintf("Epochs per week is zero for topic %d. Skipping fee revenue drip.", topicId))
+		return nil
 	}
 	// this delta is the drip per epoch
 	dripPerEpoch, err := topicFeeRevenueDec.Quo(epochsPerWeek)
@@ -2084,10 +2093,11 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 		if err = k.SetLastDripBlock(ctx, topicId, topic.EpochLastEnded); err != nil {
 			return err
 		}
-		logMsg := fmt.Sprintf(
-			"Dripping topic fee revenue: block %d, topicId %d, oldRevenue %v, newRevenue %v",
-			ctx.BlockHeight(), topicId, topicFeeRevenue, newTopicFeeRevenue)
-		ctx.Logger().Debug(logMsg)
+		ctx.Logger().Debug("Dripping topic fee revenue",
+			"block", ctx.BlockHeight(),
+			"topicId", topicId,
+			"oldRevenue", topicFeeRevenue,
+			"newRevenue", newTopicFeeRevenue)
 		return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 	}
 	return nil
