@@ -1182,7 +1182,7 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Forecaster:  worker1Addr.String(),
+			Forecaster:  oldInferencer1.String(),
 			ForecastElements: []*types.ForecastElement{
 				{
 					Inferer: s.addrs[7].String(),
@@ -1217,7 +1217,7 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Forecaster:  worker2Addr.String(),
+			Forecaster:  oldInferencer2.String(),
 			ForecastElements: []*types.ForecastElement{
 				{
 					Inferer: s.addrs[5].String(),
