@@ -181,6 +181,11 @@ func (s *MsgServerTestSuite) MintTokensToModule(moduleName string, amount cosmos
 }
 
 func (s *MsgServerTestSuite) CreateOneTopic() uint64 {
+	result := s.CreateCustomEpochTopic(10800)
+	return result
+}
+
+func (s *MsgServerTestSuite) CreateCustomEpochTopic(epochLen int64) uint64 {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -194,8 +199,8 @@ func (s *MsgServerTestSuite) CreateOneTopic() uint64 {
 		Creator:                creator.String(),
 		Metadata:               metadata,
 		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
+		EpochLength:            epochLen,
+		GroundTruthLag:         epochLen,
 		WorkerSubmissionWindow: 10,
 		AlphaRegret:            alloraMath.NewDecFromInt64(1),
 		PNorm:                  alloraMath.NewDecFromInt64(3),

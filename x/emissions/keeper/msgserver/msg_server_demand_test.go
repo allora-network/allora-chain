@@ -64,7 +64,7 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 	topicId := s.CreateOneTopic()
-	topicId2 := s.CreateOneTopic()
+	topicId2 := s.CreateCustomEpochTopic(10900)
 	// put some stake in the topic
 	err := s.emissionsKeeper.AddReputerStake(s.ctx, topicId, PKS[1].Address().String(), cosmosMath.NewInt(500000))
 	s.Require().NoError(err)

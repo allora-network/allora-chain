@@ -171,7 +171,7 @@ func (s *RewardsTestSuite) FundAccount(amount int64, accAddress sdk.AccAddress) 
 	s.Require().NoError(err)
 }
 
-func TestModuleTestSuite(t *testing.T) {
+func TestRewardsTestSuite(t *testing.T) {
 	suite.Run(t, new(RewardsTestSuite))
 }
 
@@ -312,7 +312,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		s.Require().NoError(err)
 	}
 
-	block += 1
+	block = 600 + 10800
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	// Trigger end block - rewards distribution
@@ -321,6 +321,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 }
 
 func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfilledNonces() {
+	s.SetParamsForTest()
 	block := int64(600)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
@@ -447,6 +448,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	newBlockheight := block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
@@ -560,8 +565,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// mint some rewards to give out
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
-	block += 1
-	s.ctx = s.ctx.WithBlockHeight(block)
+	newBlockheight += topic.GroundTruthLag
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Trigger end block - rewards distribution
 	err = s.emissionsAppModule.EndBlock(s.ctx)
@@ -725,6 +730,9 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	}
 
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	s.Require().NoError(err)
+
+	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
@@ -1327,6 +1335,9 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	newBlockheight := block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
@@ -1465,8 +1476,11 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.Require().NoError(err)
 	}
 
-	newBlockheight = block + topic.GroundTruthLag
+	newBlockheight += topic.GroundTruthLag - 1
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
 	lossBundles = GenerateLossBundles(s, block, topicId, reputerAddrs)
@@ -1645,6 +1659,10 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	newBlockheight := block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
@@ -1658,13 +1676,12 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
-	newBlockheight += epochLength * 3
-	s.ctx = s.ctx.WithBlockHeight(newBlockheight)
-
 	// mint some rewards to give out
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
 	// Trigger end block - rewards distribution
+	newBlockheight += epochLength
+	s.ctx = s.ctx.WithBlockHeight(newBlockheight)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -2066,7 +2083,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 }
 
-func (s *RewardsTestSuite) SetParamsForTest(numInferers uint64) {
+func (s *RewardsTestSuite) SetParamsForTest() {
 	// Setup a sender address
 	adminPrivateKey := secp256k1.GenPrivKey()
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
@@ -2074,9 +2091,10 @@ func (s *RewardsTestSuite) SetParamsForTest(numInferers uint64) {
 	s.Require().NoError(err)
 
 	newParams := &types.OptionalParams{
-		MaxTopInferersToReward: []uint64{24},
-		MinEpochLength:         []int64{1},
-		RegistrationFee:        []cosmosMath.Int{cosmosMath.NewInt(6)},
+		MaxTopInferersToReward:  []uint64{24},
+		MinEpochLength:          []int64{1},
+		RegistrationFee:         []cosmosMath.Int{cosmosMath.NewInt(6)},
+		MaxActiveTopicsPerBlock: []uint64{2},
 	}
 
 	updateMsg := &types.MsgUpdateParams{
@@ -2100,7 +2118,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	var stakes = make([]cosmosMath.Int, 0)
 	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
 
-	s.SetParamsForTest(24)
+	s.SetParamsForTest()
 
 	for i := 0; i < 25; i++ {
 		reputerAddrs = append(reputerAddrs, s.addrs[i])
@@ -2362,6 +2380,11 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	block = block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+
+	// Trigger end block - rewards distribution
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
+
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
 			Sender:             payload.ValueBundle.Reputer,
@@ -2478,6 +2501,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
 
+	block += newTopicMsg.EpochLength
+	s.ctx = s.ctx.WithBlockHeight(block)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
@@ -2511,7 +2536,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		})
 		s.Require().NoError(err)
 	}
-
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	s.Require().NoError(err)
 	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
@@ -2519,6 +2545,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	block = block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+
 	// Insert loss bundle from reputers
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
@@ -2624,6 +2651,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	_, err = s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
 	s.Require().NoError(err)
 
+	block += newTopicMsg.EpochLength
+	s.ctx = s.ctx.WithBlockHeight(block)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -2658,6 +2687,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	lossBundles = GenerateHugeLossBundles(s, block, topicId, reputerAddrs, newThirdWorkersAddrs)
 	block = block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
+
 	// Insert loss bundle from reputers
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
@@ -2704,7 +2734,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	block := int64(1)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
-	s.SetParamsForTest(24)
+	s.SetParamsForTest()
 
 	reputerAddrs := []sdk.AccAddress{
 		s.addrs[0],
@@ -2913,7 +2943,7 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 
-	s.SetParamsForTest(24)
+	s.SetParamsForTest()
 
 	reputer0Addrs := []sdk.AccAddress{
 		s.addrs[0],
@@ -3012,7 +3042,7 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 
-	s.SetParamsForTest(24)
+	s.SetParamsForTest()
 
 	reputerAddrs := []sdk.AccAddress{
 		s.addrs[0],
@@ -3112,7 +3142,7 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 
-	s.SetParamsForTest(24)
+	s.SetParamsForTest()
 
 	reputer0Addrs := []sdk.AccAddress{
 		s.addrs[0],
@@ -3171,6 +3201,8 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	// create tokens to reward with
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
+	newBlockheight := block + 1
+	s.ctx = s.ctx.WithBlockHeight(newBlockheight)
 	// force rewards to be distributed
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
@@ -3208,7 +3240,7 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 
 	// increase the block height
 	block = s.ctx.BlockHeight()
-	block++
+	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
 	// do work on the current block, but with one less reputer
 	s.getRewardsDistribution(

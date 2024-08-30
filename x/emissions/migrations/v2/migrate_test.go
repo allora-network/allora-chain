@@ -36,7 +36,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
-type MigrationsTestSuite struct {
+type EmissionsV2MigrationsTestSuite struct {
 	suite.Suite
 	ctx             sdk.Context
 	codec           codec.Codec
@@ -44,7 +44,7 @@ type MigrationsTestSuite struct {
 	emissionsKeeper keeper.Keeper
 }
 
-func (s *MigrationsTestSuite) SetupTest() {
+func (s *EmissionsV2MigrationsTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	s.storeService = storeService
@@ -92,16 +92,16 @@ func (s *MigrationsTestSuite) SetupTest() {
 		authtypes.FeeCollectorName)
 }
 
-func TestMigrationsTestSuite(t *testing.T) {
-	suite.Run(t, new(MigrationsTestSuite))
+func TestEmissionsV2MigrationsTestSuite(t *testing.T) {
+	suite.Run(t, new(EmissionsV2MigrationsTestSuite))
 }
 
-func (s *MigrationsTestSuite) TestMigrateStore() {
+func (s *EmissionsV2MigrationsTestSuite) TestMigrateStore() {
 	err := v2.MigrateStore(s.ctx, s.emissionsKeeper)
 	s.Require().NoError(err)
 }
 
-func (s *MigrationsTestSuite) TestMigrateTopic() {
+func (s *EmissionsV2MigrationsTestSuite) TestMigrateTopic() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
@@ -151,7 +151,7 @@ func (s *MigrationsTestSuite) TestMigrateTopic() {
 	s.Require().Equal(oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
 }
 
-func (s *MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc codec.BinaryCodec, prefixKey collections.Prefix) {
+func (s *EmissionsV2MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc codec.BinaryCodec, prefixKey collections.Prefix) {
 	oldOffchainNode := oldtypes.OffchainNode{
 		LibP2PKey:    "testLibP2PKey",
 		MultiAddress: "testMultiAddress",
@@ -203,14 +203,14 @@ func (s *MigrationsTestSuite) MigrateOffchainNodeStore(store prefix.Store, cdc c
 	s.Require().Equal(oldOffchainNode2.NodeAddress, newMsg.NodeAddress)
 }
 
-func (s *MigrationsTestSuite) TestMigrateOffchainNodeWorkers() {
+func (s *EmissionsV2MigrationsTestSuite) TestMigrateOffchainNodeWorkers() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 	offchainNodeStoreWorker := prefix.NewStore(store, types.WorkerNodesKey)
 	s.MigrateOffchainNodeStore(offchainNodeStoreWorker, cdc, types.WorkerNodesKey)
 }
 
-func (s *MigrationsTestSuite) TestMigrateOffchainNodeReputers() {
+func (s *EmissionsV2MigrationsTestSuite) TestMigrateOffchainNodeReputers() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 	offchainNodeStoreReputer := prefix.NewStore(store, types.ReputerNodesKey)
@@ -241,7 +241,7 @@ func areWithHeldArraysEqual(oldValues []*oldtypes.WithheldWorkerAttributedValue,
 	return true
 }
 
-func (s *MigrationsTestSuite) TestMigrateValueBundle() {
+func (s *EmissionsV2MigrationsTestSuite) TestMigrateValueBundle() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
@@ -322,7 +322,7 @@ func (s *MigrationsTestSuite) TestMigrateValueBundle() {
 	s.Require().Empty(newMsg.OneOutInfererForecasterValues)
 }
 
-func (s *MigrationsTestSuite) TestMigrateAllLossBundles() {
+func (s *EmissionsV2MigrationsTestSuite) TestMigrateAllLossBundles() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
@@ -420,7 +420,7 @@ func (s *MigrationsTestSuite) TestMigrateAllLossBundles() {
 	s.Require().Equal(reputerValueBundle.Pubkey, newMsg.ReputerValueBundles[0].Pubkey)
 }
 
-func (s *MigrationsTestSuite) TestMigrateAllRecordCommits() {
+func (s *EmissionsV2MigrationsTestSuite) TestMigrateAllRecordCommits() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
@@ -477,7 +477,7 @@ func (s *MigrationsTestSuite) TestMigrateAllRecordCommits() {
 	s.Require().Equal(oldTimestampedActorNonce2.Nonce.BlockHeight, newMsg2.Nonce.BlockHeight)
 }
 
-func (s *MigrationsTestSuite) TestMigrateParams() {
+func (s *EmissionsV2MigrationsTestSuite) TestMigrateParams() {
 	// Create an empty Params
 	prevParams := types.Params{
 		Version: "v1",

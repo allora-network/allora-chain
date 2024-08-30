@@ -607,6 +607,23 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "GetActiveTopicsAtBlock",
+					Use:       "active-topics-at-block [block_height] [pagination]",
+					Short:     "Get active topics at block",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "block_height"},
+						{ProtoField: "pagination"},
+					},
+				},
+				{
+					RpcMethod: "GetNextChurningBlockByTopicId",
+					Use:       "next-churning-block [topic_id]",
+					Short:     "Get next possible churning block by topic id",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{

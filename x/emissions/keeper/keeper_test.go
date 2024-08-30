@@ -173,7 +173,7 @@ func (s *KeeperTestSuite) MintTokensToAddress(address sdk.AccAddress, amount cos
 	s.Require().NoError(err)
 }
 
-func (s *KeeperTestSuite) CreateOneTopic() uint64 {
+func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -187,9 +187,9 @@ func (s *KeeperTestSuite) CreateOneTopic() uint64 {
 		Creator:                creator.String(),
 		Metadata:               metadata,
 		LossMethod:             "method",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10800,
+		EpochLength:            epochLen,
+		GroundTruthLag:         epochLen,
+		WorkerSubmissionWindow: epochLen,
 		AlphaRegret:            alloraMath.NewDecFromInt64(1),
 		PNorm:                  alloraMath.NewDecFromInt64(3),
 		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
@@ -584,8 +584,8 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentInfererRegrets() {
 	worker := "worker-address"
 
 	// Topic IDs
-	topicId1 := s.CreateOneTopic()
-	topicId2 := s.CreateOneTopic()
+	topicId1 := s.CreateOneTopic(10800)
+	topicId2 := s.CreateOneTopic(10800)
 
 	// Zero regret for initial check
 	noRegret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
@@ -629,8 +629,8 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 	worker := "forecaster-address"
 
 	// Topic IDs
-	topicId1 := s.CreateOneTopic()
-	topicId2 := s.CreateOneTopic()
+	topicId1 := s.CreateOneTopic(10800)
+	topicId2 := s.CreateOneTopic(10800)
 
 	// Regrets
 	noRagret := types.TimestampedValue{BlockHeight: 0, Value: alloraMath.NewDecFromInt64(0)}
@@ -663,8 +663,8 @@ func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentForecasterRegrets()
 
 func (s *KeeperTestSuite) TestDifferentTopicIdsYieldDifferentOneInForecasterNetworkRegrets() {
 	ctx := s.ctx
-	s.CreateOneTopic() // Topic 1
-	s.CreateOneTopic() // Topic 2
+	s.CreateOneTopic(10800) // Topic 1
+	s.CreateOneTopic(10800) // Topic 2
 	keeper := s.emissionsKeeper
 	forecaster := "forecaster-address"
 	inferer := "inferer-address"
@@ -800,14 +800,14 @@ func (s *KeeperTestSuite) TestSetGetMaxTopicsPerBlock() {
 	expectedValue := uint64(100)
 
 	// Set the parameter
-	params := types.Params{MaxTopicsPerBlock: expectedValue}
+	params := types.Params{MaxActiveTopicsPerBlock: expectedValue}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	// Get the parameter
 	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
-	actualValue := moduleParams.MaxTopicsPerBlock
+	actualValue := moduleParams.MaxActiveTopicsPerBlock
 	s.Require().Equal(expectedValue, actualValue)
 }
 
@@ -1276,7 +1276,7 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
-	topicId := s.CreateOneTopic()
+	topicId := s.CreateOneTopic(10800)
 
 	// Initially, there should be no loss bundle, so we expect a zero result
 	emptyLossBundle, err := keeper.GetLatestNetworkLossBundle(ctx, topicId)
@@ -1931,7 +1931,6 @@ func (s *KeeperTestSuite) TestSetParams() {
 	params := types.Params{
 		Version:                         "v0.3.0",
 		MinTopicWeight:                  alloraMath.NewDecFromInt64(100),
-		MaxTopicsPerBlock:               1000,
 		RequiredMinimumStake:            cosmosMath.NewInt(1),
 		RemoveStakeDelayWindow:          172800,
 		MinEpochLength:                  60,
@@ -1961,6 +1960,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 		CRewardInference:                alloraMath.NewDecFromInt64(0),
 		CRewardForecast:                 alloraMath.NewDecFromInt64(0),
 		CNorm:                           alloraMath.NewDecFromInt64(0),
+		MaxActiveTopicsPerBlock:         1000,
 	}
 
 	// Set params
@@ -1972,7 +1972,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 	s.Require().NoError(err)
 	s.Require().Equal(params.Version, paramsFromKeeper.Version, "Params should be equal to the set params: Version")
 	s.Require().True(params.MinTopicWeight.Equal(paramsFromKeeper.MinTopicWeight), "Params should be equal to the set params: MinTopicWeight")
-	s.Require().Equal(params.MaxTopicsPerBlock, paramsFromKeeper.MaxTopicsPerBlock, "Params should be equal to the set params: MaxTopicsPerBlock")
+	s.Require().Equal(params.MaxActiveTopicsPerBlock, paramsFromKeeper.MaxActiveTopicsPerBlock, "Params should be equal to the set params: MaxActiveTopicsPerBlock")
 	s.Require().True(params.RequiredMinimumStake.Equal(paramsFromKeeper.RequiredMinimumStake), "Params should be equal to the set params: RequiredMinimumStake")
 	s.Require().Equal(params.RemoveStakeDelayWindow, paramsFromKeeper.RemoveStakeDelayWindow, "Params should be equal to the set params: RemoveStakeDelayWindow")
 	s.Require().Equal(params.MinEpochLength, paramsFromKeeper.MinEpochLength, "Params should be equal to the set params: MinEpochLength")
@@ -2140,13 +2140,19 @@ func (s *KeeperTestSuite) TestInactivateAndActivateTopic() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(3)
+	topicEpochLength := 5
+
+	maxActiveTopicsNum := uint64(5)
+	params := types.Params{MaxActiveTopicsPerBlock: maxActiveTopicsNum}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Assume topic initially active
-	initialTopic := types.Topic{Id: topicId}
+	initialTopic := types.Topic{Id: topicId, EpochLength: int64(topicEpochLength)}
 	_ = keeper.SetTopic(ctx, topicId, initialTopic)
 
 	// Activate the topic
-	err := keeper.ActivateTopic(ctx, topicId)
+	err = keeper.ActivateTopic(ctx, topicId)
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active
@@ -2177,9 +2183,14 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
-	topic1 := types.Topic{Id: 1}
-	topic2 := types.Topic{Id: 2}
-	topic3 := types.Topic{Id: 3}
+	maxActiveTopicsNum := uint64(2)
+	params := types.Params{MaxActiveTopicsPerBlock: maxActiveTopicsNum, MaxPageLimit: 100}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	topic1 := types.Topic{Id: 1, EpochLength: 5}
+	topic2 := types.Topic{Id: 2, EpochLength: 5}
+	topic3 := types.Topic{Id: 3, EpochLength: 15}
 
 	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
 	_ = keeper.ActivateTopic(ctx, topic1.Id)
@@ -2192,38 +2203,39 @@ func (s *KeeperTestSuite) TestGetActiveTopics() {
 		Key:   nil,
 		Limit: 10,
 	}
-	activeTopics, _, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
+	activeTopics, _, err := keeper.GetIdsActiveTopicAtBlock(ctx, 5, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Len(activeTopics, 1, "Should retrieve exactly one active topic")
 
-	s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
-
-	for _, topicId := range activeTopics {
-		isActive, err := keeper.IsTopicActive(ctx, topicId)
-		s.Require().NoError(err, "Checking topic activity should not fail")
-		s.Require().True(isActive, "Only active topics should be returned")
-		switch topicId {
-		case 1:
-			s.Require().Equal(topic1.Id, topicId, "The details of topic 1 should match")
-		case 3:
-			s.Require().Equal(topic3.Id, topicId, "The details of topic 3 should match")
-		default:
-			s.Fail("Unexpected topic ID retrieved")
-		}
+	pagination = &types.SimpleCursorPaginationRequest{
+		Key:   nil,
+		Limit: 10,
 	}
+	activeTopics, _, err = keeper.GetIdsActiveTopicAtBlock(ctx, 15, pagination)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Len(activeTopics, 1, "Should retrieve exactly one active topic")
+	s.Require().Equal(activeTopics[0], topic3.Id, "The details of topic 1 should match")
 }
 
 func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
+	maxActiveTopicsNum := uint64(5)
+	params := types.Params{MaxActiveTopicsPerBlock: maxActiveTopicsNum, MaxPageLimit: 100}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
 	topics := []types.Topic{
-		{Id: 1},
-		{Id: 2},
-		{Id: 3},
-		{Id: 4},
-		{Id: 5},
+		{Id: 1, EpochLength: 5},
+		{Id: 2, EpochLength: 5},
+		{Id: 3, EpochLength: 5},
+		{Id: 4, EpochLength: 5},
+		{Id: 5, EpochLength: 5},
+		{Id: 6, EpochLength: 15},
+		{Id: 7, EpochLength: 15},
 	}
-	isActive := []bool{true, false, true, false, true}
+	isActive := []bool{true, false, true, true, true, false, true}
 
 	for i, topic := range topics {
 		_ = keeper.SetTopic(ctx, topic.Id, topic)
@@ -2237,7 +2249,7 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 		Key:   nil,
 		Limit: 2,
 	}
-	activeTopics, pageRes, err := keeper.GetIdsOfActiveTopics(ctx, pagination)
+	activeTopics, pageRes, err := keeper.GetIdsActiveTopicAtBlock(ctx, 5, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 
 	s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
@@ -2261,15 +2273,22 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 		Key:   pageRes.NextKey,
 		Limit: 2,
 	}
-	activeTopics, pageRes, err = keeper.GetIdsOfActiveTopics(ctx, pagination)
+	activeTopics, pageRes, err = keeper.GetIdsActiveTopicAtBlock(ctx, 5, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Len(activeTopics, 1, "Should retrieve exactly one active topics")
+	s.Require().Len(activeTopics, 2, "Should retrieve exactly one active topics")
 	s.Require().NotNil(pageRes, "Next key should not be nil")
 	for _, topicId := range activeTopics {
 		isActive, err := keeper.IsTopicActive(ctx, topicId)
 		s.Require().NoError(err, "Checking topic activity should not fail")
 		s.Require().True(isActive, "Only active topics should be returned")
-		s.Require().Equal(topics[4].Id, topicId, "The details of topic 5 should match")
+		switch topicId {
+		case 4:
+			s.Require().Equal(topics[3].Id, topicId, "The details of topic 1 should match")
+		case 5:
+			s.Require().Equal(topics[4].Id, topicId, "The details of topic 3 should match")
+		default:
+			s.Fail("Unexpected topic ID retrieved")
+		}
 	}
 
 	// Fetch next page -- should only return topic 5
@@ -2277,12 +2296,79 @@ func (s *KeeperTestSuite) TestGetActiveTopicsWithSmallLimitAndOffset() {
 		Key:   pageRes.NextKey,
 		Limit: 2,
 	}
-	activeTopics, pageRes, err = keeper.GetIdsOfActiveTopics(ctx, pagination)
+	activeTopics, pageRes, err = keeper.GetIdsActiveTopicAtBlock(ctx, 5, pagination)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Empty(activeTopics, "Should retrieve exactly one active topics")
-	s.Require().NotNil(pageRes, "Next key should not be nil")
+	s.Require().Nil(pageRes, "Next key should not be nil")
 }
 
+func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+
+	params := types.Params{
+		MaxActiveTopicsPerBlock:         uint64(3),
+		MaxPageLimit:                    uint64(100),
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),
+		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("1"),
+		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("3"),
+	}
+	err := keeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
+
+	topic1 := types.Topic{Id: 1, EpochLength: 15}
+	topic2 := types.Topic{Id: 2, EpochLength: 15}
+	topic3 := types.Topic{Id: 3, EpochLength: 5}
+	topic4 := types.Topic{Id: 4, EpochLength: 5}
+
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		_ = keeper.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue))
+		_ = keeper.SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake))
+	}
+
+	setTopicWeight(topic1.Id, 10, 10)
+	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
+	_ = keeper.ActivateTopic(ctx, topic1.Id)
+
+	setTopicWeight(topic2.Id, 20, 10)
+	_ = keeper.SetTopic(ctx, topic2.Id, topic2)
+	_ = keeper.ActivateTopic(ctx, topic2.Id)
+
+	// Fetch next page -- should only return topic 5
+	pagination := &types.SimpleCursorPaginationRequest{
+		Key:   nil,
+		Limit: 2,
+	}
+	activeTopics, _, err := keeper.GetIdsActiveTopicAtBlock(ctx, 15, pagination)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
+
+	ctx = s.ctx.WithBlockHeight(15)
+	_ = keeper.AttemptTopicReactivation(ctx, topic1.Id)
+	_ = keeper.AttemptTopicReactivation(ctx, topic2.Id)
+
+	ctx = s.ctx.WithBlockHeight(25)
+	setTopicWeight(topic3.Id, 50, 10)
+	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
+	_ = keeper.ActivateTopic(ctx, topic3.Id)
+
+	pagination = &types.SimpleCursorPaginationRequest{
+		Key:   nil,
+		Limit: 3,
+	}
+	activeTopics, _, err = keeper.GetIdsActiveTopicAtBlock(ctx, 30, pagination)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Len(activeTopics, 3, "Should retrieve exactly two active topics")
+	s.Require().Equal(uint64(1), activeTopics[0])
+	s.Require().Equal(uint64(2), activeTopics[1])
+	s.Require().Equal(uint64(3), activeTopics[2])
+
+	ctx = s.ctx.WithBlockHeight(30)
+	setTopicWeight(topic4.Id, 1, 1)
+	isActive, err := keeper.IsTopicActive(ctx, topic4.Id)
+	s.Require().NoError(err, "Is topic active should not produce an error")
+	s.Require().False(isActive, "Topic4 should not be activated")
+}
 func (s *KeeperTestSuite) TestIncrementTopicId() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper

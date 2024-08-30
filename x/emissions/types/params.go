@@ -12,7 +12,6 @@ func DefaultParams() Params {
 	return Params{
 		Version:                             "v2",                                         // version of the protocol should be in lockstep with github release tag version
 		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),       // total weight for a topic < this => don't run inference solicatation or loss update
-		MaxTopicsPerBlock:                   uint64(128),                                  // max number of topics to run cadence for per block
 		RequiredMinimumStake:                cosmosMath.NewInt(10000),                     // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:              int64((60 * 60 * 24 * 7 * 3) / 3),            // ~approx 3 weeks assuming 3 second block time, number of blocks to wait before finalizing a stake withdrawal
 		MinEpochLength:                      12,                                           // shortest number of blocks per epoch topics are allowed to set as their cadence
@@ -50,6 +49,7 @@ func DefaultParams() Params {
 		HalfMaxProcessStakeRemovalsEndBlock: uint64(40),                                   // half of the max number of stake removals to process at the end of the block, set this too big and blocks require too much time to process, slowing down consensus
 		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
 		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
+		MaxActiveTopicsPerBlock:             uint64(1),                                    // maximum number of active topics per block
 	}
 }
 
@@ -59,9 +59,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateMinTopicWeight(p.MinTopicWeight); err != nil {
-		return err
-	}
-	if err := validateMaxTopicsPerBlock(p.MaxTopicsPerBlock); err != nil {
 		return err
 	}
 	if err := validateRequiredMinimumStake(p.RequiredMinimumStake); err != nil {
@@ -175,6 +172,9 @@ func (p Params) Validate() error {
 	if err := validateMaxElementsPerForecast(p.MaxElementsPerForecast); err != nil {
 		return err
 	}
+	if err := validateMaxActiveTopicsPerBlock(p.MaxActiveTopicsPerBlock); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -197,12 +197,6 @@ func validateMinTopicWeight(i alloraMath.Dec) error {
 	if i.IsNegative() {
 		return ErrValidationMustBeGreaterthanZero
 	}
-	return nil
-}
-
-// Max number of topics to run cadence for per block.
-// Should be >= 0, uint enforces this.
-func validateMaxTopicsPerBlock(_ uint64) error {
 	return nil
 }
 
@@ -432,6 +426,10 @@ func validateMaxTopForecastersToReward(_ uint64) error {
 func validateMaxElementsPerForecast(_ uint64) error {
 	return nil
 }
+
+// maximum number of active topics per block
+// Should be zero or positive. Enforced by uint type
+func validateMaxActiveTopicsPerBlock(_ uint64) error { return nil }
 
 // max this many top reputers by score are rewarded for a topic
 // Should be zero or positive. Enforced by uint type

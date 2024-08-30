@@ -89,6 +89,8 @@ const (
 	Query_GetOneOutInfererForecasterNetworkRegret_FullMethodName     = "/emissions.v3.Query/GetOneOutInfererForecasterNetworkRegret"
 	Query_GetOneOutForecasterInfererNetworkRegret_FullMethodName     = "/emissions.v3.Query/GetOneOutForecasterInfererNetworkRegret"
 	Query_GetOneOutForecasterForecasterNetworkRegret_FullMethodName  = "/emissions.v3.Query/GetOneOutForecasterForecasterNetworkRegret"
+	Query_GetActiveTopicsAtBlock_FullMethodName                      = "/emissions.v3.Query/GetActiveTopicsAtBlock"
+	Query_GetNextChurningBlockByTopicId_FullMethodName               = "/emissions.v3.Query/GetNextChurningBlockByTopicId"
 )
 
 // QueryClient is the client API for Query service.
@@ -166,6 +168,8 @@ type QueryClient interface {
 	GetOneOutInfererForecasterNetworkRegret(ctx context.Context, in *QueryOneOutInfererForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutInfererForecasterNetworkRegretResponse, error)
 	GetOneOutForecasterInfererNetworkRegret(ctx context.Context, in *QueryOneOutForecasterInfererNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutForecasterInfererNetworkRegretResponse, error)
 	GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, in *QueryOneOutForecasterForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*QueryOneOutForecasterForecasterNetworkRegretResponse, error)
+	GetActiveTopicsAtBlock(ctx context.Context, in *QueryActiveTopicsAtBlockRequest, opts ...grpc.CallOption) (*QueryActiveTopicsAtBlockResponse, error)
+	GetNextChurningBlockByTopicId(ctx context.Context, in *QueryNextChurningBlockByTopicIdRequest, opts ...grpc.CallOption) (*QueryNextChurningBlockByTopicIdResponse, error)
 }
 
 type queryClient struct {
@@ -806,6 +810,24 @@ func (c *queryClient) GetOneOutForecasterForecasterNetworkRegret(ctx context.Con
 	return out, nil
 }
 
+func (c *queryClient) GetActiveTopicsAtBlock(ctx context.Context, in *QueryActiveTopicsAtBlockRequest, opts ...grpc.CallOption) (*QueryActiveTopicsAtBlockResponse, error) {
+	out := new(QueryActiveTopicsAtBlockResponse)
+	err := c.cc.Invoke(ctx, Query_GetActiveTopicsAtBlock_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetNextChurningBlockByTopicId(ctx context.Context, in *QueryNextChurningBlockByTopicIdRequest, opts ...grpc.CallOption) (*QueryNextChurningBlockByTopicIdResponse, error) {
+	out := new(QueryNextChurningBlockByTopicIdResponse)
+	err := c.cc.Invoke(ctx, Query_GetNextChurningBlockByTopicId_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
@@ -881,6 +903,8 @@ type QueryServer interface {
 	GetOneOutInfererForecasterNetworkRegret(context.Context, *QueryOneOutInfererForecasterNetworkRegretRequest) (*QueryOneOutInfererForecasterNetworkRegretResponse, error)
 	GetOneOutForecasterInfererNetworkRegret(context.Context, *QueryOneOutForecasterInfererNetworkRegretRequest) (*QueryOneOutForecasterInfererNetworkRegretResponse, error)
 	GetOneOutForecasterForecasterNetworkRegret(context.Context, *QueryOneOutForecasterForecasterNetworkRegretRequest) (*QueryOneOutForecasterForecasterNetworkRegretResponse, error)
+	GetActiveTopicsAtBlock(context.Context, *QueryActiveTopicsAtBlockRequest) (*QueryActiveTopicsAtBlockResponse, error)
+	GetNextChurningBlockByTopicId(context.Context, *QueryNextChurningBlockByTopicIdRequest) (*QueryNextChurningBlockByTopicIdResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -1097,6 +1121,12 @@ func (UnimplementedQueryServer) GetOneOutForecasterInfererNetworkRegret(context.
 }
 func (UnimplementedQueryServer) GetOneOutForecasterForecasterNetworkRegret(context.Context, *QueryOneOutForecasterForecasterNetworkRegretRequest) (*QueryOneOutForecasterForecasterNetworkRegretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOneOutForecasterForecasterNetworkRegret not implemented")
+}
+func (UnimplementedQueryServer) GetActiveTopicsAtBlock(context.Context, *QueryActiveTopicsAtBlockRequest) (*QueryActiveTopicsAtBlockResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActiveTopicsAtBlock not implemented")
+}
+func (UnimplementedQueryServer) GetNextChurningBlockByTopicId(context.Context, *QueryNextChurningBlockByTopicIdRequest) (*QueryNextChurningBlockByTopicIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNextChurningBlockByTopicId not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -2371,6 +2401,42 @@ func _Query_GetOneOutForecasterForecasterNetworkRegret_Handler(srv interface{}, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetActiveTopicsAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryActiveTopicsAtBlockRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetActiveTopicsAtBlock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetActiveTopicsAtBlock_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetActiveTopicsAtBlock(ctx, req.(*QueryActiveTopicsAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetNextChurningBlockByTopicId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryNextChurningBlockByTopicIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetNextChurningBlockByTopicId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetNextChurningBlockByTopicId_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetNextChurningBlockByTopicId(ctx, req.(*QueryNextChurningBlockByTopicIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2657,6 +2723,14 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetOneOutForecasterForecasterNetworkRegret",
 			Handler:    _Query_GetOneOutForecasterForecasterNetworkRegret_Handler,
+		},
+		{
+			MethodName: "GetActiveTopicsAtBlock",
+			Handler:    _Query_GetActiveTopicsAtBlock_Handler,
+		},
+		{
+			MethodName: "GetNextChurningBlockByTopicId",
+			Handler:    _Query_GetNextChurningBlockByTopicId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

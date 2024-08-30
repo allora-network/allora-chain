@@ -3,7 +3,6 @@ package integration_test
 import (
 	"context"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"time"
 
@@ -14,32 +13,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const defaultEpochLength = 10
-const approximateBlockLengthSeconds = 5
-
-func getNonZeroTopicEpochLastRan(m testCommon.TestConfig, topicID uint64, maxRetries int) (*types.Topic, error) {
+func waitForNextChurningBlock(m testCommon.TestConfig, topicId uint64) (*types.Topic, error) {
 	ctx := context.Background()
-	sleepingTimeBlocks := defaultEpochLength
-	// Retry loop for a maximum of 5 times
-	for retries := 0; retries < maxRetries; retries++ {
-		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicID})
-		if err == nil {
-			storedTopic := topicResponse.Topic
-			if storedTopic.EpochLastEnded != 0 {
-				return topicResponse.Topic, nil
-			}
-			sleepingTimeBlocks = int(storedTopic.EpochLength)
-		} else {
-			m.T.Log(time.Now(), "Error getting topic, retry...", err)
-		}
-		// Sleep for a while before retrying
-		m.T.Log(time.Now(), "Retrying sleeping for a default epoch, retry ", retries, " for sleeping time ", sleepingTimeBlocks)
-		time.Sleep(time.Duration(sleepingTimeBlocks*approximateBlockLengthSeconds) * time.Second)
+	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicId})
+	if err != nil {
+		return nil, err
 	}
-
-	return nil, errors.New("topicEpochLastRan is still 0 after retrying")
+	nextBlockResponse, err := m.Client.QueryEmissions().GetNextChurningBlockByTopicId(ctx, &types.QueryNextChurningBlockByTopicIdRequest{TopicId: topicId})
+	if err != nil {
+		return nil, err
+	}
+	m.T.Log(time.Now(), "Wait for next churning block ", nextBlockResponse.BlockHeight, " for topic ", topicId)
+	err = m.Client.WaitForBlockHeight(ctx, nextBlockResponse.BlockHeight)
+	return topicResponse.Topic, err
 }
-
 func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, blockHeight int64) error {
 	ctx := context.Background()
 	// Nonce: calculate from EpochLastRan + EpochLength
@@ -241,14 +228,14 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	ctx := context.Background()
 	m.T.Log(time.Now(), "--- START  Worker Inference, Forecast and Reputation test ---")
 	// Nonce: calculate from EpochLastRan + EpochLength
-	topic, err := getNonZeroTopicEpochLastRan(m, 1, 5)
+
+	topic, err := waitForNextChurningBlock(m, 1)
 	if err != nil {
-		m.T.Log(time.Now(), "--- Failed getting a topic that was ran ---")
 		require.NoError(m.T, err)
 	}
 	m.T.Log(time.Now(), "--- Insert Worker Bundle ---")
 	// Waiting for ground truth lag to pass
-	m.T.Log(time.Now(), "--- Waiting to Insert Reputer Bundle ---")
+	m.T.Log(time.Now(), "--- Waiting to Insert Worker Bundle ---")
 	blockHeightNonce, err := RunWithRetry(m, 3, 2*time.Second, func() (int64, error) {
 		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topic.Id})
 		if err != nil {

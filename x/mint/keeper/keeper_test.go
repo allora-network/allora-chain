@@ -24,7 +24,7 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 )
 
-type IntegrationTestSuite struct {
+type MintKeeperTestSuite struct {
 	suite.Suite
 
 	mintKeeper      keeper.Keeper
@@ -39,11 +39,11 @@ type IntegrationTestSuite struct {
 	epochGet        map[int]func(string) alloraMath.Dec
 }
 
-func TestKeeperTestSuite(t *testing.T) {
-	suite.Run(t, new(IntegrationTestSuite))
+func TestMintKeeperTestSuite(t *testing.T) {
+	suite.Run(t, new(MintKeeperTestSuite))
 }
 
-func (s *IntegrationTestSuite) SetupTest() {
+func (s *MintKeeperTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(mint.AppModuleBasic{})
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
@@ -86,7 +86,7 @@ func (s *IntegrationTestSuite) SetupTest() {
 	s.epochGet = alloratestutil.GetTokenomicsSimulatorValuesGetterForEpochs()
 }
 
-func (s *IntegrationTestSuite) TestAliasFunctions() {
+func (s *MintKeeperTestSuite) TestAliasFunctions() {
 	stakingTokenSupply := math.NewIntFromUint64(100000000000)
 	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(stakingTokenSupply, nil)
 	tokenSupply, err := s.mintKeeper.CosmosValidatorStakedSupply(s.ctx)

@@ -56,8 +56,8 @@ service Msg {
 // optional field and if the repeated field is empty, it is considered to be the
 // same as if the field was not set
 message OptionalParams {
-  reserved 26, 27, 39, 41;
-  reserved "topic_fee_revenue_decay_rate", "min_effective_topic_revenue", "max_retries_to_fulfil_nonces_worker", "max_retries_to_fulfil_nonces_reputer";
+  reserved 4, 26, 27, 39, 41;
+  reserved "max_topics_per_block", "min_effective_topic_revenue", "max_retries_to_fulfil_nonces_worker", "topic_fee_revenue_decay_rate", "max_retries_to_fulfil_nonces_reputer";
 
   repeated string version = 1;
   repeated int64 max_serialized_msg_length = 2;
@@ -65,7 +65,6 @@ message OptionalParams {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  repeated uint64 max_topics_per_block = 4;
   repeated string required_minimum_stake = 5 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
@@ -173,6 +172,7 @@ message OptionalParams {
     (gogoproto.nullable) = false
   ];
   repeated uint64 max_elements_per_forecast = 45;
+  repeated uint64 max_active_topics_per_block = 46;
 }
 
 message MsgUpdateParams {

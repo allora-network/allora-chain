@@ -80,4 +80,7 @@ var (
 	LatestOneOutForecasterForecasterNetworkRegretsKey = collections.NewPrefix(65)
 	PreviousForecasterScoreRatioKey                   = collections.NewPrefix(66)
 	LastDripBlockKey                                  = collections.NewPrefix(67)
+	TopicToNextPossibleChurningBlockKey               = collections.NewPrefix(68)
+	BlockToActiveTopicsKey                            = collections.NewPrefix(69)
+	BlockToLowestActiveTopicWeightKey                 = collections.NewPrefix(70)
 )
