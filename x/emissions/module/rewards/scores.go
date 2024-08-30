@@ -113,7 +113,7 @@ func GenerateReputerScores(
 			return []types.Score{}, errors.Wrapf(err, "Error getting reputer score ema")
 		}
 		firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
-		newScore.Score, err = alloraMath.CalcEma(
+		emaScoreDec, err := alloraMath.CalcEma(
 			topic.MeritSortitionAlpha,
 			newScore.Score,
 			previousScore.Score,
@@ -122,7 +122,13 @@ func GenerateReputerScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating ema")
 		}
-		err = keeper.SetReputerScoreEma(ctx, topicId, reputer, newScore)
+		emaScore := types.Score{
+			TopicId:     topicId,
+			BlockHeight: block,
+			Address:     reputer,
+			Score:       emaScoreDec,
+		}
+		err = keeper.SetReputerScoreEma(ctx, topicId, reputer, emaScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error setting latest reputer score")
 		}
@@ -185,7 +191,7 @@ func GenerateInferenceScores(
 			return []types.Score{}, errors.Wrapf(err, "Error getting inferer score ema")
 		}
 		firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
-		newScore.Score, err = alloraMath.CalcEma(
+		emaScoreDec, err := alloraMath.CalcEma(
 			topic.MeritSortitionAlpha,
 			newScore.Score,
 			previousScore.Score,
@@ -194,7 +200,13 @@ func GenerateInferenceScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating ema")
 		}
-		err = keeper.SetInfererScoreEma(ctx, topicId, oneOutLoss.Worker, newScore)
+		emaScore := types.Score{
+			TopicId:     topicId,
+			BlockHeight: block,
+			Address:     oneOutLoss.Worker,
+			Score:       emaScoreDec,
+		}
+		err = keeper.SetInfererScoreEma(ctx, topicId, oneOutLoss.Worker, emaScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "error setting latest inferer score")
 		}
@@ -281,7 +293,7 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error getting inferer score ema")
 		}
 		firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
-		newScore.Score, err = alloraMath.CalcEma(
+		emaScoreDec, err := alloraMath.CalcEma(
 			topic.MeritSortitionAlpha,
 			newScore.Score,
 			previousScore.Score,
@@ -290,7 +302,13 @@ func GenerateForecastScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating ema")
 		}
-		err = keeper.SetForecasterScoreEma(ctx, topicId, oneInNaiveLoss.Worker, newScore)
+		emaScore := types.Score{
+			TopicId:     topicId,
+			BlockHeight: block,
+			Address:     oneInNaiveLoss.Worker,
+			Score:       emaScoreDec,
+		}
+		err = keeper.SetForecasterScoreEma(ctx, topicId, oneInNaiveLoss.Worker, emaScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error setting latest forecaster score")
 		}
