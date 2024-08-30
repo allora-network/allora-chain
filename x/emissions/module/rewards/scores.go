@@ -105,6 +105,9 @@ func GenerateReputerScores(
 			Score:       scores[i],
 		}
 		previousScore, err := keeper.GetReputerScoreEma(ctx, topicId, reputer)
+		if err != nil {
+			return []types.Score{}, errors.Wrapf(err, "Error getting reputer score ema")
+		}
 		firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 		newScore.Score, err = alloraMath.CalcEma(
 			topic.MeritSortitionAlpha,
@@ -174,6 +177,9 @@ func GenerateInferenceScores(
 			Score:       workerNewScore,
 		}
 		previousScore, err := keeper.GetInfererScoreEma(ctx, topicId, oneOutLoss.Worker)
+		if err != nil {
+			return []types.Score{}, errors.Wrapf(err, "Error getting inferer score ema")
+		}
 		firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 		newScore.Score, err = alloraMath.CalcEma(
 			topic.MeritSortitionAlpha,
@@ -267,6 +273,9 @@ func GenerateForecastScores(
 			Score:       workerFinalScore,
 		}
 		previousScore, err := keeper.GetForecasterScoreEma(ctx, topicId, oneInNaiveLoss.Worker)
+		if err != nil {
+			return []types.Score{}, errors.Wrapf(err, "Error getting inferer score ema")
+		}
 		firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 		newScore.Score, err = alloraMath.CalcEma(
 			topic.MeritSortitionAlpha,
