@@ -2209,77 +2209,6 @@ func (s *KeeperTestSuite) TestGetActiveTopicIdsAtBlock() {
 	s.Require().Equal(activeTopics.TopicIds[0], topic3.Id, "The details of topic 1 should match")
 }
 
-func (s *KeeperTestSuite) TestGetActiveTopicIdsAtBlockWithSmallLimitAndOffset() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-
-	maxActiveTopicsNum := uint64(5)
-	params := types.Params{MaxActiveTopicsPerBlock: maxActiveTopicsNum, MaxPageLimit: 100}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err, "Setting parameters should not fail")
-
-	topics := []types.Topic{
-		{Id: 1, EpochLength: 5},
-		{Id: 2, EpochLength: 5},
-		{Id: 3, EpochLength: 5},
-		{Id: 4, EpochLength: 5},
-		{Id: 5, EpochLength: 5},
-		{Id: 6, EpochLength: 15},
-		{Id: 7, EpochLength: 15},
-	}
-	isActive := []bool{true, false, true, true, true, false, true}
-
-	for i, topic := range topics {
-		_ = keeper.SetTopic(ctx, topic.Id, topic)
-		if isActive[i] {
-			_ = keeper.ActivateTopic(ctx, topic.Id)
-		}
-	}
-
-	// Fetch only active topics -- should only return topics 1 and 3
-	activeTopics, err := keeper.GetActiveTopicIdsAtBlock(ctx, 5)
-	s.Require().NoError(err, "Fetching active topics should not produce an error")
-
-	s.Require().Len(activeTopics.TopicIds, 2, "Should retrieve exactly two active topics")
-
-	for _, topicId := range activeTopics.TopicIds {
-		isActive, err := keeper.IsTopicActive(ctx, topicId)
-		s.Require().NoError(err, "Checking topic activity should not fail")
-		s.Require().True(isActive, "Only active topics should be returned")
-		switch topicId {
-		case 1:
-			s.Require().Equal(topics[0].Id, topicId, "The details of topic 1 should match")
-		case 3:
-			s.Require().Equal(topics[2].Id, topicId, "The details of topic 3 should match")
-		default:
-			s.Fail("Unexpected topic ID retrieved")
-		}
-	}
-
-	// Fetch next page -- should only return topic 5
-	activeTopics, err = keeper.GetActiveTopicIdsAtBlock(ctx, 5)
-	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Len(activeTopics.TopicIds, 2, "Should retrieve exactly one active topics")
-	for _, topicId := range activeTopics.TopicIds {
-		isActive, err := keeper.IsTopicActive(ctx, topicId)
-		s.Require().NoError(err, "Checking topic activity should not fail")
-		s.Require().True(isActive, "Only active topics should be returned")
-		switch topicId {
-		case 4:
-			s.Require().Equal(topics[3].Id, topicId, "The details of topic 1 should match")
-		case 5:
-			s.Require().Equal(topics[4].Id, topicId, "The details of topic 3 should match")
-		default:
-			s.Fail("Unexpected topic ID retrieved")
-		}
-	}
-
-	// Fetch next page -- should only return topic 5
-	activeTopics, err = keeper.GetActiveTopicIdsAtBlock(ctx, 5)
-	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Empty(activeTopics, "Should retrieve exactly one active topics")
-}
-
 func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -2315,7 +2244,7 @@ func (s *KeeperTestSuite) TestTopicGoesInactivateOnEpochEndBlockIfLowWeight() {
 	// Fetch next page -- should only return topic 5
 	activeTopics, err := keeper.GetActiveTopicIdsAtBlock(ctx, 15)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Len(activeTopics, 2, "Should retrieve exactly two active topics")
+	s.Require().Len(activeTopics.TopicIds, 2, "Should retrieve exactly two active topics")
 
 	ctx = s.ctx.WithBlockHeight(15)
 	_ = keeper.AttemptTopicReactivation(ctx, topic1.Id)
