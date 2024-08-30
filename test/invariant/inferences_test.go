@@ -85,19 +85,18 @@ func doInferenceAndReputation(
 }
 
 // determine if this state transition is worth trying based on our knowledge of the state
-func findActiveTopics(
+func findActiveTopicsAtThisBlock(
 	m *testcommon.TestConfig,
 	data *SimulationData,
+	blockHeight int64,
 ) []*emissionstypes.Topic {
 	// first off someone has to be registered for both working and reputing in general
 	if !anyReputersRegistered(data) || !anyWorkersRegistered(data) {
 		return nil
 	}
 	ctx := context.Background()
-	response, err := m.Client.QueryEmissions().GetActiveTopics(ctx, &emissionstypes.QueryActiveTopicsRequest{
-		Pagination: &emissionstypes.SimpleCursorPaginationRequest{
-			Limit: 10,
-		},
+	response, err := m.Client.QueryEmissions().GetActiveTopicsAtBlock(ctx, &emissionstypes.QueryActiveTopicsAtBlockRequest{
+		BlockHeight: blockHeight,
 	})
 	requireNoError(m.T, data.failOnErr, err)
 	return response.Topics

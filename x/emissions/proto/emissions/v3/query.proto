@@ -36,11 +36,6 @@ service Query {
     option (google.api.http).get = "/emissions/v3/topics/{topic_id}";
   }
 
-  rpc GetActiveTopics(QueryActiveTopicsRequest) returns (QueryActiveTopicsResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/active_topics";
-  }
-
   rpc GetWorkerLatestInferenceByTopicId(QueryWorkerLatestInferenceRequest) returns (QueryWorkerLatestInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get =
@@ -1142,7 +1137,6 @@ message QueryTotalRewardToDistributeResponse {
 
 message QueryActiveTopicsAtBlockRequest {
   int64 block_height = 1;
-  SimpleCursorPaginationRequest pagination = 2;
 }
 
 message QueryActiveTopicsAtBlockResponse {
