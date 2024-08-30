@@ -26,7 +26,11 @@ func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 	response, err := s.queryServer.GetInfererScoreEma(ctx, req)
 	s.Require().NoError(err)
 
-	s.Require().Equal(newScore.Score, response.Score, "Score should be set")
+	s.Require().True(
+		newScore.Score.Equal(response.Score.Score),
+		"Score should be set %s | %s",
+		newScore.Score.String(),
+		response.Score.Score.String())
 }
 
 func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
