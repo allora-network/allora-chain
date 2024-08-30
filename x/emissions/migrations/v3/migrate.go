@@ -51,11 +51,13 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
 	//      MaxElementsPerForecast
+	//      MaxActiveTopicsPerBlock
 	// REMOVED:
-	// 		MinEffectiveTopicRevenue
+	//      MinEffectiveTopicRevenue
 	//      TopicFeeRevenueDecayRate
 	//      MaxRetriesToFulfilNoncesWorker
-	// 		MaxRetriesToFulfilNoncesReputer
+	//      MaxRetriesToFulfilNoncesReputer
+	//      MaxTopicsPerBlock
 	newParams := types.Params{
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
