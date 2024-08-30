@@ -138,8 +138,8 @@ func (a *ActorUtilsTestSuite) SetupTest() {
 		AllowNegative:          false,
 		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
 	})
-a.Require().NoError(err)
-
+	a.Require().NoError(err)
+}
 
 func TestModuleTestSuite(t *testing.T) {
 	suite.Run(t, new(ActorUtilsTestSuite))
