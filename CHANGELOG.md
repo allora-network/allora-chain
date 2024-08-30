@@ -49,12 +49,11 @@ Implements fixes for our [June 2024](https://github.com/sherlock-audit/2024-06-a
 
 ### Added
 
-* To be filled in before release of v0.4.0
+* [#542](https://github.com/allora-network/allora-chain/pull/542) Add scalable management of active topics with associated queries such as `GetActiveTopicsAtBlock` and `GetNextChurningBlockByTopicId`
 
 ### Removed
 
-* To be filled in before release of v0.4.0
-
+* [#542](https://github.com/allora-network/allora-chain/pull/542) As part of active topic management, we removed `GetActiveTopics` and other (especially paginated) remnants of an unpartitioned store of active topics.
 
 ### Fixed
 
