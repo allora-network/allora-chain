@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Summary
 
-Implements merit based sortition for top N inferers, forecasters, and reputers. Implements fixes for our [June 2024](https://github.com/sherlock-audit/2024-06-allora-judging) Sherlock.xyz audit, including important fixes for determining which topics are considered active.
+Implements fixes for our [June 2024](https://github.com/sherlock-audit/2024-06-allora-judging) Sherlock.xyz audit, including important fixes for determining which topics are considered active.
 
 ### Added
 
@@ -66,6 +66,7 @@ Implements merit based sortition for top N inferers, forecasters, and reputers. 
 ### Security
 
 * See our recent [June 2024](https://github.com/sherlock-audit/2024-06-allora-judging) security audit for a full description of bugs found during that audit.
+* [#554](https://github.com/allora-network/allora-chain/pull/554) Check Signature on Worker or Reputer Payload Matches Inferer/Forecaster/Reputer inside Bundle
 
 
 ## v0.3.0

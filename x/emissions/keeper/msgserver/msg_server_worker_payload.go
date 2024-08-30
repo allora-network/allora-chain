@@ -24,7 +24,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 	}
 
 	if err := msg.WorkerDataBundle.Validate(); err != nil {
-		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
+		return nil, errorsmod.Wrapf(err,
 			"Worker invalid data for block: %d", blockHeight)
 	}
 

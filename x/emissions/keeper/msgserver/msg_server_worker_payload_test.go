@@ -7,6 +7,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 func getNewAddress() string {
@@ -30,13 +31,10 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 
 	// Mock setup for addresses
 	reputerAddr := getNewAddress()
-	InfererAddr := getNewAddress()
+	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
 	Inferer2Addr := getNewAddress()
 	Inferer3Addr := getNewAddress()
 	Inferer4Addr := getNewAddress()
-	ForecasterAddr := getNewAddress()
-
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
 
 	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
@@ -45,11 +43,9 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
 	err = keeper.AddWorkerNonce(ctx, topicId, &nonce)
 	s.Require().NoError(err)
-	err = keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
+	err = keeper.InsertWorker(ctx, topicId, workerAddr, workerInfo)
 	s.Require().NoError(err)
 	err = keeper.InsertWorker(ctx, topicId, Inferer2Addr, workerInfo)
-	s.Require().NoError(err)
-	err = keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 	s.Require().NoError(err)
 
 	topic, _ := s.emissionsKeeper.GetTopic(ctx, topicId)
@@ -60,23 +56,23 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	workerMsg := types.MsgInsertWorkerPayload{
 		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
-			Worker:  InfererAddr,
+			Worker:  workerAddr,
 			Nonce:   &nonce,
 			TopicId: topicId,
 			InferenceForecastsBundle: &types.InferenceForecastBundle{
 				Inference: &types.Inference{
 					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
-					Inferer:     Inferer2Addr,
+					Inferer:     workerAddr,
 					Value:       alloraMath.NewDecFromInt64(100),
 				},
 				Forecast: &types.Forecast{
 					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
-					Forecaster:  ForecasterAddr,
+					Forecaster:  workerAddr,
 					ForecastElements: []*types.ForecastElement{
 						{
-							Inferer: InfererAddr,
+							Inferer: workerAddr,
 							Value:   alloraMath.NewDecFromInt64(100),
 						},
 						{
@@ -201,7 +197,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithNilInferenceAndF
 	// END MODIFICATION
 
 	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
-	require.ErrorIs(err, types.ErrInvalidWorkerData)
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithoutSignature() {
@@ -217,7 +213,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithoutSignature() {
 	// END MODIFICATION
 
 	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
-	require.ErrorIs(err, types.ErrInvalidWorkerData)
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedTopicId() {
@@ -610,7 +606,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	}
 
 	_, err = msgServer.InsertWorkerPayload(ctx, workerMsg)
-	require.ErrorIs(err, types.ErrInvalidWorkerData)
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreRejected() {
@@ -746,4 +742,52 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithForecastRepeatedlyOve
 	require.NoError(err)
 	require.Equal(len(forecasts.Forecasts[0].ForecastElements), 4)
 	require.Equal(forecasts.Forecasts[0].ForecastElements[0].Value, alloraMath.NewDecFromInt64(200))
+}
+
+// test that the inferer address inside the bundle matches the signature on the payload message
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadInfererNotMatchSignature() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Inferer = s.addrsStr[3]
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	ctx = ctx.WithBlockHeight(blockHeight)
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
+}
+
+// test that the forecaster address inside the bundle matches the signature on the payload message
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterNotMatchSignature() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.Forecaster = s.addrsStr[3]
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	ctx = ctx.WithBlockHeight(blockHeight)
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
+}
+
+// test that the worker field on the bundle matches the signature on the payload message
+func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWorkerNotMatchSignature() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+
+	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
+	workerMsg.WorkerDataBundle.Worker = s.addrsStr[3]
+	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
+	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+	ctx = ctx.WithBlockHeight(blockHeight)
+	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 }

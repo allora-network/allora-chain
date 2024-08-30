@@ -8,6 +8,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const block = types.BlockHeight(1)
@@ -193,4 +194,48 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
 	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	reputerPrivateKey := secp256k1.GenPrivKey()
+	reputerPublicKeyBytes := reputerPrivateKey.PubKey().Bytes()
+	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
+
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
+
+	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
+	require.NoError(err)
+
+	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
+	require.NoError(err)
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	// Prior to the ground truth lag, should not allow reputer payload
+	newBlockheight := block + topic.GroundTruthLag - 1
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
+	reputerValueBundle.Reputer = s.addrsStr[3]
+	valueBundleSignature := s.signValueBundle(&reputerValueBundle, reputerPrivateKey)
+
+	// Create a MsgInsertReputerPayload message
+	lossesMsg := &types.MsgInsertReputerPayload{
+		Sender: reputerAddr.String(),
+		ReputerValueBundle: &types.ReputerValueBundle{
+			ValueBundle: &reputerValueBundle,
+			Signature:   valueBundleSignature,
+			Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
+		},
+	}
+
+	_, err = s.msgServer.InsertReputerPayload(ctx, lossesMsg)
+	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 }

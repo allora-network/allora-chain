@@ -12,7 +12,7 @@ func (withheldWorkerValue *WithheldWorkerAttributedValue) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid withheld worker address (%s)", err)
 	}
 
-	if err := ValidateDec(withheldWorkerValue.Value); err != nil {
+	if err := validateDec(withheldWorkerValue.Value); err != nil {
 		return err
 	}
 
