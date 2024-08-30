@@ -49,13 +49,9 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(ctx, s.emissionsKeeper, int64(block))
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	pagination := &types.SimpleCursorPaginationRequest{
-		Key:   nil,
-		Limit: 2,
-	}
-	activeTopics, _, err := s.emissionsKeeper.GetIdsActiveTopicAtBlock(ctx, 31, pagination)
+	activeTopics, err := s.emissionsKeeper.GetActiveTopicIdsAtBlock(ctx, 31)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(2, len(activeTopics), "Should retrieve exactly two active topics")
+	s.Require().Equal(2, len(activeTopics.TopicIds), "Should retrieve exactly two active topics")
 
 	params = types.Params{
 		MaxActiveTopicsPerBlock:         maxActiveTopicsNum,
@@ -73,11 +69,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(ctx, s.emissionsKeeper, int64(block))
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	pagination = &types.SimpleCursorPaginationRequest{
-		Key:   nil,
-		Limit: 2,
-	}
-	activeTopics, _, err = s.emissionsKeeper.GetIdsActiveTopicAtBlock(ctx, 46, pagination)
+	activeTopics, err = s.emissionsKeeper.GetActiveTopicIdsAtBlock(ctx, 46)
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
-	s.Require().Equal(1, len(activeTopics), "Should retrieve exactly one active topics")
+	s.Require().Equal(1, len(activeTopics.TopicIds), "Should retrieve exactly one active topics")
 }
