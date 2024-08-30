@@ -2057,7 +2057,7 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 		return err
 	}
 	// this delta is the drip per epoch
-	dripPerEpoch, err := topicFeeRevenueDec.Mul(epochsPerWeek)
+	dripPerEpoch, err := topicFeeRevenueDec.Quo(epochsPerWeek)
 	if err != nil {
 		return err
 	}
