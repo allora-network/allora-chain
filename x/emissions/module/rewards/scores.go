@@ -256,6 +256,8 @@ func GenerateForecastScores(
 // Returns the reported losses adding NaN values for missing workers in uncompleted reported losses
 func EnsureWorkerPresence(reportedLosses types.ReputerValueBundles) types.ReputerValueBundles {
 	// Consolidate all unique worker addresses and forecaster addresses
+	allWorkersInferer := make(map[string]struct{})
+	allWorkersForecaster := make(map[string]struct{})
 	allWorkersOneOutInferer := make(map[string]struct{})
 	allWorkersOneOutForecaster := make(map[string]struct{})
 	allWorkersOneInForecaster := make(map[string]struct{})
@@ -263,6 +265,12 @@ func EnsureWorkerPresence(reportedLosses types.ReputerValueBundles) types.Repute
 
 	for _, bundle := range reportedLosses.ReputerValueBundles {
 		// Collect unique workers for each type
+		for _, workerValue := range bundle.ValueBundle.InfererValues {
+			allWorkersInferer[workerValue.Worker] = struct{}{}
+		}
+		for _, workerValue := range bundle.ValueBundle.ForecasterValues {
+			allWorkersForecaster[workerValue.Worker] = struct{}{}
+		}
 		for _, workerValue := range bundle.ValueBundle.OneOutInfererValues {
 			allWorkersOneOutInferer[workerValue.Worker] = struct{}{}
 		}
@@ -287,6 +295,8 @@ func EnsureWorkerPresence(reportedLosses types.ReputerValueBundles) types.Repute
 
 	// Ensure each set has all workers, add NaN value for missing workers
 	for _, bundle := range reportedLosses.ReputerValueBundles {
+		bundle.ValueBundle.InfererValues = EnsureAllWorkersPresent(bundle.ValueBundle.InfererValues, allWorkersInferer)
+		bundle.ValueBundle.ForecasterValues = EnsureAllWorkersPresent(bundle.ValueBundle.ForecasterValues, allWorkersForecaster)
 		bundle.ValueBundle.OneOutInfererValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutInfererValues, allWorkersOneOutInferer)
 		bundle.ValueBundle.OneOutForecasterValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutForecasterValues, allWorkersOneOutForecaster)
 		bundle.ValueBundle.OneInForecasterValues = EnsureAllWorkersPresent(bundle.ValueBundle.OneInForecasterValues, allWorkersOneInForecaster)

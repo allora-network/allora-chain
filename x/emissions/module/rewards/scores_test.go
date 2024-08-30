@@ -468,6 +468,13 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 			{
 				Pubkey: "reputer1",
 				ValueBundle: &types.ValueBundle{
+					InfererValues: []*types.WorkerAttributedValue{
+						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
+						{Worker: "worker2", Value: alloraMath.NewDecFromInt64(200)},
+					},
+					ForecasterValues: []*types.WorkerAttributedValue{
+						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(300)},
+					},
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
 						{Worker: "worker2", Value: alloraMath.NewDecFromInt64(200)},
@@ -491,6 +498,9 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 			{
 				Pubkey: "reputer2",
 				ValueBundle: &types.ValueBundle{
+					InfererValues: []*types.WorkerAttributedValue{
+						{Worker: "worker5", Value: alloraMath.NewDecFromInt64(100)},
+					},
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
 						{Worker: "worker2", Value: alloraMath.NewDecFromInt64(200)},
