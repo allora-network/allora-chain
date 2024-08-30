@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
+func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -18,20 +18,20 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 		Inferences: []*types.Inference{
 			{
 				TopicId:     topicId,
-				BlockHeight: int64(blockHeight),
+				BlockHeight: blockHeight,
 				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
 				Value:       alloraMath.NewDecFromInt64(1),
 			},
 			{
 				TopicId:     topicId,
-				BlockHeight: int64(blockHeight),
+				BlockHeight: blockHeight,
 				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
 				Value:       alloraMath.NewDecFromInt64(2),
 			},
 		},
 	}
 
-	nonce := types.Nonce{BlockHeight: int64(blockHeight)}
+	nonce := types.Nonce{BlockHeight: blockHeight}
 	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
 	s.Require().NoError(err)
 
@@ -39,7 +39,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 		ctx,
 		&types.QueryInferencesAtBlockRequest{
 			TopicId:     topicId,
-			BlockHeight: int64(blockHeight),
+			BlockHeight: blockHeight,
 		},
 	)
 
@@ -47,7 +47,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	s.Require().Equal(&expectedInferences, results.Inferences)
 }
 
-func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
+func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
@@ -107,7 +107,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	s.Require().Equal(&inference, response.LatestInference, "The latest inference should match the expected data")
 }
 
-func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
+func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -250,14 +250,13 @@ func (s *KeeperTestSuite) TestGetNetworkInferencesAtBlock() {
 	req := &types.QueryNetworkInferencesAtBlockRequest{
 		TopicId:                  topicId,
 		BlockHeightLastInference: blockHeight,
-		BlockHeightLastReward:    blockHeight,
 	}
 	response, err := queryServer.GetNetworkInferencesAtBlock(s.ctx, req)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 }
 
-func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
+func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -269,8 +268,8 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	epochLength := topic.EpochLength
 	epochLastEnded := topic.EpochLastEnded
 
-	lossBlockHeight := int64(epochLastEnded)
-	inferenceBlockHeight := int64(epochLastEnded + epochLength)
+	lossBlockHeight := epochLastEnded
+	inferenceBlockHeight := epochLastEnded + epochLength
 
 	lossNonce := types.Nonce{BlockHeight: lossBlockHeight}
 	inferenceNonce := types.Nonce{BlockHeight: inferenceBlockHeight}
@@ -307,15 +306,23 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	forecaster1 := "allo1nxqgvyt6ggu3dz7uwe8p22sac6v2v8sayhwqvz"
 	forecaster2 := "allo1a0sc83cls78g4j5qey5er9zzpjpva4x935aajk"
 
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	require.NoError(err)
 
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
 
 	inferences := types.Inferences{
 		Inferences: []*types.Inference{
@@ -417,7 +424,7 @@ func (s *KeeperTestSuite) TestGetLatestNetworkInferences() {
 	require.Equal(len(response.ForecastImpliedInferences), 3)
 }
 
-func (s *KeeperTestSuite) TestIsWorkerNonceUnfulfilled() {
+func (s *QueryServerTestSuite) TestIsWorkerNonceUnfulfilled() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -442,7 +449,7 @@ func (s *KeeperTestSuite) TestIsWorkerNonceUnfulfilled() {
 	s.Require().True(response.IsWorkerNonceUnfulfilled)
 }
 
-func (s *KeeperTestSuite) TestGetUnfulfilledWorkerNonces() {
+func (s *QueryServerTestSuite) TestGetUnfulfilledWorkerNonces() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -474,7 +481,7 @@ func (s *KeeperTestSuite) TestGetUnfulfilledWorkerNonces() {
 	}
 }
 
-func (s *KeeperTestSuite) TestGetInfererNetworkRegret() {
+func (s *QueryServerTestSuite) TestGetInfererNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := s.CreateOneTopic()
@@ -503,7 +510,7 @@ func (s *KeeperTestSuite) TestGetInfererNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 }
 
-func (s *KeeperTestSuite) TestGetForecasterNetworkRegret() {
+func (s *QueryServerTestSuite) TestGetForecasterNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := s.CreateOneTopic()
@@ -532,7 +539,7 @@ func (s *KeeperTestSuite) TestGetForecasterNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 }
 
-func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
+func (s *QueryServerTestSuite) TestGetOneInForecasterNetworkRegret() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := s.CreateOneTopic()
@@ -563,7 +570,7 @@ func (s *KeeperTestSuite) TestGetOneInForecasterNetworkRegret() {
 	s.Require().Equal(response.Regret, &regret)
 }
 
-func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
+func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 
@@ -585,7 +592,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	// Insert first set of inferences
 	blockHeight1 := types.BlockHeight(12345)
 	newInference1 := types.Inference{
-		TopicId:     uint64(topicId),
+		TopicId:     topicId,
 		BlockHeight: blockHeight1,
 		Inferer:     "worker1",
 		Value:       alloraMath.MustNewDecFromString("10"),
@@ -602,7 +609,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	// Insert second set of inferences
 	blockHeight2 := types.BlockHeight(12346)
 	newInference2 := types.Inference{
-		TopicId:     uint64(topicId),
+		TopicId:     topicId,
 		BlockHeight: blockHeight2,
 		Inferer:     "worker2",
 		Value:       alloraMath.MustNewDecFromString("20"),
@@ -626,7 +633,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
 }
 
-func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
+func (s *QueryServerTestSuite) TestGetLatestAvailableNetworkInference() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -638,9 +645,9 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	epochLength := topic.EpochLength
 	epochLastEnded := topic.EpochLastEnded
 
-	lossBlockHeight := int64(epochLastEnded + epochLength)
-	inferenceBlockHeight := int64(lossBlockHeight + epochLength)
-	inferenceBlockHeight2 := int64(inferenceBlockHeight + epochLength)
+	lossBlockHeight := epochLastEnded + epochLength
+	inferenceBlockHeight := lossBlockHeight + epochLength
+	inferenceBlockHeight2 := inferenceBlockHeight + epochLength
 
 	lossNonce := types.Nonce{BlockHeight: lossBlockHeight}
 	inferenceNonce := types.Nonce{BlockHeight: inferenceBlockHeight}
@@ -681,15 +688,23 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	forecaster1 := "allo1nxqgvyt6ggu3dz7uwe8p22sac6v2v8sayhwqvz"
 	forecaster2 := "allo1a0sc83cls78g4j5qey5er9zzpjpva4x935aajk"
 
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	require.NoError(err)
 
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
 
 	getInferencesForBlockHeight := func(blockHeight int64) types.Inferences {
 		return types.Inferences{
@@ -796,7 +811,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	require.NoError(err)
 
 	// Test querying the server
-	req := &types.QueryLatestNetworkInferencesRequest{
+	req := &types.QueryLatestAvailableNetworkInferencesRequest{
 		TopicId: topicId,
 	}
 	response, err := queryServer.GetLatestAvailableNetworkInference(s.ctx, req)
@@ -814,7 +829,7 @@ func (s *KeeperTestSuite) TestGetLatestAvailableNetworkInference() {
 	require.Equal(response.LossBlockHeight, lossBlockHeight)
 }
 
-func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingInferences() {
+func (s *QueryServerTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingInferences() {
 	queryServer := s.queryServer
 	keeper := s.emissionsKeeper
 
@@ -826,9 +841,9 @@ func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingI
 	epochLength := topic.EpochLength
 	epochLastEnded := topic.EpochLastEnded
 
-	lossBlockHeight := int64(epochLastEnded)
-	inferenceBlockHeight := int64(epochLastEnded + epochLength)
-	inferenceBlockHeight2 := int64(inferenceBlockHeight + epochLength)
+	lossBlockHeight := epochLastEnded
+	inferenceBlockHeight := epochLastEnded + epochLength
+	inferenceBlockHeight2 := inferenceBlockHeight + epochLength
 
 	lossNonce := types.Nonce{BlockHeight: lossBlockHeight}
 	// inferenceNonce := types.Nonce{BlockHeight: inferenceBlockHeight}
@@ -866,15 +881,23 @@ func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingI
 	forecaster1 := "allo1nxqgvyt6ggu3dz7uwe8p22sac6v2v8sayhwqvz"
 	forecaster2 := "allo1a0sc83cls78g4j5qey5er9zzpjpva4x935aajk"
 
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
-	keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker3, getWorkerRegretValue("0.4"))
+	require.NoError(err)
+	err = keeper.SetInfererNetworkRegret(s.ctx, topicId, worker4, getWorkerRegretValue("0.5"))
+	require.NoError(err)
 
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
-	keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster0, getWorkerRegretValue("0.1"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster1, getWorkerRegretValue("0.2"))
+	require.NoError(err)
+	err = keeper.SetForecasterNetworkRegret(s.ctx, topicId, forecaster2, getWorkerRegretValue("0.3"))
+	require.NoError(err)
 
 	getInferencesForBlockHeight := func(blockHeight int64) types.Inferences {
 		return types.Inferences{
@@ -969,7 +992,7 @@ func (s *KeeperTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMissingI
 	require.NoError(err)
 
 	// Test querying the server
-	req := &types.QueryLatestNetworkInferencesRequest{
+	req := &types.QueryLatestAvailableNetworkInferencesRequest{
 		TopicId: topicId,
 	}
 	_, err = queryServer.GetLatestAvailableNetworkInference(s.ctx, req)

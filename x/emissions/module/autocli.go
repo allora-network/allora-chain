@@ -2,14 +2,14 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	statev2 "github.com/allora-network/allora-chain/x/emissions/api/v2"
+	statev3 "github.com/allora-network/allora-chain/x/emissions/api/v3"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: statev2.Query_ServiceDesc.ServiceName,
+			Service: statev3.Query_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "Params",
@@ -43,14 +43,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "True if topic is active, else false",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
-					},
-				},
-				{
-					RpcMethod: "GetActiveTopics",
-					Use:       "active-topics [pagination]",
-					Short:     "Get Active Topics",
-					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
-						{ProtoField: "pagination"},
 					},
 				},
 				{
@@ -178,8 +170,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestForecasterScore",
-					Use:       "latest-forecaster-score [topic_id] [forecaster]",
+					RpcMethod: "GetForecasterScoreEma",
+					Use:       "forecaster-score-ema [topic_id] [forecaster]",
 					Short:     "Returns latest score for a forecaster in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -187,8 +179,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestInfererScore",
-					Use:       "latest-inferer-score [topic_id] [inferer]",
+					RpcMethod: "GetInfererScoreEma",
+					Use:       "inferer-score-ema [topic_id] [inferer]",
 					Short:     "Returns latest score for a inferer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -196,8 +188,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestReputerScore",
-					Use:       "latest-reputer-score [topic_id] [reputer]",
+					RpcMethod: "GetReputerScoreEma",
+					Use:       "reputer-score-ema [topic_id] [reputer]",
 					Short:     "Returns latest score for a reputer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -524,12 +516,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetNetworkInferencesAtBlock",
-					Use:       "network-inferences-at-block [topic_id] [block_height_last_inference] [block_height_last_reward]",
-					Short:     "Get the Network Inferences for a topic at a block height where the last inference was made and the last reward was given",
+					Use:       "network-inferences-at-block [topic_id] [block_height_last_inference]",
+					Short:     "Get the Network Inferences for a topic at a block height where the last inference was made",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "block_height_last_inference"},
-						{ProtoField: "block_height_last_reward"},
 					},
 				},
 				{
@@ -608,10 +599,26 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "GetActiveTopicsAtBlock",
+					Use:       "active-topics-at-block [block_height]",
+					Short:     "Get active topics at block",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "block_height"},
+					},
+				},
+				{
+					RpcMethod: "GetNextChurningBlockByTopicId",
+					Use:       "next-churning-block [topic_id]",
+					Short:     "Get next possible churning block by topic id",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service: statev2.Msg_ServiceDesc.ServiceName,
+			Service: statev3.Msg_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",

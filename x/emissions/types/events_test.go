@@ -44,7 +44,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v2.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v3.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -77,7 +77,7 @@ func TestEmitNewInfererScoresSetEventWithNoScores(t *testing.T) {
 	types.EmitNewInfererScoresSetEvent(ctx, scores)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
@@ -103,7 +103,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v2.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v3.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -136,7 +136,7 @@ func TestEmitNewForecasterScoresSetEventWithNoScores(t *testing.T) {
 	types.EmitNewForecasterScoresSetEvent(ctx, scores)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
@@ -162,7 +162,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v2.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v3.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -195,7 +195,7 @@ func TestEmitNewReputerScoresSetEventWithNoScores(t *testing.T) {
 	types.EmitNewReputerScoresSetEvent(ctx, scores)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
@@ -219,7 +219,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v2.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v3.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -252,7 +252,7 @@ func TestEmitNewInfererRewardsSettledEventWithNoRewards(t *testing.T) {
 	types.EmitNewInfererRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
@@ -276,7 +276,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v2.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v3.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -309,7 +309,7 @@ func TestEmitNewForecasterRewardsSettledEventWithNoRewards(t *testing.T) {
 	types.EmitNewForecasterRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) {
@@ -333,7 +333,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v2.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v3.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -366,7 +366,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithNoRewards(t *testing.T
 	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
 
 	events := ctx.EventManager().Events()
-	require.Len(t, events, 0)
+	require.Empty(t, events)
 }
 
 func TestEmitNewNetworkLossSetEvent(t *testing.T) {
@@ -389,7 +389,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v2.EventNetworkLossSet", event.Type)
+	require.Equal(t, "emissions.v3.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 3)

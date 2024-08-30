@@ -31,18 +31,14 @@ func FundTopic1(m testCommon.TestConfig) {
 func CheckTopic1Activated(m testCommon.TestConfig) {
 	ctx := context.Background()
 	// Fetch only active topics
-	pagi := &emissionstypes.QueryActiveTopicsRequest{
-		Pagination: &emissionstypes.SimpleCursorPaginationRequest{
-			Limit: 10,
-		},
-	}
-	activeTopics, err := m.Client.QueryEmissions().GetActiveTopics(
+	topicIsActive, err := m.Client.QueryEmissions().IsTopicActive(
 		ctx,
-		pagi)
+		&emissionstypes.QueryIsTopicActiveRequest{TopicId: 1},
+	)
 	require.NoError(m.T, err, "Fetching active topics should not produce an error")
 
 	// Verify the correct number of active topics is retrieved
-	require.Equal(m.T, len(activeTopics.Topics), 1, "Should retrieve exactly one active topics")
+	require.True(m.T, topicIsActive.IsActive, "Should retrieve exactly one active topics")
 }
 
 // Must come after a reputer is registered and staked in topic 1

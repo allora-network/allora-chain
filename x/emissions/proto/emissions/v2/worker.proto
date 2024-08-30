@@ -1,17 +1,19 @@
 syntax = "proto3";
 package emissions.v2;
 
-option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
-
-import "gogoproto/gogo.proto";
 import "emissions/v2/nonce.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
 message TimestampedValue {
   option (gogoproto.equal) = true;
 
-  int64 block_height = 1;  // height at which value calculated or received
-  string value = 2
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  int64 block_height = 1; // height at which value calculated or received
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message Inference {
@@ -20,8 +22,10 @@ message Inference {
   uint64 topic_id = 1;
   int64 block_height = 2;
   string inferer = 3;
-  string value = 4
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string value = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
   bytes extra_data = 5;
   string proof = 6;
 }
@@ -34,8 +38,10 @@ message ForecastElement {
   option (gogoproto.equal) = true;
 
   string inferer = 1;
-  string value = 2
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message Forecast {
@@ -67,6 +73,6 @@ message WorkerDataBundle {
   string pubkey = 6;
 }
 
-message WorkerDataBundles {  // This will be in the incoming message, sent by leader
+message WorkerDataBundles { // This will be in the incoming message, sent by leader
   repeated WorkerDataBundle worker_data_bundles = 1;
 }

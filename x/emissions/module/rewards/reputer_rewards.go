@@ -17,7 +17,6 @@ func GetReputersRewardFractions(
 	pReward alloraMath.Dec,
 	scoresAtBlock []types.Score,
 ) ([]string, []alloraMath.Dec, error) {
-
 	numReputers := len(scoresAtBlock)
 	stakes := make([]alloraMath.Dec, numReputers)
 	scores := make([]alloraMath.Dec, numReputers)
@@ -147,7 +146,6 @@ func GetRewardForReputerFromTotalReward(
 	topicId uint64,
 	reputerDelegatorRewards []types.TaskReward,
 ) ([]types.TaskReward, error) {
-
 	var reputerRewards []types.TaskReward
 	for _, reputerReward := range reputerDelegatorRewards {
 		reputer := reputerReward.Address
@@ -178,7 +176,10 @@ func GetRewardForReputerFromTotalReward(
 		if err != nil {
 			return nil, err
 		}
-		delegatorRewardInt := delegatorRewardDec.SdkIntTrim()
+		delegatorRewardInt, err := delegatorRewardDec.SdkIntTrim()
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to sdk int trim delegator reward")
+		}
 		delegatorRewardDec, err = alloraMath.NewDecFromSdkInt(delegatorRewardInt)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to reconvert delegator reward from int to dec")

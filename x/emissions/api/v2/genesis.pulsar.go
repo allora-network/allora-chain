@@ -22009,12 +22009,15 @@ type GenesisState struct {
 	// params defines all the parameters of the module.
 	Params *Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
 	// / TOPIC
-	// the next topic id to be used, equal to the number of topics that have been created
+	// the next topic id to be used, equal to the number of topics that have been
+	// created
 	NextTopicId uint64 `protobuf:"varint,3,opt,name=nextTopicId,proto3" json:"nextTopicId,omitempty"`
-	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
+	// every topic that has been created indexed by their topicId starting from 1
+	// (0 is reserved for the root network)
 	Topics       []*TopicIdAndTopic `protobuf:"bytes,4,rep,name=topics,proto3" json:"topics,omitempty"`
 	ActiveTopics []uint64           `protobuf:"varint,5,rep,packed,name=activeTopics,proto3" json:"activeTopics,omitempty"`
-	// every topic that has been churned and ready to be rewarded i.e. reputer losses have been committed
+	// every topic that has been churned and ready to be rewarded i.e. reputer
+	// losses have been committed
 	RewardableTopics []uint64 `protobuf:"varint,6,rep,packed,name=rewardableTopics,proto3" json:"rewardableTopics,omitempty"`
 	// for a topic, what is every worker node that has registered to it?
 	TopicWorkers []*TopicAndActorId `protobuf:"bytes,7,rep,name=topicWorkers,proto3" json:"topicWorkers,omitempty"`
@@ -22051,26 +22054,34 @@ type GenesisState struct {
 	TopicStake []*TopicIdAndInt `protobuf:"bytes,22,rep,name=topicStake,proto3" json:"topicStake,omitempty"`
 	// stake reputer placed in topic + delegate stake placed in them,
 	// signalling their total authority on the topic
-	// (topic Id, reputer) -> stake from reputer on self + stakeFromDelegatorsUponReputer
+	// (topic Id, reputer) -> stake from reputer on self +
+	// stakeFromDelegatorsUponReputer
 	StakeReputerAuthority []*TopicIdActorIdInt `protobuf:"bytes,23,rep,name=stakeReputerAuthority,proto3" json:"stakeReputerAuthority,omitempty"`
-	// map of (topic id, delegator) -> total amount of stake in that topic placed by that delegator
+	// map of (topic id, delegator) -> total amount of stake in that topic placed
+	// by that delegator
 	StakeSumFromDelegator []*TopicIdActorIdInt `protobuf:"bytes,24,rep,name=stakeSumFromDelegator,proto3" json:"stakeSumFromDelegator,omitempty"`
-	// map of (topic id, delegator, reputer) -> amount of stake that has been placed by that delegator on that target
+	// map of (topic id, delegator, reputer) -> amount of stake that has been
+	// placed by that delegator on that target
 	DelegatedStakes []*TopicIdDelegatorReputerDelegatorInfo `protobuf:"bytes,25,rep,name=delegatedStakes,proto3" json:"delegatedStakes,omitempty"`
-	// map of (topic id, reputer) -> total amount of stake that has been placed on that reputer by delegators
+	// map of (topic id, reputer) -> total amount of stake that has been placed on
+	// that reputer by delegators
 	StakeFromDelegatorsUponReputer []*TopicIdActorIdInt `protobuf:"bytes,26,rep,name=stakeFromDelegatorsUponReputer,proto3" json:"stakeFromDelegatorsUponReputer,omitempty"`
 	// map of (topicId, reputer) -> share of delegate reward
 	DelegateRewardPerShare []*TopicIdActorIdDec `protobuf:"bytes,27,rep,name=delegateRewardPerShare,proto3" json:"delegateRewardPerShare,omitempty"`
 	// stake removals are double indexed to avoid O(n) lookups when removing stake
-	// map of (blockHeight, topic, reputer) -> removal information for that reputer
+	// map of (blockHeight, topic, reputer) -> removal information for that
+	// reputer
 	StakeRemovalsByBlock []*BlockHeightTopicIdReputerStakeRemovalInfo `protobuf:"bytes,28,rep,name=stakeRemovalsByBlock,proto3" json:"stakeRemovalsByBlock,omitempty"`
-	// key set of (reputer, topic, blockHeight) to existence of a removal in the forwards map
+	// key set of (reputer, topic, blockHeight) to existence of a removal in the
+	// forwards map
 	StakeRemovalsByActor []*ActorIdTopicIdBlockHeight `protobuf:"bytes,29,rep,name=stakeRemovalsByActor,proto3" json:"stakeRemovalsByActor,omitempty"`
-	// delegate stake removals are double indexed to avoid O(n) lookups when removing stake
-	// map of (blockHeight, topic, delegator, reputer staked upon) -> (list of reputers delegated upon and info) to have
-	// stake removed at that block
+	// delegate stake removals are double indexed to avoid O(n) lookups when
+	// removing stake map of (blockHeight, topic, delegator, reputer staked upon)
+	// -> (list of reputers delegated upon and info) to have stake removed at that
+	// block
 	DelegateStakeRemovalsByBlock []*BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo `protobuf:"bytes,30,rep,name=delegateStakeRemovalsByBlock,proto3" json:"delegateStakeRemovalsByBlock,omitempty"`
-	// key set of (delegator, reputer, topicId, blockHeight) to existence of a removal in the forwards map
+	// key set of (delegator, reputer, topicId, blockHeight) to existence of a
+	// removal in the forwards map
 	DelegateStakeRemovalsByActor []*DelegatorReputerTopicIdBlockHeight `protobuf:"bytes,31,rep,name=delegateStakeRemovalsByActor,proto3" json:"delegateStakeRemovalsByActor,omitempty"`
 	// / MISC GLOBAL STATE
 	// map of (topic, worker) -> inference
@@ -22089,11 +22100,14 @@ type GenesisState struct {
 	AllInferences []*TopicIdBlockHeightInferences `protobuf:"bytes,38,rep,name=allInferences,proto3" json:"allInferences,omitempty"`
 	// map of (topic, block_height) -> Forecast
 	AllForecasts []*TopicIdBlockHeightForecasts `protobuf:"bytes,39,rep,name=allForecasts,proto3" json:"allForecasts,omitempty"`
-	// map of (topic, block_height) -> ReputerValueBundles (1 per reputer active at that time)
+	// map of (topic, block_height) -> ReputerValueBundles (1 per reputer active
+	// at that time)
 	AllLossBundles []*TopicIdBlockHeightReputerValueBundles `protobuf:"bytes,40,rep,name=allLossBundles,proto3" json:"allLossBundles,omitempty"`
-	// map of (topic, block_height) -> ValueBundle (1 network wide bundle per timestep)
+	// map of (topic, block_height) -> ValueBundle (1 network wide bundle per
+	// timestep)
 	NetworkLossBundles []*TopicIdBlockHeightValueBundles `protobuf:"bytes,41,rep,name=networkLossBundles,proto3" json:"networkLossBundles,omitempty"`
-	// Percentage of all rewards, paid out to staked reputers, during the previous reward cadence. Used by mint module
+	// Percentage of all rewards, paid out to staked reputers, during the previous
+	// reward cadence. Used by mint module
 	PreviousPercentageRewardToStakedReputers string `protobuf:"bytes,42,opt,name=previousPercentageRewardToStakedReputers,proto3" json:"previousPercentageRewardToStakedReputers,omitempty"`
 	// / NONCES
 	// map of (topic) -> unfulfilled nonces
@@ -22101,14 +22115,18 @@ type GenesisState struct {
 	// map of (topic) -> unfulfilled nonces
 	UnfulfilledReputerNonces []*TopicIdAndReputerRequestNonces `protobuf:"bytes,44,rep,name=unfulfilledReputerNonces,proto3" json:"unfulfilledReputerNonces,omitempty"`
 	// / REGRETS
-	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other inferers
+	// map of (topic, worker) -> regret of worker from comparing loss of worker
+	// relative to loss of other inferers
 	LatestInfererNetworkRegrets []*TopicIdActorIdTimeStampedValue `protobuf:"bytes,45,rep,name=latestInfererNetworkRegrets,proto3" json:"latestInfererNetworkRegrets,omitempty"`
-	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other forecasters
+	// map of (topic, worker) -> regret of worker from comparing loss of worker
+	// relative to loss of other forecasters
 	LatestForecasterNetworkRegrets []*TopicIdActorIdTimeStampedValue `protobuf:"bytes,46,rep,name=latestForecasterNetworkRegrets,proto3" json:"latestForecasterNetworkRegrets,omitempty"`
-	// map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster loss from comparing one-in loss with
-	// all network inferer (3rd index) regrets L_ij made under the regime of the one-in forecaster (2nd index)
+	// map of (topic, forecaster, inferer) -> R^+_{ij_kk} regret of forecaster
+	// loss from comparing one-in loss with all network inferer (3rd index)
+	// regrets L_ij made under the regime of the one-in forecaster (2nd index)
 	LatestOneInForecasterNetworkRegrets []*TopicIdActorIdActorIdTimeStampedValue `protobuf:"bytes,47,rep,name=latestOneInForecasterNetworkRegrets,proto3" json:"latestOneInForecasterNetworkRegrets,omitempty"`
-	// the forecaster (2nd index) regrets made under the regime of the same forecaster as a one-in forecaster
+	// the forecaster (2nd index) regrets made under the regime of the same
+	// forecaster as a one-in forecaster
 	LatestNaiveInfererNetworkRegrets               []*TopicIdActorIdTimeStampedValue        `protobuf:"bytes,48,rep,name=latestNaiveInfererNetworkRegrets,proto3" json:"latestNaiveInfererNetworkRegrets,omitempty"`
 	LatestOneOutInfererInfererNetworkRegrets       []*TopicIdActorIdActorIdTimeStampedValue `protobuf:"bytes,49,rep,name=latestOneOutInfererInfererNetworkRegrets,proto3" json:"latestOneOutInfererInfererNetworkRegrets,omitempty"`
 	LatestOneOutInfererForecasterNetworkRegrets    []*TopicIdActorIdActorIdTimeStampedValue `protobuf:"bytes,50,rep,name=latestOneOutInfererForecasterNetworkRegrets,proto3" json:"latestOneOutInfererForecasterNetworkRegrets,omitempty"`
@@ -23877,26 +23895,26 @@ var File_emissions_v2_genesis_proto protoreflect.FileDescriptor
 var file_emissions_v2_genesis_proto_rawDesc = []byte{
 	0x0a, 0x1a, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x67,
 	0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0c, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x32, 0x1a, 0x19, 0x63, 0x6f, 0x73, 0x6d,
-	0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2f, 0x61, 0x6d, 0x69,
-	0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19,
-	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x61, 0x72,
-	0x61, 0x6d, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76,
-	0x32, 0x2f, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65,
-	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x74, 0x79, 0x70, 0x65,
-	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f,
-	0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x17, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x6e, 0x6f, 0x64, 0x65, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1a, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2f, 0x76, 0x32, 0x2f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x32, 0x1a, 0x11, 0x61, 0x6d, 0x69, 0x6e,
+	0x6f, 0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63,
+	0x6f, 0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d,
+	0x6f, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x17, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x6e, 0x6f, 0x64, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f,
-	0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf0, 0x27, 0x0a, 0x0c,
+	0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69,
+	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1a, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2f, 0x76, 0x32, 0x2f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32,
+	0x2f, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x73, 0x74, 0x61, 0x6b, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x2f, 0x76, 0x32, 0x2f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x1a, 0x18, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x74,
+	0x79, 0x70, 0x65, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x32, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xf0, 0x27, 0x0a, 0x0c,
 	0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x32, 0x0a, 0x06,
 	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x65,
 	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x32, 0x2e, 0x50, 0x61, 0x72, 0x61,
@@ -24619,15 +24637,15 @@ func file_emissions_v2_genesis_proto_init() {
 	if File_emissions_v2_genesis_proto != nil {
 		return
 	}
+	file_emissions_v2_node_proto_init()
+	file_emissions_v2_nonce_proto_init()
 	file_emissions_v2_params_proto_init()
+	file_emissions_v2_reputer_proto_init()
 	file_emissions_v2_score_proto_init()
 	file_emissions_v2_stake_proto_init()
-	file_emissions_v2_types_proto_init()
 	file_emissions_v2_topic_proto_init()
+	file_emissions_v2_types_proto_init()
 	file_emissions_v2_worker_proto_init()
-	file_emissions_v2_node_proto_init()
-	file_emissions_v2_reputer_proto_init()
-	file_emissions_v2_nonce_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_emissions_v2_genesis_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GenesisState); i {

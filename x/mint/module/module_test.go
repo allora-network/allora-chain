@@ -1,6 +1,7 @@
 package mint_test
 
 import (
+	"math/big"
 	"testing"
 	"time"
 
@@ -108,7 +109,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
-	stakingKeeper.SetParams(ctx, stakingtypes.Params{
+	err := stakingKeeper.SetParams(ctx, stakingtypes.Params{
 		UnbondingTime:     60,
 		MaxValidators:     100,
 		MaxEntries:        7,
@@ -116,6 +117,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		BondDenom:         sdk.DefaultBondDenom,
 		MinCommissionRate: cosmosMath.LegacyNewDecWithPrec(1, 2),
 	})
+	s.Require().NoError(err)
 	emissionsKeeper := emissionskeeper.NewKeeper(
 		encCfg.Codec,
 		addresscodec.NewBech32Codec(sdk.Bech32PrefixAccAddr),
@@ -159,7 +161,7 @@ func TestMintModuleTestSuite(t *testing.T) {
 func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown() {
 	params, err := s.mintKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
-	ecosystemMintSupplyRemaining, err := mint.GetEcosystemMintSupplyRemaining(s.ctx, s.mintKeeper, params)
+	ecosystemMintSupplyRemaining, err := s.mintKeeper.GetEcosystemMintSupplyRemaining(s.ctx, params)
 	s.Require().NoError(err)
 	// stake enough tokens so that the networkStaked is non zero
 	stake, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
@@ -232,11 +234,10 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 		emissionPerUnitStakedTokenBefore.String(),
 		emissionPerUnitStakedTokenAfter.String(),
 	)
-
 }
 
 func (s *MintModuleTestSuite) TestEcosystemMintableRemainingGoDownTargetEmissionPerUnitStakeTokenGoDown() {
-	var fEmission cosmosMath.LegacyDec = types.DefaultParams().FEmission
+	var fEmission = types.DefaultParams().FEmission
 	networkStaked, ok := cosmosMath.NewIntFromString("1000000000000000000000") // 1000e18
 	s.Require().True(ok)
 	circulatingSupply, ok := cosmosMath.NewIntFromString("10000000000000000000000") // 10000e18
@@ -467,12 +468,13 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 		spareCoins,
 	)
 	s.Require().NoError(err)
-	s.bankKeeper.SendCoinsFromModuleToAccount(
+	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		s.ctx,
 		"mint",
 		sdk.AccAddress(s.PKS[2].Address()),
 		spareCoins,
 	)
+	s.Require().NoError(err)
 
 	tokenSupplyZero := s.bankKeeper.GetSupply(s.ctx, sdk.DefaultBondDenom)
 	ecosystemTokensMintedZero, err := s.mintKeeper.EcosystemTokensMinted.Get(s.ctx)
@@ -506,7 +508,9 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	emissionsParams, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 	blocksPerMonth := emissionsParams.BlocksPerMonth
-	s.ctx = s.ctx.WithBlockHeight(int64(blocksPerMonth + 1))
+	blocks := new(big.Int).SetUint64(blocksPerMonth)
+	blocks.Add(blocks, big.NewInt(1))
+	s.ctx = s.ctx.WithBlockHeight(blocks.Int64())
 
 	err = mint.BeginBlocker(s.ctx, s.mintKeeper)
 	s.Require().NoError(err)

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"math/bits"
 
 	"cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -39,6 +40,7 @@ var (
 	ErrUnexpectedRounding = errors.Register(mathCodespace, 2, "unexpected rounding")
 	ErrNonIntegeral       = errors.Register(mathCodespace, 3, "value is non-integral")
 	ErrInfiniteString     = errors.Register(mathCodespace, 4, "value is infinite")
+	ErrOverflow           = errors.Register(mathCodespace, 5, "overflow")
 )
 
 // The number 0 encoded as Dec
@@ -80,7 +82,7 @@ func NewDecFromString(s string) (Dec, error) {
 
 	d1 := Dec{*d, false}
 	if d1.dec.Form == apd.Infinite {
-		return d1, ErrInfiniteString.Wrapf(s)
+		return d1, ErrInfiniteString.Wrap(s)
 	}
 
 	return d1, nil
@@ -218,7 +220,7 @@ func (x Dec) Quo(y Dec) (Dec, error) {
 	return z, errors.Wrap(err, "decimal quotient error")
 }
 
-// MulExact returns a new dec with value x * y. The product must not round or
+// MulExact returns a new dec with value x * y. The product must not be rounded or
 // ErrUnexpectedRounding will be returned.
 func (x Dec) MulExact(y Dec) (Dec, error) {
 	var z Dec
@@ -300,7 +302,7 @@ func Exp(x Dec) (Dec, error) {
 
 // Exp10 returns a new Dec with the value of 10^x, without mutating x.
 func Exp10(x Dec) (Dec, error) {
-	var ten Dec = NewDecFromInt64(10)
+	var ten = NewDecFromInt64(10)
 	var z Dec
 	_, err := dec128Context.Pow(&z.dec, &ten.dec, &x.dec)
 	return z, errors.Wrap(err, "decimal 10 to the x exponentiation error")
@@ -389,6 +391,7 @@ func (x Dec) BigInt() (*big.Int, error) {
 	return z, nil
 }
 
+// Coeff copies x into a big int while minimizing trailing zeroes
 func (x Dec) Coeff() big.Int {
 	y, _ := x.Reduce()
 	var r = y.dec.Coeff
@@ -408,19 +411,43 @@ func (x Dec) Coeff() big.Int {
 	return *r.MathBigInt()
 }
 
+// MaxBitLen defines the maximum bit length supported bit Int and Uint types.
+const MaxBitLen = 256
+
+// maxWordLen defines the maximum word length supported by Int and Uint types.
+// We check overflow, by first doing a fast check if the word length is below maxWordLen
+// and if not then do the slower full bitlen check.
+// NOTE: If MaxBitLen is not a multiple of bits.UintSize, then we need to edit the used logic slightly.
+const maxWordLen = MaxBitLen / bits.UintSize
+
+// check if the big int is greater than the maximum word length
+// of a sdk int (256 bits)
+func bigIntOverflows(i *big.Int) bool {
+	// overflow is defined as i.BitLen() > MaxBitLen
+	// however this check can be expensive when doing many operations.
+	// So we first check if the word length is greater than maxWordLen.
+	// However the most significant word could be zero, hence we still do the bitlen check.
+	if len(i.Bits()) > maxWordLen {
+		return i.BitLen() > MaxBitLen
+	}
+	return false
+}
+
 // SdkIntTrim rounds decimal number to the integer towards zero and converts it to `sdkmath.Int`.
-// Panics if x is bigger the SDK Int max value
-func (x Dec) SdkIntTrim() sdkmath.Int {
+// returns error if the Dec is not representable in an sdkmath.Int
+func (x Dec) SdkIntTrim() (sdkmath.Int, error) {
 	var r = x.Coeff()
-	return sdkmath.NewIntFromBigInt(&r)
+	if bigIntOverflows(&r) {
+		return sdkmath.Int{}, errors.Wrap(ErrOverflow, "decimal is not representable as an sdkmath.Int")
+	}
+	return sdkmath.NewIntFromBigInt(&r), nil
 }
 
 // SdkLegacyDec converts Dec to `sdkmath.LegacyDec`
 // can return nil if the value is not representable in a LegacyDec
-func (x Dec) SdkLegacyDec() sdkmath.LegacyDec {
+func (x Dec) SdkLegacyDec() (sdkmath.LegacyDec, error) {
 	stringRep := x.dec.Text('f')
-	y, _ := sdkmath.LegacyNewDecFromStr(stringRep)
-	return y
+	return sdkmath.LegacyNewDecFromStr(stringRep)
 }
 
 func (x Dec) String() string {
@@ -428,17 +455,17 @@ func (x Dec) String() string {
 }
 
 // Marshal implements the gogo proto custom type interface.
-func (d Dec) Marshal() ([]byte, error) {
-	return d.dec.MarshalText()
+func (x Dec) Marshal() ([]byte, error) {
+	return x.dec.MarshalText()
 }
 
 // Unmarshal implements the gogo proto custom type interface.
-func (d *Dec) Unmarshal(data []byte) error {
+func (x *Dec) Unmarshal(data []byte) error {
 	if len(data) == 0 {
 		return nil
 	}
 
-	if err := d.dec.UnmarshalText(data); err != nil {
+	if err := x.dec.UnmarshalText(data); err != nil {
 		return err
 	}
 
@@ -446,14 +473,14 @@ func (d *Dec) Unmarshal(data []byte) error {
 }
 
 // Size returns the size of the marshalled Dec type in bytes
-func (d Dec) Size() int {
-	bz, _ := d.Marshal()
+func (x Dec) Size() int {
+	bz, _ := x.Marshal()
 	return len(bz)
 }
 
 // MarshalTo implements the gogo proto custom type interface.
-func (d *Dec) MarshalTo(data []byte) (n int, err error) {
-	bz, err := d.Marshal()
+func (x *Dec) MarshalTo(data []byte) (n int, err error) {
+	bz, err := x.Marshal()
 	if err != nil {
 		return 0, err
 	}
@@ -463,13 +490,12 @@ func (d *Dec) MarshalTo(data []byte) (n int, err error) {
 }
 
 // MarshalJSON marshals the decimal
-func (d Dec) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.String())
+func (x Dec) MarshalJSON() ([]byte, error) {
+	return json.Marshal(x.String())
 }
 
 // UnmarshalJSON defines custom decoding scheme
-func (d *Dec) UnmarshalJSON(bz []byte) error {
-
+func (x *Dec) UnmarshalJSON(bz []byte) error {
 	var text string
 	err := json.Unmarshal(bz, &text)
 	if err != nil {
@@ -481,7 +507,7 @@ func (d *Dec) UnmarshalJSON(bz []byte) error {
 		return err
 	}
 
-	*d = newDec
+	*x = newDec
 
 	return nil
 }
@@ -594,7 +620,7 @@ func SlicesInDelta(a, b []Dec, epsilon Dec) bool {
 // Generic Sum function, given an array of values returns its sum
 func SumDecSlice(x []Dec) (Dec, error) {
 	sum := ZeroDec()
-	var err error = nil
+	var err error
 	for _, v := range x {
 		sum, err = sum.Add(v)
 		if err != nil {

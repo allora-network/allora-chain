@@ -268,7 +268,7 @@ func workerReputerLoop(
 		}
 
 		// Generate and insert reputer bundle scoring workers
-		err = generateInsertReputerBulk(
+		err = generateInsertReputerBundle(
 			m,
 			topic,
 			reputers,
@@ -327,7 +327,7 @@ func workerReputerLoop(
 	}
 
 	// Check that only the top workers and reputers are rewarded
-	maxTopInferersCount, maxTopForecastersCount, maxTopReputersCount, _ := getMaxTopWorkersReputersToReward(m)
+	maxTopInferersCount, maxTopForecastersCount, maxTopReputersCount := getMaxTopWorkersReputersToReward(m)
 	require.Less(m.T, rewardedWorkersCount, maxTopInferersCount, "Only top workers can get reward")
 	require.Less(m.T, rewardedWorkersCount, maxTopForecastersCount, "Only top workers can get reward")
 	require.Less(m.T, rewardedReputersCount, maxTopReputersCount, "Only top reputers can get reward")

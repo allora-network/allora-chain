@@ -96,6 +96,7 @@ func sendEffectiveRevenueActivateTopicIfWeightSufficient(
 	topicId TopicId,
 	amount Allo,
 ) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err := checkBalanceAndSendFee(ctx, ms, sender, amount)
 	if err != nil {
 		return err
@@ -107,5 +108,9 @@ func sendEffectiveRevenueActivateTopicIfWeightSufficient(
 	}
 
 	err = activateTopicIfWeightAtLeastGlobalMin(ctx, ms, topicId)
-	return err
+	if err != nil {
+		sdkCtx.Logger().Error("Failed to activate topic", err)
+		return err
+	}
+	return nil
 }

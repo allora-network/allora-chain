@@ -98,8 +98,8 @@ func registerReputersForIteration(
 	return countReputers
 }
 
-// Insert reputer bulk, choosing one random leader from the reputer accounts
-func generateInsertReputerBulk(
+// Insert reputer bundle
+func generateInsertReputerBundle(
 	m testCommon.TestConfig,
 	topic *emissionstypes.Topic,
 	reputers NameToAccountMap,
@@ -108,22 +108,21 @@ func generateInsertReputerBulk(
 	retryTimes int,
 	makeReport bool,
 ) error {
-	leaderReputerAccountName, err := pickRandomKeyFromMap(reputers)
+	reputerAccountName, err := pickRandomKeyFromMap(reputers)
 	if err != nil {
 		m.T.Log(topicLog(topic.Id, "Error getting random worker address: ", err))
 		if makeReport {
-			saveReputerError(topic.Id, leaderReputerAccountName, err)
+			saveReputerError(topic.Id, reputerAccountName, err)
 			saveTopicError(topic.Id, err)
 		}
 		return err
 	}
 	// ground truth lag is 10 blocks
 	blockHeightCurrent := insertedBlockHeight + topic.EpochLength
-	blockHeightEval := insertedBlockHeight
 
 	startReputer := time.Now()
 	for i := 0; i < retryTimes; i++ {
-		err = insertReputerPayload(m, topic, leaderReputerAccountName, reputers, workers, blockHeightCurrent, blockHeightEval)
+		err = insertReputerPayload(m, topic, reputerAccountName, reputers, workers, blockHeightCurrent)
 		if err != nil {
 			if strings.Contains(err.Error(), "nonce already fulfilled") ||
 				strings.Contains(err.Error(), "nonce still unfulfilled") {
@@ -132,28 +131,27 @@ func generateInsertReputerBulk(
 				topic, err = getLastTopic(ctx, m.Client.QueryEmissions(), topic.Id)
 				if err == nil {
 					blockHeightCurrent = topic.EpochLastEnded + topic.EpochLength
-					blockHeightEval = blockHeightCurrent - topic.EpochLength
-					m.T.Log(topicLog(topic.Id, "Reset ", leaderReputerAccountName, "blockHeights to (", blockHeightCurrent, ",", blockHeightEval, ")"))
+					m.T.Log(topicLog(topic.Id, "Reset ", reputerAccountName, "blockHeights to (", blockHeightCurrent, ")"))
 				} else {
 					m.T.Log(topicLog(topic.Id, "Error getting topic!"))
 					if makeReport {
-						saveReputerError(topic.Id, leaderReputerAccountName, err)
+						saveReputerError(topic.Id, reputerAccountName, err)
 						saveTopicError(topic.Id, err)
 					}
 					return err
 				}
 			} else {
-				m.T.Log(topicLog(topic.Id, "Error inserting reputer bulk: ", err))
+				m.T.Log(topicLog(topic.Id, "Error inserting reputer bundle: ", err))
 				if makeReport {
-					saveReputerError(topic.Id, leaderReputerAccountName, err)
+					saveReputerError(topic.Id, reputerAccountName, err)
 					saveTopicError(topic.Id, err)
 				}
 				return err
 			}
 		} else {
-			m.T.Log(topicLog(topic.Id, "Inserted reputer bulk, blockHeight: ", blockHeightCurrent, " with ", len(reputers), " reputers"))
-			elapsedBulk := time.Since(startReputer)
-			m.T.Log(topicLog(topic.Id, "Insert Reputer ", leaderReputerAccountName, " Elapsed time:", elapsedBulk))
+			m.T.Log(topicLog(topic.Id, "Inserted reputer bundle, blockHeight: ", blockHeightCurrent, " with ", len(reputers), " reputers"))
+			elapsedBundle := time.Since(startReputer)
+			m.T.Log(topicLog(topic.Id, "Insert Reputer ", reputerAccountName, " Elapsed time:", elapsedBundle))
 			return nil
 		}
 	}
@@ -244,15 +242,12 @@ func generateSingleReputerValueBundle(
 func insertReputerPayload(
 	m testCommon.TestConfig,
 	topic *emissionstypes.Topic,
-	leaderReputerAccountName string,
+	reputerAccountName string,
 	reputerAddresses,
 	workerAddresses NameToAccountMap,
-	BlockHeightCurrent,
-	BlockHeightEval int64,
+	BlockHeightCurrent int64,
 ) error {
-	// Nonce: calculate from EpochLastRan + EpochLength
 	topicId := topic.Id
-	// Nonces are last two blockHeights
 	reputerNonce := &emissionstypes.Nonce{
 		BlockHeight: BlockHeightCurrent,
 	}
@@ -264,7 +259,7 @@ func insertReputerPayload(
 
 		senderAcc, err := m.Client.AccountRegistryGetByName(reputerAddressName)
 		if err != nil {
-			m.T.Log(topicLog(topicId, "Error getting leader worker account: ", leaderReputerAccountName, " - ", err))
+			m.T.Log(topicLog(topicId, "Error getting worker account: ", reputerAccountName, " - ", err))
 			return err
 		}
 		txResp, err := m.Client.BroadcastTx(ctx, senderAcc, reputerValueBundle)
@@ -288,13 +283,12 @@ func checkReputersReceivedRewards(
 	maxIterations int,
 	makeReport bool,
 ) (rewardedReputersCount uint64, err error) {
-	rewardedReputersCount = 0
-	err = nil
 	for reputerIndex := 0; reputerIndex < countReputers; reputerIndex++ {
 		reputerName := getReputerAccountName(m.Seed, reputerIndex, topicId)
 		reputer := reputers[reputerName]
 		ctx := context.Background()
-		reputerStake, err := getReputerStake(
+		var reputerStake alloraMath.Dec
+		reputerStake, err = getReputerStake(
 			ctx,
 			m.Client.QueryEmissions(),
 			topicId,

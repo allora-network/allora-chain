@@ -8,42 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *MsgServerTestSuite) TestUpdateParams() {
-	ctx, msgServer := s.ctx, s.msgServer
-	keeper := s.emissionsKeeper
-	require := s.Require()
-
-	// Setup a sender address
-	adminPrivateKey := secp256k1.GenPrivKey()
-	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
-
-	keeper.AddWhitelistAdmin(ctx, adminAddr.String())
-
-	existingParams, err := keeper.GetParams(ctx)
-	require.NoError(err)
-
-	// New parameters to update
-	newParams := &types.OptionalParams{
-		MaxTopicsPerBlock: []uint64{20},
-	}
-
-	updateMsg := &types.MsgUpdateParams{
-		Sender: adminAddr.String(),
-		Params: newParams,
-	}
-
-	response, err := msgServer.UpdateParams(ctx, updateMsg)
-	require.NoError(err)
-	require.NotNil(response)
-
-	updatedParams, err := keeper.GetParams(ctx)
-	require.NoError(err)
-
-	require.Equal(uint64(20), updatedParams.MaxTopicsPerBlock)
-
-	require.Equal(existingParams.Version, updatedParams.Version)
-}
-
 func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	ctx, msgServer := s.ctx, s.msgServer
 	keeper := s.emissionsKeeper
@@ -52,12 +16,12 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	adminPrivateKey := secp256k1.GenPrivKey()
 	adminAddr := sdk.AccAddress(adminPrivateKey.PubKey().Address())
 
-	keeper.AddWhitelistAdmin(ctx, adminAddr.String())
+	err := keeper.AddWhitelistAdmin(ctx, adminAddr.String())
+	require.NoError(err)
 
 	newParams := &types.OptionalParams{
 		Version:                         []string{"1234"},
 		MinTopicWeight:                  []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
-		MaxTopicsPerBlock:               []uint64{1234},
 		RequiredMinimumStake:            []cosmosMath.Int{cosmosMath.NewInt(1234)},
 		RemoveStakeDelayWindow:          []int64{1234},
 		MinEpochLength:                  []int64{1234},
@@ -79,8 +43,6 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		MaxTopForecastersToReward:       []uint64{1234},
 		MaxTopReputersToReward:          []uint64{1234},
 		CreateTopicFee:                  []cosmosMath.Int{cosmosMath.NewInt(1234)},
-		MaxRetriesToFulfilNoncesWorker:  []int64{1234},
-		MaxRetriesToFulfilNoncesReputer: []int64{1234},
 		RegistrationFee:                 []cosmosMath.Int{cosmosMath.NewInt(1234)},
 		DefaultPageLimit:                []uint64{1234},
 		MaxPageLimit:                    []uint64{1234},
@@ -108,7 +70,6 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 
 	require.Equal(newParams.Version[0], updatedParams.Version)
 	require.Equal(newParams.MinTopicWeight[0], updatedParams.MinTopicWeight)
-	require.Equal(newParams.MaxTopicsPerBlock[0], updatedParams.MaxTopicsPerBlock)
 	require.Equal(newParams.RequiredMinimumStake[0], updatedParams.RequiredMinimumStake)
 	require.Equal(newParams.RemoveStakeDelayWindow[0], updatedParams.RemoveStakeDelayWindow)
 	require.Equal(newParams.MinEpochLength[0], updatedParams.MinEpochLength)
@@ -130,8 +91,6 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.MaxTopReputersToReward[0], updatedParams.MaxTopReputersToReward)
 	require.Equal(newParams.CreateTopicFee[0], updatedParams.CreateTopicFee)
 	require.Equal(newParams.GradientDescentMaxIters[0], updatedParams.GradientDescentMaxIters)
-	require.Equal(newParams.MaxRetriesToFulfilNoncesWorker[0], updatedParams.MaxRetriesToFulfilNoncesWorker)
-	require.Equal(newParams.MaxRetriesToFulfilNoncesReputer[0], updatedParams.MaxRetriesToFulfilNoncesReputer)
 	require.Equal(newParams.RegistrationFee[0], updatedParams.RegistrationFee)
 	require.Equal(newParams.DefaultPageLimit[0], updatedParams.DefaultPageLimit)
 	require.Equal(newParams.MaxPageLimit[0], updatedParams.MaxPageLimit)

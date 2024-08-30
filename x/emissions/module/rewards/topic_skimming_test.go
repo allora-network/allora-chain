@@ -7,14 +7,15 @@ import (
 )
 
 func (s *RewardsTestSuite) TestSortTopicsByWeightDescWithRandomTiebreakerSimple() {
-	var unsortedTopicIds []uint64 = []uint64{1, 2, 3, 4, 5}
-	var weightsPerTopic []int64 = []int64{100, 300, 700, 400, 200}
-	var weights map[uint64]*alloraMath.Dec = map[uint64]*alloraMath.Dec{}
+	var unsortedTopicIds = []uint64{1, 2, 3, 4, 5}
+	var weightsPerTopic = []int64{100, 300, 700, 400, 200}
+	var weights = map[uint64]*alloraMath.Dec{}
 	for i, topicId := range unsortedTopicIds {
 		weight := alloraMath.NewDecFromInt64(weightsPerTopic[i])
 		weights[topicId] = &weight
 	}
-	sortedList := rewards.SortTopicsByWeightDescWithRandomTiebreaker(unsortedTopicIds, weights, 0)
+	sortedList, err := rewards.SortTopicsByWeightDescWithRandomTiebreaker(unsortedTopicIds, weights, 0)
+	s.Require().NoError(err)
 
 	s.Require().Equal(len(unsortedTopicIds), len(sortedList), "SortTopicsByWeightDescWithRandomTiebreaker should return the same length list")
 	s.Require().Equal(uint64(3), sortedList[0], "SortTopicsByWeightDescWithRandomTiebreaker should return the expected sorted list")
@@ -25,15 +26,16 @@ func (s *RewardsTestSuite) TestSortTopicsByWeightDescWithRandomTiebreakerSimple(
 }
 
 func (s *RewardsTestSuite) TestSkimTopTopicsByWeightDescSimple() {
-	var unsortedTopicIds []uint64 = []uint64{1, 2, 3, 4, 5}
-	var weightsPerTopic []int64 = []int64{100, 300, 700, 400, 200}
-	var weights map[uint64]*alloraMath.Dec = map[uint64]*alloraMath.Dec{}
+	var unsortedTopicIds = []uint64{1, 2, 3, 4, 5}
+	var weightsPerTopic = []int64{100, 300, 700, 400, 200}
+	var weights = map[uint64]*alloraMath.Dec{}
 	for i, topicId := range unsortedTopicIds {
 		weight := alloraMath.NewDecFromInt64(weightsPerTopic[i])
 		weights[topicId] = &weight
 	}
 	N := uint64(3)
-	mapOfTopN, listOfTopN := rewards.SkimTopTopicsByWeightDesc(s.ctx, weights, N, 0)
+	mapOfTopN, listOfTopN, err := rewards.SkimTopTopicsByWeightDesc(s.ctx, weights, N, 0)
+	s.Require().NoError(err)
 
 	// Check that mapOfTopN has the expected keys
 	s.Require().Equal(N, uint64(len(mapOfTopN)), "SkimTopTopicsByWeightDesc should return a map with N keys")

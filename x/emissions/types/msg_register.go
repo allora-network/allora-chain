@@ -18,3 +18,11 @@ func (msg *MsgRegister) Validate() error {
 
 	return nil
 }
+
+func (msg *MsgRemoveRegistration) Validate() error {
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address (%s)", err)
+	}
+	return nil
+}

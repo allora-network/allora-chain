@@ -1,8 +1,7 @@
-package v0_3_0
+package v0_3_0 //nolint:revive // var-naming: don't use an underscore in package name
 
 import (
 	"context"
-	"fmt"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/allora-network/allora-chain/app/upgrades"
@@ -23,7 +22,6 @@ func CreateUpgradeHandler(
 	configurator module.Configurator,
 ) upgradetypes.UpgradeHandler {
 	return func(ctx context.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) {
-		fmt.Printf("Running upgrade handler for %s\n", UpgradeName)
 		return moduleManager.RunMigrations(ctx, configurator, vm)
 	}
 }

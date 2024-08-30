@@ -1,4 +1,4 @@
-package actor_utils
+package actorutils
 
 import (
 	"fmt"
@@ -102,7 +102,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	return nil
 }
 
-// Output a new set of inferences where only 1 inference per registerd inferer is kept,
+// Output a new set of inferences where only 1 inference per registered inferer is kept,
 // ignore the rest. In particular, take the first inference from each registered inferer
 // and none from any unregistered inferer.
 // Signatures, anti-synil procedures, and "skimming of only the top few workers by score
@@ -149,7 +149,7 @@ func insertInferencesFromTopInferers(
 	return acceptedInferers, nil
 }
 
-// Output a new set of forecasts where only 1 forecast per registerd forecaster is kept,
+// Output a new set of forecasts where only 1 forecast per registered forecaster is kept,
 // ignore the rest. In particular, take the first forecast from each registered forecaster
 // and none from any unregistered forecaster.
 // Signatures, anti-synil procedures, and "skimming of only the top few workers by score

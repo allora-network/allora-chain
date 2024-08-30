@@ -48,6 +48,7 @@ func NewTestConfig(
 	alloraHomeDir string,
 	seed int,
 ) TestConfig {
+	t.Helper()
 	nodeConfig := TestConfig{}
 	var err error
 	nodeConfig.T = t

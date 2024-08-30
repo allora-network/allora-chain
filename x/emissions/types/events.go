@@ -12,46 +12,67 @@ func EmitNewInfererScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_INFERER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_INFERER, scores))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewInfererScoresSetEvent: ", err.Error())
+	}
 }
 
 func EmitNewForecasterScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_FORECASTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_FORECASTER, scores))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewForecasterScoresSetEvent: ", err.Error())
+	}
 }
 
 func EmitNewReputerScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_REPUTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_REPUTER, scores))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewReputerScoresSetEvent: ", err.Error())
+	}
 }
 
 func EmitNewNetworkLossSetEvent(ctx sdk.Context, topicId TopicId, blockHeight BlockHeight, lossBundle ValueBundle) {
-	ctx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(topicId, blockHeight, lossBundle))
+	err := ctx.EventManager().EmitTypedEvent(NewNetworkLossSetEventBase(topicId, blockHeight, lossBundle))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewNetworkLossSetEvent: ", err.Error())
+	}
 }
 
 func EmitNewInfererRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_INFERER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_INFERER, blockHeight, rewards))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewInfererRewardsSettledEvent: ", err.Error())
+	}
 }
 
 func EmitNewForecasterRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_FORECASTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_FORECASTER, blockHeight, rewards))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewForecasterRewardsSettledEvent: ", err.Error())
+	}
 }
 
 func EmitNewReputerAndDelegatorRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
-	ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_REPUTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_REPUTER, blockHeight, rewards))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewReputerAndDelegatorRewardsSettledEvent: ", err.Error())
+	}
 }
 
 /// Utils

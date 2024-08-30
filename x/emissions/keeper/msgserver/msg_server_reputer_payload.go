@@ -11,7 +11,11 @@ import (
 
 // A tx function that accepts a individual loss and possibly returns an error
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInsertReputerPayload) (*types.MsgInsertReputerPayloadResponse, error) {
-	err := checkInputLength(ctx, ms, msg)
+	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	err = checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}
@@ -19,8 +23,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
 
 	if err := msg.ReputerValueBundle.Validate(); err != nil {
-		return nil, errorsmod.Wrapf(types.ErrInvalidWorkerData,
-			"Worker invalid data for block: %d", blockHeight)
+		return nil, errorsmod.Wrapf(err,
+			"Error validating reputer value bundle at block height: %d", blockHeight)
 	}
 
 	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
@@ -58,7 +62,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	}
 
 	// Check if the ground truth lag has passed: if blockheight > nonce.BlockHeight + topic.GroundTruthLag
-	if blockHeight < nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag {
+	if blockHeight < nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag ||
+		blockHeight > nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag*2 {
 		return nil, types.ErrReputerNonceWindowNotAvailable
 	}
 

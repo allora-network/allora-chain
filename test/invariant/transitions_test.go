@@ -40,8 +40,8 @@ type StateTransition struct {
 // cancel the removal of stake (as a reputer),
 // cancel the removal of delegated stake (delegator),
 // collect delegator rewards,
-// produce an inference (insert a bulk worker payload),
-// produce reputation scores (insert a bulk reputer payload)
+// produce an inference (insert worker payloads),
+// produce reputation scores (insert reputer payloads)
 func allTransitions() ([]StateTransition, []StateTransition) {
 	// return additive state transitions first
 	// and subtractive state transitions second
@@ -122,7 +122,9 @@ func canTransitionOccur(m *testcommon.TestConfig, data *SimulationData, transiti
 		// figure this out in picking step
 		return true
 	case "doInferenceAndReputation":
-		activeTopics := findActiveTopics(m, data)
+		blockHeight, err := m.Client.BlockHeight(m.Client.Context().CmdContext)
+		requireNoError(m.T, data.failOnErr, err)
+		activeTopics := findActiveTopicsAtThisBlock(m, data, blockHeight)
 		for i := 0; i < len(activeTopics); i++ {
 			workerExists := data.isAnyWorkerRegisteredInTopic(activeTopics[i].Id)
 			reputerExists := data.isAnyReputerRegisteredInTopic(activeTopics[i].Id)
@@ -142,7 +144,7 @@ func isValidTransition(m *testcommon.TestConfig, transition StateTransition, act
 	switch transition.name {
 	case "collectDelegatorRewards":
 		// if the reputer unregisters before the delegator withdraws stake, it can be invalid for a
-		// validator to collecte rewards
+		// validator to collective rewards
 		if !data.isReputerRegistered(topicId, actor2) {
 			iterLog(m.T, iteration, "Transition not valid: ", transition.name, actor1, actor2, amount, topicId)
 			return false
@@ -279,7 +281,9 @@ func pickActorAndTopicIdForStateTransition(
 		}
 		return true, delegator, reputer, &stakeRemoval.Amount, stakeRemoval.TopicId
 	case "doInferenceAndReputation":
-		topics := findActiveTopics(m, data)
+		blockHeight, err := m.Client.BlockHeight(m.Client.Context().CmdContext)
+		requireNoError(m.T, data.failOnErr, err)
+		topics := findActiveTopicsAtThisBlock(m, data, blockHeight)
 		if len(topics) > 0 {
 			for i := 0; i < 10; i++ {
 				randIndex := m.Client.Rand.Intn(len(topics))
