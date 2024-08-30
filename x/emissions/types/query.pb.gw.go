@@ -3347,8 +3347,8 @@ func local_request_Query_GetRewardableTopics_0(ctx context.Context, marshaler ru
 
 }
 
-func request_Query_GetLatestInfererScore_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLatestInfererScoreRequest
+func request_Query_GetInfererScoreEma_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryGetInfererScoreEmaRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -3380,13 +3380,13 @@ func request_Query_GetLatestInfererScore_0(ctx context.Context, marshaler runtim
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "inferer", err)
 	}
 
-	msg, err := client.GetLatestInfererScore(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetInfererScoreEma(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Query_GetLatestInfererScore_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLatestInfererScoreRequest
+func local_request_Query_GetInfererScoreEma_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryGetInfererScoreEmaRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -3418,13 +3418,13 @@ func local_request_Query_GetLatestInfererScore_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "inferer", err)
 	}
 
-	msg, err := server.GetLatestInfererScore(ctx, &protoReq)
+	msg, err := server.GetInfererScoreEma(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_Query_GetLatestForecasterScore_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLatestForecasterScoreRequest
+func request_Query_GetForecasterScoreEma_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryGetForecasterScoreEmaRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -3456,13 +3456,13 @@ func request_Query_GetLatestForecasterScore_0(ctx context.Context, marshaler run
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "forecaster", err)
 	}
 
-	msg, err := client.GetLatestForecasterScore(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetForecasterScoreEma(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Query_GetLatestForecasterScore_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLatestForecasterScoreRequest
+func local_request_Query_GetForecasterScoreEma_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryGetForecasterScoreEmaRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -3494,13 +3494,13 @@ func local_request_Query_GetLatestForecasterScore_0(ctx context.Context, marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "forecaster", err)
 	}
 
-	msg, err := server.GetLatestForecasterScore(ctx, &protoReq)
+	msg, err := server.GetForecasterScoreEma(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_Query_GetLatestReputerScore_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLatestReputerScoreRequest
+func request_Query_GetReputerScoreEma_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryGetReputerScoreEmaRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -3532,13 +3532,13 @@ func request_Query_GetLatestReputerScore_0(ctx context.Context, marshaler runtim
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "reputer", err)
 	}
 
-	msg, err := client.GetLatestReputerScore(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetReputerScoreEma(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Query_GetLatestReputerScore_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryLatestReputerScoreRequest
+func local_request_Query_GetReputerScoreEma_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryGetReputerScoreEmaRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -3570,7 +3570,7 @@ func local_request_Query_GetLatestReputerScore_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "reputer", err)
 	}
 
-	msg, err := server.GetLatestReputerScore(ctx, &protoReq)
+	msg, err := server.GetReputerScoreEma(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -5780,7 +5780,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetLatestInfererScore_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_GetInfererScoreEma_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -5791,7 +5791,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Query_GetLatestInfererScore_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Query_GetInfererScoreEma_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -5799,11 +5799,11 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Query_GetLatestInfererScore_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_GetInfererScoreEma_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetLatestForecasterScore_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_GetForecasterScoreEma_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -5814,7 +5814,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Query_GetLatestForecasterScore_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Query_GetForecasterScoreEma_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -5822,11 +5822,11 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Query_GetLatestForecasterScore_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_GetForecasterScoreEma_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetLatestReputerScore_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_GetReputerScoreEma_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -5837,7 +5837,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Query_GetLatestReputerScore_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Query_GetReputerScoreEma_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -5845,7 +5845,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Query_GetLatestReputerScore_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_GetReputerScoreEma_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -7324,7 +7324,7 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetLatestInfererScore_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_GetInfererScoreEma_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -7333,18 +7333,18 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Query_GetLatestInfererScore_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Query_GetInfererScoreEma_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Query_GetLatestInfererScore_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_GetInfererScoreEma_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetLatestForecasterScore_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_GetForecasterScoreEma_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -7353,18 +7353,18 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Query_GetLatestForecasterScore_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Query_GetForecasterScoreEma_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Query_GetLatestForecasterScore_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_GetForecasterScoreEma_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_Query_GetLatestReputerScore_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_GetReputerScoreEma_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -7373,14 +7373,14 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Query_GetLatestReputerScore_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Query_GetReputerScoreEma_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Query_GetLatestReputerScore_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_GetReputerScoreEma_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -7850,11 +7850,11 @@ var (
 
 	pattern_Query_GetRewardableTopics_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"emissions", "v3", "rewardable_topics"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetLatestInfererScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "latest_inferer_score", "topic_id", "inferer"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetInfererScoreEma_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "inferer_score_ema", "topic_id", "inferer"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetLatestForecasterScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "latest_forecaster_score", "topic_id", "forecaster"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetForecasterScoreEma_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "forecaster_score_ema", "topic_id", "forecaster"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetLatestReputerScore_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "latest_reputer_score", "topic_id", "reputer"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetReputerScoreEma_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "reputer_score_ema", "topic_id", "reputer"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GetInferenceScoresUntilBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "inference_scores_until_block", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
 
@@ -7996,11 +7996,11 @@ var (
 
 	forward_Query_GetRewardableTopics_0 = runtime.ForwardResponseMessage
 
-	forward_Query_GetLatestInfererScore_0 = runtime.ForwardResponseMessage
+	forward_Query_GetInfererScoreEma_0 = runtime.ForwardResponseMessage
 
-	forward_Query_GetLatestForecasterScore_0 = runtime.ForwardResponseMessage
+	forward_Query_GetForecasterScoreEma_0 = runtime.ForwardResponseMessage
 
-	forward_Query_GetLatestReputerScore_0 = runtime.ForwardResponseMessage
+	forward_Query_GetReputerScoreEma_0 = runtime.ForwardResponseMessage
 
 	forward_Query_GetInferenceScoresUntilBlock_0 = runtime.ForwardResponseMessage
 
