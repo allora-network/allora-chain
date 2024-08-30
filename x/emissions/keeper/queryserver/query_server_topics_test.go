@@ -58,45 +58,6 @@ func (s *QueryServerTestSuite) TestGetTopic() {
 	s.Require().Equal(metadata, response.Topic.Metadata, "The metadata of the retrieved topic should match")
 }
 
-func (s *QueryServerTestSuite) TestGetActiveTopics() {
-	ctx := s.ctx
-	queryServer := s.queryServer
-	keeper := s.emissionsKeeper
-
-	params := types.Params{MaxActiveTopicsPerBlock: uint64(2), MaxPageLimit: 100}
-	err := keeper.SetParams(ctx, params)
-	s.Require().NoError(err, "Setting parameters should not fail")
-
-	topic1 := types.Topic{Id: 1}
-	topic2 := types.Topic{Id: 2}
-	topic3 := types.Topic{Id: 3}
-
-	_ = keeper.SetTopic(ctx, topic1.Id, topic1)
-	_ = keeper.ActivateTopic(ctx, topic1.Id)
-	_ = keeper.SetTopic(ctx, topic2.Id, topic2) // Inactive topic
-	_ = keeper.SetTopic(ctx, topic3.Id, topic3)
-	_ = keeper.ActivateTopic(ctx, topic3.Id)
-
-	req := &types.QueryActiveTopicsRequest{
-		Pagination: &types.SimpleCursorPaginationRequest{
-			Key:   nil,
-			Limit: 10,
-		},
-	}
-
-	response, err := queryServer.GetActiveTopics(ctx, req)
-	s.Require().NoError(err, "GetActiveTopics should not produce an error")
-	s.Require().NotNil(response, "The response should not be nil")
-	s.Require().Equal(len(response.Topics), 2, "Should retrieve exactly two active topics")
-
-	for _, topic := range response.Topics {
-		s.Require().True(topic.Id == 1 || topic.Id == 3, "Only active topic IDs (1 or 3) should be returned")
-		isActive, err := keeper.IsTopicActive(ctx, topic.Id)
-		s.Require().NoError(err, "Checking topic activity should not fail")
-		s.Require().True(isActive, "Only active topics should be returned")
-	}
-}
-
 func (s *QueryServerTestSuite) TestGetLatestCommit() {
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -119,7 +80,7 @@ func (s *QueryServerTestSuite) TestGetLatestCommit() {
 	}
 
 	response, err := queryServer.GetTopicLastReputerCommitInfo(ctx, req)
-	s.Require().NoError(err, "GetActiveTopics should not produce an error")
+	s.Require().NoError(err, "GetTopicLastReputerCommitInfo should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().Equal(int64(blockHeight), response.LastCommit.BlockHeight, "Retrieved blockheight should match")
 	s.Require().Equal(&nonce, response.LastCommit.Nonce, "The metadata of the retrieved nonce should match")
@@ -142,7 +103,7 @@ func (s *QueryServerTestSuite) TestGetLatestCommit() {
 	}
 
 	response2, err := queryServer.GetTopicLastWorkerCommitInfo(ctx, req2)
-	s.Require().NoError(err, "GetActiveTopics should not produce an error")
+	s.Require().NoError(err, "GetTopicLastWorkerCommitInfo should not produce an error")
 	s.Require().NotNil(response2, "The response should not be nil")
 	s.Require().Equal(int64(blockHeight), response2.LastCommit.BlockHeight, "Retrieved blockheight should match")
 	s.Require().Equal(&nonce, response2.LastCommit.Nonce, "The metadata of the retrieved nonce should match")

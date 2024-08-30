@@ -122,7 +122,9 @@ func canTransitionOccur(m *testcommon.TestConfig, data *SimulationData, transiti
 		// figure this out in picking step
 		return true
 	case "doInferenceAndReputation":
-		activeTopics := findActiveTopics(m, data)
+		blockHeight, err := m.Client.BlockHeight(m.Client.Context().CmdContext)
+		requireNoError(m.T, data.failOnErr, err)
+		activeTopics := findActiveTopicsAtThisBlock(m, data, blockHeight)
 		for i := 0; i < len(activeTopics); i++ {
 			workerExists := data.isAnyWorkerRegisteredInTopic(activeTopics[i].Id)
 			reputerExists := data.isAnyReputerRegisteredInTopic(activeTopics[i].Id)
@@ -279,7 +281,9 @@ func pickActorAndTopicIdForStateTransition(
 		}
 		return true, delegator, reputer, &stakeRemoval.Amount, stakeRemoval.TopicId
 	case "doInferenceAndReputation":
-		topics := findActiveTopics(m, data)
+		blockHeight, err := m.Client.BlockHeight(m.Client.Context().CmdContext)
+		requireNoError(m.T, data.failOnErr, err)
+		topics := findActiveTopicsAtThisBlock(m, data, blockHeight)
 		if len(topics) > 0 {
 			for i := 0; i < 10; i++ {
 				randIndex := m.Client.Rand.Intn(len(topics))

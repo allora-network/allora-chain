@@ -50,24 +50,6 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest
 	}, nil
 }
 
-// Retrieves a list of active topics. Paginated.
-func (qs queryServer) GetActiveTopics(ctx context.Context, req *types.QueryActiveTopicsRequest) (*types.QueryActiveTopicsResponse, error) {
-	activeTopics, pageRes, err := qs.k.GetIdsOfActiveTopics(ctx, req.Pagination)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	topics := make([]*types.Topic, 0)
-	for _, topicId := range activeTopics {
-		topic, err := qs.k.GetTopic(ctx, topicId)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		topics = append(topics, &topic)
-	}
-
-	return &types.QueryActiveTopicsResponse{Topics: topics, Pagination: pageRes}, nil
-}
-
 // Return last payload timestamp & nonce by worker/reputer
 func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *types.QueryTopicLastWorkerCommitInfoRequest) (*types.QueryTopicLastWorkerCommitInfoResponse, error) {
 	lastCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
@@ -182,12 +164,12 @@ func (qs queryServer) GetActiveTopicsAtBlock(
 	ctx context.Context,
 	req *types.QueryActiveTopicsAtBlockRequest,
 ) (*types.QueryActiveTopicsAtBlockResponse, error) {
-	activeTopicIds, pageRes, err := qs.k.GetIdsActiveTopicAtBlock(ctx, req.BlockHeight, req.Pagination)
+	activeTopicIds, err := qs.k.GetActiveTopicIdsAtBlock(ctx, req.BlockHeight)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	topics := make([]*types.Topic, 0)
-	for _, topicId := range activeTopicIds {
+	for _, topicId := range activeTopicIds.TopicIds {
 		topic, err := qs.k.GetTopic(ctx, topicId)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
@@ -195,7 +177,7 @@ func (qs queryServer) GetActiveTopicsAtBlock(
 		topics = append(topics, &topic)
 	}
 
-	return &types.QueryActiveTopicsAtBlockResponse{Topics: topics, Pagination: pageRes}, nil
+	return &types.QueryActiveTopicsAtBlockResponse{Topics: topics}, nil
 }
 
 func (qs queryServer) GetNextChurningBlockByTopicId(
