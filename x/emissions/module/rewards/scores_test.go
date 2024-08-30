@@ -461,6 +461,96 @@ func (s *RewardsTestSuite) TestEnsureAllWorkersPresentWithheld() {
 	}
 }
 
+func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
+	// Create sample input where reputer1 has fewer workers
+	reportedLosses := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			{
+				Pubkey: "reputer1",
+				ValueBundle: &types.ValueBundle{
+					InfererValues: []*types.WorkerAttributedValue{
+						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
+						{Worker: "worker2", Value: alloraMath.NewDecFromInt64(200)},
+					},
+					ForecasterValues: []*types.WorkerAttributedValue{
+						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(300)},
+					},
+					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
+						{Worker: "worker2", Value: alloraMath.NewDecFromInt64(200)},
+					},
+					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(300)},
+					},
+					OneInForecasterValues: []*types.WorkerAttributedValue{
+						{Worker: "worker2", Value: alloraMath.NewDecFromInt64(400)},
+					},
+					OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+						{
+							Forecaster: "forecaster1",
+							OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+								{Worker: "worker1", Value: alloraMath.NewDecFromInt64(500)},
+							},
+						},
+					},
+				},
+			},
+			{
+				Pubkey: "reputer2",
+				ValueBundle: &types.ValueBundle{
+					InfererValues: []*types.WorkerAttributedValue{
+						{Worker: "worker5", Value: alloraMath.NewDecFromInt64(100)},
+					},
+					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(100)},
+						{Worker: "worker2", Value: alloraMath.NewDecFromInt64(200)},
+						{Worker: "worker3", Value: alloraMath.NewDecFromInt64(300)},
+						{Worker: "worker4", Value: alloraMath.NewDecFromInt64(400)},
+					},
+					OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{
+						{Worker: "worker1", Value: alloraMath.NewDecFromInt64(500)},
+						{Worker: "worker3", Value: alloraMath.NewDecFromInt64(600)},
+					},
+					OneInForecasterValues: []*types.WorkerAttributedValue{
+						{Worker: "worker2", Value: alloraMath.NewDecFromInt64(700)},
+						{Worker: "worker4", Value: alloraMath.NewDecFromInt64(800)},
+					},
+					OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
+						{
+							Forecaster: "forecaster1",
+							OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+								{Worker: "worker6", Value: alloraMath.NewDecFromInt64(1000)},
+							},
+						},
+						{
+							Forecaster: "forecaster2",
+							OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+								{Worker: "worker3", Value: alloraMath.NewDecFromInt64(900)},
+								{Worker: "worker4", Value: alloraMath.NewDecFromInt64(1000)},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// Flatten losses and compare lengths before processing
+	reputer1Losses := rewards.ExtractValues(reportedLosses.ReputerValueBundles[0].ValueBundle)
+	reputer2Losses := rewards.ExtractValues(reportedLosses.ReputerValueBundles[1].ValueBundle)
+	s.Require().NotEqual(len(reputer1Losses), len(reputer2Losses), "Initial lengths should not be equal")
+
+	// Run the function under test
+	updatedLosses := rewards.EnsureWorkerPresence(reportedLosses)
+
+	// Flatten losses and compare lengths after processing
+	reputer1Losses = rewards.ExtractValues(updatedLosses.ReputerValueBundles[0].ValueBundle)
+	reputer2Losses = rewards.ExtractValues(updatedLosses.ReputerValueBundles[1].ValueBundle)
+
+	// Ensure the lengths are equal
+	s.Require().Equal(len(reputer1Losses), len(reputer2Losses), "Lengths should be equal after processing")
+}
+
 func GenerateReputerLatestScores(s *RewardsTestSuite, reputers []sdk.AccAddress, blockHeight int64, topicId uint64) error {
 	var scores = []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("17.53436"),

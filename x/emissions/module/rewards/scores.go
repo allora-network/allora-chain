@@ -26,7 +26,7 @@ func GenerateReputerScores(
 	// Ensure all workers are present in the reported losses
 	// This is necessary to ensure that all workers are accounted for in the final scores
 	// If a worker is missing from the reported losses, it will be added with a NaN value
-	reportedLosses = ensureWorkerPresence(reportedLosses)
+	reportedLosses = EnsureWorkerPresence(reportedLosses)
 
 	// Fetch reputers data
 	var reputers []string
@@ -254,13 +254,23 @@ func GenerateForecastScores(
 
 // Check if all workers are present in the reported losses and add NaN values for missing workers
 // Returns the reported losses adding NaN values for missing workers in uncompleted reported losses
-func ensureWorkerPresence(reportedLosses types.ReputerValueBundles) types.ReputerValueBundles {
-	// Consolidate all unique worker addresses from the three slices
+func EnsureWorkerPresence(reportedLosses types.ReputerValueBundles) types.ReputerValueBundles {
+	// Consolidate all unique worker addresses and forecaster addresses
+	allWorkersInferer := make(map[string]struct{})
+	allWorkersForecaster := make(map[string]struct{})
 	allWorkersOneOutInferer := make(map[string]struct{})
 	allWorkersOneOutForecaster := make(map[string]struct{})
 	allWorkersOneInForecaster := make(map[string]struct{})
+	allForecastersOneOutInferer := make(map[string]map[string]struct{})
 
 	for _, bundle := range reportedLosses.ReputerValueBundles {
+		// Collect unique workers for each type
+		for _, workerValue := range bundle.ValueBundle.InfererValues {
+			allWorkersInferer[workerValue.Worker] = struct{}{}
+		}
+		for _, workerValue := range bundle.ValueBundle.ForecasterValues {
+			allWorkersForecaster[workerValue.Worker] = struct{}{}
+		}
 		for _, workerValue := range bundle.ValueBundle.OneOutInfererValues {
 			allWorkersOneOutInferer[workerValue.Worker] = struct{}{}
 		}
@@ -270,16 +280,61 @@ func ensureWorkerPresence(reportedLosses types.ReputerValueBundles) types.Repute
 		for _, workerValue := range bundle.ValueBundle.OneInForecasterValues {
 			allWorkersOneInForecaster[workerValue.Worker] = struct{}{}
 		}
+		// Collect unique forecasters and their workers
+		for _, forecasterValue := range bundle.ValueBundle.OneOutInfererForecasterValues {
+			// Ensure a map exists for this forecaster
+			if _, exists := allForecastersOneOutInferer[forecasterValue.Forecaster]; !exists {
+				allForecastersOneOutInferer[forecasterValue.Forecaster] = make(map[string]struct{})
+			}
+			// Collect all workers associated with this forecaster
+			for _, workerValue := range forecasterValue.OneOutInfererValues {
+				allForecastersOneOutInferer[forecasterValue.Forecaster][workerValue.Worker] = struct{}{}
+			}
+		}
 	}
 
 	// Ensure each set has all workers, add NaN value for missing workers
 	for _, bundle := range reportedLosses.ReputerValueBundles {
+		bundle.ValueBundle.InfererValues = EnsureAllWorkersPresent(bundle.ValueBundle.InfererValues, allWorkersInferer)
+		bundle.ValueBundle.ForecasterValues = EnsureAllWorkersPresent(bundle.ValueBundle.ForecasterValues, allWorkersForecaster)
 		bundle.ValueBundle.OneOutInfererValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutInfererValues, allWorkersOneOutInferer)
 		bundle.ValueBundle.OneOutForecasterValues = EnsureAllWorkersPresentWithheld(bundle.ValueBundle.OneOutForecasterValues, allWorkersOneOutForecaster)
 		bundle.ValueBundle.OneInForecasterValues = EnsureAllWorkersPresent(bundle.ValueBundle.OneInForecasterValues, allWorkersOneInForecaster)
+
+		// Ensure all forecasters and their associated workers are present
+		for forecaster, workers := range allForecastersOneOutInferer {
+			found := false
+			for _, forecasterValue := range bundle.ValueBundle.OneOutInfererForecasterValues {
+				if forecasterValue.Forecaster == forecaster {
+					forecasterValue.OneOutInfererValues = EnsureAllWorkersPresentWithheld(forecasterValue.OneOutInfererValues, workers)
+					found = true
+					break
+				}
+			}
+			// If forecaster is missing, add it with NaN values for all workers
+			if !found {
+				newForecasterValue := types.OneOutInfererForecasterValues{
+					Forecaster:          forecaster,
+					OneOutInfererValues: createNaNWithheldValues(workers),
+				}
+				bundle.ValueBundle.OneOutInfererForecasterValues = append(bundle.ValueBundle.OneOutInfererForecasterValues, &newForecasterValue)
+			}
+		}
 	}
 
 	return reportedLosses
+}
+
+// Helper function to create NaN values for missing workers
+func createNaNWithheldValues(workers map[string]struct{}) []*types.WithheldWorkerAttributedValue {
+	var values []*types.WithheldWorkerAttributedValue
+	for worker := range workers {
+		values = append(values, &types.WithheldWorkerAttributedValue{
+			Worker: worker,
+			Value:  alloraMath.NewNaN(),
+		})
+	}
+	return values
 }
 
 // ensureAllWorkersPresent checks and adds missing

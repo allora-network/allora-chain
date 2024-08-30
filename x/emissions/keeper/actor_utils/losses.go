@@ -122,7 +122,7 @@ func CloseReputerNonce(
 		// We keep what we can, ignoring the reputer and their contribution (losses) entirely
 		// if they're left with no valid losses.
 
-		filteredBundle, err := filterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, bundle)
+		filteredBundle, err := FilterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, bundle)
 		if err != nil {
 			continue
 		}
@@ -215,7 +215,7 @@ func CloseReputerNonce(
 // Filter out values of unaccepted workers.
 // It is assumed that the work of inferers and forecasters stored at the nonce is already filtered for acceptance.
 // This also removes duplicate values of the same worker.
-func filterUnacceptedWorkersFromReputerValueBundle(
+func FilterUnacceptedWorkersFromReputerValueBundle(
 	k *keeper.Keeper,
 	ctx context.Context,
 	topicId uint64,
@@ -295,6 +295,31 @@ func filterUnacceptedWorkersFromReputerValueBundle(
 		}
 	}
 
+	// Filter out unaccepted forecasters and their workers in OneOutInfererForecasterValues
+	acceptedOneOutInfererForecasterValues := make([]*types.OneOutInfererForecasterValues, 0)
+	for _, forecasterVal := range reputerValueBundle.ValueBundle.OneOutInfererForecasterValues {
+		if _, ok := acceptedForecastersOfBatch[forecasterVal.Forecaster]; ok {
+			// Filter out unaccepted workers for this forecaster
+			acceptedWorkers := make([]*types.WithheldWorkerAttributedValue, 0)
+			workerAlreadySeen := make(map[string]bool)
+			for _, workerVal := range forecasterVal.OneOutInfererValues {
+				if _, ok := acceptedInferersOfBatch[workerVal.Worker]; ok {
+					if _, ok := workerAlreadySeen[workerVal.Worker]; !ok {
+						acceptedWorkers = append(acceptedWorkers, workerVal)
+						workerAlreadySeen[workerVal.Worker] = true // Mark as seen => no duplicates
+					}
+				}
+			}
+			// Only add forecaster if it has at least one accepted worker
+			if len(acceptedWorkers) > 0 {
+				acceptedOneOutInfererForecasterValues = append(acceptedOneOutInfererForecasterValues, &types.OneOutInfererForecasterValues{
+					Forecaster:          forecasterVal.Forecaster,
+					OneOutInfererValues: acceptedWorkers,
+				})
+			}
+		}
+	}
+
 	acceptedOneInForecasterValues := make([]*types.WorkerAttributedValue, 0)
 	oneInForecasterAlreadySeen := make(map[string]bool)
 	for _, workerVal := range reputerValueBundle.ValueBundle.OneInForecasterValues {
@@ -308,17 +333,18 @@ func filterUnacceptedWorkersFromReputerValueBundle(
 
 	acceptedReputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
-			TopicId:                reputerValueBundle.ValueBundle.TopicId,
-			ReputerRequestNonce:    reputerValueBundle.ValueBundle.ReputerRequestNonce,
-			Reputer:                reputerValueBundle.ValueBundle.Reputer,
-			ExtraData:              reputerValueBundle.ValueBundle.ExtraData,
-			InfererValues:          acceptedInfererValues,
-			ForecasterValues:       acceptedForecasterValues,
-			OneOutInfererValues:    acceptedOneOutInfererValues,
-			OneOutForecasterValues: acceptedOneOutForecasterValues,
-			OneInForecasterValues:  acceptedOneInForecasterValues,
-			NaiveValue:             reputerValueBundle.ValueBundle.NaiveValue,
-			CombinedValue:          reputerValueBundle.ValueBundle.CombinedValue,
+			TopicId:                       reputerValueBundle.ValueBundle.TopicId,
+			ReputerRequestNonce:           reputerValueBundle.ValueBundle.ReputerRequestNonce,
+			Reputer:                       reputerValueBundle.ValueBundle.Reputer,
+			ExtraData:                     reputerValueBundle.ValueBundle.ExtraData,
+			InfererValues:                 acceptedInfererValues,
+			ForecasterValues:              acceptedForecasterValues,
+			OneOutInfererValues:           acceptedOneOutInfererValues,
+			OneOutForecasterValues:        acceptedOneOutForecasterValues,
+			OneInForecasterValues:         acceptedOneInForecasterValues,
+			OneOutInfererForecasterValues: acceptedOneOutInfererForecasterValues,
+			NaiveValue:                    reputerValueBundle.ValueBundle.NaiveValue,
+			CombinedValue:                 reputerValueBundle.ValueBundle.CombinedValue,
 		},
 		Signature: reputerValueBundle.Signature,
 	}
