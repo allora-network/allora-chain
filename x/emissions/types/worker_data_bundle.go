@@ -78,7 +78,7 @@ func (bundle *WorkerDataBundle) Validate() error {
 		return errorsmod.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed")
 	}
 	// Source: https://docs.cosmos.network/v0.46/basics/accounts.html#addresses
-	if sdk.AccAddress(pubkey.Address().Bytes()).String() != bundle.Worker {
+	if pubKeyConvertedToAddress != bundle.Worker {
 		return errorsmod.Wrap(sdkerrors.ErrUnauthorized, "worker address does not match signature")
 	}
 
