@@ -465,7 +465,7 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 	// Create sample input where reputer1 has fewer workers
 	reportedLosses := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{
-			{	
+			{
 				Pubkey: "reputer1",
 				ValueBundle: &types.ValueBundle{
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
@@ -507,6 +507,12 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 					},
 					OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{
 						{
+							Forecaster: "forecaster1",
+							OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
+								{Worker: "worker6", Value: alloraMath.NewDecFromInt64(1000)},
+							},
+						},
+						{
 							Forecaster: "forecaster2",
 							OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 								{Worker: "worker3", Value: alloraMath.NewDecFromInt64(900)},
@@ -518,20 +524,21 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 			},
 		},
 	}
-	
-	// flatten losses and compare the lengths - not equal
+
+	// Flatten losses and compare lengths before processing
 	reputer1Losses := rewards.ExtractValues(reportedLosses.ReputerValueBundles[0].ValueBundle)
 	reputer2Losses := rewards.ExtractValues(reportedLosses.ReputerValueBundles[1].ValueBundle)
-	s.Require().NotEqual(len(reputer1Losses), len(reputer2Losses))
+	s.Require().NotEqual(len(reputer1Losses), len(reputer2Losses), "Initial lengths should not be equal")
 
 	// Run the function under test
 	updatedLosses := rewards.EnsureWorkerPresence(reportedLosses)
 
-	// flatten losses and compare the lengths - equal
+	// Flatten losses and compare lengths after processing
 	reputer1Losses = rewards.ExtractValues(updatedLosses.ReputerValueBundles[0].ValueBundle)
 	reputer2Losses = rewards.ExtractValues(updatedLosses.ReputerValueBundles[1].ValueBundle)
 
-	s.Require().Equal(len(reputer1Losses), len(reputer2Losses))
+	// Ensure the lengths are equal
+	s.Require().Equal(len(reputer1Losses), len(reputer2Losses), "Lengths should be equal after processing")
 }
 
 func GenerateReputerLatestScores(s *RewardsTestSuite, reputers []sdk.AccAddress, blockHeight int64, topicId uint64) error {
