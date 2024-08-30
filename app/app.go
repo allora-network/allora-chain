@@ -38,7 +38,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cosmos/cosmos-sdk/codec/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -415,7 +414,7 @@ func InitAppForTestnet(app *AlloraApp, newValAddr []byte, newValPubKey crypto.Pu
 func initStaking(app *AlloraApp, ctx sdk.Context, newValPubKey crypto.PubKey, newOperatorAddress string) error {
 	// Create Validator struct for our new validator
 	pubkey := &ed25519.PubKey{Key: newValPubKey.Bytes()}
-	pubkeyAny, err := types.NewAnyWithValue(pubkey)
+	pubkeyAny, err := codectypes.NewAnyWithValue(pubkey)
 	if err != nil {
 		return err
 	}
