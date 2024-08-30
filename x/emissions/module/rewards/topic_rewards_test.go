@@ -11,6 +11,7 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	ctx := s.ctx
 	maxActiveTopicsNum := uint64(2)
 	params := types.Params{
+		BlocksPerMonth:                  864000,
 		MaxActiveTopicsPerBlock:         maxActiveTopicsNum,
 		MaxPageLimit:                    uint64(100),
 		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),
