@@ -50,6 +50,7 @@ Implements fixes for our [June 2024](https://github.com/sherlock-audit/2024-06-a
 ### Added
 
 * [#542](https://github.com/allora-network/allora-chain/pull/542) Add scalable management of active topics with associated queries such as `GetActiveTopicsAtBlock` and `GetNextChurningBlockByTopicId`
+* [#556](https://github.com/allora-network/allora-chain/pull/556) Scores now take an exponential moving average of the score rather than using the instantaneous score value from this epoch.
 
 ### Removed
 

@@ -73,11 +73,11 @@ type Keeper struct {
 	// map of (topic, block_height, reputer) -> score
 	reputerScoresByBlock collections.Map[collections.Pair[TopicId, BlockHeight], types.Scores]
 	// map of (topic, block_height, worker) -> score
-	latestInfererScoresByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
+	infererScoreEmas collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, block_height, worker) -> score
-	latestForecasterScoresByWorker collections.Map[collections.Pair[TopicId, ActorId], types.Score]
+	forecasterScoreEmas collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, block_height, reputer) -> score
-	latestReputerScoresByReputer collections.Map[collections.Pair[TopicId, ActorId], types.Score]
+	reputerScoreEmas collections.Map[collections.Pair[TopicId, ActorId], types.Score]
 	// map of (topic, reputer) -> listening coefficient
 	reputerListeningCoefficient collections.Map[collections.Pair[TopicId, ActorId], types.ListeningCoefficient]
 	// map of (topic, reputer) -> previous reward (used for EMA)
@@ -86,7 +86,8 @@ type Keeper struct {
 	previousInferenceRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 	// map of (topic, worker) -> previous reward for forecast (used for EMA)
 	previousForecastRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
-	previousForecasterScoreRatio   collections.Map[TopicId, alloraMath.Dec]
+	// map of topic -> previous forecaster score ratio
+	previousForecasterScoreRatio collections.Map[TopicId, alloraMath.Dec]
 
 	/// STAKING
 
@@ -255,9 +256,9 @@ func NewKeeper(
 		whitelistAdmins:                 collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
 		infererScoresByBlock:            collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		forecasterScoresByBlock:         collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		latestInfererScoresByWorker:     collections.NewMap(sb, types.LatestInfererScoresByWorkerKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		latestForecasterScoresByWorker:  collections.NewMap(sb, types.LatestForecasterScoresByWorkerKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		latestReputerScoresByReputer:    collections.NewMap(sb, types.LatestReputerScoresByReputerKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		infererScoreEmas:                collections.NewMap(sb, types.InfererScoreEmasKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		forecasterScoreEmas:             collections.NewMap(sb, types.ForecasterScoreEmasKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		reputerScoreEmas:                collections.NewMap(sb, types.ReputerScoreEmasKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
 		previousReputerRewardFraction:   collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		previousInferenceRewardFraction: collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 		previousForecastRewardFraction:  collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
@@ -813,7 +814,7 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 		return k.allInferences.Set(ctx, key, newInferences)
 	}
 	// get score of current inference and check with
-	score, err := k.GetLatestInfererScore(ctx, topicId, inference.Inferer)
+	score, err := k.GetInfererScoreEma(ctx, topicId, inference.Inferer)
 	if err != nil {
 		return err
 	}
@@ -875,7 +876,7 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 		return k.allForecasts.Set(ctx, key, newForecasts)
 	}
 	// get score of current inference and check with
-	score, err := k.GetLatestForecasterScore(ctx, topicId, forecast.Forecaster)
+	score, err := k.GetForecasterScoreEma(ctx, topicId, forecast.Forecaster)
 	if err != nil {
 		return err
 	}
@@ -975,7 +976,7 @@ func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block B
 	}
 
 	// get score of current inference and check with
-	score, err := k.GetLatestReputerScore(ctx, topicId, reputerLoss.ValueBundle.Reputer)
+	score, err := k.GetReputerScoreEma(ctx, topicId, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
 		return err
 	}
@@ -2126,25 +2127,36 @@ func (k *Keeper) RemoveRewardableTopic(ctx context.Context, topicId TopicId) err
 /// SCORES
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
-	oldScore, err := k.GetLatestInfererScore(ctx, topicId, worker)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting latest inferer score")
-	}
-	if oldScore.BlockHeight >= score.BlockHeight {
-		return nil
-	}
+func (k *Keeper) SetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
 	key := collections.Join(topicId, worker)
-	err = k.latestInfererScoresByWorker.Set(ctx, key, score)
-	if err != nil {
-		return errorsmod.Wrap(err, "error setting latest inferer score")
-	}
-	return nil
+	return k.infererScoreEmas.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
+func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
-	score, err := k.latestInfererScoresByWorker.Get(ctx, key)
+	score, err := k.infererScoreEmas.Get(ctx, key)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.Score{
+				BlockHeight: 0,
+				Address:     worker,
+				TopicId:     topicId,
+				Score:       alloraMath.ZeroDec(),
+			}, nil
+		}
+		return types.Score{}, err
+	}
+	return score, nil
+}
+
+func (k *Keeper) SetForecasterScoreEma(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
+	key := collections.Join(topicId, worker)
+	return k.forecasterScoreEmas.Set(ctx, key, score)
+}
+
+func (k *Keeper) GetForecasterScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
+	key := collections.Join(topicId, worker)
+	score, err := k.forecasterScoreEmas.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Score{
@@ -2160,49 +2172,22 @@ func (k *Keeper) GetLatestInfererScore(ctx context.Context, topicId TopicId, wor
 }
 
 // If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestForecasterScore(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
-	oldScore, err := k.GetLatestForecasterScore(ctx, topicId, worker)
-	if err != nil {
-		return err
-	}
-	if oldScore.BlockHeight >= score.BlockHeight {
-		return nil
-	}
-	key := collections.Join(topicId, worker)
-	return k.latestForecasterScoresByWorker.Set(ctx, key, score)
+func (k *Keeper) SetReputerScoreEma(ctx context.Context, topicId TopicId, reputer ActorId, score types.Score) error {
+	key := collections.Join(topicId, reputer)
+	return k.reputerScoreEmas.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetLatestForecasterScore(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
-	key := collections.Join(topicId, worker)
-	score, err := k.latestForecasterScoresByWorker.Get(ctx, key)
+func (k *Keeper) GetReputerScoreEma(ctx context.Context, topicId TopicId, reputer ActorId) (types.Score, error) {
+	key := collections.Join(topicId, reputer)
+	score, err := k.reputerScoreEmas.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, nil
-		}
-		return types.Score{}, err
-	}
-	return score, nil
-}
-
-// If the new score is older than the current score, don't update
-func (k *Keeper) SetLatestReputerScore(ctx context.Context, topicId TopicId, reputer ActorId, score types.Score) error {
-	oldScore, err := k.GetLatestReputerScore(ctx, topicId, reputer)
-	if err != nil {
-		return err
-	}
-	if oldScore.BlockHeight >= score.BlockHeight {
-		return nil
-	}
-	key := collections.Join(topicId, reputer)
-	return k.latestReputerScoresByReputer.Set(ctx, key, score)
-}
-
-func (k *Keeper) GetLatestReputerScore(ctx context.Context, topicId TopicId, reputer ActorId) (types.Score, error) {
-	key := collections.Join(topicId, reputer)
-	score, err := k.latestReputerScoresByReputer.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, nil
+			return types.Score{
+				BlockHeight: 0,
+				Address:     reputer,
+				TopicId:     topicId,
+				Score:       alloraMath.ZeroDec(),
+			}, nil
 		}
 		return types.Score{}, err
 	}

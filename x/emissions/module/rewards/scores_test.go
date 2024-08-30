@@ -21,16 +21,20 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 	block := int64(1003)
 
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                s.addrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          true,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -144,7 +148,25 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetInferenceScores() {
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block := int64(1003)
 
 	// Generate workers data for tests
@@ -182,7 +204,25 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block := int64(1003)
 
 	inferer0 := s.addrs[5].String()
@@ -225,7 +265,25 @@ func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 // and the second with higher one out losses.
 // We then compare the resulting scores and check that the higher one out losses result in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block0 := int64(1003)
 	require := s.Require()
 
@@ -259,8 +317,26 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 }
 
 func (s *RewardsTestSuite) TestGetForecastScores() {
-	topicId := uint64(1)
 	block := int64(1003)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 
 	// Generate workers data for tests
 	reportedLosses, err := mockNetworkLosses(s, topicId, block)
@@ -295,7 +371,25 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block := int64(1003)
 
 	inferer0 := s.addrs[5].String()
@@ -337,7 +431,25 @@ func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 // We then compare the resulting forecaster scores and check that the higher one out losses result
 // in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block0 := int64(1003)
 	require := s.Require()
 

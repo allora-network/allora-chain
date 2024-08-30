@@ -118,7 +118,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		// LImit forecast elements for top inferers
 		latestScoresForForecastedInferers := make([]types.Score, 0)
 		for _, el := range forecast.ForecastElements {
-			score, err := ms.k.GetLatestInfererScore(ctx, forecast.TopicId, el.Inferer)
+			score, err := ms.k.GetInfererScoreEma(ctx, forecast.TopicId, el.Inferer)
 			if err != nil {
 				continue
 			}

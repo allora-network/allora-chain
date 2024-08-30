@@ -28,15 +28,19 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	// Create Topic
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                reputerAddr.String(),
-		Metadata:               "Some metadata for the new topic",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  reputerAddr.String(),
+		Metadata:                 "Some metadata for the new topic",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 
 	reputerInitialBalance := types.DefaultParams().CreateTopicFee.Add(reputerInitialBalanceUint)

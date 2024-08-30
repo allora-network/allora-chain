@@ -184,15 +184,19 @@ func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
 	creator := sdk.AccAddress(PKS[0].Address())
 
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                creator.String(),
-		Metadata:               metadata,
-		LossMethod:             "method",
-		EpochLength:            epochLen,
-		GroundTruthLag:         epochLen,
-		WorkerSubmissionWindow: epochLen,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  creator.String(),
+		Metadata:                 metadata,
+		LossMethod:               "method",
+		EpochLength:              epochLen,
+		GroundTruthLag:           epochLen,
+		WorkerSubmissionWindow:   epochLen,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 
 	s.MintTokensToAddress(creator, types.DefaultParams().CreateTopicFee)
@@ -2454,7 +2458,7 @@ func (s *KeeperTestSuite) TestRewardableTopics() {
 
 /// SCORES
 
-func (s *KeeperTestSuite) TestGetLatestScores() {
+func (s *KeeperTestSuite) TestGetScoreEmas() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -2463,7 +2467,7 @@ func (s *KeeperTestSuite) TestGetLatestScores() {
 	reputer := "reputer1"
 
 	// Test getting latest scores when none are set
-	infererScore, err := keeper.GetLatestInfererScore(ctx, topicId, worker)
+	infererScore, err := keeper.GetInfererScoreEma(ctx, topicId, worker)
 	s.Require().NoError(err, "Fetching latest inferer score should not fail")
 	s.Require().Equal(types.Score{
 		TopicId:     topicId,
@@ -2472,41 +2476,54 @@ func (s *KeeperTestSuite) TestGetLatestScores() {
 		Score:       alloraMath.ZeroDec(),
 	}, infererScore, "Inferer score should be zero if not set")
 
-	forecasterScore, err := keeper.GetLatestForecasterScore(ctx, topicId, forecaster)
+	forecasterScore, err := keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
 	s.Require().NoError(err, "Fetching latest forecaster score should not fail")
-	s.Require().Equal(types.Score{}, forecasterScore, "Forecaster score should be empty if not set")
+	s.Require().Equal(types.Score{
+		TopicId:     topicId,
+		BlockHeight: 0,
+		Address:     forecaster,
+		Score:       alloraMath.ZeroDec(),
+	}, forecasterScore, "Forecaster score should be empty if not set")
 
-	reputerScore, err := keeper.GetLatestReputerScore(ctx, topicId, reputer)
+	reputerScore, err := keeper.GetReputerScoreEma(ctx, topicId, reputer)
 	s.Require().NoError(err, "Fetching latest reputer score should not fail")
-	s.Require().Equal(types.Score{}, reputerScore, "Reputer score should be empty if not set")
+	s.Require().Equal(types.Score{
+		TopicId:     topicId,
+		BlockHeight: 0,
+		Address:     reputer,
+		Score:       alloraMath.ZeroDec(),
+	}, reputerScore, "Reputer score should be empty if not set")
 }
 
-func (s *KeeperTestSuite) TestSetLatestScores() {
+func (s *KeeperTestSuite) TestSetScoreEmas() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 	worker := "worker1"
 	forecaster := "forecaster1"
 	reputer := "reputer1"
-	oldScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: worker, Score: alloraMath.NewDecFromInt64(90)}
-	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
+	score := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set an initial score for inferer and attempt to update with an older score
-	_ = keeper.SetLatestInfererScore(ctx, topicId, worker, newScore)
-	err := keeper.SetLatestInfererScore(ctx, topicId, worker, oldScore)
-	s.Require().NoError(err, "Setting an older inferer score should not fail but should not update")
-	updatedScore, _ := keeper.GetLatestInfererScore(ctx, topicId, worker)
-	s.Require().NotEqual(oldScore.Score, updatedScore.Score, "Older score should not replace newer score")
+	err := keeper.SetInfererScoreEma(ctx, topicId, worker, score)
+	s.Require().NoError(err)
+	infererScore, err := keeper.GetInfererScoreEma(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(score.Score, infererScore.Score, "Newer inferer score should be set")
 
 	// Set a new score for forecaster
-	_ = keeper.SetLatestForecasterScore(ctx, topicId, forecaster, newScore)
-	forecasterScore, _ := keeper.GetLatestForecasterScore(ctx, topicId, forecaster)
-	s.Require().Equal(newScore.Score, forecasterScore.Score, "Newer forecaster score should be set")
+	err = keeper.SetForecasterScoreEma(ctx, topicId, forecaster, score)
+	s.Require().NoError(err)
+	forecasterScore, err := keeper.GetForecasterScoreEma(ctx, topicId, forecaster)
+	s.Require().NoError(err)
+	s.Require().Equal(score.Score, forecasterScore.Score, "Newer forecaster score should be set")
 
 	// Set a new score for reputer
-	_ = keeper.SetLatestReputerScore(ctx, topicId, reputer, newScore)
-	reputerScore, _ := keeper.GetLatestReputerScore(ctx, topicId, reputer)
-	s.Require().Equal(newScore.Score, reputerScore.Score, "Newer reputer score should be set")
+	err = keeper.SetReputerScoreEma(ctx, topicId, reputer, score)
+	s.Require().NoError(err)
+	reputerScore, err := keeper.GetReputerScoreEma(ctx, topicId, reputer)
+	s.Require().NoError(err)
+	s.Require().Equal(score.Score, reputerScore.Score, "Newer reputer score should be set")
 }
 
 func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
@@ -3476,15 +3493,15 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
-	err := k.SetLatestInfererScore(ctx, topicId, worker1, score1)
+	err := k.SetInfererScoreEma(ctx, topicId, worker1, score1)
 	s.Require().NoError(err)
-	err = k.SetLatestInfererScore(ctx, topicId, worker2, score2)
+	err = k.SetInfererScoreEma(ctx, topicId, worker2, score2)
 	s.Require().NoError(err)
-	err = k.SetLatestInfererScore(ctx, topicId, worker3, score3)
+	err = k.SetInfererScoreEma(ctx, topicId, worker3, score3)
 	s.Require().NoError(err)
-	err = k.SetLatestInfererScore(ctx, topicId, worker4, score4)
+	err = k.SetInfererScoreEma(ctx, topicId, worker4, score4)
 	s.Require().NoError(err)
-	err = k.SetLatestInfererScore(ctx, topicId, worker5, score5)
+	err = k.SetInfererScoreEma(ctx, topicId, worker5, score5)
 	s.Require().NoError(err)
 
 	allInferences := types.Inferences{
@@ -3539,15 +3556,15 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
-	err := k.SetLatestForecasterScore(ctx, topicId, worker1, score1)
+	err := k.SetForecasterScoreEma(ctx, topicId, worker1, score1)
 	s.Require().NoError(err)
-	err = k.SetLatestForecasterScore(ctx, topicId, worker2, score2)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker2, score2)
 	s.Require().NoError(err)
-	err = k.SetLatestForecasterScore(ctx, topicId, worker3, score3)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker3, score3)
 	s.Require().NoError(err)
-	err = k.SetLatestForecasterScore(ctx, topicId, worker4, score4)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker4, score4)
 	s.Require().NoError(err)
-	err = k.SetLatestForecasterScore(ctx, topicId, worker5, score5)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker5, score5)
 	s.Require().NoError(err)
 
 	allForecasts := types.Forecasts{
@@ -3671,15 +3688,15 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer5, Score: alloraMath.NewDecFromInt64(96)}
-	err := k.SetLatestReputerScore(ctx, topicId, reputer1, score1)
+	err := k.SetReputerScoreEma(ctx, topicId, reputer1, score1)
 	s.Require().NoError(err)
-	err = k.SetLatestReputerScore(ctx, topicId, reputer2, score2)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer2, score2)
 	s.Require().NoError(err)
-	err = k.SetLatestReputerScore(ctx, topicId, reputer3, score3)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer3, score3)
 	s.Require().NoError(err)
-	err = k.SetLatestReputerScore(ctx, topicId, reputer4, score4)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer4, score4)
 	s.Require().NoError(err)
-	err = k.SetLatestReputerScore(ctx, topicId, reputer5, score5)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer5, score5)
 	s.Require().NoError(err)
 
 	allReputerLosses := types.ReputerValueBundles{

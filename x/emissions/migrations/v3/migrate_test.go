@@ -1,22 +1,19 @@
 package v3_test
 
 import (
-	"encoding/json"
-	"strconv"
 	"testing"
-
-	cosmosMath "cosmossdk.io/math"
-	"cosmossdk.io/store/prefix"
-	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/types"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 
+	"cosmossdk.io/core/store"
 	"github.com/allora-network/allora-chain/app/params"
 
+	"cosmossdk.io/store/prefix"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	migrations "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
+	v3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
+	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -30,7 +27,6 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 
 	storetypes "cosmossdk.io/store/types"
-	oldparams "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
 	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
 )
 
@@ -39,6 +35,7 @@ type EmissionsV3MigrationTestSuite struct {
 	ctrl *gomock.Controller
 
 	ctx             sdk.Context
+	storeService    store.KVStoreService
 	emissionsKeeper *keeper.Keeper
 }
 
@@ -50,6 +47,7 @@ func (s *EmissionsV3MigrationTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
+	s.storeService = storeService
 	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	s.ctx = testCtx.Ctx
 
@@ -72,8 +70,9 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrate() {
 	storageService := s.emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
+
 	defaultParams := types.DefaultParams()
-	paramsOld := oldparams.Params{
+	paramsOld := oldtypes.Params{
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,
@@ -118,16 +117,19 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrate() {
 		TopicFeeRevenueDecayRate:        alloraMath.NewDecFromInt64(1338),
 		MaxRetriesToFulfilNoncesWorker:  4242,
 		MaxRetriesToFulfilNoncesReputer: 4243,
+		MaxTopicsPerBlock:               4244,
 	}
 
 	store.Set(types.ParamsKey, cdc.MustMarshal(&paramsOld))
 
 	// Run migration
-	err := migrations.MigrateStore(s.ctx, *s.emissionsKeeper)
+	err := v3.MigrateStore(s.ctx, *s.emissionsKeeper)
 	s.Require().NoError(err)
 
 	// TO BE ADDED VIA DEFAULT PARAMS
 	// MaxElementsPerForecast: defaultParams.MaxElementsPerForecast
+	// MaxActiveTopicsPerBlock: defaultParams.MaxActiveTopicsPerBlock
+
 	paramsExpected := defaultParams
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -175,99 +177,97 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrate() {
 	s.Require().Equal(paramsExpected, params)
 }
 
-func (s *EmissionsV3MigrationTestSuite) TestActiveTopicsMigration() {
-	storageService := s.emissionsKeeper.GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
+func (s *EmissionsV3MigrationTestSuite) TestMigrateTopics() {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-	err := s.emissionsKeeper.SetParams(s.ctx, types.Params{
-		MinTopicWeight:          alloraMath.MustNewDecFromString("0"),
-		MaxActiveTopicsPerBlock: uint64(4),
-	})
-	s.Require().NoError(err)
-
-	topicCnt := 10
-	s.setUpOldTopicsData(store, topicCnt)
-	err = migrations.MigrateActiveTopics(store, s.ctx, *s.emissionsKeeper)
-	s.Require().NoError(err)
-
-	blockToActiveStore := prefix.NewStore(store, types.BlockToActiveTopicsKey)
-	iterator := blockToActiveStore.Iterator(nil, nil)
-	for ; iterator.Valid(); iterator.Next() {
-		var msg types.TopicIds
-		err := proto.Unmarshal(iterator.Value(), &msg)
-		s.Require().NoError(err)
-		s.Require().GreaterOrEqual(len(msg.TopicIds), 3)
+	oldTopic := oldtypes.Topic{
+		Id:             1,
+		Creator:        "creator",
+		Metadata:       "metadata",
+		LossMethod:     "lossmethod",
+		EpochLastEnded: 0,
+		EpochLength:    100,
+		GroundTruthLag: 10,
+		PNorm:          alloraMath.NewDecFromInt64(3),
+		AlphaRegret:    alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:  false,
+		Epsilon:        alloraMath.MustNewDecFromString("0.01"),
+		// InitialRegret is being reset to account for NaNs that were previously stored due to insufficient validation
+		InitialRegret:          alloraMath.MustNewDecFromString("11"),
+		WorkerSubmissionWindow: 120,
 	}
-}
 
-func (s *EmissionsV3MigrationTestSuite) TestLimitedActiveTopicsMigration() {
-	storageService := s.emissionsKeeper.GetStorageService()
-	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
-
-	maxActiveTopicPerBlock := 2
-	err := s.emissionsKeeper.SetParams(s.ctx, types.Params{
-		MinTopicWeight:          alloraMath.MustNewDecFromString("0"),
-		MaxActiveTopicsPerBlock: uint64(maxActiveTopicPerBlock),
-	})
+	bz, err := proto.Marshal(&oldTopic)
 	s.Require().NoError(err)
 
-	topicCnt := 10
-	s.setUpOldTopicsData(store, topicCnt)
-	err = migrations.MigrateActiveTopics(store, s.ctx, *s.emissionsKeeper)
-	s.Require().NoError(err)
-
-	blockToActiveStore := prefix.NewStore(store, types.BlockToActiveTopicsKey)
-	iterator := blockToActiveStore.Iterator(nil, nil)
-	for ; iterator.Valid(); iterator.Next() {
-		var msg types.TopicIds
-		err := proto.Unmarshal(iterator.Value(), &msg)
-		s.Require().NoError(err)
-		if len(msg.TopicIds) == 0 {
-			continue
-		}
-		s.Require().Len(msg.TopicIds, 3)
-	}
-}
-
-func (s *EmissionsV3MigrationTestSuite) setUpOldTopicsData(store storetypes.KVStore, topicCnt int) {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
-	topicFeeRevenueStore := prefix.NewStore(store, types.TopicFeeRevenueKey)
-	topicStakeStore := prefix.NewStore(store, types.TopicStakeKey)
-	previousTopicWeightStore := prefix.NewStore(store, types.PreviousTopicWeightKey)
+	topicStore.Set([]byte("testKey"), bz)
 
-	for i := 1; i <= topicCnt; i++ {
-		oldTopic := oldtypes.Topic{
-			Id:              uint64(i),
-			Creator:         "creator",
-			Metadata:        "metadata",
-			LossLogic:       "losslogic",
-			LossMethod:      "lossmethod",
-			InferenceLogic:  "inferencelogic",
-			InferenceMethod: "inferencemethod",
-			EpochLastEnded:  0,
-			EpochLength:     int64(100 + 50*(i%3)),
-			GroundTruthLag:  10,
-			DefaultArg:      "defaultarg",
-			PNorm:           alloraMath.NewDecFromInt64(3),
-			AlphaRegret:     alloraMath.MustNewDecFromString("0.1"),
-			AllowNegative:   false,
-		}
+	err = v3.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	s.Require().NoError(err)
 
-		bz, err := proto.Marshal(&oldTopic)
-		s.Require().NoError(err)
+	// Verify the store has been updated correctly
+	iterator := topicStore.Iterator(nil, nil)
+	s.Require().True(iterator.Valid())
+	defer iterator.Close()
 
-		topicStore.Set([]byte(strconv.Itoa(i)), bz)
+	var newMsg types.Topic
+	err = proto.Unmarshal(iterator.Value(), &newMsg)
+	s.Require().NoError(err)
 
-		topicFeeRevenue, err := json.Marshal(cosmosMath.NewInt(int64(10 + i*30)))
-		s.Require().NoError(err)
-		topicFeeRevenueStore.Set([]byte(strconv.Itoa(i)), topicFeeRevenue)
+	// Old props are the same
+	s.Require().Equal(oldTopic.Id, newMsg.Id)
+	s.Require().Equal(oldTopic.Creator, newMsg.Creator)
+	s.Require().Equal(oldTopic.Metadata, newMsg.Metadata)
+	s.Require().Equal(oldTopic.LossMethod, newMsg.LossMethod)
+	s.Require().Equal(oldTopic.EpochLength, newMsg.EpochLength)
+	s.Require().Equal(oldTopic.GroundTruthLag, newMsg.GroundTruthLag)
+	s.Require().Equal(oldTopic.PNorm.String(), newMsg.PNorm.String())
+	s.Require().Equal(oldTopic.AlphaRegret.String(), newMsg.AlphaRegret.String())
+	s.Require().Equal(oldTopic.AllowNegative, newMsg.AllowNegative)
+	s.Require().Equal(oldTopic.EpochLastEnded, newMsg.EpochLastEnded)
+	// New props are imputed with defaults
+	s.Require().Equal("0.1", newMsg.MeritSortitionAlpha.String())
+	s.Require().Equal("0.25", newMsg.ActiveInfererQuantile.String())
+	s.Require().Equal("0.25", newMsg.ActiveForecasterQuantile.String())
+	s.Require().Equal("0.25", newMsg.ActiveReputerQuantile.String())
+	// InitialRegret is reset to 0
+	s.Require().Equal("0", newMsg.InitialRegret.String())
+}
 
-		topicStake, err := json.Marshal(cosmosMath.NewInt(int64(1000 + i*100)))
-		s.Require().NoError(err)
-		topicStakeStore.Set([]byte(strconv.Itoa(i)), topicStake)
+func (s *EmissionsV3MigrationTestSuite) TestResetMapsWithNonNumericValues() {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-		previousTopicWeight, err := json.Marshal(alloraMath.NewDecFromInt64(int64(50 + i*10)))
-		s.Require().NoError(err)
-		previousTopicWeightStore.Set([]byte(strconv.Itoa(i)), previousTopicWeight)
+	score := []*types.Score{
+		{
+			TopicId:     uint64(1),
+			BlockHeight: int64(1),
+			Address:     "address",
+			Score:       alloraMath.NewDecFromInt64(10),
+		},
 	}
+	scores := types.Scores{Scores: score}
+
+	bz, err := proto.Marshal(&scores)
+	s.Require().NoError(err)
+
+	infererScoresByBlock := prefix.NewStore(store, types.InferenceScoresKey)
+	infererScoresByBlock.Set([]byte("testKey"), bz)
+
+	// Sanity check
+	iterator := infererScoresByBlock.Iterator(nil, nil)
+	s.Require().True(iterator.Valid())
+	err = proto.Unmarshal(iterator.Value(), &scores)
+	s.Require().NoError(err)
+	iterator.Close()
+	s.Require().Len(scores.Scores, 1)
+
+	v3.ResetMapsWithNonNumericValues(store, cdc)
+
+	// Verify the store has been updated correctly
+	iterator = infererScoresByBlock.Iterator(nil, nil)
+	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
+	iterator.Close()
 }

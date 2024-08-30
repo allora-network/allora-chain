@@ -170,8 +170,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestForecasterScore",
-					Use:       "latest-forecaster-score [topic_id] [forecaster]",
+					RpcMethod: "GetForecasterScoreEma",
+					Use:       "forecaster-score-ema [topic_id] [forecaster]",
 					Short:     "Returns latest score for a forecaster in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -179,8 +179,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestInfererScore",
-					Use:       "latest-inferer-score [topic_id] [inferer]",
+					RpcMethod: "GetInfererScoreEma",
+					Use:       "inferer-score-ema [topic_id] [inferer]",
 					Short:     "Returns latest score for a inferer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -188,8 +188,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestReputerScore",
-					Use:       "latest-reputer-score [topic_id] [reputer]",
+					RpcMethod: "GetReputerScoreEma",
+					Use:       "reputer-score-ema [topic_id] [reputer]",
 					Short:     "Returns latest score for a reputer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},

@@ -282,19 +282,19 @@ service Query {
     option (google.api.http).get = "/emissions/v3/rewardable_topics";
   }
 
-  rpc GetLatestInfererScore(QueryLatestInfererScoreRequest) returns (QueryLatestInfererScoreResponse) {
+  rpc GetInfererScoreEma(QueryGetInfererScoreEmaRequest) returns (QueryGetInfererScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/latest_inferer_score/{topic_id}/{inferer}";
+    option (google.api.http).get = "/emissions/v3/inferer_score_ema/{topic_id}/{inferer}";
   }
 
-  rpc GetLatestForecasterScore(QueryLatestForecasterScoreRequest) returns (QueryLatestForecasterScoreResponse) {
+  rpc GetForecasterScoreEma(QueryGetForecasterScoreEmaRequest) returns (QueryGetForecasterScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/latest_forecaster_score/{topic_id}/{forecaster}";
+    option (google.api.http).get = "/emissions/v3/forecaster_score_ema/{topic_id}/{forecaster}";
   }
 
-  rpc GetLatestReputerScore(QueryLatestReputerScoreRequest) returns (QueryLatestReputerScoreResponse) {
+  rpc GetReputerScoreEma(QueryGetReputerScoreEmaRequest) returns (QueryGetReputerScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v3/latest_reputer_score/{topic_id}/{reputer}";
+    option (google.api.http).get = "/emissions/v3/reputer_score_ema/{topic_id}/{reputer}";
   }
 
   rpc GetInferenceScoresUntilBlock(QueryInferenceScoresUntilBlockRequest) returns (QueryInferenceScoresUntilBlockResponse) {
@@ -998,30 +998,30 @@ message QueryRewardableTopicsResponse {
   repeated uint64 rewardable_topic_ids = 1;
 }
 
-message QueryLatestInfererScoreRequest {
+message QueryGetInfererScoreEmaRequest {
   uint64 topic_id = 1;
   string inferer = 2;
 }
 
-message QueryLatestInfererScoreResponse {
+message QueryGetInfererScoreEmaResponse {
   Score score = 1;
 }
 
-message QueryLatestForecasterScoreRequest {
+message QueryGetForecasterScoreEmaRequest {
   uint64 topic_id = 1;
   string forecaster = 2;
 }
 
-message QueryLatestForecasterScoreResponse {
+message QueryGetForecasterScoreEmaResponse {
   Score score = 1;
 }
 
-message QueryLatestReputerScoreRequest {
+message QueryGetReputerScoreEmaRequest {
   uint64 topic_id = 1;
   string reputer = 2;
 }
 
-message QueryLatestReputerScoreResponse {
+message QueryGetReputerScoreEmaResponse {
   Score score = 1;
 }
 

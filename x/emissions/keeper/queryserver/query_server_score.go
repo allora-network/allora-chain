@@ -6,49 +6,49 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (qs queryServer) GetLatestInfererScore(
+func (qs queryServer) GetInfererScoreEma(
 	ctx context.Context,
-	req *types.QueryLatestInfererScoreRequest,
+	req *types.QueryGetInfererScoreEmaRequest,
 ) (
-	*types.QueryLatestInfererScoreResponse,
+	*types.QueryGetInfererScoreEmaResponse,
 	error,
 ) {
-	latestInfererScore, err := qs.k.GetLatestInfererScore(ctx, req.TopicId, req.Inferer)
+	latestInfererScore, err := qs.k.GetInfererScoreEma(ctx, req.TopicId, req.Inferer)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryLatestInfererScoreResponse{Score: &latestInfererScore}, nil
+	return &types.QueryGetInfererScoreEmaResponse{Score: &latestInfererScore}, nil
 }
 
-func (qs queryServer) GetLatestForecasterScore(
+func (qs queryServer) GetForecasterScoreEma(
 	ctx context.Context,
-	req *types.QueryLatestForecasterScoreRequest,
+	req *types.QueryGetForecasterScoreEmaRequest,
 ) (
-	*types.QueryLatestForecasterScoreResponse,
+	*types.QueryGetForecasterScoreEmaResponse,
 	error,
 ) {
-	latestForecasterScore, err := qs.k.GetLatestForecasterScore(ctx, req.TopicId, req.Forecaster)
+	latestForecasterScore, err := qs.k.GetForecasterScoreEma(ctx, req.TopicId, req.Forecaster)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryLatestForecasterScoreResponse{Score: &latestForecasterScore}, nil
+	return &types.QueryGetForecasterScoreEmaResponse{Score: &latestForecasterScore}, nil
 }
 
-func (qs queryServer) GetLatestReputerScore(
+func (qs queryServer) GetReputerScoreEma(
 	ctx context.Context,
-	req *types.QueryLatestReputerScoreRequest,
+	req *types.QueryGetReputerScoreEmaRequest,
 ) (
-	*types.QueryLatestReputerScoreResponse,
+	*types.QueryGetReputerScoreEmaResponse,
 	error,
 ) {
-	latestReputerScore, err := qs.k.GetLatestReputerScore(ctx, req.TopicId, req.Reputer)
+	latestReputerScore, err := qs.k.GetReputerScoreEma(ctx, req.TopicId, req.Reputer)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryLatestReputerScoreResponse{Score: &latestReputerScore}, nil
+	return &types.QueryGetReputerScoreEmaResponse{Score: &latestReputerScore}, nil
 }
 
 func (qs queryServer) GetInferenceScoresUntilBlock(
