@@ -531,7 +531,7 @@ func initSlashing(app *AlloraApp, ctx sdk.Context, newValAddr []byte) error {
 func initBank(app *AlloraApp, ctx sdk.Context) error {
 	defaultCoins := sdk.NewCoins(sdk.NewInt64Coin("uallo", 1000000000000))
 	testAccounts := []string{
-		"allo1cyyzpxplxdzkeea7kwsydadg87357qnahakaks",
+		"allo1az9ru7rnkaqhgcr4h6tpvtr3arem2whva74cev",
 		// Add more test accounts as needed
 	}
 	for _, accAddr := range testAccounts {
