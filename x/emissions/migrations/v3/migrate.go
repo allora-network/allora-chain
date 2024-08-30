@@ -63,7 +63,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	//      MaxElementsPerForecast
 	//		MaxActiveTopicsPerBlock
 	// REMOVED:
-	// 		MinEffectiveTopicRevenue
+	//      MinEffectiveTopicRevenue
 	//      TopicFeeRevenueDecayRate
 	//      MaxRetriesToFulfilNoncesWorker
 	// 		MaxRetriesToFulfilNoncesReputer
