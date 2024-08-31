@@ -826,6 +826,18 @@ func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce typ
 		newInferences.Inferences = append(newInferences.Inferences[:lowScoreIndex], newInferences.Inferences[lowScoreIndex+1:]...)
 		newInferences.Inferences = append(newInferences.Inferences, inference)
 		return k.allInferences.Set(ctx, key, newInferences)
+	} else {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return err
+		}
+		/*
+		 * TODO: Get + use previous active set score!
+		 */
+		err = k.CalcAndSaveInfererScoreEmaIfNewUpdate(ctx, topic, block, inference.Inferer, score)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -888,6 +900,18 @@ func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce type
 		newForecasts.Forecasts = append(newForecasts.Forecasts[:lowScoreIndex], newForecasts.Forecasts[lowScoreIndex+1:]...)
 		newForecasts.Forecasts = append(newForecasts.Forecasts, forecast)
 		return k.allForecasts.Set(ctx, key, newForecasts)
+	} else {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return err
+		}
+		/*
+		 * TODO: Get + use previous active set score!
+		 */
+		err = k.CalcAndSaveForecasterScoreEmaIfNewUpdate(ctx, topic, block, forecast.Forecaster, score)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -989,6 +1013,18 @@ func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block B
 			newReputerLossBundles.ReputerValueBundles[lowScoreIndex+1:]...)
 		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerLoss)
 		return k.allLossBundles.Set(ctx, key, newReputerLossBundles)
+	} else {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return err
+		}
+		/*
+		 * TODO: Get + use previous active set score!
+		 */
+		err = k.CalcAndSaveReputerScoreEmaIfNewUpdate(ctx, topic, block, reputerLoss.ValueBundle.Reputer, score)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
