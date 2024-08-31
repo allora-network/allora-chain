@@ -634,7 +634,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 		LossMethod:               "mse",
 		EpochLength:              epochLength,
 		GroundTruthLag:           epochLength,
-		WorkerSubmissionWindow:   epochLength,
+		WorkerSubmissionWindow:   min(10, epochLength-2),
 		AlphaRegret:              alphaRegret,
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
@@ -707,19 +707,23 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	require.NoError(err)
 
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight)
+	// TODO EndBlock should create the nonce, and add to workerSubmissionWindows, etc.
+	// but it doesn't. So we have to do it manually.
+	// err = s.emissionsAppModule.EndBlock(s.ctx)
 	err = s.emissionsKeeper.AddWorkerNonce(
 		s.ctx,
 		topicId,
 		&types.Nonce{BlockHeight: blockHeight},
 	)
 	require.NoError(err)
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddWorkerWindowTopicId(s.ctx, blockHeight+topic.WorkerSubmissionWindow, topic.Id)
+	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.AddReputerNonce(
-		s.ctx,
-		topicId,
-		&types.Nonce{BlockHeight: blockHeight},
-	)
-	require.NoError(err)
+	// Advance one to send the worker data
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight + 1)
 
 	getAddrsFromValues := func(values []TestWorkerValue) []sdk.AccAddress {
 		addrs := make([]sdk.AccAddress, 0)
@@ -731,11 +735,6 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 
 	workerAddrs := getAddrsFromValues(workerValues)
 
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
-	s.Require().NoError(err)
-
-	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight)
-	// Insert inference from workers
 	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, blockHeight, workerValues, workerAddrs)
 	for _, payload := range inferenceBundles {
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
@@ -744,10 +743,11 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 		})
 		require.NoError(err)
 	}
-
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
-	s.Require().NoError(err)
-
+	// Advance to close the window
+	newBlock := blockHeight + topic.WorkerSubmissionWindow
+	fmt.Println("newBlock", newBlock, "blockHeight", blockHeight, "topic sub win:", topic.WorkerSubmissionWindow, " lastEnded: ", topic.EpochLastEnded, ", gtlag: ", topic.GroundTruthLag)
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlock)
+	// EndBlock closes the nonce
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -3014,7 +3014,7 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 3)
 
 	reputer0Values := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.1"},
@@ -3113,7 +3113,7 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 3)
 
 	reputerValues := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.9"},
@@ -3210,7 +3210,7 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 30)
 
 	// Define values to test
 	reputer0Values := []TestWorkerValue{
