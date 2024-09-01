@@ -720,7 +720,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	//	topicId,
 	//	&types.Nonce{BlockHeight: blockHeight},
 	//)
-	//require.NoError(err)
+	require.NoError(err)
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 	//err = s.emissionsKeeper.AddWorkerWindowTopicId(s.ctx, blockHeight+topic.WorkerSubmissionWindow, topic.Id)
@@ -2807,7 +2807,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	// setup topics
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	epochLength := int64(201600) // if every block is 3 seconds
+	epochLength := int64(100)
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
 	fmt.Println(s.ctx.BlockHeight())
 	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
@@ -2864,6 +2864,9 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	// force rewards to be distributed
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
+	nextBlock, _, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId0)
+	s.Require().NoError(err)
+	s.ctx = s.ctx.WithBlockHeight(nextBlock)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
