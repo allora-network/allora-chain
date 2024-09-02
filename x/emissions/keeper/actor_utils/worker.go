@@ -140,7 +140,7 @@ func insertInferencesFromTopInferers(
 	inferencesToInsert := types.Inferences{
 		Inferences: inferences,
 	}
-	err := k.InsertInferences(ctx, topicId, nonce, inferencesToInsert)
+	err := k.InsertInferences(ctx, topicId, nonce.BlockHeight, inferencesToInsert)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +218,7 @@ func insertForecastsFromTopForecasters(
 	forecastsToInsert := types.Forecasts{
 		Forecasts: latestForecaster,
 	}
-	err := k.InsertForecasts(ctx, topicId, nonce, forecastsToInsert)
+	err := k.InsertForecasts(ctx, topicId, nonce.BlockHeight, forecastsToInsert)
 	if err != nil {
 		return err
 	}
