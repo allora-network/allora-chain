@@ -2659,18 +2659,9 @@ func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHe
 	return nil
 }
 
-// Return true if the topic has met its cadence or is the first run
-func (k *Keeper) CheckWorkerOpenCadence(blockHeight int64, topic types.Topic) bool {
-	return (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0 ||
-		topic.EpochLastEnded == 0
-}
-
-func (k *Keeper) CheckWorkerCloseCadence(blockHeight int64, topic types.Topic) bool {
-	return blockHeight-topic.EpochLastEnded == topic.WorkerSubmissionWindow
-}
-
-func (k *Keeper) CheckReputerCloseCadence(blockHeight int64, topic types.Topic) bool {
-	return (blockHeight-topic.EpochLastEnded)%topic.EpochLength == 0
+// Return true if the nonce is within the worker submission window for the topic
+func (k *Keeper) BlockWithinWorkerSubmissionWindowOfNonce(topic types.Topic, nonce types.Nonce, blockHeight int64) bool {
+	return nonce.BlockHeight <= blockHeight && blockHeight < topic.WorkerSubmissionWindow+nonce.BlockHeight
 }
 
 func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
