@@ -176,24 +176,17 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
 	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 
-	// Valid reputer nonce window, start
-	newBlockheight = block + topic.GroundTruthLag
+	// Valid reputer nonce window, end
+	newBlockheight = block + topic.GroundTruthLag*2 + 1
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
-
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
-	require.NoError(err)
+	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 
 	// Valid reputer nonce window, end
 	newBlockheight = block + topic.GroundTruthLag*2
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
 	require.NoError(err)
-
-	// Valid reputer nonce window, end
-	newBlockheight = block + topic.GroundTruthLag*2 + 1
-	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
-	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
-	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature() {

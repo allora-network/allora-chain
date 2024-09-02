@@ -825,7 +825,8 @@ func (k *Keeper) AppendInference(
 		return errorsmod.Wrapf(err, "Error getting inferer score ema")
 	}
 	// Only calc and save if there's a new update
-	if blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+	if previousEmaScore.BlockHeight != 0 &&
+		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -922,7 +923,8 @@ func (k *Keeper) AppendForecast(
 		return errorsmod.Wrapf(err, "Error getting forecaster score ema")
 	}
 	// Only calc and save if there's a new update
-	if blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+	if previousEmaScore.BlockHeight != 0 &&
+		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -1052,7 +1054,8 @@ func (k *Keeper) AppendReputerLoss(
 		return err
 	}
 	// Only calc and save if there's a new update
-	if blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+	if previousEmaScore.BlockHeight != 0 &&
+		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -2821,7 +2824,7 @@ func (k *Keeper) BlockWithinWorkerSubmissionWindowOfNonce(topic types.Topic, non
 // Return true if the nonce is within the worker submission window for the topic
 func (k *Keeper) BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, nonce types.ReputerRequestNonce, blockHeight int64) bool {
 	return nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag <= blockHeight &&
-		blockHeight < nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag*2
+		blockHeight <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag*2
 }
 
 func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {

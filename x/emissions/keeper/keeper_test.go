@@ -3641,6 +3641,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		},
 	}
 	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
 	err = k.AppendForecast(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newForecast)
 	s.Require().NoError(err)
 	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
@@ -3747,6 +3748,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	}
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
+	blockHeight = blockHeight + topic.EpochLength
 	err = k.AppendReputerLoss(ctx, topic, blockHeight, nonce.BlockHeight, &newReputerLoss)
 	s.Require().NoError(err)
 	newAllReputerLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
@@ -3766,6 +3768,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			TopicId:             topicId,
 		},
 	}
+	blockHeight = blockHeight + topic.EpochLength
 	err = k.AppendReputerLoss(ctx, topic, blockHeight, nonce.BlockHeight, &newReputerLoss2)
 	s.Require().NoError(err)
 	newAllReputerLosses, err = k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
