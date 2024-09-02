@@ -8050,11 +8050,11 @@ var (
 
 	pattern_Query_GetInferenceScoresUntilBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "inference_scores_until_block", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetPreviousTopicQuantileForecasterScoreEma_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "previous_topic_quantile_forecaster_score_ema", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetPreviousTopicQuantileForecasterScoreEma_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "topic_quantile_forecaster_score_ema", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetPreviousTopicQuantileInfererScoreEma_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "previous_topic_quantile_inferer_score_ema", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetPreviousTopicQuantileInfererScoreEma_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "topic_quantile_inferer_score_ema", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GetPreviousTopicQuantileReputerScoreEma_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "previous_topic_quantile_reputer_score_ema", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GetPreviousTopicQuantileReputerScoreEma_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v3", "topic_quantile_reputer_score_ema", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GetWorkerInferenceScoresAtBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v3", "worker_inference_scores_at_block", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
 
