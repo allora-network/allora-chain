@@ -83,4 +83,7 @@ var (
 	TopicToNextPossibleChurningBlockKey               = collections.NewPrefix(68)
 	BlockToActiveTopicsKey                            = collections.NewPrefix(69)
 	BlockToLowestActiveTopicWeightKey                 = collections.NewPrefix(70)
+	PreviousTopicQuantileInfererScoreEmaKey           = collections.NewPrefix(71)
+	PreviousTopicQuantileForecasterScoreEmaKey        = collections.NewPrefix(72)
+	PreviousTopicQuantileReputerScoreEmaKey           = collections.NewPrefix(73)
 )

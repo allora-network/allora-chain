@@ -51,6 +51,39 @@ func (qs queryServer) GetReputerScoreEma(
 	return &types.QueryGetReputerScoreEmaResponse{Score: &latestReputerScore}, nil
 }
 
+func (qs queryServer) GetPreviousTopicQuantileForecasterScoreEma(ctx context.Context, req *types.QueryGetPreviousTopicQuantileForecasterScoreEmaRequest) (
+	*types.QueryGetPreviousTopicQuantileForecasterScoreEmaResponse,
+	error,
+) {
+	previousQuantileForecasterScore, err := qs.k.GetPreviousTopicQuantileForecasterScoreEma(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	return &types.QueryGetPreviousTopicQuantileForecasterScoreEmaResponse{Value: previousQuantileForecasterScore}, nil
+}
+
+func (qs queryServer) GetPreviousTopicQuantileInfererScoreEma(ctx context.Context, req *types.QueryGetPreviousTopicQuantileInfererScoreEmaRequest) (
+	*types.QueryGetPreviousTopicQuantileInfererScoreEmaResponse,
+	error,
+) {
+	previousQuantileInfererScore, err := qs.k.GetPreviousTopicQuantileInfererScoreEma(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	return &types.QueryGetPreviousTopicQuantileInfererScoreEmaResponse{Value: previousQuantileInfererScore}, nil
+}
+
+func (qs queryServer) GetPreviousTopicQuantileReputerScoreEma(ctx context.Context, req *types.QueryGetPreviousTopicQuantileReputerScoreEmaRequest) (
+	*types.QueryGetPreviousTopicQuantileReputerScoreEmaResponse,
+	error,
+) {
+	previousQuantileReputerScore, err := qs.k.GetPreviousTopicQuantileReputerScoreEma(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	return &types.QueryGetPreviousTopicQuantileReputerScoreEmaResponse{Value: previousQuantileReputerScore}, nil
+}
+
 func (qs queryServer) GetInferenceScoresUntilBlock(
 	ctx context.Context,
 	req *types.QueryInferenceScoresUntilBlockRequest,

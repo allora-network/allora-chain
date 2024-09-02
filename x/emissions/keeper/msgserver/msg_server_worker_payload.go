@@ -11,6 +11,9 @@ import (
 
 // A tx function that accepts a individual inference and forecast and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
+// Only 1 payload per registered worker is kept, ignore the rest. In particular, take the first payload from each
+// registered worker and none from any unregistered actor.
+// Signatures, anti-synil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInsertWorkerPayload) (*types.MsgInsertWorkerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
@@ -114,7 +117,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 				"forecaster address is not registered in this topic")
 		}
 
-		// LImit forecast elements for top inferers
+		// Limit forecast elements to top inferers
 		latestScoresForForecastedInferers := make([]types.Score, 0)
 		for _, el := range forecast.ForecastElements {
 			score, err := ms.k.GetInfererScoreEma(ctx, forecast.TopicId, el.Inferer)

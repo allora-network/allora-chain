@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -117,6 +118,16 @@ func GenerateReputerScores(
 		newScores = append(newScores, newScore)
 	}
 
+	// Update topic quantile of EMA score
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveReputerQuantile)
+	if err != nil {
+		return nil, err
+	}
+	err = keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	if err != nil {
+		return nil, err
+	}
+
 	types.EmitNewReputerScoresSetEvent(ctx, newScores)
 	return newScores, nil
 }
@@ -175,6 +186,16 @@ func GenerateInferenceScores(
 		}
 
 		newScores = append(newScores, newScore)
+	}
+
+	// Update topic quantile of EMA score
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveInfererQuantile)
+	if err != nil {
+		return nil, err
+	}
+	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	if err != nil {
+		return nil, err
 	}
 
 	types.EmitNewInfererScoresSetEvent(ctx, newScores)
@@ -259,6 +280,16 @@ func GenerateForecastScores(
 		}
 
 		newScores = append(newScores, newScore)
+	}
+
+	// Update topic quantile of EMA score
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveForecasterQuantile)
+	if err != nil {
+		return nil, err
+	}
+	err = keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	if err != nil {
+		return nil, err
 	}
 
 	types.EmitNewForecasterScoresSetEvent(ctx, newScores)

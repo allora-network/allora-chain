@@ -73,6 +73,9 @@ const (
 	Query_GetForecasterScoreEma_FullMethodName                       = "/emissions.v3.Query/GetForecasterScoreEma"
 	Query_GetReputerScoreEma_FullMethodName                          = "/emissions.v3.Query/GetReputerScoreEma"
 	Query_GetInferenceScoresUntilBlock_FullMethodName                = "/emissions.v3.Query/GetInferenceScoresUntilBlock"
+	Query_GetPreviousTopicQuantileForecasterScoreEma_FullMethodName  = "/emissions.v3.Query/GetPreviousTopicQuantileForecasterScoreEma"
+	Query_GetPreviousTopicQuantileInfererScoreEma_FullMethodName     = "/emissions.v3.Query/GetPreviousTopicQuantileInfererScoreEma"
+	Query_GetPreviousTopicQuantileReputerScoreEma_FullMethodName     = "/emissions.v3.Query/GetPreviousTopicQuantileReputerScoreEma"
 	Query_GetWorkerInferenceScoresAtBlock_FullMethodName             = "/emissions.v3.Query/GetWorkerInferenceScoresAtBlock"
 	Query_GetForecastScoresUntilBlock_FullMethodName                 = "/emissions.v3.Query/GetForecastScoresUntilBlock"
 	Query_GetWorkerForecastScoresAtBlock_FullMethodName              = "/emissions.v3.Query/GetWorkerForecastScoresAtBlock"
@@ -151,6 +154,9 @@ type QueryClient interface {
 	GetForecasterScoreEma(ctx context.Context, in *QueryGetForecasterScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetForecasterScoreEmaResponse, error)
 	GetReputerScoreEma(ctx context.Context, in *QueryGetReputerScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetReputerScoreEmaResponse, error)
 	GetInferenceScoresUntilBlock(ctx context.Context, in *QueryInferenceScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryInferenceScoresUntilBlockResponse, error)
+	GetPreviousTopicQuantileForecasterScoreEma(ctx context.Context, in *QueryGetPreviousTopicQuantileForecasterScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetPreviousTopicQuantileForecasterScoreEmaResponse, error)
+	GetPreviousTopicQuantileInfererScoreEma(ctx context.Context, in *QueryGetPreviousTopicQuantileInfererScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetPreviousTopicQuantileInfererScoreEmaResponse, error)
+	GetPreviousTopicQuantileReputerScoreEma(ctx context.Context, in *QueryGetPreviousTopicQuantileReputerScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetPreviousTopicQuantileReputerScoreEmaResponse, error)
 	GetWorkerInferenceScoresAtBlock(ctx context.Context, in *QueryWorkerInferenceScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerInferenceScoresAtBlockResponse, error)
 	GetForecastScoresUntilBlock(ctx context.Context, in *QueryForecastScoresUntilBlockRequest, opts ...grpc.CallOption) (*QueryForecastScoresUntilBlockResponse, error)
 	GetWorkerForecastScoresAtBlock(ctx context.Context, in *QueryWorkerForecastScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerForecastScoresAtBlockResponse, error)
@@ -664,6 +670,33 @@ func (c *queryClient) GetInferenceScoresUntilBlock(ctx context.Context, in *Quer
 	return out, nil
 }
 
+func (c *queryClient) GetPreviousTopicQuantileForecasterScoreEma(ctx context.Context, in *QueryGetPreviousTopicQuantileForecasterScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetPreviousTopicQuantileForecasterScoreEmaResponse, error) {
+	out := new(QueryGetPreviousTopicQuantileForecasterScoreEmaResponse)
+	err := c.cc.Invoke(ctx, Query_GetPreviousTopicQuantileForecasterScoreEma_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetPreviousTopicQuantileInfererScoreEma(ctx context.Context, in *QueryGetPreviousTopicQuantileInfererScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetPreviousTopicQuantileInfererScoreEmaResponse, error) {
+	out := new(QueryGetPreviousTopicQuantileInfererScoreEmaResponse)
+	err := c.cc.Invoke(ctx, Query_GetPreviousTopicQuantileInfererScoreEma_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) GetPreviousTopicQuantileReputerScoreEma(ctx context.Context, in *QueryGetPreviousTopicQuantileReputerScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetPreviousTopicQuantileReputerScoreEmaResponse, error) {
+	out := new(QueryGetPreviousTopicQuantileReputerScoreEmaResponse)
+	err := c.cc.Invoke(ctx, Query_GetPreviousTopicQuantileReputerScoreEma_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryClient) GetWorkerInferenceScoresAtBlock(ctx context.Context, in *QueryWorkerInferenceScoresAtBlockRequest, opts ...grpc.CallOption) (*QueryWorkerInferenceScoresAtBlockResponse, error) {
 	out := new(QueryWorkerInferenceScoresAtBlockResponse)
 	err := c.cc.Invoke(ctx, Query_GetWorkerInferenceScoresAtBlock_FullMethodName, in, out, opts...)
@@ -876,6 +909,9 @@ type QueryServer interface {
 	GetForecasterScoreEma(context.Context, *QueryGetForecasterScoreEmaRequest) (*QueryGetForecasterScoreEmaResponse, error)
 	GetReputerScoreEma(context.Context, *QueryGetReputerScoreEmaRequest) (*QueryGetReputerScoreEmaResponse, error)
 	GetInferenceScoresUntilBlock(context.Context, *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error)
+	GetPreviousTopicQuantileForecasterScoreEma(context.Context, *QueryGetPreviousTopicQuantileForecasterScoreEmaRequest) (*QueryGetPreviousTopicQuantileForecasterScoreEmaResponse, error)
+	GetPreviousTopicQuantileInfererScoreEma(context.Context, *QueryGetPreviousTopicQuantileInfererScoreEmaRequest) (*QueryGetPreviousTopicQuantileInfererScoreEmaResponse, error)
+	GetPreviousTopicQuantileReputerScoreEma(context.Context, *QueryGetPreviousTopicQuantileReputerScoreEmaRequest) (*QueryGetPreviousTopicQuantileReputerScoreEmaResponse, error)
 	GetWorkerInferenceScoresAtBlock(context.Context, *QueryWorkerInferenceScoresAtBlockRequest) (*QueryWorkerInferenceScoresAtBlockResponse, error)
 	GetForecastScoresUntilBlock(context.Context, *QueryForecastScoresUntilBlockRequest) (*QueryForecastScoresUntilBlockResponse, error)
 	GetWorkerForecastScoresAtBlock(context.Context, *QueryWorkerForecastScoresAtBlockRequest) (*QueryWorkerForecastScoresAtBlockResponse, error)
@@ -1061,6 +1097,15 @@ func (UnimplementedQueryServer) GetReputerScoreEma(context.Context, *QueryGetRep
 }
 func (UnimplementedQueryServer) GetInferenceScoresUntilBlock(context.Context, *QueryInferenceScoresUntilBlockRequest) (*QueryInferenceScoresUntilBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInferenceScoresUntilBlock not implemented")
+}
+func (UnimplementedQueryServer) GetPreviousTopicQuantileForecasterScoreEma(context.Context, *QueryGetPreviousTopicQuantileForecasterScoreEmaRequest) (*QueryGetPreviousTopicQuantileForecasterScoreEmaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousTopicQuantileForecasterScoreEma not implemented")
+}
+func (UnimplementedQueryServer) GetPreviousTopicQuantileInfererScoreEma(context.Context, *QueryGetPreviousTopicQuantileInfererScoreEmaRequest) (*QueryGetPreviousTopicQuantileInfererScoreEmaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousTopicQuantileInfererScoreEma not implemented")
+}
+func (UnimplementedQueryServer) GetPreviousTopicQuantileReputerScoreEma(context.Context, *QueryGetPreviousTopicQuantileReputerScoreEmaRequest) (*QueryGetPreviousTopicQuantileReputerScoreEmaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousTopicQuantileReputerScoreEma not implemented")
 }
 func (UnimplementedQueryServer) GetWorkerInferenceScoresAtBlock(context.Context, *QueryWorkerInferenceScoresAtBlockRequest) (*QueryWorkerInferenceScoresAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerInferenceScoresAtBlock not implemented")
@@ -2098,6 +2143,60 @@ func _Query_GetInferenceScoresUntilBlock_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_GetPreviousTopicQuantileForecasterScoreEma_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryGetPreviousTopicQuantileForecasterScoreEmaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousTopicQuantileForecasterScoreEma(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetPreviousTopicQuantileForecasterScoreEma_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousTopicQuantileForecasterScoreEma(ctx, req.(*QueryGetPreviousTopicQuantileForecasterScoreEmaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetPreviousTopicQuantileInfererScoreEma_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryGetPreviousTopicQuantileInfererScoreEmaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousTopicQuantileInfererScoreEma(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetPreviousTopicQuantileInfererScoreEma_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousTopicQuantileInfererScoreEma(ctx, req.(*QueryGetPreviousTopicQuantileInfererScoreEmaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_GetPreviousTopicQuantileReputerScoreEma_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryGetPreviousTopicQuantileReputerScoreEmaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).GetPreviousTopicQuantileReputerScoreEma(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_GetPreviousTopicQuantileReputerScoreEma_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).GetPreviousTopicQuantileReputerScoreEma(ctx, req.(*QueryGetPreviousTopicQuantileReputerScoreEmaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Query_GetWorkerInferenceScoresAtBlock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryWorkerInferenceScoresAtBlockRequest)
 	if err := dec(in); err != nil {
@@ -2626,6 +2725,18 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInferenceScoresUntilBlock",
 			Handler:    _Query_GetInferenceScoresUntilBlock_Handler,
+		},
+		{
+			MethodName: "GetPreviousTopicQuantileForecasterScoreEma",
+			Handler:    _Query_GetPreviousTopicQuantileForecasterScoreEma_Handler,
+		},
+		{
+			MethodName: "GetPreviousTopicQuantileInfererScoreEma",
+			Handler:    _Query_GetPreviousTopicQuantileInfererScoreEma_Handler,
+		},
+		{
+			MethodName: "GetPreviousTopicQuantileReputerScoreEma",
+			Handler:    _Query_GetPreviousTopicQuantileReputerScoreEma_Handler,
 		},
 		{
 			MethodName: "GetWorkerInferenceScoresAtBlock",
