@@ -24,7 +24,7 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaIfNewUpdate(
 	}
 	// Only calc and save if there's a new update
 	if newScore.BlockHeight-previousScore.BlockHeight <= topic.WorkerSubmissionWindow {
-		return types.Score{}, nil
+		return previousScore, nil
 	}
 	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
@@ -65,7 +65,7 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaIfNewUpdate(
 	}
 	// Only calc and save if there's a new update
 	if newScore.BlockHeight-previousScore.BlockHeight <= topic.WorkerSubmissionWindow {
-		return types.Score{}, nil
+		return previousScore, nil
 	}
 	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
@@ -106,7 +106,7 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaIfNewUpdate(
 	}
 	// Only calc and save if there's a new update
 	if newScore.BlockHeight-previousScore.BlockHeight <= topic.EpochLength {
-		return types.Score{}, nil
+		return previousScore, nil
 	}
 	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
