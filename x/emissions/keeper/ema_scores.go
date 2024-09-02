@@ -17,14 +17,14 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaIfNewUpdate(
 	block types.BlockHeight,
 	worker ActorId,
 	newScore types.Score,
-) error {
+) (types.Score, error) {
 	previousScore, err := k.GetInfererScoreEma(ctx, topic.Id, worker)
 	if err != nil {
-		return errors.Wrapf(err, "Error getting inferer score ema")
+		return types.Score{}, errors.Wrapf(err, "Error getting inferer score ema")
 	}
 	// Only calc and save if there's a new update
 	if newScore.BlockHeight-previousScore.BlockHeight <= topic.WorkerSubmissionWindow {
-		return nil
+		return types.Score{}, nil
 	}
 	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
@@ -34,7 +34,7 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaIfNewUpdate(
 		firstTime,
 	)
 	if err != nil {
-		return errors.Wrapf(err, "Error calculating ema")
+		return types.Score{}, errors.Wrapf(err, "Error calculating ema")
 	}
 	emaScore := types.Score{
 		TopicId:     topic.Id,
@@ -44,9 +44,9 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaIfNewUpdate(
 	}
 	err = k.SetInfererScoreEma(ctx, topic.Id, worker, emaScore)
 	if err != nil {
-		return errors.Wrapf(err, "error setting latest inferer score")
+		return types.Score{}, errors.Wrapf(err, "error setting latest inferer score")
 	}
-	return nil
+	return emaScore, nil
 }
 
 // Calculates and saves the EMA scores for a given worker and topic
@@ -58,14 +58,14 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaIfNewUpdate(
 	block types.BlockHeight,
 	worker ActorId,
 	newScore types.Score,
-) error {
+) (types.Score, error) {
 	previousScore, err := k.GetForecasterScoreEma(ctx, topic.Id, worker)
 	if err != nil {
-		return errors.Wrapf(err, "Error getting forecaster score ema")
+		return types.Score{}, errors.Wrapf(err, "Error getting forecaster score ema")
 	}
 	// Only calc and save if there's a new update
 	if newScore.BlockHeight-previousScore.BlockHeight <= topic.WorkerSubmissionWindow {
-		return nil
+		return types.Score{}, nil
 	}
 	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
@@ -75,7 +75,7 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaIfNewUpdate(
 		firstTime,
 	)
 	if err != nil {
-		return errors.Wrapf(err, "Error calculating ema")
+		return types.Score{}, errors.Wrapf(err, "Error calculating ema")
 	}
 	emaScore := types.Score{
 		TopicId:     topic.Id,
@@ -85,9 +85,9 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaIfNewUpdate(
 	}
 	err = k.SetForecasterScoreEma(ctx, topic.Id, worker, emaScore)
 	if err != nil {
-		return errors.Wrapf(err, "error setting latest forecaster score")
+		return types.Score{}, errors.Wrapf(err, "error setting latest forecaster score")
 	}
-	return nil
+	return emaScore, nil
 }
 
 // Calculates and saves the EMA scores for a given reputer and topic
@@ -99,14 +99,14 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaIfNewUpdate(
 	block types.BlockHeight,
 	reputer ActorId,
 	newScore types.Score,
-) error {
+) (types.Score, error) {
 	previousScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputer)
 	if err != nil {
-		return errors.Wrapf(err, "Error getting reputer score ema")
+		return types.Score{}, errors.Wrapf(err, "Error getting reputer score ema")
 	}
 	// Only calc and save if there's a new update
 	if newScore.BlockHeight-previousScore.BlockHeight <= topic.EpochLength {
-		return nil
+		return types.Score{}, nil
 	}
 	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
@@ -116,7 +116,7 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaIfNewUpdate(
 		firstTime,
 	)
 	if err != nil {
-		return errors.Wrapf(err, "Error calculating ema")
+		return types.Score{}, errors.Wrapf(err, "Error calculating ema")
 	}
 	emaScore := types.Score{
 		TopicId:     topic.Id,
@@ -126,9 +126,9 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaIfNewUpdate(
 	}
 	err = k.SetReputerScoreEma(ctx, topic.Id, reputer, emaScore)
 	if err != nil {
-		return errors.Wrapf(err, "error setting latest reputer score")
+		return types.Score{}, errors.Wrapf(err, "error setting latest reputer score")
 	}
-	return nil
+	return emaScore, nil
 }
 
 // Calculates and saves the EMA scores for a given worker and topic

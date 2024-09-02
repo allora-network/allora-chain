@@ -26,8 +26,9 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaIfNewUpdate() {
 		Address:     worker,
 		Score:       alloraMath.MustNewDecFromString("0.2"),
 	}
-	err := keeper.CalcAndSaveInfererScoreEmaIfNewUpdate(ctx, topic, block, worker, newScore)
+	emaScore, err := keeper.CalcAndSaveInfererScoreEmaIfNewUpdate(ctx, topic, block, worker, newScore)
 	s.Require().NoError(err)
+	s.Require().Equal("0.2", emaScore.Score.String())
 
 	// Verify the EMA score was saved
 	savedScore, err := keeper.GetInfererScoreEma(ctx, topic.Id, worker)
@@ -36,8 +37,9 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaIfNewUpdate() {
 
 	// Test case 2: No update (within submission window)
 	newScore.BlockHeight = block + 5
-	err = keeper.CalcAndSaveInfererScoreEmaIfNewUpdate(ctx, topic, newScore.BlockHeight, worker, newScore)
+	emaScore, err = keeper.CalcAndSaveInfererScoreEmaIfNewUpdate(ctx, topic, newScore.BlockHeight, worker, newScore)
 	s.Require().NoError(err)
+	s.Require().Equal("0.2", emaScore.Score.String())
 
 	// Verify the EMA score was not updated
 	savedScore, err = keeper.GetInfererScoreEma(ctx, topic.Id, worker)
@@ -66,8 +68,9 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
 		Address:     worker,
 		Score:       alloraMath.MustNewDecFromString("0.5"),
 	}
-	err := keeper.CalcAndSaveForecasterScoreEmaIfNewUpdate(ctx, topic, block, worker, newScore)
+	emaScore, err := keeper.CalcAndSaveForecasterScoreEmaIfNewUpdate(ctx, topic, block, worker, newScore)
 	s.Require().NoError(err)
+	s.Require().Equal("0.5", emaScore.Score.String())
 
 	// Verify the EMA score was saved
 	savedScore, err := keeper.GetForecasterScoreEma(ctx, topic.Id, worker)
@@ -76,8 +79,9 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
 
 	// Test case 2: No update (within submission window)
 	newScore.BlockHeight = block + 5
-	err = keeper.CalcAndSaveForecasterScoreEmaIfNewUpdate(ctx, topic, newScore.BlockHeight, worker, newScore)
+	emaScore, err = keeper.CalcAndSaveForecasterScoreEmaIfNewUpdate(ctx, topic, newScore.BlockHeight, worker, newScore)
 	s.Require().NoError(err)
+	s.Require().Equal("0.5", emaScore.Score.String())
 
 	// Verify the EMA score was not updated
 	savedScore, err = keeper.GetForecasterScoreEma(ctx, topic.Id, worker)
@@ -104,8 +108,9 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
 		Address:     reputer,
 		Score:       alloraMath.MustNewDecFromString("0.5"),
 	}
-	err := keeper.CalcAndSaveReputerScoreEmaIfNewUpdate(ctx, topic, block, reputer, newScore)
+	emaScore, err := keeper.CalcAndSaveReputerScoreEmaIfNewUpdate(ctx, topic, block, reputer, newScore)
 	s.Require().NoError(err)
+	s.Require().Equal("0.5", emaScore.Score.String())
 
 	// Verify the EMA score was saved
 	savedScore, err := keeper.GetReputerScoreEma(ctx, topic.Id, reputer)
@@ -114,8 +119,9 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
 
 	// Test case 2: No update (within epoch length)
 	newScore.BlockHeight = block + 10
-	err = keeper.CalcAndSaveReputerScoreEmaIfNewUpdate(ctx, topic, newScore.BlockHeight, reputer, newScore)
+	emaScore, err = keeper.CalcAndSaveReputerScoreEmaIfNewUpdate(ctx, topic, newScore.BlockHeight, reputer, newScore)
 	s.Require().NoError(err)
+	s.Require().Equal("0.5", emaScore.Score.String())
 
 	// Verify the EMA score was not updated
 	savedScore, err = keeper.GetReputerScoreEma(ctx, topic.Id, reputer)

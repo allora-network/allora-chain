@@ -88,6 +88,7 @@ func GenerateReputerScores(
 
 	// Insert new coeffients and scores
 	var newScores []types.Score
+	var emaScores []types.Score
 	for i, reputer := range reputers {
 		err := keeper.SetListeningCoefficient(
 			ctx,
@@ -110,16 +111,17 @@ func GenerateReputerScores(
 			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
 
-		err = keeper.CalcAndSaveReputerScoreEmaIfNewUpdate(ctx, topic, block, reputer, newScore)
+		emaScore, err := keeper.CalcAndSaveReputerScoreEmaIfNewUpdate(ctx, topic, block, reputer, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving reputer score ema")
 		}
 
 		newScores = append(newScores, newScore)
+		emaScores = append(emaScores, emaScore)
 	}
 
 	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveReputerQuantile)
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveReputerQuantile)
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +143,7 @@ func GenerateInferenceScores(
 	networkLosses types.ValueBundle,
 ) ([]types.Score, error) {
 	var newScores []types.Score
-
+	var emaScores []types.Score
 	// If there is only one inferer, set score to 0
 	// More than one inferer is required to have one-out losses
 	if len(networkLosses.InfererValues) == 1 {
@@ -180,16 +182,17 @@ func GenerateInferenceScores(
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 
-		err = keeper.CalcAndSaveInfererScoreEmaIfNewUpdate(ctx, topic, block, oneOutLoss.Worker, newScore)
+		emaScore, err := keeper.CalcAndSaveInfererScoreEmaIfNewUpdate(ctx, topic, block, oneOutLoss.Worker, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving inferer score ema")
 		}
 
 		newScores = append(newScores, newScore)
+		emaScores = append(emaScores, emaScore)
 	}
 
 	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveInfererQuantile)
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveInfererQuantile)
 	if err != nil {
 		return nil, err
 	}
@@ -211,6 +214,7 @@ func GenerateForecastScores(
 	networkLosses types.ValueBundle,
 ) ([]types.Score, error) {
 	var newScores []types.Score
+	var emaScores []types.Score
 	topic, err := keeper.GetTopic(ctx, topicId)
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
@@ -274,16 +278,17 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
 		}
 
-		err = keeper.CalcAndSaveForecasterScoreEmaIfNewUpdate(ctx, topic, block, oneInNaiveLoss.Worker, newScore)
+		emaScore, err := keeper.CalcAndSaveForecasterScoreEmaIfNewUpdate(ctx, topic, block, oneInNaiveLoss.Worker, newScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving forecaster score ema")
 		}
 
 		newScores = append(newScores, newScore)
+		emaScores = append(emaScores, emaScore)
 	}
 
 	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveForecasterQuantile)
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveForecasterQuantile)
 	if err != nil {
 		return nil, err
 	}
