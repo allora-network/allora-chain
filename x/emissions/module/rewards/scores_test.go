@@ -1455,6 +1455,7 @@ type TestWorkerValue struct {
 func GenerateSimpleWorkerDataBundles(
 	s *RewardsTestSuite,
 	topicId uint64,
+	nonce int64,
 	blockHeight int64,
 	workerValues []TestWorkerValue,
 	infererAddrs []sdk.AccAddress,
@@ -1508,7 +1509,7 @@ func GenerateSimpleWorkerDataBundles(
 		s.Require().NoError(err)
 		workerBundle := &types.WorkerDataBundle{
 			Worker:                             workerValue.Address.String(),
-			Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+			Nonce:                              &types.Nonce{BlockHeight: nonce},
 			TopicId:                            topicId,
 			InferenceForecastsBundle:           newWorkerInferenceForecastBundle,
 			InferencesForecastsBundleSignature: workerSig,
@@ -1523,6 +1524,7 @@ func GenerateSimpleWorkerDataBundles(
 func GenerateSimpleLossBundles(
 	s *RewardsTestSuite,
 	topicId uint64,
+	nonce int64,
 	blockHeight int64,
 	workerValues []TestWorkerValue,
 	reputerValues []TestWorkerValue,
@@ -1543,7 +1545,7 @@ func GenerateSimpleLossBundles(
 			TopicId: topicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
 				ReputerNonce: &types.Nonce{
-					BlockHeight: blockHeight,
+					BlockHeight: nonce,
 				},
 			},
 			Reputer:                reputer.Address.String(),

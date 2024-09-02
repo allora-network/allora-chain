@@ -634,7 +634,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 		LossMethod:               "mse",
 		EpochLength:              epochLength,
 		GroundTruthLag:           epochLength,
-		WorkerSubmissionWindow:   epochLength,
+		WorkerSubmissionWindow:   min(10, epochLength-2),
 		AlphaRegret:              alphaRegret,
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
@@ -707,19 +707,27 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	require.NoError(err)
 
-	err = s.emissionsKeeper.AddWorkerNonce(
-		s.ctx,
-		topicId,
-		&types.Nonce{BlockHeight: blockHeight},
-	)
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight)
+	// TODO EndBlock should create the nonce, and add to workerSubmissionWindows, etc.
+	// but it doesn't. So we have to do it manually.
+	nextBlock, _, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId)
+	s.Require().NoError(err)
+	blockHeight = nextBlock
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight)
+	err = s.emissionsAppModule.EndBlock(s.ctx)
+	//err = s.emissionsKeeper.AddWorkerNonce(
+	//	s.ctx,
+	//	topicId,
+	//	&types.Nonce{BlockHeight: blockHeight},
+	//)
 	require.NoError(err)
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+	//err = s.emissionsKeeper.AddWorkerWindowTopicId(s.ctx, blockHeight+topic.WorkerSubmissionWindow, topic.Id)
+	//s.Require().NoError(err)
 
-	err = s.emissionsKeeper.AddReputerNonce(
-		s.ctx,
-		topicId,
-		&types.Nonce{BlockHeight: blockHeight},
-	)
-	require.NoError(err)
+	// Advance one to send the worker data
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight + 1)
 
 	getAddrsFromValues := func(values []TestWorkerValue) []sdk.AccAddress {
 		addrs := make([]sdk.AccAddress, 0)
@@ -731,12 +739,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 
 	workerAddrs := getAddrsFromValues(workerValues)
 
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
-	s.Require().NoError(err)
-
-	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight)
-	// Insert inference from workers
-	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, blockHeight, workerValues, workerAddrs)
+	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, topic.EpochLastEnded, blockHeight, workerValues, workerAddrs)
 	for _, payload := range inferenceBundles {
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
 			Sender:           payload.Worker,
@@ -744,10 +747,10 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 		})
 		require.NoError(err)
 	}
-
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
-	s.Require().NoError(err)
-
+	// Advance to close the window
+	newBlock := blockHeight + topic.WorkerSubmissionWindow
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlock)
+	// EndBlock closes the nonce
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -755,6 +758,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	lossBundles := GenerateSimpleLossBundles(
 		s,
 		topicId,
+		topic.EpochLastEnded,
 		blockHeight,
 		workerValues,
 		reputerValues,
@@ -2803,7 +2807,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	// setup topics
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	epochLength := int64(201600) // if every block is 3 seconds
+	epochLength := int64(100)
 	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
 	fmt.Println(s.ctx.BlockHeight())
 	topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
@@ -2860,6 +2864,9 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	// force rewards to be distributed
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
+	nextBlock, _, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId0)
+	s.Require().NoError(err)
+	s.ctx = s.ctx.WithBlockHeight(nextBlock)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
@@ -3014,7 +3021,7 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 3)
 
 	reputer0Values := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.1"},
@@ -3113,7 +3120,7 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 3)
 
 	reputerValues := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.9"},
@@ -3210,7 +3217,7 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 1)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 30)
 
 	// Define values to test
 	reputer0Values := []TestWorkerValue{
@@ -3253,8 +3260,9 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	// create tokens to reward with
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
-	newBlockheight := block + 1
-	s.ctx = s.ctx.WithBlockHeight(newBlockheight)
+	nextBlock, _, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId0)
+	s.Require().NoError(err)
+	s.ctx = s.ctx.WithBlockHeight(nextBlock)
 	// force rewards to be distributed
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
@@ -3290,10 +3298,6 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 
 	fundTopic(topicId0, s.addrs[0], topicFundAmount)
 
-	// increase the block height
-	block = s.ctx.BlockHeight()
-	block += 1
-	s.ctx = s.ctx.WithBlockHeight(block)
 	// do work on the current block, but with one less reputer
 	s.getRewardsDistribution(
 		topic.Id,
@@ -3308,6 +3312,9 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	// create tokens to reward with
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
+	nextBlock, _, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId0)
+	s.Require().NoError(err)
+	s.ctx = s.ctx.WithBlockHeight(nextBlock)
 	// force rewards to be distributed
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
