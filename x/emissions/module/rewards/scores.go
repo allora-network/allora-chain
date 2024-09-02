@@ -194,11 +194,11 @@ func GenerateInferenceScores(
 	// Update topic quantile of EMA score
 	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveInfererQuantile)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Error getting quantile of scores")
 	}
 	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicEmaScoreQuantile)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Error setting previous topic quantile inferer score ema")
 	}
 
 	types.EmitNewInfererScoresSetEvent(ctx, newScores)

@@ -2310,13 +2310,13 @@ func (k *Keeper) GetReputerScoreEma(ctx context.Context, topicId TopicId, repute
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockHeight BlockHeight, score types.Score) error {
 	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
-		return err
+		return errorsmod.Wrapf(err, "Error getting worker inference scores at block")
 	}
 	scores.Scores = append(scores.Scores, &score)
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrapf(err, "Error getting params")
 	}
 	maxNumScores := moduleParams.MaxSamplesToScaleScores
 
