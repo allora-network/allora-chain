@@ -160,10 +160,10 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
 
-	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
+	err := keeper.InsertForecasts(ctx, topicId, block, expectedForecasts)
 	require.NoError(err)
 
-	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
+	err = keeper.InsertInferences(ctx, topicId, block, expectedInferences)
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
@@ -210,10 +210,10 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
 
-	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
+	err := keeper.InsertForecasts(ctx, topicId, block, expectedForecasts)
 	require.NoError(err)
 
-	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
+	err = keeper.InsertInferences(ctx, topicId, block, expectedInferences)
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)

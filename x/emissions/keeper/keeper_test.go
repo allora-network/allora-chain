@@ -1078,7 +1078,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 
 	// Assume InsertInferences correctly sets up inferences
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
-	err := keeper.InsertInferences(ctx, topicId, nonce, expectedInferences)
+	err := keeper.InsertInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err)
 
 	// Retrieve inferences
@@ -1113,7 +1113,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference1},
 	}
 	nonce1 := types.Nonce{BlockHeight: blockHeight1}
-	err = keeper.InsertInferences(ctx, topicId, nonce1, inferences1)
+	err = keeper.InsertInferences(ctx, topicId, nonce1.BlockHeight, inferences1)
 	s.Require().NoError(err, "Inserting first set of inferences should not fail")
 
 	// Insert second set of inferences
@@ -1130,7 +1130,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference2},
 	}
 	nonce2 := types.Nonce{BlockHeight: blockHeight2}
-	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	err = keeper.InsertInferences(ctx, topicId, nonce2.BlockHeight, inferences2)
 	s.Require().NoError(err, "Inserting second set of inferences should not fail")
 
 	// Retrieve the latest inferences
@@ -1163,7 +1163,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		Inferences: []*types.Inference{&newInference1},
 	}
 	nonce := types.Nonce{BlockHeight: blockHeight1}
-	err = keeper.InsertInferences(ctx, topicId, nonce, inferences1)
+	err = keeper.InsertInferences(ctx, topicId, nonce.BlockHeight, inferences1)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	blockHeight2 := int64(12346)
@@ -1179,7 +1179,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		Inferences: []*types.Inference{&newInference2},
 	}
 	nonce2 := types.Nonce{BlockHeight: blockHeight2}
-	err = keeper.InsertInferences(ctx, topicId, nonce2, inferences2)
+	err = keeper.InsertInferences(ctx, topicId, nonce2.BlockHeight, inferences2)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	retrievedInference, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
@@ -1207,7 +1207,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 
 	// Assume InsertForecasts correctly sets up forecasts
 	nonce := types.Nonce{BlockHeight: block}
-	err := keeper.InsertForecasts(ctx, topicId, nonce, expectedForecasts)
+	err := keeper.InsertForecasts(ctx, topicId, nonce.BlockHeight, expectedForecasts)
 	s.Require().NoError(err)
 
 	// Retrieve forecasts
@@ -3070,7 +3070,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 		},
 	}
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
-	err := s.emissionsKeeper.InsertInferences(s.ctx, topicId, nonce, expectedInferences)
+	err := s.emissionsKeeper.InsertInferences(s.ctx, topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	expectedForecasts := types.Forecasts{
@@ -3085,7 +3085,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 			},
 		},
 	}
-	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, nonce, expectedForecasts)
+	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, nonce.BlockHeight, expectedForecasts)
 	s.Require().NoError(err)
 
 	reputerLossBundles := types.ReputerValueBundles{}
@@ -3478,9 +3478,13 @@ func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAnd
 func (s *KeeperTestSuite) TestAppendForecast() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
-	topicId := uint64(1)
+	// Topic IDs
+	topicId := s.CreateOneTopic(10800)
 	nonce := types.Nonce{BlockHeight: 10}
 	blockHeightInferences := int64(10)
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
 
 	worker1 := "worker1"
 	worker2 := "worker2"
@@ -3493,7 +3497,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
-	err := k.SetInfererScoreEma(ctx, topicId, worker1, score1)
+	err = k.SetInfererScoreEma(ctx, topicId, worker1, score1)
 	s.Require().NoError(err)
 	err = k.SetInfererScoreEma(ctx, topicId, worker2, score2)
 	s.Require().NoError(err)
@@ -3511,15 +3515,16 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.71")},
 		},
 	}
-	err = k.InsertInferences(ctx, topicId, nonce, allInferences)
+	err = k.InsertInferences(ctx, topicId, nonce.BlockHeight, allInferences)
 	s.Require().NoError(err)
 
+	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	newInference := types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
-	err = k.AppendInference(ctx, topicId, nonce, &newInference)
+	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference)
 	s.Require().NoError(err)
-	newAllInferences, err := k.GetInferencesAtBlock(ctx, topicId, blockHeightInferences)
+	newAllInferences, err := k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
 	s.Require().Equal(len(newAllInferences.Inferences), len(allInferences.Inferences)+1)
 	params := types.Params{
@@ -3527,12 +3532,13 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	}
 	err = k.SetParams(ctx, params)
 	s.Require().NoError(err)
+	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	newInference2 := types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
-	err = k.AppendInference(ctx, topicId, nonce, &newInference2)
+	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
 	s.Require().NoError(err)
-	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, blockHeightInferences)
+	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(len(newAllInferences.Inferences)), params.MaxTopInferersToReward)
 	s.Require().Equal(newAllInferences.Inferences[1].Inferer, worker3)
@@ -3541,7 +3547,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 func (s *KeeperTestSuite) TestAppendInference() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
-	topicId := uint64(1)
+	topicId := s.CreateOneTopic(10800)
 	nonce := types.Nonce{BlockHeight: 10}
 	blockHeightInferences := int64(10)
 
@@ -3616,7 +3622,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			},
 		},
 	}
-	err = k.InsertForecasts(ctx, topicId, nonce, allForecasts)
+	err = k.InsertForecasts(ctx, topicId, nonce.BlockHeight, allForecasts)
 	s.Require().NoError(err)
 
 	newForecast := types.Forecast{
@@ -3634,7 +3640,8 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			},
 		},
 	}
-	err = k.AppendForecast(ctx, topicId, nonce, &newForecast)
+	topic, err := k.GetTopic(ctx, topicId)
+	err = k.AppendForecast(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newForecast)
 	s.Require().NoError(err)
 	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
@@ -3659,7 +3666,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			},
 		},
 	}
-	err = k.AppendForecast(ctx, topicId, nonce, &newInference2)
+	err = k.AppendForecast(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
 	s.Require().NoError(err)
 	newAllForecasts, err = k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
 	s.Require().NoError(err)
@@ -3670,7 +3677,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
-	topicId := uint64(1)
+	topicId := s.CreateOneTopic(10800)
 	blockHeight := int64(10)
 	nonce := types.Nonce{BlockHeight: blockHeight}
 	reputerRequestNonce := &types.ReputerRequestNonce{
@@ -3738,7 +3745,9 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			TopicId:             topicId,
 		},
 	}
-	err = k.AppendReputerLoss(ctx, topicId, nonce.BlockHeight, &newReputerLoss)
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	err = k.AppendReputerLoss(ctx, topic, blockHeight, nonce.BlockHeight, &newReputerLoss)
 	s.Require().NoError(err)
 	newAllReputerLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3757,7 +3766,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			TopicId:             topicId,
 		},
 	}
-	err = k.AppendReputerLoss(ctx, topicId, nonce.BlockHeight, &newReputerLoss2)
+	err = k.AppendReputerLoss(ctx, topic, blockHeight, nonce.BlockHeight, &newReputerLoss2)
 	s.Require().NoError(err)
 	newAllReputerLosses, err = k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
