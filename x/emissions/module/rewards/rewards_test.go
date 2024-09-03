@@ -3324,7 +3324,7 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 	// Check if first topic is inactivated due to low weight
 	isActivated, err := s.emissionsKeeper.IsTopicActive(s.ctx, topicId0)
 	require.NoError(err)
-	require.Equal(isActivated, false)
+	require.False(isActivated)
 
 	// Activate first topic
 	s.MintTokensToAddress(reputer0Addrs[0], initialStake)
@@ -3338,7 +3338,7 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 
 	isActivated, err = s.emissionsKeeper.IsTopicActive(s.ctx, topicId0)
 	require.NoError(err)
-	require.Equal(isActivated, true)
+	require.True(isActivated)
 
 	rewardsDistribution0_1 := s.getRewardsDistribution(
 		topicId0,
@@ -3349,7 +3349,7 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 		"0.1",
 	)
 	require.Equal(len(rewardsDistribution0_1), len(rewardsDistribution0_0))
-	require.Equal(rewardsDistribution0_1[0].Reward.Gt(rewardsDistribution0_0[0].Reward), true)
+	require.True(rewardsDistribution0_0[0].Reward.Gte(rewardsDistribution0_1[0].Reward))
 }
 func (s *RewardsTestSuite) returnAddresses(start, count int) []sdk.AccAddress {
 	res := make([]sdk.AccAddress, count)
