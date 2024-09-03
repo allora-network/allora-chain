@@ -302,7 +302,6 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 	err = keeper.InsertInferences(ctx, topicId, blockHeight, inferences)
 	require.NoError(err, "Inserting inferences should not fail")
 	for i := 0; i < 3; i++ {
-
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
