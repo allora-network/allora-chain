@@ -37,7 +37,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return types.ErrInvalidTopicId
 	}
 
-	// Check if the window time has passed: if blockheight > nonce.BlockHeight + topic.WorkerSubmissionWindow
+	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
 	blockHeight := ctx.BlockHeight()
 	if blockHeight <= topic.EpochLastEnded ||
 		blockHeight > topic.EpochLastEnded+topic.GroundTruthLag {
@@ -104,19 +104,17 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 
 // It is assumed `inferences` come from unique, registered, top inferers by EMA score descending
 // It is also assumed that the inferences are for the correct topic and nonce
-// The returned map is the set of inferers that were accepted
-// The returned error is an error that occurred during the process
 func insertInferencesFromTopInferers(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
 	nonce types.Nonce,
 	inferences []*types.Inference,
-) (map[string]bool, error) {
-	acceptedInferers := make(map[string]bool, 0)
+) (acceptedInferers map[string]bool, err error) {
+	acceptedInferers = make(map[string]bool, 0)
 	if len(inferences) == 0 {
 		ctx.Logger().Warn(fmt.Sprintf("No inferences to process for topic: %d, nonce: %v", topicId, nonce))
-		return nil, types.ErrNoValidInferences // TODO Change err name - No inferences to process
+		return nil, types.ErrNoInferencesToInsert
 	}
 	for _, inference := range inferences {
 		// Check that the forecast exist, is for the correct topic, and is for the correct nonce
@@ -140,7 +138,7 @@ func insertInferencesFromTopInferers(
 	inferencesToInsert := types.Inferences{
 		Inferences: inferences,
 	}
-	err := k.InsertInferences(ctx, topicId, nonce.BlockHeight, inferencesToInsert)
+	err = k.InsertInferences(ctx, topicId, nonce.BlockHeight, inferencesToInsert)
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +146,9 @@ func insertInferencesFromTopInferers(
 	return acceptedInferers, nil
 }
 
+// insert forecasts from top forecasters
+// check forecast elements to ensure they are forecasts made about
+// the active list of inferers.
 func insertForecastsFromTopForecasters(
 	ctx sdk.Context,
 	k *keeper.Keeper,
@@ -206,7 +207,7 @@ func insertForecastsFromTopForecasters(
 		}
 	}
 
-	// Though less than ideal because it produces less-acurate network inferences,
+	// Though less than ideal because it produces less-accurate network inferences,
 	// it is fine if no forecasts are accepted
 	// => no need to check len(forecastsFromTopForecasters) == 0
 

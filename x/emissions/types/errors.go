@@ -81,4 +81,5 @@ var (
 	ErrNotFound                              = errors.Register(ModuleName, 76, "not found")
 	ErrNoValidForecastElements               = errors.Register(ModuleName, 77, "no valid forecast elements found")
 	ErrCantUpdateEmaMoreThanOncePerWindow    = errors.Register(ModuleName, 78, "cannot update EMA more than once per window")
+	ErrNoInferencesToInsert                  = errors.Register(ModuleName, 79, "no inferences to insert")
 )

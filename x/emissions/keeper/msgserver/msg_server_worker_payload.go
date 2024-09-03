@@ -13,7 +13,7 @@ import (
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
 // Only 1 payload per registered worker is kept, ignore the rest. In particular, take the first payload from each
 // registered worker and none from any unregistered actor.
-// Signatures, anti-synil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
+// Signatures, anti-sybil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInsertWorkerPayload) (*types.MsgInsertWorkerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
