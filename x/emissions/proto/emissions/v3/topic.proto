@@ -17,42 +17,26 @@ message Topic {
   int64 epoch_last_ended = 8;
   int64 epoch_length = 9;
   int64 ground_truth_lag = 10;
-  string p_norm = 12 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  string alpha_regret = 13 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string p_norm = 12
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string alpha_regret = 13
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   bool allow_negative = 14;
-  string epsilon = 15 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  string initial_regret = 16 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string epsilon = 15
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string initial_regret = 16
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   int64 worker_submission_window = 17;
   // alpha parameter to weight previous score EMA importance in
   // filtering the active set of inferers, forecasters, and reputers
-  string merit_sortition_alpha = 18 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  string active_inferer_quantile = 19 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  string active_forecaster_quantile = 20 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  string active_reputer_quantile = 21 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string merit_sortition_alpha = 18
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string active_inferer_quantile = 19
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string active_forecaster_quantile = 20
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string active_reputer_quantile = 21
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message TopicList {
@@ -65,7 +49,7 @@ message TimestampedActorNonce {
 
   option (gogoproto.equal) = true;
 
-  int64 block_height = 1; // height at which value calculated or received
+  int64 block_height = 1;  // height at which value calculated or received
   Nonce nonce = 3;
 }
 
@@ -76,8 +60,6 @@ message TopicIds {
 
 message TopicIdWeightPair {
   uint64 topic_id = 1;
-  string weight = 2 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string weight = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
