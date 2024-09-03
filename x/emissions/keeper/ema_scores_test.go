@@ -1,8 +1,6 @@
 package keeper_test
 
 import (
-	"log"
-
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -35,7 +33,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaIfNewUpdate() {
 	s.Require().NoError(err)
 	s.Require().Equal(newScore.Score, savedScore.Score)
 
-	// Test case 2: No update (within submission window)
+	// Test case 2: Update blockheight of score
 	newScore.BlockHeight = block + 5
 	emaScore, err = keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, newScore.BlockHeight, worker, newScore)
 	s.Require().NoError(err)
@@ -44,9 +42,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaIfNewUpdate() {
 	// Verify the EMA score was not updated
 	savedScore, err = keeper.GetInfererScoreEma(ctx, topic.Id, worker)
 	s.Require().NoError(err)
-	s.Require().Equal(block, savedScore.BlockHeight)
-
-	log.Println("savedScore", savedScore)
+	s.Require().Equal(newScore.BlockHeight, savedScore.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
@@ -77,7 +73,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
 	s.Require().NoError(err)
 	s.Require().Equal(newScore.Score, savedScore.Score)
 
-	// Test case 2: No update (within submission window)
+	// Test case 2: Update blockheight of score
 	newScore.BlockHeight = block + 5
 	emaScore, err = keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, newScore.BlockHeight, worker, newScore)
 	s.Require().NoError(err)
@@ -86,7 +82,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
 	// Verify the EMA score was not updated
 	savedScore, err = keeper.GetForecasterScoreEma(ctx, topic.Id, worker)
 	s.Require().NoError(err)
-	s.Require().Equal(block, savedScore.BlockHeight)
+	s.Require().Equal(newScore.BlockHeight, savedScore.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
@@ -117,7 +113,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
 	s.Require().NoError(err)
 	s.Require().Equal(newScore.Score, savedScore.Score)
 
-	// Test case 2: No update (within epoch length)
+	// Test case 2: Update blockheight of score
 	newScore.BlockHeight = block + 10
 	emaScore, err = keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, newScore.BlockHeight, reputer, newScore)
 	s.Require().NoError(err)
@@ -126,7 +122,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
 	// Verify the EMA score was not updated
 	savedScore, err = keeper.GetReputerScoreEma(ctx, topic.Id, reputer)
 	s.Require().NoError(err)
-	s.Require().Equal(block, savedScore.BlockHeight)
+	s.Require().Equal(newScore.BlockHeight, savedScore.BlockHeight)
 }
 
 func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile() {
