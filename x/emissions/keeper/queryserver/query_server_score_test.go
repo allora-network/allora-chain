@@ -386,5 +386,4 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 		"The lowest score should be 95",
 		response.Score,
 	)
-
 }

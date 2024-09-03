@@ -136,7 +136,6 @@ func (qs queryServer) GetCurrentLowestInfererScore(
 		if nonce.BlockHeight > highestNonce.BlockHeight {
 			highestNonce = nonce
 		}
-
 	}
 	inferenceScores, err := qs.k.GetWorkerInferenceScoresAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
 	if err != nil {
