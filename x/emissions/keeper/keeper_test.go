@@ -3642,9 +3642,10 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	}
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
+	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	err = k.AppendForecast(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newForecast)
 	s.Require().NoError(err)
-	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
+	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
 	s.Require().Equal(len(newAllForecasts.Forecasts), len(allForecasts.Forecasts)+1)
 	params := types.Params{
@@ -3667,9 +3668,10 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			},
 		},
 	}
+	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	err = k.AppendForecast(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
 	s.Require().NoError(err)
-	newAllForecasts, err = k.GetForecastsAtBlock(ctx, topicId, blockHeightInferences)
+	newAllForecasts, err = k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(len(newAllForecasts.Forecasts)), params.MaxTopInferersToReward)
 	s.Require().Equal(newAllForecasts.Forecasts[1].Forecaster, worker3)

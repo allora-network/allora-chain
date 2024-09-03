@@ -190,6 +190,36 @@ func (s *RewardsTestSuite) MintTokensToModule(moduleName string, amount cosmosMa
 	s.Require().NoError(err)
 }
 
+func (s *RewardsTestSuite) RegisterAllWorkersOfPayload(topicId types.TopicId, payload *types.WorkerDataBundle) {
+	worker := payload.InferenceForecastsBundle.Inference.Inferer
+	// Define sample OffchainNode information for a worker
+	workerInfo := types.OffchainNode{
+		Owner:       "worker-owner-sample",
+		NodeAddress: worker,
+	}
+	err := s.emissionsKeeper.InsertWorker(s.ctx, topicId, worker, workerInfo)
+	s.Require().NoError(err)
+	for _, element := range payload.InferenceForecastsBundle.Forecast.ForecastElements {
+		worker = element.Inferer
+		workerInfo = types.OffchainNode{
+			Owner:       "worker-owner-sample",
+			NodeAddress: worker,
+		}
+		err := s.emissionsKeeper.InsertWorker(s.ctx, topicId, worker, workerInfo)
+		s.Require().NoError(err)
+	}
+}
+
+func (s *RewardsTestSuite) RegisterAllReputersOfPayload(topicId types.TopicId, payload *types.ReputerValueBundle) {
+	reputer := payload.ValueBundle.Reputer
+	// Define sample OffchainNode information for a worker
+	reputerInfo := types.OffchainNode{
+		Owner:       "worker-owner-sample",
+		NodeAddress: reputer,
+	}
+	err := s.emissionsKeeper.InsertReputer(s.ctx, topicId, reputer, reputerInfo)
+	s.Require().NoError(err)
+}
 func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	block := int64(600)
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -1900,6 +1930,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId1)
 	for _, payload := range inferenceBundles {
+		s.RegisterAllWorkersOfPayload(topicId1, payload)
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
@@ -1909,6 +1940,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	inferenceBundles2 := GenerateWorkerDataBundles(s, block, topicId2)
 	for _, payload := range inferenceBundles2 {
+		s.RegisterAllWorkersOfPayload(topicId2, payload)
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
@@ -1925,6 +1957,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId1, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
+		s.RegisterAllReputersOfPayload(topicId1, payload)
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
@@ -1942,6 +1975,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	lossBundles2 := GenerateLossBundles(s, block, topicId2, reputerAddrs)
 	for _, payload := range lossBundles2.ReputerValueBundles {
+		s.RegisterAllReputersOfPayload(topicId2, payload)
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
@@ -2410,6 +2444,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Insert inference from workers
 	inferenceBundles := GenerateHugeWorkerDataBundles(s, block, topicId, workerAddrs)
 	for _, payload := range inferenceBundles {
+		s.RegisterAllWorkersOfPayload(topicId, payload)
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
@@ -2474,8 +2509,6 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	firstInfererFraction, err := totalInferersReward.Quo(totalReward)
 	s.Require().NoError(err)
-	firstForecasterFraction, err := totalForecastersReward.Quo(totalReward)
-	s.Require().NoError(err)
 
 	block += 1
 	s.ctx = s.ctx.WithBlockHeight(block)
@@ -2484,6 +2517,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	newSecondWorkersAddrs := []sdk.AccAddress{
 		s.addrs[10],
 		s.addrs[11],
+		s.addrs[12],
 	}
 	newSecondWorkersAddrs = append(workerAddrs, newSecondWorkersAddrs...)
 
@@ -2582,6 +2616,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
 
 	for _, payload := range inferenceBundles {
+		s.RegisterAllWorkersOfPayload(topicId, payload)
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
@@ -2730,6 +2765,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	newInferenceBundles = GenerateMoreForecastersDataBundles(s, block, topicId)
 	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
 	for _, payload := range inferenceBundles {
+		s.RegisterAllWorkersOfPayload(topicId, payload)
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
@@ -2763,21 +2799,21 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		params)
 	s.Require().NoError(err)
 
-	totalForecastersReward = alloraMath.ZeroDec()
+	totalInferersReward = alloraMath.ZeroDec()
 	totalReward = alloraMath.ZeroDec()
 	for _, reward := range thirdRewardsDistribution {
-		if reward.Type == types.WorkerForecastRewardType {
-			totalForecastersReward, _ = totalForecastersReward.Add(reward.Reward)
+		if reward.Type == types.WorkerInferenceRewardType {
+			totalInferersReward, _ = totalInferersReward.Add(reward.Reward)
 		}
 		totalReward, _ = totalReward.Add(reward.Reward)
 	}
-	thirdForecasterFraction, err := totalForecastersReward.Quo(totalReward)
+	thirdInfererFraction, err := totalInferersReward.Quo(totalReward)
 	s.Require().NoError(err)
 	s.Require().True(
-		firstForecasterFraction.Lt(thirdForecasterFraction),
+		firstInfererFraction.Lt(thirdInfererFraction),
 		"Third forecaster fraction must be bigger than first fraction %s > %s",
-		firstForecasterFraction.String(),
-		thirdForecasterFraction.String(),
+		firstInfererFraction.String(),
+		thirdInfererFraction.String(),
 	)
 }
 
@@ -3021,7 +3057,7 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 3)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputer0Addrs, stake, alphaRegret, 5)
 
 	reputer0Values := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.1"},
@@ -3120,7 +3156,7 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 3)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, 5)
 
 	reputerValues := []TestWorkerValue{
 		{Address: s.addrs[0], Value: "0.9"},

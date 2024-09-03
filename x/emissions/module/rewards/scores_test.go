@@ -1293,8 +1293,8 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 
 func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
 	var newInferences []*types.WorkerDataBundle
-	worker1Addr := s.addrs[10]
-	worker2Addr := s.addrs[11]
+	worker1Addr := s.addrs[13]
+	worker2Addr := s.addrs[14]
 
 	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
 		Inference: &types.Inference{
@@ -1371,8 +1371,8 @@ func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 
 func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
 	var newForecasts []*types.WorkerDataBundle
-	worker1Addr := s.addrs[10]
-	worker2Addr := s.addrs[11]
+	worker1Addr := s.addrs[13]
+	worker2Addr := s.addrs[14]
 
 	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
 		Inference: &types.Inference{
