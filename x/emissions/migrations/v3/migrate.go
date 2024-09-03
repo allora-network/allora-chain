@@ -200,6 +200,7 @@ func MigrateTopics(
 				Weight:  weight,
 				TopicId: oldMsg.Id,
 			}
+			lowestWeight[blockHeight] = cuLowestWeight
 		}
 
 		churningBlock[oldMsg.Id] = blockHeight
@@ -208,7 +209,7 @@ func MigrateTopics(
 		activeTopicIds.TopicIds = append(activeTopicIds.TopicIds, oldMsg.Id)
 
 		// If number of active topic is over global param then remove lowest topic
-		if uint64(len(blockToActiveTopics[blockHeight].TopicIds)) > params.MaxActiveTopicsPerBlock {
+		if uint64(len(blockToActiveTopics[blockHeight].TopicIds)) >= params.MaxActiveTopicsPerBlock {
 			// Remove from topicToNextPossibleChurningBlock
 			delete(churningBlock, lowestWeight[blockHeight].TopicId)
 			newActiveTopicIds := []types.TopicId{}
