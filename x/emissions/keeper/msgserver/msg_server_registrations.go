@@ -57,6 +57,9 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 
 // Remove registration from a topic for worker or reputer
 func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemoveRegistration) (*types.MsgRemoveRegistrationResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
 	// Check if topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
@@ -82,7 +85,6 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 		if err != nil {
 			return nil, err
 		}
-
 	} else {
 		isRegisteredInTopic, err := ms.k.IsWorkerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 		if err != nil {

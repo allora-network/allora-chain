@@ -20,6 +20,25 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "inflation",
 					Short:     "Query the current minting inflation value",
 				},
+				{
+					RpcMethod: "EmissionInfo",
+					Use:       "emission-info",
+					Short:     "Get a bunch of debugging info about the inflation rate",
+				},
+			},
+		},
+		Tx: &autocliv1.ServiceCommandDescriptor{
+			Service: mintv1beta1.Msg_ServiceDesc.ServiceName,
+			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
+				{
+					RpcMethod: "UpdateParams",
+					Use:       "update-params [sender] [params]",
+					Short:     "Update params of the network",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
+						{ProtoField: "params"},
+					},
+				},
 			},
 		},
 	}

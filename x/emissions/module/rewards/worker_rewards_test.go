@@ -11,15 +11,19 @@ import (
 
 func createNewTopic(s *RewardsTestSuite) uint64 {
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                s.addrs[5].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		AlphaRegret:            alloraMath.NewDecFromInt64(1),
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  s.addrs[5].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -491,7 +495,7 @@ func (s *RewardsTestSuite) TestInferenceRewardsFromCsv() {
 		{Score: epoch3Get("inferer_score_3")},
 		{Score: epoch3Get("inferer_score_4")},
 	}
-	chi, gamma, err := rewards.GetChiAndGamma(
+	chi, gamma, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
 		epoch3Get("network_loss"),
 		epoch3Get("inferers_entropy"),
@@ -529,7 +533,7 @@ func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
 		{Score: epoch3Get("inferer_score_3")},
 		{Score: epoch3Get("inferer_score_4")},
 	}
-	chi, gamma, err := rewards.GetChiAndGamma(
+	chi, gamma, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
 		epoch3Get("network_loss"),
 		epoch3Get("inferers_entropy"),
@@ -644,7 +648,7 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 
 func mockSimpleNetworkLosses(
 	s *RewardsTestSuite,
-	topicId uint64,
+	topicId uint64, // nolint: unparam
 	block int64,
 	worker0Value string,
 ) (types.ValueBundle, error) {

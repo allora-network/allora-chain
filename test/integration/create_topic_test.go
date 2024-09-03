@@ -17,19 +17,23 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		&emissionstypes.QueryNextTopicIdRequest{},
 	)
 	require.NoError(m.T, err)
-	require.Greater(m.T, topicIdStart.NextTopicId, uint64(0))
+	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:                m.AliceAddr,
-		Metadata:               "ETH 24h Prediction",
-		LossMethod:             "mse",
-		EpochLength:            5,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 4,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          true,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  m.AliceAddr,
+		Metadata:                 "ETH 24h Prediction",
+		LossMethod:               "mse",
+		EpochLength:              5,
+		GroundTruthLag:           10,
+		WorkerSubmissionWindow:   4,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)

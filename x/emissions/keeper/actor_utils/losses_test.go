@@ -1,4 +1,4 @@
-package actor_utils_test
+package actorutils_test
 
 import (
 	"testing"
@@ -51,10 +51,10 @@ type ActorUtilsTestSuite struct {
 	addrsStr        []string
 }
 
-func (s *ActorUtilsTestSuite) SetupTest() {
+func (a *ActorUtilsTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
-	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	testCtx := testutil.DefaultContextWithDB(a.T(), key, storetypes.NewTransientStoreKey("transient_test"))
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
@@ -81,15 +81,15 @@ func (s *ActorUtilsTestSuite) SetupTest() {
 		authtypes.NewModuleAddress("gov").String(),
 	)
 
-	var addrs []sdk.AccAddress = make([]sdk.AccAddress, 0)
-	var addrsStr []string = make([]string, 0)
+	var addrs = make([]sdk.AccAddress, 0)
+	var addrsStr = make([]string, 0)
 	pubkeys := simtestutil.CreateTestPubKeys(50)
 	for i := 0; i < 50; i++ {
 		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
 		addrsStr = append(addrsStr, addrs[i].String())
 	}
-	s.addrs = addrs
-	s.addrsStr = addrsStr
+	a.addrs = addrs
+	a.addrsStr = addrsStr
 
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		encCfg.Codec,
@@ -100,10 +100,10 @@ func (s *ActorUtilsTestSuite) SetupTest() {
 		clog.NewNopLogger(),
 	)
 
-	s.ctx = ctx
-	s.accountKeeper = accountKeeper
-	s.bankKeeper = bankKeeper
-	s.emissionsKeeper = keeper.NewKeeper(
+	a.ctx = ctx
+	a.accountKeeper = accountKeeper
+	a.bankKeeper = bankKeeper
+	a.emissionsKeeper = keeper.NewKeeper(
 		encCfg.Codec,
 		addressCodec,
 		storeService,
@@ -111,19 +111,20 @@ func (s *ActorUtilsTestSuite) SetupTest() {
 		bankKeeper,
 		authtypes.FeeCollectorName,
 	)
-	s.key = key
-	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
+	a.key = key
+	appModule := module.NewAppModule(encCfg.Codec, a.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
 	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
-	s.appModule = appModule
+	a.msgServer = msgserver.NewMsgServerImpl(a.emissionsKeeper)
+	a.appModule = appModule
 
 	// Add all tests addresses in whitelists
 	for _, addr := range addrsStr {
-		s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		err := a.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
+		a.Require().NoError(err)
 	}
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, 1, emissionstypes.Topic{
+	err := a.emissionsKeeper.SetTopic(a.ctx, 1, emissionstypes.Topic{
 		Id:                     1,
 		Creator:                "creator",
 		Metadata:               "metadata",
@@ -137,7 +138,7 @@ func (s *ActorUtilsTestSuite) SetupTest() {
 		AllowNegative:          false,
 		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
 	})
-	s.Require().NoError(err)
+	a.Require().NoError(err)
 }
 
 func TestModuleTestSuite(t *testing.T) {
@@ -171,7 +172,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			},
 		},
 	}
-	err := a.emissionsKeeper.InsertInferences(a.ctx, 1, workerNonce, infererLossBundle)
+	err := a.emissionsKeeper.InsertInferences(a.ctx, 1, workerNonce.BlockHeight, infererLossBundle)
 	a.Require().NoError(err)
 
 	forecasterLossBundle := emissionstypes.Forecasts{
@@ -204,7 +205,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			},
 		},
 	}
-	err = a.emissionsKeeper.InsertForecasts(a.ctx, 1, workerNonce, forecasterLossBundle)
+	err = a.emissionsKeeper.InsertForecasts(a.ctx, 1, workerNonce.BlockHeight, forecasterLossBundle)
 	a.Require().NoError(err)
 
 	// Prepare a sample ReputerValueBundle

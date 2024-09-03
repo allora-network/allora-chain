@@ -63,12 +63,11 @@ func (qs queryServer) GetNetworkInferencesAtBlock(
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	networkInferences, _, _, _, err := synth.GetNetworkInferencesAtBlock(
+	networkInferences, _, _, _, _, _, err := synth.GetNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
-		req.BlockHeightLastInference,
-		req.BlockHeightLastReward,
+		&req.BlockHeightLastInference,
 	)
 	if err != nil {
 		return nil, err
@@ -92,10 +91,11 @@ func (qs queryServer) GetLatestNetworkInference(
 		return nil, err
 	}
 
-	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err := synth.GetLatestNetworkInference(
+	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err := synth.GetNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
+		nil,
 	)
 	if err != nil {
 		return nil, err
@@ -137,12 +137,11 @@ func (qs queryServer) GetLatestNetworkInference(
 
 func (qs queryServer) GetLatestAvailableNetworkInference(
 	ctx context.Context,
-	req *emissionstypes.QueryLatestNetworkInferencesRequest,
+	req *emissionstypes.QueryLatestAvailableNetworkInferencesRequest,
 ) (
-	*emissionstypes.QueryLatestNetworkInferencesResponse,
+	*emissionstypes.QueryLatestAvailableNetworkInferencesResponse,
 	error,
 ) {
-
 	lastWorkerCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -153,13 +152,12 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 		return nil, err
 	}
 
-	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, err :=
-		synth.GetNetworkInferencesAtBlock(
+	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, _, _, err :=
+		synth.GetNetworkInferences(
 			sdk.UnwrapSDKContext(ctx),
 			qs.k,
 			req.TopicId,
-			lastWorkerCommit.Nonce.BlockHeight,
-			lastReputerCommit.Nonce.BlockHeight,
+			&lastWorkerCommit.Nonce.BlockHeight,
 		)
 	if err != nil {
 		return nil, err
@@ -187,7 +185,7 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	inferers := alloraMath.GetSortedKeys(infererWeights)
 	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
 
-	return &emissionstypes.QueryLatestNetworkInferencesResponse{
+	return &emissionstypes.QueryLatestAvailableNetworkInferencesResponse{
 		NetworkInferences:                networkInferences,
 		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
 		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),

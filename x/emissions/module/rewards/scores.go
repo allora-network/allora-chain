@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -27,6 +28,10 @@ func GenerateReputerScores(
 	// This is necessary to ensure that all workers are accounted for in the final scores
 	// If a worker is missing from the reported losses, it will be added with a NaN value
 	reportedLosses = EnsureWorkerPresence(reportedLosses)
+	topic, err := keeper.GetTopic(ctx, topicId)
+	if err != nil {
+		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
+	}
 
 	// Fetch reputers data
 	var reputers []string
@@ -64,11 +69,6 @@ func GenerateReputerScores(
 		return []types.Score{}, errors.Wrapf(err, "Error getting GetParams")
 	}
 
-	topic, err := keeper.GetTopic(ctx, topicId)
-	if err != nil {
-		return []types.Score{}, errors.Wrapf(err, "Error getting topic %v", topicId)
-	}
-
 	// Get reputer output
 	scores, newCoefficients, err := GetAllReputersOutput(
 		losses,
@@ -78,7 +78,7 @@ func GenerateReputerScores(
 		params.LearningRate,
 		params.GradientDescentMaxIters,
 		params.EpsilonReputer,
-		topic.Epsilon,
+		params.EpsilonSafeDiv,
 		params.MinStakeFraction,
 		params.MaxGradientThreshold,
 	)
@@ -88,6 +88,7 @@ func GenerateReputerScores(
 
 	// Insert new coeffients and scores
 	var newScores []types.Score
+	var emaScores []types.Score
 	for i, reputer := range reputers {
 		err := keeper.SetListeningCoefficient(
 			ctx,
@@ -109,11 +110,24 @@ func GenerateReputerScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
-		err = keeper.SetLatestReputerScore(ctx, topicId, reputer, newScore)
+
+		emaScore, err := keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, block, reputer, newScore)
 		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error setting latest reputer score")
+			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving reputer score ema")
 		}
+
 		newScores = append(newScores, newScore)
+		emaScores = append(emaScores, emaScore)
+	}
+
+	// Update topic quantile of EMA score
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveReputerQuantile)
+	if err != nil {
+		return nil, err
+	}
+	err = keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	if err != nil {
+		return nil, err
 	}
 
 	types.EmitNewReputerScoresSetEvent(ctx, newScores)
@@ -129,7 +143,7 @@ func GenerateInferenceScores(
 	networkLosses types.ValueBundle,
 ) ([]types.Score, error) {
 	var newScores []types.Score
-
+	var emaScores []types.Score
 	// If there is only one inferer, set score to 0
 	// More than one inferer is required to have one-out losses
 	if len(networkLosses.InfererValues) == 1 {
@@ -145,6 +159,10 @@ func GenerateInferenceScores(
 		}
 		newScores = append(newScores, newScore)
 		return newScores, nil
+	}
+	topic, err := keeper.GetTopic(ctx, topicId)
+	if err != nil {
+		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
 	}
 
 	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
@@ -163,11 +181,24 @@ func GenerateInferenceScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
-		err = keeper.SetLatestInfererScore(ctx, topicId, oneOutLoss.Worker, newScore)
+
+		emaScore, err := keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, block, oneOutLoss.Worker, newScore)
 		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "error setting latest inferer score")
+			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving inferer score ema")
 		}
+
 		newScores = append(newScores, newScore)
+		emaScores = append(emaScores, emaScore)
+	}
+
+	// Update topic quantile of EMA score
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveInfererQuantile)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error getting quantile of scores")
+	}
+	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error setting previous topic quantile inferer score ema")
 	}
 
 	types.EmitNewInfererScoresSetEvent(ctx, newScores)
@@ -183,6 +214,11 @@ func GenerateForecastScores(
 	networkLosses types.ValueBundle,
 ) ([]types.Score, error) {
 	var newScores []types.Score
+	var emaScores []types.Score
+	topic, err := keeper.GetTopic(ctx, topicId)
+	if err != nil {
+		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
+	}
 
 	// If there is only one forecaster, set score to 0
 	// More than one forecaster is required to have one-out losses
@@ -241,11 +277,24 @@ func GenerateForecastScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
 		}
-		err = keeper.SetLatestForecasterScore(ctx, topicId, oneInNaiveLoss.Worker, newScore)
+
+		emaScore, err := keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, block, oneInNaiveLoss.Worker, newScore)
 		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error setting latest forecaster score")
+			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving forecaster score ema")
 		}
+
 		newScores = append(newScores, newScore)
+		emaScores = append(emaScores, emaScore)
+	}
+
+	// Update topic quantile of EMA score
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveForecasterQuantile)
+	if err != nil {
+		return nil, err
+	}
+	err = keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	if err != nil {
+		return nil, err
 	}
 
 	types.EmitNewForecasterScoresSetEvent(ctx, newScores)

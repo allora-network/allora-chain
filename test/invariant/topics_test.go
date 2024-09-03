@@ -23,16 +23,20 @@ func createTopic(
 	wasErr := false
 	iterLog(m.T, iteration, actor, "creating new topic")
 	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
-		Creator:                actor.addr,
-		Metadata:               fmt.Sprintf("Created topic iteration %d", iteration),
-		LossMethod:             "mse",
-		EpochLength:            data.epochLength,
-		GroundTruthLag:         data.epochLength,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          true,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  actor.addr,
+		Metadata:                 fmt.Sprintf("Created topic iteration %d", iteration),
+		LossMethod:               "mse",
+		EpochLength:              data.epochLength,
+		GroundTruthLag:           data.epochLength,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 
 	ctx := context.Background()

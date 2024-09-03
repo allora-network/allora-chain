@@ -181,7 +181,10 @@ func StakingInvariantDelegatedStakes(k Keeper) sdk.Invariant {
 				}
 				delegator := delegatorInfo.Key.K2()
 				reputer := delegatorInfo.Key.K3()
-				amount := delegatorInfo.Value.Amount.SdkIntTrim()
+				amount, err := delegatorInfo.Value.Amount.SdkIntTrim()
+				if err != nil {
+					panic(fmt.Sprintf("failed to get amount from delegated stake: %v", err))
+				}
 				existingSumsDelegator, presentDelegator := delegatorsToSumsMap[delegator]
 				if !presentDelegator {
 					stakeSumForDelegator, err := k.stakeSumFromDelegator.Get(ctx, collections.Join(i, delegator))
@@ -313,7 +316,7 @@ func StakingInvariantSumStakeFromStakeReputerAuthorityEqualTotalStakeAndTopicSta
 
 func StakingInvariantPendingRewardForDelegatorsEqualRewardPerShareMinusRewardDebt(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
-		// get the sum of all accumulated debts that happend to be staked upon a reputer
+		// get the sum of all accumulated debts that happened to be staked upon a reputer
 		iter, err := k.delegatedStakes.Iterate(ctx, nil)
 		if err != nil {
 			panic("failed to get delegated stakes iterator")
@@ -388,7 +391,10 @@ func StakingInvariantPendingRewardForDelegatorsEqualRewardPerShareMinusRewardDeb
 		// now check the total pending rewards bank balance is equal to the accumulated rewards beyond reward debt
 		alloraPendingAddr := k.authKeeper.GetModuleAccount(ctx, emissionstypes.AlloraPendingRewardForDelegatorAccountName).GetAddress()
 		bal := k.GetBankBalance(ctx, alloraPendingAddr, params.DefaultBondDenom).Amount
-		rewards := accumulatedRewardsBeyondRewardDebt.SdkIntTrim()
+		rewards, err := accumulatedRewardsBeyondRewardDebt.SdkIntTrim()
+		if err != nil {
+			panic("failed to convert accumulated rewards beyond reward debt to sdk.Int")
+		}
 		// we define the invariant as holding if the rewards we think we
 		// have to pay people is equal to the balance we have earmarked to pay them
 		// OR if the balance we have earmarked to pay them is greater than the rewards

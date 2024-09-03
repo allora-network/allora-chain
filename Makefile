@@ -82,5 +82,15 @@ build-local-edits:
 	go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
 
 lint:
-	go vet ./...
-	staticcheck ./...
+	@echo "--> Running linter"
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m
+
+build-maprange-linter:
+	@echo "--> Buiding maprange linter"
+	go build -o linter/bin/maprange.so -buildmode=plugin linter/maprange.go
+
+maprange: build-maprange-linter
+	@echo "--> Running maprange linter"
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m --config linter/.golangci-maprange.yml
+
+.PHONY: all install build lint build-maprange-linter maprange

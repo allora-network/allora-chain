@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestGetWorkerNodeInfo() {
+func (s *QueryServerTestSuite) TestGetWorkerNodeInfo() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
@@ -40,7 +40,7 @@ func (s *KeeperTestSuite) TestGetWorkerNodeInfo() {
 	s.Require().Error(err, "Expected an error for nonexistent key")
 }
 
-func (s *KeeperTestSuite) TestGetReputerNodeInfo() {
+func (s *QueryServerTestSuite) TestGetReputerNodeInfo() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
@@ -73,7 +73,7 @@ func (s *KeeperTestSuite) TestGetReputerNodeInfo() {
 	s.Require().Error(err, "Expected an error for nonexistent key")
 }
 
-func (s *KeeperTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
+func (s *QueryServerTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	queryServer := s.queryServer
@@ -91,7 +91,7 @@ func (s *KeeperTestSuite) TestUnregisteredWorkerIsUnregisteredInTopicId() {
 	s.Require().False(invalidResponse.IsRegistered, "The worker should not be registered for the topic")
 }
 
-func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
+func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -103,8 +103,10 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	topic1 := types.Topic{Id: topicId, Creator: creatorAddress}
 
 	// Topic register
-	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
-	s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	err := s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	require.NoError(err, "SetTopic should not return an error")
+	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	require.NoError(err, "ActivateTopic should not return an error")
 	// Worker register
 	registerMsg := &types.MsgRegister{
 		Sender:    workerAddrString,
@@ -113,8 +115,10 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 		Owner:     workerAddrString,
 	}
 
-	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
-	err := s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	s.Require().NoError(err)
+	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
+	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		ctx,
@@ -140,7 +144,7 @@ func (s *KeeperTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	require.True(queryResp.IsRegistered, "Query response should confirm worker is registered")
 }
 
-func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
+func (s *QueryServerTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -151,8 +155,10 @@ func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
 
 	// Topic register
-	s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
-	s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	err := s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
+	require.NoError(err, "SetTopic should not return an error")
+	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
+	require.NoError(err, "ActivateTopic should not return an error")
 	// Register reputer
 	registerMsg := &types.MsgRegister{
 		Sender:    reputerAddr.String(),
@@ -161,8 +167,10 @@ func (s *KeeperTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 		Owner:     reputerAddr.String(),
 	}
 
-	mintAmount := sdk.NewCoins(sdk.NewInt64Coin(params.DefaultBondDenom, 100))
-	err := s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	s.Require().NoError(err)
+	mintAmount := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee))
+	err = s.bankKeeper.MintCoins(ctx, minttypes.ModuleName, mintAmount)
 	require.NoError(err, "MintCoins should not return an error")
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, reputerAddr, mintAmount)
 	require.NoError(err, "SendCoinsFromModuleToAccount should not return an error")

@@ -1,4 +1,4 @@
-package inference_synthesis
+package inferencesynthesis
 
 import (
 	"fmt"
@@ -198,7 +198,7 @@ func (b *NetworkInferenceBuilder) calcOneOutInfererInference(withheldInferer Wor
 
 // Set all one-out-inferer inferences that are possible given the provided input
 // Assumed that there is at most 1 inference per inferer
-// Loop over all inferences and withold one, then calculate the network inference less that witheld inference
+// Loop over all inferences and withhold one, then calculate the network inference less that withheld inference
 // This involves recalculating the forecast-implied inferences for each withheld inferer
 func (b *NetworkInferenceBuilder) SetOneOutInfererValues() *NetworkInferenceBuilder {
 	b.logger.Debug(fmt.Sprintf("Calculating one-out inferer inferences for topic %v with %v inferers", b.palette.TopicId, len(b.palette.Inferers)))
@@ -277,7 +277,7 @@ func (b *NetworkInferenceBuilder) calcOneOutForecasterInference(withheldForecast
 
 // Set all one-out-forecaster inferences that are possible given the provided input
 // Assume that there is at most 1 forecast-implied inference per forecaster
-// Loop over all forecast-implied inferences and withold one, then calculate the network inference less that witheld value
+// Loop over all forecast-implied inferences and withhold one, then calculate the network inference less that withheld value
 func (b *NetworkInferenceBuilder) SetOneOutForecasterValues() *NetworkInferenceBuilder {
 	b.logger.Debug(fmt.Sprintf("Calculating one-out forecaster inferences for topic %v with %v forecasters", b.palette.TopicId, len(b.palette.Forecasters)))
 	// Calculate the one-out forecast-implied inferences per forecaster

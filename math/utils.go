@@ -43,21 +43,6 @@ func CalcEma(
 	return ret, nil
 }
 
-func CalcExpDecay(
-	currentRev,
-	decayFactor Dec,
-) (Dec, error) {
-	oneMinusDecayFactor, err := OneDec().Sub(decayFactor)
-	if err != nil {
-		return ZeroDec(), err
-	}
-	newRev, err := oneMinusDecayFactor.Mul(currentRev)
-	if err != nil {
-		return ZeroDec(), err
-	}
-	return newRev, nil
-}
-
 // Generic function that sorts the keys of a map
 // Used for deterministic ranging of maps
 func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
@@ -103,7 +88,7 @@ func StdDev(data []Dec) (Dec, error) {
 	}
 
 	mean := ZeroDec()
-	var err error = nil
+	var err error
 	for _, v := range data {
 		mean, err = mean.Add(v)
 		if err != nil {

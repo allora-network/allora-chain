@@ -1,0 +1,78 @@
+syntax = "proto3";
+package emissions.v3;
+
+import "emissions/v3/nonce.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
+
+message TimestampedValue {
+  option (gogoproto.equal) = true;
+
+  int64 block_height = 1; // height at which value calculated or received
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message Inference {
+  option (gogoproto.equal) = true;
+
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  string inferer = 3;
+  string value = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+  bytes extra_data = 5;
+  string proof = 6;
+}
+
+message Inferences {
+  repeated Inference inferences = 1;
+}
+
+message ForecastElement {
+  option (gogoproto.equal) = true;
+
+  string inferer = 1;
+  string value = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message Forecast {
+  option (gogoproto.equal) = true;
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  string forecaster = 3;
+  repeated ForecastElement forecast_elements = 4;
+  bytes extra_data = 5;
+}
+
+message Forecasts {
+  repeated Forecast forecasts = 1;
+}
+
+message InferenceForecastBundle {
+  option (gogoproto.equal) = true;
+  Inference inference = 1;
+  Forecast forecast = 2;
+}
+
+message WorkerDataBundle {
+  option (gogoproto.equal) = true;
+  string worker = 1;
+  Nonce nonce = 2;
+  uint64 topic_id = 3;
+  InferenceForecastBundle inference_forecasts_bundle = 4;
+  bytes inferences_forecasts_bundle_signature = 5;
+  string pubkey = 6;
+}
+
+message WorkerDataBundles {
+  repeated WorkerDataBundle worker_data_bundles = 1;
+}

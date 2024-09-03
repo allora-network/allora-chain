@@ -1,4 +1,4 @@
-package inference_synthesis
+package inferencesynthesis
 
 import (
 	"fmt"
@@ -119,7 +119,7 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 // \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
 // given inferences, forecast-implied inferences, and network regrets
 func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (InferenceValue, error) {
-	runningUnnormalizedI_i := alloraMath.ZeroDec()
+	runningUnnormalizedI_i := alloraMath.ZeroDec() //nolint:revive // var-naming: don't use underscores in Go names
 	sumWeights := alloraMath.ZeroDec()
 	err := error(nil)
 
@@ -183,7 +183,6 @@ func (p *SynthPalette) CalcWeightedInference(weights RegretInformedWeights) (Inf
 			if err != nil {
 				return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of forecaster")
 			}
-
 		}
 	}
 
@@ -289,7 +288,7 @@ func AccumulateWeights(
 	inference *emissionstypes.Inference,
 	weight alloraMath.Dec,
 	allPeersAreNew bool,
-	runningUnnormalizedI_i alloraMath.Dec,
+	runningUnnormalizedI_i alloraMath.Dec, //nolint:revive // var-naming: don't use underscores in Go names
 	sumWeights alloraMath.Dec,
 ) (alloraMath.Dec, alloraMath.Dec, error) {
 	err := error(nil)

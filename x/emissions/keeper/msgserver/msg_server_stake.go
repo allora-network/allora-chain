@@ -15,6 +15,10 @@ import (
 
 // Function for reputers to call to add stake to an existing stake position.
 func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*types.MsgAddStakeResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
+
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -60,8 +64,8 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.MsgAddStake) (*type
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) (*types.MsgRemoveStakeResponse, error) {
-	if msg.Amount.LTE(cosmosMath.ZeroInt()) {
-		return nil, types.ErrInvalidValue
+	if err := msg.Validate(); err != nil {
+		return nil, err
 	}
 
 	// Check the sender has enough stake already placed on the topic to remove the stake
@@ -114,6 +118,9 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.MsgRemoveStake) 
 
 // cancel a request to remove your stake, during the delay window
 func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelRemoveStake) (*types.MsgCancelRemoveStakeResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
 	// if the specific error is that we somehow got into a buggy invariant state
@@ -134,6 +141,9 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.MsgCancelR
 
 // Delegates a stake to a reputer. Sender does not have to be registered to delegate stake.
 func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateStake) (*types.MsgDelegateStakeResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
@@ -174,6 +184,9 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.MsgDelegateSta
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
 func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemoveDelegateStake) (*types.MsgRemoveDelegateStakeResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
 	if msg.Amount.LTE(cosmosMath.ZeroInt()) {
 		return nil, types.ErrInvalidValue
 	}
@@ -210,7 +223,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
 	)
 	if err != nil {
-		errorsmod.Wrap(err, "error during finding delegate stake removal")
+		return nil, errorsmod.Wrap(err, "error during finding delegate stake removal")
 	}
 	if found {
 		err = ms.k.DeleteDelegateStakeRemoval(
@@ -243,6 +256,9 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.MsgRemov
 
 // cancel an ongoing stake removal request during the delay period
 func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.MsgCancelRemoveDelegateStake) (*types.MsgCancelRemoveDelegateStakeResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
@@ -270,6 +286,9 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ms
 }
 
 func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewardDelegateStake) (*types.MsgRewardDelegateStakeResponse, error) {
+	if err := msg.Validate(); err != nil {
+		return nil, err
+	}
 	// Check the target reputer exists and is registered
 	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
@@ -296,7 +315,11 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.MsgRewar
 		return nil, err
 	}
 	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
-		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingReward.SdkIntTrim()))
+		pendingRewardInt, err := pendingReward.SdkIntTrim()
+		if err != nil {
+			return nil, err
+		}
+		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingRewardInt))
 		err = ms.k.SendCoinsFromModuleToAccount(ctx, types.AlloraPendingRewardForDelegatorAccountName, msg.Sender, coins)
 		if err != nil {
 			return nil, err

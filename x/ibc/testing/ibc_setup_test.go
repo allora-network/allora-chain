@@ -2,7 +2,6 @@ package testing
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"cosmossdk.io/log"
@@ -16,8 +15,7 @@ import (
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 
-	//lint:ignore SA1019 deprecated code breaking unit tests
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types" //nolint:staticcheck // SA1019 deprecated code breaking unit tests
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/suite"
 )
@@ -55,7 +53,6 @@ func alloraAppInitializer() (ibctesting.TestingApp, map[string]json.RawMessage) 
 		simtestutil.EmptyAppOptions{},
 	)
 	if err != nil {
-		fmt.Printf("Initializing app error: %v\n", err)
 		return nil, nil
 	}
 
@@ -122,7 +119,7 @@ func (s *IBCTestSuite) IBCTransfer(
 
 	// Send message from provider chain
 	res, err := sourceEndpoint.Chain.SendMsgs(transferMsg)
-	s.Assert().NoError(err)
+	s.Require().NoError(err)
 
 	// Relay transfer msg to Allora chain
 	packet, err := ibctesting.ParsePacketFromEvents(res.GetEvents())
@@ -186,7 +183,7 @@ func (s *IBCTestSuite) assertBalance(
 	expectedAmt math.Int,
 ) {
 	actualAmt := s.getBalance(bk, chain, addr, denom).Amount
-	s.Assert().
+	s.
 		Equal(expectedAmt, actualAmt, "Expected amount of %s: %s; Got: %s", denom, expectedAmt, actualAmt)
 }
 

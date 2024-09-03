@@ -2,7 +2,7 @@ version: "3"
 
 services:
   allora:
-    image: alloranetwork/allora-chain:v0.2.14
+    image: alloranetwork/allora-chain:v0.3.0
     volumes:
       - ./scripts/setup_allora.sh:/allora/setup.sh
       - $HOME/.allora/:/allora/.allorad/

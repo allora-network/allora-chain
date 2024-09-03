@@ -8,31 +8,32 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (s *KeeperTestSuite) TestGetLatestInfererScore() {
+func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 	worker := "worker1"
-	oldScore := types.Score{TopicId: topicId, BlockHeight: 1, Address: worker, Score: alloraMath.NewDecFromInt64(90)}
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set an initial score for inferer and attempt to update with an older score
-	_ = keeper.SetLatestInfererScore(ctx, topicId, worker, newScore)
-	err := keeper.SetLatestInfererScore(ctx, topicId, worker, oldScore)
-	s.Require().NoError(err, "Setting an older inferer score should not fail but should not update")
+	err := keeper.SetInfererScoreEma(ctx, topicId, worker, newScore)
+	s.Require().NoError(err, "Setting an inferer score should not fail")
 
-	req := &types.QueryLatestInfererScoreRequest{
+	req := &types.QueryGetInfererScoreEmaRequest{
 		TopicId: topicId,
 		Inferer: worker,
 	}
-	response, err := s.queryServer.GetLatestInfererScore(ctx, req)
+	response, err := s.queryServer.GetInfererScoreEma(ctx, req)
 	s.Require().NoError(err)
 
-	updatedScore := response.Score
-	s.Require().NotEqual(oldScore.Score, updatedScore.Score, "Older score should not replace newer score")
+	s.Require().True(
+		newScore.Score.Equal(response.Score.Score),
+		"Score should be set %s | %s",
+		newScore.Score.String(),
+		response.Score.Score.String())
 }
 
-func (s *KeeperTestSuite) TestGetLatestForecasterScore() {
+func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -41,20 +42,20 @@ func (s *KeeperTestSuite) TestGetLatestForecasterScore() {
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set a new score for forecaster
-	_ = keeper.SetLatestForecasterScore(ctx, topicId, forecaster, newScore)
+	_ = keeper.SetForecasterScoreEma(ctx, topicId, forecaster, newScore)
 
-	req := &types.QueryLatestForecasterScoreRequest{
+	req := &types.QueryGetForecasterScoreEmaRequest{
 		TopicId:    topicId,
 		Forecaster: forecaster,
 	}
-	response, err := s.queryServer.GetLatestForecasterScore(ctx, req)
+	response, err := s.queryServer.GetForecasterScoreEma(ctx, req)
 	s.Require().NoError(err)
 
 	forecasterScore := response.Score
 	s.Require().Equal(newScore.Score, forecasterScore.Score, "Newer forecaster score should be set")
 }
 
-func (s *KeeperTestSuite) TestGetLatestReputerScore() {
+func (s *QueryServerTestSuite) TestGetReputerScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -63,20 +64,20 @@ func (s *KeeperTestSuite) TestGetLatestReputerScore() {
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set a new score for reputer
-	_ = keeper.SetLatestReputerScore(ctx, topicId, reputer, newScore)
+	_ = keeper.SetReputerScoreEma(ctx, topicId, reputer, newScore)
 
-	req := &types.QueryLatestReputerScoreRequest{
+	req := &types.QueryGetReputerScoreEmaRequest{
 		TopicId: topicId,
 		Reputer: reputer,
 	}
-	response, err := s.queryServer.GetLatestReputerScore(ctx, req)
+	response, err := s.queryServer.GetReputerScoreEma(ctx, req)
 	s.Require().NoError(err)
 
 	reputerScore := response.Score
 	s.Require().Equal(newScore.Score, reputerScore.Score, "Newer reputer score should be set")
 }
 
-func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
+func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -117,7 +118,7 @@ func (s *KeeperTestSuite) TestGetInferenceScoresUntilBlock() {
 	}
 }
 
-func (s *KeeperTestSuite) TestGetWorkerInferenceScoresAtBlock() {
+func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -130,13 +131,13 @@ func (s *KeeperTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	}
 
 	// Set the maximum number of scores using system parameters
-	maxNumScores := uint64(5)
-	params := types.Params{MaxSamplesToScaleScores: maxNumScores}
+	maxNumScores := 5
+	params := types.Params{MaxSamplesToScaleScores: uint64(maxNumScores)}
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	// Insert scores more than the max limit to test trimming
-	for i := 0; i < int(maxNumScores+2); i++ {
+	for i := 0; i < maxNumScores+2; i++ {
 		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
 		s.Require().NoError(err, "Inserting worker inference score should not fail")
 	}
@@ -150,10 +151,10 @@ func (s *KeeperTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	scores := response.Scores
 
 	s.Require().NoError(err, "Fetching scores at block should not fail")
-	s.Require().Len(scores.Scores, int(maxNumScores), "Scores should not exceed the maximum limit")
+	s.Require().Len(scores.Scores, maxNumScores, "Scores should not exceed the maximum limit")
 }
 
-func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
+func (s *QueryServerTestSuite) TestGetForecastScoresUntilBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -179,7 +180,7 @@ func (s *KeeperTestSuite) TestGetForecastScoresUntilBlock() {
 	s.Require().Len(scores, 6, "Should retrieve correct number of scores up to block 105")
 }
 
-func (s *KeeperTestSuite) TestGetWorkerForecastScoresAtBlock() {
+func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -208,7 +209,7 @@ func (s *KeeperTestSuite) TestGetWorkerForecastScoresAtBlock() {
 	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
 
-func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
+func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -238,7 +239,7 @@ func (s *KeeperTestSuite) TestGetReputersScoresAtBlock() {
 	s.Require().Len(scores.Scores, 5, "Should retrieve all scores at the block")
 }
 
-func (s *KeeperTestSuite) TestGetListeningCoefficient() {
+func (s *QueryServerTestSuite) TestGetListeningCoefficient() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
@@ -269,4 +270,189 @@ func (s *KeeperTestSuite) TestGetListeningCoefficient() {
 
 	s.Require().NoError(err, "Fetching coefficient should not fail after setting")
 	s.Require().Equal(setCoef.Coefficient, fetchedCoef.Coefficient, "The fetched coefficient should match the set value")
+}
+
+func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
+	ctx, keeper, require := s.ctx, s.emissionsKeeper, s.Require()
+
+	topicId := uint64(1)
+	blockHeight := int64(100)
+
+	// add a worker nonce at block height
+	nonce := types.Nonce{
+		BlockHeight: blockHeight,
+	}
+	err := keeper.AddWorkerNonce(ctx, topicId, &nonce)
+	require.NoError(err, "Adding worker nonce should not fail")
+
+	inferences := types.Inferences{
+		Inferences: []*types.Inference{},
+	}
+	for i := 0; i < 3; i++ {
+		inference := types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.ZeroDec(),
+			ExtraData:   []byte{},
+			Proof:       "",
+			Inferer:     "worker" + strconv.Itoa(i),
+		}
+		inferences.Inferences = append(inferences.Inferences, &inference)
+	}
+	err = keeper.InsertInferences(ctx, topicId, blockHeight, inferences)
+	require.NoError(err, "Inserting inferences should not fail")
+	for i := 0; i < 3; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Address:     "worker" + strconv.Itoa(i),
+			Score:       alloraMath.NewDecFromInt64(int64(95 + i)),
+		}
+		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
+		require.NoError(err, "Inserting worker inference score should not fail")
+		err = keeper.SetInfererScoreEma(ctx, topicId, "worker"+strconv.Itoa(i), score)
+		require.NoError(err, "Setting inferer score ema should not fail")
+	}
+	// call the query function
+
+	req := &types.QueryCurrentLowestInfererScoreRequest{TopicId: topicId}
+
+	response, err := s.queryServer.GetCurrentLowestInfererScore(ctx, req)
+	require.NoError(err, "Fetching current lowest inferer score should not fail")
+
+	// verify the result
+
+	require.True(
+		response.Score.Score.Equal(alloraMath.NewDecFromInt64(95)),
+		"The lowest score should be 95",
+		response.Score,
+	)
+}
+
+func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
+	ctx, keeper, require := s.ctx, s.emissionsKeeper, s.Require()
+
+	topicId := uint64(1)
+	blockHeight := int64(100)
+
+	// add a worker nonce at block height
+	nonce := types.Nonce{
+		BlockHeight: blockHeight,
+	}
+	err := keeper.AddWorkerNonce(ctx, topicId, &nonce)
+	require.NoError(err, "Adding worker nonce should not fail")
+
+	forecasts := types.Forecasts{
+		Forecasts: []*types.Forecast{},
+	}
+	for i := 0; i < 3; i++ {
+		forecast := types.Forecast{
+			TopicId:          topicId,
+			BlockHeight:      blockHeight,
+			ExtraData:        []byte{},
+			Forecaster:       "forecaster" + strconv.Itoa(i),
+			ForecastElements: []*types.ForecastElement{},
+		}
+		forecasts.Forecasts = append(forecasts.Forecasts, &forecast)
+	}
+	err = keeper.InsertForecasts(ctx, topicId, blockHeight, forecasts)
+	require.NoError(err, "Inserting forecasts should not fail")
+
+	for i := 0; i < 3; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Address:     "forecaster" + strconv.Itoa(i),
+			Score:       alloraMath.NewDecFromInt64(int64(95 + i)),
+		}
+		err := keeper.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
+		require.NoError(err, "Inserting worker forecast score should not fail")
+		err = keeper.SetForecasterScoreEma(ctx, topicId, "forecaster"+strconv.Itoa(i), score)
+		require.NoError(err, "Setting forecaster score ema should not fail")
+	}
+
+	// call the query function
+	req := &types.QueryCurrentLowestForecasterScoreRequest{TopicId: topicId}
+
+	response, err := s.queryServer.GetCurrentLowestForecasterScore(ctx, req)
+	require.NoError(err, "Fetching current lowest forecaster score should not fail")
+
+	// verify the result
+	require.True(
+		response.Score.Score.Equal(alloraMath.NewDecFromInt64(95)),
+		"The lowest score should be 95",
+		response.Score,
+	)
+}
+
+func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
+	ctx, keeper, require := s.ctx, s.emissionsKeeper, s.Require()
+
+	topicId := uint64(1)
+	blockHeight := int64(100)
+
+	// add reputer nonce at block height
+
+	reputerNonce := types.Nonce{
+		BlockHeight: blockHeight,
+	}
+	err := keeper.AddReputerNonce(ctx, topicId, &reputerNonce)
+	require.NoError(err, "Adding reputer nonce should not fail")
+
+	lossBundles := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{},
+	}
+	for i := 0; i < 3; i++ {
+		lossBundle := types.ReputerValueBundle{
+			ValueBundle: &types.ValueBundle{
+				TopicId: topicId,
+				ReputerRequestNonce: &types.ReputerRequestNonce{
+					ReputerNonce: &types.Nonce{
+						BlockHeight: blockHeight,
+					},
+				},
+				Reputer:                       "reputer" + strconv.Itoa(i),
+				ExtraData:                     []byte{},
+				CombinedValue:                 alloraMath.ZeroDec(),
+				InfererValues:                 []*types.WorkerAttributedValue{},
+				ForecasterValues:              []*types.WorkerAttributedValue{},
+				NaiveValue:                    alloraMath.ZeroDec(),
+				OneOutInfererValues:           []*types.WithheldWorkerAttributedValue{},
+				OneOutForecasterValues:        []*types.WithheldWorkerAttributedValue{},
+				OneInForecasterValues:         []*types.WorkerAttributedValue{},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{},
+			},
+			Signature: []byte{},
+			Pubkey:    "",
+		}
+		lossBundles.ReputerValueBundles = append(lossBundles.ReputerValueBundles, &lossBundle)
+	}
+	err = keeper.InsertReputerLossBundlesAtBlock(ctx, topicId, blockHeight, lossBundles)
+	require.NoError(err, "Inserting reputer loss bundles should not fail")
+
+	for i := 0; i < 3; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Address:     "reputer" + strconv.Itoa(i),
+			Score:       alloraMath.NewDecFromInt64(int64(95 + i)),
+		}
+		err := keeper.InsertReputerScore(ctx, topicId, blockHeight, score)
+		require.NoError(err, "Inserting reputer score should not fail")
+		err = keeper.SetReputerScoreEma(ctx, topicId, "reputer"+strconv.Itoa(i), score)
+		require.NoError(err, "Setting reputer score ema should not fail")
+	}
+
+	// call the query function
+	req := &types.QueryCurrentLowestReputerScoreRequest{TopicId: topicId}
+
+	response, err := s.queryServer.GetCurrentLowestReputerScore(ctx, req)
+	require.NoError(err, "Fetching current lowest reputer score should not fail")
+
+	// verify the result
+	require.True(
+		response.Score.Score.Equal(alloraMath.NewDecFromInt64(95)),
+		"The lowest score should be 95",
+		response.Score,
+	)
 }

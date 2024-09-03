@@ -12,8 +12,8 @@ func (workerValue *WorkerAttributedValue) Validate() error {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid worker address (%s)", err)
 	}
 
-	if workerValue.Value.IsNaN() {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value cannot be NaN")
+	if err := validateDec(workerValue.Value); err != nil {
+		return err
 	}
 
 	return nil

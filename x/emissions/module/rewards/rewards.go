@@ -50,8 +50,8 @@ func EmitRewards(
 	}
 
 	// Top `N=MaxTopicsPerBlock` active topics of this block => the *actually* rewardable topics
-	if uint64(len(sortedRewardableTopics)) > moduleParams.MaxTopicsPerBlock {
-		sortedRewardableTopics = sortedRewardableTopics[:moduleParams.MaxTopicsPerBlock]
+	if uint64(len(sortedRewardableTopics)) > moduleParams.MaxActiveTopicsPerBlock {
+		sortedRewardableTopics = sortedRewardableTopics[:moduleParams.MaxActiveTopicsPerBlock]
 	}
 
 	// Get total weight of rewardable topics
@@ -342,7 +342,7 @@ func GenerateRewardsDistributionByTopicParticipant(
 	}
 
 	// Get chi (Forecasting Utility) and gamma (Normalization Factor)
-	chi, gamma, err := GetChiAndGamma(
+	chi, gamma, updatedForecasterScoreRatio, err := GetChiAndGamma(
 		lossBundles.NaiveValue,
 		lossBundles.CombinedValue,
 		inferenceEntropy,
@@ -353,6 +353,12 @@ func GenerateRewardsDistributionByTopicParticipant(
 	)
 	if err != nil {
 		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to get chi and gamma")
+	}
+
+	// Set updated forecaster score ratio
+	err = k.SetPreviousForecasterScoreRatio(ctx, topicId, updatedForecasterScoreRatio)
+	if err != nil {
+		return []types.TaskReward{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous forecast score ratio")
 	}
 
 	// Get Total Rewards for Inference task
@@ -455,7 +461,14 @@ func payoutRewards(
 			continue
 		}
 
-		rewardInt := reward.Reward.SdkIntTrim()
+		rewardInt, err := reward.Reward.SdkIntTrim()
+		if err != nil {
+			ret = append(ret, errors.Wrapf(err, "failed to convert reward to sdk.Int: %s", reward.Reward.String()))
+			continue
+		}
+		if rewardInt.IsZero() {
+			continue
+		}
 		coins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, rewardInt))
 
 		if reward.Type == types.ReputerAndDelegatorRewardType {
@@ -468,7 +481,7 @@ func payoutRewards(
 				))
 				continue
 			}
-			err = k.AddReputerStake(ctx, reward.TopicId, reward.Address, cosmosMath.Int(rewardInt))
+			err = k.AddReputerStake(ctx, reward.TopicId, reward.Address, rewardInt)
 			if err != nil {
 				ret = append(ret, errors.Wrapf(err, "failed to add stake %s: %s", reward.Address, rewardInt.String()))
 				continue

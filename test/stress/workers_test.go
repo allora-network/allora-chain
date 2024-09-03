@@ -13,6 +13,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/stretchr/testify/require"
 )
@@ -143,7 +144,7 @@ func insertWorkerPayloads(
 		// serialize workerMsg to json and print
 		senderAcc, err := m.Client.AccountRegistryGetByName(key)
 		if err != nil {
-			m.T.Log(topicLog(topic.Id, "Error getting leader worker account: ", senderAcc, " - ", err))
+			m.T.Log(topicLog(topic.Id, "Error getting worker account: ", senderAcc, " - ", err))
 			return err
 		}
 		ctx := context.Background()
@@ -222,12 +223,11 @@ func checkWorkersReceivedRewards(
 	maxIterations int,
 	makeReport bool,
 ) (rewardedWorkersCount uint64, err error) {
-	rewardedWorkersCount = 0
-	err = nil
 	for workerIndex := 0; workerIndex < countWorkers; workerIndex++ {
 		ctx := context.Background()
 		workerName := getWorkerAccountName(m.Seed, workerIndex, topicId)
-		balance, err := getAccountBalance(
+		var balance *sdktypes.Coin
+		balance, err = getAccountBalance(
 			ctx,
 			m.Client.QueryBank(),
 			workers[workerName].addr,

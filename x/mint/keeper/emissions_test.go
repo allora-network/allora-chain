@@ -1,8 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
-
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/test/testutil"
@@ -10,7 +8,7 @@ import (
 	"github.com/allora-network/allora-chain/x/mint/types"
 )
 
-func (s *IntegrationTestSuite) TestTotalEmissionPerMonthSimple() {
+func (s *MintKeeperTestSuite) TestTotalEmissionPerMonthSimple() {
 	// 1. Set up the test inputs
 	rewardEmissionPerUnitStakedToken := cosmosMath.NewInt(5).ToLegacyDec()
 	numStakedTokens := cosmosMath.NewInt(100)
@@ -29,7 +27,7 @@ func (s *IntegrationTestSuite) TestTotalEmissionPerMonthSimple() {
 // all the staking stuff which is a pain in the behind
 // we will test that in integration, for now just test the value is non
 // negative aka zero when you don't have stakers
-func (s *IntegrationTestSuite) TestGetNumStakedTokensNonNegative() {
+func (s *MintKeeperTestSuite) TestGetNumStakedTokensNonNegative() {
 	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(cosmosMath.NewInt(0), nil)
 	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(cosmosMath.NewInt(0), nil)
 	nst, err := keeper.GetNumStakedTokens(s.ctx, s.mintKeeper)
@@ -37,7 +35,7 @@ func (s *IntegrationTestSuite) TestGetNumStakedTokensNonNegative() {
 	s.False(nst.IsNegative())
 }
 
-func (s *IntegrationTestSuite) TestGetExponentialMovingAverageSimple() {
+func (s *MintKeeperTestSuite) TestGetExponentialMovingAverageSimple() {
 	// e_i = α_e * ^e_i + (1 − α_e)*e_{i−1}
 	// random numbers for test
 	// e_i = 0.1 * 1000 + (1 - 0.1) * 800
@@ -54,7 +52,7 @@ func (s *IntegrationTestSuite) TestGetExponentialMovingAverageSimple() {
 	s.Require().True(expectedValue.Equal(result))
 }
 
-func (s *IntegrationTestSuite) TestNumberLockedTokensBeforeVest() {
+func (s *MintKeeperTestSuite) TestNumberLockedTokensBeforeVest() {
 	defaultParams := types.DefaultParams()
 	fullPreseedInvestors := defaultParams.InvestorsPreseedPercentOfTotalSupply.
 		Mul(defaultParams.MaxSupply.ToLegacyDec()).TruncateInt()
@@ -69,13 +67,13 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensBeforeVest() {
 	s.Require().NoError(err)
 	result, _, _, _ := keeper.GetLockedVestingTokens(
 		bpm,
-		cosmosMath.NewInt(int64(bpm*2)),
+		cosmosMath.NewIntFromUint64(bpm*2),
 		defaultParams,
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
 }
 
-func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
+func (s *MintKeeperTestSuite) TestNumberLockedTokensDuringVest() {
 	defaultParams := types.DefaultParams()
 	// after 13 months investors and team should get 1/3 + 1/36 = 13/36
 	fractionUnlocked := cosmosMath.LegacyNewDec(13).Quo(cosmosMath.LegacyNewDec(36))
@@ -95,26 +93,26 @@ func (s *IntegrationTestSuite) TestNumberLockedTokensDuringVest() {
 	s.Require().NoError(err)
 	result, _, _, _ := keeper.GetLockedVestingTokens(
 		bpm,
-		cosmosMath.NewInt(int64(bpm*13+1)),
+		cosmosMath.NewIntFromUint64(bpm*13+1),
 		defaultParams,
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
 }
 
-func (s *IntegrationTestSuite) TestNumberLockedTokensAfterVest() {
+func (s *MintKeeperTestSuite) TestNumberLockedTokensAfterVest() {
 	defaultParams := types.DefaultParams()
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
 	result, _, _, _ := keeper.GetLockedVestingTokens(
 		bpm,
-		cosmosMath.NewInt(int64(bpm*40)),
+		cosmosMath.NewIntFromUint64(bpm*40),
 		defaultParams,
 	)
 	s.Require().True(result.Equal(cosmosMath.ZeroInt()))
 }
 
-func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple() {
+func (s *MintKeeperTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple() {
 	// ^e_i = ((f_e*T_{total,i}) / N_{staked,i}) * (N_{circ,i} / N_{total,i})
 	// using some random sample values
 	//  ^e_i = ((0.015*2000)/400)*(10000000/12000000)
@@ -130,7 +128,7 @@ func (s *IntegrationTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple(
 }
 
 // match ^e_i from row 61
-func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
+func (s *MintKeeperTestSuite) TestEHatTargetFromCsv() {
 	epoch := s.epochGet[60]
 	epoch61 := s.epochGet[61]
 	// because of how the simulator is written, the target is
@@ -138,15 +136,14 @@ func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
 	expectedResult := epoch61("ehat_target_i")
 
 	simulatorFEmission := cosmosMath.LegacyMustNewDecFromStr("0.025")
-	networkTokensTotal := epoch("network_tokens_total").SdkIntTrim()
-	ecosystemTokensTotal := epoch("ecosystem_tokens_total").SdkIntTrim()
-	networkTokensCirculating := epoch("network_tokens_circulating").SdkIntTrim()
-	networkTokensStaked := epoch("network_tokens_staked").SdkIntTrim()
-	fmt.Println("f_emission", simulatorFEmission)
-	fmt.Println("ecosystem_tokens_total", ecosystemTokensTotal)
-	fmt.Println("network_tokens_circulating", networkTokensCirculating)
-	fmt.Println("network_tokens_staked", networkTokensStaked)
-	fmt.Println("network_tokens_total", networkTokensTotal)
+	networkTokensTotal, err := epoch("network_tokens_total").SdkIntTrim()
+	s.Require().NoError(err)
+	ecosystemTokensTotal, err := epoch("ecosystem_tokens_total").SdkIntTrim()
+	s.Require().NoError(err)
+	networkTokensCirculating, err := epoch("network_tokens_circulating").SdkIntTrim()
+	s.Require().NoError(err)
+	networkTokensStaked, err := epoch("network_tokens_staked").SdkIntTrim()
+	s.Require().NoError(err)
 	result, err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
 		simulatorFEmission,
 		ecosystemTokensTotal,
@@ -160,7 +157,7 @@ func (s *IntegrationTestSuite) TestEHatTargetFromCsv() {
 	testutil.InEpsilon5Dec(s.T(), resultD, expectedResult)
 }
 
-func (s *IntegrationTestSuite) TestEHatMaxAtGenesisFromCsv() {
+func (s *MintKeeperTestSuite) TestEHatMaxAtGenesisFromCsv() {
 	epoch0Get := s.epochGet[0]
 	expectedResult := epoch0Get("ehat_max_i")
 	// not exposed in csv, but taken looking directly from python notebook:
@@ -189,11 +186,13 @@ func (s *IntegrationTestSuite) TestEHatMaxAtGenesisFromCsv() {
 	testutil.InEpsilon5Dec(s.T(), resultD, expectedResult)
 }
 
-func (s *IntegrationTestSuite) TestEhatIFromCsv() {
+func (s *MintKeeperTestSuite) TestEhatIFromCsv() {
 	epoch := s.epochGet[61]
 	expectedResult := epoch("ehat_i")
-	ehatMaxI := epoch("ehat_max_i").SdkLegacyDec()
-	ehatTargetI := epoch("ehat_target_i").SdkLegacyDec()
+	ehatMaxI, err := epoch("ehat_max_i").SdkLegacyDec()
+	s.Require().NoError(err)
+	ehatTargetI, err := epoch("ehat_target_i").SdkLegacyDec()
+	s.Require().NoError(err)
 
 	result := keeper.GetCappedTargetEmissionPerUnitStakedToken(
 		ehatTargetI,
@@ -205,10 +204,12 @@ func (s *IntegrationTestSuite) TestEhatIFromCsv() {
 }
 
 // calculate e_i for the 61st epoch
-func (s *IntegrationTestSuite) TestESubIFromCsv() {
+func (s *MintKeeperTestSuite) TestESubIFromCsv() {
 	expectedResult := s.epochGet[61]("e_i")
-	targetE_i := s.epochGet[61]("ehat_target_i").SdkLegacyDec()
-	previousE_i := s.epochGet[60]("e_i").SdkLegacyDec()
+	targetE_i, err := s.epochGet[61]("ehat_target_i").SdkLegacyDec()
+	s.Require().NoError(err)
+	previousE_i, err := s.epochGet[60]("e_i").SdkLegacyDec()
+	s.Require().NoError(err)
 
 	// this is taken directly from the python notebook
 	alpha_Emission := cosmosMath.LegacyMustNewDecFromStr("0.1")
@@ -225,12 +226,14 @@ func (s *IntegrationTestSuite) TestESubIFromCsv() {
 
 // calculate \cal E for the 61st epoch
 // GetTotalEmissionPerMonth
-func (s *IntegrationTestSuite) TestCalEFromCsv() {
+func (s *MintKeeperTestSuite) TestCalEFromCsv() {
 	expectedResult := s.epochGet[61]("ecosystem_tokens_emission")
-	rewardEmissionPerUnitStakedToken := s.epochGet[61]("e_i").SdkLegacyDec()
+	rewardEmissionPerUnitStakedToken, err := s.epochGet[61]("e_i").SdkLegacyDec()
+	s.Require().NoError(err)
 	// use the value from epoch 60 rather than 61 because the python notebook
 	// updates the value AFTER calculating the total emission and handing out rewards
-	numStakedTokens := s.epochGet[60]("network_tokens_staked").SdkIntTrim()
+	numStakedTokens, err := s.epochGet[60]("network_tokens_staked").SdkIntTrim()
+	s.Require().NoError(err)
 	totalEmission := keeper.GetTotalEmissionPerMonth(
 		rewardEmissionPerUnitStakedToken,
 		numStakedTokens,
@@ -240,7 +243,7 @@ func (s *IntegrationTestSuite) TestCalEFromCsv() {
 	testutil.InEpsilon5Dec(s.T(), resultD, expectedResult)
 }
 
-func (s *IntegrationTestSuite) TestGetLockedVestingTokens() {
+func (s *MintKeeperTestSuite) TestGetLockedVestingTokens() {
 	_1e18 := alloraMath.NewDecFinite(1, 18)
 	blocksPerMonth := uint64(525960)
 	epoch0 := s.epochGet[0]
@@ -251,11 +254,11 @@ func (s *IntegrationTestSuite) TestGetLockedVestingTokens() {
 	preseedAccumulated := alloraMath.ZeroDec()
 	seedAccumulated := alloraMath.ZeroDec()
 	teamAccumulated := alloraMath.ZeroDec()
-	for i := uint64(0); i < 96; i++ {
-		epoch := s.epochGet[int(i)]
+	for i := 0; i < 96; i++ {
+		epoch := s.epochGet[i]
 		result, resultPreseed, resultSeed, resultTeam := keeper.GetLockedVestingTokens(
 			blocksPerMonth,
-			cosmosMath.NewIntFromUint64(blocksPerMonth*i),
+			cosmosMath.NewIntFromUint64(blocksPerMonth*uint64(i)),
 			types.DefaultParams(),
 		)
 		resultPreseedDec, err := alloraMath.NewDecFromSdkInt(resultPreseed)

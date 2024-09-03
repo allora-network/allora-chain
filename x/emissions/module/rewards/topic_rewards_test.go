@@ -1,131 +1,76 @@
 package rewards_test
 
 import (
+	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
-	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopics() {
-	// Test case 1: No active topics
-	block := int64(100)
-	topicPageLimit := uint64(10)
-	maxTopicPages := uint64(5)
+func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
+	ctx := s.ctx
+	maxActiveTopicsNum := uint64(2)
+	params := types.Params{
+		BlocksPerMonth:                  864000,
+		MaxActiveTopicsPerBlock:         maxActiveTopicsNum,
+		MaxPageLimit:                    uint64(100),
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),
+		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("1"),
+		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("3"),
+	}
+	err := s.emissionsKeeper.SetParams(ctx, params)
+	s.Require().NoError(err, "Setting parameters should not fail")
 
-	createNewTopic(s)
-	createNewTopic(s)
-	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
-	s.Require().Len(result, 0)
-}
+	setTopicWeight := func(topicId uint64, revenue, stake int64) {
+		_ = s.emissionsKeeper.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue))
+		_ = s.emissionsKeeper.SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake))
+	}
 
-func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopicsActiveTopicsExistButNotEpochEnding() {
-	// Test case 2: Active topics exist but no epoch ending topics
-	block := int64(100)
-	topicPageLimit := uint64(10)
-	maxTopicPages := uint64(5)
-	id1 := uint64(1)
-	id3 := uint64(3)
+	ctx = s.ctx.WithBlockHeight(1)
+	// Assume topic initially active
+	topic1 := types.Topic{Id: 1, EpochLength: 15}
+	topic2 := types.Topic{Id: 2, EpochLength: 15}
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, id1, emissionstypes.Topic{
-		Id:                     id1,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         10,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
-	})
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopic(s.ctx, id3, emissionstypes.Topic{
-		Id:                     id3,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         10,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
-	})
-	s.Require().NoError(err)
+	setTopicWeight(topic1.Id, 10, 10)
+	_ = s.emissionsKeeper.SetTopic(ctx, topic1.Id, topic1)
+	err = s.emissionsKeeper.ActivateTopic(ctx, topic1.Id)
+	s.Require().NoError(err, "Activating topic should not fail")
 
-	s.emissionsKeeper.ActivateTopic(s.ctx, id1)
-	s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+	setTopicWeight(topic2.Id, 30, 10)
+	_ = s.emissionsKeeper.SetTopic(ctx, topic2.Id, topic2)
+	err = s.emissionsKeeper.ActivateTopic(ctx, topic2.Id)
+	s.Require().NoError(err, "Activating topic should not fail")
 
-	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
-	s.Require().Len(result, 0)
-}
+	block := 10
+	ctx = s.ctx.WithBlockHeight(int64(block))
+	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(ctx, s.emissionsKeeper, int64(block))
+	s.Require().NoError(err, "Activating topic should not fail")
+	block = 16
+	ctx = s.ctx.WithBlockHeight(int64(block))
+	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(ctx, s.emissionsKeeper, int64(block))
+	s.Require().NoError(err, "Activating topic should not fail")
 
-func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopicsActiveTopicsExistAndSomeEpochEnding() {
-	// Test case 3: Active topics exist and some epoch ending topics
-	block := int64(300)
-	topicPageLimit := uint64(10)
-	maxTopicPages := uint64(5)
-	id1 := uint64(1)
-	id3 := uint64(3)
+	activeTopics, err := s.emissionsKeeper.GetActiveTopicIdsAtBlock(ctx, 31)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Equal(2, len(activeTopics.TopicIds), "Should retrieve exactly two active topics")
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, id1, emissionstypes.Topic{
-		Id:                     id1,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         200,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
-	})
-	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopic(s.ctx, id3, emissionstypes.Topic{
-		Id:                     id3,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         250,
-		EpochLength:            50,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		InitialRegret:          alloraMath.MustNewDecFromString("0.0001"),
-	})
+	params = types.Params{
+		MaxActiveTopicsPerBlock:         maxActiveTopicsNum,
+		MaxPageLimit:                    uint64(100),
+		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),
+		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("1"),
+		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("3"),
+		MinTopicWeight:                  alloraMath.MustNewDecFromString("10"),
+	}
+	err = s.emissionsKeeper.SetParams(ctx, params)
 	s.Require().NoError(err)
 
-	s.emissionsKeeper.ActivateTopic(s.ctx, id1)
-	s.emissionsKeeper.ActivateTopic(s.ctx, id3)
+	block = 31
+	ctx = s.ctx.WithBlockHeight(int64(block))
+	_, _, _, err = rewards.GetAndUpdateActiveTopicWeights(ctx, s.emissionsKeeper, int64(block))
+	s.Require().NoError(err, "Activating topic should not fail")
 
-	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
-	s.Require().Len(result, 2)
-	// Topics in result should be in ascending order of id
-	s.Require().Equal(result[0].Id, id1, "topics in result should be in ascending order of id, and id1 should be of active topic")
-	s.Require().Equal(result[1].Id, id3, "topics in result should be in ascending order of id, and id3 should be of active topic")
-}
-
-func (s *RewardsTestSuite) TestGetAllActiveEpochEndingTopicsActiveTopicsExistAndAbideByPageLimits() {
-	// Test case 4: Respecting page limits
-	block := int64(100)
-	topicPageLimit := uint64(1)
-	maxTopicPages := uint64(1)
-
-	id1 := createNewTopic(s)
-	id3 := createNewTopic(s)
-
-	s.emissionsKeeper.ActivateTopic(s.ctx, id1)
-	s.emissionsKeeper.ActivateTopic(s.ctx, id3)
-
-	result := rewards.GetAllActiveEpochEndingTopics(s.ctx, s.emissionsKeeper, block, topicPageLimit, maxTopicPages)
-	s.Require().Len(result, 1)
-	s.Require().Equal(result[0].Id, id1, "topics in result should be in ascending order of id")
+	activeTopics, err = s.emissionsKeeper.GetActiveTopicIdsAtBlock(ctx, 46)
+	s.Require().NoError(err, "Fetching active topics should not produce an error")
+	s.Require().Equal(1, len(activeTopics.TopicIds), "Should retrieve exactly one active topics")
 }

@@ -19,9 +19,9 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllInferences() {
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
-	_ = k.SetLatestInfererScore(ctx, topicId, worker1, score1)
-	_ = k.SetLatestInfererScore(ctx, topicId, worker2, score2)
-	_ = k.SetLatestInfererScore(ctx, topicId, worker3, score3)
+	_ = k.SetInfererScoreEma(ctx, topicId, worker1, score1)
+	_ = k.SetInfererScoreEma(ctx, topicId, worker2, score2)
+	_ = k.SetInfererScoreEma(ctx, topicId, worker3, score3)
 
 	allInferences := types.Inferences{
 		Inferences: []*types.Inference{
@@ -49,9 +49,9 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllForecasts() {
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
-	_ = k.SetLatestForecasterScore(ctx, topicId, worker1, score1)
-	_ = k.SetLatestForecasterScore(ctx, topicId, worker2, score2)
-	_ = k.SetLatestForecasterScore(ctx, topicId, worker3, score3)
+	_ = k.SetForecasterScoreEma(ctx, topicId, worker1, score1)
+	_ = k.SetForecasterScoreEma(ctx, topicId, worker2, score2)
+	_ = k.SetForecasterScoreEma(ctx, topicId, worker3, score3)
 
 	allForecasts := types.Forecasts{
 		Forecasts: []*types.Forecast{
@@ -124,9 +124,9 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllLossBundles() {
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer2, Score: alloraMath.NewDecFromInt64(90)}
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer3, Score: alloraMath.NewDecFromInt64(99)}
-	_ = k.SetLatestReputerScore(ctx, topicId, reputer1, score1)
-	_ = k.SetLatestReputerScore(ctx, topicId, reputer2, score2)
-	_ = k.SetLatestReputerScore(ctx, topicId, reputer3, score3)
+	_ = k.SetReputerScoreEma(ctx, topicId, reputer1, score1)
+	_ = k.SetReputerScoreEma(ctx, topicId, reputer2, score2)
+	_ = k.SetReputerScoreEma(ctx, topicId, reputer3, score3)
 
 	allReputerLosses := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{

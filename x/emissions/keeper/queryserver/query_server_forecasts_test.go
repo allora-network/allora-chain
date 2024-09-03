@@ -4,7 +4,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
+func (s *QueryServerTestSuite) TestGetForecastsAtBlock() {
 	s.CreateOneTopic()
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
@@ -25,8 +25,8 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 	}
 
 	// Assume InsertForecasts correctly sets up forecasts
-	nonce := types.Nonce{BlockHeight: int64(blockHeight)}
-	err := keeper.InsertForecasts(ctx, topicId, nonce, expectedForecasts)
+	nonce := types.Nonce{BlockHeight: blockHeight}
+	err := keeper.InsertForecasts(ctx, topicId, nonce.BlockHeight, expectedForecasts)
 	s.Require().NoError(err)
 
 	results, err := queryserver.GetForecastsAtBlock(

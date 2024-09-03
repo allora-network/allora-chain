@@ -194,7 +194,7 @@ func GetStakeWeightedLoss(reputersStakes, reputersReportedLosses []alloraMath.De
 	if len(reputersStakes) != len(reputersReportedLosses) {
 		return alloraMath.ZeroDec(), types.ErrInvalidSliceLength
 	}
-	var err error = nil
+	var err error
 
 	totalStake := alloraMath.ZeroDec()
 	for _, stake := range reputersStakes {
@@ -232,7 +232,7 @@ func GetStakeWeightedLossMatrix(
 	if len(reputersAdjustedStakes) == 0 || len(reputersReportedLosses) == 0 {
 		return nil, nil, types.ErrInvalidSliceLength
 	}
-	var err error = nil
+	var err error
 
 	// Ensure every loss array is non-empty and calculate geometric mean
 	stakeWeightedLoss := make([]alloraMath.Dec, len(reputersReportedLosses[0]))
@@ -313,8 +313,8 @@ func GetConsensusScore(
 		return alloraMath.ZeroDec(), types.ErrInvalidSliceLength
 	}
 
-	var err error = nil
-	var sumConsensusSquared alloraMath.Dec = alloraMath.ZeroDec()
+	var err error
+	var sumConsensusSquared = alloraMath.ZeroDec()
 	for _, cLoss := range consensusLosses {
 		cLossSquared, err := cLoss.Mul(cLoss)
 		if err != nil {
@@ -329,18 +329,16 @@ func GetConsensusScore(
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
+	// If consensusNorm is zero, set it to epsilon to avoid division by zero
+	if consensusNorm.IsZero() {
+		consensusNorm = epsilon
+	}
 
 	var distanceSquared alloraMath.Dec
 	for i, rLoss := range reputerLosses {
 		// Attribute most distant value if loss is NaN
 		if rLoss.IsNaN() {
 			rLoss = mostDistantValues[i]
-		}
-		if rLoss.IsZero() {
-			rLoss = epsilon
-		}
-		if consensusLosses[i].IsZero() {
-			consensusLosses[i] = epsilon
 		}
 		// We have the log losses and the identity: log(Loss_im / Loss_i) = log(Loss_im) - log(Loss_i)
 		rLossLessConsensusLoss, err := rLoss.Sub(consensusLosses[i])
@@ -446,7 +444,7 @@ func GetAllReputersOutput(
 
 	oldCoefficients := make([]alloraMath.Dec, numReputers)
 	var i uint64 = 0
-	var maxGradient alloraMath.Dec = alloraMath.OneDec()
+	var maxGradient = alloraMath.OneDec()
 	// finalScores := make([]alloraMath.Dec, numReputers)
 	newScores := make([]alloraMath.Dec, numReputers)
 
@@ -540,8 +538,8 @@ func GetAllReputersOutput(
 			return nil, nil, err
 		}
 		if listenedStakeFraction.Lt(minStakeFraction) {
-			for l := range coefficients {
-				coeffDiff, err := coefficients[l].Sub(oldCoefficients[l])
+			for l := range newCoefficients {
+				coeffDiff, err := newCoefficients[l].Sub(oldCoefficients[l])
 				if err != nil {
 					return nil, nil, err
 				}
@@ -593,7 +591,7 @@ func GetAllReputersOutput(
 func sumWeighted(weights, values []alloraMath.Dec) (alloraMath.Dec, error) {
 	var sum alloraMath.Dec
 	for i, weight := range weights {
-		var err error = nil
+		var err error
 		weightTimesValue, err := weight.Mul(values[i])
 		if err != nil {
 			return alloraMath.Dec{}, err

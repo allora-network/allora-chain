@@ -3,14 +3,19 @@ package module
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"cosmossdk.io/errors"
 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func EndBlocker(ctx context.Context, am AppModule) error {
+	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	sdkCtx.Logger().Debug(
@@ -22,8 +27,14 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return err
 	}
 	// Remove Stakers that have been wanting to unstake this block. They no longer get paid rewards
-	RemoveStakes(sdkCtx, blockHeight, am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
-	RemoveDelegateStakes(sdkCtx, blockHeight, am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
+	err = RemoveStakes(sdkCtx, blockHeight, am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
+	if err != nil {
+		sdkCtx.Logger().Error("Error removing stakes: ", err)
+	}
+	err = RemoveDelegateStakes(sdkCtx, blockHeight, am.keeper, moduleParams.HalfMaxProcessStakeRemovalsEndBlock)
+	if err != nil {
+		sdkCtx.Logger().Error("Error removing delegate stakes: ", err)
+	}
 
 	// Get unnormalized weights of active topics and the sum weight and revenue they have generated
 	weights, sumWeight, totalRevenue, err := rewards.GetAndUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight)
@@ -64,7 +75,17 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				// No nonces to fulfill
 				continue
 			} else {
+				topic, err := am.keeper.GetTopic(sdkCtx, topicId)
+				if err != nil {
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
+					continue
+				}
 				for _, nonce := range nonces.Nonces {
+					// Skip rest of logic if the worker submission window is still open (i.e. don't close the window yet)
+					if am.keeper.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
+						sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Worker window still open for topic: %d, nonce: %v", blockHeight, topicId, nonce))
+						continue
+					}
 					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId, nonce))
 					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topicId, *nonce)
 					if err != nil {

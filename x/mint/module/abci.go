@@ -3,6 +3,7 @@ package mint
 import (
 	"context"
 
+	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	"github.com/allora-network/allora-chain/x/mint/types"
@@ -28,14 +29,14 @@ func GetEmissionPerMonth(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	totalSupply := params.MaxSupply
-	lockedVestingTokens, _, _, _ := keeper.GetLockedVestingTokens(
-		blocksPerMonth,
-		math.NewIntFromUint64(blockHeight),
-		params,
-	)
-	ecosystemLocked := ecosystemBalance.Add(ecosystemMintSupplyRemaining)
-	circulatingSupply := totalSupply.Sub(lockedVestingTokens).Sub(ecosystemLocked)
+	circulatingSupply,
+		totalSupply,
+		lockedVestingTokens,
+		ecosystemLocked,
+		err := keeper.GetCirculatingSupply(ctx, k, params, blockHeight, blocksPerMonth)
+	if err != nil {
+		return math.Int{}, math.LegacyDec{}, err
+	}
 	if circulatingSupply.IsNegative() {
 		ctx.Logger().Error(
 			"Negative circulating supply",
@@ -113,23 +114,6 @@ func GetEmissionPerMonth(
 	return emissionPerMonth, emissionPerUnitStakedToken, nil
 }
 
-// How many tokens are left that the ecosystem bucket is allowed to mint?
-func GetEcosystemMintSupplyRemaining(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	params types.Params,
-) (math.Int, error) {
-	// calculate how many tokens left the ecosystem account is allowed to mint
-	ecosystemTokensAlreadyMinted, err := k.EcosystemTokensMinted.Get(ctx)
-	if err != nil {
-		return math.Int{}, err
-	}
-	// check that you are allowed to mint more tokens and we haven't hit the max supply
-	ecosystemMaxSupply := math.LegacyNewDecFromInt(params.MaxSupply).
-		Mul(params.EcosystemTreasuryPercentOfTotalSupply).TruncateInt()
-	return ecosystemMaxSupply.Sub(ecosystemTokensAlreadyMinted), nil
-}
-
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -149,12 +133,12 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
-	ecosystemMintSupplyRemaining, err := GetEcosystemMintSupplyRemaining(sdkCtx, k, params)
+	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(sdkCtx, params)
 	if err != nil {
 		return err
 	}
 	updateEmission := false
-	var e_i math.LegacyDec
+	var e_i math.LegacyDec //nolint:revive // var-naming: don't use underscores in Go names
 	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
 	if err != nil {
 		return err
@@ -163,7 +147,10 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
-	vPercent := vPercentADec.SdkLegacyDec()
+	vPercent, err := vPercentADec.SdkLegacyDec()
+	if err != nil {
+		return err
+	}
 	// every month on the first block of the month, update the emissions rate
 	if blockHeight%blocksPerMonth == 1 { // easier to test when genesis starts at 1
 		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
@@ -189,7 +176,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 			"emissionPerMonth", emissionPerMonth.String(),
 			"blockEmission", blockEmission.String(),
 		)
-
 	}
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
 	if blockEmission.GT(ecosystemBalance) {
@@ -231,8 +217,14 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	if updateEmission {
 		// set the previous emissions to this block's emissions
-		k.PreviousRewardEmissionPerUnitStakedToken.Set(ctx, e_i)
-		k.PreviousBlockEmission.Set(ctx, blockEmission)
+		err = k.PreviousRewardEmissionPerUnitStakedToken.Set(ctx, e_i)
+		if err != nil {
+			return errors.Wrap(err, "error setting previous reward emission per unit staked token")
+		}
+		err = k.PreviousBlockEmission.Set(ctx, blockEmission)
+		if err != nil {
+			return errors.Wrap(err, "error setting previous block emission")
+		}
 	}
 	return nil
 }

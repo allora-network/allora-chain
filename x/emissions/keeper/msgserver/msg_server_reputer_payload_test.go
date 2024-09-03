@@ -4,23 +4,23 @@ import (
 	"encoding/hex"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
+	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
+
+const block = types.BlockHeight(1)
 
 func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 	reputerAddr sdk.AccAddress,
 	workerAddr sdk.AccAddress,
-	block types.BlockHeight,
 ) (
 	reputerValueBundle types.ValueBundle,
 	expectedInferences types.Inferences,
 	expectedForecasts types.Forecasts,
 	topicId uint64,
-	reputerNonce types.Nonce,
-	workerNonce types.Nonce,
 ) {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
@@ -29,7 +29,7 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 	params, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
-	minStakeScaled := params.RequiredMinimumStake.Mul(inference_synthesis.CosmosIntOneE18())
+	minStakeScaled := params.RequiredMinimumStake.Mul(inferencesynthesis.CosmosIntOneE18())
 
 	topicId = s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 	s.MintTokensToAddress(reputerAddr, params.RequiredMinimumStake)
@@ -43,16 +43,16 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 	_, err = msgServer.AddStake(ctx, addStakeMsg)
 	s.Require().NoError(err)
 
-	reputerNonce = types.Nonce{
-		BlockHeight: block,
-	}
-	workerNonce = types.Nonce{
+	workerNonce := types.Nonce{
 		BlockHeight: block,
 	}
 
-	keeper.AddWorkerNonce(ctx, topicId, &workerNonce)
-	keeper.FulfillWorkerNonce(ctx, topicId, &workerNonce)
-	keeper.AddReputerNonce(ctx, topicId, &reputerNonce)
+	err = keeper.AddWorkerNonce(ctx, topicId, &workerNonce)
+	require.NoError(err)
+	_, err = keeper.FulfillWorkerNonce(ctx, topicId, &workerNonce)
+	require.NoError(err)
+	err = keeper.AddReputerNonce(ctx, topicId, &workerNonce)
+	require.NoError(err)
 
 	// add in inference and forecast data
 	expectedInferences = types.Inferences{
@@ -104,11 +104,11 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 			},
 		},
 		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &reputerNonce,
+			ReputerNonce: &workerNonce,
 		},
 	}
 
-	return reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, workerNonce
+	return reputerValueBundle, expectedInferences, expectedForecasts, topicId
 }
 
 func (s *MsgServerTestSuite) signValueBundle(reputerValueBundle *types.ValueBundle, privateKey secp256k1.PrivKey) []byte {
@@ -128,8 +128,6 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	reputerPrivateKey secp256k1.PrivKey,
 	reputerPublicKeyBytes []byte,
 	reputerValueBundle *types.ValueBundle,
-	topicId uint64,
-	reputerNonce *types.Nonce,
 ) error {
 	ctx, msgServer := s.ctx, s.msgServer
 	valueBundleSignature := s.signValueBundle(reputerValueBundle, reputerPrivateKey)
@@ -148,12 +146,10 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	return err
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertReputerPayload() {
+func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
-
-	block := types.BlockHeight(1)
 
 	reputerPrivateKey := secp256k1.GenPrivKey()
 	reputerPublicKeyBytes := reputerPrivateKey.PubKey().Bytes()
@@ -162,20 +158,77 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayload() {
 	workerPrivateKey := secp256k1.GenPrivKey()
 	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
 
-	reputerValueBundle, expectedInferences, expectedForecasts, topicId, reputerNonce, _ := s.setUpMsgReputerPayload(reputerAddr, workerAddr, block)
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
 
-	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: int64(block)}, expectedForecasts)
+	err := keeper.InsertForecasts(ctx, topicId, block, expectedForecasts)
 	require.NoError(err)
 
-	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
+	err = keeper.InsertInferences(ctx, topicId, block, expectedInferences)
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
-	newBlockheight := block + topic.GroundTruthLag
+	// Prior to the ground truth lag, should not allow reputer payload
+	newBlockheight := block + topic.GroundTruthLag - 1
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
-	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle, topicId, &reputerNonce)
+	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
+	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
+
+	// Valid reputer nonce window, end
+	newBlockheight = block + topic.GroundTruthLag*2 + 1
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
+	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
+
+	// Valid reputer nonce window, end
+	newBlockheight = block + topic.GroundTruthLag*2
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
 	require.NoError(err)
+}
+
+func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	reputerPrivateKey := secp256k1.GenPrivKey()
+	reputerPublicKeyBytes := reputerPrivateKey.PubKey().Bytes()
+	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address())
+
+	workerPrivateKey := secp256k1.GenPrivKey()
+	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
+
+	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
+
+	err := keeper.InsertForecasts(ctx, topicId, block, expectedForecasts)
+	require.NoError(err)
+
+	err = keeper.InsertInferences(ctx, topicId, block, expectedInferences)
+	require.NoError(err)
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	// Prior to the ground truth lag, should not allow reputer payload
+	newBlockheight := block + topic.GroundTruthLag - 1
+	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+
+	reputerValueBundle.Reputer = s.addrsStr[3]
+	valueBundleSignature := s.signValueBundle(&reputerValueBundle, reputerPrivateKey)
+
+	// Create a MsgInsertReputerPayload message
+	lossesMsg := &types.MsgInsertReputerPayload{
+		Sender: reputerAddr.String(),
+		ReputerValueBundle: &types.ReputerValueBundle{
+			ValueBundle: &reputerValueBundle,
+			Signature:   valueBundleSignature,
+			Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
+		},
+	}
+
+	_, err = s.msgServer.InsertReputerPayload(ctx, lossesMsg)
+	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 }

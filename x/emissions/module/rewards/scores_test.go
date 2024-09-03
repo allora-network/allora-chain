@@ -21,16 +21,20 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 	block := int64(1003)
 
 	newTopicMsg := &types.MsgCreateNewTopic{
-		Creator:                s.addrs[0].String(),
-		Metadata:               "test",
-		LossMethod:             "mse",
-		EpochLength:            10800,
-		GroundTruthLag:         10800,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          true,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -144,7 +148,25 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetInferenceScores() {
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block := int64(1003)
 
 	// Generate workers data for tests
@@ -182,7 +204,25 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block := int64(1003)
 
 	inferer0 := s.addrs[5].String()
@@ -225,7 +265,25 @@ func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 // and the second with higher one out losses.
 // We then compare the resulting scores and check that the higher one out losses result in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block0 := int64(1003)
 	require := s.Require()
 
@@ -259,8 +317,26 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 }
 
 func (s *RewardsTestSuite) TestGetForecastScores() {
-	topicId := uint64(1)
 	block := int64(1003)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 
 	// Generate workers data for tests
 	reportedLosses, err := mockNetworkLosses(s, topicId, block)
@@ -295,7 +371,25 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block := int64(1003)
 
 	inferer0 := s.addrs[5].String()
@@ -337,7 +431,25 @@ func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 // We then compare the resulting forecaster scores and check that the higher one out losses result
 // in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
-	topicId := uint64(1)
+	newTopicMsg := &types.MsgCreateNewTopic{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
 	block0 := int64(1003)
 	require := s.Require()
 
@@ -864,7 +976,6 @@ func GenerateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64,
 }
 
 func GenerateHugeLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64, reputers []sdk.AccAddress, workers []sdk.AccAddress) types.ReputerValueBundles {
-
 	var (
 		reputersLosses,
 		reputersInfererLosses,
@@ -1182,9 +1293,8 @@ func GenerateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 
 func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
 	var newInferences []*types.WorkerDataBundle
-	oldForecaster := s.addrs[5]
-	worker1Addr := s.addrs[10]
-	worker2Addr := s.addrs[11]
+	worker1Addr := s.addrs[13]
+	worker2Addr := s.addrs[14]
 
 	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
 		Inference: &types.Inference{
@@ -1196,7 +1306,7 @@ func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Forecaster:  oldForecaster.String(),
+			Forecaster:  worker1Addr.String(),
 			ForecastElements: []*types.ForecastElement{
 				{
 					Inferer: s.addrs[7].String(),
@@ -1231,7 +1341,7 @@ func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Forecaster:  oldForecaster.String(),
+			Forecaster:  worker2Addr.String(),
 			ForecastElements: []*types.ForecastElement{
 				{
 					Inferer: s.addrs[5].String(),
@@ -1261,16 +1371,14 @@ func GenerateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 
 func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
 	var newForecasts []*types.WorkerDataBundle
-	oldInferencer1 := s.addrs[5]
-	oldInferencer2 := s.addrs[6]
-	worker1Addr := s.addrs[10]
-	worker2Addr := s.addrs[11]
+	worker1Addr := s.addrs[13]
+	worker2Addr := s.addrs[14]
 
 	worker1InferenceForecastBundle := &types.InferenceForecastBundle{
 		Inference: &types.Inference{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Inferer:     oldInferencer1.String(),
+			Inferer:     worker1Addr.String(),
 			Value:       alloraMath.MustNewDecFromString("0.01251"),
 		},
 		Forecast: &types.Forecast{
@@ -1289,15 +1397,15 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 			},
 		},
 	}
-	worker1Sig, err := GenerateWorkerSignature(s, worker1InferenceForecastBundle, oldInferencer1)
+	worker1Sig, err := GenerateWorkerSignature(s, worker1InferenceForecastBundle, worker1Addr)
 	s.Require().NoError(err)
 	worker1Bundle := &types.WorkerDataBundle{
-		Worker:                             oldInferencer1.String(),
+		Worker:                             worker1Addr.String(),
 		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
 		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker1InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker1Sig,
-		Pubkey:                             GetAccPubKey(s, oldInferencer1),
+		Pubkey:                             GetAccPubKey(s, worker1Addr),
 	}
 	newForecasts = append(newForecasts, worker1Bundle)
 
@@ -1305,7 +1413,7 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 		Inference: &types.Inference{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Inferer:     oldInferencer2.String(),
+			Inferer:     worker2Addr.String(),
 			Value:       alloraMath.MustNewDecFromString("0.01251"),
 		},
 		Forecast: &types.Forecast{
@@ -1324,15 +1432,15 @@ func GenerateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 			},
 		},
 	}
-	worker2Sig, err := GenerateWorkerSignature(s, worker2InferenceForecastBundle, oldInferencer2)
+	worker2Sig, err := GenerateWorkerSignature(s, worker2InferenceForecastBundle, worker2Addr)
 	s.Require().NoError(err)
 	worker2Bundle := &types.WorkerDataBundle{
-		Worker:                             oldInferencer2.String(),
+		Worker:                             worker2Addr.String(),
 		Nonce:                              &types.Nonce{BlockHeight: blockHeight},
 		TopicId:                            topicId,
 		InferenceForecastsBundle:           worker2InferenceForecastBundle,
 		InferencesForecastsBundleSignature: worker2Sig,
-		Pubkey:                             GetAccPubKey(s, oldInferencer2),
+		Pubkey:                             GetAccPubKey(s, worker2Addr),
 	}
 	newForecasts = append(newForecasts, worker2Bundle)
 
@@ -1347,6 +1455,7 @@ type TestWorkerValue struct {
 func GenerateSimpleWorkerDataBundles(
 	s *RewardsTestSuite,
 	topicId uint64,
+	nonce int64,
 	blockHeight int64,
 	workerValues []TestWorkerValue,
 	infererAddrs []sdk.AccAddress,
@@ -1400,7 +1509,7 @@ func GenerateSimpleWorkerDataBundles(
 		s.Require().NoError(err)
 		workerBundle := &types.WorkerDataBundle{
 			Worker:                             workerValue.Address.String(),
-			Nonce:                              &types.Nonce{BlockHeight: blockHeight},
+			Nonce:                              &types.Nonce{BlockHeight: nonce},
 			TopicId:                            topicId,
 			InferenceForecastsBundle:           newWorkerInferenceForecastBundle,
 			InferencesForecastsBundleSignature: workerSig,
@@ -1415,6 +1524,7 @@ func GenerateSimpleWorkerDataBundles(
 func GenerateSimpleLossBundles(
 	s *RewardsTestSuite,
 	topicId uint64,
+	nonce int64,
 	blockHeight int64,
 	workerValues []TestWorkerValue,
 	reputerValues []TestWorkerValue,
@@ -1422,10 +1532,8 @@ func GenerateSimpleLossBundles(
 	workerZeroOneOutInfererValue string,
 	workerZeroInfererValue string,
 ) types.ReputerValueBundles {
-
 	var reputerValueBundles types.ReputerValueBundles
 	for _, reputer := range reputerValues {
-
 		var countValues int
 		if len(workerValues) < len(reputerValues) {
 			countValues = len(workerValues)
@@ -1437,7 +1545,7 @@ func GenerateSimpleLossBundles(
 			TopicId: topicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
 				ReputerNonce: &types.Nonce{
-					BlockHeight: blockHeight,
+					BlockHeight: nonce,
 				},
 			},
 			Reputer:                reputer.Address.String(),
