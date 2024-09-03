@@ -134,8 +134,10 @@ message GenesisState {
   repeated TopicIdBlockHeightValueBundles networkLossBundles = 41;
   // Percentage of all rewards, paid out to staked reputers, during the previous
   // reward cadence. Used by mint module
-  string previousPercentageRewardToStakedReputers = 42
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string previousPercentageRewardToStakedReputers = 42 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 
   /// NONCES
 
@@ -226,8 +228,10 @@ message TopicIdActorIdListeningCoefficient {
 message TopicIdActorIdDec {
   uint64 TopicId = 1;
   string ActorId = 2;
-  string Dec = 3
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string Dec = 3 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message TopicIdAndInt {
@@ -305,8 +309,10 @@ message LibP2pKeyAndOffchainNode {
 
 message TopicIdAndDec {
   uint64 TopicId = 1;
-  string Dec = 2
-      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
+  string Dec = 2 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message TopicIdBlockHeightInferences {
