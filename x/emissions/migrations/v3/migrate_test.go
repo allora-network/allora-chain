@@ -325,7 +325,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 
 	churningBlock, inFuture, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 1)
 	s.Require().NoError(err)
-	s.Require().Equal(churningBlock, int64(0))
+	s.Require().Equal(int64(0), churningBlock)
 	s.Require().False(inFuture)
 
 	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 2)
@@ -335,7 +335,7 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 
 	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 3)
 	s.Require().NoError(err)
-	s.Require().Equal(churningBlock, int64(0))
+	s.Require().Equal(int64(0), churningBlock)
 	s.Require().False(inFuture)
 
 	// not the same as feeRev * stake because weight is EMAd with 0
