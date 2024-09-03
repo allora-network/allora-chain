@@ -37,7 +37,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return types.ErrInvalidTopicId
 	}
 
-	// Check if the window time has passed: if blockheight > nonce.BlockHeight + topic.WorkerSubmissionWindow
+	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
 	blockHeight := ctx.BlockHeight()
 	if blockHeight <= topic.EpochLastEnded ||
 		blockHeight > topic.EpochLastEnded+topic.GroundTruthLag {
@@ -102,22 +102,19 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	return nil
 }
 
-// Output a new set of inferences where only 1 inference per registered inferer is kept,
-// ignore the rest. In particular, take the first inference from each registered inferer
-// and none from any unregistered inferer.
-// Signatures, anti-synil procedures, and "skimming of only the top few workers by score
-// descending" should be done here.
+// It is assumed `inferences` come from unique, registered, top inferers by EMA score descending
+// It is also assumed that the inferences are for the correct topic and nonce
 func insertInferencesFromTopInferers(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
 	nonce types.Nonce,
 	inferences []*types.Inference,
-) (map[string]bool, error) {
-	acceptedInferers := make(map[string]bool, 0)
+) (acceptedInferers map[string]bool, err error) {
+	acceptedInferers = make(map[string]bool, 0)
 	if len(inferences) == 0 {
 		ctx.Logger().Warn(fmt.Sprintf("No inferences to process for topic: %d, nonce: %v", topicId, nonce))
-		return nil, types.ErrNoValidInferences // TODO Change err name - No inferences to process
+		return nil, types.ErrNoInferencesToInsert
 	}
 	for _, inference := range inferences {
 		// Check that the forecast exist, is for the correct topic, and is for the correct nonce
@@ -141,7 +138,7 @@ func insertInferencesFromTopInferers(
 	inferencesToInsert := types.Inferences{
 		Inferences: inferences,
 	}
-	err := k.InsertInferences(ctx, topicId, nonce, inferencesToInsert)
+	err = k.InsertInferences(ctx, topicId, nonce.BlockHeight, inferencesToInsert)
 	if err != nil {
 		return nil, err
 	}
@@ -149,11 +146,9 @@ func insertInferencesFromTopInferers(
 	return acceptedInferers, nil
 }
 
-// Output a new set of forecasts where only 1 forecast per registered forecaster is kept,
-// ignore the rest. In particular, take the first forecast from each registered forecaster
-// and none from any unregistered forecaster.
-// Signatures, anti-synil procedures, and "skimming of only the top few workers by score
-// descending" should be done here.
+// insert forecasts from top forecasters
+// check forecast elements to ensure they are forecasts made about
+// the active list of inferers.
 func insertForecastsFromTopForecasters(
 	ctx sdk.Context,
 	k *keeper.Keeper,
@@ -212,7 +207,7 @@ func insertForecastsFromTopForecasters(
 		}
 	}
 
-	// Though less than ideal because it produces less-acurate network inferences,
+	// Though less than ideal because it produces less-accurate network inferences,
 	// it is fine if no forecasts are accepted
 	// => no need to check len(forecastsFromTopForecasters) == 0
 
@@ -224,7 +219,7 @@ func insertForecastsFromTopForecasters(
 	forecastsToInsert := types.Forecasts{
 		Forecasts: latestForecaster,
 	}
-	err := k.InsertForecasts(ctx, topicId, nonce, forecastsToInsert)
+	err := k.InsertForecasts(ctx, topicId, nonce.BlockHeight, forecastsToInsert)
 	if err != nil {
 		return err
 	}

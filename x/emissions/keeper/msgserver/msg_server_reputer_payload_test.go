@@ -160,10 +160,10 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
 
-	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
+	err := keeper.InsertForecasts(ctx, topicId, block, expectedForecasts)
 	require.NoError(err)
 
-	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
+	err = keeper.InsertInferences(ctx, topicId, block, expectedInferences)
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
@@ -176,24 +176,17 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
 	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 
-	// Valid reputer nonce window, start
-	newBlockheight = block + topic.GroundTruthLag
+	// Valid reputer nonce window, end
+	newBlockheight = block + topic.GroundTruthLag*2 + 1
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
-
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
-	require.NoError(err)
+	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 
 	// Valid reputer nonce window, end
 	newBlockheight = block + topic.GroundTruthLag*2
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
 	require.NoError(err)
-
-	// Valid reputer nonce window, end
-	newBlockheight = block + topic.GroundTruthLag*2 + 1
-	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
-	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyBytes, &reputerValueBundle)
-	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature() {
@@ -210,10 +203,10 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputerAddr, workerAddr)
 
-	err := keeper.InsertForecasts(ctx, topicId, types.Nonce{BlockHeight: block}, expectedForecasts)
+	err := keeper.InsertForecasts(ctx, topicId, block, expectedForecasts)
 	require.NoError(err)
 
-	err = keeper.InsertInferences(ctx, topicId, types.Nonce{BlockHeight: block}, expectedInferences)
+	err = keeper.InsertInferences(ctx, topicId, block, expectedInferences)
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)

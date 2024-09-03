@@ -4,6 +4,7 @@ import (
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -87,6 +88,7 @@ func GenerateReputerScores(
 
 	// Insert new coeffients and scores
 	var newScores []types.Score
+	var emaScores []types.Score
 	for i, reputer := range reputers {
 		err := keeper.SetListeningCoefficient(
 			ctx,
@@ -108,31 +110,24 @@ func GenerateReputerScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
-		previousScore, err := keeper.GetReputerScoreEma(ctx, topicId, reputer)
+
+		emaScore, err := keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, block, reputer, newScore)
 		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error getting reputer score ema")
+			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving reputer score ema")
 		}
-		firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
-		emaScoreDec, err := alloraMath.CalcEma(
-			topic.MeritSortitionAlpha,
-			newScore.Score,
-			previousScore.Score,
-			firstTime,
-		)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error calculating ema")
-		}
-		emaScore := types.Score{
-			TopicId:     topicId,
-			BlockHeight: block,
-			Address:     reputer,
-			Score:       emaScoreDec,
-		}
-		err = keeper.SetReputerScoreEma(ctx, topicId, reputer, emaScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error setting latest reputer score")
-		}
+
 		newScores = append(newScores, newScore)
+		emaScores = append(emaScores, emaScore)
+	}
+
+	// Update topic quantile of EMA score
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveReputerQuantile)
+	if err != nil {
+		return nil, err
+	}
+	err = keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	if err != nil {
+		return nil, err
 	}
 
 	types.EmitNewReputerScoresSetEvent(ctx, newScores)
@@ -148,7 +143,7 @@ func GenerateInferenceScores(
 	networkLosses types.ValueBundle,
 ) ([]types.Score, error) {
 	var newScores []types.Score
-
+	var emaScores []types.Score
 	// If there is only one inferer, set score to 0
 	// More than one inferer is required to have one-out losses
 	if len(networkLosses.InfererValues) == 1 {
@@ -186,31 +181,24 @@ func GenerateInferenceScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
-		previousScore, err := keeper.GetInfererScoreEma(ctx, topicId, oneOutLoss.Worker)
+
+		emaScore, err := keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, block, oneOutLoss.Worker, newScore)
 		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error getting inferer score ema")
+			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving inferer score ema")
 		}
-		firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
-		emaScoreDec, err := alloraMath.CalcEma(
-			topic.MeritSortitionAlpha,
-			newScore.Score,
-			previousScore.Score,
-			firstTime,
-		)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error calculating ema")
-		}
-		emaScore := types.Score{
-			TopicId:     topicId,
-			BlockHeight: block,
-			Address:     oneOutLoss.Worker,
-			Score:       emaScoreDec,
-		}
-		err = keeper.SetInfererScoreEma(ctx, topicId, oneOutLoss.Worker, emaScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "error setting latest inferer score")
-		}
+
 		newScores = append(newScores, newScore)
+		emaScores = append(emaScores, emaScore)
+	}
+
+	// Update topic quantile of EMA score
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveInfererQuantile)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error getting quantile of scores")
+	}
+	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error setting previous topic quantile inferer score ema")
 	}
 
 	types.EmitNewInfererScoresSetEvent(ctx, newScores)
@@ -226,6 +214,7 @@ func GenerateForecastScores(
 	networkLosses types.ValueBundle,
 ) ([]types.Score, error) {
 	var newScores []types.Score
+	var emaScores []types.Score
 	topic, err := keeper.GetTopic(ctx, topicId)
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
@@ -288,31 +277,24 @@ func GenerateForecastScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
 		}
-		previousScore, err := keeper.GetForecasterScoreEma(ctx, topicId, oneInNaiveLoss.Worker)
+
+		emaScore, err := keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, block, oneInNaiveLoss.Worker, newScore)
 		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error getting inferer score ema")
+			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving forecaster score ema")
 		}
-		firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
-		emaScoreDec, err := alloraMath.CalcEma(
-			topic.MeritSortitionAlpha,
-			newScore.Score,
-			previousScore.Score,
-			firstTime,
-		)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error calculating ema")
-		}
-		emaScore := types.Score{
-			TopicId:     topicId,
-			BlockHeight: block,
-			Address:     oneInNaiveLoss.Worker,
-			Score:       emaScoreDec,
-		}
-		err = keeper.SetForecasterScoreEma(ctx, topicId, oneInNaiveLoss.Worker, emaScore)
-		if err != nil {
-			return []types.Score{}, errors.Wrapf(err, "Error setting latest forecaster score")
-		}
+
 		newScores = append(newScores, newScore)
+		emaScores = append(emaScores, emaScore)
+	}
+
+	// Update topic quantile of EMA score
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveForecasterQuantile)
+	if err != nil {
+		return nil, err
+	}
+	err = keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	if err != nil {
+		return nil, err
 	}
 
 	types.EmitNewForecasterScoresSetEvent(ctx, newScores)

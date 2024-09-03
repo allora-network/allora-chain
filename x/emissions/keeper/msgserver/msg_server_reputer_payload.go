@@ -31,8 +31,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 	topicId := msg.ReputerValueBundle.ValueBundle.TopicId
 
 	// Check if the topic exists
-	topicExists, err := ms.k.TopicExists(ctx, topicId)
-	if err != nil || !topicExists {
+	topic, err := ms.k.GetTopic(ctx, topicId)
+	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
 
@@ -56,28 +56,40 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	topic, err := ms.k.GetTopic(ctx, topicId)
-	if err != nil {
-		return nil, types.ErrInvalidTopicId
-	}
-
 	// Check if the ground truth lag has passed: if blockheight > nonce.BlockHeight + topic.GroundTruthLag
-	if blockHeight < nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag ||
-		blockHeight > nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag*2 {
+	if !ms.k.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
 		return nil, types.ErrReputerNonceWindowNotAvailable
 	}
 
-	// Before creating topic, transfer fee amount from creator to ecosystem bucket
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, topicId, msg.ReputerValueBundle.ValueBundle.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	if !isRegistered {
+		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is not registered in this topic")
+	}
+
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
+
+	// Check that the reputer enough stake in the topic
+	stake, err := ms.k.GetStakeReputerAuthority(ctx, topicId, msg.ReputerValueBundle.ValueBundle.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	if stake.LT(params.RequiredMinimumStake) {
+		return nil, errorsmod.Wrapf(types.ErrInsufficientStake, "reputer does not have sufficient stake in the topic")
+	}
+
+	// Before accepting data, transfer fee amount from sender to ecosystem bucket
 	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
 
-	err = ms.k.AppendReputerLoss(ctx, topicId, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
+	err = ms.k.AppendReputerLoss(ctx, topic, blockHeight, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
 	if err != nil {
 		return nil, err
 	}

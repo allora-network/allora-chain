@@ -179,6 +179,22 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetPreviousTopicQuantileForecasterScoreEma",
+					Use:       "topic-quantile-forecaster-score [topic_id]",
+					Short:     "Returns topic-quantile score ema among the previous top forecasters by score EMA",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetCurrentLowestForecasterScore",
+					Use:       "current-lowest-forecaster-score [topic_id]",
+					Short:     "Returns current lowest score for a forecaster in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetInfererScoreEma",
 					Use:       "inferer-score-ema [topic_id] [inferer]",
 					Short:     "Returns latest score for a inferer in a topic",
@@ -188,12 +204,44 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetPreviousTopicQuantileInfererScoreEma",
+					Use:       "topic-quantile-inferer-score [topic_id]",
+					Short:     "Returns topic-quantile score ema among the previous top inferers by score EMA",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetCurrentLowestInfererScore",
+					Use:       "current-lowest-inferer-score [topic_id]",
+					Short:     "Returns current lowest score for a inferer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetReputerScoreEma",
 					Use:       "reputer-score-ema [topic_id] [reputer]",
 					Short:     "Returns latest score for a reputer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 						{ProtoField: "reputer"},
+					},
+				},
+				{
+					RpcMethod: "GetPreviousTopicQuantileReputerScoreEma",
+					Use:       "topic-quantile-reputer-score [topic_id]",
+					Short:     "Returns topic-quantile score ema among the previous top reputers by score EMA",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetCurrentLowestReputerScore",
+					Use:       "current-lowest-reputer-score [topic_id]",
+					Short:     "Returns current lowest score for a reputer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
 					},
 				},
 				{
@@ -476,7 +524,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetReputerNodeInfo",
-					Use:       "reputer-info [addresss]",
+					Use:       "reputer-info [address]",
 					Short:     "Get node info for reputer node",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "address"},
@@ -631,7 +679,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "CreateNewTopic",
-					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon]",
+					Use:       "create-topic [creator] [metadata] [loss_method] [epoch_length] [ground_truth_lag] [worker_submission_window] [p_norm] [alpha_regret] [allow_negative] [epsilon] [merit_sortition_alpha] [active_inferer_quantile] [active_forecaster_quantile] [active_reputer_quantile]",
 					Short:     "Add a new topic to the network",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "creator"},
@@ -644,6 +692,10 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "alpha_regret"},
 						{ProtoField: "allow_negative"},
 						{ProtoField: "epsilon"},
+						{ProtoField: "merit_sortition_alpha"},
+						{ProtoField: "active_inferer_quantile"},
+						{ProtoField: "active_forecaster_quantile"},
+						{ProtoField: "active_reputer_quantile"},
 					},
 				},
 				{

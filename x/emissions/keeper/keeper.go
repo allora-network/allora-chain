@@ -88,6 +88,12 @@ type Keeper struct {
 	previousForecastRewardFraction collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
 	// map of topic -> previous forecaster score ratio
 	previousForecasterScoreRatio collections.Map[TopicId, alloraMath.Dec]
+	// previous topic inferer ema score at topic quantile
+	previousTopicQuantileInfererScoreEma collections.Map[TopicId, alloraMath.Dec]
+	// previous topic forecaster ema score at topic quantile
+	previousTopicQuantileForecasterScoreEma collections.Map[TopicId, alloraMath.Dec]
+	// previous topic reputer ema score at topic quantile
+	previousTopicQuantileReputerScoreEma collections.Map[TopicId, alloraMath.Dec]
 
 	/// STAKING
 
@@ -253,25 +259,28 @@ func NewKeeper(
 		latestOneOutInfererForecasterNetworkRegrets:    collections.NewMap(sb, types.LatestOneOutInfererForecasterNetworkRegretsKey, "latest_one_out_inferer_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneOutForecasterInfererNetworkRegrets:    collections.NewMap(sb, types.LatestOneOutForecasterInfererNetworkRegretsKey, "latest_one_out_forecaster_inferer_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneOutForecasterForecasterNetworkRegrets: collections.NewMap(sb, types.LatestOneOutForecasterForecasterNetworkRegretsKey, "latest_one_out_forecaster_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
-		whitelistAdmins:                 collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
-		infererScoresByBlock:            collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		forecasterScoresByBlock:         collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		infererScoreEmas:                collections.NewMap(sb, types.InfererScoreEmasKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		forecasterScoreEmas:             collections.NewMap(sb, types.ForecasterScoreEmasKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		reputerScoreEmas:                collections.NewMap(sb, types.ReputerScoreEmasKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
-		previousReputerRewardFraction:   collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		previousInferenceRewardFraction: collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		previousForecastRewardFraction:  collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
-		previousForecasterScoreRatio:    collections.NewMap(sb, types.PreviousForecasterScoreRatioKey, "previous_forecaster_score_ratio", collections.Uint64Key, alloraMath.DecValue),
-		reputerScoresByBlock:            collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
-		reputerListeningCoefficient:     collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ListeningCoefficient](cdc)),
-		unfulfilledWorkerNonces:         collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
-		unfulfilledReputerNonces:        collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
-		lastDripBlock:                   collections.NewMap(sb, types.LastDripBlockKey, "last_drip_block", collections.Uint64Key, collections.Int64Value),
-		topicRewardNonce:                collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
-		topicLastWorkerCommit:           collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		topicLastReputerCommit:          collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
-		openWorkerWindows:               collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.TopicIds](cdc)),
+		whitelistAdmins:                         collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
+		infererScoresByBlock:                    collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		forecasterScoresByBlock:                 collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		infererScoreEmas:                        collections.NewMap(sb, types.InfererScoreEmasKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		forecasterScoreEmas:                     collections.NewMap(sb, types.ForecasterScoreEmasKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		reputerScoreEmas:                        collections.NewMap(sb, types.ReputerScoreEmasKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		previousReputerRewardFraction:           collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousInferenceRewardFraction:         collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousForecastRewardFraction:          collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousForecasterScoreRatio:            collections.NewMap(sb, types.PreviousForecasterScoreRatioKey, "previous_forecaster_score_ratio", collections.Uint64Key, alloraMath.DecValue),
+		reputerScoresByBlock:                    collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		reputerListeningCoefficient:             collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ListeningCoefficient](cdc)),
+		unfulfilledWorkerNonces:                 collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
+		unfulfilledReputerNonces:                collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
+		lastDripBlock:                           collections.NewMap(sb, types.LastDripBlockKey, "last_drip_block", collections.Uint64Key, collections.Int64Value),
+		topicRewardNonce:                        collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
+		topicLastWorkerCommit:                   collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		topicLastReputerCommit:                  collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		openWorkerWindows:                       collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.TopicIds](cdc)),
+		previousTopicQuantileInfererScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileInfererScoreEmaKey, "previous_topic_quantile_inferer_score_ema", collections.Uint64Key, alloraMath.DecValue),
+		previousTopicQuantileForecasterScoreEma: collections.NewMap(sb, types.PreviousTopicQuantileForecasterScoreEmaKey, "previous_topic_quantile_forecaster_score_ema", collections.Uint64Key, alloraMath.DecValue),
+		previousTopicQuantileReputerScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileReputerScoreEmaKey, "previous_topic_quantile_reputer_score_ema", collections.Uint64Key, alloraMath.DecValue),
 	}
 
 	schema, err := sb.Build()
@@ -784,56 +793,89 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 }
 
 // Append individual inference for a topic/block
-func (k *Keeper) AppendInference(ctx context.Context, topicId TopicId, nonce types.Nonce, inference *types.Inference) error {
-	if inference == nil {
+func (k *Keeper) AppendInference(
+	ctx context.Context,
+	topic types.Topic,
+	blockHeight BlockHeight,
+	nonceBlockHeight BlockHeight,
+	inference *types.Inference,
+) error {
+	if inference == nil || inference.Inferer == "" {
 		return errors.New("invalid inference: inferer is empty or nil")
 	}
-	if inference.Inferer == "" {
-		return errors.New("invalid inference: inferer is empty")
-	}
-	block := nonce.BlockHeight
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	key := collections.Join(topicId, block)
-	inferences, err := k.allInferences.Get(ctx, key)
+	ptr, err := k.GetInferencesAtBlock(ctx, topic.Id, nonceBlockHeight)
 	if err != nil {
-		inferences = types.Inferences{}
+		return errorsmod.Wrapf(err, "Error getting inferences at block %d", nonceBlockHeight)
 	}
-	var newInferences types.Inferences
-	// remove inference if this inferer already submitted
+	inferences := *ptr
+
+	// Check if the inference is already submitted
 	for _, exInference := range inferences.Inferences {
-		if exInference.Inferer != inference.Inferer {
-			newInferences.Inferences = append(newInferences.Inferences, exInference)
+		if exInference.Inferer == inference.Inferer {
+			return errors.New("inference already submitted")
 		}
 	}
-	// append inference if not reached out topN
-	if uint64(len(newInferences.Inferences)) < moduleParams.MaxTopInferersToReward {
-		newInferences.Inferences = append(newInferences.Inferences, inference)
-		return k.allInferences.Set(ctx, key, newInferences)
+
+	previousEmaScore, err := k.GetInfererScoreEma(ctx, topic.Id, inference.Inferer)
+	if err != nil {
+		return errorsmod.Wrapf(err, "Error getting inferer score ema")
 	}
-	// get score of current inference and check with
-	score, err := k.GetInfererScoreEma(ctx, topicId, inference.Inferer)
+	// Only calc and save if there's a new update
+	if previousEmaScore.BlockHeight != 0 &&
+		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+		return types.ErrCantUpdateEmaMoreThanOncePerWindow
+	}
+
+	// append inference if not yet reached topN
+	if uint64(len(inferences.Inferences)) < moduleParams.MaxTopInferersToReward {
+		inferences.Inferences = append(inferences.Inferences, inference)
+		return k.InsertInferences(ctx, topic.Id, nonceBlockHeight, inferences)
+	}
+
+	// get score of current inference and check with lowest score
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllInferences(ctx, k, topic.Id, inferences)
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := GetLowScoreFromAllInferences(ctx, k, topicId, newInferences)
-	if err != nil {
-		return err
-	}
-	if score.Score.Gt(lowScore.Score) {
-		newInferences.Inferences = append(newInferences.Inferences[:lowScoreIndex], newInferences.Inferences[lowScoreIndex+1:]...)
-		newInferences.Inferences = append(newInferences.Inferences, inference)
-		return k.allInferences.Set(ctx, key, newInferences)
+	// Update EMA score for the lowest score inferer
+	// This conditional decides who that lowest score inferer is
+	if previousEmaScore.Score.Gt(lowScore.Score) {
+		// Update EMA score for the lowest score inferer, who is not the current inferer
+		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
+			ctx,
+			topic,
+			blockHeight,
+			inferences.Inferences[lowScoreIndex].Inferer,
+		)
+		if err != nil {
+			return err
+		}
+		// Remove the lowest score inferer from the list
+		inferences.Inferences = append(inferences.Inferences[:lowScoreIndex], inferences.Inferences[lowScoreIndex+1:]...)
+		// Append the current inferer to the list
+		inferences.Inferences = append(inferences.Inferences, inference)
+		return k.InsertInferences(ctx, topic.Id, nonceBlockHeight, inferences)
+	} else {
+		// Update EMA score for the current inferer, who is the lowest score inferer
+		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, blockHeight, inference.Inferer)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
-func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce types.Nonce, inferences types.Inferences) error {
-	block := nonce.BlockHeight
-
+func (k *Keeper) InsertInferences(
+	ctx context.Context,
+	topicId TopicId,
+	nonceBlockHeight BlockHeight,
+	inferences types.Inferences,
+) error {
 	for _, inference := range inferences.Inferences {
 		// Update latests inferences for each worker
 		key := collections.Join(topicId, inference.Inferer)
@@ -841,61 +883,92 @@ func (k *Keeper) InsertInferences(ctx context.Context, topicId TopicId, nonce ty
 			return err
 		}
 	}
-
-	key := collections.Join(topicId, block)
+	key := collections.Join(topicId, nonceBlockHeight)
 	return k.allInferences.Set(ctx, key, inferences)
 }
 
 // Append individual forecast for a topic/block
-func (k *Keeper) AppendForecast(ctx context.Context, topicId TopicId, nonce types.Nonce, forecast *types.Forecast) error {
+func (k *Keeper) AppendForecast(
+	ctx context.Context,
+	topic types.Topic,
+	blockHeight BlockHeight,
+	nonceBlockHeight BlockHeight,
+	forecast *types.Forecast,
+) error {
 	if forecast == nil || forecast.Forecaster == "" {
 		return errors.New("invalid forecast: forecaster is empty or nil")
 	}
 	if len(forecast.ForecastElements) == 0 {
 		return errors.New("invalid forecast: forecast elements are empty")
 	}
-	block := nonce.BlockHeight
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
 	}
-	key := collections.Join(topicId, block)
-	forecasts, err := k.allForecasts.Get(ctx, key)
+	ptr, err := k.GetForecastsAtBlock(ctx, topic.Id, nonceBlockHeight)
 	if err != nil {
-		forecasts = types.Forecasts{}
+		return errorsmod.Wrapf(err, "Error getting forecasts at block %d", nonceBlockHeight)
 	}
-	var newForecasts types.Forecasts
-	// remove forecast if this forecaster already submitted
+	forecasts := *ptr
+
+	// Check if the inference is already submitted
 	for _, exForecast := range forecasts.Forecasts {
-		if exForecast.Forecaster != forecast.Forecaster {
-			newForecasts.Forecasts = append(newForecasts.Forecasts, exForecast)
+		if exForecast.Forecaster == forecast.Forecaster {
+			return errors.New("forecast already submitted")
 		}
 	}
-	if uint64(len(newForecasts.Forecasts)) < moduleParams.MaxTopForecastersToReward {
-		newForecasts.Forecasts = append(newForecasts.Forecasts, forecast)
-		return k.allForecasts.Set(ctx, key, newForecasts)
+
+	previousEmaScore, err := k.GetForecasterScoreEma(ctx, topic.Id, forecast.Forecaster)
+	if err != nil {
+		return errorsmod.Wrapf(err, "Error getting forecaster score ema")
 	}
-	// get score of current inference and check with
-	score, err := k.GetForecasterScoreEma(ctx, topicId, forecast.Forecaster)
+	// Only calc and save if there's a new update
+	if previousEmaScore.BlockHeight != 0 &&
+		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+		return types.ErrCantUpdateEmaMoreThanOncePerWindow
+	}
+
+	// append forecast if not yet reached topN
+	if uint64(len(forecasts.Forecasts)) < moduleParams.MaxTopForecastersToReward {
+		forecasts.Forecasts = append(forecasts.Forecasts, forecast)
+		return k.InsertForecasts(ctx, topic.Id, nonceBlockHeight, forecasts)
+	}
+
+	// get score of current forecast and check with lowest score
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllForecasts(ctx, k, topic.Id, forecasts)
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := GetLowScoreFromAllForecasts(ctx, k, topicId, newForecasts)
-	if err != nil {
-		return err
-	}
-	if score.Score.Gt(lowScore.Score) {
-		newForecasts.Forecasts = append(newForecasts.Forecasts[:lowScoreIndex], newForecasts.Forecasts[lowScoreIndex+1:]...)
-		newForecasts.Forecasts = append(newForecasts.Forecasts, forecast)
-		return k.allForecasts.Set(ctx, key, newForecasts)
+	// Update EMA score for the lowest score forecaster
+	// This conditional decides who that lowest score forecaster is
+	if previousEmaScore.Score.Gt(lowScore.Score) {
+		// Update EMA score for the lowest score forecaster, who is not the current forecaster
+		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
+			ctx,
+			topic,
+			blockHeight,
+			forecasts.Forecasts[lowScoreIndex].Forecaster,
+		)
+		if err != nil {
+			return err
+		}
+		// Remove the lowest score forecaster from the list
+		forecasts.Forecasts = append(forecasts.Forecasts[:lowScoreIndex], forecasts.Forecasts[lowScoreIndex+1:]...)
+		// Append the current forecaster to the list
+		forecasts.Forecasts = append(forecasts.Forecasts, forecast)
+		return k.InsertForecasts(ctx, topic.Id, nonceBlockHeight, forecasts)
+	} else {
+		// Update EMA score for the current forecaster, who is the lowest score forecaster
+		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, blockHeight, forecast.Forecaster)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
-func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce types.Nonce, forecasts types.Forecasts) error {
-	block := nonce.BlockHeight
-
+func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, forecasts types.Forecasts) error {
 	for _, forecast := range forecasts.Forecasts {
 		// Update latests forecasts for each worker
 		key := collections.Join(topicId, forecast.Forecaster)
@@ -903,15 +976,15 @@ func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonce typ
 			return err
 		}
 	}
-
-	key := collections.Join(topicId, block)
+	key := collections.Join(topicId, nonceBlockHeight)
 	return k.allForecasts.Set(ctx, key, forecasts)
 }
 
 func (k *Keeper) GetWorkerLatestInferenceByTopicId(
 	ctx context.Context,
 	topicId TopicId,
-	worker ActorId) (types.Inference, error) {
+	worker ActorId,
+) (types.Inference, error) {
 	key := collections.Join(topicId, worker)
 	return k.inferences.Get(ctx, key)
 }
@@ -942,8 +1015,14 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 
 /// LOSS BUNDLES
 
-// Append loss bundle for a topoic and blockheight
-func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block BlockHeight, reputerLoss *types.ReputerValueBundle) error {
+// Append loss bundle for a topic and blockHeight
+func (k *Keeper) AppendReputerLoss(
+	ctx context.Context,
+	topic types.Topic,
+	blockHeight BlockHeight,
+	nonceBlockHeight BlockHeight,
+	reputerLoss *types.ReputerValueBundle,
+) error {
 	if reputerLoss == nil {
 		return errors.New("invalid reputerLoss bundle: inferer is empty or nil")
 	}
@@ -957,38 +1036,65 @@ func (k *Keeper) AppendReputerLoss(ctx context.Context, topicId TopicId, block B
 	if err != nil {
 		return err
 	}
-	key := collections.Join(topicId, block)
-	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
+	ptr, err := k.GetReputerLossBundlesAtBlock(ctx, topic.Id, nonceBlockHeight)
 	if err != nil {
-		reputerLossBundles = types.ReputerValueBundles{}
+		return errorsmod.Wrapf(err, "Error getting reputer loss bundles at block %d", nonceBlockHeight)
 	}
+	reputerLossBundles := *ptr
 
-	var newReputerLossBundles types.ReputerValueBundles
-	// remove reputation if this reputer already submitted
+	// Check if the reputer loss bundle is already submitted
 	for _, exReputation := range reputerLossBundles.ReputerValueBundles {
-		if exReputation.ValueBundle.Reputer != reputerLoss.ValueBundle.Reputer {
-			newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, exReputation)
+		if exReputation.ValueBundle.Reputer == reputerLoss.ValueBundle.Reputer {
+			return errors.New("reputer loss bundle already submitted")
 		}
 	}
-	if uint64(len(newReputerLossBundles.ReputerValueBundles)) < moduleParams.MaxTopReputersToReward {
-		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerLoss)
-		return k.allLossBundles.Set(ctx, key, newReputerLossBundles)
+
+	previousEmaScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
+	if err != nil {
+		return err
+	}
+	// Only calc and save if there's a new update
+	if previousEmaScore.BlockHeight != 0 &&
+		blockHeight-previousEmaScore.BlockHeight <= topic.EpochLength {
+		return types.ErrCantUpdateEmaMoreThanOncePerWindow
+	}
+
+	// append reputer loss bundle if not yet reached topN
+	if uint64(len(reputerLossBundles.ReputerValueBundles)) < moduleParams.MaxTopReputersToReward {
+		reputerLossBundles.ReputerValueBundles = append(reputerLossBundles.ReputerValueBundles, reputerLoss)
+		return k.InsertReputerLossBundlesAtBlock(ctx, topic.Id, nonceBlockHeight, reputerLossBundles)
 	}
 
 	// get score of current inference and check with
-	score, err := k.GetReputerScoreEma(ctx, topicId, reputerLoss.ValueBundle.Reputer)
+	lowScore, lowScoreIndex, err := GetLowScoreFromAllLossBundles(ctx, k, topic.Id, reputerLossBundles)
 	if err != nil {
 		return err
 	}
-	lowScore, lowScoreIndex, err := GetLowScoreFromAllLossBundles(ctx, k, topicId, newReputerLossBundles)
-	if err != nil {
-		return err
-	}
-	if score.Score.Gt(lowScore.Score) {
-		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles[:lowScoreIndex],
-			newReputerLossBundles.ReputerValueBundles[lowScoreIndex+1:]...)
-		newReputerLossBundles.ReputerValueBundles = append(newReputerLossBundles.ReputerValueBundles, reputerLoss)
-		return k.allLossBundles.Set(ctx, key, newReputerLossBundles)
+	// Update EMA score for the lowest score reputer
+	// This conditional decides who that lowest score reputer is
+	if previousEmaScore.Score.Gt(lowScore.Score) {
+		// Update EMA score for the lowest score reputer, who is not the current reputer
+		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
+			ctx,
+			topic,
+			blockHeight,
+			reputerLossBundles.ReputerValueBundles[lowScoreIndex].ValueBundle.Reputer,
+		)
+		if err != nil {
+			return err
+		}
+		// Remove the lowest score reputer from the list
+		reputerLossBundles.ReputerValueBundles = append(reputerLossBundles.ReputerValueBundles[:lowScoreIndex],
+			reputerLossBundles.ReputerValueBundles[lowScoreIndex+1:]...)
+		// Append the current reputer to the list
+		reputerLossBundles.ReputerValueBundles = append(reputerLossBundles.ReputerValueBundles, reputerLoss)
+		return k.InsertReputerLossBundlesAtBlock(ctx, topic.Id, nonceBlockHeight, reputerLossBundles)
+	} else {
+		// Update EMA score for the current reputer, who is the lowest score reputer
+		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, blockHeight, reputerLoss.ValueBundle.Reputer)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -1851,8 +1957,8 @@ func (k *Keeper) GetReputerInfo(ctx sdk.Context, reputerKey ActorId) (types.Offc
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
 func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker ActorId, workerInfo types.OffchainNode) error {
-	topickey := collections.Join(topicId, worker)
-	err := k.topicWorkers.Set(ctx, topickey)
+	topicKey := collections.Join(topicId, worker)
+	err := k.topicWorkers.Set(ctx, topicKey)
 	if err != nil {
 		return err
 	}
@@ -1954,14 +2060,14 @@ func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId,
 
 // True if worker is registered in topic, else False
 func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId, worker ActorId) (bool, error) {
-	topickey := collections.Join(topicId, worker)
-	return k.topicWorkers.Has(ctx, topickey)
+	topicKey := collections.Join(topicId, worker)
+	return k.topicWorkers.Has(ctx, topicKey)
 }
 
 // True if reputer is registered in topic, else False
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer ActorId) (bool, error) {
-	topickey := collections.Join(topicId, reputer)
-	return k.topicReputers.Has(ctx, topickey)
+	topicKey := collections.Join(topicId, reputer)
+	return k.topicReputers.Has(ctx, topicKey)
 }
 
 /// TOPIC FEE REVENUE
@@ -2207,13 +2313,13 @@ func (k *Keeper) GetReputerScoreEma(ctx context.Context, topicId TopicId, repute
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockHeight BlockHeight, score types.Score) error {
 	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
-		return err
+		return errorsmod.Wrapf(err, "Error getting worker inference scores at block")
 	}
 	scores.Scores = append(scores.Scores, &score)
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrapf(err, "Error getting params")
 	}
 	maxNumScores := moduleParams.MaxSamplesToScaleScores
 
@@ -2409,6 +2515,57 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 		return types.ListeningCoefficient{}, err
 	}
 	return coef, nil
+}
+
+func (k *Keeper) SetPreviousTopicQuantileInfererScoreEma(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	return k.previousTopicQuantileInfererScoreEma.Set(ctx, topicId, score)
+}
+
+// Gets the previous Inferer Score Ema at Topic quantile
+// Returns previous inferer score ema at topic quantile, or 0 if not yet seen
+func (k *Keeper) GetPreviousTopicQuantileInfererScoreEma(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	score, err := k.previousTopicQuantileInfererScoreEma.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return score, nil
+}
+
+func (k *Keeper) SetPreviousTopicQuantileForecasterScoreEma(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	return k.previousTopicQuantileForecasterScoreEma.Set(ctx, topicId, score)
+}
+
+// Gets the previous Forecaster Score Ema at Topic quantile
+// Returns previous forecaster score ema at topic quantile, or 0 if not yet seen
+func (k *Keeper) GetPreviousTopicQuantileForecasterScoreEma(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	score, err := k.previousTopicQuantileForecasterScoreEma.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return score, nil
+}
+
+func (k *Keeper) SetPreviousTopicQuantileReputerScoreEma(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	return k.previousTopicQuantileReputerScoreEma.Set(ctx, topicId, score)
+}
+
+// Gets the previous Reputer Score Ema at Topic quantile
+// Returns previous reputer score ema at topic quantile, or 0 if not yet seen
+func (k *Keeper) GetPreviousTopicQuantileReputerScoreEma(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	score, err := k.previousTopicQuantileReputerScoreEma.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, err
+	}
+	return score, nil
 }
 
 /// REWARD FRACTION
@@ -2662,6 +2819,12 @@ func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHe
 // Return true if the nonce is within the worker submission window for the topic
 func (k *Keeper) BlockWithinWorkerSubmissionWindowOfNonce(topic types.Topic, nonce types.Nonce, blockHeight int64) bool {
 	return nonce.BlockHeight <= blockHeight && blockHeight < topic.WorkerSubmissionWindow+nonce.BlockHeight
+}
+
+// Return true if the nonce is within the worker submission window for the topic
+func (k *Keeper) BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, nonce types.ReputerRequestNonce, blockHeight int64) bool {
+	return nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag <= blockHeight &&
+		blockHeight <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag*2
 }
 
 func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
