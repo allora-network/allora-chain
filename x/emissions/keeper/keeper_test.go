@@ -3475,13 +3475,17 @@ func (s *KeeperTestSuite) TestGetFirstDelegateStakeRemovalForDelegatorReputerAnd
 	s.Require().False(found)
 }
 
-func (s *KeeperTestSuite) TestAppendForecast() {
+func (s *KeeperTestSuite) TestAppendInference() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	// Topic IDs
 	topicId := s.CreateOneTopic(10800)
 	nonce := types.Nonce{BlockHeight: 10}
 	blockHeightInferences := int64(10)
+
+	// Set previous topic quantile inferer score ema
+	err := k.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.MustNewDecFromString("1000"))
+	s.Require().NoError(err)
 
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -3491,9 +3495,10 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	worker3 := "worker3"
 	worker4 := "worker4"
 	worker5 := "worker5"
+	ogWorker2Score := alloraMath.MustNewDecFromString("90")
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
-	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
+	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: ogWorker2Score}
 	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
 	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
 	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
@@ -3527,6 +3532,9 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	newAllInferences, err := k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
 	s.Require().Equal(len(newAllInferences.Inferences), len(allInferences.Inferences)+1)
+
+	// Ensure that the number of top inferers is capped at the max top inferers to reward
+	// New high-score entrant should replace earlier low-score entrant
 	params := types.Params{
 		MaxTopInferersToReward: 4,
 	}
@@ -3536,15 +3544,62 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	newInference2 := types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
+	worker5OgScore, err := k.GetInfererScoreEma(ctx, topicId, worker5)
+	s.Require().NoError(err)
 	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
 	s.Require().NoError(err)
 	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
 	s.Require().Equal(uint64(len(newAllInferences.Inferences)), params.MaxTopInferersToReward)
-	s.Require().Equal(newAllInferences.Inferences[1].Inferer, worker3)
+	// New high-score entrant should replace earlier low-score entrant
+	worker5Found := false
+	for _, inference := range newAllInferences.Inferences {
+		if inference.Inferer == worker5 {
+			worker5Found = true
+		}
+	}
+	s.Require().True(worker5Found)
+
+	// Ensure EMA score of active set is not yet updated
+	// This will happen later during epoch reward calculation, not here
+	worker5NewScore, err := k.GetInfererScoreEma(ctx, topicId, worker5)
+	s.Require().NoError(err)
+	// EMA score should be updated higher because saved topic quantile ema is higher
+	s.Require().True(worker5OgScore.Score.Equal(worker5NewScore.Score))
+	// EMA score should be updated with the new time of update given that it was updated then
+	s.Require().Equal(worker5OgScore.BlockHeight, worker5NewScore.BlockHeight)
+
+	// Ensure EMA score of actor moved to passive set is updated
+	updatedWorker2Score, err := k.GetInfererScoreEma(ctx, topicId, worker2)
+	s.Require().NoError(err)
+	// EMA score should be updated higher because saved topic quantile ema is higher
+	updatedWorker2ScoreVal, _ := updatedWorker2Score.Score.Int64()
+	ogWorker2ScoreVal, _ := ogWorker2Score.Int64()
+	worker5OgScoreVal, _ := worker5OgScore.Score.Int64()
+	s.Require().Greater(updatedWorker2ScoreVal, ogWorker2ScoreVal, "worker2 score should go up given large ema value")
+	s.Require().Greater(updatedWorker2ScoreVal, worker5OgScoreVal, "worker2 could not overtake worker5, but not in this epoch")
+	// EMA score should be updated with the new time of update given that it was updated then
+	s.Require().Equal(blockHeightInferences, updatedWorker2Score.BlockHeight)
+
+	// Ensure passive set participant can't update their score within the same epoch
+	blockHeightInferences = blockHeightInferences + 1 // within the same epoch => no update
+	newInference2 = types.Inference{
+		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.52"),
+	}
+	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
+	s.Require().Error(err, types.ErrCantUpdateEmaMoreThanOncePerWindow.Error())
+	// Confirm no change in EMA score
+	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
+	s.Require().NoError(err)
+	s.Require().Equal(uint64(len(newAllInferences.Inferences)), params.MaxTopInferersToReward)
+	updateAttemptForWorker2, err := k.GetInfererScoreEma(ctx, topicId, worker2)
+	s.Require().NoError(err)
+	updateAttemptForWorker2Val, _ := updateAttemptForWorker2.Score.Int64()
+	s.Require().Equal(updateAttemptForWorker2Val, updatedWorker2ScoreVal, "unchanged score")
+	s.Require().Equal(updateAttemptForWorker2.BlockHeight, updatedWorker2Score.BlockHeight, "unchanged height")
 }
 
-func (s *KeeperTestSuite) TestAppendInference() {
+func (s *KeeperTestSuite) TestAppendForecast() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := s.CreateOneTopic(10800)
