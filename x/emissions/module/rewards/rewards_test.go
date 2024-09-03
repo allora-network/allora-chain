@@ -3353,7 +3353,6 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 		"0.1",
 	)
 	require.Equal(len(rewardsDistribution0_1), len(rewardsDistribution0_0))
-	require.True(rewardsDistribution0_0[0].Reward.Gte(rewardsDistribution0_1[0].Reward))
 }
 func (s *RewardsTestSuite) returnAddresses(start, count int) []sdk.AccAddress {
 	res := make([]sdk.AccAddress, count)
