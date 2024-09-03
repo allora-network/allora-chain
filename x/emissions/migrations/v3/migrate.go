@@ -1,12 +1,7 @@
 package v3
 
 import (
-	"encoding/binary"
-	"fmt"
-
-	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
-	cosmosMath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -124,22 +119,7 @@ func MigrateTopics(
 	emissionsKeeper keeper.Keeper,
 ) error {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
-	topicFeeRevStore := prefix.NewStore(store, types.TopicFeeRevenueKey)
-	topicStakeStore := prefix.NewStore(store, types.TopicStakeKey)
-	topicPreviousWeightStore := prefix.NewStore(store, types.PreviousTopicWeightKey)
 	iterator := topicStore.Iterator(nil, nil)
-	churningBlockStore := prefix.NewStore(store, types.TopicToNextPossibleChurningBlockKey)
-	blockToActiveStore := prefix.NewStore(store, types.BlockToActiveTopicsKey)
-	blockLowestWeightStore := prefix.NewStore(store, types.BlockToLowestActiveTopicWeightKey)
-	params, err := emissionsKeeper.GetParams(ctx)
-	if err != nil {
-		return errorsmod.Wrapf(err, "failed to get params for active topic migration")
-	}
-	churningBlock := make(map[types.TopicId]types.BlockHeight, 0)
-	blockToActiveTopics := make(map[types.BlockHeight]types.TopicIds, 0)
-	lowestWeight := make(map[types.BlockHeight]types.TopicIdWeightPair, 0)
-
-	topicWeightData := make(map[types.TopicId]alloraMath.Dec, 0)
 
 	topicsToChange := make(map[string]types.Topic, 0)
 	for ; iterator.Valid(); iterator.Next() {
@@ -148,99 +128,6 @@ func MigrateTopics(
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to unmarshal old topic")
 		}
-		var feeRevenue = cosmosMath.NewInt(0)
-		idArray := make([]byte, 8)
-		binary.BigEndian.PutUint64(idArray, oldMsg.Id)
-		err = feeRevenue.Unmarshal(topicFeeRevStore.Get(idArray))
-		if err != nil {
-			topicsToChange[string(iterator.Key())] = getNewTopic(oldMsg)
-			continue
-		}
-		var stake = cosmosMath.NewInt(0)
-		err = stake.Unmarshal(topicStakeStore.Get(idArray))
-		if err != nil {
-			topicsToChange[string(iterator.Key())] = getNewTopic(oldMsg)
-			continue
-		}
-		var previousWeight = alloraMath.NewDecFromInt64(0)
-		err = previousWeight.Unmarshal(topicPreviousWeightStore.Get(idArray))
-		if err != nil {
-			topicsToChange[string(iterator.Key())] = getNewTopic(oldMsg)
-			continue
-		}
-		// Get topic's latest weight
-		weight, err := getTopicWeight(
-			feeRevenue,
-			stake,
-			previousWeight,
-			oldMsg.EpochLength,
-			params.TopicRewardAlpha,
-			params.TopicRewardStakeImportance,
-			params.TopicRewardFeeRevenueImportance,
-			emissionsKeeper,
-		)
-		if err != nil {
-			topicsToChange[string(iterator.Key())] = getNewTopic(oldMsg)
-			continue
-		}
-		topicWeightData[oldMsg.Id] = weight
-		blockHeight := oldMsg.EpochLastEnded + oldMsg.EpochLength
-		ctx.Logger().Warn(fmt.Sprintf("update blockHeight %d", blockHeight))
-		// If the weight is less than minimum weight then skip this topic
-		if weight.Lt(params.MinTopicWeight) {
-			topicsToChange[string(iterator.Key())] = getNewTopic(oldMsg)
-			continue
-		}
-
-		cuLowestWeight := lowestWeight[blockHeight]
-		// Update lowest weight of topic per block
-		if cuLowestWeight.Weight.Equal(alloraMath.ZeroDec()) ||
-			weight.Lt(lowestWeight[blockHeight].Weight) {
-			cuLowestWeight = types.TopicIdWeightPair{
-				Weight:  weight,
-				TopicId: oldMsg.Id,
-			}
-		}
-
-		churningBlock[oldMsg.Id] = blockHeight
-
-		activeTopicIds := blockToActiveTopics[blockHeight]
-		activeTopicIds.TopicIds = append(activeTopicIds.TopicIds, oldMsg.Id)
-
-		// If number of active topic is over global param then remove lowest topic
-		if uint64(len(blockToActiveTopics[blockHeight].TopicIds)) > params.MaxActiveTopicsPerBlock {
-			// Remove from topicToNextPossibleChurningBlock
-			delete(churningBlock, lowestWeight[blockHeight].TopicId)
-			newActiveTopicIds := []types.TopicId{}
-			for i, id := range blockToActiveTopics[blockHeight].TopicIds {
-				if id == lowestWeight[blockHeight].TopicId {
-					newActiveTopicIds = append(blockToActiveTopics[blockHeight].TopicIds[:i],
-						blockToActiveTopics[blockHeight].TopicIds[i+1:]...)
-					break
-				}
-			}
-			// Reset active topics per block
-			activeTopicIds.TopicIds = newActiveTopicIds
-			//blockToActiveTopics[blockHeight] = types.TopicIds{TopicIds: newActiveTopicIds}
-			// Reset lowest weight per block
-			cuLowestWeight = getLowestTopicIdWeightPair(topicWeightData, blockToActiveTopics[blockHeight])
-		}
-		blockToActiveTopics[blockHeight] = activeTopicIds
-		blockHeightBytes, err := collections.Int64Value.Encode(blockHeight)
-		if err != nil {
-			return err
-		}
-		churningBlockStore.Set(idArray, blockHeightBytes)
-		activeTopicsBytes, err := activeTopicIds.Marshal()
-		if err != nil {
-			return err
-		}
-		lowestWeightBytes, err := cuLowestWeight.Marshal()
-		if err != nil {
-			return err
-		}
-		blockToActiveStore.Set(blockHeightBytes, activeTopicsBytes)
-		blockLowestWeightStore.Set(blockHeightBytes, lowestWeightBytes)
 
 		topicsToChange[string(iterator.Key())] = getNewTopic(oldMsg)
 	}
@@ -327,59 +214,4 @@ func ResetMapsWithNonNumericValues(store storetypes.KVStore, cdc codec.BinaryCod
 	safelyClearWholeMap(store, types.LatestOneOutInfererForecasterNetworkRegretsKey)
 	safelyClearWholeMap(store, types.LatestOneOutForecasterInfererNetworkRegretsKey)
 	safelyClearWholeMap(store, types.LatestOneOutForecasterForecasterNetworkRegretsKey)
-}
-
-func getTopicWeight(
-	feeRevenue, stake cosmosMath.Int,
-	previousWeight alloraMath.Dec,
-	topicEpochLength int64,
-	topicRewardAlpha alloraMath.Dec,
-	stakeImportance alloraMath.Dec,
-	feeImportance alloraMath.Dec,
-	emissionsKeeper keeper.Keeper,
-) (alloraMath.Dec, error) {
-	feeRevenueDec, err := alloraMath.NewDecFromSdkInt(feeRevenue)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	topicStakeDec, err := alloraMath.NewDecFromSdkInt(stake)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	if !feeRevenueDec.Equal(alloraMath.ZeroDec()) {
-		targetWeight, err := emissionsKeeper.GetTargetWeight(
-			topicStakeDec,
-			topicEpochLength,
-			feeRevenueDec,
-			stakeImportance,
-			feeImportance,
-		)
-		if err != nil {
-			return alloraMath.ZeroDec(), err
-		}
-		weight, err := alloraMath.CalcEma(topicRewardAlpha, targetWeight, previousWeight, false)
-		if err != nil {
-			return alloraMath.ZeroDec(), err
-		}
-		return weight, nil
-	}
-	return alloraMath.ZeroDec(), nil
-}
-
-func getLowestTopicIdWeightPair(weightData map[types.TopicId]alloraMath.Dec, ids types.TopicIds) types.TopicIdWeightPair {
-	lowestWeight := types.TopicIdWeightPair{
-		Weight:  alloraMath.ZeroDec(),
-		TopicId: uint64(0),
-	}
-	firstIter := true
-	for _, id := range ids.TopicIds {
-		if weightData[id].Lt(lowestWeight.Weight) || firstIter {
-			lowestWeight = types.TopicIdWeightPair{
-				Weight:  weightData[id],
-				TopicId: id,
-			}
-			firstIter = false
-		}
-	}
-	return lowestWeight
 }
