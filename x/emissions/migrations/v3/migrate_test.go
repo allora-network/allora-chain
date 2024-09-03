@@ -1,6 +1,7 @@
 package v3_test
 
 import (
+	"strconv"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -8,6 +9,7 @@ import (
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 
 	"cosmossdk.io/core/store"
+	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 
 	"cosmossdk.io/store/prefix"
@@ -234,6 +236,255 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopics() {
 	s.Require().Equal("0.25", newMsg.ActiveReputerQuantile.String())
 	// InitialRegret is reset to 0
 	s.Require().Equal("0", newMsg.InitialRegret.String())
+}
+
+func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
+
+	oldTopics := []oldtypes.Topic{
+		{
+			Id:             1,
+			Creator:        "creator",
+			Metadata:       "metadata",
+			LossMethod:     "lossmethod",
+			EpochLastEnded: 0,
+			EpochLength:    100,
+			GroundTruthLag: 10,
+			PNorm:          alloraMath.NewDecFromInt64(3),
+			AlphaRegret:    alloraMath.MustNewDecFromString("0.1"),
+			AllowNegative:  false,
+			Epsilon:        alloraMath.MustNewDecFromString("0.01"),
+			// InitialRegret is being reset to account for NaNs that were previously stored due to insufficient validation
+			InitialRegret:          alloraMath.MustNewDecFromString("11"),
+			WorkerSubmissionWindow: 120,
+		},
+		{
+			Id:                     2,
+			Creator:                "creator2",
+			Metadata:               "metadata2",
+			LossMethod:             "lossmethod2",
+			EpochLastEnded:         0,
+			EpochLength:            100,
+			GroundTruthLag:         20,
+			PNorm:                  alloraMath.NewDecFromInt64(3),
+			AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+			AllowNegative:          false,
+			Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+			InitialRegret:          alloraMath.MustNewDecFromString("11"),
+			WorkerSubmissionWindow: 120,
+		},
+		{
+			Id:                     3,
+			Creator:                "creator3",
+			Metadata:               "metadata3",
+			LossMethod:             "lossmethod3",
+			EpochLastEnded:         0,
+			EpochLength:            100,
+			GroundTruthLag:         30,
+			PNorm:                  alloraMath.NewDecFromInt64(3),
+			AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+			AllowNegative:          false,
+			Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+			InitialRegret:          alloraMath.MustNewDecFromString("11"),
+			WorkerSubmissionWindow: 130,
+		},
+	}
+	err := s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 1, cosmosMath.NewInt(40000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 2, cosmosMath.NewInt(70000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 3, cosmosMath.NewInt(60000))
+	s.Require().NoError(err)
+
+	err = s.emissionsKeeper.SetTopicStake(s.ctx, 1, cosmosMath.NewInt(40000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.SetTopicStake(s.ctx, 2, cosmosMath.NewInt(70000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.SetTopicStake(s.ctx, 3, cosmosMath.NewInt(60000))
+	s.Require().NoError(err)
+
+	topicStore := prefix.NewStore(store, types.TopicsKey)
+	for i, oldTopic := range oldTopics {
+		bz, err := proto.Marshal(&oldTopic)
+		s.Require().NoError(err)
+
+		topicStore.Set([]byte("testKey"+strconv.Itoa(i+1)), bz)
+	}
+
+	err = v3.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	s.Require().NoError(err)
+
+	// Verify the store has been updated correctly
+	iterator := topicStore.Iterator(nil, nil)
+	s.Require().True(iterator.Valid())
+	defer iterator.Close()
+
+	// this is from topic.BlockHeightEnded + topic.EpochLength
+	blockHeightEnded := int64(100)
+
+	churningBlock, inFuture, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 1)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(0), churningBlock)
+	s.Require().False(inFuture)
+
+	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 2)
+	s.Require().NoError(err)
+	s.Require().Equal(churningBlock, blockHeightEnded)
+	s.Require().True(inFuture)
+
+	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 3)
+	s.Require().NoError(err)
+	s.Require().Equal(int64(0), churningBlock)
+	s.Require().False(inFuture)
+
+	// not the same as feeRev * stake because weight is EMAd with 0
+	lowestWeight, noPrior, err := s.emissionsKeeper.GetLowestActiveTopicWeightAtBlock(s.ctx, blockHeightEnded)
+	s.Require().False(noPrior)
+	s.Require().NoError(err)
+	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
+
+	activeTopicIds, err := s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, blockHeightEnded)
+	s.Require().NoError(err)
+	s.Require().Len(activeTopicIds.TopicIds, 1)
+	s.Require().NotContains(activeTopicIds.TopicIds, uint64(1))
+	s.Require().Contains(activeTopicIds.TopicIds, uint64(2))
+	s.Require().NotContains(activeTopicIds.TopicIds, uint64(3))
+}
+
+func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoch() {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
+
+	blockHeightEnded1 := int64(100)
+	blockHeightEnded2 := int64(200)
+	blockHeightEnded3 := int64(300)
+
+	oldTopics := []oldtypes.Topic{
+		{
+			Id:             1,
+			Creator:        "creator",
+			Metadata:       "metadata",
+			LossMethod:     "lossmethod",
+			EpochLastEnded: 0,
+			EpochLength:    blockHeightEnded1,
+			GroundTruthLag: 10,
+			PNorm:          alloraMath.NewDecFromInt64(3),
+			AlphaRegret:    alloraMath.MustNewDecFromString("0.1"),
+			AllowNegative:  false,
+			Epsilon:        alloraMath.MustNewDecFromString("0.01"),
+			// InitialRegret is being reset to account for NaNs that were previously stored due to insufficient validation
+			InitialRegret:          alloraMath.MustNewDecFromString("11"),
+			WorkerSubmissionWindow: 120,
+		},
+		{
+			Id:                     2,
+			Creator:                "creator2",
+			Metadata:               "metadata2",
+			LossMethod:             "lossmethod2",
+			EpochLastEnded:         0,
+			EpochLength:            blockHeightEnded2,
+			GroundTruthLag:         20,
+			PNorm:                  alloraMath.NewDecFromInt64(3),
+			AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+			AllowNegative:          false,
+			Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+			InitialRegret:          alloraMath.MustNewDecFromString("11"),
+			WorkerSubmissionWindow: 120,
+		},
+		{
+			Id:                     3,
+			Creator:                "creator3",
+			Metadata:               "metadata3",
+			LossMethod:             "lossmethod3",
+			EpochLastEnded:         0,
+			EpochLength:            blockHeightEnded3,
+			GroundTruthLag:         30,
+			PNorm:                  alloraMath.NewDecFromInt64(3),
+			AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
+			AllowNegative:          false,
+			Epsilon:                alloraMath.MustNewDecFromString("0.01"),
+			InitialRegret:          alloraMath.MustNewDecFromString("11"),
+			WorkerSubmissionWindow: 130,
+		},
+	}
+	err := s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 1, cosmosMath.NewInt(20000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 2, cosmosMath.NewInt(40000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 3, cosmosMath.NewInt(60000))
+	s.Require().NoError(err)
+
+	err = s.emissionsKeeper.SetTopicStake(s.ctx, 1, cosmosMath.NewInt(20000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.SetTopicStake(s.ctx, 2, cosmosMath.NewInt(40000))
+	s.Require().NoError(err)
+	err = s.emissionsKeeper.SetTopicStake(s.ctx, 3, cosmosMath.NewInt(60000))
+	s.Require().NoError(err)
+
+	topicStore := prefix.NewStore(store, types.TopicsKey)
+	for i, oldTopic := range oldTopics {
+		bz, err := proto.Marshal(&oldTopic)
+		s.Require().NoError(err)
+
+		topicStore.Set([]byte("testKey"+strconv.Itoa(i+1)), bz)
+	}
+
+	err = v3.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	s.Require().NoError(err)
+
+	// Verify the store has been updated correctly
+	iterator := topicStore.Iterator(nil, nil)
+	s.Require().True(iterator.Valid())
+	defer iterator.Close()
+
+	// this is from topic.BlockHeightEnded + topic.EpochLength
+
+	churningBlock, inFuture, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 1)
+	s.Require().NoError(err)
+	s.Require().Equal(churningBlock, blockHeightEnded1)
+	s.Require().True(inFuture)
+
+	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 2)
+	s.Require().NoError(err)
+	s.Require().Equal(churningBlock, blockHeightEnded2)
+	s.Require().True(inFuture)
+
+	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 3)
+	s.Require().NoError(err)
+	s.Require().Equal(churningBlock, blockHeightEnded3)
+	s.Require().True(inFuture)
+
+	// not the same as feeRev * stake because weight is EMAd with 0
+	lowestWeight, noPrior, err := s.emissionsKeeper.GetLowestActiveTopicWeightAtBlock(s.ctx, blockHeightEnded1)
+	s.Require().False(noPrior)
+	s.Require().NoError(err)
+	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
+
+	lowestWeight, noPrior, err = s.emissionsKeeper.GetLowestActiveTopicWeightAtBlock(s.ctx, blockHeightEnded2)
+	s.Require().False(noPrior)
+	s.Require().NoError(err)
+	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
+
+	lowestWeight, noPrior, err = s.emissionsKeeper.GetLowestActiveTopicWeightAtBlock(s.ctx, blockHeightEnded3)
+	s.Require().False(noPrior)
+	s.Require().NoError(err)
+	s.Require().True(lowestWeight.Weight.Gt(alloraMath.ZeroDec()))
+
+	activeTopicIds, err := s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, blockHeightEnded1)
+	s.Require().NoError(err)
+	s.Require().Len(activeTopicIds.TopicIds, 1)
+	s.Require().Contains(activeTopicIds.TopicIds, uint64(1))
+
+	activeTopicIds, err = s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, blockHeightEnded2)
+	s.Require().NoError(err)
+	s.Require().Len(activeTopicIds.TopicIds, 1)
+	s.Require().Contains(activeTopicIds.TopicIds, uint64(2))
+
+	activeTopicIds, err = s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, blockHeightEnded3)
+	s.Require().NoError(err)
+	s.Require().Len(activeTopicIds.TopicIds, 1)
+	s.Require().Contains(activeTopicIds.TopicIds, uint64(3))
 }
 
 func (s *EmissionsV3MigrationTestSuite) TestResetMapsWithNonNumericValues() {
