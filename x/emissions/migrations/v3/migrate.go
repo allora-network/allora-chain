@@ -265,7 +265,7 @@ func getNewTopic(oldMsg oldtypes.Topic) types.Topic {
 		PNorm:          oldMsg.PNorm,
 		AlphaRegret:    oldMsg.AlphaRegret,
 		AllowNegative:  oldMsg.AllowNegative,
-		Epsilon:        alloraMath.MustNewDecFromString("0.01"),
+		Epsilon:        oldMsg.Epsilon,
 		// InitialRegret is being reset to account for NaNs that were previously stored due to insufficient validation
 		InitialRegret:          alloraMath.MustNewDecFromString("0"),
 		WorkerSubmissionWindow: oldMsg.WorkerSubmissionWindow,
