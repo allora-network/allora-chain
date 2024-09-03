@@ -1956,15 +1956,17 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId1, reputerAddrs)
-	for _, payload := range lossBundles.ReputerValueBundles {
+	for i, payload := range lossBundles.ReputerValueBundles {
 		s.RegisterAllReputersOfPayload(topicId1, payload)
-		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
-			Sender:             payload.ValueBundle.Reputer,
-			ReputerValueBundle: payload,
-		})
-		s.Require().NoError(err)
+		if i <= 2 {
+			_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+			_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+			_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+				Sender:             payload.ValueBundle.Reputer,
+				ReputerValueBundle: payload,
+			})
+			s.Require().NoError(err)
+		}
 	}
 
 	topic2, err := s.emissionsKeeper.GetTopic(s.ctx, topicId2)
@@ -1974,15 +1976,17 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	lossBundles2 := GenerateLossBundles(s, block, topicId2, reputerAddrs)
-	for _, payload := range lossBundles2.ReputerValueBundles {
+	for i, payload := range lossBundles2.ReputerValueBundles {
 		s.RegisterAllReputersOfPayload(topicId2, payload)
-		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
-			Sender:             payload.ValueBundle.Reputer,
-			ReputerValueBundle: payload,
-		})
-		s.Require().NoError(err)
+		if i > 2 {
+			_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+			_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
+			_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+				Sender:             payload.ValueBundle.Reputer,
+				ReputerValueBundle: payload,
+			})
+			s.Require().NoError(err)
+		}
 	}
 
 	block += epochLength * 3
