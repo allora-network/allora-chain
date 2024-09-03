@@ -9,12 +9,12 @@ current_verison=v0.3.0
 new_version=v0.4.0
 expedited=true
 deposit=50000000uallo
-num_hours_between_proposal_and_upgrade=18
+num_minutes_between_proposal_and_upgrade=6
 avg_block_time=5 # seconds
 current_height=10000
 
 # Calculating height
-height=$((3600*num_hours_between_proposal_and_upgrade/avg_block_time+current_height))
+height=$((60*num_minutes_between_proposal_and_upgrade/avg_block_time+current_height))
 
 # To get the authority address, run this command on the validator:
 # allorad q upgrade authority | grep address | awk '{print $2}'
