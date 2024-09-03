@@ -135,10 +135,9 @@ func MigrateTopics(
 	if err != nil {
 		return errorsmod.Wrapf(err, "failed to get params for active topic migration")
 	}
-	churningBlock := make(map[types.TopicId]types.BlockHeight, 0)
 	blockToActiveTopics := make(map[types.BlockHeight]types.TopicIds, 0)
 	lowestWeight := make(map[types.BlockHeight]types.TopicIdWeightPair, 0)
-
+	churningBlock := make(map[types.TopicId]types.BlockHeight, 0)
 	topicWeightData := make(map[types.TopicId]alloraMath.Dec, 0)
 
 	topicsToChange := make(map[string]types.Topic, 0)
@@ -192,6 +191,29 @@ func MigrateTopics(
 			continue
 		}
 
+		activeTopicIds := blockToActiveTopics[blockHeight]
+		activeTopicIds.TopicIds = append(activeTopicIds.TopicIds, oldMsg.Id)
+		// If number of active topic is over global param then remove lowest topic
+		if uint64(len(blockToActiveTopics[blockHeight].TopicIds)) >= params.MaxActiveTopicsPerBlock {
+			// If current weight is lower than lowest then skip
+			// Otherwise upgrade lowest weight
+			if weight.Lt(lowestWeight[blockHeight].Weight) {
+				continue
+			} else {
+				newActiveTopicIds := []types.TopicId{}
+				for i, id := range activeTopicIds.TopicIds {
+					if id == lowestWeight[blockHeight].TopicId {
+						delete(churningBlock, id)
+						newActiveTopicIds = append(activeTopicIds.TopicIds[:i],
+							activeTopicIds.TopicIds[i+1:]...)
+						break
+					}
+				}
+				activeTopicIds.TopicIds = newActiveTopicIds
+				lowestWeight[blockHeight] = getLowestTopicIdWeightPair(topicWeightData, activeTopicIds)
+			}
+		}
+		churningBlock[oldMsg.Id] = blockHeight
 		cuLowestWeight := lowestWeight[blockHeight]
 		// Update lowest weight of topic per block
 		if cuLowestWeight.Weight.Equal(alloraMath.ZeroDec()) ||
@@ -203,35 +225,11 @@ func MigrateTopics(
 			lowestWeight[blockHeight] = cuLowestWeight
 		}
 
-		churningBlock[oldMsg.Id] = blockHeight
-
-		activeTopicIds := blockToActiveTopics[blockHeight]
-		activeTopicIds.TopicIds = append(activeTopicIds.TopicIds, oldMsg.Id)
-
-		// If number of active topic is over global param then remove lowest topic
-		if uint64(len(blockToActiveTopics[blockHeight].TopicIds)) >= params.MaxActiveTopicsPerBlock {
-			// Remove from topicToNextPossibleChurningBlock
-			delete(churningBlock, lowestWeight[blockHeight].TopicId)
-			newActiveTopicIds := []types.TopicId{}
-			for i, id := range blockToActiveTopics[blockHeight].TopicIds {
-				if id == lowestWeight[blockHeight].TopicId {
-					newActiveTopicIds = append(blockToActiveTopics[blockHeight].TopicIds[:i],
-						blockToActiveTopics[blockHeight].TopicIds[i+1:]...)
-					break
-				}
-			}
-			// Reset active topics per block
-			activeTopicIds.TopicIds = newActiveTopicIds
-			//blockToActiveTopics[blockHeight] = types.TopicIds{TopicIds: newActiveTopicIds}
-			// Reset lowest weight per block
-			cuLowestWeight = getLowestTopicIdWeightPair(topicWeightData, blockToActiveTopics[blockHeight])
-		}
 		blockToActiveTopics[blockHeight] = activeTopicIds
 		blockHeightBytes, err := collections.Int64Value.Encode(blockHeight)
 		if err != nil {
 			return err
 		}
-		churningBlockStore.Set(idArray, blockHeightBytes)
 		activeTopicsBytes, err := activeTopicIds.Marshal()
 		if err != nil {
 			return err
@@ -246,6 +244,15 @@ func MigrateTopics(
 		topicsToChange[string(iterator.Key())] = getNewTopic(oldMsg)
 	}
 	_ = iterator.Close()
+	for key, value := range churningBlock {
+		blockHeightBytes, err := collections.Int64Value.Encode(value)
+		if err != nil {
+			return err
+		}
+		idArray := make([]byte, 8)
+		binary.BigEndian.PutUint64(idArray, key)
+		churningBlockStore.Set(idArray, blockHeightBytes)
+	}
 	for key, value := range topicsToChange {
 		topicStore.Set([]byte(key), cdc.MustMarshal(&value))
 	}

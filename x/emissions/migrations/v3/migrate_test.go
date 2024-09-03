@@ -290,16 +290,16 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 			WorkerSubmissionWindow: 130,
 		},
 	}
-	err := s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 1, cosmosMath.NewInt(20000))
+	err := s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 1, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 2, cosmosMath.NewInt(40000))
+	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 2, cosmosMath.NewInt(70000))
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddTopicFeeRevenue(s.ctx, 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.SetTopicStake(s.ctx, 1, cosmosMath.NewInt(20000))
+	err = s.emissionsKeeper.SetTopicStake(s.ctx, 1, cosmosMath.NewInt(40000))
 	s.Require().NoError(err)
-	err = s.emissionsKeeper.SetTopicStake(s.ctx, 2, cosmosMath.NewInt(40000))
+	err = s.emissionsKeeper.SetTopicStake(s.ctx, 2, cosmosMath.NewInt(70000))
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.SetTopicStake(s.ctx, 3, cosmosMath.NewInt(60000))
 	s.Require().NoError(err)
@@ -325,8 +325,8 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 
 	churningBlock, inFuture, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 1)
 	s.Require().NoError(err)
-	s.Require().Equal(churningBlock, blockHeightEnded)
-	s.Require().True(inFuture)
+	s.Require().Equal(churningBlock, int64(0))
+	s.Require().False(inFuture)
 
 	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 2)
 	s.Require().NoError(err)
@@ -335,8 +335,8 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 
 	churningBlock, inFuture, err = s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, 3)
 	s.Require().NoError(err)
-	s.Require().Equal(churningBlock, blockHeightEnded)
-	s.Require().True(inFuture)
+	s.Require().Equal(churningBlock, int64(0))
+	s.Require().False(inFuture)
 
 	// not the same as feeRev * stake because weight is EMAd with 0
 	lowestWeight, noPrior, err := s.emissionsKeeper.GetLowestActiveTopicWeightAtBlock(s.ctx, blockHeightEnded)
@@ -348,8 +348,8 @@ func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightSameEpoch() {
 	s.Require().NoError(err)
 	s.Require().Len(activeTopicIds.TopicIds, 1)
 	s.Require().NotContains(activeTopicIds.TopicIds, uint64(1))
-	s.Require().NotContains(activeTopicIds.TopicIds, uint64(2))
-	s.Require().Contains(activeTopicIds.TopicIds, uint64(3))
+	s.Require().Contains(activeTopicIds.TopicIds, uint64(2))
+	s.Require().NotContains(activeTopicIds.TopicIds, uint64(3))
 }
 
 func (s *EmissionsV3MigrationTestSuite) TestMigrateTopicsWithWeightDifferentEpoch() {
