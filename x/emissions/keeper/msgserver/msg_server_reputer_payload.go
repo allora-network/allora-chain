@@ -69,11 +69,21 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is not registered in this topic")
 	}
 
-	// Before accepting data, transfer fee amount from sender to ecosystem bucket
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
+
+	// Check that the reputer enough stake in the topic
+	stake, err := ms.k.GetStakeReputerAuthority(ctx, topicId, msg.ReputerValueBundle.ValueBundle.Reputer)
+	if err != nil {
+		return nil, err
+	}
+	if stake.LT(params.RequiredMinimumStake) {
+		return nil, errorsmod.Wrapf(types.ErrInsufficientStake, "reputer does not have sufficient stake in the topic")
+	}
+
+	// Before accepting data, transfer fee amount from sender to ecosystem bucket
 	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee)
 	if err != nil {
 		return nil, err

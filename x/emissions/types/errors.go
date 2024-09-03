@@ -15,7 +15,7 @@ var (
 	ErrAddressAlreadyRegisteredInATopic  = errors.Register(ModuleName, 8, "address already registered in a topic")
 	ErrAddressIsNotRegisteredInAnyTopic  = errors.Register(ModuleName, 9, "address is not registered in any topic")
 	ErrAddressIsNotRegisteredInThisTopic = errors.Register(ModuleName, 10, "address is not registered in this topic")
-	ErrInsufficientStakeToRegister       = errors.Register(ModuleName, 11, "insufficient stake to register")
+	ErrInsufficientStake                 = errors.Register(ModuleName, 11, "insufficient stake")
 	// ErrLibP2PKeyRequired                        = errors.Register(ModuleName, 12, "libp2p key required")
 	ErrAddressNotRegistered                     = errors.Register(ModuleName, 13, "address not registered")
 	ErrInsufficientStakeToRemove                = errors.Register(ModuleName, 14, "insufficient stake to remove")
