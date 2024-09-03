@@ -16,6 +16,13 @@ func GetQuantileOfScores(
 	scores []emissionstypes.Score,
 	quantile alloraMath.Dec,
 ) (alloraMath.Dec, error) {
+	// If there are no scores then the quantile of scores is 0.
+	// This better ensures chain continuity without consequence because in this situation
+	// there is no meaningful quantile to calculate.
+	if len(scores) == 0 {
+		return alloraMath.ZeroDec(), nil
+	}
+
 	// Sort scores in descending order. Address is used to break ties.
 	slices.SortStableFunc(scores, func(x, y emissionstypes.Score) int {
 		if x.Score.Lt(y.Score) {
@@ -33,12 +40,6 @@ func GetQuantileOfScores(
 		}
 	})
 
-	// If there are no scores then the quantile of scores is 0.
-	// This better ensures chain continuity without consequence because in this situation
-	// there is no meaningful quantile to calculate.
-	if len(scores) == 0 {
-		return alloraMath.ZeroDec(), nil
-	}
 	// n elements, q quantile
 	// position = (1 - q) * (n - 1)
 	nLessOne, err := alloraMath.NewDecFromUint64(uint64(len(scores) - 1))

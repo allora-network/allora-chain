@@ -41,7 +41,7 @@ func TestGetQuantileOfScores(t *testing.T) {
 	require.Equal(t, expectedInt, actualInt)
 }
 
-func TestGetQuantileOfScores2(t *testing.T) {
+func TestGetQuantileOfScoresWithLargerAltDataset(t *testing.T) {
 	scoresSorted := []emissionstypes.Score{
 		{Score: alloraMath.MustNewDecFromString("0.8"), Address: "w1", BlockHeight: 0, TopicId: 0},
 		{Score: alloraMath.MustNewDecFromString("0.7"), Address: "w2", BlockHeight: 0, TopicId: 0},
