@@ -310,6 +310,11 @@ service Query {
     option (google.api.http).get = "/emissions/v3/worker_inference_scores_at_block/{topic_id}/{block_height}";
   }
 
+  rpc GetCurrentLowestInfererScore(QueryCurrentLowestInfererScoreRequest) returns (QueryCurrentLowestInfererScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/current_lowest_inferer_score/{topic_id}";
+  }
+
   rpc GetForecastScoresUntilBlock(QueryForecastScoresUntilBlockRequest) returns (QueryForecastScoresUntilBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/forecast_scores_until_block/{topic_id}/{block_height}";
@@ -320,9 +325,19 @@ service Query {
     option (google.api.http).get = "/emissions/v3/worker_forecast_scores_at_block/{topic_id}/{block_height}";
   }
 
+  rpc GetCurrentLowestForecasterScore(QueryCurrentLowestForecasterScoreRequest) returns (QueryCurrentLowestForecasterScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/current_lowest_forecaster_score/{topic_id}";
+  }
+
   rpc GetReputersScoresAtBlock(QueryReputersScoresAtBlockRequest) returns (QueryReputersScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/reputers_scores_at_block/{topic_id}/{block_height}";
+  }
+
+  rpc GetCurrentLowestReputerScore(QueryCurrentLowestReputerScoreRequest) returns (QueryCurrentLowestReputerScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/current_lowest_reputer_score/{topic_id}";
   }
 
   rpc GetListeningCoefficient(QueryListeningCoefficientRequest) returns (QueryListeningCoefficientResponse) {
@@ -1075,6 +1090,14 @@ message QueryWorkerInferenceScoresAtBlockResponse {
   Scores scores = 1;
 }
 
+message QueryCurrentLowestInfererScoreRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryCurrentLowestInfererScoreResponse {
+  Score score = 1;
+}
+
 message QueryForecastScoresUntilBlockRequest {
   uint64 topic_id = 1;
   int64 block_height = 2;
@@ -1093,6 +1116,14 @@ message QueryWorkerForecastScoresAtBlockResponse {
   Scores scores = 1;
 }
 
+message QueryCurrentLowestForecasterScoreRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryCurrentLowestForecasterScoreResponse {
+  Score score = 1;
+}
+
 message QueryReputersScoresAtBlockRequest {
   uint64 topic_id = 1;
   int64 block_height = 2;
@@ -1100,6 +1131,14 @@ message QueryReputersScoresAtBlockRequest {
 
 message QueryReputersScoresAtBlockResponse {
   Scores scores = 1;
+}
+
+message QueryCurrentLowestReputerScoreRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryCurrentLowestReputerScoreResponse {
+  Score score = 1;
 }
 
 message QueryListeningCoefficientRequest {

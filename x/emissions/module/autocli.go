@@ -187,6 +187,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetCurrentLowestForecasterScore",
+					Use:       "current-lowest-forecaster-score [topic_id]",
+					Short:     "Returns current lowest score for a forecaster in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetInfererScoreEma",
 					Use:       "inferer-score-ema [topic_id] [inferer]",
 					Short:     "Returns latest score for a inferer in a topic",
@@ -204,6 +212,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetCurrentLowestInfererScore",
+					Use:       "current-lowest-inferer-score [topic_id]",
+					Short:     "Returns current lowest score for a inferer in a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetReputerScoreEma",
 					Use:       "reputer-score-ema [topic_id] [reputer]",
 					Short:     "Returns latest score for a reputer in a topic",
@@ -216,6 +232,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "GetPreviousTopicQuantileReputerScoreEma",
 					Use:       "topic-quantile-reputer-score [topic_id]",
 					Short:     "Returns topic-quantile score ema among the previous top reputers by score EMA",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetCurrentLowestReputerScore",
+					Use:       "current-lowest-reputer-score [topic_id]",
+					Short:     "Returns current lowest score for a reputer in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},
@@ -500,7 +524,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetReputerNodeInfo",
-					Use:       "reputer-info [addresss]",
+					Use:       "reputer-info [address]",
 					Short:     "Get node info for reputer node",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "address"},

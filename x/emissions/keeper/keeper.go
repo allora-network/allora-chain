@@ -1015,7 +1015,7 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 
 /// LOSS BUNDLES
 
-// Append loss bundle for a topoic and blockheight
+// Append loss bundle for a topic and blockHeight
 func (k *Keeper) AppendReputerLoss(
 	ctx context.Context,
 	topic types.Topic,
@@ -1957,8 +1957,8 @@ func (k *Keeper) GetReputerInfo(ctx sdk.Context, reputerKey ActorId) (types.Offc
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
 func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker ActorId, workerInfo types.OffchainNode) error {
-	topickey := collections.Join(topicId, worker)
-	err := k.topicWorkers.Set(ctx, topickey)
+	topicKey := collections.Join(topicId, worker)
+	err := k.topicWorkers.Set(ctx, topicKey)
 	if err != nil {
 		return err
 	}
@@ -2060,14 +2060,14 @@ func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId,
 
 // True if worker is registered in topic, else False
 func (k *Keeper) IsWorkerRegisteredInTopic(ctx context.Context, topicId TopicId, worker ActorId) (bool, error) {
-	topickey := collections.Join(topicId, worker)
-	return k.topicWorkers.Has(ctx, topickey)
+	topicKey := collections.Join(topicId, worker)
+	return k.topicWorkers.Has(ctx, topicKey)
 }
 
 // True if reputer is registered in topic, else False
 func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId, reputer ActorId) (bool, error) {
-	topickey := collections.Join(topicId, reputer)
-	return k.topicReputers.Has(ctx, topickey)
+	topicKey := collections.Join(topicId, reputer)
+	return k.topicReputers.Has(ctx, topicKey)
 }
 
 /// TOPIC FEE REVENUE

@@ -3,6 +3,8 @@ package queryserver
 import (
 	"context"
 
+	errorsmod "cosmossdk.io/errors"
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -114,6 +116,46 @@ func (qs queryServer) GetWorkerInferenceScoresAtBlock(
 	return &types.QueryWorkerInferenceScoresAtBlockResponse{Scores: &workerInferenceScores}, nil
 }
 
+func (qs queryServer) GetCurrentLowestInfererScore(
+	ctx context.Context,
+	req *types.QueryCurrentLowestInfererScoreRequest,
+) (
+	*types.QueryCurrentLowestInfererScoreResponse,
+	error,
+) {
+	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if len(unfulfilledWorkerNonces.Nonces) == 0 {
+		return nil,
+			errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable,
+				"no unfulfilled nonces right now, is the topic active?")
+	}
+	highestNonce := unfulfilledWorkerNonces.Nonces[0]
+	for _, nonce := range unfulfilledWorkerNonces.Nonces {
+		if nonce.BlockHeight > highestNonce.BlockHeight {
+			highestNonce = nonce
+		}
+	}
+
+	inferences, err := qs.k.GetInferencesAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	lowestInfererScore, _, err := emissionskeeper.GetLowScoreFromAllInferences(
+		ctx,
+		&qs.k,
+		req.TopicId,
+		*inferences,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryCurrentLowestInfererScoreResponse{Score: &lowestInfererScore}, nil
+}
+
 func (qs queryServer) GetForecastScoresUntilBlock(
 	ctx context.Context,
 	req *types.QueryForecastScoresUntilBlockRequest,
@@ -144,6 +186,49 @@ func (qs queryServer) GetWorkerForecastScoresAtBlock(
 	return &types.QueryWorkerForecastScoresAtBlockResponse{Scores: &workerForecastScores}, nil
 }
 
+func (qs queryServer) GetCurrentLowestForecasterScore(
+	ctx context.Context,
+	req *types.QueryCurrentLowestForecasterScoreRequest,
+) (
+	*types.QueryCurrentLowestForecasterScoreResponse,
+	error,
+) {
+	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if len(unfulfilledWorkerNonces.Nonces) == 0 {
+		return nil,
+			errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable,
+				"no unfulfilled nonces right now, is the topic active?")
+	}
+	highestNonce := unfulfilledWorkerNonces.Nonces[0]
+	for _, nonce := range unfulfilledWorkerNonces.Nonces {
+		if nonce.BlockHeight > highestNonce.BlockHeight {
+			highestNonce = nonce
+		}
+	}
+	forecasts, err := qs.k.GetForecastsAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	if len(forecasts.Forecasts) == 0 {
+		return nil, errorsmod.Wrap(types.ErrInvalidLengthScore, "no scores found for this epoch")
+	}
+
+	lowestForecasterScore, _, err := emissionskeeper.GetLowScoreFromAllForecasts(
+		ctx,
+		&qs.k,
+		req.TopicId,
+		*forecasts,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryCurrentLowestForecasterScoreResponse{Score: &lowestForecasterScore}, nil
+}
+
 func (qs queryServer) GetReputersScoresAtBlock(
 	ctx context.Context,
 	req *types.QueryReputersScoresAtBlockRequest,
@@ -157,6 +242,45 @@ func (qs queryServer) GetReputersScoresAtBlock(
 	}
 
 	return &types.QueryReputersScoresAtBlockResponse{Scores: &reputersScores}, nil
+}
+
+func (qs queryServer) GetCurrentLowestReputerScore(
+	ctx context.Context,
+	req *types.QueryCurrentLowestReputerScoreRequest,
+) (
+	*types.QueryCurrentLowestReputerScoreResponse,
+	error,
+) {
+	unfulfilledReputerNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if len(unfulfilledReputerNonces.Nonces) == 0 {
+		return nil,
+			errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable,
+				"no unfulfilled nonces right now, is the topic active?")
+	}
+	highestNonce := unfulfilledReputerNonces.Nonces[0]
+	for _, nonce := range unfulfilledReputerNonces.Nonces {
+		if nonce.ReputerNonce.BlockHeight > highestNonce.ReputerNonce.BlockHeight {
+			highestNonce = nonce
+		}
+	}
+	lossBundles, err := qs.k.GetReputerLossBundlesAtBlock(ctx, req.TopicId, highestNonce.ReputerNonce.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	lowestReputerScore, _, err := emissionskeeper.GetLowScoreFromAllLossBundles(
+		ctx,
+		&qs.k,
+		req.TopicId,
+		*lossBundles,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.QueryCurrentLowestReputerScoreResponse{Score: &lowestReputerScore}, nil
 }
 
 func (qs queryServer) GetListeningCoefficient(
