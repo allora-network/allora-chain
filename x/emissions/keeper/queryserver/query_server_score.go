@@ -4,6 +4,7 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -137,21 +138,22 @@ func (qs queryServer) GetCurrentLowestInfererScore(
 			highestNonce = nonce
 		}
 	}
-	inferenceScores, err := qs.k.GetWorkerInferenceScoresAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
+
+	inferences, err := qs.k.GetInferencesAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}
-	if len(inferenceScores.Scores) == 0 {
-		return nil, errorsmod.Wrap(types.ErrInvalidLengthScore, "no scores found for this epoch")
-	}
-	lowestInfererScore := inferenceScores.Scores[0]
-	for _, score := range inferenceScores.Scores {
-		if score.Score.Lt(lowestInfererScore.Score) {
-			lowestInfererScore = score
-		}
+	lowestInfererScore, _, err := emissionskeeper.GetLowScoreFromAllInferences(
+		ctx,
+		&qs.k,
+		req.TopicId,
+		*inferences,
+	)
+	if err != nil {
+		return nil, err
 	}
 
-	return &types.QueryCurrentLowestInfererScoreResponse{Score: lowestInfererScore}, nil
+	return &types.QueryCurrentLowestInfererScoreResponse{Score: &lowestInfererScore}, nil
 }
 
 func (qs queryServer) GetForecastScoresUntilBlock(
@@ -206,22 +208,25 @@ func (qs queryServer) GetCurrentLowestForecasterScore(
 			highestNonce = nonce
 		}
 	}
-	forecastScores, err := qs.k.GetWorkerForecastScoresAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
+	forecasts, err := qs.k.GetForecastsAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}
-	if len(forecastScores.Scores) == 0 {
+	if len(forecasts.Forecasts) == 0 {
 		return nil, errorsmod.Wrap(types.ErrInvalidLengthScore, "no scores found for this epoch")
 	}
 
-	lowestForecasterScore := forecastScores.Scores[0]
-	for _, score := range forecastScores.Scores {
-		if score.Score.Lt(lowestForecasterScore.Score) {
-			lowestForecasterScore = score
-		}
+	lowestForecasterScore, _, err := emissionskeeper.GetLowScoreFromAllForecasts(
+		ctx,
+		&qs.k,
+		req.TopicId,
+		*forecasts,
+	)
+	if err != nil {
+		return nil, err
 	}
 
-	return &types.QueryCurrentLowestForecasterScoreResponse{Score: lowestForecasterScore}, nil
+	return &types.QueryCurrentLowestForecasterScoreResponse{Score: &lowestForecasterScore}, nil
 }
 
 func (qs queryServer) GetReputersScoresAtBlock(
@@ -261,22 +266,21 @@ func (qs queryServer) GetCurrentLowestReputerScore(
 			highestNonce = nonce
 		}
 	}
-	reputersScores, err := qs.k.GetReputersScoresAtBlock(ctx, req.TopicId, highestNonce.ReputerNonce.BlockHeight)
+	lossBundles, err := qs.k.GetReputerLossBundlesAtBlock(ctx, req.TopicId, highestNonce.ReputerNonce.BlockHeight)
 	if err != nil {
 		return nil, err
 	}
-	if len(reputersScores.Scores) == 0 {
-		return nil, errorsmod.Wrap(types.ErrInvalidLengthScore, "no scores found for this epoch")
+	lowestReputerScore, _, err := emissionskeeper.GetLowScoreFromAllLossBundles(
+		ctx,
+		&qs.k,
+		req.TopicId,
+		*lossBundles,
+	)
+	if err != nil {
+		return nil, err
 	}
 
-	lowestReputerScore := reputersScores.Scores[0]
-	for _, score := range reputersScores.Scores {
-		if score.Score.Lt(lowestReputerScore.Score) {
-			lowestReputerScore = score
-		}
-	}
-
-	return &types.QueryCurrentLowestReputerScoreResponse{Score: lowestReputerScore}, nil
+	return &types.QueryCurrentLowestReputerScoreResponse{Score: &lowestReputerScore}, nil
 }
 
 func (qs queryServer) GetListeningCoefficient(

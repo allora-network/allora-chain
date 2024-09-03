@@ -285,7 +285,24 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 	err := keeper.AddWorkerNonce(ctx, topicId, &nonce)
 	require.NoError(err, "Adding worker nonce should not fail")
 
+	inferences := types.Inferences{
+		Inferences: []*types.Inference{},
+	}
 	for i := 0; i < 3; i++ {
+		inference := types.Inference{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.ZeroDec(),
+			ExtraData:   []byte{},
+			Proof:       "",
+			Inferer:     "worker" + strconv.Itoa(i),
+		}
+		inferences.Inferences = append(inferences.Inferences, &inference)
+	}
+	err = keeper.InsertInferences(ctx, topicId, blockHeight, inferences)
+	require.NoError(err, "Inserting inferences should not fail")
+	for i := 0; i < 3; i++ {
+
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
@@ -294,6 +311,8 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 		}
 		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
 		require.NoError(err, "Inserting worker inference score should not fail")
+		err = keeper.SetInfererScoreEma(ctx, topicId, "worker"+strconv.Itoa(i), score)
+		require.NoError(err, "Setting inferer score ema should not fail")
 	}
 	// call the query function
 
@@ -324,6 +343,22 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 	err := keeper.AddWorkerNonce(ctx, topicId, &nonce)
 	require.NoError(err, "Adding worker nonce should not fail")
 
+	forecasts := types.Forecasts{
+		Forecasts: []*types.Forecast{},
+	}
+	for i := 0; i < 3; i++ {
+		forecast := types.Forecast{
+			TopicId:          topicId,
+			BlockHeight:      blockHeight,
+			ExtraData:        []byte{},
+			Forecaster:       "forecaster" + strconv.Itoa(i),
+			ForecastElements: []*types.ForecastElement{},
+		}
+		forecasts.Forecasts = append(forecasts.Forecasts, &forecast)
+	}
+	err = keeper.InsertForecasts(ctx, topicId, blockHeight, forecasts)
+	require.NoError(err, "Inserting forecasts should not fail")
+
 	for i := 0; i < 3; i++ {
 		score := types.Score{
 			TopicId:     topicId,
@@ -333,6 +368,8 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 		}
 		err := keeper.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
 		require.NoError(err, "Inserting worker forecast score should not fail")
+		err = keeper.SetForecasterScoreEma(ctx, topicId, "forecaster"+strconv.Itoa(i), score)
+		require.NoError(err, "Setting forecaster score ema should not fail")
 	}
 
 	// call the query function
@@ -363,6 +400,37 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 	err := keeper.AddReputerNonce(ctx, topicId, &reputerNonce)
 	require.NoError(err, "Adding reputer nonce should not fail")
 
+	lossBundles := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{},
+	}
+	for i := 0; i < 3; i++ {
+		lossBundle := types.ReputerValueBundle{
+			ValueBundle: &types.ValueBundle{
+				TopicId: topicId,
+				ReputerRequestNonce: &types.ReputerRequestNonce{
+					ReputerNonce: &types.Nonce{
+						BlockHeight: blockHeight,
+					},
+				},
+				Reputer:                       "reputer" + strconv.Itoa(i),
+				ExtraData:                     []byte{},
+				CombinedValue:                 alloraMath.ZeroDec(),
+				InfererValues:                 []*types.WorkerAttributedValue{},
+				ForecasterValues:              []*types.WorkerAttributedValue{},
+				NaiveValue:                    alloraMath.ZeroDec(),
+				OneOutInfererValues:           []*types.WithheldWorkerAttributedValue{},
+				OneOutForecasterValues:        []*types.WithheldWorkerAttributedValue{},
+				OneInForecasterValues:         []*types.WorkerAttributedValue{},
+				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{},
+			},
+			Signature: []byte{},
+			Pubkey:    "",
+		}
+		lossBundles.ReputerValueBundles = append(lossBundles.ReputerValueBundles, &lossBundle)
+	}
+	err = keeper.InsertReputerLossBundlesAtBlock(ctx, topicId, blockHeight, lossBundles)
+	require.NoError(err, "Inserting reputer loss bundles should not fail")
+
 	for i := 0; i < 3; i++ {
 		score := types.Score{
 			TopicId:     topicId,
@@ -372,6 +440,8 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 		}
 		err := keeper.InsertReputerScore(ctx, topicId, blockHeight, score)
 		require.NoError(err, "Inserting reputer score should not fail")
+		err = keeper.SetReputerScoreEma(ctx, topicId, "reputer"+strconv.Itoa(i), score)
+		require.NoError(err, "Setting reputer score ema should not fail")
 	}
 
 	// call the query function

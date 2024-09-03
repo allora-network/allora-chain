@@ -12,9 +12,9 @@ func GetLowScoreFromAllLossBundles(
 	k *Keeper,
 	topicId TopicId,
 	lossBundles types.ReputerValueBundles,
-) (types.Score, int, error) {
-	lowScoreIndex := 0
-	lowScore, err := k.GetReputerScoreEma(ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.Reputer)
+) (lowScore types.Score, lowScoreIndex int, err error) {
+	lowScoreIndex = 0
+	lowScore, err = k.GetReputerScoreEma(ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.Reputer)
 	if err != nil {
 		return types.Score{}, lowScoreIndex, err
 	}
@@ -37,9 +37,9 @@ func GetLowScoreFromAllInferences(
 	k *Keeper,
 	topicId TopicId,
 	inferences types.Inferences,
-) (types.Score, int, error) {
-	lowScoreIndex := 0
-	lowScore, err := k.GetInfererScoreEma(ctx, topicId, inferences.Inferences[0].Inferer)
+) (lowScore types.Score, lowScoreIndex int, err error) {
+	lowScoreIndex = 0
+	lowScore, err = k.GetInfererScoreEma(ctx, topicId, inferences.Inferences[0].Inferer)
 	if err != nil {
 		return types.Score{}, lowScoreIndex, err
 	}
@@ -62,9 +62,9 @@ func GetLowScoreFromAllForecasts(
 	k *Keeper,
 	topicId TopicId,
 	forecasts types.Forecasts,
-) (types.Score, int, error) {
-	lowScoreIndex := 0
-	lowScore, err := k.GetForecasterScoreEma(ctx, topicId, forecasts.Forecasts[0].Forecaster)
+) (lowScore types.Score, lowScoreIndex int, err error) {
+	lowScoreIndex = 0
+	lowScore, err = k.GetForecasterScoreEma(ctx, topicId, forecasts.Forecasts[0].Forecaster)
 	if err != nil {
 		return types.Score{}, lowScoreIndex, err
 	}
