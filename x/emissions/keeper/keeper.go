@@ -1055,7 +1055,7 @@ func (k *Keeper) AppendReputerLoss(
 	}
 	// Only calc and save if there's a new update
 	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+		blockHeight-previousEmaScore.BlockHeight <= topic.EpochLength {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 

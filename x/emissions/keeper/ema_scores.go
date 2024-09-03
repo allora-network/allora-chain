@@ -8,10 +8,9 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// Calculates and saves the EMA scores for a given worker and topic
-// Does nothing if the last update of the score was topic.WorkerSubmissionWindow blocks ago or less
-// This is useful to ensure workers cannot game the system by spamming submissions to unfairly up their score
-func (k *Keeper) CalcAndSaveInfererScoreEmaIfNewUpdate(
+// Calculates and saves the EMA scores for a active set worker and topic.
+// By assuming worker is in active set, we know to calculate the EMA with a new, passed-in score.
+func (k *Keeper) CalcAndSaveInfererScoreEmaForActiveSet(
 	ctx context.Context,
 	topic types.Topic,
 	block types.BlockHeight,
@@ -21,10 +20,6 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaIfNewUpdate(
 	previousScore, err := k.GetInfererScoreEma(ctx, topic.Id, worker)
 	if err != nil {
 		return types.Score{}, errors.Wrapf(err, "Error getting inferer score ema")
-	}
-	// Only calc and save if there's a new update
-	if newScore.BlockHeight-previousScore.BlockHeight <= topic.WorkerSubmissionWindow {
-		return previousScore, nil
 	}
 	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
@@ -49,10 +44,9 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaIfNewUpdate(
 	return emaScore, nil
 }
 
-// Calculates and saves the EMA scores for a given worker and topic
-// Does nothing if the last update of the score was topic.WorkerSubmissionWindow blocks ago or less
-// This is useful to ensure workers cannot game the system by spamming submissions to unfairly up their score
-func (k *Keeper) CalcAndSaveForecasterScoreEmaIfNewUpdate(
+// Calculates and saves the EMA scores for a active set worker and topic.
+// By assuming worker is in active set, we know to calculate the EMA with a new, passed-in score.
+func (k *Keeper) CalcAndSaveForecasterScoreEmaForActiveSet(
 	ctx context.Context,
 	topic types.Topic,
 	block types.BlockHeight,
@@ -62,10 +56,6 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaIfNewUpdate(
 	previousScore, err := k.GetForecasterScoreEma(ctx, topic.Id, worker)
 	if err != nil {
 		return types.Score{}, errors.Wrapf(err, "Error getting forecaster score ema")
-	}
-	// Only calc and save if there's a new update
-	if newScore.BlockHeight-previousScore.BlockHeight <= topic.WorkerSubmissionWindow {
-		return previousScore, nil
 	}
 	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
@@ -90,10 +80,9 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaIfNewUpdate(
 	return emaScore, nil
 }
 
-// Calculates and saves the EMA scores for a given reputer and topic
-// Does nothing if the last update of the score was topic.EpochLength blocks ago or less
-// This is useful to ensure reputers cannot game the system by spamming submissions to unfairly up their score
-func (k *Keeper) CalcAndSaveReputerScoreEmaIfNewUpdate(
+// Calculates and saves the EMA scores for a given reputer and topic.
+// By assuming reputer is in active set, we know to calculate the EMA with a new, passed-in score.
+func (k *Keeper) CalcAndSaveReputerScoreEmaForActiveSet(
 	ctx context.Context,
 	topic types.Topic,
 	block types.BlockHeight,
@@ -103,10 +92,6 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaIfNewUpdate(
 	previousScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputer)
 	if err != nil {
 		return types.Score{}, errors.Wrapf(err, "Error getting reputer score ema")
-	}
-	// Only calc and save if there's a new update
-	if newScore.BlockHeight-previousScore.BlockHeight <= topic.EpochLength {
-		return previousScore, nil
 	}
 	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
@@ -131,8 +116,9 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaIfNewUpdate(
 	return emaScore, nil
 }
 
-// Calculates and saves the EMA scores for a given worker and topic
-// Uses the last saved topic quantile score to calculate the EMA
+// Calculates and saves the EMA scores for a given worker and topic.
+// Uses the last saved topic quantile score to calculate the EMA.
+// This is useful for updating EMAs of workers in the passive set.
 func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 	ctx context.Context,
 	topic types.Topic,
@@ -170,8 +156,9 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 	return nil
 }
 
-// Calculates and saves the EMA scores for a given worker and topic
-// Uses the last saved topic quantile score to calculate the EMA
+// Calculates and saves the EMA scores for a given worker and topic.
+// Uses the last saved topic quantile score to calculate the EMA.
+// This is useful for updating EMAs of workers in the passive set.
 func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 	ctx context.Context,
 	topic types.Topic,
@@ -209,8 +196,9 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 	return nil
 }
 
-// Calculates and saves the EMA scores for a given reputer and topic
-// Uses the last saved topic quantile score to calculate the EMA
+// Calculates and saves the EMA scores for a given reputer and topic.
+// Uses the last saved topic quantile score to calculate the EMA.
+// This is useful for updating EMAs of reputers in the passive set.
 func (k *Keeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
 	ctx context.Context,
 	topic types.Topic,
