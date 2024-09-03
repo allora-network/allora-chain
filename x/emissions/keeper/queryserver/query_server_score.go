@@ -3,6 +3,7 @@ package queryserver
 import (
 	"context"
 
+	errorsmod "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -114,6 +115,46 @@ func (qs queryServer) GetWorkerInferenceScoresAtBlock(
 	return &types.QueryWorkerInferenceScoresAtBlockResponse{Scores: &workerInferenceScores}, nil
 }
 
+func (qs queryServer) GetCurrentLowestInfererScore(
+	ctx context.Context,
+	req *types.QueryCurrentLowestInfererScoreRequest,
+) (
+	*types.QueryCurrentLowestInfererScoreResponse,
+	error,
+) {
+	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if len(unfulfilledWorkerNonces.Nonces) == 0 {
+		return nil,
+			errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable,
+				"no unfulfilled nonces right now, is the topic active?")
+	}
+	highestNonce := unfulfilledWorkerNonces.Nonces[0]
+	for _, nonce := range unfulfilledWorkerNonces.Nonces {
+		if nonce.BlockHeight > highestNonce.BlockHeight {
+			highestNonce = nonce
+		}
+
+	}
+	inferenceScores, err := qs.k.GetWorkerInferenceScoresAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	if len(inferenceScores.Scores) == 0 {
+		return nil, errorsmod.Wrap(types.ErrInvalidLengthScore, "no scores found for this epoch")
+	}
+	lowestInfererScore := inferenceScores.Scores[0]
+	for _, score := range inferenceScores.Scores {
+		if score.Score.Lt(lowestInfererScore.Score) {
+			lowestInfererScore = score
+		}
+	}
+
+	return &types.QueryCurrentLowestInfererScoreResponse{Score: lowestInfererScore}, nil
+}
+
 func (qs queryServer) GetForecastScoresUntilBlock(
 	ctx context.Context,
 	req *types.QueryForecastScoresUntilBlockRequest,
@@ -144,6 +185,46 @@ func (qs queryServer) GetWorkerForecastScoresAtBlock(
 	return &types.QueryWorkerForecastScoresAtBlockResponse{Scores: &workerForecastScores}, nil
 }
 
+func (qs queryServer) GetCurrentLowestForecasterScore(
+	ctx context.Context,
+	req *types.QueryCurrentLowestForecasterScoreRequest,
+) (
+	*types.QueryCurrentLowestForecasterScoreResponse,
+	error,
+) {
+	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if len(unfulfilledWorkerNonces.Nonces) == 0 {
+		return nil,
+			errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable,
+				"no unfulfilled nonces right now, is the topic active?")
+	}
+	highestNonce := unfulfilledWorkerNonces.Nonces[0]
+	for _, nonce := range unfulfilledWorkerNonces.Nonces {
+		if nonce.BlockHeight > highestNonce.BlockHeight {
+			highestNonce = nonce
+		}
+	}
+	forecastScores, err := qs.k.GetWorkerForecastScoresAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	if len(forecastScores.Scores) == 0 {
+		return nil, errorsmod.Wrap(types.ErrInvalidLengthScore, "no scores found for this epoch")
+	}
+
+	lowestForecasterScore := forecastScores.Scores[0]
+	for _, score := range forecastScores.Scores {
+		if score.Score.Lt(lowestForecasterScore.Score) {
+			lowestForecasterScore = score
+		}
+	}
+
+	return &types.QueryCurrentLowestForecasterScoreResponse{Score: lowestForecasterScore}, nil
+}
+
 func (qs queryServer) GetReputersScoresAtBlock(
 	ctx context.Context,
 	req *types.QueryReputersScoresAtBlockRequest,
@@ -157,6 +238,46 @@ func (qs queryServer) GetReputersScoresAtBlock(
 	}
 
 	return &types.QueryReputersScoresAtBlockResponse{Scores: &reputersScores}, nil
+}
+
+func (qs queryServer) GetCurrentLowestReputerScore(
+	ctx context.Context,
+	req *types.QueryCurrentLowestReputerScoreRequest,
+) (
+	*types.QueryCurrentLowestReputerScoreResponse,
+	error,
+) {
+	unfulfilledReputerNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if len(unfulfilledReputerNonces.Nonces) == 0 {
+		return nil,
+			errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable,
+				"no unfulfilled nonces right now, is the topic active?")
+	}
+	highestNonce := unfulfilledReputerNonces.Nonces[0]
+	for _, nonce := range unfulfilledReputerNonces.Nonces {
+		if nonce.ReputerNonce.BlockHeight > highestNonce.ReputerNonce.BlockHeight {
+			highestNonce = nonce
+		}
+	}
+	reputersScores, err := qs.k.GetReputersScoresAtBlock(ctx, req.TopicId, highestNonce.ReputerNonce.BlockHeight)
+	if err != nil {
+		return nil, err
+	}
+	if len(reputersScores.Scores) == 0 {
+		return nil, errorsmod.Wrap(types.ErrInvalidLengthScore, "no scores found for this epoch")
+	}
+
+	lowestReputerScore := reputersScores.Scores[0]
+	for _, score := range reputersScores.Scores {
+		if score.Score.Lt(lowestReputerScore.Score) {
+			lowestReputerScore = score
+		}
+	}
+
+	return &types.QueryCurrentLowestReputerScoreResponse{Score: lowestReputerScore}, nil
 }
 
 func (qs queryServer) GetListeningCoefficient(
