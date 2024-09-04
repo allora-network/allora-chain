@@ -310,11 +310,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	inferer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := "allo1pluvmvsmvecg2ccuqxa6ugzvc3a5udfyy0t76v"
-	forecaster1 := "allo1e92saykj94jw3z55g4d3lfz098ppk0suwzc03a"
-	forecaster2 := "allo1pk6mxny5p79t8zhkm23z7u3zmfuz2gn0snxkkt"
-	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
-
 	// Set Previous Loss
 	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
 		CombinedValue:       epoch1Get("network_loss"),
@@ -329,14 +324,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	err = s.emissionsKeeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
-	s.Require().NoError(err)
-
-	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
-	s.Require().NoError(err)
-
 	// Set regrets from the previous epoch
-	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, []string{"allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"}, forecasterAddresses, epoch1Get)
+	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, []string{"allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"}, []string{}, epoch1Get)
 	s.Require().NoError(err)
 
 	valueBundle, _, _, _, _, _, err :=
@@ -347,7 +336,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 			&blockHeight,
 		)
 	s.Require().NoError(err)
-	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.08168865507864786")
+	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.20059970801966293")
 
 	s.Require().Len(valueBundle.OneOutInfererValues, 5)
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
@@ -355,13 +344,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 		case inferer0:
 			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.1404419672286048")
 		case inferer1:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.19900012132108014")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.1288457756437288")
 		case inferer2:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.20105596560978706")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.1431887680171583")
 		case inferer3:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.207471493032747")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.18794792677471128")
 		case inferer4:
-			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.20519729415934562")
+			testutil.InEpsilon5(s.T(), oneOutInfererValue.Value, "0.17208154172014362")
 		default:
 			s.Require().Fail("Unexpected worker %v", oneOutInfererValue.Worker)
 		}
