@@ -38,9 +38,7 @@ service Query {
 
   rpc GetWorkerLatestInferenceByTopicId(QueryWorkerLatestInferenceRequest) returns (QueryWorkerLatestInferenceResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/v3/topics/{topic_id}/"
-      "workers/{worker_address}/latest_inference";
+    option (google.api.http).get = "/emissions/v3/topics/{topic_id}/workers/{worker_address}/latest_inference";
   }
 
   rpc GetInferencesAtBlock(QueryInferencesAtBlockRequest) returns (QueryInferencesAtBlockResponse) {
@@ -90,9 +88,7 @@ service Query {
 
   rpc GetStakeFromDelegatorInTopicInReputer(QueryStakeFromDelegatorInTopicInReputerRequest) returns (QueryStakeFromDelegatorInTopicInReputerResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/v3/delegate_stake/{delegator_address}/{reputer_address}/"
-      "{topic_id}";
+    option (google.api.http).get = "/emissions/v3/delegate_stake/{delegator_address}/{reputer_address}/{topic_id}";
   }
 
   rpc GetStakeFromDelegatorInTopic(QueryStakeFromDelegatorInTopicRequest) returns (QueryStakeFromDelegatorInTopicResponse) {
@@ -147,9 +143,7 @@ service Query {
 
   rpc GetNetworkInferencesAtBlock(QueryNetworkInferencesAtBlockRequest) returns (QueryNetworkInferencesAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/v3/network_inferences/{topic_id}/last_inference/"
-      "{block_height_last_inference}";
+    option (google.api.http).get = "/emissions/v3/network_inferences/{topic_id}/last_inference/{block_height_last_inference}";
   }
 
   rpc GetLatestNetworkInference(QueryLatestNetworkInferencesRequest) returns (QueryLatestNetworkInferencesResponse) {
@@ -194,9 +188,7 @@ service Query {
 
   rpc GetOneInForecasterNetworkRegret(QueryOneInForecasterNetworkRegretRequest) returns (QueryOneInForecasterNetworkRegretResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/v3/one_in_forecaster_network_regret/{topic_id}/"
-      "{forecaster}/{inferer}";
+    option (google.api.http).get = "/emissions/v3/one_in_forecaster_network_regret/{topic_id}/{forecaster}/{inferer}";
   }
 
   rpc IsWhitelistAdmin(QueryIsWhitelistAdminRequest) returns (QueryIsWhitelistAdminResponse) {
@@ -230,9 +222,7 @@ service Query {
 
   rpc GetDelegateStakePlacement(QueryDelegateStakePlacementRequest) returns (QueryDelegateStakePlacementResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/v3/delegate_stake_placement/"
-      "{topic_id}/{delegator}/{target}";
+    option (google.api.http).get = "/emissions/v3/delegate_stake_placement/{topic_id}/{delegator}/{target}";
   }
 
   rpc GetDelegateStakeUponReputer(QueryDelegateStakeUponReputerRequest) returns (QueryDelegateStakeUponReputerResponse) {
@@ -252,9 +242,7 @@ service Query {
 
   rpc GetDelegateStakeRemoval(QueryDelegateStakeRemovalRequest) returns (QueryDelegateStakeRemovalResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/v3/delegate_stake_removal/{block_height}/{topic_id}/"
-      "{delegator}/{reputer}";
+    option (google.api.http).get = "/emissions/v3/delegate_stake_removal/{block_height}/{topic_id}/{delegator}/{reputer}";
   }
 
   rpc GetPreviousTopicWeight(QueryPreviousTopicWeightRequest) returns (QueryPreviousTopicWeightResponse) {
@@ -302,11 +290,29 @@ service Query {
     option (google.api.http).get = "/emissions/v3/inference_scores_until_block/{topic_id}/{block_height}";
   }
 
+  rpc GetPreviousTopicQuantileForecasterScoreEma(QueryGetPreviousTopicQuantileForecasterScoreEmaRequest) returns (QueryGetPreviousTopicQuantileForecasterScoreEmaResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/topic_quantile_forecaster_score_ema/{topic_id}";
+  }
+
+  rpc GetPreviousTopicQuantileInfererScoreEma(QueryGetPreviousTopicQuantileInfererScoreEmaRequest) returns (QueryGetPreviousTopicQuantileInfererScoreEmaResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/topic_quantile_inferer_score_ema/{topic_id}";
+  }
+
+  rpc GetPreviousTopicQuantileReputerScoreEma(QueryGetPreviousTopicQuantileReputerScoreEmaRequest) returns (QueryGetPreviousTopicQuantileReputerScoreEmaResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/topic_quantile_reputer_score_ema/{topic_id}";
+  }
+
   rpc GetWorkerInferenceScoresAtBlock(QueryWorkerInferenceScoresAtBlockRequest) returns (QueryWorkerInferenceScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/v3/worker_inference_scores_at_block/{topic_id}/"
-      "{block_height}";
+    option (google.api.http).get = "/emissions/v3/worker_inference_scores_at_block/{topic_id}/{block_height}";
+  }
+
+  rpc GetCurrentLowestInfererScore(QueryCurrentLowestInfererScoreRequest) returns (QueryCurrentLowestInfererScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/current_lowest_inferer_score/{topic_id}";
   }
 
   rpc GetForecastScoresUntilBlock(QueryForecastScoresUntilBlockRequest) returns (QueryForecastScoresUntilBlockResponse) {
@@ -316,14 +322,22 @@ service Query {
 
   rpc GetWorkerForecastScoresAtBlock(QueryWorkerForecastScoresAtBlockRequest) returns (QueryWorkerForecastScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/v3/worker_forecast_scores_at_block/{topic_id}/"
-      "{block_height}";
+    option (google.api.http).get = "/emissions/v3/worker_forecast_scores_at_block/{topic_id}/{block_height}";
+  }
+
+  rpc GetCurrentLowestForecasterScore(QueryCurrentLowestForecasterScoreRequest) returns (QueryCurrentLowestForecasterScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/current_lowest_forecaster_score/{topic_id}";
   }
 
   rpc GetReputersScoresAtBlock(QueryReputersScoresAtBlockRequest) returns (QueryReputersScoresAtBlockResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/reputers_scores_at_block/{topic_id}/{block_height}";
+  }
+
+  rpc GetCurrentLowestReputerScore(QueryCurrentLowestReputerScoreRequest) returns (QueryCurrentLowestReputerScoreResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/current_lowest_reputer_score/{topic_id}";
   }
 
   rpc GetListeningCoefficient(QueryListeningCoefficientRequest) returns (QueryListeningCoefficientResponse) {
@@ -1034,6 +1048,39 @@ message QueryInferenceScoresUntilBlockResponse {
   repeated Score scores = 1;
 }
 
+message QueryGetPreviousTopicQuantileForecasterScoreEmaRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryGetPreviousTopicQuantileForecasterScoreEmaResponse {
+  string value = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryGetPreviousTopicQuantileInfererScoreEmaRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryGetPreviousTopicQuantileInfererScoreEmaResponse {
+  string value = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message QueryGetPreviousTopicQuantileReputerScoreEmaRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryGetPreviousTopicQuantileReputerScoreEmaResponse {
+  string value = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
 message QueryWorkerInferenceScoresAtBlockRequest {
   uint64 topic_id = 1;
   int64 block_height = 2;
@@ -1041,6 +1088,14 @@ message QueryWorkerInferenceScoresAtBlockRequest {
 
 message QueryWorkerInferenceScoresAtBlockResponse {
   Scores scores = 1;
+}
+
+message QueryCurrentLowestInfererScoreRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryCurrentLowestInfererScoreResponse {
+  Score score = 1;
 }
 
 message QueryForecastScoresUntilBlockRequest {
@@ -1061,6 +1116,14 @@ message QueryWorkerForecastScoresAtBlockResponse {
   Scores scores = 1;
 }
 
+message QueryCurrentLowestForecasterScoreRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryCurrentLowestForecasterScoreResponse {
+  Score score = 1;
+}
+
 message QueryReputersScoresAtBlockRequest {
   uint64 topic_id = 1;
   int64 block_height = 2;
@@ -1068,6 +1131,14 @@ message QueryReputersScoresAtBlockRequest {
 
 message QueryReputersScoresAtBlockResponse {
   Scores scores = 1;
+}
+
+message QueryCurrentLowestReputerScoreRequest {
+  uint64 topic_id = 1;
+}
+
+message QueryCurrentLowestReputerScoreResponse {
+  Score score = 1;
 }
 
 message QueryListeningCoefficientRequest {

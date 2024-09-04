@@ -15,4 +15,19 @@
   "go.lintFlags": [
         "-c", "${workspaceFolder}/.golangci.yml", "--fast"
     ],
+    "cSpell.words": [
+      "actorutils",
+      "autocli",
+      "Bech",
+      "cosmossdk",
+      "Delegators",
+      "errorsmod",
+      "Inferer",
+      "inferers",
+      "msgserver",
+      "protobuf",
+      "quantile",
+      "reputers",
+      "Wrapf"
+    ],
 }

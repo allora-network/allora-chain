@@ -75,7 +75,17 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				// No nonces to fulfill
 				continue
 			} else {
+				topic, err := am.keeper.GetTopic(sdkCtx, topicId)
+				if err != nil {
+					sdkCtx.Logger().Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
+					continue
+				}
 				for _, nonce := range nonces.Nonces {
+					// Skip rest of logic if the worker submission window is still open (i.e. don't close the window yet)
+					if am.keeper.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
+						sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Worker window still open for topic: %d, nonce: %v", blockHeight, topicId, nonce))
+						continue
+					}
 					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId, nonce))
 					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topicId, *nonce)
 					if err != nil {

@@ -11,6 +11,9 @@ import (
 
 // A tx function that accepts a individual inference and forecast and possibly returns an error
 // Need to call this once per forecaster per topic inference solicitation round because protobuf does not nested repeated fields
+// Only 1 payload per registered worker is kept, ignore the rest. In particular, take the first payload from each
+// registered worker and none from any unregistered actor.
+// Signatures, anti-sybil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInsertWorkerPayload) (*types.MsgInsertWorkerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
@@ -31,9 +34,9 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 	nonce := msg.WorkerDataBundle.Nonce
 	topicId := msg.WorkerDataBundle.TopicId
 
-	// Check if the topic exists
-	topicExists, err := ms.k.TopicExists(ctx, topicId)
-	if err != nil || !topicExists {
+	// Check if the topic exists. Will throw if topic does not exist
+	topic, err := ms.k.GetTopic(ctx, topicId)
+	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
 	// Check if the nonce is unfulfilled
@@ -46,14 +49,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	topic, err := ms.k.GetTopic(ctx, topicId)
-	if err != nil {
-		return nil, types.ErrInvalidTopicId
-	}
-
 	// Check if the window time is open
-	if blockHeight < nonce.BlockHeight ||
-		blockHeight > nonce.BlockHeight+topic.WorkerSubmissionWindow {
+	if !ms.k.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
 		return nil, errorsmod.Wrapf(
 			types.ErrWorkerNonceWindowNotAvailable,
 			"Worker window not open for topic: %d, current block %d , nonce block height: %d , start window: %d, end window: %d",
@@ -61,7 +58,15 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		)
 	}
 
-	// Before creating topic, transfer fee amount from creator to ecosystem bucket
+	isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, msg.WorkerDataBundle.Worker)
+	if err != nil {
+		return nil, err
+	}
+	if !isInfererRegistered {
+		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker is not registered in this topic")
+	}
+
+	// Before accepting data, transfer fee amount from sender to ecosystem bucket
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
@@ -81,15 +86,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId,
 				"inferer not using the same topic as bundle")
 		}
-		isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, inference.Inferer)
-		if err != nil {
-			return nil, err
-		}
-		if !isInfererRegistered {
-			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered,
-				"inferer address is not registered in this topic")
-		}
-		err = ms.k.AppendInference(ctx, topicId, *nonce, inference)
+
+		err = ms.k.AppendInference(ctx, topic, blockHeight, nonce.BlockHeight, inference)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
@@ -104,17 +102,8 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 		if forecast.TopicId != msg.WorkerDataBundle.TopicId {
 			return nil, errorsmod.Wrapf(types.ErrInvalidTopicId, "forecaster not using the same topic as bundle")
 		}
-		isForecasterRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, forecast.Forecaster)
-		if err != nil {
-			return nil, errorsmod.Wrapf(err,
-				"error checking if forecaster address is registered in this topic")
-		}
-		if !isForecasterRegistered {
-			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered,
-				"forecaster address is not registered in this topic")
-		}
 
-		// LImit forecast elements for top inferers
+		// Limit forecast elements to top inferers
 		latestScoresForForecastedInferers := make([]types.Score, 0)
 		for _, el := range forecast.ForecastElements {
 			score, err := ms.k.GetInfererScoreEma(ctx, forecast.TopicId, el.Inferer)
@@ -159,7 +148,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 
 		if len(acceptedForecastElements) > 0 {
 			forecast.ForecastElements = acceptedForecastElements
-			err = ms.k.AppendForecast(ctx, topicId, *nonce, forecast)
+			err = ms.k.AppendForecast(ctx, topic, blockHeight, nonce.BlockHeight, forecast)
 			if err != nil {
 				return nil, errorsmod.Wrapf(err,
 					"Error appending forecast")

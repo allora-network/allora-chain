@@ -15,9 +15,9 @@ go test ./... -coverprofile=coverage.out
 gcov2lcov -infile=coverage.out -outfile=coverage_raw.lcov
 
 exclude_patterns=(
-    'x/emissions/types/*.pb.go'
-    'x/emissions/types/*.pb.gw.go'
-    'math/collections.go'
+    '*.pb.go'
+    '*.pb.gw.go'
+    '*.pulsar.go'
 )
 
 # 3) Exclude files from coverage results
