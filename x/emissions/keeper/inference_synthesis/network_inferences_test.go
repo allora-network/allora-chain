@@ -270,7 +270,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 		)
 	s.Require().NoError(err)
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, "0.1997509073157136")
-
 }
 
 func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldInfererNoForecastersFromCsv() {
