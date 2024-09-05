@@ -249,3 +249,35 @@ func (s *MintKeeperTestSuite) TestUpdateParamsRecalculateTargetEmission() {
 	s.Require().NoError(err)
 	s.Require().NotEqual(startEmission, updatedTargetEmission)
 }
+
+func (s *MintKeeperTestSuite) TestRecalculateTargetEmission() {
+	ecosystemTokensMinted := sdkmath.NewInt(1000000)
+	err := s.mintKeeper.EcosystemTokensMinted.Set(s.ctx, ecosystemTokensMinted)
+	s.Require().NoError(err)
+	startEmission := sdkmath.LegacyNewDec(100)
+	err = s.mintKeeper.PreviousRewardEmissionPerUnitStakedToken.Set(s.ctx, startEmission)
+	s.Require().NoError(err)
+	request := &types.RecalculateTargetEmissionRequest{
+		Sender: s.adminAddr,
+	}
+	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
+	expectedEmissionsParams := emissionstypes.DefaultParams()
+	s.accountKeeper.EXPECT().GetModuleAddress("ecosystem").Return(sdk.AccAddress{})
+	s.accountKeeper.EXPECT().GetModuleAddress("ecosystem").Return(sdk.AccAddress{})
+	s.bankKeeper.EXPECT().GetBalance(s.ctx, sdk.AccAddress{}, "stake").Return(sdk.Coin{Denom: "stake", Amount: sdkmath.NewInt(1000000000000000000)})
+	s.bankKeeper.EXPECT().GetBalance(s.ctx, sdk.AccAddress{}, "stake").Return(sdk.Coin{Denom: "stake", Amount: sdkmath.NewInt(1000000000000000000)})
+	s.emissionsKeeper.EXPECT().GetPreviousPercentageRewardToStakedReputers(s.ctx).Return(alloraMath.MustNewDecFromString("0.5"), nil)
+	s.stakingKeeper.EXPECT().TotalBondedTokens(s.ctx).Return(sdkmath.NewInt(1000000000000000000), nil)
+	s.emissionsKeeper.EXPECT().GetTotalStake(s.ctx).Return(sdkmath.NewInt(1000000000000000000), nil)
+	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(expectedEmissionsParams, nil)
+	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(expectedEmissionsParams, nil)
+
+	resp, err := s.msgServer.RecalculateTargetEmission(s.ctx, request)
+	s.Require().NoError(err)
+	s.Require().NotNil(resp)
+	s.Require().Equal(&types.RecalculateTargetEmissionResponse{}, resp)
+
+	updatedTargetEmission, err := s.mintKeeper.GetPreviousRewardEmissionPerUnitStakedToken(s.ctx)
+	s.Require().NoError(err)
+	s.Require().NotEqual(startEmission, updatedTargetEmission)
+}
