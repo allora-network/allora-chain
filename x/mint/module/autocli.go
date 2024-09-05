@@ -3,6 +3,7 @@ package mint
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	mintv1beta1 "github.com/allora-network/allora-chain/x/mint/api/v1beta1"
+	mintv2 "github.com/allora-network/allora-chain/x/mint/api/v2"
 )
 
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
@@ -28,7 +29,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service: mintv1beta1.Msg_ServiceDesc.ServiceName,
+			Service: mintv2.MsgService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",
@@ -37,6 +38,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "sender"},
 						{ProtoField: "params"},
+					},
+				},
+				{
+					RpcMethod: "RecalculateTargetEmission",
+					Use:       "recalculate-target-emission [sender]",
+					Short:     "Recalculate target emission of the network",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "sender"},
 					},
 				},
 			},
