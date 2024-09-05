@@ -20,8 +20,12 @@ func (s *MintKeeperTestSuite) TestUpdateParams() {
 		Sender:                    s.adminAddr,
 		Params:                    params,
 		BlocksPerMonth:            525590,
-		RecalculateTargetEmission: true,
+		RecalculateTargetEmission: false,
 	}
+	expectedEmissionsParams := emissionstypes.DefaultParams()
+	s.emissionsKeeper.EXPECT().GetParams(s.ctx).Return(expectedEmissionsParams, nil)
+	expectedEmissionsParams.BlocksPerMonth = 525590
+	s.emissionsKeeper.EXPECT().SetParams(s.ctx, expectedEmissionsParams).Return(nil)
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
 	s.Require().NoError(err)
