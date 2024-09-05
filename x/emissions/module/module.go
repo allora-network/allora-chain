@@ -70,7 +70,7 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterMsgServer(cfg.MsgServer(), msgserver.NewMsgServerImpl(am.keeper))
+	types.RegisterMsgServiceServer(cfg.MsgServer(), msgserver.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), queryserver.NewQueryServerImpl(am.keeper))
 
 	if err := cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {

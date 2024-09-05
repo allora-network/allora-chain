@@ -655,9 +655,9 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 	return reputerValueBundles, nil
 }
 
-func CreateTopic(ctx context.Context, msgServer types.MsgServer, creator string) (uint64, error) {
+func CreateTopic(ctx context.Context, msgServer types.MsgServiceServer, creator string) (uint64, error) {
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  creator,
 		Metadata:                 "test",
 		LossMethod:               "mse",

@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*types.MsgFundTopicResponse, error) {
+func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgServiceFundTopicRequest) (*types.MsgServiceFundTopicResponse, error) {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address (%s)", err)
@@ -26,5 +26,5 @@ func (ms msgServer) FundTopic(ctx context.Context, msg *types.MsgFundTopic) (*ty
 	}
 
 	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, msg.TopicId, msg.Amount)
-	return &types.MsgFundTopicResponse{}, err
+	return &types.MsgServiceFundTopicResponse{}, err
 }

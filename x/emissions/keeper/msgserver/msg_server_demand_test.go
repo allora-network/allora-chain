@@ -22,7 +22,7 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 	s.Require().NoError(err)
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.Require().NoError(err)
-	r := types.MsgFundTopic{
+	r := types.MsgServiceFundTopicRequest{
 		Sender:  sender,
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -81,12 +81,12 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	s.Require().NoError(err)
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.Require().NoError(err)
-	r := types.MsgFundTopic{
+	r := types.MsgServiceFundTopicRequest{
 		Sender:  sender,
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
 	}
-	r2 := types.MsgFundTopic{
+	r2 := types.MsgServiceFundTopicRequest{
 		Sender:  sender,
 		TopicId: topicId2,
 		Amount:  cosmosMath.NewInt(initialStake2),

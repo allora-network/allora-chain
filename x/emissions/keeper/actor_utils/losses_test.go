@@ -14,7 +14,6 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
@@ -45,7 +44,6 @@ type ActorUtilsTestSuite struct {
 	bankKeeper      keeper.BankKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
-	msgServer       emissionstypes.MsgServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
@@ -115,7 +113,6 @@ func (a *ActorUtilsTestSuite) SetupTest() {
 	appModule := module.NewAppModule(encCfg.Codec, a.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
 	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	a.msgServer = msgserver.NewMsgServerImpl(a.emissionsKeeper)
 	a.appModule = appModule
 
 	// Add all tests addresses in whitelists

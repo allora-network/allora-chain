@@ -53,7 +53,7 @@ type RewardsTestSuite struct {
 	emissionsKeeper    keeper.Keeper
 	emissionsAppModule module.AppModule
 	mintAppModule      mint.AppModule
-	msgServer          types.MsgServer
+	msgServer          types.MsgServiceServer
 	key                *storetypes.KVStoreKey
 	privKeys           map[string]secp256k1.PrivKey
 	addrs              []sdk.AccAddress
@@ -231,7 +231,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	workerAddrs := s.returnAddresses(5, 5)
 
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -254,7 +254,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -266,7 +266,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -288,7 +288,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	}
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId,
@@ -309,7 +309,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
 	for _, payload := range inferenceBundles {
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -327,7 +327,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
@@ -354,7 +354,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	workerAddrs := s.returnAddresses(5, 5)
 
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -377,7 +377,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -389,7 +389,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -411,7 +411,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	}
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId,
@@ -421,7 +421,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	initialStake := cosmosMath.NewInt(1000)
 	s.MintTokensToAddress(reputerAddrs[0], initialStake)
-	fundTopicMessage := types.MsgFundTopic{
+	fundTopicMessage := types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
 		Amount:  initialStake,
@@ -450,7 +450,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
 	for _, payload := range inferenceBundles {
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -471,7 +471,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
@@ -486,7 +486,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	workerAddrs = s.returnAddresses(15, 5)
 
 	// Create topic
-	newTopicMsg = &types.MsgCreateNewTopic{
+	newTopicMsg = &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -509,7 +509,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId2,
 			IsReputer: false,
@@ -521,7 +521,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId2,
 			IsReputer: true,
@@ -533,7 +533,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId2,
@@ -543,7 +543,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 
 	initialStake = cosmosMath.NewInt(1000)
 	s.MintTokensToAddress(reputerAddrs[0], initialStake)
-	fundTopicMessage = types.MsgFundTopic{
+	fundTopicMessage = types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId2,
 		Amount:  initialStake,
@@ -622,7 +622,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 	s.ctx = s.ctx.WithBlockHeight(blockHeight)
 
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -644,7 +644,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 	topicId := res.TopicId
 
 	for _, workerAddr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    workerAddr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -655,7 +655,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 	}
 
 	for _, reputerAddr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    reputerAddr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -666,7 +666,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 	}
 	for _, reputerAddr := range reputerAddrs {
 		s.MintTokensToAddress(reputerAddr, stake)
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  reputerAddr.String(),
 			Amount:  stake,
 			TopicId: topicId,
@@ -676,7 +676,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 
 	var initialStake int64 = 1000
 	s.MintTokensToAddress(reputerAddrs[0], cosmosMath.NewInt(initialStake))
-	fundTopicMessage := types.MsgFundTopic{
+	fundTopicMessage := types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -727,7 +727,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId, topic.EpochLastEnded, blockHeight, workerValues, workerAddrs)
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId, payload)
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -757,7 +757,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 	for _, payload := range lossBundles.ReputerValueBundles {
 		s.RegisterAllReputersOfPayload(topicId, payload)
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
@@ -1211,7 +1211,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	}
 
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -1234,7 +1234,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -1246,7 +1246,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Register 3 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -1258,7 +1258,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	// Add Stake for reputers
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId,
@@ -1268,7 +1268,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	var initialStake int64 = 1000
 	s.FundAccount(initialStake, reputerAddrs[0])
-	fundTopicMessage := types.MsgFundTopic{
+	fundTopicMessage := types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -1288,7 +1288,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
 	for _, payload := range inferenceBundles {
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -1309,7 +1309,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
@@ -1361,7 +1361,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	stakes = append(stakes, newStakes...)
 
 	// Create new topic
-	newTopicMsg = &types.MsgCreateNewTopic{
+	newTopicMsg = &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -1384,7 +1384,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -1396,7 +1396,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -1408,7 +1408,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	// Add Stake for reputers
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId,
@@ -1418,7 +1418,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	s.FundAccount(initialStake, reputerAddrs[0])
 
-	fundTopicMessage = types.MsgFundTopic{
+	fundTopicMessage = types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -1438,7 +1438,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	// Insert inference from workers
 	inferenceBundles = GenerateWorkerDataBundles(s, block, topicId)
 	for _, payload := range inferenceBundles {
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -1456,7 +1456,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	for _, payload := range lossBundles.ReputerValueBundles {
 		_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 		_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
@@ -1503,7 +1503,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	workerAddrs := s.returnAddresses(5, 5)
 
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -1526,7 +1526,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -1538,7 +1538,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 
 	// Register 5 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -1560,7 +1560,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	}
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId,
@@ -1570,7 +1570,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 
 	initialStake := cosmosMath.NewInt(1000)
 	s.MintTokensToAddress(reputerAddrs[0], initialStake)
-	fundTopicMessage := types.MsgFundTopic{
+	fundTopicMessage := types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
 		Amount:  initialStake,
@@ -1604,7 +1604,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	// Insert inference from workers
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId)
 	for _, payload := range inferenceBundles {
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -1627,7 +1627,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	// Insert loss bundle from reputers
 	lossBundles := GenerateLossBundles(s, block, topicId, reputerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
@@ -1675,7 +1675,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	workerAddrs := s.returnAddresses(5, 5)
 
 	// Create first topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -1700,7 +1700,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	// Register 5 workers, first 3 for topic 1 and last 2 for topic 2
 	for _, addr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId1,
 			IsReputer: false,
@@ -1717,7 +1717,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 
 	// Register 5 reputers, first 3 for topic 1 and last 2 for topic 2
 	for i, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			Owner:     addr.String(),
 			TopicId:   topicId1,
@@ -1741,7 +1741,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		cosmosMath.NewInt(368582).Mul(cosmosOneE18),
 	}
 	for i, addr := range reputerAddrs {
-		addStakeMsg := &types.MsgAddStake{
+		addStakeMsg := &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId1,
@@ -1761,7 +1761,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	s.Require().NoError(err)
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputerAddrs[0], initialStakeCoins)
 	s.Require().NoError(err)
-	fundTopicMessage := types.MsgFundTopic{
+	fundTopicMessage := types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId1,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -1818,7 +1818,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	inferenceBundles := GenerateWorkerDataBundles(s, block, topicId1)
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId1, payload)
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -1828,7 +1828,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	inferenceBundles2 := GenerateWorkerDataBundles(s, block, topicId2)
 	for _, payload := range inferenceBundles2 {
 		s.RegisterAllWorkersOfPayload(topicId2, payload)
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -1848,7 +1848,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		if i <= 2 {
 			_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 			_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId1, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-			_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 				Sender:             payload.ValueBundle.Reputer,
 				ReputerValueBundle: payload,
 			})
@@ -1868,7 +1868,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		if i > 2 {
 			_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
 			_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId2, payload.ValueBundle.ReputerRequestNonce.ReputerNonce)
-			_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+			_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 				Sender:             payload.ValueBundle.Reputer,
 				ReputerValueBundle: payload,
 			})
@@ -1898,7 +1898,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	worker := s.addrs[5]
 
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputer.String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -1919,7 +1919,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	topicId := res.TopicId
 
 	// Register 1 worker
-	workerRegMsg := &types.MsgRegister{
+	workerRegMsg := &types.MsgServiceRegisterRequest{
 		Sender:    worker.String(),
 		TopicId:   topicId,
 		IsReputer: false,
@@ -1929,7 +1929,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 
 	// Register 1 reputer
-	reputerRegMsg := &types.MsgRegister{
+	reputerRegMsg := &types.MsgServiceRegisterRequest{
 		Sender:    reputer.String(),
 		TopicId:   topicId,
 		IsReputer: true,
@@ -1942,7 +1942,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 
 	s.MintTokensToAddress(reputer, cosmosMath.NewInt(1176644).Mul(cosmosOneE18))
 	// Add Stake for reputer
-	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+	_, err = s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 		Sender:  reputer.String(),
 		Amount:  cosmosMath.NewInt(1176644).Mul(cosmosOneE18),
 		TopicId: topicId,
@@ -1955,7 +1955,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.Require().NoError(err)
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, reputer, initialStakeCoins)
 	s.Require().NoError(err)
-	fundTopicMessage := types.MsgFundTopic{
+	fundTopicMessage := types.MsgServiceFundTopicRequest{
 		Sender:  reputer.String(),
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -1991,7 +1991,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		InferencesForecastsBundleSignature: worker1Sig,
 		Pubkey:                             GetAccPubKey(s, worker),
 	}
-	_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+	_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 		Sender:           worker.String(),
 		WorkerDataBundle: worker1Bundle,
 	})
@@ -2031,7 +2031,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	_, _ = s.emissionsKeeper.FulfillWorkerNonce(s.ctx, topicId, reputerBundle.ValueBundle.ReputerRequestNonce.ReputerNonce)
 	_ = s.emissionsKeeper.AddReputerNonce(s.ctx, topicId, reputerBundle.ValueBundle.ReputerRequestNonce.ReputerNonce)
 
-	_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+	_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 		Sender:             reputer.String(),
 		ReputerValueBundle: reputerBundle,
 	})
@@ -2062,7 +2062,7 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		MaxActiveTopicsPerBlock: []uint64{2},
 	}
 
-	updateMsg := &types.MsgUpdateParams{
+	updateMsg := &types.MsgServiceUpdateParamsRequest{
 		Sender: adminAddr.String(),
 		Params: newParams,
 	}
@@ -2092,7 +2092,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	}
 
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -2115,7 +2115,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 
 	// Register 25 workers
 	for _, addr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -2127,7 +2127,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 
 	// Register 25 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -2139,7 +2139,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId,
@@ -2150,7 +2150,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	var initialStake int64 = 1000
 	s.FundAccount(initialStake, reputerAddrs[0])
 
-	fundTopicMessage := types.MsgFundTopic{
+	fundTopicMessage := types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -2171,7 +2171,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	// Insert inference from workers
 	inferenceBundles := GenerateHugeWorkerDataBundles(s, block, topicId, workerAddrs)
 	for _, payload := range inferenceBundles {
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -2190,7 +2190,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 	// Insert loss bundle from reputers
 	lossBundles := GenerateHugeLossBundles(s, block, topicId, reputerAddrs, workerAddrs)
 	for _, payload := range lossBundles.ReputerValueBundles {
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             reputerAddrs[0].String(),
 			ReputerValueBundle: payload,
 		})
@@ -2245,7 +2245,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	}
 
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -2271,7 +2271,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Register 5 workers
 	for _, addr := range workerAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -2283,7 +2283,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Register 3 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -2295,7 +2295,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Add Stake for reputers
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId,
@@ -2305,7 +2305,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	var initialStake int64 = 1000
 	s.FundAccount(initialStake, reputerAddrs[0])
-	fundTopicMessage := types.MsgFundTopic{
+	fundTopicMessage := types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -2326,7 +2326,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	inferenceBundles := GenerateHugeWorkerDataBundles(s, block, topicId, workerAddrs)
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId, payload)
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -2350,7 +2350,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.Require().NoError(err)
 
 	for _, payload := range lossBundles.ReputerValueBundles {
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
@@ -2403,7 +2403,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	newSecondWorkersAddrs = append(workerAddrs, newSecondWorkersAddrs...)
 
 	// Create new topic
-	newTopicMsg = &types.MsgCreateNewTopic{
+	newTopicMsg = &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -2426,7 +2426,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Register 7 workers with 2 new inferers
 	for _, addr := range newSecondWorkersAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -2438,7 +2438,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Register 3 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -2450,7 +2450,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Add Stake for reputers
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId,
@@ -2460,7 +2460,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	s.FundAccount(initialStake, reputerAddrs[0])
 
-	fundTopicMessage = types.MsgFundTopic{
+	fundTopicMessage = types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -2498,7 +2498,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId, payload)
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -2516,7 +2516,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Insert loss bundle from reputers
 	for _, payload := range lossBundles.ReputerValueBundles {
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
@@ -2550,7 +2550,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		secondInfererFraction,
 	)
 
-	// Add new worker(forecsater) and stakes
+	// Add new worker(forecaster) and stakes
 	newThirdWorkersAddrs := []sdk.AccAddress{
 		s.addrs[10],
 		s.addrs[11],
@@ -2558,7 +2558,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	newThirdWorkersAddrs = append(workerAddrs, newThirdWorkersAddrs...)
 
 	// Create new topic
-	newTopicMsg = &types.MsgCreateNewTopic{
+	newTopicMsg = &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  reputerAddrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -2581,7 +2581,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Register 7 workers with 2 new forecasters
 	for _, addr := range newThirdWorkersAddrs {
-		workerRegMsg := &types.MsgRegister{
+		workerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: false,
@@ -2593,7 +2593,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Register 3 reputers
 	for _, addr := range reputerAddrs {
-		reputerRegMsg := &types.MsgRegister{
+		reputerRegMsg := &types.MsgServiceRegisterRequest{
 			Sender:    addr.String(),
 			TopicId:   topicId,
 			IsReputer: true,
@@ -2605,7 +2605,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Add Stake for reputers
 	for i, addr := range reputerAddrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId,
@@ -2615,7 +2615,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	s.FundAccount(initialStake, reputerAddrs[0])
 
-	fundTopicMessage = types.MsgFundTopic{
+	fundTopicMessage = types.MsgServiceFundTopicRequest{
 		Sender:  reputerAddrs[0].String(),
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -2647,7 +2647,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	inferenceBundles = append(inferenceBundles, newInferenceBundles...)
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId, payload)
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgServiceInsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -2663,7 +2663,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	// Insert loss bundle from reputers
 	for _, payload := range lossBundles.ReputerValueBundles {
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgServiceInsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})
@@ -2781,7 +2781,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	fundTopic := func(topicId uint64, funderAddr sdk.AccAddress, amount int64) {
 		s.MintTokensToAddress(funderAddr, cosmosMath.NewInt(amount))
-		fundTopicMessage := types.MsgFundTopic{
+		fundTopicMessage := types.MsgServiceFundTopicRequest{
 			Sender:  funderAddr.String(),
 			TopicId: topicId,
 			Amount:  cosmosMath.NewInt(amount),
@@ -2821,7 +2821,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	// Now, in second trial, increase stake for first reputer in topic1
 	s.MintTokensToAddress(reputerAddrs[0], stake)
-	_, err = s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+	_, err = s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 		Sender:  reputerAddrs[0].String(),
 		Amount:  stake,
 		TopicId: topicId1,
@@ -3159,7 +3159,7 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 
 	fundTopic := func(topicId uint64, funderAddr sdk.AccAddress, amount int64) {
 		s.MintTokensToAddress(funderAddr, cosmosMath.NewInt(amount))
-		fundTopicMessage := types.MsgFundTopic{
+		fundTopicMessage := types.MsgServiceFundTopicRequest{
 			Sender:  funderAddr.String(),
 			TopicId: topicId,
 			Amount:  cosmosMath.NewInt(amount),
@@ -3245,7 +3245,7 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 	}
 	for i, addr := range reputer0Addrs {
 		s.MintTokensToAddress(addr, stakes[i])
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i],
 			TopicId: topicId0,
@@ -3254,7 +3254,7 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 	}
 	for i, addr := range reputer1Addrs {
 		s.MintTokensToAddress(addr, stakes[i].MulRaw(2))
-		_, err := s.msgServer.AddStake(s.ctx, &types.MsgAddStake{
+		_, err := s.msgServer.AddStake(s.ctx, &types.MsgServiceAddStakeRequest{
 			Sender:  addr.String(),
 			Amount:  stakes[i].MulRaw(2),
 			TopicId: topicId1,
@@ -3264,7 +3264,7 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 
 	initialStake := cosmosMath.NewInt(1000)
 	s.MintTokensToAddress(reputer0Addrs[0], initialStake)
-	fundTopic0Message := types.MsgFundTopic{
+	fundTopic0Message := types.MsgServiceFundTopicRequest{
 		Sender:  reputer0Addrs[0].String(),
 		TopicId: topicId0,
 		Amount:  initialStake,
@@ -3273,7 +3273,7 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 	s.Require().NoError(err)
 
 	s.MintTokensToAddress(reputer1Addrs[0], initialStake.MulRaw(2))
-	fundTopic1Message := types.MsgFundTopic{
+	fundTopic1Message := types.MsgServiceFundTopicRequest{
 		Sender:  reputer1Addrs[0].String(),
 		TopicId: topicId1,
 		Amount:  initialStake.MulRaw(2),
@@ -3332,7 +3332,7 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 
 	// Activate first topic
 	s.MintTokensToAddress(reputer0Addrs[0], initialStake)
-	fundTopic0Message = types.MsgFundTopic{
+	fundTopic0Message = types.MsgServiceFundTopicRequest{
 		Sender:  reputer0Addrs[0].String(),
 		TopicId: topicId0,
 		Amount:  initialStake.MulRaw(3),

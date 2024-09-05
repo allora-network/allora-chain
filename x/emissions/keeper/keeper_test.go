@@ -64,7 +64,7 @@ type KeeperTestSuite struct {
 	bankKeeper      bankkeeper.BaseKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
-	msgServer       types.MsgServer
+	msgServer       types.MsgServiceServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
@@ -179,11 +179,11 @@ func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
 
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
-	// Create a MsgCreateNewTopic message
+	// Create a MsgServiceCreateNewTopicRequest message
 
 	creator := sdk.AccAddress(PKS[0].Address())
 
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
 		Creator:                  creator.String(),
 		Metadata:                 metadata,
 		LossMethod:               "method",

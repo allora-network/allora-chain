@@ -6,7 +6,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (msg *MsgRegister) Validate() error {
+func (msg *MsgServiceRegisterRequest) Validate() error {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address (%s)", err)
@@ -19,7 +19,7 @@ func (msg *MsgRegister) Validate() error {
 	return nil
 }
 
-func (msg *MsgRemoveRegistration) Validate() error {
+func (msg *MsgServiceRemoveRegistrationRequest) Validate() error {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address (%s)", err)

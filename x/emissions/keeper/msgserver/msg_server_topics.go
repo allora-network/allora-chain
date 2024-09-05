@@ -8,7 +8,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
+func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgServiceCreateNewTopicRequest) (*types.MsgServiceCreateNewTopicResponse, error) {
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -65,5 +65,5 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	// we do nothing, since no value in the map means zero
 
 	err = ms.k.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
-	return &types.MsgCreateNewTopicResponse{TopicId: topicId}, err
+	return &types.MsgServiceCreateNewTopicResponse{TopicId: topicId}, err
 }

@@ -56,7 +56,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		CNorm:                           []alloraMath.Dec{alloraMath.NewDecFromInt64(1234)},
 	}
 
-	updateMsg := &types.MsgUpdateParams{
+	updateMsg := &types.MsgServiceUpdateParamsRequest{
 		Sender: adminAddr.String(),
 		Params: newParams,
 	}
@@ -117,8 +117,8 @@ func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
 		Version: []string{"2.0"}, // example of changing the version
 	}
 
-	// Creating the MsgUpdateParams message with a non-whitelisted user
-	updateMsg := &types.MsgUpdateParams{
+	// Creating the MsgServiceUpdateParamsRequest message with a non-whitelisted user
+	updateMsg := &types.MsgServiceUpdateParamsRequest{
 		Sender: nonAdminAddr.String(),
 		Params: newParams,
 	}
