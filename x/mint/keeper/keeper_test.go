@@ -29,8 +29,9 @@ type MintKeeperTestSuite struct {
 
 	mintKeeper      keeper.Keeper
 	ctx             sdk.Context
-	msgServer       types.MsgServer
+	msgServer       types.MsgServiceServer
 	ctrl            *gomock.Controller
+	accountKeeper   *minttestutil.MockAccountKeeper
 	stakingKeeper   *minttestutil.MockStakingKeeper
 	bankKeeper      *minttestutil.MockBankKeeper
 	emissionsKeeper *minttestutil.MockEmissionsKeeper
@@ -71,6 +72,7 @@ func (s *MintKeeperTestSuite) SetupTest() {
 	s.stakingKeeper = stakingKeeper
 	s.bankKeeper = bankKeeper
 	s.emissionsKeeper = emissionsKeeper
+	s.accountKeeper = accountKeeper
 
 	// Setup a sender address
 	s.adminPrivateKey = secp256k1.GenPrivKey()

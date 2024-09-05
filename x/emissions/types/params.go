@@ -142,7 +142,7 @@ func (p Params) Validate() error {
 	if err := validateMaxSerializedMsgLength(p.MaxSerializedMsgLength); err != nil {
 		return err
 	}
-	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
+	if err := ValidateBlocksPerMonth(p.BlocksPerMonth); err != nil {
 		return err
 	}
 	if err := validatePRewardInference(p.PRewardInference); err != nil {
@@ -487,7 +487,7 @@ func validateMaxSerializedMsgLength(i int64) error {
 
 // Number of blocks in a month.
 // should be a number on the order of 525,960
-func validateBlocksPerMonth(i uint64) error {
+func ValidateBlocksPerMonth(i uint64) error {
 	if i == 0 {
 		return fmt.Errorf("blocks per month must be positive: %d", i)
 	}
