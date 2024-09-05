@@ -43,6 +43,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.4.1
+
+### Summary
+
+Implement fix on topic values after a migration. plus minor fixes
+
+### Fixed
+
+* [#582](https://github.com/allora-network/allora-chain/pull/582) Additional topic fields validation
+
+
 ## v0.4.0
 
 ### Summary
