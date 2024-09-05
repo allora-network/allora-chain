@@ -29,7 +29,7 @@ type MintKeeperTestSuite struct {
 
 	mintKeeper      keeper.Keeper
 	ctx             sdk.Context
-	msgServer       types.MsgServer
+	msgServer       types.MsgServiceServer
 	ctrl            *gomock.Controller
 	stakingKeeper   *minttestutil.MockStakingKeeper
 	bankKeeper      *minttestutil.MockBankKeeper

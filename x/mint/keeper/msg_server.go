@@ -7,22 +7,22 @@ import (
 	"github.com/allora-network/allora-chain/x/mint/types"
 )
 
-var _ types.MsgServer = msgServer{}
+var _ types.MsgServiceServer = msgServiceServer{}
 
-// msgServer is a wrapper of Keeper.
-type msgServer struct {
+// msgServiceServer is a wrapper of Keeper.
+type msgServiceServer struct {
 	Keeper
 }
 
 // NewMsgServerImpl returns an implementation of the x/mint MsgServer interface.
-func NewMsgServerImpl(k Keeper) types.MsgServer {
-	return &msgServer{
+func NewMsgServerImpl(k Keeper) types.MsgServiceServer {
+	return &msgServiceServer{
 		Keeper: k,
 	}
 }
 
 // UpdateParams updates the params.
-func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.MsgServiceUpdateParamsRequest) (*types.MsgServiceUpdateParamsResponse, error) {
 	isAdmin, err := ms.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {
 		return nil, err
@@ -39,5 +39,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 		return nil, err
 	}
 
-	return &types.MsgUpdateParamsResponse{}, nil
+	return &types.MsgServiceUpdateParamsResponse{}, nil
+}
+
+func (ms msgServiceServer) RecalculateTargetEmission(ctx context.Context, msg *types.MsgServiceRecalculateTargetEmissionRequest) (*types.MsgServiceRecalculateTargetEmissionResponse, error) {
+	return nil, nil
 }

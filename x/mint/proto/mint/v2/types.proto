@@ -5,7 +5,7 @@ import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/allora-network/allora-chain/x/mint/api/v2";
+option go_package = "github.com/allora-network/allora-chain/x/mint/types";
 
 // Params defines the parameters for the x/mint module.
 message Params {
