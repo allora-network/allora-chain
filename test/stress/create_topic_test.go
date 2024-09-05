@@ -17,7 +17,7 @@ func createTopic(
 	creator NameAccountAndAddress,
 ) (topicId uint64) {
 	ctx := context.Background()
-	createTopicRequest := &emissionstypes.MsgServiceCreateNewTopicRequest{
+	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
 		Creator:                  creator.aa.addr,
 		Metadata:                 "ETH 24h Prediction",
 		LossMethod:               "mse",
@@ -40,7 +40,7 @@ func createTopic(
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
-	createTopicResponse := &emissionstypes.MsgServiceCreateNewTopicResponse{}
+	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.T, err)
 
@@ -63,7 +63,7 @@ func fundTopic(
 	txResp, err := m.Client.BroadcastTx(
 		ctx,
 		sender.aa.acc,
-		&emissionstypes.MsgServiceFundTopicRequest{
+		&emissionstypes.MsgFundTopic{
 			Sender:  sender.aa.addr,
 			TopicId: topicId,
 			Amount:  cosmosMath.NewInt(amount),
@@ -76,7 +76,7 @@ func fundTopic(
 	if err != nil {
 		return err
 	}
-	resp := &emissionstypes.MsgServiceFundTopicResponse{}
+	resp := &emissionstypes.MsgFundTopicResponse{}
 	err = txResp.Decode(resp)
 	if err != nil {
 		return err
