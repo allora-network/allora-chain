@@ -7,7 +7,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (msg *MsgServiceCreateNewTopicRequest) Validate() error {
+func (msg *MsgServiceCreateNewTopicRequest) Validate(maxSerializedMsgLength int64) error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
@@ -37,17 +37,25 @@ func (msg *MsgServiceCreateNewTopicRequest) Validate() error {
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
-	if msg.MeritSortitionAlpha.Lte(alloraMath.ZeroDec()) || msg.MeritSortitionAlpha.Gt(alloraMath.OneDec()) || validateDec(msg.MeritSortitionAlpha) != nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than 0 and less than or equal to 1")
+	if int64(len(msg.Metadata)) > maxSerializedMsgLength {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata cannot be longer than max serialized msg length")
 	}
-	if msg.ActiveInfererQuantile.Lte(alloraMath.ZeroDec()) || msg.ActiveInfererQuantile.Gt(alloraMath.OneDec()) || validateDec(msg.ActiveInfererQuantile) != nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be greater than 0 and less than or equal to 1")
+	// no validation on AllowNegative because either it is true or false
+	// and both are valid values
+	//	AllowNegative            bool
+
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.MeritSortitionAlpha) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
 	}
-	if msg.ActiveForecasterQuantile.Lte(alloraMath.ZeroDec()) || msg.ActiveForecasterQuantile.Gt(alloraMath.OneDec()) || validateDec(msg.ActiveForecasterQuantile) != nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active forecaster quantile must be greater than 0 and less than or equal to 1")
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveInfererQuantile) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be between 0 and 1 inclusive")
 	}
-	if msg.ActiveReputerQuantile.Lte(alloraMath.ZeroDec()) || msg.ActiveReputerQuantile.Gt(alloraMath.OneDec()) || validateDec(msg.ActiveReputerQuantile) != nil {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be greater than 0 and less than or equal to 1")
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveForecasterQuantile) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active forecaster quantile must be between 0 and 1 inclusive")
 	}
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
+	}
+
 	return nil
 }
