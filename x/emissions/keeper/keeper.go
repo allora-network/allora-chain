@@ -738,7 +738,7 @@ func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context,
 
 /// PARAMETERS
 
-func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
+func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
 	return k.params.Set(ctx, params)
 }
 
