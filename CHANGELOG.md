@@ -47,7 +47,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Summary
 
-Implement fix on topic values after a migration. plus minor fixes
+1. Implement fix on topic values after migration v0.4.0. 
+2. Add additional RPC endpoint to allow for recalculating 
+   the inflation rate / target emission rate more often than once per month.
+3. Other miscellaneous minor fixes
+
+### Added
+
+* [#584](https://github.com/allora-network/allora-chain/pull/584) Allow admins to force target emission recalculation on params update and via dedicated mint RPC endpoint
 
 ### Fixed
 
