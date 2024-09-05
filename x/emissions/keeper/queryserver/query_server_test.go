@@ -128,7 +128,9 @@ func (s *QueryServerTestSuite) SetupTest() {
 		storeService,
 		accountKeeper,
 		bankKeeper,
-		authtypes.FeeCollectorName)
+		authtypes.FeeCollectorName,
+		keeper.DefaultConfig(),
+	)
 	s.key = key
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)

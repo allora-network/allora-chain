@@ -108,6 +108,7 @@ func (a *ActorUtilsTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		authtypes.FeeCollectorName,
+		keeper.DefaultConfig(),
 	)
 	a.key = key
 	appModule := module.NewAppModule(encCfg.Codec, a.emissionsKeeper)
