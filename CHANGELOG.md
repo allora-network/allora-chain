@@ -41,7 +41,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) for all versions `v1.0.0` and beyond (still considered experimental prior to v1.0.0).
 
-## [Unreleased] -- will be v0.4.0
+## [Unreleased]
+
+## v0.4.0
 
 ### Summary
 
@@ -62,6 +64,7 @@ Implements fixes for our [June 2024](https://github.com/sherlock-audit/2024-06-a
 * [#547](https://github.com/allora-network/allora-chain/pull/547) Improve error handling on InsertPayload, fixed/added tests err handling
 * [#550](https://github.com/allora-network/allora-chain/pull/550) Fix reputer window upper limit
 * [#555](https://github.com/allora-network/allora-chain/pull/555) Refactor: Rename TestSuite names
+* [#567](https://github.com/allora-network/allora-chain/pull/567) Fix worker nonce window closing as soon as it opens
 
 ### Security
 

@@ -180,6 +180,11 @@ message GenesisState {
   repeated TopicIdAndBlockHeight topicToNextPossibleChurningBlock = 57;
   repeated BlockHeightTopicIds blockToActiveTopics = 58;
   repeated BlockHeightTopicIdWeightPair blockToLowestActiveTopicWeight = 59;
+
+  // EMA
+  repeated TopicIdAndDec previousTopicQuantileInfererScoreEma = 63;
+  repeated TopicIdAndDec previousTopicQuantileForecasterScoreEma = 64;
+  repeated TopicIdAndDec previousTopicQuantileReputerScoreEma = 65;
 }
 
 message TopicIdAndTopic {
