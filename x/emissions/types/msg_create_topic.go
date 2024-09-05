@@ -37,6 +37,17 @@ func (msg *MsgServiceCreateNewTopicRequest) Validate() error {
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
-
+	if msg.MeritSortitionAlpha.Lte(alloraMath.ZeroDec()) || msg.MeritSortitionAlpha.Gt(alloraMath.OneDec()) || validateDec(msg.MeritSortitionAlpha) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be greater than 0 and less than or equal to 1")
+	}
+	if msg.ActiveInfererQuantile.Lte(alloraMath.ZeroDec()) || msg.ActiveInfererQuantile.Gt(alloraMath.OneDec()) || validateDec(msg.ActiveInfererQuantile) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be greater than 0 and less than or equal to 1")
+	}
+	if msg.ActiveForecasterQuantile.Lte(alloraMath.ZeroDec()) || msg.ActiveForecasterQuantile.Gt(alloraMath.OneDec()) || validateDec(msg.ActiveForecasterQuantile) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active forecaster quantile must be greater than 0 and less than or equal to 1")
+	}
+	if msg.ActiveReputerQuantile.Lte(alloraMath.ZeroDec()) || msg.ActiveReputerQuantile.Gt(alloraMath.OneDec()) || validateDec(msg.ActiveReputerQuantile) != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be greater than 0 and less than or equal to 1")
+	}
 	return nil
 }
