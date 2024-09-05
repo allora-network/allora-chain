@@ -22,7 +22,7 @@ func createTopic(
 ) {
 	wasErr := false
 	iterLog(m.T, iteration, actor, "creating new topic")
-	createTopicRequest := &emissionstypes.MsgServiceCreateNewTopicRequest{
+	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
 		Creator:                  actor.addr,
 		Metadata:                 fmt.Sprintf("Created topic iteration %d", iteration),
 		LossMethod:               "mse",
@@ -52,7 +52,7 @@ func createTopic(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	createTopicResponse := &emissionstypes.MsgServiceCreateNewTopicResponse{}
+	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
 	err = txResp.Decode(createTopicResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -79,7 +79,7 @@ func fundTopic(
 ) {
 	wasErr := false
 	iterLog(m.T, iteration, actor, "funding topic in amount ", amount)
-	fundTopicRequest := &emissionstypes.MsgServiceFundTopicRequest{
+	fundTopicRequest := &emissionstypes.MsgFundTopic{
 		Sender:  actor.addr,
 		TopicId: topicId,
 		Amount:  *amount,

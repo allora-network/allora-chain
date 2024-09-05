@@ -22,7 +22,7 @@ func (s *MsgServerTestSuite) TestFundTopicSimple() {
 	s.Require().NoError(err)
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.Require().NoError(err)
-	r := types.MsgServiceFundTopicRequest{
+	r := types.MsgFundTopic{
 		Sender:  sender,
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
@@ -81,12 +81,12 @@ func (s *MsgServerTestSuite) TestHighWeightForHighFundedTopic() {
 	s.Require().NoError(err)
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(s.ctx, types.AlloraStakingAccountName, senderAddr, initialStakeCoins)
 	s.Require().NoError(err)
-	r := types.MsgServiceFundTopicRequest{
+	r := types.MsgFundTopic{
 		Sender:  sender,
 		TopicId: topicId,
 		Amount:  cosmosMath.NewInt(initialStake),
 	}
-	r2 := types.MsgServiceFundTopicRequest{
+	r2 := types.MsgFundTopic{
 		Sender:  sender,
 		TopicId: topicId2,
 		Amount:  cosmosMath.NewInt(initialStake2),
@@ -178,7 +178,7 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	s.Require().NotNil(response.RequestId, "RequestInference should contain the id of the new request")
 
 	// Check updated stake for delegator
-	r0 := types.CreateNewInferenceRequestFromListItem(r[0].Sender, r[0].Request)
+	r0 := types.CreateNewInferenceRequestFromListItem(r[0].Sender, r[0].)
 	requestId, err := r0.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, requestId)
@@ -196,7 +196,7 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	response, err = s.msgServer.RequestInference(s.ctx, r[1])
 	s.Require().NoError(err, "RequestInference should not return an error")
 	s.Require().NotNil(response.RequestId, "RequestInference should contain the id of the new request")
-	r1 := types.CreateNewInferenceRequestFromListItem(r[1].Sender, r[1].Request)
+	r1 := types.CreateNewInferenceRequestFromListItem(r[1].Sender, r[1].)
 	requestId, err = r1.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err = s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, requestId)

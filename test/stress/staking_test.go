@@ -15,7 +15,7 @@ func stakeReputer(
 	reputer NameAccountAndAddress,
 	stakeToAdd uint64,
 ) error {
-	addStake := &emissionstypes.MsgServiceAddStakeRequest{
+	addStake := &emissionstypes.MsgAddStake{
 		Sender:  reputer.aa.addr,
 		TopicId: topicId,
 		Amount:  cosmosMath.NewIntFromUint64(stakeToAdd),

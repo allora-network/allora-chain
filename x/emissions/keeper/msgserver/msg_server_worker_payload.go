@@ -14,7 +14,7 @@ import (
 // Only 1 payload per registered worker is kept, ignore the rest. In particular, take the first payload from each
 // registered worker and none from any unregistered actor.
 // Signatures, anti-sybil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
-func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgServiceInsertWorkerPayloadRequest) (*types.MsgServiceInsertWorkerPayloadResponse, error) {
+func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInsertWorkerPayload) (*types.MsgInsertWorkerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
@@ -155,5 +155,5 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgServi
 			}
 		}
 	}
-	return &types.MsgServiceInsertWorkerPayloadResponse{}, nil
+	return &types.MsgInsertWorkerPayloadResponse{}, nil
 }

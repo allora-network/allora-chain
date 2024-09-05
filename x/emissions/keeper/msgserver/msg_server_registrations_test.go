@@ -15,7 +15,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
-func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputer() {
+func (s *MsgServerTestSuite) TestMsgRegisterRequestReputer() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -31,7 +31,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputer() {
 	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Reputer register
-	registerMsg := &types.MsgServiceRegisterRequest{
+	registerMsg := &types.MsgRegister{
 		Sender:    reputerAddr.String(),
 		TopicId:   topicId,
 		IsReputer: true,
@@ -64,7 +64,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputer() {
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgServiceRemoveRegistrationRequest() {
+func (s *MsgServerTestSuite) TestMsgRemoveRegistrationRequest() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -80,7 +80,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRemoveRegistrationRequest() {
 	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	require.NoError(err)
 	// Reputer register
-	registerMsg := &types.MsgServiceRegisterRequest{
+	registerMsg := &types.MsgRegister{
 		Sender:    reputerAddr.String(),
 		TopicId:   topicId,
 		IsReputer: true,
@@ -107,7 +107,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRemoveRegistrationRequest() {
 	require.NoError(err)
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 
-	unregisterMsg := &types.MsgServiceRemoveRegistrationRequest{
+	unregisterMsg := &types.MsgRemoveRegistration{
 		Sender:    reputerAddr.String(),
 		TopicId:   topicId,
 		IsReputer: true,
@@ -121,7 +121,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRemoveRegistrationRequest() {
 	require.False(isReputerRegistered, "Reputer should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestWorker() {
+func (s *MsgServerTestSuite) TestMsgRegisterRequestWorker() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -137,7 +137,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestWorker() {
 	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	require.NoError(err)
 	// Reputer register
-	registerMsg := &types.MsgServiceRegisterRequest{
+	registerMsg := &types.MsgRegister{
 		Sender:    workerAddr.String(),
 		TopicId:   topicId,
 		IsReputer: false,
@@ -173,7 +173,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestWorker() {
 	require.True(isWorkerRegistered, "Worker should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgServiceRemoveRegistrationRequestWorker() {
+func (s *MsgServerTestSuite) TestMsgRemoveRegistrationRequestWorker() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -189,7 +189,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRemoveRegistrationRequestWorker() {
 	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	require.NoError(err)
 	// Reputer register
-	registerMsg := &types.MsgServiceRegisterRequest{
+	registerMsg := &types.MsgRegister{
 		Sender:    workerAddr.String(),
 		TopicId:   topicId,
 		IsReputer: false,
@@ -216,7 +216,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRemoveRegistrationRequestWorker() {
 	require.NoError(err)
 	require.True(isWorkerRegistered, "Worker should be registered in topic")
 
-	unregisterMsg := &types.MsgServiceRemoveRegistrationRequest{
+	unregisterMsg := &types.MsgRemoveRegistration{
 		Sender:    workerAddr.String(),
 		TopicId:   topicId,
 		IsReputer: false,
@@ -230,7 +230,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRemoveRegistrationRequestWorker() {
 	require.False(isWorkerRegistered, "Worker should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputerInsufficientBalance() {
+func (s *MsgServerTestSuite) TestMsgRegisterRequestReputerInsufficientBalance() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	topicId := s.CreateOneTopic()
@@ -246,7 +246,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputerInsufficientBal
 
 	s.MintTokensToAddress(reputerAddr, cosmosMath.NewInt(1))
 	// Topic does not exist
-	registerMsg := &types.MsgServiceRegisterRequest{
+	registerMsg := &types.MsgRegister{
 		Sender:    reputerAddr.String(),
 		Owner:     reputerAddr.String(),
 		TopicId:   topicId,
@@ -256,7 +256,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputerInsufficientBal
 	require.Error(err)
 }
 
-func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputerInsufficientDenom() {
+func (s *MsgServerTestSuite) TestMsgRegisterRequestReputerInsufficientDenom() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	topicId := s.CreateOneTopic()
@@ -266,7 +266,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputerInsufficientDen
 	registrationInitialStake := cosmosMath.NewInt(100)
 
 	// Register Reputer
-	reputerRegMsg := &types.MsgServiceRegisterRequest{
+	reputerRegMsg := &types.MsgRegister{
 		Sender:    reputerAddr.String(),
 		TopicId:   topicId,
 		IsReputer: true,
@@ -315,7 +315,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 
 	s.MintTokensToAddress(worker, cosmosMath.NewInt(10).Mul(cosmosOneE18))
 	// Create topic
-	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:                  worker.String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -336,7 +336,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 	topicId := res.TopicId
 
 	// Register 1 worker
-	workerRegMsg := &types.MsgServiceRegisterRequest{
+	workerRegMsg := &types.MsgRegister{
 		Sender:    worker.String(),
 		TopicId:   topicId,
 		IsReputer: false,
@@ -345,7 +345,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 	_, err = s.msgServer.Register(s.ctx, workerRegMsg)
 	s.Require().NoError(err)
 
-	reputerRegMsg := &types.MsgServiceRegisterRequest{
+	reputerRegMsg := &types.MsgRegister{
 		Sender:    reputer.String(),
 		TopicId:   topicId,
 		IsReputer: true,
@@ -355,7 +355,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 	s.Require().ErrorIs(err, sdkerrors.ErrInsufficientFunds, "Register should return an error")
 }
 
-func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputerInvalidTopicNotExist() {
+func (s *MsgServerTestSuite) TestMsgRegisterRequestReputerInvalidTopicNotExist() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -365,7 +365,7 @@ func (s *MsgServerTestSuite) TestMsgServiceRegisterRequestReputerInvalidTopicNot
 	reputerAddr := sdk.AccAddress(PKS[0].Address())
 
 	// Topic does not exist
-	registerMsg := &types.MsgServiceRegisterRequest{
+	registerMsg := &types.MsgRegister{
 		Sender:    reputerAddr.String(),
 		Owner:     reputerAddr.String(),
 		TopicId:   topicId,

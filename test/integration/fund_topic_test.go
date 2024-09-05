@@ -14,7 +14,7 @@ func FundTopic1(m testCommon.TestConfig) {
 	txResp, err := m.Client.BroadcastTx(
 		ctx,
 		m.BobAcc,
-		&emissionstypes.MsgServiceFundTopicRequest{
+		&emissionstypes.MsgFundTopic{
 			Sender:  m.BobAddr,
 			TopicId: uint64(1),
 			Amount:  cosmosMath.NewInt(10000),
@@ -23,7 +23,7 @@ func FundTopic1(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	resp := &emissionstypes.MsgServiceFundTopicResponse{}
+	resp := &emissionstypes.MsgFundTopicResponse{}
 	err = txResp.Decode(resp)
 	require.NoError(m.T, err)
 }
