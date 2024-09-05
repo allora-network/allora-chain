@@ -111,6 +111,7 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		authtypes.FeeCollectorName,
+		keeper.DefaultConfig(),
 	)
 	s.key = key
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)

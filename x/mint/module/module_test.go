@@ -125,6 +125,7 @@ func (s *MintModuleTestSuite) SetupTest() {
 		accountKeeper,
 		bankKeeper,
 		"fee_collector",
+		emissionskeeper.DefaultConfig(),
 	)
 
 	mintKeeper := keeper.NewKeeper(

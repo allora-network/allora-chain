@@ -89,7 +89,9 @@ func (s *EmissionsV2MigrationsTestSuite) SetupTest() {
 		storeService,
 		accountKeeper,
 		bankKeeper,
-		authtypes.FeeCollectorName)
+		authtypes.FeeCollectorName,
+		keeper.DefaultConfig(),
+	)
 }
 
 func TestEmissionsV2MigrationsTestSuite(t *testing.T) {
