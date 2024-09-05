@@ -3,11 +3,12 @@ package types
 import (
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	types "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (msg *MsgServiceCreateNewTopicRequest) Validate() error {
+func (msg *MsgServiceCreateNewTopicRequest) Validate(maxSerializedMsgLength int64) error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
@@ -36,6 +37,25 @@ func (msg *MsgServiceCreateNewTopicRequest) Validate() error {
 	}
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
+	}
+	if int64(len(msg.Metadata)) > maxSerializedMsgLength {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata cannot be longer than max serialized msg length")
+	}
+	// no validation on AllowNegative because either it is true or false
+	// and both are valid values
+	//	AllowNegative            bool
+
+	if !types.IsAlloraDecBetweenZeroAndOneInclusive(msg.MeritSortitionAlpha) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
+	}
+	if !types.IsAlloraDecBetweenZeroAndOneInclusive(msg.ActiveInfererQuantile) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be between 0 and 1 inclusive")
+	}
+	if !types.IsAlloraDecBetweenZeroAndOneInclusive(msg.ActiveForecasterQuantile) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active forecaster quantile must be between 0 and 1 inclusive")
+	}
+	if !types.IsAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 	}
 
 	return nil
