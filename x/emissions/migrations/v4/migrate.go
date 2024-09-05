@@ -2,7 +2,6 @@ package v4
 
 import (
 	errorsmod "cosmossdk.io/errors"
-	cosmosMath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -137,59 +136,4 @@ func ResetMapsWithNonNumericValues(store storetypes.KVStore, cdc codec.BinaryCod
 	safelyClearWholeMap(store, types.LatestOneOutInfererForecasterNetworkRegretsKey)
 	safelyClearWholeMap(store, types.LatestOneOutForecasterInfererNetworkRegretsKey)
 	safelyClearWholeMap(store, types.LatestOneOutForecasterForecasterNetworkRegretsKey)
-}
-
-func getTopicWeight(
-	feeRevenue, stake cosmosMath.Int,
-	previousWeight alloraMath.Dec,
-	topicEpochLength int64,
-	topicRewardAlpha alloraMath.Dec,
-	stakeImportance alloraMath.Dec,
-	feeImportance alloraMath.Dec,
-	emissionsKeeper keeper.Keeper,
-) (alloraMath.Dec, error) {
-	feeRevenueDec, err := alloraMath.NewDecFromSdkInt(feeRevenue)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	topicStakeDec, err := alloraMath.NewDecFromSdkInt(stake)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-	if !feeRevenueDec.Equal(alloraMath.ZeroDec()) {
-		targetWeight, err := emissionsKeeper.GetTargetWeight(
-			topicStakeDec,
-			topicEpochLength,
-			feeRevenueDec,
-			stakeImportance,
-			feeImportance,
-		)
-		if err != nil {
-			return alloraMath.ZeroDec(), err
-		}
-		weight, err := alloraMath.CalcEma(topicRewardAlpha, targetWeight, previousWeight, false)
-		if err != nil {
-			return alloraMath.ZeroDec(), err
-		}
-		return weight, nil
-	}
-	return alloraMath.ZeroDec(), nil
-}
-
-func getLowestTopicIdWeightPair(weightData map[types.TopicId]alloraMath.Dec, ids types.TopicIds) types.TopicIdWeightPair {
-	lowestWeight := types.TopicIdWeightPair{
-		Weight:  alloraMath.ZeroDec(),
-		TopicId: uint64(0),
-	}
-	firstIter := true
-	for _, id := range ids.TopicIds {
-		if weightData[id].Lt(lowestWeight.Weight) || firstIter {
-			lowestWeight = types.TopicIdWeightPair{
-				Weight:  weightData[id],
-				TopicId: id,
-			}
-			firstIter = false
-		}
-	}
-	return lowestWeight
 }
