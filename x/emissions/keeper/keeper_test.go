@@ -181,7 +181,7 @@ func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
 
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
-	// Create a MsgServiceCreateNewTopicRequest message
+	// Create a MsgCreateNewTopic message
 
 	creator := sdk.AccAddress(PKS[0].Address())
 

@@ -117,7 +117,7 @@ func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
 		Version: []string{"2.0"}, // example of changing the version
 	}
 
-	// Creating the MsgUpdateParamsRequest message with a non-whitelisted user
+	// Creating the MsgUpdateParams message with a non-whitelisted user
 	updateMsg := &types.MsgUpdateParams{
 		Sender: nonAdminAddr.String(),
 		Params: newParams,

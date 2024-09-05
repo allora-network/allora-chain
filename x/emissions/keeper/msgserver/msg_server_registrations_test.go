@@ -15,7 +15,7 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
-func (s *MsgServerTestSuite) TestMsgRegisterRequestReputer() {
+func (s *MsgServerTestSuite) TestMsgRegisterReputer() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -64,7 +64,7 @@ func (s *MsgServerTestSuite) TestMsgRegisterRequestReputer() {
 	require.True(isReputerRegistered, "Reputer should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgRemoveRegistrationRequest() {
+func (s *MsgServerTestSuite) TestMsgRemoveRegistration() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -121,7 +121,7 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistrationRequest() {
 	require.False(isReputerRegistered, "Reputer should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgRegisterRequestWorker() {
+func (s *MsgServerTestSuite) TestMsgRegisterWorker() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -173,7 +173,7 @@ func (s *MsgServerTestSuite) TestMsgRegisterRequestWorker() {
 	require.True(isWorkerRegistered, "Worker should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgRemoveRegistrationRequestWorker() {
+func (s *MsgServerTestSuite) TestMsgRemoveRegistrationWorker() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -230,7 +230,7 @@ func (s *MsgServerTestSuite) TestMsgRemoveRegistrationRequestWorker() {
 	require.False(isWorkerRegistered, "Worker should be registered in topic")
 }
 
-func (s *MsgServerTestSuite) TestMsgRegisterRequestReputerInsufficientBalance() {
+func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientBalance() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	topicId := s.CreateOneTopic()
@@ -256,7 +256,7 @@ func (s *MsgServerTestSuite) TestMsgRegisterRequestReputerInsufficientBalance() 
 	require.Error(err)
 }
 
-func (s *MsgServerTestSuite) TestMsgRegisterRequestReputerInsufficientDenom() {
+func (s *MsgServerTestSuite) TestMsgRegisterReputerInsufficientDenom() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	topicId := s.CreateOneTopic()
@@ -355,7 +355,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 	s.Require().ErrorIs(err, sdkerrors.ErrInsufficientFunds, "Register should return an error")
 }
 
-func (s *MsgServerTestSuite) TestMsgRegisterRequestReputerInvalidTopicNotExist() {
+func (s *MsgServerTestSuite) TestMsgRegisterReputerInvalidTopicNotExist() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 

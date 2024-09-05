@@ -175,7 +175,7 @@ func (s *QueryServerTestSuite) CreateOneTopic() uint64 {
 
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
-	// Create a MsgServiceCreateNewTopicRequest message
+	// Create a MsgCreateNewTopic message
 
 	creator := sdk.AccAddress(PKS[0].Address())
 
@@ -208,7 +208,7 @@ func (s *QueryServerTestSuite) TestCreateSeveralTopics() {
 	require := s.Require()
 	// Mock setup for metadata and validation steps
 	metadata := "Some metadata for the new topic"
-	// Create a MsgServiceCreateNewTopicRequest message
+	// Create a MsgCreateNewTopic message
 
 	creator := sdk.AccAddress(PKS[0].Address())
 

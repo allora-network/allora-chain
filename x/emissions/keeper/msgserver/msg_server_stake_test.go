@@ -87,7 +87,7 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 	return topicId
 }
 
-func (s *MsgServerTestSuite) TestMsgAddStakeRequest() {
+func (s *MsgServerTestSuite) TestMsgAddStake() {
 	ctx := s.ctx
 	require := s.Require()
 

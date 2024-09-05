@@ -193,7 +193,7 @@ func (s *MsgServerTestSuite) CreateCustomEpochTopic(epochLen int64) uint64 {
 
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
-	// Create a MsgCreateNewTopicRequest message
+	// Create a MsgCreateNewTopic message
 
 	creator := sdk.AccAddress(PKS[0].Address())
 
@@ -226,7 +226,7 @@ func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 	require := s.Require()
 	// Mock setup for metadata and validation steps
 	metadata := "Some metadata for the new topic"
-	// Create a MsgCreateNewTopicRequest message
+	// Create a MsgCreateNewTopic message
 
 	creator := sdk.AccAddress(PKS[0].Address())
 

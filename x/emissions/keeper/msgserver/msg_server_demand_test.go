@@ -178,7 +178,7 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	s.Require().NotNil(response.RequestId, "RequestInference should contain the id of the new request")
 
 	// Check updated stake for delegator
-	r0 := types.CreateNewInferenceRequestFromListItem(r[0].Sender, r[0].)
+	r0 := types.CreateNewInferenceRequestFromListItem(r[0].Sender, r[0].Request)
 	requestId, err := r0.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err := s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, requestId)
@@ -196,7 +196,7 @@ func (s *KeeperTestSuite) TestRequestInferenceBatchSimple() {
 	response, err = s.msgServer.RequestInference(s.ctx, r[1])
 	s.Require().NoError(err, "RequestInference should not return an error")
 	s.Require().NotNil(response.RequestId, "RequestInference should contain the id of the new request")
-	r1 := types.CreateNewInferenceRequestFromListItem(r[1].Sender, r[1].)
+	r1 := types.CreateNewInferenceRequestFromListItem(r[1].Sender, r[1].Request)
 	requestId, err = r1.GetRequestId()
 	s.Require().NoError(err)
 	storedRequest, err = s.emissionsKeeper.GetMempoolInferenceRequestById(s.ctx, requestId)
