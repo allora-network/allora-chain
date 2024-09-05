@@ -14,8 +14,6 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
-const maxPageSize = uint64(10000)
-
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("MIGRATING STORE FROM VERSION 3 TO VERSION 4")
 	storageService := emissionsKeeper.GetStorageService()
