@@ -8,7 +8,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgServiceCreateNewTopicRequest) (*types.MsgServiceCreateNewTopicResponse, error) {
+func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewTopic) (*types.MsgCreateNewTopicResponse, error) {
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
@@ -65,5 +65,5 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgServiceCre
 	// we do nothing, since no value in the map means zero
 
 	err = ms.k.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
-	return &types.MsgServiceCreateNewTopicResponse{TopicId: topicId}, err
+	return &types.MsgCreateNewTopicResponse{TopicId: topicId}, err
 }

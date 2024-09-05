@@ -376,7 +376,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 	err := keeper.InsertReputer(ctx, topicId, reputerAddr.String(), reputerInfo)
 	require.NoError(err)
 
-	msg := &types.MsgServiceDelegateStakeRequest{
+	msg := &types.MsgDelegateStake{
 		Sender:  delegatorAddr.String(),
 		TopicId: topicId,
 		Reputer: reputerAddr.String(),

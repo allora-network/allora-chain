@@ -58,7 +58,7 @@ type QueryServerTestSuite struct {
 	bankKeeper      keeper.BankKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
-	msgServer       types.MsgServiceServer
+	msgServer       types.MsgServer
 	queryServer     types.QueryServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
@@ -179,7 +179,7 @@ func (s *QueryServerTestSuite) CreateOneTopic() uint64 {
 
 	creator := sdk.AccAddress(PKS[0].Address())
 
-	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:                  creator.String(),
 		Metadata:                 metadata,
 		LossMethod:               "method",
@@ -212,7 +212,7 @@ func (s *QueryServerTestSuite) TestCreateSeveralTopics() {
 
 	creator := sdk.AccAddress(PKS[0].Address())
 
-	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:                  creator.String(),
 		Metadata:                 metadata,
 		LossMethod:               "mse",

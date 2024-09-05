@@ -10,7 +10,7 @@ import (
 )
 
 func createNewTopic(s *RewardsTestSuite) uint64 {
-	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:                  s.addrs[5].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",

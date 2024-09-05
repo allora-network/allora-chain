@@ -19,7 +19,7 @@ func (s *MsgServerTestSuite) TestAddWhitelistAdmin() {
 	require.False(isWhitelistAdmin, "newAdminAddr should not be a whitelist admin")
 
 	// Attempt to add newAdminAddr to whitelist by adminAddr
-	msg := &types.MsgServiceAddToWhitelistAdminRequest{
+	msg := &types.MsgAddToWhitelistAdmin{
 		Sender:  adminAddr,
 		Address: newAdminAddr,
 	}
@@ -41,7 +41,7 @@ func (s *MsgServerTestSuite) TestAddWhitelistAdminInvalidUnauthorized() {
 	targetAddr := sdk.AccAddress(PKS[1].Address())
 
 	// Attempt to add targetAddr to whitelist by nonAdminAddr
-	msg := &types.MsgServiceAddToWhitelistAdminRequest{
+	msg := &types.MsgAddToWhitelistAdmin{
 		Sender:  nonAdminAddr.String(),
 		Address: targetAddr.String(),
 	}
@@ -59,7 +59,7 @@ func (s *MsgServerTestSuite) TestRemoveWhitelistAdmin() {
 	adminToRemove := sdk.AccAddress(PKS[1].Address()).String()
 
 	// Attempt to remove adminToRemove from the whitelist by adminAddr
-	removeMsg := &types.MsgServiceRemoveFromWhitelistAdminRequest{
+	removeMsg := &types.MsgRemoveFromWhitelistAdmin{
 		Sender:  adminAddr,
 		Address: adminToRemove,
 	}
@@ -79,7 +79,7 @@ func (s *MsgServerTestSuite) TestRemoveWhitelistAdminInvalidUnauthorized() {
 	nonAdminAddr := nonAdminAccounts[0]
 
 	// Attempt to remove an admin from whitelist by nonAdminAddr
-	msg := &types.MsgServiceRemoveFromWhitelistAdminRequest{
+	msg := &types.MsgRemoveFromWhitelistAdmin{
 		Sender:  nonAdminAddr.String(),
 		Address: Addr.String(),
 	}
