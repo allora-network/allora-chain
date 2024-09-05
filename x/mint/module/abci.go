@@ -114,15 +114,72 @@ func GetEmissionPerMonth(
 	return emissionPerMonth, emissionPerUnitStakedToken, nil
 }
 
+// RecalculateTargetEmission recalculates the target emission for the network
+// It writes the old emission rates to the store for
+// PreviousRewardEmissionPerUnitStakedToken and PreviousBlockEmission
+// Then it calculates the new target emission rate
+// returns that, and the block emission we should mint/send for this block
+func RecalculateTargetEmission(
+	ctx sdk.Context,
+	k keeper.Keeper,
+	blockHeight uint64,
+	blocksPerMonth uint64,
+	moduleParams types.Params,
+	ecosystemBalance math.Int,
+	ecosystemMintSupplyRemaining math.Int,
+	validatorsPercent math.LegacyDec,
+) (
+	blockEmission math.Int,
+	emissionPerUnitStakedToke math.LegacyDec, // e_i in the whitepaper
+	err error,
+) {
+	emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
+		ctx,
+		k,
+		blockHeight,
+		blocksPerMonth,
+		moduleParams,
+		ecosystemBalance,
+		ecosystemMintSupplyRemaining,
+		validatorsPercent,
+	)
+	if err != nil {
+		return math.Int{}, math.LegacyDec{}, err
+	}
+	// emission/block = (emission/month) / (block/month)
+	blockEmission = emissionPerMonth.
+		Quo(math.NewIntFromUint64(blocksPerMonth))
+
+	// set the previous emissions to this block's emissions
+	err = k.PreviousRewardEmissionPerUnitStakedToken.Set(ctx, emissionPerUnitStakedToken)
+	if err != nil {
+		return math.Int{}, math.LegacyDec{}, errors.Wrap(err, "error setting previous reward emission per unit staked token")
+	}
+	err = k.PreviousBlockEmission.Set(ctx, blockEmission)
+	if err != nil {
+		return math.Int{}, math.LegacyDec{}, errors.Wrap(err, "error setting previous block emission")
+	}
+
+	k.Logger(ctx).Info("Emissions Update",
+		"emissionPerUnitStakedToken", emissionPerUnitStakedToken.String(),
+		"emissionPerMonth", emissionPerMonth.String(),
+		"blockEmission", blockEmission.String(),
+	)
+	return blockEmission, emissionPerUnitStakedToken, nil
+}
+
+// the begin blocker function for the mint module
+// it calculates the emission / inflation rate for the block,
+// and sends inflationary rewards to the validators and reputers module accounts
 func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	params, err := k.Params.Get(ctx)
+	moduleParams, err := k.Params.Get(ctx)
 	if err != nil {
 		return err
 	}
 	// Get the balance of the "ecosystem" module account
-	ecosystemBalance, err := k.GetEcosystemBalance(ctx, params.MintDenom)
+	ecosystemBalance, err := k.GetEcosystemBalance(ctx, moduleParams.MintDenom)
 	if err != nil {
 		return err
 	}
@@ -133,12 +190,10 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
-	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(sdkCtx, params)
+	ecosystemMintSupplyRemaining, err := k.GetEcosystemMintSupplyRemaining(sdkCtx, moduleParams)
 	if err != nil {
 		return err
 	}
-	updateEmission := false
-	var e_i math.LegacyDec //nolint:revive // var-naming: don't use underscores in Go names
 	blocksPerMonth, err := k.GetParamsBlocksPerMonth(ctx)
 	if err != nil {
 		return err
@@ -153,29 +208,24 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	}
 	// every month on the first block of the month, update the emissions rate
 	if blockHeight%blocksPerMonth == 1 { // easier to test when genesis starts at 1
-		emissionPerMonth, emissionPerUnitStakedToken, err := GetEmissionPerMonth(
+		// Recalculate the target emission for the block
+		// WARNING: After Calling RecalculateTargetEmission,
+		// PreviousRewardEmissionPerUnitStakedToken and PreviousBlockEmission
+		// are set to new values. If later in begin blocker you need to use these
+		// you should get them first before this function is called!!
+		blockEmission, _, err = RecalculateTargetEmission(
 			sdkCtx,
 			k,
 			blockHeight,
 			blocksPerMonth,
-			params,
+			moduleParams,
 			ecosystemBalance,
 			ecosystemMintSupplyRemaining,
 			vPercent,
 		)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "error recalculating target emission")
 		}
-		// emission/block = (emission/month) / (block/month)
-		blockEmission = emissionPerMonth.
-			Quo(math.NewIntFromUint64(blocksPerMonth))
-		e_i = emissionPerUnitStakedToken
-		updateEmission = true
-		k.Logger(ctx).Info("Emissions Update",
-			"emissionPerUnitStakedToken", e_i.String(),
-			"emissionPerMonth", emissionPerMonth.String(),
-			"blockEmission", blockEmission.String(),
-		)
 	}
 	// if the expected amount of emissions is greater than the balance of the ecosystem module account
 	if blockEmission.GT(ecosystemBalance) {
@@ -184,7 +234,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		if tokensToMint.GT(ecosystemMintSupplyRemaining) {
 			tokensToMint = ecosystemMintSupplyRemaining
 		}
-		coins := sdk.NewCoins(sdk.NewCoin(params.MintDenom, tokensToMint))
+		coins := sdk.NewCoins(sdk.NewCoin(moduleParams.MintDenom, tokensToMint))
 		err = k.MintCoins(sdkCtx, coins)
 		if err != nil {
 			return err
@@ -204,9 +254,9 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	// we pay both reputers and cosmos validators, so each payment should be
 	// half as big (divide by two). Integer division truncates, and that's fine.
 	validatorCut := vPercent.Mul(blockEmission.ToLegacyDec()).TruncateInt()
-	coinsValidator := sdk.NewCoins(sdk.NewCoin(params.MintDenom, validatorCut))
+	coinsValidator := sdk.NewCoins(sdk.NewCoin(moduleParams.MintDenom, validatorCut))
 	alloraRewardsCut := blockEmission.Sub(validatorCut)
-	coinsAlloraRewards := sdk.NewCoins(sdk.NewCoin(params.MintDenom, alloraRewardsCut))
+	coinsAlloraRewards := sdk.NewCoins(sdk.NewCoin(moduleParams.MintDenom, alloraRewardsCut))
 	err = k.PayValidatorsFromEcosystem(sdkCtx, coinsValidator)
 	if err != nil {
 		return err
@@ -214,17 +264,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	err = k.PayAlloraRewardsFromEcosystem(sdkCtx, coinsAlloraRewards)
 	if err != nil {
 		return err
-	}
-	if updateEmission {
-		// set the previous emissions to this block's emissions
-		err = k.PreviousRewardEmissionPerUnitStakedToken.Set(ctx, e_i)
-		if err != nil {
-			return errors.Wrap(err, "error setting previous reward emission per unit staked token")
-		}
-		err = k.PreviousBlockEmission.Set(ctx, blockEmission)
-		if err != nil {
-			return errors.Wrap(err, "error setting previous block emission")
-		}
 	}
 	return nil
 }
