@@ -9,7 +9,11 @@ import (
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgServiceCreateNewTopicRequest) (*types.MsgServiceCreateNewTopicResponse, error) {
-	if err := msg.Validate(); err != nil {
+	params, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
+	}
+	if err := msg.Validate(params.MaxSerializedMsgLength); err != nil {
 		return nil, err
 	}
 
@@ -18,10 +22,6 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgServiceCre
 		return nil, err
 	}
 
-	params, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
-	}
 	if msg.EpochLength < params.MinEpochLength {
 		return nil, types.ErrTopicCadenceBelowMinimum
 	}

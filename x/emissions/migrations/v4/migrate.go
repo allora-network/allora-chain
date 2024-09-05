@@ -7,7 +7,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
-	types "github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -37,13 +37,13 @@ func MigrateTopics(
 	cdc codec.BinaryCodec,
 	emissionsKeeper keeper.Keeper,
 ) error {
-	topicStore := prefix.NewStore(store, types.TopicsKey)
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
 
 	// iterate over the topic store by manually checking prefixes
 	// to make sure we absolutely do not miss any topics
 	// (as opposed to using collections.go API)
-	topicsToChange := make(map[string]types.Topic, 0)
+	topicsToChange := make(map[string]emissionstypes.Topic, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		iterator.Key()
 		var oldMsg oldtypes.Topic
@@ -85,8 +85,8 @@ func MigrateTopics(
 	return nil
 }
 
-func copyTopic(original types.Topic) types.Topic {
-	return types.Topic{
+func copyTopic(original emissionstypes.Topic) emissionstypes.Topic {
+	return emissionstypes.Topic{
 		Id:                       original.Id,
 		Creator:                  original.Creator,
 		Metadata:                 original.Metadata,

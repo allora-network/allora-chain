@@ -3,7 +3,6 @@ package types
 import (
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	types "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -45,16 +44,16 @@ func (msg *MsgServiceCreateNewTopicRequest) Validate(maxSerializedMsgLength int6
 	// and both are valid values
 	//	AllowNegative            bool
 
-	if !types.IsAlloraDecBetweenZeroAndOneInclusive(msg.MeritSortitionAlpha) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.MeritSortitionAlpha) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
 	}
-	if !types.IsAlloraDecBetweenZeroAndOneInclusive(msg.ActiveInfererQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveInfererQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be between 0 and 1 inclusive")
 	}
-	if !types.IsAlloraDecBetweenZeroAndOneInclusive(msg.ActiveForecasterQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveForecasterQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active forecaster quantile must be between 0 and 1 inclusive")
 	}
-	if !types.IsAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
+	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 	}
 
