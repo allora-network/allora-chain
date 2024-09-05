@@ -6,6 +6,7 @@ import (
 
 	"cosmossdk.io/collections"
 	storetypes "cosmossdk.io/core/store"
+	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -215,6 +216,16 @@ func (k Keeper) GetParamsBlocksPerMonth(ctx context.Context) (uint64, error) {
 		return 0, err
 	}
 	return emissionsParams.BlocksPerMonth, nil
+}
+
+// wrapper around emissions keeper call to set the number of blocks expected in a month
+func (k Keeper) SetEmissionsParamsBlocksPerMonth(ctx context.Context, blocksPerMonth uint64) error {
+	emissionsParams, err := k.emissionsKeeper.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params from emissions keeper")
+	}
+	emissionsParams.BlocksPerMonth = blocksPerMonth
+	return k.emissionsKeeper.SetParams(ctx, emissionsParams)
 }
 
 // wrapper around emissions keeper call to get if whitelist admin

@@ -41,6 +41,7 @@ type EmissionsKeeper interface {
 	GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error)
 	GetParams(ctx context.Context) (emissionstypes.Params, error)
 	IsWhitelistAdmin(ctx context.Context, admin string) (bool, error)
+	SetParams(ctx context.Context, params emissionstypes.Params) error
 }
 
 // used for testing

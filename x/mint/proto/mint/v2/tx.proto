@@ -34,8 +34,10 @@ message UpdateParamsRequest {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
-
+  // allow updating params to also force a recalculation of the target emission
   bool recalculate_target_emission = 3;
+  // blocksPerMonth is used/updateable by both the mint and emissions module.
+  uint64 blocks_per_month = 4;
 }
 
 // MsgUpdateParamsResponse defines the response structure for executing a

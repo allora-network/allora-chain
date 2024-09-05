@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -41,6 +42,14 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdatePa
 
 	if err := ms.Params.Set(ctx, msg.Params); err != nil {
 		return nil, errors.Wrap(err, "error setting params")
+	}
+	err = emissionstypes.ValidateBlocksPerMonth(msg.BlocksPerMonth)
+	if err != nil {
+		return nil, errors.Wrap(err, "error validating blocks per month")
+	}
+	err = ms.Keeper.SetEmissionsParamsBlocksPerMonth(ctx, msg.BlocksPerMonth)
+	if err != nil {
+		return nil, errors.Wrap(err, "error setting blocks per month")
 	}
 
 	if msg.RecalculateTargetEmission {
