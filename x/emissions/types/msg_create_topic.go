@@ -7,7 +7,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (msg *MsgServiceCreateNewTopicRequest) Validate(maxMetadataLen uint64) error {
+func (msg *MsgCreateNewTopic) Validate(maxMetadataLen uint64) error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)

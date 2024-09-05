@@ -183,7 +183,7 @@ func sendWorkerPayload(
 ) bool {
 	wasErr := false
 
-	workerMsg := &emissionstypes.MsgServiceInsertWorkerPayloadRequest{
+	workerMsg := &emissionstypes.MsgInsertWorkerPayload{
 		Sender:           sender.addr,
 		WorkerDataBundle: WorkerDataBundles,
 	}
@@ -223,7 +223,7 @@ func createAndSendReputerPayloads(
 	for _, reputer := range reputers {
 		valueBundle := createReputerValueBundle(m, topicId, reputer, workers, reputerNonce)
 		signedValueBundle := signReputerValueBundle(m, reputer, valueBundle)
-		lossesMsg := &emissionstypes.MsgServiceInsertReputerPayloadRequest{
+		lossesMsg := &emissionstypes.MsgInsertReputerPayload{
 			Sender:             reputer.addr,
 			ReputerValueBundle: signedValueBundle,
 		}

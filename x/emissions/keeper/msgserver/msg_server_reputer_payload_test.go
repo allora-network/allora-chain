@@ -34,7 +34,7 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 	topicId = s.commonStakingSetup(ctx, reputerAddr.String(), workerAddr.String(), minStakeScaled)
 	s.MintTokensToAddress(reputerAddr, params.RequiredMinimumStake)
 
-	addStakeMsg := &types.MsgServiceAddStakeRequest{
+	addStakeMsg := &types.MsgAddStake{
 		Sender:  reputerAddr.String(),
 		TopicId: topicId,
 		Amount:  minStakeScaled,
@@ -133,7 +133,7 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	valueBundleSignature := s.signValueBundle(reputerValueBundle, reputerPrivateKey)
 
 	// Create a MsgInsertReputerPayload message
-	lossesMsg := &types.MsgServiceInsertReputerPayloadRequest{
+	lossesMsg := &types.MsgInsertReputerPayload{
 		Sender: reputerAddr.String(),
 		ReputerValueBundle: &types.ReputerValueBundle{
 			ValueBundle: reputerValueBundle,
@@ -220,7 +220,7 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 	valueBundleSignature := s.signValueBundle(&reputerValueBundle, reputerPrivateKey)
 
 	// Create a MsgInsertReputerPayload message
-	lossesMsg := &types.MsgServiceInsertReputerPayloadRequest{
+	lossesMsg := &types.MsgInsertReputerPayload{
 		Sender: reputerAddr.String(),
 		ReputerValueBundle: &types.ReputerValueBundle{
 			ValueBundle: &reputerValueBundle,

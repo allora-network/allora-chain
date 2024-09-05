@@ -15,7 +15,7 @@ func RegisterReputerForTopic(
 ) error {
 	ctx := context.Background()
 
-	registerReputerRequest := &emissionstypes.MsgServiceRegisterRequest{
+	registerReputerRequest := &emissionstypes.MsgRegister{
 		Sender:    reputer.aa.addr,
 		Owner:     reputer.aa.addr,
 		TopicId:   topicId,
@@ -29,7 +29,7 @@ func RegisterReputerForTopic(
 	if err != nil {
 		return err
 	}
-	registerAliceResponse := &emissionstypes.MsgServiceRegisterResponse{}
+	registerAliceResponse := &emissionstypes.MsgRegisterResponse{}
 	err = txResp.Decode(registerAliceResponse)
 	if err != nil {
 		return err
@@ -45,7 +45,7 @@ func RegisterWorkerForTopic(
 	topicId uint64,
 ) error {
 	ctx := context.Background()
-	registerWorkerRequest := &emissionstypes.MsgServiceRegisterRequest{
+	registerWorkerRequest := &emissionstypes.MsgRegister{
 		Sender:    worker.aa.addr,
 		Owner:     worker.aa.addr,
 		TopicId:   topicId,
@@ -59,7 +59,7 @@ func RegisterWorkerForTopic(
 	if err != nil {
 		return err
 	}
-	registerBobResponse := &emissionstypes.MsgServiceRegisterResponse{}
+	registerBobResponse := &emissionstypes.MsgRegisterResponse{}
 	err = txResp.Decode(registerBobResponse)
 	if err != nil {
 		return err

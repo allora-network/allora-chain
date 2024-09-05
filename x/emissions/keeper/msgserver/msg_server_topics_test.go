@@ -10,15 +10,15 @@ import (
 
 /// Topics tests
 
-func (s *MsgServerTestSuite) TestMsgServiceCreateNewTopicRequest() {
+func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 
-	// Create a MsgServiceCreateNewTopicRequest message
-	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
+	// Create a MsgCreateNewTopic message
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:                  sender,
 		Metadata:                 "Some metadata for the new topic",
 		LossMethod:               "mse",
@@ -53,15 +53,15 @@ func (s *MsgServerTestSuite) TestMsgServiceCreateNewTopicRequest() {
 	require.False(found, "Added topic found in active topics")
 }
 
-func (s *MsgServerTestSuite) TestMsgServiceCreateNewTopicRequestWithEpsilonZeroFails() {
+func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 
-	// Create a MsgServiceCreateNewTopicRequest message
-	newTopicMsg := &types.MsgServiceCreateNewTopicRequest{
+	// Create a MsgCreateNewTopic message
+	newTopicMsg := &types.MsgCreateNewTopic{
 		Creator:                  sender,
 		Metadata:                 "Some metadata for the new topic",
 		LossMethod:               "mse",

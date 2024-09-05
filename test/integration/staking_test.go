@@ -26,7 +26,7 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	const stakeToAdd = 1000000
 
 	// Have Alice stake more
-	addStake := &emissionstypes.MsgServiceAddStakeRequest{
+	addStake := &emissionstypes.MsgAddStake{
 		Sender:  m.AliceAddr,
 		TopicId: 1,
 		Amount:  cosmosMath.NewInt(stakeToAdd),
@@ -65,7 +65,7 @@ func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 	const stakeToAdd = 200000
 
 	// Have bob stake
-	addDelegateStake := &emissionstypes.MsgServiceDelegateStakeRequest{
+	addDelegateStake := &emissionstypes.MsgDelegateStake{
 		Sender:  m.BobAddr,
 		Reputer: m.AliceAddr,
 		TopicId: 1,
@@ -127,7 +127,7 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	)
 
 	// Have Alice unstake
-	unstake := &emissionstypes.MsgServiceRemoveStakeRequest{
+	unstake := &emissionstypes.MsgRemoveStake{
 		Sender:  m.AliceAddr,
 		TopicId: 1,
 		Amount:  aliceStakeBefore.Amount,
@@ -194,7 +194,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	)
 
 	// Have Bob unstake
-	unstake := &emissionstypes.MsgServiceRemoveDelegateStakeRequest{
+	unstake := &emissionstypes.MsgRemoveDelegateStake{
 		Sender:  m.BobAddr,
 		Reputer: m.AliceAddr,
 		TopicId: 1,

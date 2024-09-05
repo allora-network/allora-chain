@@ -30,7 +30,7 @@ func stakeAsReputer(
 		" in amount",
 		amount.String(),
 	)
-	msg := emissionstypes.MsgServiceAddStakeRequest{
+	msg := emissionstypes.MsgAddStake{
 		Sender:  actor.addr,
 		TopicId: topicId,
 		Amount:  *amount,
@@ -48,7 +48,7 @@ func stakeAsReputer(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgServiceAddStakeResponse{}
+	response := &emissionstypes.MsgAddStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -104,7 +104,7 @@ func unstakeAsReputer(
 		" in amount",
 		amount.String(),
 	)
-	msg := emissionstypes.MsgServiceRemoveStakeRequest{
+	msg := emissionstypes.MsgRemoveStake{
 		Sender:  actor.addr,
 		TopicId: topicId,
 		Amount:  *amount,
@@ -122,7 +122,7 @@ func unstakeAsReputer(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgServiceRemoveStakeResponse{}
+	response := &emissionstypes.MsgRemoveStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -194,7 +194,7 @@ func cancelStakeRemoval(
 		"in topic id",
 		topicId,
 	)
-	msg := emissionstypes.MsgServiceCancelRemoveStakeRequest{
+	msg := emissionstypes.MsgCancelRemoveStake{
 		Sender:  actor.addr,
 		TopicId: topicId,
 	}
@@ -211,7 +211,7 @@ func cancelStakeRemoval(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgServiceRemoveStakeResponse{}
+	response := &emissionstypes.MsgRemoveStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -248,7 +248,7 @@ func delegateStake(
 		" in amount",
 		amount.String(),
 	)
-	msg := emissionstypes.MsgServiceDelegateStakeRequest{
+	msg := emissionstypes.MsgDelegateStake{
 		Sender:  delegator.addr,
 		Reputer: reputer.addr,
 		TopicId: topicId,
@@ -267,7 +267,7 @@ func delegateStake(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	registerWorkerResponse := &emissionstypes.MsgServiceDelegateStakeResponse{}
+	registerWorkerResponse := &emissionstypes.MsgDelegateStakeResponse{}
 	err = txResp.Decode(registerWorkerResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -315,7 +315,7 @@ func undelegateStake(
 		" in amount ",
 		amount.String(),
 	)
-	msg := emissionstypes.MsgServiceRemoveDelegateStakeRequest{
+	msg := emissionstypes.MsgRemoveDelegateStake{
 		Sender:  delegator.addr,
 		Reputer: reputer.addr,
 		TopicId: topicId,
@@ -334,7 +334,7 @@ func undelegateStake(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgServiceRemoveDelegateStakeResponse{}
+	response := &emissionstypes.MsgRemoveDelegateStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -408,7 +408,7 @@ func cancelDelegateStakeRemoval(
 		"in topic id",
 		topicId,
 	)
-	msg := emissionstypes.MsgServiceCancelRemoveDelegateStakeRequest{
+	msg := emissionstypes.MsgCancelRemoveDelegateStake{
 		Sender:    delegator.addr,
 		TopicId:   topicId,
 		Delegator: delegator.addr,
@@ -427,7 +427,7 @@ func cancelDelegateStakeRemoval(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgServiceCancelRemoveDelegateStakeResponse{}
+	response := &emissionstypes.MsgCancelRemoveDelegateStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -458,7 +458,7 @@ func collectDelegatorRewards(
 		" in topic id ",
 		topicId,
 	)
-	msg := emissionstypes.MsgServiceRewardDelegateStakeRequest{
+	msg := emissionstypes.MsgRewardDelegateStake{
 		Sender:  delegator.addr,
 		TopicId: topicId,
 		Reputer: reputer.addr,
@@ -476,7 +476,7 @@ func collectDelegatorRewards(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgServiceRewardDelegateStakeResponse{}
+	response := &emissionstypes.MsgRewardDelegateStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
