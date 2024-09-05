@@ -80,7 +80,7 @@ func (ms msgServiceServer) RecalculateTargetEmission(ctx context.Context, msg *t
 		return nil, errors.Wrap(err, "error getting ecosystem balance")
 	}
 
-	RecalculateTargetEmission(
+	_, _, err = RecalculateTargetEmission(
 		sdkCtx,
 		ms.Keeper,
 		uint64(sdkCtx.BlockHeight()),
@@ -90,7 +90,9 @@ func (ms msgServiceServer) RecalculateTargetEmission(ctx context.Context, msg *t
 		ecosystemMintSupplyRemaining,
 		vPercent,
 	)
+	if err != nil {
+		return nil, errors.Wrap(err, "error recalculating target emission")
+	}
 
 	return &types.RecalculateTargetEmissionResponse{}, nil
-
 }
