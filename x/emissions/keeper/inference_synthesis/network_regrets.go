@@ -399,10 +399,10 @@ func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pN
 		}
 	}
 
-	dummyRegret, err := minimumRegret.Add(offSetTimesDenominator)
+	initialRegret, err := minimumRegret.Add(offSetTimesDenominator)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
 
-	return dummyRegret, nil
+	return initialRegret, nil
 }
