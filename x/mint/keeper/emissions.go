@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/x/mint/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // return the uncirculating supply, i.e. tokens on a vesting schedule
@@ -236,7 +237,7 @@ func (k Keeper) GetEcosystemMintSupplyRemaining(
 // returns that, and the block emission we should mint/send for this block
 func RecalculateTargetEmission(
 	ctx sdk.Context,
-	k keeper.Keeper,
+	k Keeper,
 	blockHeight uint64,
 	blocksPerMonth uint64,
 	moduleParams types.Params,
@@ -286,7 +287,7 @@ func RecalculateTargetEmission(
 // GetEmissionPerMonth calculates the emission per month for the network
 func GetEmissionPerMonth(
 	ctx sdk.Context,
-	k types.MintKeeper,
+	k Keeper,
 	blockHeight uint64,
 	blocksPerMonth uint64,
 	params types.Params,
@@ -299,7 +300,7 @@ func GetEmissionPerMonth(
 	err error,
 ) {
 	// Get the expected amount of emissions this block
-	networkStaked, err := keeper.GetNumStakedTokens(ctx, k)
+	networkStaked, err := GetNumStakedTokens(ctx, k)
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
@@ -307,7 +308,7 @@ func GetEmissionPerMonth(
 		totalSupply,
 		lockedVestingTokens,
 		ecosystemLocked,
-		err := keeper.GetCirculatingSupply(ctx, k, params, blockHeight, blocksPerMonth)
+		err := GetCirculatingSupply(ctx, k, params, blockHeight, blocksPerMonth)
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
@@ -346,7 +347,7 @@ func GetEmissionPerMonth(
 		ecosystemMintSupplyRemaining.String(),
 	)
 	targetRewardEmissionPerUnitStakedToken,
-		err := keeper.GetTargetRewardEmissionPerUnitStakedToken(
+		err := GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmission,
 		ecosystemLocked,
 		networkStaked,
@@ -360,12 +361,12 @@ func GetEmissionPerMonth(
 	if err != nil {
 		return math.Int{}, math.LegacyDec{}, err
 	}
-	maximumMonthlyEmissionPerUnitStakedToken := keeper.GetMaximumMonthlyEmissionPerUnitStakedToken(
+	maximumMonthlyEmissionPerUnitStakedToken := GetMaximumMonthlyEmissionPerUnitStakedToken(
 		params.MaximumMonthlyPercentageYield,
 		reputersPercent,
 		validatorsPercent,
 	)
-	targetRewardEmissionPerUnitStakedToken = keeper.GetCappedTargetEmissionPerUnitStakedToken(
+	targetRewardEmissionPerUnitStakedToken = GetCappedTargetEmissionPerUnitStakedToken(
 		targetRewardEmissionPerUnitStakedToken,
 		maximumMonthlyEmissionPerUnitStakedToken,
 	)
@@ -379,11 +380,11 @@ func GetEmissionPerMonth(
 			return math.Int{}, math.LegacyDec{}, err
 		}
 	}
-	emissionPerUnitStakedToken = keeper.GetExponentialMovingAverage(
+	emissionPerUnitStakedToken = GetExponentialMovingAverage(
 		targetRewardEmissionPerUnitStakedToken,
 		params.OneMonthSmoothingDegree,
 		previousRewardEmissionPerUnitStakedToken,
 	)
-	emissionPerMonth = keeper.GetTotalEmissionPerMonth(emissionPerUnitStakedToken, networkStaked)
+	emissionPerMonth = GetTotalEmissionPerMonth(emissionPerUnitStakedToken, networkStaked)
 	return emissionPerMonth, emissionPerUnitStakedToken, nil
 }
