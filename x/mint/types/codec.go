@@ -11,14 +11,14 @@ import (
 // RegisterLegacyAminoCodec registers concrete types on the LegacyAmino codec
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(Params{}, "allora-chain/x/mint/Params", nil)
-	legacy.RegisterAminoMsg(cdc, &MsgServiceUpdateParamsRequest{}, "allora-chain/x/mint/MsgServiceUpdateParamsRequest")
+	legacy.RegisterAminoMsg(cdc, &UpdateParamsRequest{}, "allora-chain/x/mint/UpdateParamsRequest")
 }
 
 // RegisterInterfaces registers the interfaces types with the interface registry.
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
-		&MsgServiceUpdateParamsRequest{},
+		&UpdateParamsRequest{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_MsgService_serviceDesc)

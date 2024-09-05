@@ -13,7 +13,7 @@ func (s *MintKeeperTestSuite) TestUpdateParams() {
 	params := types.DefaultParams()
 	params.MintDenom = "testcoin"
 
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -21,7 +21,7 @@ func (s *MintKeeperTestSuite) TestUpdateParams() {
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
 	s.Require().NoError(err)
 	s.Require().NotNil(resp)
-	s.Require().Equal(&types.MsgServiceUpdateParamsResponse{}, resp)
+	s.Require().Equal(&types.UpdateParamsResponse{}, resp)
 }
 
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidSigner() {
@@ -30,7 +30,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidSigner() {
 	nonAdminAddr := sdk.AccAddress(nonAdminPrivateKey.PubKey().Address()).String()
 
 	params := types.DefaultParams()
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: nonAdminAddr,
 		Params: params,
 	}
@@ -48,7 +48,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsNonAddressSigner() {
 	defaultParams := types.DefaultParams()
 
 	notAnAddress := "not an address lol"
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: notAnAddress,
 		Params: defaultParams,
 	}
@@ -61,7 +61,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsNonAddressSigner() {
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMintDenom() {
 	params := types.DefaultParams()
 	params.MintDenom = ""
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -74,7 +74,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMintDenom() {
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMaxSupply() {
 	params := types.DefaultParams()
 	params.MaxSupply = sdkmath.NewIntFromUint64(0)
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -87,7 +87,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMaxSupply() {
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsFEmission() {
 	params := types.DefaultParams()
 	params.FEmission = sdkmath.LegacyNewDec(205)
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -100,7 +100,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsFEmission() {
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsOneMonthSmoothingDegree() {
 	params := types.DefaultParams()
 	params.OneMonthSmoothingDegree = sdkmath.LegacyNewDec(15)
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -113,7 +113,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsOneMonthSmoothingDegr
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsEcosystemTreasuryPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.EcosystemTreasuryPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -126,7 +126,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsEcosystemTreasuryPerc
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsFoundationTreasuryPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.FoundationTreasuryPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -139,7 +139,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsFoundationTreasuryPer
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsParticipantsPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.ParticipantsPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -152,7 +152,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsParticipantsPercentOf
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsInvestorsPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.ParticipantsPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -164,7 +164,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsInvestorsPercentOfTot
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsTeamPercentOfTotalSupply() {
 	params := types.DefaultParams()
 	params.TeamPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}
@@ -176,7 +176,7 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsTeamPercentOfTotalSup
 func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMaximumMonthlyPercentageYield() {
 	params := types.DefaultParams()
 	params.MaximumMonthlyPercentageYield = sdkmath.LegacyNewDec(101)
-	request := &types.MsgServiceUpdateParamsRequest{
+	request := &types.UpdateParamsRequest{
 		Sender: s.adminAddr,
 		Params: params,
 	}

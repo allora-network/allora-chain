@@ -31,8 +31,8 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// MsgUpdateParams allows an update to the minting parameters of the module.
-type MsgServiceUpdateParamsRequest struct {
+// UpdateParams allows an update to the minting parameters of the module.
+type UpdateParamsRequest struct {
 	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 	// params defines the x/mint parameters to update.
 	//
@@ -41,18 +41,18 @@ type MsgServiceUpdateParamsRequest struct {
 	RecalculateTargetEmission bool   `protobuf:"varint,3,opt,name=recalculate_target_emission,json=recalculateTargetEmission,proto3" json:"recalculate_target_emission,omitempty"`
 }
 
-func (m *MsgServiceUpdateParamsRequest) Reset()         { *m = MsgServiceUpdateParamsRequest{} }
-func (m *MsgServiceUpdateParamsRequest) String() string { return proto.CompactTextString(m) }
-func (*MsgServiceUpdateParamsRequest) ProtoMessage()    {}
-func (*MsgServiceUpdateParamsRequest) Descriptor() ([]byte, []int) {
+func (m *UpdateParamsRequest) Reset()         { *m = UpdateParamsRequest{} }
+func (m *UpdateParamsRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateParamsRequest) ProtoMessage()    {}
+func (*UpdateParamsRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2bf02b1ff3ccb0c3, []int{0}
 }
-func (m *MsgServiceUpdateParamsRequest) XXX_Unmarshal(b []byte) error {
+func (m *UpdateParamsRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgServiceUpdateParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *UpdateParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgServiceUpdateParamsRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_UpdateParamsRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -62,33 +62,33 @@ func (m *MsgServiceUpdateParamsRequest) XXX_Marshal(b []byte, deterministic bool
 		return b[:n], nil
 	}
 }
-func (m *MsgServiceUpdateParamsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgServiceUpdateParamsRequest.Merge(m, src)
+func (m *UpdateParamsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateParamsRequest.Merge(m, src)
 }
-func (m *MsgServiceUpdateParamsRequest) XXX_Size() int {
+func (m *UpdateParamsRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgServiceUpdateParamsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgServiceUpdateParamsRequest.DiscardUnknown(m)
+func (m *UpdateParamsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateParamsRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgServiceUpdateParamsRequest proto.InternalMessageInfo
+var xxx_messageInfo_UpdateParamsRequest proto.InternalMessageInfo
 
-func (m *MsgServiceUpdateParamsRequest) GetSender() string {
+func (m *UpdateParamsRequest) GetSender() string {
 	if m != nil {
 		return m.Sender
 	}
 	return ""
 }
 
-func (m *MsgServiceUpdateParamsRequest) GetParams() Params {
+func (m *UpdateParamsRequest) GetParams() Params {
 	if m != nil {
 		return m.Params
 	}
 	return Params{}
 }
 
-func (m *MsgServiceUpdateParamsRequest) GetRecalculateTargetEmission() bool {
+func (m *UpdateParamsRequest) GetRecalculateTargetEmission() bool {
 	if m != nil {
 		return m.RecalculateTargetEmission
 	}
@@ -97,21 +97,21 @@ func (m *MsgServiceUpdateParamsRequest) GetRecalculateTargetEmission() bool {
 
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
-type MsgServiceUpdateParamsResponse struct {
+type UpdateParamsResponse struct {
 }
 
-func (m *MsgServiceUpdateParamsResponse) Reset()         { *m = MsgServiceUpdateParamsResponse{} }
-func (m *MsgServiceUpdateParamsResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgServiceUpdateParamsResponse) ProtoMessage()    {}
-func (*MsgServiceUpdateParamsResponse) Descriptor() ([]byte, []int) {
+func (m *UpdateParamsResponse) Reset()         { *m = UpdateParamsResponse{} }
+func (m *UpdateParamsResponse) String() string { return proto.CompactTextString(m) }
+func (*UpdateParamsResponse) ProtoMessage()    {}
+func (*UpdateParamsResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2bf02b1ff3ccb0c3, []int{1}
 }
-func (m *MsgServiceUpdateParamsResponse) XXX_Unmarshal(b []byte) error {
+func (m *UpdateParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgServiceUpdateParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *UpdateParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgServiceUpdateParamsResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_UpdateParamsResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -121,41 +121,37 @@ func (m *MsgServiceUpdateParamsResponse) XXX_Marshal(b []byte, deterministic boo
 		return b[:n], nil
 	}
 }
-func (m *MsgServiceUpdateParamsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgServiceUpdateParamsResponse.Merge(m, src)
+func (m *UpdateParamsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateParamsResponse.Merge(m, src)
 }
-func (m *MsgServiceUpdateParamsResponse) XXX_Size() int {
+func (m *UpdateParamsResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgServiceUpdateParamsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgServiceUpdateParamsResponse.DiscardUnknown(m)
+func (m *UpdateParamsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateParamsResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgServiceUpdateParamsResponse proto.InternalMessageInfo
+var xxx_messageInfo_UpdateParamsResponse proto.InternalMessageInfo
 
 // Force a recalculation of the target emission right now.
 // This indirectly controls recalculating the inflation rate for the network
 // and the stakers APY %.
-type MsgServiceRecalculateTargetEmissionRequest struct {
+type RecalculateTargetEmissionRequest struct {
 	Sender string `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
 }
 
-func (m *MsgServiceRecalculateTargetEmissionRequest) Reset() {
-	*m = MsgServiceRecalculateTargetEmissionRequest{}
-}
-func (m *MsgServiceRecalculateTargetEmissionRequest) String() string {
-	return proto.CompactTextString(m)
-}
-func (*MsgServiceRecalculateTargetEmissionRequest) ProtoMessage() {}
-func (*MsgServiceRecalculateTargetEmissionRequest) Descriptor() ([]byte, []int) {
+func (m *RecalculateTargetEmissionRequest) Reset()         { *m = RecalculateTargetEmissionRequest{} }
+func (m *RecalculateTargetEmissionRequest) String() string { return proto.CompactTextString(m) }
+func (*RecalculateTargetEmissionRequest) ProtoMessage()    {}
+func (*RecalculateTargetEmissionRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2bf02b1ff3ccb0c3, []int{2}
 }
-func (m *MsgServiceRecalculateTargetEmissionRequest) XXX_Unmarshal(b []byte) error {
+func (m *RecalculateTargetEmissionRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgServiceRecalculateTargetEmissionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *RecalculateTargetEmissionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgServiceRecalculateTargetEmissionRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_RecalculateTargetEmissionRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -165,19 +161,19 @@ func (m *MsgServiceRecalculateTargetEmissionRequest) XXX_Marshal(b []byte, deter
 		return b[:n], nil
 	}
 }
-func (m *MsgServiceRecalculateTargetEmissionRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgServiceRecalculateTargetEmissionRequest.Merge(m, src)
+func (m *RecalculateTargetEmissionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RecalculateTargetEmissionRequest.Merge(m, src)
 }
-func (m *MsgServiceRecalculateTargetEmissionRequest) XXX_Size() int {
+func (m *RecalculateTargetEmissionRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgServiceRecalculateTargetEmissionRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgServiceRecalculateTargetEmissionRequest.DiscardUnknown(m)
+func (m *RecalculateTargetEmissionRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_RecalculateTargetEmissionRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgServiceRecalculateTargetEmissionRequest proto.InternalMessageInfo
+var xxx_messageInfo_RecalculateTargetEmissionRequest proto.InternalMessageInfo
 
-func (m *MsgServiceRecalculateTargetEmissionRequest) GetSender() string {
+func (m *RecalculateTargetEmissionRequest) GetSender() string {
 	if m != nil {
 		return m.Sender
 	}
@@ -185,25 +181,21 @@ func (m *MsgServiceRecalculateTargetEmissionRequest) GetSender() string {
 }
 
 // response from recalculating the target emission
-type MsgServiceRecalculateTargetEmissionResponse struct {
+type RecalculateTargetEmissionResponse struct {
 }
 
-func (m *MsgServiceRecalculateTargetEmissionResponse) Reset() {
-	*m = MsgServiceRecalculateTargetEmissionResponse{}
-}
-func (m *MsgServiceRecalculateTargetEmissionResponse) String() string {
-	return proto.CompactTextString(m)
-}
-func (*MsgServiceRecalculateTargetEmissionResponse) ProtoMessage() {}
-func (*MsgServiceRecalculateTargetEmissionResponse) Descriptor() ([]byte, []int) {
+func (m *RecalculateTargetEmissionResponse) Reset()         { *m = RecalculateTargetEmissionResponse{} }
+func (m *RecalculateTargetEmissionResponse) String() string { return proto.CompactTextString(m) }
+func (*RecalculateTargetEmissionResponse) ProtoMessage()    {}
+func (*RecalculateTargetEmissionResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_2bf02b1ff3ccb0c3, []int{3}
 }
-func (m *MsgServiceRecalculateTargetEmissionResponse) XXX_Unmarshal(b []byte) error {
+func (m *RecalculateTargetEmissionResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgServiceRecalculateTargetEmissionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *RecalculateTargetEmissionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgServiceRecalculateTargetEmissionResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_RecalculateTargetEmissionResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -213,58 +205,58 @@ func (m *MsgServiceRecalculateTargetEmissionResponse) XXX_Marshal(b []byte, dete
 		return b[:n], nil
 	}
 }
-func (m *MsgServiceRecalculateTargetEmissionResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgServiceRecalculateTargetEmissionResponse.Merge(m, src)
+func (m *RecalculateTargetEmissionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RecalculateTargetEmissionResponse.Merge(m, src)
 }
-func (m *MsgServiceRecalculateTargetEmissionResponse) XXX_Size() int {
+func (m *RecalculateTargetEmissionResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgServiceRecalculateTargetEmissionResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgServiceRecalculateTargetEmissionResponse.DiscardUnknown(m)
+func (m *RecalculateTargetEmissionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RecalculateTargetEmissionResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgServiceRecalculateTargetEmissionResponse proto.InternalMessageInfo
+var xxx_messageInfo_RecalculateTargetEmissionResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgServiceUpdateParamsRequest)(nil), "mint.v2.MsgServiceUpdateParamsRequest")
-	proto.RegisterType((*MsgServiceUpdateParamsResponse)(nil), "mint.v2.MsgServiceUpdateParamsResponse")
-	proto.RegisterType((*MsgServiceRecalculateTargetEmissionRequest)(nil), "mint.v2.MsgServiceRecalculateTargetEmissionRequest")
-	proto.RegisterType((*MsgServiceRecalculateTargetEmissionResponse)(nil), "mint.v2.MsgServiceRecalculateTargetEmissionResponse")
+	proto.RegisterType((*UpdateParamsRequest)(nil), "mint.v2.UpdateParamsRequest")
+	proto.RegisterType((*UpdateParamsResponse)(nil), "mint.v2.UpdateParamsResponse")
+	proto.RegisterType((*RecalculateTargetEmissionRequest)(nil), "mint.v2.RecalculateTargetEmissionRequest")
+	proto.RegisterType((*RecalculateTargetEmissionResponse)(nil), "mint.v2.RecalculateTargetEmissionResponse")
 }
 
 func init() { proto.RegisterFile("mint/v2/tx.proto", fileDescriptor_2bf02b1ff3ccb0c3) }
 
 var fileDescriptor_2bf02b1ff3ccb0c3 = []byte{
-	// 462 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xc8, 0xcd, 0xcc, 0x2b,
-	0xd1, 0x2f, 0x33, 0xd2, 0x2f, 0xa9, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x07, 0x89,
-	0xe8, 0x95, 0x19, 0x49, 0x09, 0x26, 0xe6, 0x66, 0xe6, 0xe5, 0xeb, 0x83, 0x49, 0x88, 0x9c, 0x94,
-	0x78, 0x72, 0x7e, 0x71, 0x6e, 0x7e, 0xb1, 0x7e, 0x6e, 0x71, 0xba, 0x7e, 0x99, 0x21, 0x88, 0x82,
-	0x4a, 0x48, 0x42, 0x24, 0xe2, 0xc1, 0x3c, 0x7d, 0x08, 0x07, 0x2a, 0x25, 0x92, 0x9e, 0x9f, 0x9e,
-	0x0f, 0x11, 0x07, 0xb1, 0xa0, 0xa2, 0xc2, 0x70, 0x7b, 0x2b, 0x0b, 0x52, 0xa1, 0x4a, 0x95, 0x7e,
-	0x31, 0x72, 0xc9, 0xfa, 0x16, 0xa7, 0x07, 0xa7, 0x16, 0x95, 0x65, 0x26, 0xa7, 0x86, 0x16, 0xa4,
-	0x24, 0x96, 0xa4, 0x06, 0x24, 0x16, 0x25, 0xe6, 0x16, 0x07, 0xa5, 0x16, 0x96, 0xa6, 0x16, 0x97,
-	0x08, 0x19, 0x70, 0xb1, 0x15, 0xa7, 0xe6, 0xa5, 0xa4, 0x16, 0x49, 0x30, 0x2a, 0x30, 0x6a, 0x70,
-	0x3a, 0x49, 0x5c, 0xda, 0xa2, 0x2b, 0x02, 0xb5, 0xce, 0x31, 0x25, 0xa5, 0x28, 0xb5, 0xb8, 0x38,
-	0xb8, 0xa4, 0x28, 0x33, 0x2f, 0x3d, 0x08, 0xaa, 0x4e, 0xc8, 0x88, 0x8b, 0xad, 0x00, 0x6c, 0x84,
-	0x04, 0x93, 0x02, 0xa3, 0x06, 0xb7, 0x11, 0xbf, 0x1e, 0xd4, 0x7f, 0x7a, 0x10, 0x93, 0x9d, 0x38,
-	0x4f, 0xdc, 0x93, 0x67, 0x58, 0xf1, 0x7c, 0x83, 0x16, 0x63, 0x10, 0x54, 0xa5, 0x90, 0x1d, 0x97,
-	0x74, 0x51, 0x6a, 0x72, 0x62, 0x4e, 0x72, 0x69, 0x4e, 0x62, 0x49, 0x6a, 0x7c, 0x49, 0x62, 0x51,
-	0x7a, 0x6a, 0x49, 0x7c, 0x6a, 0x6e, 0x66, 0x71, 0x71, 0x66, 0x7e, 0x9e, 0x04, 0xb3, 0x02, 0xa3,
-	0x06, 0x47, 0x90, 0x24, 0x92, 0x92, 0x10, 0xb0, 0x0a, 0x57, 0xa8, 0x02, 0x2b, 0xe3, 0xa6, 0xe7,
-	0x1b, 0xb4, 0xa0, 0x0e, 0xe8, 0x7a, 0xbe, 0x41, 0x4b, 0x39, 0x31, 0x27, 0x27, 0xbf, 0x28, 0x51,
-	0x37, 0x39, 0x23, 0x31, 0x33, 0x4f, 0xbf, 0x42, 0x1f, 0xec, 0x77, 0xdf, 0xe2, 0x74, 0x64, 0x1f,
-	0x2a, 0x29, 0x70, 0xc9, 0xe1, 0xf2, 0x7b, 0x71, 0x41, 0x7e, 0x5e, 0x71, 0xaa, 0xd2, 0x02, 0x46,
-	0x2e, 0x2d, 0x84, 0x92, 0x20, 0x5c, 0xd6, 0x93, 0x1d, 0x56, 0x56, 0x0e, 0x68, 0xee, 0x36, 0xc0,
-	0xe1, 0x6e, 0x9c, 0x56, 0x2b, 0xe9, 0x72, 0x69, 0x13, 0xe5, 0x42, 0x88, 0x8f, 0x8c, 0xfe, 0x32,
-	0x72, 0x71, 0x21, 0xd4, 0x0b, 0xc5, 0x73, 0xf1, 0x20, 0x7b, 0x5c, 0x48, 0x0d, 0x1e, 0x57, 0x78,
-	0x53, 0x85, 0x94, 0x3a, 0x41, 0x75, 0x10, 0xfb, 0x84, 0xda, 0x18, 0xb9, 0x24, 0x71, 0xba, 0x4a,
-	0xc8, 0x18, 0x8b, 0x31, 0x84, 0x42, 0x59, 0xca, 0x84, 0x34, 0x4d, 0x10, 0x87, 0x48, 0xb1, 0x36,
-	0x80, 0x12, 0x9c, 0x93, 0xef, 0x89, 0x47, 0x72, 0x8c, 0x17, 0x1e, 0xc9, 0x31, 0x3e, 0x78, 0x24,
-	0xc7, 0x38, 0xe1, 0xb1, 0x1c, 0xc3, 0x85, 0xc7, 0x72, 0x0c, 0x37, 0x1e, 0xcb, 0x31, 0x44, 0x19,
-	0xa7, 0x67, 0x96, 0x64, 0x94, 0x26, 0xe9, 0x25, 0xe7, 0xe7, 0xea, 0x43, 0x63, 0x21, 0x2f, 0xb5,
-	0xa4, 0x3c, 0xbf, 0x28, 0x5b, 0x1f, 0x5b, 0xa4, 0x80, 0x73, 0x51, 0x12, 0x1b, 0x38, 0x1b, 0x19,
-	0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0x19, 0xf6, 0xc8, 0x8a, 0xd5, 0x03, 0x00, 0x00,
+	// 453 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x52, 0x31, 0x8f, 0xd3, 0x30,
+	0x18, 0xad, 0x41, 0x14, 0xce, 0x20, 0x01, 0xbe, 0x0a, 0xda, 0x00, 0xa1, 0xf4, 0x96, 0x52, 0xe9,
+	0xe2, 0x23, 0xdd, 0x6e, 0x40, 0x50, 0x89, 0x09, 0x55, 0x42, 0x39, 0x58, 0x58, 0x2a, 0x5f, 0x62,
+	0xf9, 0x2c, 0x12, 0x3b, 0xd8, 0x6e, 0x38, 0x36, 0xc4, 0xc8, 0xc4, 0xc4, 0x6f, 0x60, 0xec, 0xc0,
+	0x8f, 0xb8, 0xf1, 0x84, 0x18, 0x98, 0x10, 0x6a, 0x87, 0xae, 0xfc, 0x04, 0x94, 0xd8, 0xaa, 0x0a,
+	0x6a, 0x00, 0xb1, 0x24, 0xf1, 0xf7, 0x5e, 0xbe, 0xf7, 0xde, 0xe7, 0x0f, 0x5e, 0xc9, 0xb8, 0x30,
+	0xb8, 0x08, 0xb1, 0x39, 0x0e, 0x72, 0x25, 0x8d, 0x44, 0xe7, 0xcb, 0x4a, 0x50, 0x84, 0xde, 0x55,
+	0x92, 0x71, 0x21, 0x71, 0xf5, 0xb4, 0x98, 0x77, 0x3d, 0x96, 0x3a, 0x93, 0x1a, 0x67, 0x9a, 0xe1,
+	0xe2, 0x5e, 0xf9, 0x72, 0x40, 0xc7, 0x02, 0x93, 0xea, 0x84, 0xed, 0xc1, 0x41, 0x2d, 0x26, 0x99,
+	0xb4, 0xf5, 0xf2, 0xcb, 0x55, 0xb7, 0x57, 0xba, 0xaf, 0x73, 0xea, 0xa8, 0xbd, 0x1f, 0x00, 0x6e,
+	0x3f, 0xcb, 0x13, 0x62, 0xe8, 0x13, 0xa2, 0x48, 0xa6, 0x23, 0xfa, 0x72, 0x4a, 0xb5, 0x41, 0x7b,
+	0xb0, 0xa9, 0xa9, 0x48, 0xa8, 0x6a, 0x83, 0x2e, 0xe8, 0x6f, 0x8d, 0xda, 0x9f, 0x3f, 0xed, 0xb6,
+	0x9c, 0xc8, 0xc3, 0x24, 0x51, 0x54, 0xeb, 0x03, 0xa3, 0xb8, 0x60, 0x91, 0xe3, 0xa1, 0x10, 0x36,
+	0xf3, 0xaa, 0x45, 0xfb, 0x4c, 0x17, 0xf4, 0x2f, 0x86, 0x97, 0x03, 0x97, 0x2a, 0xb0, 0x9d, 0x47,
+	0x5b, 0x27, 0xdf, 0x6e, 0x37, 0x3e, 0x2e, 0x67, 0x03, 0x10, 0x39, 0x26, 0xba, 0x0f, 0x6f, 0x28,
+	0x1a, 0x93, 0x34, 0x9e, 0xa6, 0xc4, 0xd0, 0x89, 0x21, 0x8a, 0x51, 0x33, 0xa1, 0x19, 0xd7, 0x9a,
+	0x4b, 0xd1, 0x3e, 0xdb, 0x05, 0xfd, 0x0b, 0x51, 0x67, 0x8d, 0xf2, 0xb4, 0x62, 0x3c, 0x72, 0x84,
+	0xfd, 0xe1, 0xdb, 0xe5, 0x6c, 0xe0, 0x0c, 0xbc, 0x5b, 0xce, 0x06, 0x3b, 0x24, 0x4d, 0xa5, 0x22,
+	0xbb, 0xf1, 0x11, 0xe1, 0x02, 0x1f, 0xe3, 0x2a, 0xf1, 0x58, 0xb3, 0xf5, 0x84, 0xbd, 0x6b, 0xb0,
+	0xf5, 0x6b, 0x62, 0x9d, 0x4b, 0xa1, 0x69, 0xef, 0x03, 0x80, 0xdd, 0xa8, 0x4e, 0xea, 0xbf, 0xe7,
+	0xb2, 0xff, 0xe0, 0x37, 0x8f, 0x7b, 0x35, 0x1e, 0x6b, 0xa5, 0x7b, 0x3b, 0xf0, 0xce, 0x1f, 0x7c,
+	0x59, 0xf7, 0xe1, 0x17, 0x00, 0xe1, 0x58, 0xb3, 0x03, 0xaa, 0x0a, 0x1e, 0x53, 0xf4, 0x18, 0x5e,
+	0x5a, 0x0f, 0x89, 0x6e, 0xae, 0x6e, 0x63, 0xc3, 0x6d, 0x7b, 0xb7, 0x6a, 0x50, 0xdb, 0x1b, 0x29,
+	0xd8, 0xa9, 0x35, 0x80, 0xee, 0xae, 0xfe, 0xfd, 0xdb, 0xf0, 0xbc, 0xc1, 0xbf, 0x50, 0xad, 0xa6,
+	0x77, 0xee, 0x4d, 0xb9, 0x29, 0xa3, 0xf1, 0xc9, 0xdc, 0x07, 0xa7, 0x73, 0x1f, 0x7c, 0x9f, 0xfb,
+	0xe0, 0xfd, 0xc2, 0x6f, 0x9c, 0x2e, 0xfc, 0xc6, 0xd7, 0x85, 0xdf, 0x78, 0x3e, 0x64, 0xdc, 0x1c,
+	0x4d, 0x0f, 0x83, 0x58, 0x66, 0xd8, 0x8d, 0x54, 0x50, 0xf3, 0x4a, 0xaa, 0x17, 0x78, 0xd3, 0x84,
+	0xab, 0xa5, 0x3f, 0x6c, 0x56, 0x5b, 0x3f, 0xfc, 0x19, 0x00, 0x00, 0xff, 0xff, 0xdd, 0xb3, 0xa8,
+	0x1d, 0x84, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -280,10 +272,10 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgServiceClient interface {
 	// update params. Only callable by someone on the emissions module whitelist
-	UpdateParams(ctx context.Context, in *MsgServiceUpdateParamsRequest, opts ...grpc.CallOption) (*MsgServiceUpdateParamsResponse, error)
+	UpdateParams(ctx context.Context, in *UpdateParamsRequest, opts ...grpc.CallOption) (*UpdateParamsResponse, error)
 	// force a target emission calculation right now. Otherwise waits until the
 	// end of params.BlocksPerMonth
-	RecalculateTargetEmission(ctx context.Context, in *MsgServiceRecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*MsgServiceRecalculateTargetEmissionResponse, error)
+	RecalculateTargetEmission(ctx context.Context, in *RecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*RecalculateTargetEmissionResponse, error)
 }
 
 type msgServiceClient struct {
@@ -294,8 +286,8 @@ func NewMsgServiceClient(cc grpc1.ClientConn) MsgServiceClient {
 	return &msgServiceClient{cc}
 }
 
-func (c *msgServiceClient) UpdateParams(ctx context.Context, in *MsgServiceUpdateParamsRequest, opts ...grpc.CallOption) (*MsgServiceUpdateParamsResponse, error) {
-	out := new(MsgServiceUpdateParamsResponse)
+func (c *msgServiceClient) UpdateParams(ctx context.Context, in *UpdateParamsRequest, opts ...grpc.CallOption) (*UpdateParamsResponse, error) {
+	out := new(UpdateParamsResponse)
 	err := c.cc.Invoke(ctx, "/mint.v2.MsgService/UpdateParams", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -303,8 +295,8 @@ func (c *msgServiceClient) UpdateParams(ctx context.Context, in *MsgServiceUpdat
 	return out, nil
 }
 
-func (c *msgServiceClient) RecalculateTargetEmission(ctx context.Context, in *MsgServiceRecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*MsgServiceRecalculateTargetEmissionResponse, error) {
-	out := new(MsgServiceRecalculateTargetEmissionResponse)
+func (c *msgServiceClient) RecalculateTargetEmission(ctx context.Context, in *RecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*RecalculateTargetEmissionResponse, error) {
+	out := new(RecalculateTargetEmissionResponse)
 	err := c.cc.Invoke(ctx, "/mint.v2.MsgService/RecalculateTargetEmission", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -315,20 +307,20 @@ func (c *msgServiceClient) RecalculateTargetEmission(ctx context.Context, in *Ms
 // MsgServiceServer is the server API for MsgService service.
 type MsgServiceServer interface {
 	// update params. Only callable by someone on the emissions module whitelist
-	UpdateParams(context.Context, *MsgServiceUpdateParamsRequest) (*MsgServiceUpdateParamsResponse, error)
+	UpdateParams(context.Context, *UpdateParamsRequest) (*UpdateParamsResponse, error)
 	// force a target emission calculation right now. Otherwise waits until the
 	// end of params.BlocksPerMonth
-	RecalculateTargetEmission(context.Context, *MsgServiceRecalculateTargetEmissionRequest) (*MsgServiceRecalculateTargetEmissionResponse, error)
+	RecalculateTargetEmission(context.Context, *RecalculateTargetEmissionRequest) (*RecalculateTargetEmissionResponse, error)
 }
 
 // UnimplementedMsgServiceServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServiceServer struct {
 }
 
-func (*UnimplementedMsgServiceServer) UpdateParams(ctx context.Context, req *MsgServiceUpdateParamsRequest) (*MsgServiceUpdateParamsResponse, error) {
+func (*UnimplementedMsgServiceServer) UpdateParams(ctx context.Context, req *UpdateParamsRequest) (*UpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
-func (*UnimplementedMsgServiceServer) RecalculateTargetEmission(ctx context.Context, req *MsgServiceRecalculateTargetEmissionRequest) (*MsgServiceRecalculateTargetEmissionResponse, error) {
+func (*UnimplementedMsgServiceServer) RecalculateTargetEmission(ctx context.Context, req *RecalculateTargetEmissionRequest) (*RecalculateTargetEmissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecalculateTargetEmission not implemented")
 }
 
@@ -337,7 +329,7 @@ func RegisterMsgServiceServer(s grpc1.Server, srv MsgServiceServer) {
 }
 
 func _MsgService_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgServiceUpdateParamsRequest)
+	in := new(UpdateParamsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -349,13 +341,13 @@ func _MsgService_UpdateParams_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/mint.v2.MsgService/UpdateParams",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServiceServer).UpdateParams(ctx, req.(*MsgServiceUpdateParamsRequest))
+		return srv.(MsgServiceServer).UpdateParams(ctx, req.(*UpdateParamsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MsgService_RecalculateTargetEmission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgServiceRecalculateTargetEmissionRequest)
+	in := new(RecalculateTargetEmissionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -367,7 +359,7 @@ func _MsgService_RecalculateTargetEmission_Handler(srv interface{}, ctx context.
 		FullMethod: "/mint.v2.MsgService/RecalculateTargetEmission",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServiceServer).RecalculateTargetEmission(ctx, req.(*MsgServiceRecalculateTargetEmissionRequest))
+		return srv.(MsgServiceServer).RecalculateTargetEmission(ctx, req.(*RecalculateTargetEmissionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -389,7 +381,7 @@ var _MsgService_serviceDesc = grpc.ServiceDesc{
 	Metadata: "mint/v2/tx.proto",
 }
 
-func (m *MsgServiceUpdateParamsRequest) Marshal() (dAtA []byte, err error) {
+func (m *UpdateParamsRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -399,12 +391,12 @@ func (m *MsgServiceUpdateParamsRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgServiceUpdateParamsRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *UpdateParamsRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgServiceUpdateParamsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *UpdateParamsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -439,7 +431,7 @@ func (m *MsgServiceUpdateParamsRequest) MarshalToSizedBuffer(dAtA []byte) (int, 
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgServiceUpdateParamsResponse) Marshal() (dAtA []byte, err error) {
+func (m *UpdateParamsResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -449,12 +441,12 @@ func (m *MsgServiceUpdateParamsResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgServiceUpdateParamsResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *UpdateParamsResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgServiceUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *UpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -462,7 +454,7 @@ func (m *MsgServiceUpdateParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int,
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgServiceRecalculateTargetEmissionRequest) Marshal() (dAtA []byte, err error) {
+func (m *RecalculateTargetEmissionRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -472,12 +464,12 @@ func (m *MsgServiceRecalculateTargetEmissionRequest) Marshal() (dAtA []byte, err
 	return dAtA[:n], nil
 }
 
-func (m *MsgServiceRecalculateTargetEmissionRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *RecalculateTargetEmissionRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgServiceRecalculateTargetEmissionRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *RecalculateTargetEmissionRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -492,7 +484,7 @@ func (m *MsgServiceRecalculateTargetEmissionRequest) MarshalToSizedBuffer(dAtA [
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgServiceRecalculateTargetEmissionResponse) Marshal() (dAtA []byte, err error) {
+func (m *RecalculateTargetEmissionResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -502,12 +494,12 @@ func (m *MsgServiceRecalculateTargetEmissionResponse) Marshal() (dAtA []byte, er
 	return dAtA[:n], nil
 }
 
-func (m *MsgServiceRecalculateTargetEmissionResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *RecalculateTargetEmissionResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgServiceRecalculateTargetEmissionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *RecalculateTargetEmissionResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -526,7 +518,7 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgServiceUpdateParamsRequest) Size() (n int) {
+func (m *UpdateParamsRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -544,7 +536,7 @@ func (m *MsgServiceUpdateParamsRequest) Size() (n int) {
 	return n
 }
 
-func (m *MsgServiceUpdateParamsResponse) Size() (n int) {
+func (m *UpdateParamsResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -553,7 +545,7 @@ func (m *MsgServiceUpdateParamsResponse) Size() (n int) {
 	return n
 }
 
-func (m *MsgServiceRecalculateTargetEmissionRequest) Size() (n int) {
+func (m *RecalculateTargetEmissionRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -566,7 +558,7 @@ func (m *MsgServiceRecalculateTargetEmissionRequest) Size() (n int) {
 	return n
 }
 
-func (m *MsgServiceRecalculateTargetEmissionResponse) Size() (n int) {
+func (m *RecalculateTargetEmissionResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -581,7 +573,7 @@ func sovTx(x uint64) (n int) {
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *MsgServiceUpdateParamsRequest) Unmarshal(dAtA []byte) error {
+func (m *UpdateParamsRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -604,10 +596,10 @@ func (m *MsgServiceUpdateParamsRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgServiceUpdateParamsRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: UpdateParamsRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgServiceUpdateParamsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: UpdateParamsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -716,7 +708,7 @@ func (m *MsgServiceUpdateParamsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgServiceUpdateParamsResponse) Unmarshal(dAtA []byte) error {
+func (m *UpdateParamsResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -739,10 +731,10 @@ func (m *MsgServiceUpdateParamsResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgServiceUpdateParamsResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: UpdateParamsResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgServiceUpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: UpdateParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -766,7 +758,7 @@ func (m *MsgServiceUpdateParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgServiceRecalculateTargetEmissionRequest) Unmarshal(dAtA []byte) error {
+func (m *RecalculateTargetEmissionRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -789,10 +781,10 @@ func (m *MsgServiceRecalculateTargetEmissionRequest) Unmarshal(dAtA []byte) erro
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgServiceRecalculateTargetEmissionRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: RecalculateTargetEmissionRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgServiceRecalculateTargetEmissionRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: RecalculateTargetEmissionRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -848,7 +840,7 @@ func (m *MsgServiceRecalculateTargetEmissionRequest) Unmarshal(dAtA []byte) erro
 	}
 	return nil
 }
-func (m *MsgServiceRecalculateTargetEmissionResponse) Unmarshal(dAtA []byte) error {
+func (m *RecalculateTargetEmissionResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -871,10 +863,10 @@ func (m *MsgServiceRecalculateTargetEmissionResponse) Unmarshal(dAtA []byte) err
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgServiceRecalculateTargetEmissionResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: RecalculateTargetEmissionResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgServiceRecalculateTargetEmissionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: RecalculateTargetEmissionResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

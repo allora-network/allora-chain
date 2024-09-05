@@ -23,7 +23,7 @@ func NewMsgServerImpl(k Keeper) types.MsgServiceServer {
 }
 
 // UpdateParams updates the params.
-func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.MsgServiceUpdateParamsRequest) (*types.MsgServiceUpdateParamsResponse, error) {
+func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (*types.UpdateParamsResponse, error) {
 	isAdmin, err := ms.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {
 		return nil, err
@@ -40,10 +40,10 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.MsgServi
 		return nil, err
 	}
 
-	return &types.MsgServiceUpdateParamsResponse{}, nil
+	return &types.UpdateParamsResponse{}, nil
 }
 
-func (ms msgServiceServer) RecalculateTargetEmission(ctx context.Context, msg *types.MsgServiceRecalculateTargetEmissionRequest) (*types.MsgServiceRecalculateTargetEmissionResponse, error) {
+func (ms msgServiceServer) RecalculateTargetEmission(ctx context.Context, msg *types.RecalculateTargetEmissionRequest) (*types.RecalculateTargetEmissionResponse, error) {
 	isAdmin, err := ms.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {
 		return nil, err
@@ -91,6 +91,6 @@ func (ms msgServiceServer) RecalculateTargetEmission(ctx context.Context, msg *t
 		vPercent,
 	)
 
-	return &types.MsgServiceRecalculateTargetEmissionResponse{}, nil
+	return &types.RecalculateTargetEmissionResponse{}, nil
 
 }

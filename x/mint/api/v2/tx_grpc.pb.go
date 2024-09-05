@@ -28,10 +28,10 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MsgServiceClient interface {
 	// update params. Only callable by someone on the emissions module whitelist
-	UpdateParams(ctx context.Context, in *MsgServiceUpdateParamsRequest, opts ...grpc.CallOption) (*MsgServiceUpdateParamsResponse, error)
+	UpdateParams(ctx context.Context, in *UpdateParamsRequest, opts ...grpc.CallOption) (*UpdateParamsResponse, error)
 	// force a target emission calculation right now. Otherwise waits until the
 	// end of params.BlocksPerMonth
-	RecalculateTargetEmission(ctx context.Context, in *MsgServiceRecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*MsgServiceRecalculateTargetEmissionResponse, error)
+	RecalculateTargetEmission(ctx context.Context, in *RecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*RecalculateTargetEmissionResponse, error)
 }
 
 type msgServiceClient struct {
@@ -42,8 +42,8 @@ func NewMsgServiceClient(cc grpc.ClientConnInterface) MsgServiceClient {
 	return &msgServiceClient{cc}
 }
 
-func (c *msgServiceClient) UpdateParams(ctx context.Context, in *MsgServiceUpdateParamsRequest, opts ...grpc.CallOption) (*MsgServiceUpdateParamsResponse, error) {
-	out := new(MsgServiceUpdateParamsResponse)
+func (c *msgServiceClient) UpdateParams(ctx context.Context, in *UpdateParamsRequest, opts ...grpc.CallOption) (*UpdateParamsResponse, error) {
+	out := new(UpdateParamsResponse)
 	err := c.cc.Invoke(ctx, MsgService_UpdateParams_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -51,8 +51,8 @@ func (c *msgServiceClient) UpdateParams(ctx context.Context, in *MsgServiceUpdat
 	return out, nil
 }
 
-func (c *msgServiceClient) RecalculateTargetEmission(ctx context.Context, in *MsgServiceRecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*MsgServiceRecalculateTargetEmissionResponse, error) {
-	out := new(MsgServiceRecalculateTargetEmissionResponse)
+func (c *msgServiceClient) RecalculateTargetEmission(ctx context.Context, in *RecalculateTargetEmissionRequest, opts ...grpc.CallOption) (*RecalculateTargetEmissionResponse, error) {
+	out := new(RecalculateTargetEmissionResponse)
 	err := c.cc.Invoke(ctx, MsgService_RecalculateTargetEmission_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -65,10 +65,10 @@ func (c *msgServiceClient) RecalculateTargetEmission(ctx context.Context, in *Ms
 // for forward compatibility
 type MsgServiceServer interface {
 	// update params. Only callable by someone on the emissions module whitelist
-	UpdateParams(context.Context, *MsgServiceUpdateParamsRequest) (*MsgServiceUpdateParamsResponse, error)
+	UpdateParams(context.Context, *UpdateParamsRequest) (*UpdateParamsResponse, error)
 	// force a target emission calculation right now. Otherwise waits until the
 	// end of params.BlocksPerMonth
-	RecalculateTargetEmission(context.Context, *MsgServiceRecalculateTargetEmissionRequest) (*MsgServiceRecalculateTargetEmissionResponse, error)
+	RecalculateTargetEmission(context.Context, *RecalculateTargetEmissionRequest) (*RecalculateTargetEmissionResponse, error)
 	mustEmbedUnimplementedMsgServiceServer()
 }
 
@@ -76,10 +76,10 @@ type MsgServiceServer interface {
 type UnimplementedMsgServiceServer struct {
 }
 
-func (UnimplementedMsgServiceServer) UpdateParams(context.Context, *MsgServiceUpdateParamsRequest) (*MsgServiceUpdateParamsResponse, error) {
+func (UnimplementedMsgServiceServer) UpdateParams(context.Context, *UpdateParamsRequest) (*UpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
-func (UnimplementedMsgServiceServer) RecalculateTargetEmission(context.Context, *MsgServiceRecalculateTargetEmissionRequest) (*MsgServiceRecalculateTargetEmissionResponse, error) {
+func (UnimplementedMsgServiceServer) RecalculateTargetEmission(context.Context, *RecalculateTargetEmissionRequest) (*RecalculateTargetEmissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecalculateTargetEmission not implemented")
 }
 func (UnimplementedMsgServiceServer) mustEmbedUnimplementedMsgServiceServer() {}
@@ -96,7 +96,7 @@ func RegisterMsgServiceServer(s grpc.ServiceRegistrar, srv MsgServiceServer) {
 }
 
 func _MsgService_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgServiceUpdateParamsRequest)
+	in := new(UpdateParamsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -108,13 +108,13 @@ func _MsgService_UpdateParams_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: MsgService_UpdateParams_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServiceServer).UpdateParams(ctx, req.(*MsgServiceUpdateParamsRequest))
+		return srv.(MsgServiceServer).UpdateParams(ctx, req.(*UpdateParamsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _MsgService_RecalculateTargetEmission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgServiceRecalculateTargetEmissionRequest)
+	in := new(RecalculateTargetEmissionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func _MsgService_RecalculateTargetEmission_Handler(srv interface{}, ctx context.
 		FullMethod: MsgService_RecalculateTargetEmission_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServiceServer).RecalculateTargetEmission(ctx, req.(*MsgServiceRecalculateTargetEmissionRequest))
+		return srv.(MsgServiceServer).RecalculateTargetEmission(ctx, req.(*RecalculateTargetEmissionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

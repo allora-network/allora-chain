@@ -14,14 +14,14 @@ service MsgService {
   option (cosmos.msg.v1.service) = true;
 
   // update params. Only callable by someone on the emissions module whitelist
-  rpc UpdateParams(MsgServiceUpdateParamsRequest) returns (MsgServiceUpdateParamsResponse);
+  rpc UpdateParams(UpdateParamsRequest) returns (UpdateParamsResponse);
   // force a target emission calculation right now. Otherwise waits until the
   // end of params.BlocksPerMonth
-  rpc RecalculateTargetEmission(MsgServiceRecalculateTargetEmissionRequest) returns (MsgServiceRecalculateTargetEmissionResponse);
+  rpc RecalculateTargetEmission(RecalculateTargetEmissionRequest) returns (RecalculateTargetEmissionResponse);
 }
 
-// MsgUpdateParams allows an update to the minting parameters of the module.
-message MsgServiceUpdateParamsRequest {
+// UpdateParams allows an update to the minting parameters of the module.
+message UpdateParamsRequest {
   option (cosmos.msg.v1.signer) = "sender";
   option (amino.name) = "allora-chain/x/mint/MsgUpdateParams";
 
@@ -40,12 +40,12 @@ message MsgServiceUpdateParamsRequest {
 
 // MsgUpdateParamsResponse defines the response structure for executing a
 // MsgUpdateParams message.
-message MsgServiceUpdateParamsResponse {}
+message UpdateParamsResponse {}
 
 // Force a recalculation of the target emission right now.
 // This indirectly controls recalculating the inflation rate for the network
 // and the stakers APY %.
-message MsgServiceRecalculateTargetEmissionRequest {
+message RecalculateTargetEmissionRequest {
   option (cosmos.msg.v1.signer) = "sender";
   option (amino.name) = "allora-chain/x/mint/MsgRecalculateTargetEmission";
 
@@ -53,4 +53,4 @@ message MsgServiceRecalculateTargetEmissionRequest {
 }
 
 // response from recalculating the target emission
-message MsgServiceRecalculateTargetEmissionResponse {}
+message RecalculateTargetEmissionResponse {}
