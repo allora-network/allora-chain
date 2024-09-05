@@ -19,644 +19,644 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName              = "/emissions.v4.Msg/UpdateParams"
-	Msg_CreateNewTopic_FullMethodName            = "/emissions.v4.Msg/CreateNewTopic"
-	Msg_Register_FullMethodName                  = "/emissions.v4.Msg/Register"
-	Msg_RemoveRegistration_FullMethodName        = "/emissions.v4.Msg/RemoveRegistration"
-	Msg_AddStake_FullMethodName                  = "/emissions.v4.Msg/AddStake"
-	Msg_RemoveStake_FullMethodName               = "/emissions.v4.Msg/RemoveStake"
-	Msg_CancelRemoveStake_FullMethodName         = "/emissions.v4.Msg/CancelRemoveStake"
-	Msg_DelegateStake_FullMethodName             = "/emissions.v4.Msg/DelegateStake"
-	Msg_RewardDelegateStake_FullMethodName       = "/emissions.v4.Msg/RewardDelegateStake"
-	Msg_RemoveDelegateStake_FullMethodName       = "/emissions.v4.Msg/RemoveDelegateStake"
-	Msg_CancelRemoveDelegateStake_FullMethodName = "/emissions.v4.Msg/CancelRemoveDelegateStake"
-	Msg_FundTopic_FullMethodName                 = "/emissions.v4.Msg/FundTopic"
-	Msg_AddToWhitelistAdmin_FullMethodName       = "/emissions.v4.Msg/AddToWhitelistAdmin"
-	Msg_RemoveFromWhitelistAdmin_FullMethodName  = "/emissions.v4.Msg/RemoveFromWhitelistAdmin"
-	Msg_InsertWorkerPayload_FullMethodName       = "/emissions.v4.Msg/InsertWorkerPayload"
-	Msg_InsertReputerPayload_FullMethodName      = "/emissions.v4.Msg/InsertReputerPayload"
+	MsgService_UpdateParams_FullMethodName              = "/emissions.v4.MsgService/UpdateParams"
+	MsgService_CreateNewTopic_FullMethodName            = "/emissions.v4.MsgService/CreateNewTopic"
+	MsgService_Register_FullMethodName                  = "/emissions.v4.MsgService/Register"
+	MsgService_RemoveRegistration_FullMethodName        = "/emissions.v4.MsgService/RemoveRegistration"
+	MsgService_AddStake_FullMethodName                  = "/emissions.v4.MsgService/AddStake"
+	MsgService_RemoveStake_FullMethodName               = "/emissions.v4.MsgService/RemoveStake"
+	MsgService_CancelRemoveStake_FullMethodName         = "/emissions.v4.MsgService/CancelRemoveStake"
+	MsgService_DelegateStake_FullMethodName             = "/emissions.v4.MsgService/DelegateStake"
+	MsgService_RewardDelegateStake_FullMethodName       = "/emissions.v4.MsgService/RewardDelegateStake"
+	MsgService_RemoveDelegateStake_FullMethodName       = "/emissions.v4.MsgService/RemoveDelegateStake"
+	MsgService_CancelRemoveDelegateStake_FullMethodName = "/emissions.v4.MsgService/CancelRemoveDelegateStake"
+	MsgService_FundTopic_FullMethodName                 = "/emissions.v4.MsgService/FundTopic"
+	MsgService_AddToWhitelistAdmin_FullMethodName       = "/emissions.v4.MsgService/AddToWhitelistAdmin"
+	MsgService_RemoveFromWhitelistAdmin_FullMethodName  = "/emissions.v4.MsgService/RemoveFromWhitelistAdmin"
+	MsgService_InsertWorkerPayload_FullMethodName       = "/emissions.v4.MsgService/InsertWorkerPayload"
+	MsgService_InsertReputerPayload_FullMethodName      = "/emissions.v4.MsgService/InsertReputerPayload"
 )
 
-// MsgClient is the client API for Msg service.
+// MsgServiceClient is the client API for MsgService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type MsgClient interface {
-	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
-	CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error)
-	Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error)
-	RemoveRegistration(ctx context.Context, in *MsgRemoveRegistration, opts ...grpc.CallOption) (*MsgRemoveRegistrationResponse, error)
-	AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.CallOption) (*MsgAddStakeResponse, error)
-	RemoveStake(ctx context.Context, in *MsgRemoveStake, opts ...grpc.CallOption) (*MsgRemoveStakeResponse, error)
-	CancelRemoveStake(ctx context.Context, in *MsgCancelRemoveStake, opts ...grpc.CallOption) (*MsgCancelRemoveStakeResponse, error)
-	DelegateStake(ctx context.Context, in *MsgDelegateStake, opts ...grpc.CallOption) (*MsgDelegateStakeResponse, error)
-	RewardDelegateStake(ctx context.Context, in *MsgRewardDelegateStake, opts ...grpc.CallOption) (*MsgRewardDelegateStakeResponse, error)
-	RemoveDelegateStake(ctx context.Context, in *MsgRemoveDelegateStake, opts ...grpc.CallOption) (*MsgRemoveDelegateStakeResponse, error)
-	CancelRemoveDelegateStake(ctx context.Context, in *MsgCancelRemoveDelegateStake, opts ...grpc.CallOption) (*MsgCancelRemoveDelegateStakeResponse, error)
-	FundTopic(ctx context.Context, in *MsgFundTopic, opts ...grpc.CallOption) (*MsgFundTopicResponse, error)
-	AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error)
-	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error)
-	InsertWorkerPayload(ctx context.Context, in *MsgInsertWorkerPayload, opts ...grpc.CallOption) (*MsgInsertWorkerPayloadResponse, error)
-	InsertReputerPayload(ctx context.Context, in *MsgInsertReputerPayload, opts ...grpc.CallOption) (*MsgInsertReputerPayloadResponse, error)
+type MsgServiceClient interface {
+	UpdateParams(ctx context.Context, in *MsgServiceUpdateParamsRequest, opts ...grpc.CallOption) (*MsgServiceUpdateParamsResponse, error)
+	CreateNewTopic(ctx context.Context, in *MsgServiceCreateNewTopicRequest, opts ...grpc.CallOption) (*MsgServiceCreateNewTopicResponse, error)
+	Register(ctx context.Context, in *MsgServiceRegisterRequest, opts ...grpc.CallOption) (*MsgServiceRegisterResponse, error)
+	RemoveRegistration(ctx context.Context, in *MsgServiceRemoveRegistrationRequest, opts ...grpc.CallOption) (*MsgServiceRemoveRegistrationResponse, error)
+	AddStake(ctx context.Context, in *MsgServiceAddStakeRequest, opts ...grpc.CallOption) (*MsgServiceAddStakeResponse, error)
+	RemoveStake(ctx context.Context, in *MsgServiceRemoveStakeRequest, opts ...grpc.CallOption) (*MsgServiceRemoveStakeResponse, error)
+	CancelRemoveStake(ctx context.Context, in *MsgServiceCancelRemoveStakeRequest, opts ...grpc.CallOption) (*MsgServiceCancelRemoveStakeResponse, error)
+	DelegateStake(ctx context.Context, in *MsgServiceDelegateStakeRequest, opts ...grpc.CallOption) (*MsgServiceDelegateStakeResponse, error)
+	RewardDelegateStake(ctx context.Context, in *MsgServiceRewardDelegateStakeRequest, opts ...grpc.CallOption) (*MsgServiceRewardDelegateStakeResponse, error)
+	RemoveDelegateStake(ctx context.Context, in *MsgServiceRemoveDelegateStakeRequest, opts ...grpc.CallOption) (*MsgServiceRemoveDelegateStakeResponse, error)
+	CancelRemoveDelegateStake(ctx context.Context, in *MsgServiceCancelRemoveDelegateStakeRequest, opts ...grpc.CallOption) (*MsgServiceCancelRemoveDelegateStakeResponse, error)
+	FundTopic(ctx context.Context, in *MsgServiceFundTopicRequest, opts ...grpc.CallOption) (*MsgServiceFundTopicResponse, error)
+	AddToWhitelistAdmin(ctx context.Context, in *MsgServiceAddToWhitelistAdminRequest, opts ...grpc.CallOption) (*MsgServiceAddToWhitelistAdminResponse, error)
+	RemoveFromWhitelistAdmin(ctx context.Context, in *MsgServiceRemoveFromWhitelistAdminRequest, opts ...grpc.CallOption) (*MsgServiceRemoveFromWhitelistAdminResponse, error)
+	InsertWorkerPayload(ctx context.Context, in *MsgServiceInsertWorkerPayloadRequest, opts ...grpc.CallOption) (*MsgServiceInsertWorkerPayloadResponse, error)
+	InsertReputerPayload(ctx context.Context, in *MsgServiceInsertReputerPayloadRequest, opts ...grpc.CallOption) (*MsgServiceInsertReputerPayloadResponse, error)
 }
 
-type msgClient struct {
+type msgServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewMsgClient(cc grpc.ClientConnInterface) MsgClient {
-	return &msgClient{cc}
+func NewMsgServiceClient(cc grpc.ClientConnInterface) MsgServiceClient {
+	return &msgServiceClient{cc}
 }
 
-func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error) {
-	out := new(MsgUpdateParamsResponse)
-	err := c.cc.Invoke(ctx, Msg_UpdateParams_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) UpdateParams(ctx context.Context, in *MsgServiceUpdateParamsRequest, opts ...grpc.CallOption) (*MsgServiceUpdateParamsResponse, error) {
+	out := new(MsgServiceUpdateParamsResponse)
+	err := c.cc.Invoke(ctx, MsgService_UpdateParams_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) CreateNewTopic(ctx context.Context, in *MsgCreateNewTopic, opts ...grpc.CallOption) (*MsgCreateNewTopicResponse, error) {
-	out := new(MsgCreateNewTopicResponse)
-	err := c.cc.Invoke(ctx, Msg_CreateNewTopic_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) CreateNewTopic(ctx context.Context, in *MsgServiceCreateNewTopicRequest, opts ...grpc.CallOption) (*MsgServiceCreateNewTopicResponse, error) {
+	out := new(MsgServiceCreateNewTopicResponse)
+	err := c.cc.Invoke(ctx, MsgService_CreateNewTopic_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) Register(ctx context.Context, in *MsgRegister, opts ...grpc.CallOption) (*MsgRegisterResponse, error) {
-	out := new(MsgRegisterResponse)
-	err := c.cc.Invoke(ctx, Msg_Register_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) Register(ctx context.Context, in *MsgServiceRegisterRequest, opts ...grpc.CallOption) (*MsgServiceRegisterResponse, error) {
+	out := new(MsgServiceRegisterResponse)
+	err := c.cc.Invoke(ctx, MsgService_Register_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) RemoveRegistration(ctx context.Context, in *MsgRemoveRegistration, opts ...grpc.CallOption) (*MsgRemoveRegistrationResponse, error) {
-	out := new(MsgRemoveRegistrationResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveRegistration_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) RemoveRegistration(ctx context.Context, in *MsgServiceRemoveRegistrationRequest, opts ...grpc.CallOption) (*MsgServiceRemoveRegistrationResponse, error) {
+	out := new(MsgServiceRemoveRegistrationResponse)
+	err := c.cc.Invoke(ctx, MsgService_RemoveRegistration_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) AddStake(ctx context.Context, in *MsgAddStake, opts ...grpc.CallOption) (*MsgAddStakeResponse, error) {
-	out := new(MsgAddStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_AddStake_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) AddStake(ctx context.Context, in *MsgServiceAddStakeRequest, opts ...grpc.CallOption) (*MsgServiceAddStakeResponse, error) {
+	out := new(MsgServiceAddStakeResponse)
+	err := c.cc.Invoke(ctx, MsgService_AddStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) RemoveStake(ctx context.Context, in *MsgRemoveStake, opts ...grpc.CallOption) (*MsgRemoveStakeResponse, error) {
-	out := new(MsgRemoveStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveStake_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) RemoveStake(ctx context.Context, in *MsgServiceRemoveStakeRequest, opts ...grpc.CallOption) (*MsgServiceRemoveStakeResponse, error) {
+	out := new(MsgServiceRemoveStakeResponse)
+	err := c.cc.Invoke(ctx, MsgService_RemoveStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) CancelRemoveStake(ctx context.Context, in *MsgCancelRemoveStake, opts ...grpc.CallOption) (*MsgCancelRemoveStakeResponse, error) {
-	out := new(MsgCancelRemoveStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_CancelRemoveStake_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) CancelRemoveStake(ctx context.Context, in *MsgServiceCancelRemoveStakeRequest, opts ...grpc.CallOption) (*MsgServiceCancelRemoveStakeResponse, error) {
+	out := new(MsgServiceCancelRemoveStakeResponse)
+	err := c.cc.Invoke(ctx, MsgService_CancelRemoveStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) DelegateStake(ctx context.Context, in *MsgDelegateStake, opts ...grpc.CallOption) (*MsgDelegateStakeResponse, error) {
-	out := new(MsgDelegateStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_DelegateStake_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) DelegateStake(ctx context.Context, in *MsgServiceDelegateStakeRequest, opts ...grpc.CallOption) (*MsgServiceDelegateStakeResponse, error) {
+	out := new(MsgServiceDelegateStakeResponse)
+	err := c.cc.Invoke(ctx, MsgService_DelegateStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) RewardDelegateStake(ctx context.Context, in *MsgRewardDelegateStake, opts ...grpc.CallOption) (*MsgRewardDelegateStakeResponse, error) {
-	out := new(MsgRewardDelegateStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_RewardDelegateStake_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) RewardDelegateStake(ctx context.Context, in *MsgServiceRewardDelegateStakeRequest, opts ...grpc.CallOption) (*MsgServiceRewardDelegateStakeResponse, error) {
+	out := new(MsgServiceRewardDelegateStakeResponse)
+	err := c.cc.Invoke(ctx, MsgService_RewardDelegateStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) RemoveDelegateStake(ctx context.Context, in *MsgRemoveDelegateStake, opts ...grpc.CallOption) (*MsgRemoveDelegateStakeResponse, error) {
-	out := new(MsgRemoveDelegateStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveDelegateStake_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) RemoveDelegateStake(ctx context.Context, in *MsgServiceRemoveDelegateStakeRequest, opts ...grpc.CallOption) (*MsgServiceRemoveDelegateStakeResponse, error) {
+	out := new(MsgServiceRemoveDelegateStakeResponse)
+	err := c.cc.Invoke(ctx, MsgService_RemoveDelegateStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) CancelRemoveDelegateStake(ctx context.Context, in *MsgCancelRemoveDelegateStake, opts ...grpc.CallOption) (*MsgCancelRemoveDelegateStakeResponse, error) {
-	out := new(MsgCancelRemoveDelegateStakeResponse)
-	err := c.cc.Invoke(ctx, Msg_CancelRemoveDelegateStake_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) CancelRemoveDelegateStake(ctx context.Context, in *MsgServiceCancelRemoveDelegateStakeRequest, opts ...grpc.CallOption) (*MsgServiceCancelRemoveDelegateStakeResponse, error) {
+	out := new(MsgServiceCancelRemoveDelegateStakeResponse)
+	err := c.cc.Invoke(ctx, MsgService_CancelRemoveDelegateStake_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) FundTopic(ctx context.Context, in *MsgFundTopic, opts ...grpc.CallOption) (*MsgFundTopicResponse, error) {
-	out := new(MsgFundTopicResponse)
-	err := c.cc.Invoke(ctx, Msg_FundTopic_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) FundTopic(ctx context.Context, in *MsgServiceFundTopicRequest, opts ...grpc.CallOption) (*MsgServiceFundTopicResponse, error) {
+	out := new(MsgServiceFundTopicResponse)
+	err := c.cc.Invoke(ctx, MsgService_FundTopic_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) AddToWhitelistAdmin(ctx context.Context, in *MsgAddToWhitelistAdmin, opts ...grpc.CallOption) (*MsgAddToWhitelistAdminResponse, error) {
-	out := new(MsgAddToWhitelistAdminResponse)
-	err := c.cc.Invoke(ctx, Msg_AddToWhitelistAdmin_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) AddToWhitelistAdmin(ctx context.Context, in *MsgServiceAddToWhitelistAdminRequest, opts ...grpc.CallOption) (*MsgServiceAddToWhitelistAdminResponse, error) {
+	out := new(MsgServiceAddToWhitelistAdminResponse)
+	err := c.cc.Invoke(ctx, MsgService_AddToWhitelistAdmin_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) RemoveFromWhitelistAdmin(ctx context.Context, in *MsgRemoveFromWhitelistAdmin, opts ...grpc.CallOption) (*MsgRemoveFromWhitelistAdminResponse, error) {
-	out := new(MsgRemoveFromWhitelistAdminResponse)
-	err := c.cc.Invoke(ctx, Msg_RemoveFromWhitelistAdmin_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) RemoveFromWhitelistAdmin(ctx context.Context, in *MsgServiceRemoveFromWhitelistAdminRequest, opts ...grpc.CallOption) (*MsgServiceRemoveFromWhitelistAdminResponse, error) {
+	out := new(MsgServiceRemoveFromWhitelistAdminResponse)
+	err := c.cc.Invoke(ctx, MsgService_RemoveFromWhitelistAdmin_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) InsertWorkerPayload(ctx context.Context, in *MsgInsertWorkerPayload, opts ...grpc.CallOption) (*MsgInsertWorkerPayloadResponse, error) {
-	out := new(MsgInsertWorkerPayloadResponse)
-	err := c.cc.Invoke(ctx, Msg_InsertWorkerPayload_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) InsertWorkerPayload(ctx context.Context, in *MsgServiceInsertWorkerPayloadRequest, opts ...grpc.CallOption) (*MsgServiceInsertWorkerPayloadResponse, error) {
+	out := new(MsgServiceInsertWorkerPayloadResponse)
+	err := c.cc.Invoke(ctx, MsgService_InsertWorkerPayload_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *msgClient) InsertReputerPayload(ctx context.Context, in *MsgInsertReputerPayload, opts ...grpc.CallOption) (*MsgInsertReputerPayloadResponse, error) {
-	out := new(MsgInsertReputerPayloadResponse)
-	err := c.cc.Invoke(ctx, Msg_InsertReputerPayload_FullMethodName, in, out, opts...)
+func (c *msgServiceClient) InsertReputerPayload(ctx context.Context, in *MsgServiceInsertReputerPayloadRequest, opts ...grpc.CallOption) (*MsgServiceInsertReputerPayloadResponse, error) {
+	out := new(MsgServiceInsertReputerPayloadResponse)
+	err := c.cc.Invoke(ctx, MsgService_InsertReputerPayload_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// MsgServer is the server API for Msg service.
-// All implementations must embed UnimplementedMsgServer
+// MsgServiceServer is the server API for MsgService service.
+// All implementations must embed UnimplementedMsgServiceServer
 // for forward compatibility
-type MsgServer interface {
-	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error)
-	Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error)
-	RemoveRegistration(context.Context, *MsgRemoveRegistration) (*MsgRemoveRegistrationResponse, error)
-	AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error)
-	RemoveStake(context.Context, *MsgRemoveStake) (*MsgRemoveStakeResponse, error)
-	CancelRemoveStake(context.Context, *MsgCancelRemoveStake) (*MsgCancelRemoveStakeResponse, error)
-	DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error)
-	RewardDelegateStake(context.Context, *MsgRewardDelegateStake) (*MsgRewardDelegateStakeResponse, error)
-	RemoveDelegateStake(context.Context, *MsgRemoveDelegateStake) (*MsgRemoveDelegateStakeResponse, error)
-	CancelRemoveDelegateStake(context.Context, *MsgCancelRemoveDelegateStake) (*MsgCancelRemoveDelegateStakeResponse, error)
-	FundTopic(context.Context, *MsgFundTopic) (*MsgFundTopicResponse, error)
-	AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error)
-	RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error)
-	InsertWorkerPayload(context.Context, *MsgInsertWorkerPayload) (*MsgInsertWorkerPayloadResponse, error)
-	InsertReputerPayload(context.Context, *MsgInsertReputerPayload) (*MsgInsertReputerPayloadResponse, error)
-	mustEmbedUnimplementedMsgServer()
+type MsgServiceServer interface {
+	UpdateParams(context.Context, *MsgServiceUpdateParamsRequest) (*MsgServiceUpdateParamsResponse, error)
+	CreateNewTopic(context.Context, *MsgServiceCreateNewTopicRequest) (*MsgServiceCreateNewTopicResponse, error)
+	Register(context.Context, *MsgServiceRegisterRequest) (*MsgServiceRegisterResponse, error)
+	RemoveRegistration(context.Context, *MsgServiceRemoveRegistrationRequest) (*MsgServiceRemoveRegistrationResponse, error)
+	AddStake(context.Context, *MsgServiceAddStakeRequest) (*MsgServiceAddStakeResponse, error)
+	RemoveStake(context.Context, *MsgServiceRemoveStakeRequest) (*MsgServiceRemoveStakeResponse, error)
+	CancelRemoveStake(context.Context, *MsgServiceCancelRemoveStakeRequest) (*MsgServiceCancelRemoveStakeResponse, error)
+	DelegateStake(context.Context, *MsgServiceDelegateStakeRequest) (*MsgServiceDelegateStakeResponse, error)
+	RewardDelegateStake(context.Context, *MsgServiceRewardDelegateStakeRequest) (*MsgServiceRewardDelegateStakeResponse, error)
+	RemoveDelegateStake(context.Context, *MsgServiceRemoveDelegateStakeRequest) (*MsgServiceRemoveDelegateStakeResponse, error)
+	CancelRemoveDelegateStake(context.Context, *MsgServiceCancelRemoveDelegateStakeRequest) (*MsgServiceCancelRemoveDelegateStakeResponse, error)
+	FundTopic(context.Context, *MsgServiceFundTopicRequest) (*MsgServiceFundTopicResponse, error)
+	AddToWhitelistAdmin(context.Context, *MsgServiceAddToWhitelistAdminRequest) (*MsgServiceAddToWhitelistAdminResponse, error)
+	RemoveFromWhitelistAdmin(context.Context, *MsgServiceRemoveFromWhitelistAdminRequest) (*MsgServiceRemoveFromWhitelistAdminResponse, error)
+	InsertWorkerPayload(context.Context, *MsgServiceInsertWorkerPayloadRequest) (*MsgServiceInsertWorkerPayloadResponse, error)
+	InsertReputerPayload(context.Context, *MsgServiceInsertReputerPayloadRequest) (*MsgServiceInsertReputerPayloadResponse, error)
+	mustEmbedUnimplementedMsgServiceServer()
 }
 
-// UnimplementedMsgServer must be embedded to have forward compatible implementations.
-type UnimplementedMsgServer struct {
+// UnimplementedMsgServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedMsgServiceServer struct {
 }
 
-func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
+func (UnimplementedMsgServiceServer) UpdateParams(context.Context, *MsgServiceUpdateParamsRequest) (*MsgServiceUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
-func (UnimplementedMsgServer) CreateNewTopic(context.Context, *MsgCreateNewTopic) (*MsgCreateNewTopicResponse, error) {
+func (UnimplementedMsgServiceServer) CreateNewTopic(context.Context, *MsgServiceCreateNewTopicRequest) (*MsgServiceCreateNewTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewTopic not implemented")
 }
-func (UnimplementedMsgServer) Register(context.Context, *MsgRegister) (*MsgRegisterResponse, error) {
+func (UnimplementedMsgServiceServer) Register(context.Context, *MsgServiceRegisterRequest) (*MsgServiceRegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (UnimplementedMsgServer) RemoveRegistration(context.Context, *MsgRemoveRegistration) (*MsgRemoveRegistrationResponse, error) {
+func (UnimplementedMsgServiceServer) RemoveRegistration(context.Context, *MsgServiceRemoveRegistrationRequest) (*MsgServiceRemoveRegistrationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveRegistration not implemented")
 }
-func (UnimplementedMsgServer) AddStake(context.Context, *MsgAddStake) (*MsgAddStakeResponse, error) {
+func (UnimplementedMsgServiceServer) AddStake(context.Context, *MsgServiceAddStakeRequest) (*MsgServiceAddStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddStake not implemented")
 }
-func (UnimplementedMsgServer) RemoveStake(context.Context, *MsgRemoveStake) (*MsgRemoveStakeResponse, error) {
+func (UnimplementedMsgServiceServer) RemoveStake(context.Context, *MsgServiceRemoveStakeRequest) (*MsgServiceRemoveStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveStake not implemented")
 }
-func (UnimplementedMsgServer) CancelRemoveStake(context.Context, *MsgCancelRemoveStake) (*MsgCancelRemoveStakeResponse, error) {
+func (UnimplementedMsgServiceServer) CancelRemoveStake(context.Context, *MsgServiceCancelRemoveStakeRequest) (*MsgServiceCancelRemoveStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelRemoveStake not implemented")
 }
-func (UnimplementedMsgServer) DelegateStake(context.Context, *MsgDelegateStake) (*MsgDelegateStakeResponse, error) {
+func (UnimplementedMsgServiceServer) DelegateStake(context.Context, *MsgServiceDelegateStakeRequest) (*MsgServiceDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelegateStake not implemented")
 }
-func (UnimplementedMsgServer) RewardDelegateStake(context.Context, *MsgRewardDelegateStake) (*MsgRewardDelegateStakeResponse, error) {
+func (UnimplementedMsgServiceServer) RewardDelegateStake(context.Context, *MsgServiceRewardDelegateStakeRequest) (*MsgServiceRewardDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RewardDelegateStake not implemented")
 }
-func (UnimplementedMsgServer) RemoveDelegateStake(context.Context, *MsgRemoveDelegateStake) (*MsgRemoveDelegateStakeResponse, error) {
+func (UnimplementedMsgServiceServer) RemoveDelegateStake(context.Context, *MsgServiceRemoveDelegateStakeRequest) (*MsgServiceRemoveDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveDelegateStake not implemented")
 }
-func (UnimplementedMsgServer) CancelRemoveDelegateStake(context.Context, *MsgCancelRemoveDelegateStake) (*MsgCancelRemoveDelegateStakeResponse, error) {
+func (UnimplementedMsgServiceServer) CancelRemoveDelegateStake(context.Context, *MsgServiceCancelRemoveDelegateStakeRequest) (*MsgServiceCancelRemoveDelegateStakeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelRemoveDelegateStake not implemented")
 }
-func (UnimplementedMsgServer) FundTopic(context.Context, *MsgFundTopic) (*MsgFundTopicResponse, error) {
+func (UnimplementedMsgServiceServer) FundTopic(context.Context, *MsgServiceFundTopicRequest) (*MsgServiceFundTopicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FundTopic not implemented")
 }
-func (UnimplementedMsgServer) AddToWhitelistAdmin(context.Context, *MsgAddToWhitelistAdmin) (*MsgAddToWhitelistAdminResponse, error) {
+func (UnimplementedMsgServiceServer) AddToWhitelistAdmin(context.Context, *MsgServiceAddToWhitelistAdminRequest) (*MsgServiceAddToWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddToWhitelistAdmin not implemented")
 }
-func (UnimplementedMsgServer) RemoveFromWhitelistAdmin(context.Context, *MsgRemoveFromWhitelistAdmin) (*MsgRemoveFromWhitelistAdminResponse, error) {
+func (UnimplementedMsgServiceServer) RemoveFromWhitelistAdmin(context.Context, *MsgServiceRemoveFromWhitelistAdminRequest) (*MsgServiceRemoveFromWhitelistAdminResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFromWhitelistAdmin not implemented")
 }
-func (UnimplementedMsgServer) InsertWorkerPayload(context.Context, *MsgInsertWorkerPayload) (*MsgInsertWorkerPayloadResponse, error) {
+func (UnimplementedMsgServiceServer) InsertWorkerPayload(context.Context, *MsgServiceInsertWorkerPayloadRequest) (*MsgServiceInsertWorkerPayloadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InsertWorkerPayload not implemented")
 }
-func (UnimplementedMsgServer) InsertReputerPayload(context.Context, *MsgInsertReputerPayload) (*MsgInsertReputerPayloadResponse, error) {
+func (UnimplementedMsgServiceServer) InsertReputerPayload(context.Context, *MsgServiceInsertReputerPayloadRequest) (*MsgServiceInsertReputerPayloadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InsertReputerPayload not implemented")
 }
-func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
+func (UnimplementedMsgServiceServer) mustEmbedUnimplementedMsgServiceServer() {}
 
-// UnsafeMsgServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to MsgServer will
+// UnsafeMsgServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MsgServiceServer will
 // result in compilation errors.
-type UnsafeMsgServer interface {
-	mustEmbedUnimplementedMsgServer()
+type UnsafeMsgServiceServer interface {
+	mustEmbedUnimplementedMsgServiceServer()
 }
 
-func RegisterMsgServer(s grpc.ServiceRegistrar, srv MsgServer) {
-	s.RegisterService(&Msg_ServiceDesc, srv)
+func RegisterMsgServiceServer(s grpc.ServiceRegistrar, srv MsgServiceServer) {
+	s.RegisterService(&MsgService_ServiceDesc, srv)
 }
 
-func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgUpdateParams)
+func _MsgService_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceUpdateParamsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).UpdateParams(ctx, in)
+		return srv.(MsgServiceServer).UpdateParams(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_UpdateParams_FullMethodName,
+		FullMethod: MsgService_UpdateParams_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).UpdateParams(ctx, req.(*MsgUpdateParams))
+		return srv.(MsgServiceServer).UpdateParams(ctx, req.(*MsgServiceUpdateParamsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_CreateNewTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgCreateNewTopic)
+func _MsgService_CreateNewTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceCreateNewTopicRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).CreateNewTopic(ctx, in)
+		return srv.(MsgServiceServer).CreateNewTopic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_CreateNewTopic_FullMethodName,
+		FullMethod: MsgService_CreateNewTopic_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).CreateNewTopic(ctx, req.(*MsgCreateNewTopic))
+		return srv.(MsgServiceServer).CreateNewTopic(ctx, req.(*MsgServiceCreateNewTopicRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRegister)
+func _MsgService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceRegisterRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).Register(ctx, in)
+		return srv.(MsgServiceServer).Register(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_Register_FullMethodName,
+		FullMethod: MsgService_Register_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).Register(ctx, req.(*MsgRegister))
+		return srv.(MsgServiceServer).Register(ctx, req.(*MsgServiceRegisterRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RemoveRegistration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveRegistration)
+func _MsgService_RemoveRegistration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceRemoveRegistrationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RemoveRegistration(ctx, in)
+		return srv.(MsgServiceServer).RemoveRegistration(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RemoveRegistration_FullMethodName,
+		FullMethod: MsgService_RemoveRegistration_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveRegistration(ctx, req.(*MsgRemoveRegistration))
+		return srv.(MsgServiceServer).RemoveRegistration(ctx, req.(*MsgServiceRemoveRegistrationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_AddStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgAddStake)
+func _MsgService_AddStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceAddStakeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).AddStake(ctx, in)
+		return srv.(MsgServiceServer).AddStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_AddStake_FullMethodName,
+		FullMethod: MsgService_AddStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddStake(ctx, req.(*MsgAddStake))
+		return srv.(MsgServiceServer).AddStake(ctx, req.(*MsgServiceAddStakeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveStake)
+func _MsgService_RemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceRemoveStakeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RemoveStake(ctx, in)
+		return srv.(MsgServiceServer).RemoveStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RemoveStake_FullMethodName,
+		FullMethod: MsgService_RemoveStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveStake(ctx, req.(*MsgRemoveStake))
+		return srv.(MsgServiceServer).RemoveStake(ctx, req.(*MsgServiceRemoveStakeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_CancelRemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgCancelRemoveStake)
+func _MsgService_CancelRemoveStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceCancelRemoveStakeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).CancelRemoveStake(ctx, in)
+		return srv.(MsgServiceServer).CancelRemoveStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_CancelRemoveStake_FullMethodName,
+		FullMethod: MsgService_CancelRemoveStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).CancelRemoveStake(ctx, req.(*MsgCancelRemoveStake))
+		return srv.(MsgServiceServer).CancelRemoveStake(ctx, req.(*MsgServiceCancelRemoveStakeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_DelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgDelegateStake)
+func _MsgService_DelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceDelegateStakeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).DelegateStake(ctx, in)
+		return srv.(MsgServiceServer).DelegateStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_DelegateStake_FullMethodName,
+		FullMethod: MsgService_DelegateStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).DelegateStake(ctx, req.(*MsgDelegateStake))
+		return srv.(MsgServiceServer).DelegateStake(ctx, req.(*MsgServiceDelegateStakeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RewardDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRewardDelegateStake)
+func _MsgService_RewardDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceRewardDelegateStakeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RewardDelegateStake(ctx, in)
+		return srv.(MsgServiceServer).RewardDelegateStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RewardDelegateStake_FullMethodName,
+		FullMethod: MsgService_RewardDelegateStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RewardDelegateStake(ctx, req.(*MsgRewardDelegateStake))
+		return srv.(MsgServiceServer).RewardDelegateStake(ctx, req.(*MsgServiceRewardDelegateStakeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveDelegateStake)
+func _MsgService_RemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceRemoveDelegateStakeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RemoveDelegateStake(ctx, in)
+		return srv.(MsgServiceServer).RemoveDelegateStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RemoveDelegateStake_FullMethodName,
+		FullMethod: MsgService_RemoveDelegateStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveDelegateStake(ctx, req.(*MsgRemoveDelegateStake))
+		return srv.(MsgServiceServer).RemoveDelegateStake(ctx, req.(*MsgServiceRemoveDelegateStakeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_CancelRemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgCancelRemoveDelegateStake)
+func _MsgService_CancelRemoveDelegateStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceCancelRemoveDelegateStakeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).CancelRemoveDelegateStake(ctx, in)
+		return srv.(MsgServiceServer).CancelRemoveDelegateStake(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_CancelRemoveDelegateStake_FullMethodName,
+		FullMethod: MsgService_CancelRemoveDelegateStake_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).CancelRemoveDelegateStake(ctx, req.(*MsgCancelRemoveDelegateStake))
+		return srv.(MsgServiceServer).CancelRemoveDelegateStake(ctx, req.(*MsgServiceCancelRemoveDelegateStakeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_FundTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgFundTopic)
+func _MsgService_FundTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceFundTopicRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).FundTopic(ctx, in)
+		return srv.(MsgServiceServer).FundTopic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_FundTopic_FullMethodName,
+		FullMethod: MsgService_FundTopic_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).FundTopic(ctx, req.(*MsgFundTopic))
+		return srv.(MsgServiceServer).FundTopic(ctx, req.(*MsgServiceFundTopicRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_AddToWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgAddToWhitelistAdmin)
+func _MsgService_AddToWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceAddToWhitelistAdminRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).AddToWhitelistAdmin(ctx, in)
+		return srv.(MsgServiceServer).AddToWhitelistAdmin(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_AddToWhitelistAdmin_FullMethodName,
+		FullMethod: MsgService_AddToWhitelistAdmin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).AddToWhitelistAdmin(ctx, req.(*MsgAddToWhitelistAdmin))
+		return srv.(MsgServiceServer).AddToWhitelistAdmin(ctx, req.(*MsgServiceAddToWhitelistAdminRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_RemoveFromWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgRemoveFromWhitelistAdmin)
+func _MsgService_RemoveFromWhitelistAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceRemoveFromWhitelistAdminRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).RemoveFromWhitelistAdmin(ctx, in)
+		return srv.(MsgServiceServer).RemoveFromWhitelistAdmin(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_RemoveFromWhitelistAdmin_FullMethodName,
+		FullMethod: MsgService_RemoveFromWhitelistAdmin_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).RemoveFromWhitelistAdmin(ctx, req.(*MsgRemoveFromWhitelistAdmin))
+		return srv.(MsgServiceServer).RemoveFromWhitelistAdmin(ctx, req.(*MsgServiceRemoveFromWhitelistAdminRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_InsertWorkerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgInsertWorkerPayload)
+func _MsgService_InsertWorkerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceInsertWorkerPayloadRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).InsertWorkerPayload(ctx, in)
+		return srv.(MsgServiceServer).InsertWorkerPayload(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_InsertWorkerPayload_FullMethodName,
+		FullMethod: MsgService_InsertWorkerPayload_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).InsertWorkerPayload(ctx, req.(*MsgInsertWorkerPayload))
+		return srv.(MsgServiceServer).InsertWorkerPayload(ctx, req.(*MsgServiceInsertWorkerPayloadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Msg_InsertReputerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgInsertReputerPayload)
+func _MsgService_InsertReputerPayload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgServiceInsertReputerPayloadRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).InsertReputerPayload(ctx, in)
+		return srv.(MsgServiceServer).InsertReputerPayload(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Msg_InsertReputerPayload_FullMethodName,
+		FullMethod: MsgService_InsertReputerPayload_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).InsertReputerPayload(ctx, req.(*MsgInsertReputerPayload))
+		return srv.(MsgServiceServer).InsertReputerPayload(ctx, req.(*MsgServiceInsertReputerPayloadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
+// MsgService_ServiceDesc is the grpc.ServiceDesc for MsgService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Msg_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "emissions.v4.Msg",
-	HandlerType: (*MsgServer)(nil),
+var MsgService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "emissions.v4.MsgService",
+	HandlerType: (*MsgServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "UpdateParams",
-			Handler:    _Msg_UpdateParams_Handler,
+			Handler:    _MsgService_UpdateParams_Handler,
 		},
 		{
 			MethodName: "CreateNewTopic",
-			Handler:    _Msg_CreateNewTopic_Handler,
+			Handler:    _MsgService_CreateNewTopic_Handler,
 		},
 		{
 			MethodName: "Register",
-			Handler:    _Msg_Register_Handler,
+			Handler:    _MsgService_Register_Handler,
 		},
 		{
 			MethodName: "RemoveRegistration",
-			Handler:    _Msg_RemoveRegistration_Handler,
+			Handler:    _MsgService_RemoveRegistration_Handler,
 		},
 		{
 			MethodName: "AddStake",
-			Handler:    _Msg_AddStake_Handler,
+			Handler:    _MsgService_AddStake_Handler,
 		},
 		{
 			MethodName: "RemoveStake",
-			Handler:    _Msg_RemoveStake_Handler,
+			Handler:    _MsgService_RemoveStake_Handler,
 		},
 		{
 			MethodName: "CancelRemoveStake",
-			Handler:    _Msg_CancelRemoveStake_Handler,
+			Handler:    _MsgService_CancelRemoveStake_Handler,
 		},
 		{
 			MethodName: "DelegateStake",
-			Handler:    _Msg_DelegateStake_Handler,
+			Handler:    _MsgService_DelegateStake_Handler,
 		},
 		{
 			MethodName: "RewardDelegateStake",
-			Handler:    _Msg_RewardDelegateStake_Handler,
+			Handler:    _MsgService_RewardDelegateStake_Handler,
 		},
 		{
 			MethodName: "RemoveDelegateStake",
-			Handler:    _Msg_RemoveDelegateStake_Handler,
+			Handler:    _MsgService_RemoveDelegateStake_Handler,
 		},
 		{
 			MethodName: "CancelRemoveDelegateStake",
-			Handler:    _Msg_CancelRemoveDelegateStake_Handler,
+			Handler:    _MsgService_CancelRemoveDelegateStake_Handler,
 		},
 		{
 			MethodName: "FundTopic",
-			Handler:    _Msg_FundTopic_Handler,
+			Handler:    _MsgService_FundTopic_Handler,
 		},
 		{
 			MethodName: "AddToWhitelistAdmin",
-			Handler:    _Msg_AddToWhitelistAdmin_Handler,
+			Handler:    _MsgService_AddToWhitelistAdmin_Handler,
 		},
 		{
 			MethodName: "RemoveFromWhitelistAdmin",
-			Handler:    _Msg_RemoveFromWhitelistAdmin_Handler,
+			Handler:    _MsgService_RemoveFromWhitelistAdmin_Handler,
 		},
 		{
 			MethodName: "InsertWorkerPayload",
-			Handler:    _Msg_InsertWorkerPayload_Handler,
+			Handler:    _MsgService_InsertWorkerPayload_Handler,
 		},
 		{
 			MethodName: "InsertReputerPayload",
-			Handler:    _Msg_InsertReputerPayload_Handler,
+			Handler:    _MsgService_InsertReputerPayload_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -108,7 +108,7 @@ func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Worker register
-	registerMsg := &types.MsgRegister{
+	registerMsg := &types.MsgServiceRegisterRequest{
 		Sender:    workerAddrString,
 		TopicId:   topicId,
 		IsReputer: false,
@@ -160,7 +160,7 @@ func (s *QueryServerTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	err = s.emissionsKeeper.ActivateTopic(ctx, topicId)
 	require.NoError(err, "ActivateTopic should not return an error")
 	// Register reputer
-	registerMsg := &types.MsgRegister{
+	registerMsg := &types.MsgServiceRegisterRequest{
 		Sender:    reputerAddr.String(),
 		TopicId:   topicId,
 		IsReputer: true,

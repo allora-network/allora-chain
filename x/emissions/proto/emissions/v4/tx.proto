@@ -10,41 +10,41 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 
-// Msg defines the module Msg service.
-service Msg {
+// MsgService defines the module msg service.
+service MsgService {
   option (cosmos.msg.v1.service) = true;
 
-  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+  rpc UpdateParams(MsgServiceUpdateParamsRequest) returns (MsgServiceUpdateParamsResponse);
 
-  rpc CreateNewTopic(MsgCreateNewTopic) returns (MsgCreateNewTopicResponse);
+  rpc CreateNewTopic(MsgServiceCreateNewTopicRequest) returns (MsgServiceCreateNewTopicResponse);
 
-  rpc Register(MsgRegister) returns (MsgRegisterResponse);
+  rpc Register(MsgServiceRegisterRequest) returns (MsgServiceRegisterResponse);
 
-  rpc RemoveRegistration(MsgRemoveRegistration) returns (MsgRemoveRegistrationResponse);
+  rpc RemoveRegistration(MsgServiceRemoveRegistrationRequest) returns (MsgServiceRemoveRegistrationResponse);
 
-  rpc AddStake(MsgAddStake) returns (MsgAddStakeResponse);
+  rpc AddStake(MsgServiceAddStakeRequest) returns (MsgServiceAddStakeResponse);
 
-  rpc RemoveStake(MsgRemoveStake) returns (MsgRemoveStakeResponse);
+  rpc RemoveStake(MsgServiceRemoveStakeRequest) returns (MsgServiceRemoveStakeResponse);
 
-  rpc CancelRemoveStake(MsgCancelRemoveStake) returns (MsgCancelRemoveStakeResponse);
+  rpc CancelRemoveStake(MsgServiceCancelRemoveStakeRequest) returns (MsgServiceCancelRemoveStakeResponse);
 
-  rpc DelegateStake(MsgDelegateStake) returns (MsgDelegateStakeResponse);
+  rpc DelegateStake(MsgServiceDelegateStakeRequest) returns (MsgServiceDelegateStakeResponse);
 
-  rpc RewardDelegateStake(MsgRewardDelegateStake) returns (MsgRewardDelegateStakeResponse);
+  rpc RewardDelegateStake(MsgServiceRewardDelegateStakeRequest) returns (MsgServiceRewardDelegateStakeResponse);
 
-  rpc RemoveDelegateStake(MsgRemoveDelegateStake) returns (MsgRemoveDelegateStakeResponse);
+  rpc RemoveDelegateStake(MsgServiceRemoveDelegateStakeRequest) returns (MsgServiceRemoveDelegateStakeResponse);
 
-  rpc CancelRemoveDelegateStake(MsgCancelRemoveDelegateStake) returns (MsgCancelRemoveDelegateStakeResponse);
+  rpc CancelRemoveDelegateStake(MsgServiceCancelRemoveDelegateStakeRequest) returns (MsgServiceCancelRemoveDelegateStakeResponse);
 
-  rpc FundTopic(MsgFundTopic) returns (MsgFundTopicResponse);
+  rpc FundTopic(MsgServiceFundTopicRequest) returns (MsgServiceFundTopicResponse);
 
-  rpc AddToWhitelistAdmin(MsgAddToWhitelistAdmin) returns (MsgAddToWhitelistAdminResponse);
+  rpc AddToWhitelistAdmin(MsgServiceAddToWhitelistAdminRequest) returns (MsgServiceAddToWhitelistAdminResponse);
 
-  rpc RemoveFromWhitelistAdmin(MsgRemoveFromWhitelistAdmin) returns (MsgRemoveFromWhitelistAdminResponse);
+  rpc RemoveFromWhitelistAdmin(MsgServiceRemoveFromWhitelistAdminRequest) returns (MsgServiceRemoveFromWhitelistAdminResponse);
 
-  rpc InsertWorkerPayload(MsgInsertWorkerPayload) returns (MsgInsertWorkerPayloadResponse);
+  rpc InsertWorkerPayload(MsgServiceInsertWorkerPayloadRequest) returns (MsgServiceInsertWorkerPayloadResponse);
 
-  rpc InsertReputerPayload(MsgInsertReputerPayload) returns (MsgInsertReputerPayloadResponse);
+  rpc InsertReputerPayload(MsgServiceInsertReputerPayloadRequest) returns (MsgServiceInsertReputerPayloadResponse);
 }
 
 /// PARAMS
@@ -175,7 +175,7 @@ message OptionalParams {
   repeated uint64 max_active_topics_per_block = 46;
 }
 
-message MsgUpdateParams {
+message MsgServiceUpdateParamsRequest {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   OptionalParams params = 2;
@@ -184,11 +184,11 @@ message MsgUpdateParams {
   bool recalculate_target_emission = 3;
 }
 
-message MsgUpdateParamsResponse {}
+message MsgServiceUpdateParamsResponse {}
 
 /// TOPICS
 
-message MsgCreateNewTopic {
+message MsgServiceCreateNewTopicRequest {
   reserved 3, 5, 6, 9;
   reserved "loss_logic", "inference_logic", "inference_method", "default_arg";
 
@@ -232,32 +232,32 @@ message MsgCreateNewTopic {
   ];
 }
 
-message MsgCreateNewTopicResponse {
+message MsgServiceCreateNewTopicResponse {
   uint64 topic_id = 1;
 }
 
 /// Worker and Reputer Interface
 
-message MsgInsertReputerPayload {
+message MsgServiceInsertReputerPayloadRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
   ReputerValueBundle reputer_value_bundle = 2;
 }
 
-message MsgInsertReputerPayloadResponse {}
+message MsgServiceInsertReputerPayloadResponse {}
 
-message MsgInsertWorkerPayload {
+message MsgServiceInsertWorkerPayloadRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
   WorkerDataBundle worker_data_bundle = 2;
 }
 
-message MsgInsertWorkerPayloadResponse {}
+message MsgServiceInsertWorkerPayloadResponse {}
 ///  Inference Node Registration
 
-message MsgRegister {
+message MsgServiceRegisterRequest {
   reserved 2, 3;
   reserved "lib_p2p_key", "multi_address";
 
@@ -269,12 +269,12 @@ message MsgRegister {
   bool is_reputer = 6;
 }
 
-message MsgRegisterResponse {
+message MsgServiceRegisterResponse {
   bool success = 1;
   string message = 2;
 }
 
-message MsgRemoveRegistration {
+message MsgServiceRemoveRegistrationRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
@@ -282,14 +282,14 @@ message MsgRemoveRegistration {
   bool is_reputer = 3;
 }
 
-message MsgRemoveRegistrationResponse {
+message MsgServiceRemoveRegistrationResponse {
   bool success = 1;
   string message = 2;
 }
 
 ///  Staking
 
-message MsgAddStake {
+message MsgServiceAddStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
@@ -302,9 +302,9 @@ message MsgAddStake {
   ];
 }
 
-message MsgAddStakeResponse {}
+message MsgServiceAddStakeResponse {}
 
-message MsgRemoveStake {
+message MsgServiceRemoveStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
@@ -317,17 +317,17 @@ message MsgRemoveStake {
   ];
 }
 
-message MsgRemoveStakeResponse {}
+message MsgServiceRemoveStakeResponse {}
 
-message MsgCancelRemoveStake {
+message MsgServiceCancelRemoveStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   uint64 topic_id = 2;
 }
 
-message MsgCancelRemoveStakeResponse {}
+message MsgServiceCancelRemoveStakeResponse {}
 
-message MsgDelegateStake {
+message MsgServiceDelegateStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   uint64 topic_id = 2;
@@ -340,9 +340,9 @@ message MsgDelegateStake {
   ];
 }
 
-message MsgDelegateStakeResponse {}
+message MsgServiceDelegateStakeResponse {}
 
-message MsgRemoveDelegateStake {
+message MsgServiceRemoveDelegateStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   string reputer = 2;
@@ -355,9 +355,9 @@ message MsgRemoveDelegateStake {
   ];
 }
 
-message MsgRemoveDelegateStakeResponse {}
+message MsgServiceRemoveDelegateStakeResponse {}
 
-message MsgCancelRemoveDelegateStake {
+message MsgServiceCancelRemoveDelegateStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   uint64 topic_id = 2;
@@ -365,11 +365,11 @@ message MsgCancelRemoveDelegateStake {
   string reputer = 4;
 }
 
-message MsgCancelRemoveDelegateStakeResponse {}
+message MsgServiceCancelRemoveDelegateStakeResponse {}
 
 // Inferences are requested by consumers who fund topics by sending ALLO to
 // ecosystem account via TopicFund messages
-message MsgFundTopic {
+message MsgServiceFundTopicRequest {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   uint64 topic_id = 2;
@@ -381,31 +381,31 @@ message MsgFundTopic {
   ]; // how many funds to send from alice with this Inference Request
 }
 
-message MsgFundTopicResponse {}
+message MsgServiceFundTopicResponse {}
 
 ///  Whitelist
 
-message MsgAddToWhitelistAdmin {
+message MsgServiceAddToWhitelistAdminRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
   string address = 2;
 }
 
-message MsgAddToWhitelistAdminResponse {}
+message MsgServiceAddToWhitelistAdminResponse {}
 
-message MsgRemoveFromWhitelistAdmin {
+message MsgServiceRemoveFromWhitelistAdminRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
   string sender = 1;
   string address = 2;
 }
 
-message MsgRemoveFromWhitelistAdminResponse {}
+message MsgServiceRemoveFromWhitelistAdminResponse {}
 
-message MsgRewardDelegateStakeResponse {}
+message MsgServiceRewardDelegateStakeResponse {}
 
-message MsgRewardDelegateStake {
+message MsgServiceRewardDelegateStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
   string sender = 1;
   uint64 topic_id = 2;

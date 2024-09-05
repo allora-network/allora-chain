@@ -37,7 +37,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 	// Should succeed for Alice because she's a whitelist admin
 	newEpsilonReputer := alloraMath.NewDecFinite(1, 99)
 	input := []alloraMath.Dec{newEpsilonReputer}
-	updateParamRequest := &emissionstypes.MsgUpdateParams{
+	updateParamRequest := &emissionstypes.MsgServiceUpdateParamsRequest{
 		Sender: m.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
 			EpsilonReputer: input,
@@ -53,7 +53,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 
 	// Should fail for Bob because he's not a whitelist admin
 	input = []alloraMath.Dec{alloraMath.NewDecFinite(1, 2)}
-	updateParamRequest = &emissionstypes.MsgUpdateParams{
+	updateParamRequest = &emissionstypes.MsgServiceUpdateParamsRequest{
 		Sender: m.BobAddr,
 		Params: &emissionstypes.OptionalParams{
 			EpsilonReputer: input,
@@ -70,7 +70,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 
 	// Set the epsilon reputer back to the original value
 	input = []alloraMath.Dec{oldEpsilonReputer}
-	updateParamRequest = &emissionstypes.MsgUpdateParams{
+	updateParamRequest = &emissionstypes.MsgServiceUpdateParamsRequest{
 		Sender: m.AliceAddr,
 		Params: &emissionstypes.OptionalParams{
 			EpsilonReputer: input,
