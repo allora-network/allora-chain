@@ -1,4 +1,4 @@
-package keeper 
+package keeper
 
 type Config struct {
 	// MaxMetadataLen defines the amount of characters that can be used for metadata
@@ -7,6 +7,6 @@ type Config struct {
 
 func DefaultConfig() Config {
 	return Config{
-		MaxMetadataLen:                       255,
+		MaxMetadataLen: 255,
 	}
 }

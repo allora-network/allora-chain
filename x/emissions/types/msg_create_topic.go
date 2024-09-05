@@ -37,7 +37,7 @@ func (msg *MsgServiceCreateNewTopicRequest) Validate(maxMetadataLen uint64) erro
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
-	if int64(len(msg.Metadata)) > int64(maxMetadataLen) {
+	if uint64(len(msg.Metadata)) > maxMetadataLen {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata cannot be longer than max serialized msg length")
 	}
 	// no validation on AllowNegative because either it is true or false
