@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/mint/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var _ types.MsgServiceServer = msgServiceServer{}
@@ -43,5 +44,53 @@ func (ms msgServiceServer) UpdateParams(ctx context.Context, msg *types.MsgServi
 }
 
 func (ms msgServiceServer) RecalculateTargetEmission(ctx context.Context, msg *types.MsgServiceRecalculateTargetEmissionRequest) (*types.MsgServiceRecalculateTargetEmissionResponse, error) {
-	return nil, nil
+	isAdmin, err := ms.IsWhitelistAdmin(ctx, msg.Sender)
+	if err != nil {
+		return nil, err
+	}
+	if !isAdmin {
+		return nil, errors.Wrapf(types.ErrUnauthorized, " %s not whitelist admin for mint recalculate target emission", msg.Sender)
+	}
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	moduleParams, err := ms.Keeper.GetParams(sdkCtx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting module params")
+	}
+
+	blocksPerMonth, err := ms.Keeper.GetParamsBlocksPerMonth(sdkCtx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting blocks per month")
+	}
+
+	vPercentADec, err := ms.Keeper.GetValidatorsVsAlloraPercentReward(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting validators vs allora percent reward")
+	}
+	vPercent, err := vPercentADec.SdkLegacyDec()
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting validators vs allora percent reward from dec")
+	}
+	ecosystemMintSupplyRemaining, err := ms.Keeper.GetEcosystemMintSupplyRemaining(sdkCtx, moduleParams)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting ecosystem mint supply remaining")
+	}
+	ecosystemBalance, err := ms.Keeper.GetEcosystemBalance(ctx, moduleParams.MintDenom)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting ecosystem balance")
+	}
+
+	RecalculateTargetEmission(
+		sdkCtx,
+		ms.Keeper,
+		uint64(sdkCtx.BlockHeight()),
+		blocksPerMonth,
+		moduleParams,
+		ecosystemBalance,
+		ecosystemMintSupplyRemaining,
+		vPercent,
+	)
+
+	return &types.MsgServiceRecalculateTargetEmissionResponse{}, nil
+
 }
