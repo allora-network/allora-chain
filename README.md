@@ -135,7 +135,7 @@ All the following command needs to be executed inside the validator container.
 Run `docker compose exec validator0 bash` to get shell of the validator.
 
 You can change `--moniker=...` with a human readable name you choose for your validator.
-and `--from=` - is the account name in the keyring, you can list all availble keys with `allorad --home=$APP_HOME keys --keyring-backend=test list`
+and `--from=` - is the account name in the keyring, you can list all available keys with `allorad --home=$APP_HOME keys --keyring-backend=test list`
 
 Create stake info file:
 ```bash
