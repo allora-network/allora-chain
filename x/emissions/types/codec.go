@@ -7,5 +7,5 @@ import (
 
 // RegisterInterfaces registers the interfaces types with the interface registry.
 func RegisterInterfaces(registry types.InterfaceRegistry) {
-	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
+	msgservice.RegisterMsgServiceDesc(registry, &_MsgService_serviceDesc)
 }

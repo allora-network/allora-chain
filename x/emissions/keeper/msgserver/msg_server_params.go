@@ -6,7 +6,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
+func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (*types.UpdateParamsResponse, error) {
 	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
 		return nil, err
 	}
@@ -151,5 +151,5 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.MsgUpdateParams
 	if err != nil {
 		return nil, err
 	}
-	return &types.MsgUpdateParamsResponse{}, nil
+	return &types.UpdateParamsResponse{}, nil
 }

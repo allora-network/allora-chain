@@ -10,7 +10,7 @@ import (
 )
 
 // Registers a new network participant to the network for the first time for worker or reputer
-func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*types.MsgRegisterResponse, error) {
+func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (*types.RegisterResponse, error) {
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -49,14 +49,14 @@ func (ms msgServer) Register(ctx context.Context, msg *types.MsgRegister) (*type
 		}
 	}
 
-	return &types.MsgRegisterResponse{
+	return &types.RegisterResponse{
 		Success: true,
 		Message: "Node successfully registered",
 	}, nil
 }
 
 // Remove registration from a topic for worker or reputer
-func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemoveRegistration) (*types.MsgRemoveRegistrationResponse, error) {
+func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveRegistrationRequest) (*types.RemoveRegistrationResponse, error) {
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.MsgRemove
 	}
 
 	// Return a successful response
-	return &types.MsgRemoveRegistrationResponse{
+	return &types.RemoveRegistrationResponse{
 		Success: true,
 		Message: fmt.Sprintf("Node successfully removed from topic %d", msg.TopicId),
 	}, nil

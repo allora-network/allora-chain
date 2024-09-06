@@ -17,8 +17,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 
-	// Create a MsgCreateNewTopic message
-	newTopicMsg := &types.MsgCreateNewTopic{
+	// Create a CreateNewTopicRequest message
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,
 		Metadata:                 "Some metadata for the new topic",
 		LossMethod:               "mse",
@@ -60,8 +60,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 
-	// Create a MsgCreateNewTopic message
-	newTopicMsg := &types.MsgCreateNewTopic{
+	// Create a CreateNewTopicRequest message
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,
 		Metadata:                 "Some metadata for the new topic",
 		LossMethod:               "mse",

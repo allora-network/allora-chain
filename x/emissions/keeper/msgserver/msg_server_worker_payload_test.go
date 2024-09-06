@@ -16,13 +16,13 @@ func getNewAddress() string {
 
 func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
 	workerPrivateKey secp256k1.PrivKey,
-) (types.MsgInsertWorkerPayload, uint64) {
+) (types.InsertWorkerPayloadRequest, uint64) {
 	return s.setUpMsgInsertWorkerPayloadWithBlockHeight(workerPrivateKey, 1)
 }
 func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 	workerPrivateKey secp256k1.PrivKey,
 	blockHeight int64,
-) (types.MsgInsertWorkerPayload, uint64) {
+) (types.InsertWorkerPayloadRequest, uint64) {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	nonce := types.Nonce{BlockHeight: blockHeight}
@@ -61,8 +61,8 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 	err = s.emissionsKeeper.SetTopic(ctx, topicId, topic)
 	s.Require().NoError(err)
 
-	// Create a MsgInsertWorkerPayload message
-	workerMsg := types.MsgInsertWorkerPayload{
+	// Create a InsertWorkerPayloadRequest message
+	workerMsg := types.InsertWorkerPayloadRequest{
 		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker:  workerAddr,
@@ -104,7 +104,7 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 
 	return workerMsg, topicId
 }
-func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(workerMsg types.MsgInsertWorkerPayload, workerPrivateKey secp256k1.PrivKey) types.MsgInsertWorkerPayload {
+func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(workerMsg types.InsertWorkerPayloadRequest, workerPrivateKey secp256k1.PrivKey) types.InsertWorkerPayloadRequest {
 	require := s.Require()
 
 	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
@@ -255,7 +255,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredInfe
 	// BEGIN MODIFICATION
 	inferer := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Inferer
 
-	unregisterMsg := &types.MsgRemoveRegistration{
+	unregisterMsg := &types.RemoveRegistrationRequest{
 		Sender:    inferer,
 		TopicId:   topicId,
 		IsReputer: false,
@@ -286,7 +286,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 		MaxElementsPerForecast: []uint64{3},
 	}
 
-	updateMsg := &types.MsgUpdateParams{
+	updateMsg := &types.UpdateParamsRequest{
 		Sender: adminAddr.String(),
 		Params: newParams,
 	}
@@ -385,7 +385,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredFore
 	// BEGIN MODIFICATION
 	forecaster := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.Forecaster
 
-	unregisterMsg := &types.MsgRemoveRegistration{
+	unregisterMsg := &types.RemoveRegistrationRequest{
 		Sender:    forecaster,
 		TopicId:   topicId,
 		IsReputer: false,
@@ -503,8 +503,8 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 		})
 	}
 
-	// Create a MsgInsertWorkerPayload message
-	workerMsg := &types.MsgInsertWorkerPayload{
+	// Create a InsertWorkerPayloadRequest message
+	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker: InfererAddr,
@@ -580,8 +580,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	err = s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
 	require.NoError(err)
 
-	// Create a MsgInsertWorkerPayload message
-	workerMsg := &types.MsgInsertWorkerPayload{
+	// Create a InsertWorkerPayloadRequest message
+	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: workerAddr,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker:  InfererAddr,
@@ -631,7 +631,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 		MaxElementsPerForecast: []uint64{3},
 	}
 
-	updateMsg := &types.MsgUpdateParams{
+	updateMsg := &types.UpdateParamsRequest{
 		Sender: adminAddr.String(),
 		Params: newParams,
 	}

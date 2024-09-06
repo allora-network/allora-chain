@@ -19,7 +19,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.NoError(m.T, err)
 	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
-	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
+	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
 		Creator:                  m.AliceAddr,
 		Metadata:                 "ETH 24h Prediction",
 		LossMethod:               "mse",
@@ -39,7 +39,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
+	createTopicResponse := &emissionstypes.CreateNewTopicResponse{}
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.T, err)
 	topicId = createTopicResponse.TopicId

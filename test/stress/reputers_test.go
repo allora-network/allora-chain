@@ -228,7 +228,7 @@ func generateSingleReputerValueBundle(
 	require.NoError(m.T, err, "Sign should not return an error")
 	reputerPublicKeyBytes := pubKey.Bytes()
 
-	// Create a MsgInsertReputerPayload message
+	// Create a InsertReputerPayloadRequest message
 	reputerValueBundle := &emissionstypes.ReputerValueBundle{
 		ValueBundle: &valueBundle,
 		Signature:   valueBundleSignature,

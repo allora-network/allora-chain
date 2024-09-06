@@ -7,7 +7,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func (msg *MsgCreateNewTopic) Validate(maxMetadataLen uint64) error {
+func (msg *CreateNewTopicRequest) Validate(maxMetadataLen uint64) error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
@@ -37,7 +37,7 @@ func (msg *MsgCreateNewTopic) Validate(maxMetadataLen uint64) error {
 	if msg.Epsilon.Lte(alloraMath.ZeroDec()) || msg.Epsilon.IsNaN() || !msg.Epsilon.IsFinite() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
-	if int64(len(msg.Metadata)) > int64(maxMetadataLen) {
+	if uint64(len(msg.Metadata)) > maxMetadataLen {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata cannot be longer than max serialized msg length")
 	}
 	// no validation on AllowNegative because either it is true or false
