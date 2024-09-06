@@ -273,6 +273,8 @@ func (s *QueryServerTestSuite) TestGetRewardableTopics() {
 	topicId := uint64(789)
 	topicId2 := uint64(101112)
 
+	keeper.SetParams(ctx, types.Params{MaxActiveTopicsPerBlock: 2})
+
 	// Add rewardable topics
 	err := keeper.AddRewardableTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -288,13 +290,11 @@ func (s *QueryServerTestSuite) TestGetRewardableTopics() {
 	s.Require().Len(retrievedIds, 2, "Should retrieve all rewardable topics")
 
 	// Reset the rewardable topics
-	err = keeper.RemoveRewardableTopic(ctx, topicId)
+	err = keeper.ClearRewardableTopics(ctx)
 	s.Require().NoError(err)
 
 	// Ensure no topics remain
-	req = &types.QueryRewardableTopicsRequest{}
-	response, err = s.queryServer.GetRewardableTopics(ctx, req)
-	remainingIds := response.RewardableTopicIds
+	remainingIds, err := keeper.GetRewardableTopics(ctx)
 	s.Require().NoError(err)
-	s.Require().Len(remainingIds, 1)
+	s.Require().Len(remainingIds, 0)
 }

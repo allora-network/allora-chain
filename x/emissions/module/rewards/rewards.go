@@ -140,18 +140,6 @@ func EmitRewards(
 			)
 			continue
 		}
-
-		err = k.RemoveRewardableTopic(ctx, topicId)
-		if err != nil {
-			Logger(ctx).Warn(
-				fmt.Sprintf(
-					"Failed to remove rewardable topic:\nTopic Id %d\nError:\n%s\n\n",
-					topicId,
-					err.Error(),
-				),
-			)
-			continue
-		}
 	}
 	Logger(ctx).Debug(
 		fmt.Sprintf("Paid out %s to staked reputers over %d topics",

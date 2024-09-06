@@ -49,6 +49,10 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		sdkCtx.Logger().Error("Error calculating global emission per topic: ", err)
 		return errors.Wrapf(err, "Rewards error")
 	}
+	err = am.keeper.ClearRewardableTopics(ctx)
+	if err != nil {
+		sdkCtx.Logger().Error("Failed to clear rewardable topics", err)
+	}
 
 	err = rewards.PickChurnableActiveTopics(
 		sdkCtx,

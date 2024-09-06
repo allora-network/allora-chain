@@ -2430,11 +2430,13 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 
 /// REWARDABLE TOPICS
 
-func (s *KeeperTestSuite) TestRewardableTopics() {
+func (s *KeeperTestSuite) TestClearRewardableTopics() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(789)
 	topicId2 := uint64(101112)
+
+	keeper.SetParams(ctx, types.Params{MaxActiveTopicsPerBlock: 2})
 
 	// Add rewardable topics
 	err := keeper.AddRewardableTopic(ctx, topicId)
@@ -2449,13 +2451,13 @@ func (s *KeeperTestSuite) TestRewardableTopics() {
 	s.Require().Len(retrievedIds, 2, "Should retrieve all rewardable topics")
 
 	// Reset the rewardable topics
-	err = keeper.RemoveRewardableTopic(ctx, topicId)
+	err = keeper.ClearRewardableTopics(ctx)
 	s.Require().NoError(err)
 
 	// Ensure no topics remain
 	remainingIds, err := keeper.GetRewardableTopics(ctx)
 	s.Require().NoError(err)
-	s.Require().Len(remainingIds, 1)
+	s.Require().Len(remainingIds, 0)
 }
 
 /// SCORES

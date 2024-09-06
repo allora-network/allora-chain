@@ -2246,8 +2246,39 @@ func (k *Keeper) AddRewardableTopic(ctx context.Context, topicId TopicId) error 
 	return k.rewardableTopics.Set(ctx, topicId)
 }
 
-func (k *Keeper) RemoveRewardableTopic(ctx context.Context, topicId TopicId) error {
-	return k.rewardableTopics.Remove(ctx, topicId)
+func (k *Keeper) ClearRewardableTopics(ctx context.Context) error {
+	iter, err := k.rewardableTopics.Iterate(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer iter.Close()
+
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Parse all the topics and build an array of topicIds
+	// Then clear all the rewardable topics in another loop
+	topicIds := make([]TopicId, 0)
+	// Minimal computation to ensure that all topics are eventually cleared
+	maxIters := params.MaxActiveTopicsPerBlock + 1
+	for i := uint64(0); iter.Valid() && i < maxIters; i++ {
+		topicId, err := iter.Key()
+		if err != nil {
+			return err
+		}
+		topicIds = append(topicIds, topicId)
+		iter.Next()
+	}
+
+	for _, topicId := range topicIds {
+		if err := k.rewardableTopics.Remove(ctx, topicId); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 /// SCORES
