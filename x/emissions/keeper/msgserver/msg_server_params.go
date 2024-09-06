@@ -143,6 +143,9 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.MaxActiveTopicsPerBlock) == 1 {
 		existingParams.MaxActiveTopicsPerBlock = newParams.MaxActiveTopicsPerBlock[0]
 	}
+	if len(newParams.MaxMetadataLength) == 1 {
+		existingParams.MaxMetadataLength = newParams.MaxMetadataLength[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err
