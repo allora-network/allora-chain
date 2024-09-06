@@ -14,7 +14,7 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 	}
 
 	if len(msg.LossMethod) == 0 || uint64(len(msg.LossMethod)) > maxStringLen {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method cannot be empty")
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "loss method invalid")
 	}
 	if msg.EpochLength <= 0 {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epoch length must be greater than zero")
@@ -38,7 +38,7 @@ func (msg *CreateNewTopicRequest) Validate(maxStringLen uint64) error {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "epsilon must be greater than 0")
 	}
 	if uint64(len(msg.Metadata)) > maxStringLen {
-		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata cannot be longer than max serialized msg length")
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "metadata invalid")
 	}
 	// no validation on AllowNegative because either it is true or false
 	// and both are valid values
