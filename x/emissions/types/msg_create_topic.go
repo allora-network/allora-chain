@@ -44,16 +44,16 @@ func (msg *MsgCreateNewTopic) Validate(maxMetadataLen uint64) error {
 	// and both are valid values
 	//	AllowNegative            bool
 
-	if !isAlloraDecBetweenZeroAndOneInclusive(msg.MeritSortitionAlpha) {
+	if !isAlloraDecZeroOrLessThanOne(msg.MeritSortitionAlpha) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "merit sortition alpha must be between 0 and 1 inclusive")
 	}
-	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveInfererQuantile) {
+	if !isAlloraDecZeroOrLessThanOne(msg.ActiveInfererQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active inferer quantile must be between 0 and 1 inclusive")
 	}
-	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveForecasterQuantile) {
+	if !isAlloraDecZeroOrLessThanOne(msg.ActiveForecasterQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active forecaster quantile must be between 0 and 1 inclusive")
 	}
-	if !isAlloraDecBetweenZeroAndOneInclusive(msg.ActiveReputerQuantile) {
+	if !isAlloraDecZeroOrLessThanOne(msg.ActiveReputerQuantile) {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "active reputer quantile must be between 0 and 1 inclusive")
 	}
 
