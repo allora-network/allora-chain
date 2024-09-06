@@ -173,7 +173,7 @@ message OptionalParams {
   ];
   repeated uint64 max_elements_per_forecast = 45;
   repeated uint64 max_active_topics_per_block = 46;
-  repeated uint64 max_metadata_length = 47;
+  repeated uint64 max_string_length = 47;
 }
 
 message UpdateParamsRequest {

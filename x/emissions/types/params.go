@@ -50,7 +50,7 @@ func DefaultParams() Params {
 		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
 		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
 		MaxActiveTopicsPerBlock:             uint64(1),                                    // maximum number of active topics per block
-		MaxMetadataLength:                   uint64(256),                                  // maximum number of characters in the metadata string when creating a new topic
+		MaxStringLength:                     uint64(256),                                  // maximum length of strings uploaded to the chain
 	}
 }
 
@@ -176,7 +176,7 @@ func (p Params) Validate() error {
 	if err := validateMaxActiveTopicsPerBlock(p.MaxActiveTopicsPerBlock); err != nil {
 		return err
 	}
-	if err := validateMaxMetadataLength(p.MaxMetadataLength); err != nil {
+	if err := validateMaxStringLength(p.MaxStringLength); err != nil {
 		return err
 	}
 	return nil
@@ -508,7 +508,7 @@ func validateHalfMaxProcessStakeRemovalsEndBlock(i uint64) error {
 
 // the maximum length of the metadata string when creating a new topic
 // should be non-negative, enforced by uint type
-func validateMaxMetadataLength(_ uint64) error {
+func validateMaxStringLength(_ uint64) error {
 	return nil
 }
 
