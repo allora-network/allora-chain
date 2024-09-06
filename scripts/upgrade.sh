@@ -5,8 +5,8 @@
 # to the network to trigger the upgrade process.
 
 # Update the variables below to match current conditions and desired upgrade
-current_verison=v0.3.0
-new_version=v0.4.0
+current_verison=v0.4.0
+new_version=v0.4.1
 expedited=true
 deposit=50000000uallo
 num_minutes_between_proposal_and_upgrade=6

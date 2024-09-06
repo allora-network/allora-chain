@@ -512,6 +512,12 @@ func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
 	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
 }
 
+// Whether an alloraDec is between the values of [0, 1)
+// inclusive on 0 and exclusive on 1
+func isAlloraDecZeroOrLessThanOne(a alloraMath.Dec) bool {
+	return a.Gte(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+}
+
 // How much workers and reputers must pay to send data.
 // Should be non-negative.
 func validateDataSendingFee(i cosmosMath.Int) error {
