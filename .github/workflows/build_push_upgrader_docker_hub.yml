@@ -11,11 +11,11 @@ on:
       allorad_current_version:
         description: 'Current version of allorad'
         required: true
-        default: 'v0.3.0'
+        default: 'v0.4.0'
       allorad_upgrade_version:
         description: 'Upgrade version of allorad'
         required: true
-        default: 'v0.4.0'
+        default: 'v0.4.1'
 
 concurrency:
   group: ${{ github.ref }}
