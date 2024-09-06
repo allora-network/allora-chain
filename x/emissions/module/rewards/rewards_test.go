@@ -103,9 +103,7 @@ func (s *RewardsTestSuite) SetupTest() {
 		storeService,
 		accountKeeper,
 		bankKeeper,
-		authtypes.FeeCollectorName,
-		keeper.DefaultConfig(),
-	)
+		authtypes.FeeCollectorName)
 	stakingKeeper := stakingkeeper.NewKeeper(
 		encCfg.Codec,
 		storeService,

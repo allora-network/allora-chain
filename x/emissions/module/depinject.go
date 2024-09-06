@@ -52,7 +52,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	if feeCollectorName == "" {
 		feeCollectorName = authtypes.FeeCollectorName
 	}
-	emissionsConfig := keeper.DefaultConfig()
+
 	k := keeper.NewKeeper(
 		in.Cdc,
 		in.AddressCodec,
@@ -60,7 +60,6 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.AccountKeeper,
 		in.BankKeeper,
 		feeCollectorName,
-		emissionsConfig,
 	)
 	m := NewAppModule(in.Cdc, k)
 

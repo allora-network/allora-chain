@@ -13,7 +13,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.MsgCreateNewT
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
 	}
-	if err := msg.Validate(ms.k.Config.MaxMetadataLen); err != nil {
+	if err := msg.Validate(params.MaxSerializedMsgLength); err != nil {
 		return nil, err
 	}
 

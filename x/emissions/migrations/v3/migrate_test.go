@@ -63,9 +63,7 @@ func (s *EmissionsV3MigrationTestSuite) SetupTest() {
 		storeService,
 		accountKeeper,
 		bankKeeper,
-		authtypes.FeeCollectorName,
-		keeper.DefaultConfig(),
-	)
+		authtypes.FeeCollectorName)
 
 	s.emissionsKeeper = &emissionsKeeper
 }

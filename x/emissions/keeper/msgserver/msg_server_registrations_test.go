@@ -306,7 +306,6 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 		s.accountKeeper,
 		s.bankKeeper,
 		authtypes.FeeCollectorName,
-		keeper.DefaultConfig(),
 	)
 
 	blockHeight := int64(600)

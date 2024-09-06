@@ -132,9 +132,7 @@ func (s *KeeperTestSuite) SetupTest() {
 		storeService,
 		accountKeeper,
 		bankKeeper,
-		authtypes.FeeCollectorName,
-		keeper.DefaultConfig(),
-	)
+		authtypes.FeeCollectorName)
 	s.key = key
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
