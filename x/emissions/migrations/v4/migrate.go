@@ -8,7 +8,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	v2types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
 	v3types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/types"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -98,8 +97,8 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		MaxStringLength: defaultParams.MaxStringLength,
 	}
 
-	store.Delete(types.ParamsKey)
-	store.Set(types.ParamsKey, cdc.MustMarshal(&newParams))
+	store.Delete(emissionstypes.ParamsKey)
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&newParams))
 	return nil
 }
 
