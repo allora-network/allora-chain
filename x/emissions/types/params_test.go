@@ -50,7 +50,7 @@ func TestDefaultParams(t *testing.T) {
 		DataSendingFee:                      cosmosMath.NewInt(10),
 		MaxElementsPerForecast:              uint64(12),
 		MaxActiveTopicsPerBlock:             uint64(1),
-		MaxStringLength:                     uint64(100),
+		MaxStringLength:                     uint64(255),
 	}
 
 	params := DefaultParams()

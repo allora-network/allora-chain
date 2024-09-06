@@ -50,7 +50,7 @@ func DefaultParams() Params {
 		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
 		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
 		MaxActiveTopicsPerBlock:             uint64(1),                                    // maximum number of active topics per block
-		MaxStringLength:                     uint64(256),                                  // maximum length of strings uploaded to the chain
+		MaxStringLength:                     uint64(255),                                  // maximum length of strings uploaded to the chain
 	}
 }
 
