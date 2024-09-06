@@ -8,7 +8,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	v2types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
 	v3types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/types"
-	"github.com/allora-network/allora-chain/x/emissions/types"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -211,22 +210,22 @@ func safelyClearWholeMap(store storetypes.KVStore, keyPrefix []byte) {
 
 // Clear out poison NaN values on different inferences, scores etc
 func ResetMapsWithNonNumericValues(store storetypes.KVStore, cdc codec.BinaryCodec) {
-	safelyClearWholeMap(store, types.InferenceScoresKey)
-	safelyClearWholeMap(store, types.ForecastScoresKey)
-	safelyClearWholeMap(store, types.ReputerScoresKey)
-	safelyClearWholeMap(store, types.InfererScoreEmasKey)
-	safelyClearWholeMap(store, types.ForecasterScoreEmasKey)
-	safelyClearWholeMap(store, types.ReputerScoreEmasKey)
-	safelyClearWholeMap(store, types.AllLossBundlesKey)
-	safelyClearWholeMap(store, types.NetworkLossBundlesKey)
-	safelyClearWholeMap(store, types.InfererNetworkRegretsKey)
-	safelyClearWholeMap(store, types.ForecasterNetworkRegretsKey)
-	safelyClearWholeMap(store, types.OneInForecasterNetworkRegretsKey)
-	safelyClearWholeMap(store, types.LatestNaiveInfererNetworkRegretsKey)
-	safelyClearWholeMap(store, types.LatestOneOutInfererInfererNetworkRegretsKey)
-	safelyClearWholeMap(store, types.LatestOneOutInfererForecasterNetworkRegretsKey)
-	safelyClearWholeMap(store, types.LatestOneOutForecasterInfererNetworkRegretsKey)
-	safelyClearWholeMap(store, types.LatestOneOutForecasterForecasterNetworkRegretsKey)
+	safelyClearWholeMap(store, emissionstypes.InferenceScoresKey)
+	safelyClearWholeMap(store, emissionstypes.ForecastScoresKey)
+	safelyClearWholeMap(store, emissionstypes.ReputerScoresKey)
+	safelyClearWholeMap(store, emissionstypes.InfererScoreEmasKey)
+	safelyClearWholeMap(store, emissionstypes.ForecasterScoreEmasKey)
+	safelyClearWholeMap(store, emissionstypes.ReputerScoreEmasKey)
+	safelyClearWholeMap(store, emissionstypes.AllLossBundlesKey)
+	safelyClearWholeMap(store, emissionstypes.NetworkLossBundlesKey)
+	safelyClearWholeMap(store, emissionstypes.InfererNetworkRegretsKey)
+	safelyClearWholeMap(store, emissionstypes.ForecasterNetworkRegretsKey)
+	safelyClearWholeMap(store, emissionstypes.OneInForecasterNetworkRegretsKey)
+	safelyClearWholeMap(store, emissionstypes.LatestNaiveInfererNetworkRegretsKey)
+	safelyClearWholeMap(store, emissionstypes.LatestOneOutInfererInfererNetworkRegretsKey)
+	safelyClearWholeMap(store, emissionstypes.LatestOneOutInfererForecasterNetworkRegretsKey)
+	safelyClearWholeMap(store, emissionstypes.LatestOneOutForecasterInfererNetworkRegretsKey)
+	safelyClearWholeMap(store, emissionstypes.LatestOneOutForecasterForecasterNetworkRegretsKey)
 }
 
 // copyTopic duplicates a topic into a new struct

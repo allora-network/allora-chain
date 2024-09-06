@@ -488,9 +488,7 @@ func testScoreMapDeletion(
 		Score:       alloraMath.NewDecFromInt64(10),
 	}
 
-	bz := []byte{}
-	var err error
-	bz, err = proto.Marshal(&score)
+	bz, err := proto.Marshal(&score)
 	s.Require().NoError(err)
 
 	mapStore := prefix.NewStore(store, key)
@@ -526,9 +524,7 @@ func testScoresMapDeletion(
 	}
 	scores := emissionstypes.Scores{Scores: []*emissionstypes.Score{&score}}
 
-	bz := []byte{}
-	var err error
-	bz, err = proto.Marshal(&scores)
+	bz, err := proto.Marshal(&scores)
 	s.Require().NoError(err)
 
 	mapStore := prefix.NewStore(store, key)
@@ -548,7 +544,6 @@ func testScoresMapDeletion(
 	iterator = mapStore.Iterator(nil, nil)
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
-
 }
 
 // check that the specified maps are reset correctly
@@ -630,9 +625,7 @@ func testValueBundleMapDeletion(
 	key collections.Prefix,
 ) {
 	bundle := getBundle()
-	bz := []byte{}
-	var err error
-	bz, err = proto.Marshal(&bundle)
+	bz, err := proto.Marshal(&bundle)
 	s.Require().NoError(err)
 
 	mapStore := prefix.NewStore(store, key)
@@ -661,7 +654,6 @@ func testReputerValueBundleMapDeletion(
 	cdc codec.BinaryCodec,
 	key collections.Prefix,
 ) {
-
 	bundle := getBundle()
 	reputerValueBundles := emissionstypes.ReputerValueBundles{
 		ReputerValueBundles: []*emissionstypes.ReputerValueBundle{
@@ -672,9 +664,7 @@ func testReputerValueBundleMapDeletion(
 			},
 		},
 	}
-	bz := []byte{}
-	var err error
-	bz, err = proto.Marshal(&reputerValueBundles)
+	bz, err := proto.Marshal(&reputerValueBundles)
 	s.Require().NoError(err)
 
 	mapStore := prefix.NewStore(store, key)
@@ -708,9 +698,7 @@ func testTimeStampedValueMapDeletion(
 		BlockHeight: 1,
 	}
 
-	bz := []byte{}
-	var err error
-	bz, err = proto.Marshal(&timeStampedValue)
+	bz, err := proto.Marshal(&timeStampedValue)
 	s.Require().NoError(err)
 
 	mapStore := prefix.NewStore(store, key)
