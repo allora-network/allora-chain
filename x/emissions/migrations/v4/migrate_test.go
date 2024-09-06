@@ -6,6 +6,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 
 	collections "cosmossdk.io/collections"
+	"github.com/cosmos/cosmos-sdk/codec"
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 
 	"cosmossdk.io/core/store"
@@ -18,7 +19,7 @@ import (
 	v3types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/types"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
-	"github.com/allora-network/allora-chain/x/emissions/types"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -47,7 +48,7 @@ func TestEmissionsV4MigrationTestSuite(t *testing.T) {
 
 func (s *EmissionsV4MigrationTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
-	key := storetypes.NewKVStoreKey(types.StoreKey)
+	key := storetypes.NewKVStoreKey(emissionstypes.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
 	s.storeService = storeService
 	testCtx := cosmostestutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
@@ -75,7 +76,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-	defaultParams := types.DefaultParams()
+	defaultParams := emissionstypes.DefaultParams()
 	paramsOld := v3types.Params{
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
@@ -119,7 +120,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 		MaxActiveTopicsPerBlock:             defaultParams.MaxActiveTopicsPerBlock,
 	}
 
-	store.Set(types.ParamsKey, cdc.MustMarshal(&paramsOld))
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&paramsOld))
 
 	// Run migration
 	err := v4.MigrateParams(store, cdc)
@@ -182,7 +183,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-	migratedOldTopic := types.Topic{
+	migratedOldTopic := emissionstypes.Topic{
 		Id:                       1,
 		Creator:                  "creator",
 		Metadata:                 "metadata",
@@ -205,7 +206,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 	bz, err := proto.Marshal(&migratedOldTopic)
 	s.Require().NoError(err)
 
-	topicStore := prefix.NewStore(store, types.TopicsKey)
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	bytesKey := make([]byte, collections.Uint64Key.Size(migratedOldTopic.Id))
 	countWritten, err := collections.Uint64Key.Encode(bytesKey, migratedOldTopic.Id)
 	s.Require().NoError(err)
@@ -220,7 +221,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNoProblems() {
 	s.Require().True(iterator.Valid())
 	defer iterator.Close()
 
-	var newMsg types.Topic
+	var newMsg emissionstypes.Topic
 	err = proto.Unmarshal(iterator.Value(), &newMsg)
 	s.Require().NoError(err)
 
@@ -256,7 +257,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-	migratedOldTopicWithNaNInitialRegret := types.Topic{
+	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{
 		Id:                       1,
 		Creator:                  "creator",
 		Metadata:                 "metadata",
@@ -279,7 +280,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	bz, err := proto.Marshal(&migratedOldTopicWithNaNInitialRegret)
 	s.Require().NoError(err)
 
-	topicStore := prefix.NewStore(store, types.TopicsKey)
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	bytesKey := make([]byte, collections.Uint64Key.Size(migratedOldTopicWithNaNInitialRegret.Id))
 	countWritten, err := collections.Uint64Key.Encode(bytesKey, migratedOldTopicWithNaNInitialRegret.Id)
 	s.Require().NoError(err)
@@ -293,7 +294,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().True(iterator.Valid())
 	defer iterator.Close()
 
-	var newMsg types.Topic
+	var newMsg emissionstypes.Topic
 	err = proto.Unmarshal(iterator.Value(), &newMsg)
 	s.Require().NoError(err)
 
@@ -349,7 +350,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopic() {
 	bz, err := proto.Marshal(&notMigratedTopic)
 	s.Require().NoError(err)
 
-	topicStore := prefix.NewStore(store, types.TopicsKey)
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	bytesKey := make([]byte, collections.Uint64Key.Size(notMigratedTopic.Id))
 	countWritten, err := collections.Uint64Key.Encode(bytesKey, notMigratedTopic.Id)
 	s.Require().NoError(err)
@@ -366,7 +367,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopic() {
 	s.Require().True(iterator.Valid())
 	defer iterator.Close()
 
-	var newMsg types.Topic
+	var newMsg emissionstypes.Topic
 	err = proto.Unmarshal(iterator.Value(), &newMsg)
 	s.Require().NoError(err)
 
@@ -422,7 +423,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopicWithNaNInitialRegret
 	bz, err := proto.Marshal(&notMigratedTopicWithNaNInitialRegret)
 	s.Require().NoError(err)
 
-	topicStore := prefix.NewStore(store, types.TopicsKey)
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
 	bytesKey := make([]byte, collections.Uint64Key.Size(notMigratedTopicWithNaNInitialRegret.Id))
 	countWritten, err := collections.Uint64Key.Encode(bytesKey, notMigratedTopicWithNaNInitialRegret.Id)
 	s.Require().NoError(err)
@@ -442,7 +443,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopicWithNaNInitialRegret
 	s.Require().True(iterator.Valid())
 	defer iterator.Close()
 
-	var newMsg types.Topic
+	var newMsg emissionstypes.Topic
 	err = proto.Unmarshal(iterator.Value(), &newMsg)
 	s.Require().NoError(err)
 
@@ -471,4 +472,261 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopicWithNaNInitialRegret
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, 1)
 	s.Require().NoError(err)
 	s.Require().Equal(newMsg, topic)
+}
+
+// test for deletes on maps that have score as the value of the map
+func testScoreMapDeletion(
+	s *EmissionsV4MigrationTestSuite,
+	store storetypes.KVStore,
+	cdc codec.BinaryCodec,
+	key collections.Prefix,
+) {
+	score := emissionstypes.Score{
+		TopicId:     uint64(1),
+		BlockHeight: int64(1),
+		Address:     "address",
+		Score:       alloraMath.NewDecFromInt64(10),
+	}
+
+	bz := []byte{}
+	var err error
+	bz, err = proto.Marshal(&score)
+	s.Require().NoError(err)
+
+	mapStore := prefix.NewStore(store, key)
+	mapStore.Set([]byte("testKey"), bz)
+
+	// Sanity check
+	iterator := mapStore.Iterator(nil, nil)
+	s.Require().True(iterator.Valid())
+	err = proto.Unmarshal(iterator.Value(), &score)
+	s.Require().NoError(err)
+	iterator.Close()
+
+	v4.ResetMapsWithNonNumericValues(store, cdc)
+
+	// Verify the store has been updated correctly
+	iterator = mapStore.Iterator(nil, nil)
+	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
+	iterator.Close()
+}
+
+// test for deletes on maps that have scores as the value of the map
+func testScoresMapDeletion(
+	s *EmissionsV4MigrationTestSuite,
+	store storetypes.KVStore,
+	cdc codec.BinaryCodec,
+	key collections.Prefix,
+) {
+	score := emissionstypes.Score{
+		TopicId:     uint64(1),
+		BlockHeight: int64(1),
+		Address:     "address",
+		Score:       alloraMath.NewDecFromInt64(10),
+	}
+	scores := emissionstypes.Scores{Scores: []*emissionstypes.Score{&score}}
+
+	bz := []byte{}
+	var err error
+	bz, err = proto.Marshal(&scores)
+	s.Require().NoError(err)
+
+	mapStore := prefix.NewStore(store, key)
+	mapStore.Set([]byte("testKey"), bz)
+
+	// Sanity check
+	iterator := mapStore.Iterator(nil, nil)
+	s.Require().True(iterator.Valid())
+	err = proto.Unmarshal(iterator.Value(), &scores)
+	s.Require().NoError(err)
+	iterator.Close()
+	s.Require().Len(scores.Scores, 1)
+
+	v4.ResetMapsWithNonNumericValues(store, cdc)
+
+	// Verify the store has been updated correctly
+	iterator = mapStore.Iterator(nil, nil)
+	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
+	iterator.Close()
+
+}
+
+// check that the specified maps are reset correctly
+func (s *EmissionsV4MigrationTestSuite) TestResetMapsWithNonNumericValues() {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
+	testScoresMapDeletion(s, store, cdc, emissionstypes.InferenceScoresKey)
+	testScoresMapDeletion(s, store, cdc, emissionstypes.ForecastScoresKey)
+	testScoresMapDeletion(s, store, cdc, emissionstypes.ReputerScoresKey)
+	testScoreMapDeletion(s, store, cdc, emissionstypes.InfererScoreEmasKey)
+	testScoreMapDeletion(s, store, cdc, emissionstypes.ForecasterScoreEmasKey)
+	testScoreMapDeletion(s, store, cdc, emissionstypes.ReputerScoreEmasKey)
+	testReputerValueBundleMapDeletion(s, store, cdc, emissionstypes.AllLossBundlesKey)
+	testValueBundleMapDeletion(s, store, cdc, emissionstypes.NetworkLossBundlesKey)
+	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.InfererNetworkRegretsKey)
+	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.ForecasterNetworkRegretsKey)
+	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.OneInForecasterNetworkRegretsKey)
+	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestNaiveInfererNetworkRegretsKey)
+	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestOneOutInfererInfererNetworkRegretsKey)
+	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestOneOutInfererForecasterNetworkRegretsKey)
+	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestOneOutForecasterInfererNetworkRegretsKey)
+	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestOneOutForecasterForecasterNetworkRegretsKey)
+}
+
+/// HELPER FUNCTIONS
+
+// example value bundle for testing
+func getBundle() emissionstypes.ValueBundle {
+	return emissionstypes.ValueBundle{
+		TopicId:             1,
+		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
+		Reputer:             "reputer",
+		ExtraData:           []byte("extraData"),
+		CombinedValue:       alloraMath.NewDecFromInt64(10),
+		InfererValues: []*emissionstypes.WorkerAttributedValue{
+			{
+				Worker: "inferer",
+				Value:  alloraMath.NewDecFromInt64(10),
+			},
+		},
+		ForecasterValues: []*emissionstypes.WorkerAttributedValue{
+			{
+				Worker: "forecaster",
+				Value:  alloraMath.NewDecFromInt64(10),
+			},
+		},
+		NaiveValue: alloraMath.NewDecFromInt64(10),
+		OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+			{
+				Worker: "oneOutInferer",
+				Value:  alloraMath.NewDecFromInt64(10),
+			},
+		},
+		OneOutForecasterValues: []*emissionstypes.WithheldWorkerAttributedValue{
+			{
+				Worker: "oneOutForecaster",
+				Value:  alloraMath.NewDecFromInt64(10),
+			},
+		},
+		OneOutInfererForecasterValues: []*emissionstypes.OneOutInfererForecasterValues{
+			{
+				Forecaster: "oneOutInfererForecaster",
+				OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+					{
+						Worker: "oneOutInferer",
+						Value:  alloraMath.NewDecFromInt64(10),
+					},
+				},
+			},
+		},
+	}
+}
+
+// test for deletes on maps that have ValueBundles as the value of the map
+func testValueBundleMapDeletion(
+	s *EmissionsV4MigrationTestSuite,
+	store storetypes.KVStore,
+	cdc codec.BinaryCodec,
+	key collections.Prefix,
+) {
+	bundle := getBundle()
+	bz := []byte{}
+	var err error
+	bz, err = proto.Marshal(&bundle)
+	s.Require().NoError(err)
+
+	mapStore := prefix.NewStore(store, key)
+	mapStore.Set([]byte("testKey"), bz)
+
+	// Sanity check
+	iterator := mapStore.Iterator(nil, nil)
+	s.Require().True(iterator.Valid())
+	err = proto.Unmarshal(iterator.Value(), &bundle)
+	s.Require().NoError(err)
+	iterator.Close()
+	s.Require().Equal(bundle, getBundle())
+
+	v4.ResetMapsWithNonNumericValues(store, cdc)
+
+	// Verify the store has been updated correctly
+	iterator = mapStore.Iterator(nil, nil)
+	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
+	iterator.Close()
+}
+
+// test for deletes on maps that have ReputerValueBundles as the value of the map
+func testReputerValueBundleMapDeletion(
+	s *EmissionsV4MigrationTestSuite,
+	store storetypes.KVStore,
+	cdc codec.BinaryCodec,
+	key collections.Prefix,
+) {
+
+	bundle := getBundle()
+	reputerValueBundles := emissionstypes.ReputerValueBundles{
+		ReputerValueBundles: []*emissionstypes.ReputerValueBundle{
+			{
+				ValueBundle: &bundle,
+				Pubkey:      "something",
+				Signature:   []byte("signature"),
+			},
+		},
+	}
+	bz := []byte{}
+	var err error
+	bz, err = proto.Marshal(&reputerValueBundles)
+	s.Require().NoError(err)
+
+	mapStore := prefix.NewStore(store, key)
+	mapStore.Set([]byte("testKey"), bz)
+
+	// Sanity check
+	iterator := mapStore.Iterator(nil, nil)
+	s.Require().True(iterator.Valid())
+	err = proto.Unmarshal(iterator.Value(), &reputerValueBundles)
+	s.Require().NoError(err)
+	iterator.Close()
+	s.Require().Len(reputerValueBundles.ReputerValueBundles, 1)
+
+	v4.ResetMapsWithNonNumericValues(store, cdc)
+
+	// Verify the store has been updated correctly
+	iterator = mapStore.Iterator(nil, nil)
+	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
+	iterator.Close()
+}
+
+// test for deletes on maps that have TimeStampedValues as the value of the map
+func testTimeStampedValueMapDeletion(
+	s *EmissionsV4MigrationTestSuite,
+	store storetypes.KVStore,
+	cdc codec.BinaryCodec,
+	key collections.Prefix,
+) {
+	timeStampedValue := emissionstypes.TimestampedValue{
+		Value:       alloraMath.NewDecFromInt64(10),
+		BlockHeight: 1,
+	}
+
+	bz := []byte{}
+	var err error
+	bz, err = proto.Marshal(&timeStampedValue)
+	s.Require().NoError(err)
+
+	mapStore := prefix.NewStore(store, key)
+	mapStore.Set([]byte("testKey"), bz)
+
+	// Sanity check
+	iterator := mapStore.Iterator(nil, nil)
+	s.Require().True(iterator.Valid())
+	err = proto.Unmarshal(iterator.Value(), &timeStampedValue)
+	s.Require().NoError(err)
+	iterator.Close()
+
+	v4.ResetMapsWithNonNumericValues(store, cdc)
+
+	// Verify the store has been updated correctly
+	iterator = mapStore.Iterator(nil, nil)
+	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
+	iterator.Close()
 }
