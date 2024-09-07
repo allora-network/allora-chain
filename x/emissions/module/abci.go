@@ -43,13 +43,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 	sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
-	// REWARDS (will internally filter any non-RewardReady topics)
-	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
-	if err != nil {
-		sdkCtx.Logger().Error("Error calculating global emission per topic: ", err)
-		return errors.Wrapf(err, "Rewards error")
-	}
-
 	err = rewards.PickChurnableActiveTopics(
 		sdkCtx,
 		am.keeper,
@@ -61,6 +54,12 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return err
 	}
 
+	// REWARDS (will internally filter any non-RewardReady topics)
+	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
+	if err != nil {
+		sdkCtx.Logger().Error("Error calculating global emission per topic: ", err)
+		return errors.Wrapf(err, "Rewards error")
+	}
 	// Close any open windows due this blockHeight
 	workerWindowsToClose := am.keeper.GetWorkerWindowTopicIds(sdkCtx, blockHeight)
 	if len(workerWindowsToClose.TopicIds) > 0 {

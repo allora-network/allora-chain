@@ -36,12 +36,8 @@ func EmitRewards(
 		return errors.Wrapf(err, "failed to get module params")
 	}
 
-	rewardableTopics, err := k.GetRewardableTopics(ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get rewardable topics")
-	}
 	// Sorted, active topics by weight descending. Still need skim top N to truly be the rewardable topics
-	sortedRewardableTopics := alloraMath.GetSortedElementsByDecWeightDesc(rewardableTopics, weights)
+	sortedRewardableTopics := alloraMath.GetSortedElementsByDecWeightDesc(weights)
 	Logger(ctx).Debug(fmt.Sprintf("Rewardable topics: %v", sortedRewardableTopics))
 
 	if len(sortedRewardableTopics) == 0 {
@@ -141,17 +137,6 @@ func EmitRewards(
 			continue
 		}
 
-		err = k.RemoveRewardableTopic(ctx, topicId)
-		if err != nil {
-			Logger(ctx).Warn(
-				fmt.Sprintf(
-					"Failed to remove rewardable topic:\nTopic Id %d\nError:\n%s\n\n",
-					topicId,
-					err.Error(),
-				),
-			)
-			continue
-		}
 	}
 	Logger(ctx).Debug(
 		fmt.Sprintf("Paid out %s to staked reputers over %d topics",
@@ -564,7 +549,9 @@ func pruneRecordsAfterRewards(
 	// This is to leave the necessary data for the remaining
 	// unfulfilled nonces to be fulfilled
 	oldestNonce -= minEpochLengthRecordLimit * topic.EpochLength
-
+	if oldestNonce < 0 {
+		oldestNonce = 0
+	}
 	// Prune old records after rewards have been paid out
 	err = k.PruneRecordsAfterRewards(ctx, topicId, oldestNonce)
 	if err != nil {
