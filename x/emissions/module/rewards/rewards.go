@@ -136,7 +136,6 @@ func EmitRewards(
 			)
 			continue
 		}
-
 	}
 	Logger(ctx).Debug(
 		fmt.Sprintf("Paid out %s to staked reputers over %d topics",
