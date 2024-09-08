@@ -43,7 +43,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 	sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
-	err = rewards.PickChurnableActiveTopics(
+	err = rewards.UpdateNoncesOfActiveTopics(
 		sdkCtx,
 		am.keeper,
 		blockHeight,
