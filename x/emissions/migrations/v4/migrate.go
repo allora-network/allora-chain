@@ -6,8 +6,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	v2types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
-	v3types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/types"
+	oldV2Types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
+	oldV3Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -51,7 +51,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // migrate params for this new version
 // the only change is the addition of MaxStringLength
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := v3types.Params{}
+	oldParams := oldV3Types.Params{}
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -137,7 +137,7 @@ func MigrateTopics(
 	topicsToChange := make(map[string]emissionstypes.Topic, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		iterator.Key()
-		var oldMsg v2types.Topic
+		var oldMsg oldV2Types.Topic
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to unmarshal old topic")
