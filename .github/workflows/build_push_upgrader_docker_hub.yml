@@ -15,7 +15,7 @@ on:
       allorad_upgrade_version:
         description: 'Upgrade version of allorad'
         required: true
-        default: 'v0.4.1'
+        default: 'v0.5.0'
 
 concurrency:
   group: ${{ github.ref }}
