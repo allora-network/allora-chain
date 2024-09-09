@@ -23,6 +23,7 @@ const maxPageSize = uint64(10000)
 // - migrates topics
 // - Deletes the contents of several maps that had NaN values in them
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 3 TO VERSION 4")
 	ctx.Logger().Info("MIGRATING STORE FROM VERSION 3 TO VERSION 4")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
@@ -40,9 +41,10 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
-	ctx.Logger().Info("INVOKING MIGRATION HANDLER ResetMapsWithNonNumericValues() FROM VERSION 2 TO VERSION 3")
-	ResetMapsWithNonNumericValues(store, cdc)
+	ctx.Logger().Info("INVOKING MIGRATION HANDLER ResetMapsWithNonNumericValues() FROM VERSION 3 TO VERSION 4")
+	ResetMapsWithNonNumericValues(ctx, store, cdc)
 
+	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 3 TO VERSION 4 COMPLETE")
 	return nil
 }
 
@@ -209,22 +211,38 @@ func safelyClearWholeMap(store storetypes.KVStore, keyPrefix []byte) {
 }
 
 // Clear out poison NaN values on different inferences, scores etc
-func ResetMapsWithNonNumericValues(store storetypes.KVStore, cdc codec.BinaryCodec) {
+func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) {
+	ctx.Logger().Info("MIGRATION V4: RESETTING infererScoresByBlock MAP")
 	safelyClearWholeMap(store, emissionstypes.InferenceScoresKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING forecasterScoresByBlock MAP")
 	safelyClearWholeMap(store, emissionstypes.ForecastScoresKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING reputerScoresByBlock MAP")
 	safelyClearWholeMap(store, emissionstypes.ReputerScoresKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING infererScoreEmas MAP")
 	safelyClearWholeMap(store, emissionstypes.InfererScoreEmasKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING forecasterScoreEmas MAP")
 	safelyClearWholeMap(store, emissionstypes.ForecasterScoreEmasKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING reputerScoreEmas MAP")
 	safelyClearWholeMap(store, emissionstypes.ReputerScoreEmasKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING allLossBundles MAP")
 	safelyClearWholeMap(store, emissionstypes.AllLossBundlesKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING networkLossBundles MAP")
 	safelyClearWholeMap(store, emissionstypes.NetworkLossBundlesKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestInfererNetworkRegrets MAP")
 	safelyClearWholeMap(store, emissionstypes.InfererNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestForecasterNetworkRegrets MAP")
 	safelyClearWholeMap(store, emissionstypes.ForecasterNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneInForecasterNetworkRegrets MAP")
 	safelyClearWholeMap(store, emissionstypes.OneInForecasterNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestNaiveInfererNetworkRegrets MAP")
 	safelyClearWholeMap(store, emissionstypes.LatestNaiveInfererNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneOutInfererInfererNetworkRegrets MAP")
 	safelyClearWholeMap(store, emissionstypes.LatestOneOutInfererInfererNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneOutInfererForecasterNetworkRegrets MAP")
 	safelyClearWholeMap(store, emissionstypes.LatestOneOutInfererForecasterNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneOutForecasterInfererNetworkRegrets MAP")
 	safelyClearWholeMap(store, emissionstypes.LatestOneOutForecasterInfererNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneOutForecasterForecasterNetworkRegrets MAP")
 	safelyClearWholeMap(store, emissionstypes.LatestOneOutForecasterForecasterNetworkRegretsKey)
 }
 

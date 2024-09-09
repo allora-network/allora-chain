@@ -501,7 +501,7 @@ func testScoreMapDeletion(
 	s.Require().NoError(err)
 	iterator.Close()
 
-	v4.ResetMapsWithNonNumericValues(store, cdc)
+	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
@@ -538,7 +538,7 @@ func testScoresMapDeletion(
 	iterator.Close()
 	s.Require().Len(scores.Scores, 1)
 
-	v4.ResetMapsWithNonNumericValues(store, cdc)
+	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
@@ -639,7 +639,7 @@ func testValueBundleMapDeletion(
 	iterator.Close()
 	s.Require().Equal(bundle, getBundle())
 
-	v4.ResetMapsWithNonNumericValues(store, cdc)
+	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
@@ -678,7 +678,7 @@ func testReputerValueBundleMapDeletion(
 	iterator.Close()
 	s.Require().Len(reputerValueBundles.ReputerValueBundles, 1)
 
-	v4.ResetMapsWithNonNumericValues(store, cdc)
+	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
@@ -711,7 +711,7 @@ func testTimeStampedValueMapDeletion(
 	s.Require().NoError(err)
 	iterator.Close()
 
-	v4.ResetMapsWithNonNumericValues(store, cdc)
+	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
