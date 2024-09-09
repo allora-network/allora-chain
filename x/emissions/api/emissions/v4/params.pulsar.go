@@ -2839,7 +2839,7 @@ type Params struct {
 	// payload sending fee for reputer or worker
 	MaxElementsPerForecast  uint64 `protobuf:"varint,45,opt,name=max_elements_per_forecast,json=maxElementsPerForecast,proto3" json:"max_elements_per_forecast,omitempty"`      // max number of top forecasters by score to reward
 	MaxActiveTopicsPerBlock uint64 `protobuf:"varint,46,opt,name=max_active_topics_per_block,json=maxActiveTopicsPerBlock,proto3" json:"max_active_topics_per_block,omitempty"` // max number of active topics per block
-	MaxStringLength         uint64 `protobuf:"varint,47,opt,name=max_string_length,json=maxStringLength,proto3" json:"max_string_length,omitempty"`                             // max permittible length of the metadata field on a new topic creation
+	MaxStringLength         uint64 `protobuf:"varint,47,opt,name=max_string_length,json=maxStringLength,proto3" json:"max_string_length,omitempty"`                             // max permittible length of strings uploaded to the chain
 }
 
 func (x *Params) Reset() {
