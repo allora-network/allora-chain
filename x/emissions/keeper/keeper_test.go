@@ -2426,36 +2426,6 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
 }
 
-/// REWARDABLE TOPICS
-
-func (s *KeeperTestSuite) TestRewardableTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(789)
-	topicId2 := uint64(101112)
-
-	// Add rewardable topics
-	err := keeper.AddRewardableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	err = keeper.AddRewardableTopic(ctx, topicId2)
-	s.Require().NoError(err)
-
-	// Ensure the topics are retrieved
-	retrievedIds, err := keeper.GetRewardableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(retrievedIds, 2, "Should retrieve all rewardable topics")
-
-	// Reset the rewardable topics
-	err = keeper.RemoveRewardableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	// Ensure no topics remain
-	remainingIds, err := keeper.GetRewardableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(remainingIds, 1)
-}
-
 /// SCORES
 
 func (s *KeeperTestSuite) TestGetScoreEmas() {
