@@ -13,9 +13,9 @@ import (
 
 	"cosmossdk.io/store/prefix"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	v2types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
+	oldV2Types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	v4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
-	v3types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/types"
+	oldV3Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -76,7 +76,7 @@ func (s *EmissionsV4MigrationTestSuite) TestMigrateParams() {
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
 	defaultParams := types.DefaultParams()
-	paramsOld := v3types.Params{
+	paramsOld := oldV3Types.Params{
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,
@@ -330,7 +330,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopic() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-	notMigratedTopic := v2types.Topic{
+	notMigratedTopic := oldV2Types.Topic{
 		Id:                     1,
 		Creator:                "creator",
 		Metadata:               "metadata",
@@ -403,7 +403,7 @@ func (s *EmissionsV4MigrationTestSuite) TestNotMigratedTopicWithNaNInitialRegret
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
-	notMigratedTopicWithNaNInitialRegret := v2types.Topic{
+	notMigratedTopicWithNaNInitialRegret := oldV2Types.Topic{
 		Id:                     1,
 		Creator:                "creator",
 		Metadata:               "metadata",

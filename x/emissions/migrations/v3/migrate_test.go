@@ -15,7 +15,7 @@ import (
 	"cosmossdk.io/store/prefix"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	v3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
-	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
+	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstestutil "github.com/allora-network/allora-chain/x/emissions/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/types"
