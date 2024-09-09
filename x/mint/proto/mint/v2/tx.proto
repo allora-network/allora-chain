@@ -5,7 +5,7 @@ import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
-import "mint/v2/types.proto";
+import "mint/v1beta1/types.proto";
 
 option go_package = "github.com/allora-network/allora-chain/x/mint/types";
 
@@ -30,7 +30,7 @@ message UpdateParamsRequest {
   // params defines the x/mint parameters to update.
   //
   // NOTE: All parameters must be supplied.
-  Params params = 2 [
+  mint.v1beta1.Params params = 2 [
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];

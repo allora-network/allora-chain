@@ -47,11 +47,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetRewardableTopics",
-					Use:       "rewardable-topics",
-					Short:     "Get Rewardable Topics",
-				},
-				{
 					RpcMethod: "GetReputerStakeInTopic",
 					Use:       "stake-in-topic-reputer [address] [topic_id]",
 					Short:     "Get reputer stake in a topic, including stake delegated to them in that topic",

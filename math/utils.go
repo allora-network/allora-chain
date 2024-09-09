@@ -58,18 +58,13 @@ func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 // Used for deterministic ranging of arrays with weights in a map
 // whose keys may not include some values in the array.
 // When an array element is not in the map, it is not included in the output array.
-func GetSortedElementsByDecWeightDesc[K cmp.Ordered](l []K, m map[K]*Dec) []K {
+func GetSortedElementsByDecWeightDesc[K cmp.Ordered](m map[K]*Dec) []K {
 	// Create a new array that only contains unique elements that are in the map
 	newL := make([]K, 0)
-	hasKeyBeenSeen := make(map[K]bool)
-	for _, el := range l {
-		if _, ok := m[el]; ok {
-			if _, ok := hasKeyBeenSeen[el]; !ok {
-				newL = append(newL, el)
-				hasKeyBeenSeen[el] = true
-			}
-		}
+	for id := range m {
+		newL = append(newL, id)
 	}
+
 	sort.Slice(newL, func(i, j int) bool {
 		if (*m[newL[i]]).Equal(*m[newL[j]]) {
 			return newL[i] < newL[j]

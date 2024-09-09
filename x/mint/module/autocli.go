@@ -2,8 +2,8 @@ package mint
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	mintv1beta1 "github.com/allora-network/allora-chain/x/mint/api/v1beta1"
-	mintv2 "github.com/allora-network/allora-chain/x/mint/api/v2"
+	mintv1beta1 "github.com/allora-network/allora-chain/x/mint/api/mint/v1beta1"
+	mintv2 "github.com/allora-network/allora-chain/x/mint/api/mint/v2"
 )
 
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {

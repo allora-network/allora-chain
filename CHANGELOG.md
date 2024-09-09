@@ -51,10 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 2. Add additional RPC endpoint to allow for recalculating 
    the inflation rate / target emission rate more often than once per month.
 3. Other miscellaneous minor fixes
+4. Update to use rewardable topics as active topics instead of using them separately.
 
 ### Added
 
 * [#584](https://github.com/allora-network/allora-chain/pull/584) Allow admins to force target emission recalculation on params update and via dedicated mint RPC endpoint
+* [#592](https://github.com/allora-network/allora-chain/pull/592) Update to use rewardable topics as active topics and rename `PickChurnableActiveTopics` to `UpdateNoncesOfActiveTopics`
 
 ### Fixed
 

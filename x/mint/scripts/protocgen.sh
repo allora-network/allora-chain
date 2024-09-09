@@ -23,6 +23,6 @@ cd ..
 
 cp -r github.com/allora-network/allora-chain/x/mint/* ./
 rm -rf api && mkdir api
-mv mint/* ./api
+mv mint ./api
 rm -rf mint/
 rm -rf github.com allora-network
