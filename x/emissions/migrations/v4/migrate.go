@@ -15,7 +15,15 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
+const maxPageSize = uint64(10000)
+
+// MigrateStore migrates the store from version 3 to version 4
+// it does the following:
+// - migrates params
+// - migrates topics
+// - Deletes the contents of several maps that had NaN values in them
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
+	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 3 TO VERSION 4")
 	ctx.Logger().Info("MIGRATING STORE FROM VERSION 3 TO VERSION 4")
 	storageService := emissionsKeeper.GetStorageService()
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
@@ -33,9 +41,15 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 		return err
 	}
 
+	ctx.Logger().Info("INVOKING MIGRATION HANDLER ResetMapsWithNonNumericValues() FROM VERSION 3 TO VERSION 4")
+	ResetMapsWithNonNumericValues(ctx, store, cdc)
+
+	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 3 TO VERSION 4 COMPLETE")
 	return nil
 }
 
+// migrate params for this new version
+// the only change is the addition of MaxStringLength
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	oldParams := oldV3Types.Params{}
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
@@ -102,6 +116,12 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	return nil
 }
 
+// migrate topics for this new version
+// iterate through all topics, keep all the old values of these topics
+// if a topic has a NaN value for InitialRegret, set the value to zero
+// if the topic doesn't have a value for MeritSortitionAlpha,
+// ActiveInfererQuantile, ActiveForecasterQuantile, or ActiveReputerQuantile,
+// set those values to the default.
 func MigrateTopics(
 	ctx sdk.Context,
 	store storetypes.KVStore,
@@ -156,6 +176,77 @@ func MigrateTopics(
 	return nil
 }
 
+// Deletes all keys in the store with the given keyPrefix `maxPageSize` keys at a time
+func safelyClearWholeMap(store storetypes.KVStore, keyPrefix []byte) {
+	s := prefix.NewStore(store, keyPrefix)
+
+	// Loop until all keys are deleted.
+	// Unbounded not best practice but we are sure that the number of keys will be limited
+	// and not deleting all keys means "poison" will remain in the store.
+	for {
+		// Gather keys to eventually delete
+		iterator := s.Iterator(nil, nil)
+		keysToDelete := make([][]byte, 0)
+		count := uint64(0)
+		for ; iterator.Valid(); iterator.Next() {
+			if count >= maxPageSize {
+				break
+			}
+
+			keysToDelete = append(keysToDelete, iterator.Key())
+			count++
+		}
+		iterator.Close()
+
+		// If no keys to delete, break => Exit whole function
+		if len(keysToDelete) == 0 {
+			break
+		}
+
+		// Delete the keys
+		for _, key := range keysToDelete {
+			s.Delete(key)
+		}
+	}
+}
+
+// Clear out poison NaN values on different inferences, scores etc
+func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) {
+	ctx.Logger().Info("MIGRATION V4: RESETTING infererScoresByBlock MAP")
+	safelyClearWholeMap(store, emissionstypes.InferenceScoresKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING forecasterScoresByBlock MAP")
+	safelyClearWholeMap(store, emissionstypes.ForecastScoresKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING reputerScoresByBlock MAP")
+	safelyClearWholeMap(store, emissionstypes.ReputerScoresKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING infererScoreEmas MAP")
+	safelyClearWholeMap(store, emissionstypes.InfererScoreEmasKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING forecasterScoreEmas MAP")
+	safelyClearWholeMap(store, emissionstypes.ForecasterScoreEmasKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING reputerScoreEmas MAP")
+	safelyClearWholeMap(store, emissionstypes.ReputerScoreEmasKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING allLossBundles MAP")
+	safelyClearWholeMap(store, emissionstypes.AllLossBundlesKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING networkLossBundles MAP")
+	safelyClearWholeMap(store, emissionstypes.NetworkLossBundlesKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestInfererNetworkRegrets MAP")
+	safelyClearWholeMap(store, emissionstypes.InfererNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestForecasterNetworkRegrets MAP")
+	safelyClearWholeMap(store, emissionstypes.ForecasterNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneInForecasterNetworkRegrets MAP")
+	safelyClearWholeMap(store, emissionstypes.OneInForecasterNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestNaiveInfererNetworkRegrets MAP")
+	safelyClearWholeMap(store, emissionstypes.LatestNaiveInfererNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneOutInfererInfererNetworkRegrets MAP")
+	safelyClearWholeMap(store, emissionstypes.LatestOneOutInfererInfererNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneOutInfererForecasterNetworkRegrets MAP")
+	safelyClearWholeMap(store, emissionstypes.LatestOneOutInfererForecasterNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneOutForecasterInfererNetworkRegrets MAP")
+	safelyClearWholeMap(store, emissionstypes.LatestOneOutForecasterInfererNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneOutForecasterForecasterNetworkRegrets MAP")
+	safelyClearWholeMap(store, emissionstypes.LatestOneOutForecasterForecasterNetworkRegretsKey)
+}
+
+// copyTopic duplicates a topic into a new struct
 func copyTopic(original emissionstypes.Topic) emissionstypes.Topic {
 	return emissionstypes.Topic{
 		Id:                       original.Id,
