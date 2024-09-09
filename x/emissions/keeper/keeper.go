@@ -2209,37 +2209,6 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	return nil
 }
 
-// REWARDABLE TOPICS
-
-// Get the rewardable topics
-func (k *Keeper) GetRewardableTopics(ctx context.Context) ([]TopicId, error) {
-	iter, err := k.rewardableTopics.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	topics := make([]TopicId, 0)
-	for ; iter.Valid(); iter.Next() {
-		topicId, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		topics = append(topics, topicId)
-	}
-
-	return topics, nil
-}
-
-// Add a topic as rewardable
-func (k *Keeper) AddRewardableTopic(ctx context.Context, topicId TopicId) error {
-	return k.rewardableTopics.Set(ctx, topicId)
-}
-
-func (k *Keeper) RemoveRewardableTopic(ctx context.Context, topicId TopicId) error {
-	return k.rewardableTopics.Remove(ctx, topicId)
-}
-
 /// SCORES
 
 // If the new score is older than the current score, don't update
