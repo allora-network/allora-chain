@@ -35,7 +35,7 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 	// Define inferer address as Bob's address
 	InfererAddress1 := m.BobAddr
 
-	workerMsg := &types.MsgInsertWorkerPayload{
+	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: InfererAddress1,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker:  InfererAddress1,
@@ -188,7 +188,7 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 	}
 	reputerPublicKeyBytes := pubKey.Bytes()
 
-	lossesMsg := &types.MsgInsertReputerPayload{
+	lossesMsg := &types.InsertReputerPayloadRequest{
 		Sender: reputerAddr,
 		ReputerValueBundle: &types.ReputerValueBundle{
 			ValueBundle: reputerValueBundle,

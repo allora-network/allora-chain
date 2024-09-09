@@ -6,7 +6,8 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
+	oldV2Types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
+	oldV3Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -20,12 +21,84 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
-	ctx.Logger().Info("MIGRATING STORE FROM VERSION 3 TO VERSION 4")
+	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 3 TO VERSION 4")
+	if err := MigrateParams(store, cdc); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 3 TO VERSION 4")
+		return err
+	}
+
+	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 3 TO VERSION 4")
 	if err := MigrateTopics(ctx, store, cdc, emissionsKeeper); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 3 TO VERSION 4")
 		return err
 	}
 
+	return nil
+}
+
+func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+	oldParams := oldV3Types.Params{}
+	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
+	if oldParamsBytes == nil {
+		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
+	}
+	err := proto.Unmarshal(oldParamsBytes, &oldParams)
+	if err != nil {
+		return errorsmod.Wrapf(err, "failed to unmarshal old parameters")
+	}
+
+	defaultParams := emissionstypes.DefaultParams()
+
+	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
+	// ADDED:
+	//      MaxStringLength
+	newParams := emissionstypes.Params{
+		Version:                             oldParams.Version,
+		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
+		MinTopicWeight:                      oldParams.MinTopicWeight,
+		RequiredMinimumStake:                oldParams.RequiredMinimumStake,
+		RemoveStakeDelayWindow:              oldParams.RemoveStakeDelayWindow,
+		MinEpochLength:                      oldParams.MinEpochLength,
+		BetaEntropy:                         oldParams.BetaEntropy,
+		LearningRate:                        oldParams.LearningRate,
+		MaxGradientThreshold:                oldParams.MaxGradientThreshold,
+		MinStakeFraction:                    oldParams.MinStakeFraction,
+		MaxUnfulfilledWorkerRequests:        oldParams.MaxUnfulfilledWorkerRequests,
+		MaxUnfulfilledReputerRequests:       oldParams.MaxUnfulfilledReputerRequests,
+		TopicRewardStakeImportance:          oldParams.TopicRewardStakeImportance,
+		TopicRewardFeeRevenueImportance:     oldParams.TopicRewardFeeRevenueImportance,
+		TopicRewardAlpha:                    oldParams.TopicRewardAlpha,
+		TaskRewardAlpha:                     oldParams.TaskRewardAlpha,
+		ValidatorsVsAlloraPercentReward:     oldParams.ValidatorsVsAlloraPercentReward,
+		MaxSamplesToScaleScores:             oldParams.MaxSamplesToScaleScores,
+		MaxTopInferersToReward:              oldParams.MaxTopInferersToReward,
+		MaxTopForecastersToReward:           oldParams.MaxTopForecastersToReward,
+		MaxTopReputersToReward:              oldParams.MaxTopReputersToReward,
+		CreateTopicFee:                      oldParams.CreateTopicFee,
+		GradientDescentMaxIters:             oldParams.GradientDescentMaxIters,
+		RegistrationFee:                     oldParams.RegistrationFee,
+		DefaultPageLimit:                    oldParams.DefaultPageLimit,
+		MaxPageLimit:                        oldParams.MaxPageLimit,
+		MinEpochLengthRecordLimit:           oldParams.MinEpochLengthRecordLimit,
+		BlocksPerMonth:                      oldParams.BlocksPerMonth,
+		PRewardInference:                    oldParams.PRewardInference,
+		PRewardForecast:                     oldParams.PRewardForecast,
+		PRewardReputer:                      oldParams.PRewardReputer,
+		CRewardInference:                    oldParams.CRewardInference,
+		CRewardForecast:                     oldParams.CRewardForecast,
+		CNorm:                               oldParams.CNorm,
+		EpsilonReputer:                      oldParams.EpsilonReputer,
+		HalfMaxProcessStakeRemovalsEndBlock: oldParams.HalfMaxProcessStakeRemovalsEndBlock,
+		EpsilonSafeDiv:                      oldParams.EpsilonSafeDiv,
+		DataSendingFee:                      oldParams.DataSendingFee,
+		MaxElementsPerForecast:              oldParams.MaxElementsPerForecast,
+		MaxActiveTopicsPerBlock:             oldParams.MaxActiveTopicsPerBlock,
+		// NEW PARAMS
+		MaxStringLength: defaultParams.MaxStringLength,
+	}
+
+	store.Delete(emissionstypes.ParamsKey)
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&newParams))
 	return nil
 }
 
@@ -44,7 +117,7 @@ func MigrateTopics(
 	topicsToChange := make(map[string]emissionstypes.Topic, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		iterator.Key()
-		var oldMsg oldtypes.Topic
+		var oldMsg oldV2Types.Topic
 		err := proto.Unmarshal(iterator.Value(), &oldMsg)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to unmarshal old topic")

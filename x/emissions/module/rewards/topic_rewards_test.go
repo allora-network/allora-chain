@@ -124,7 +124,7 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId0, topic0.EpochLastEnded, block, workerValues, workerAddrs)
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId0, payload)
-		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.MsgInsertWorkerPayload{
+		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.InsertWorkerPayloadRequest{
 			Sender:           payload.Worker,
 			WorkerDataBundle: payload,
 		})
@@ -157,7 +157,7 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
 	for _, payload := range lossBundles.ReputerValueBundles {
 		s.RegisterAllReputersOfPayload(topicId0, payload)
-		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.MsgInsertReputerPayload{
+		_, err = s.msgServer.InsertReputerPayload(s.ctx, &types.InsertReputerPayloadRequest{
 			Sender:             payload.ValueBundle.Reputer,
 			ReputerValueBundle: payload,
 		})

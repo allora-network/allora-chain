@@ -34,9 +34,6 @@ type Keeper struct {
 	addressCodec     address.Codec
 	feeCollectorName string
 
-	// Config represent extra module configuration
-	Config Config
-
 	/// TYPES
 
 	schema     collections.Schema
@@ -213,20 +210,13 @@ func NewKeeper(
 	ak AccountKeeper,
 	bk BankKeeper,
 	feeCollectorName string,
-	config Config,
 ) Keeper {
-	defaultConfig := DefaultConfig()
-	if config.MaxMetadataLen == 0 {
-		config.MaxMetadataLen = defaultConfig.MaxMetadataLen
-	}
-
 	sb := collections.NewSchemaBuilder(storeService)
 	k := Keeper{
 		cdc:                                      cdc,
 		storeService:                             storeService,
 		addressCodec:                             addressCodec,
 		feeCollectorName:                         feeCollectorName,
-		Config:                                   config,
 		params:                                   collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
 		authKeeper:                               ak,
 		bankKeeper:                               bk,

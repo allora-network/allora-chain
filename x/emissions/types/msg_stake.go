@@ -20,30 +20,30 @@ func validateHelper(addr []string, amount cosmosMath.Int) error {
 	return nil
 }
 
-func (msg *MsgAddStake) Validate() error {
+func (msg *AddStakeRequest) Validate() error {
 	return validateHelper([]string{msg.Sender}, msg.Amount)
 }
 
-func (msg *MsgRemoveStake) Validate() error {
+func (msg *RemoveStakeRequest) Validate() error {
 	return validateHelper([]string{msg.Sender}, msg.Amount)
 }
 
-func (msg *MsgDelegateStake) Validate() error {
+func (msg *DelegateStakeRequest) Validate() error {
 	return validateHelper([]string{msg.Sender, msg.Reputer}, msg.Amount)
 }
 
-func (msg *MsgRemoveDelegateStake) Validate() error {
+func (msg *RemoveDelegateStakeRequest) Validate() error {
 	return validateHelper([]string{msg.Sender, msg.Reputer}, msg.Amount)
 }
 
-func (msg *MsgCancelRemoveDelegateStake) Validate() error {
+func (msg *CancelRemoveDelegateStakeRequest) Validate() error {
 	return validateHelper([]string{msg.Sender}, cosmosMath.ZeroInt())
 }
 
-func (msg *MsgRewardDelegateStake) Validate() error {
+func (msg *RewardDelegateStakeRequest) Validate() error {
 	return validateHelper([]string{msg.Sender, msg.Reputer}, cosmosMath.ZeroInt())
 }
 
-func (msg *MsgCancelRemoveStake) Validate() error {
+func (msg *CancelRemoveStakeRequest) Validate() error {
 	return validateHelper([]string{msg.Sender}, cosmosMath.ZeroInt())
 }

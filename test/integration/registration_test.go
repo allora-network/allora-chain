@@ -11,7 +11,7 @@ import (
 // register alice as a reputer in topic 1, then check success
 func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
-	registerAliceRequest := &emissionstypes.MsgRegister{
+	registerAliceRequest := &emissionstypes.RegisterRequest{
 		Sender:    m.AliceAddr,
 		Owner:     m.AliceAddr,
 		TopicId:   1,
@@ -21,7 +21,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	registerAliceResponse := &emissionstypes.MsgRegisterResponse{}
+	registerAliceResponse := &emissionstypes.RegisterResponse{}
 	err = txResp.Decode(registerAliceResponse)
 	require.NoError(m.T, err)
 	require.True(m.T, registerAliceResponse.Success)
@@ -53,7 +53,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 // register bob as worker in topic 1, then check success
 func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
-	registerBobRequest := &emissionstypes.MsgRegister{
+	registerBobRequest := &emissionstypes.RegisterRequest{
 		Sender:    m.BobAddr,
 		Owner:     m.BobAddr,
 		TopicId:   1,
@@ -63,7 +63,7 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	registerBobResponse := &emissionstypes.MsgRegisterResponse{}
+	registerBobResponse := &emissionstypes.RegisterResponse{}
 	err = txResp.Decode(registerBobResponse)
 	require.NoError(m.T, err)
 	require.True(m.T, registerBobResponse.Success)

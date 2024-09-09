@@ -32,7 +32,7 @@ func registerWorker(
 	wasErr := false
 	iterLog(m.T, iteration, "registering ", actor, "as worker in topic id", topicId)
 	ctx := context.Background()
-	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.MsgRegister{
+	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.RegisterRequest{
 		Sender:    actor.addr,
 		Owner:     actor.addr, // todo pick random other actor
 		IsReputer: false,
@@ -49,7 +49,7 @@ func registerWorker(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	registerWorkerResponse := &emissionstypes.MsgRegisterResponse{}
+	registerWorkerResponse := &emissionstypes.RegisterResponse{}
 	err = txResp.Decode(registerWorkerResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	if data.failOnErr {
@@ -79,7 +79,7 @@ func unregisterWorker(
 	wasErr := false
 	iterLog(m.T, iteration, "unregistering ", actor, "as worker in topic id", topicId)
 	ctx := context.Background()
-	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.MsgRemoveRegistration{
+	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.RemoveRegistrationRequest{
 		Sender:    actor.addr,
 		TopicId:   topicId,
 		IsReputer: false,
@@ -95,7 +95,7 @@ func unregisterWorker(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	removeRegistrationResponse := &emissionstypes.MsgRemoveRegistrationResponse{}
+	removeRegistrationResponse := &emissionstypes.RemoveRegistrationResponse{}
 	err = txResp.Decode(removeRegistrationResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	if data.failOnErr {
@@ -125,7 +125,7 @@ func registerReputer(
 	wasErr := false
 	iterLog(m.T, iteration, "registering ", actor, "as reputer in topic id", topicId)
 	ctx := context.Background()
-	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.MsgRegister{
+	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.RegisterRequest{
 		Sender:    actor.addr,
 		Owner:     actor.addr, // todo pick random other actor
 		IsReputer: true,
@@ -142,7 +142,7 @@ func registerReputer(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	registerWorkerResponse := &emissionstypes.MsgRegisterResponse{}
+	registerWorkerResponse := &emissionstypes.RegisterResponse{}
 	err = txResp.Decode(registerWorkerResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	if data.failOnErr {
@@ -172,7 +172,7 @@ func unregisterReputer(
 	wasErr := false
 	iterLog(m.T, iteration, "unregistering ", actor, "as reputer in topic id", topicId)
 	ctx := context.Background()
-	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.MsgRemoveRegistration{
+	txResp, err := m.Client.BroadcastTx(ctx, actor.acc, &emissionstypes.RemoveRegistrationRequest{
 		Sender:    actor.addr,
 		TopicId:   topicId,
 		IsReputer: true,
@@ -188,7 +188,7 @@ func unregisterReputer(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	removeRegistrationResponseMsg := &emissionstypes.MsgRemoveRegistrationResponse{}
+	removeRegistrationResponseMsg := &emissionstypes.RemoveRegistrationResponse{}
 	err = txResp.Decode(removeRegistrationResponseMsg)
 	requireNoError(m.T, data.failOnErr, err)
 	if data.failOnErr {

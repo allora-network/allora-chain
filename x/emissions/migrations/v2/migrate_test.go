@@ -14,7 +14,7 @@ import (
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	v2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
-	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/types"
+	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v2/oldtypes"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -89,9 +89,7 @@ func (s *EmissionsV2MigrationsTestSuite) SetupTest() {
 		storeService,
 		accountKeeper,
 		bankKeeper,
-		authtypes.FeeCollectorName,
-		keeper.DefaultConfig(),
-	)
+		authtypes.FeeCollectorName)
 }
 
 func TestEmissionsV2MigrationsTestSuite(t *testing.T) {
