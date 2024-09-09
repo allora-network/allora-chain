@@ -21,8 +21,11 @@ func CalcEma(
 	firstTime bool,
 ) (Dec, error) {
 	// If first iteration, then return just the new value
-	if firstTime || current.Equal(previous) {
+	if firstTime || current.Equal(previous) || previous.isNaN {
 		return current, nil
+	}
+	if current.isNaN {
+		return previous, nil
 	}
 	alphaCurrent, err := alpha.Mul(current)
 	if err != nil {
