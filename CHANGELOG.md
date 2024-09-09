@@ -43,15 +43,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## v0.4.1
+## v0.5.0
 
 ### Summary
 
-1. Implement fix on topic values after migration v0.4.0. 
+1. Implement a fix for incomplete migration of topic fields from the v0.4.0 upgrade. 
 2. Add additional RPC endpoint to allow for recalculating 
    the inflation rate / target emission rate more often than once per month.
-3. Other miscellaneous minor fixes
-4. Update to use rewardable topics as active topics instead of using them separately.
+3. Update to use rewardable topics as active topics instead of using them separately.
+4. Other miscellaneous minor fixes
 
 ### Added
 
@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#582](https://github.com/allora-network/allora-chain/pull/582) Additional topic fields validation
 * [#587](https://github.com/allora-network/allora-chain/pull/587) Update Migration Tests to include NaN Initial Regrets Test
+* [#590](https://github.com/allora-network/allora-chain/pull/590) Clear NaN in maps by deleting all map values during migration
 
 ### Security
 
