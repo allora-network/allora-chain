@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#587](https://github.com/allora-network/allora-chain/pull/587) Update Migration Tests to include NaN Initial Regrets Test
 * [#590](https://github.com/allora-network/allora-chain/pull/590) Clear NaN in maps by deleting all map values during migration
 * [#595](https://github.com/allora-network/allora-chain/pull/592) Emit inference and forecast score events in case of 1 actor
+* [#596](https://github.com/allora-network/allora-chain/pull/596) EMA protection against NaN values
 
 ### Security
 
