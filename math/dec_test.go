@@ -829,60 +829,68 @@ func TestInDelta(t *testing.T) {
 func TestSlicesInDelta(t *testing.T) {
 	// Test cases
 	testCases := []struct {
-		name     string
-		a        []alloraMath.Dec
-		b        []alloraMath.Dec
-		epsilon  alloraMath.Dec
-		expected bool
+		name      string
+		a         []alloraMath.Dec
+		b         []alloraMath.Dec
+		epsilon   alloraMath.Dec
+		expected  bool
+		expectErr bool
 	}{
 		{
-			name:     "Equal slices within epsilon",
-			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
-			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
-			epsilon:  alloraMath.NewDecFromInt64(0),
-			expected: true,
+			name:      "Equal slices within epsilon",
+			a:         []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			b:         []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			epsilon:   alloraMath.NewDecFromInt64(0),
+			expected:  true,
+			expectErr: false,
 		},
 		{
-			name:     "Equal slices within epsilon",
-			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(0), alloraMath.NewDecFromInt64(-1), alloraMath.NewDecFromInt64(4)},
-			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(-1), alloraMath.NewDecFromInt64(-2), alloraMath.NewDecFromInt64(3)},
-			epsilon:  alloraMath.NewDecFromInt64(1),
-			expected: true,
+			name:      "Equal slices within epsilon",
+			a:         []alloraMath.Dec{alloraMath.NewDecFromInt64(0), alloraMath.NewDecFromInt64(-1), alloraMath.NewDecFromInt64(4)},
+			b:         []alloraMath.Dec{alloraMath.NewDecFromInt64(-1), alloraMath.NewDecFromInt64(-2), alloraMath.NewDecFromInt64(3)},
+			epsilon:   alloraMath.NewDecFromInt64(1),
+			expected:  true,
+			expectErr: false,
 		},
 		{
-			name:     "Equal slices NOT within epsilon",
-			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(5)},
-			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
-			epsilon:  alloraMath.NewDecFromInt64(1),
-			expected: false,
+			name:      "Equal slices NOT within epsilon",
+			a:         []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(5)},
+			b:         []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			epsilon:   alloraMath.NewDecFromInt64(1),
+			expected:  false,
+			expectErr: false,
 		},
 		{
-			name:     "Different slices within epsilon",
-			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(-1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
-			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(5), alloraMath.NewDecFromInt64(6)},
-			epsilon:  alloraMath.NewDecFromInt64(3),
-			expected: true,
+			name:      "Different slices within epsilon",
+			a:         []alloraMath.Dec{alloraMath.NewDecFromInt64(-1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			b:         []alloraMath.Dec{alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(5), alloraMath.NewDecFromInt64(6)},
+			epsilon:   alloraMath.NewDecFromInt64(3),
+			expected:  true,
+			expectErr: false,
 		},
 		{
-			name:     "Different slices outside epsilon",
-			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
-			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(4), alloraMath.NewDecFromInt64(5), alloraMath.NewDecFromInt64(6)},
-			epsilon:  alloraMath.NewDecFromInt64(1),
-			expected: false,
+			name:      "Different slices outside epsilon",
+			a:         []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			b:         []alloraMath.Dec{alloraMath.NewDecFromInt64(4), alloraMath.NewDecFromInt64(5), alloraMath.NewDecFromInt64(6)},
+			epsilon:   alloraMath.NewDecFromInt64(1),
+			expected:  false,
+			expectErr: false,
 		},
 		{
-			name:     "Different slice lengths",
-			a:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
-			b:        []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2)},
-			epsilon:  alloraMath.NewDecFromInt64(0),
-			expected: false,
+			name:      "Different slice lengths",
+			a:         []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2), alloraMath.NewDecFromInt64(3)},
+			b:         []alloraMath.Dec{alloraMath.NewDecFromInt64(1), alloraMath.NewDecFromInt64(2)},
+			epsilon:   alloraMath.NewDecFromInt64(0),
+			expected:  false,
+			expectErr: true,
 		},
 		{
-			name:     "Empty slice",
-			a:        []alloraMath.Dec{},
-			b:        []alloraMath.Dec{},
-			epsilon:  alloraMath.NewDecFromInt64(0),
-			expected: true,
+			name:      "Empty slice",
+			a:         []alloraMath.Dec{},
+			b:         []alloraMath.Dec{},
+			epsilon:   alloraMath.NewDecFromInt64(0),
+			expected:  true,
+			expectErr: false,
 		},
 	}
 
@@ -890,7 +898,11 @@ func TestSlicesInDelta(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := alloraMath.SlicesInDelta(tc.a, tc.b, tc.epsilon)
-			require.NoError(t, err)
+			if tc.expectErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
 			require.Equal(t, tc.expected, result)
 		})
 	}
