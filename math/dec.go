@@ -39,10 +39,10 @@ const NaNStr = "NaN"
 var (
 	ErrInvalidDecString   = errorsmod.Register(mathCodespace, 1, "invalid decimal string")
 	ErrUnexpectedRounding = errorsmod.Register(mathCodespace, 2, "unexpected rounding")
-	ErrNonIntegeral       = errorsmod.Register(mathCodespace, 3, "value is non-integral")
+	ErrNonIntegral        = errorsmod.Register(mathCodespace, 3, "value is non-integral")
 	ErrInfiniteString     = errorsmod.Register(mathCodespace, 4, "value is infinite")
 	ErrOverflow           = errorsmod.Register(mathCodespace, 5, "overflow")
-	ErrNaN                = errorsmod.Register(mathCodespace, 6, "Not a Number (NaN) is not permitted in this context")
+	ErrNaN                = errorsmod.Register(mathCodespace, 6, "NaN not permitted in this context")
 	ErrNotMatchingLength  = errorsmod.Register(mathCodespace, 7, "slices are not of the same length")
 )
 
@@ -202,6 +202,9 @@ func NewDecFromSdkLegacyDec(x sdkmath.LegacyDec) (Dec, error) {
 // Add returns a new Dec with value `x+y` without mutating any argument and error if
 // there is an overflow or resultant NaN.
 func (x Dec) Add(y Dec) (Dec, error) {
+	if x.IsNaN() || y.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot add with a NaN argument")
+	}
 	var z Dec
 	_, err := apd.BaseContext.Add(&z.dec, &x.dec, &y.dec)
 	if z.IsNaN() {
@@ -213,6 +216,9 @@ func (x Dec) Add(y Dec) (Dec, error) {
 // Sub returns a new Dec with value `x-y` without mutating any argument and error if
 // there is an overflow.
 func (x Dec) Sub(y Dec) (Dec, error) {
+	if x.IsNaN() || y.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot subtract with a NaN argument")
+	}
 	var z Dec
 	_, err := apd.BaseContext.Sub(&z.dec, &x.dec, &y.dec)
 	if z.IsNaN() {
@@ -224,6 +230,9 @@ func (x Dec) Sub(y Dec) (Dec, error) {
 // Quo returns a new Dec with value `x/y` (formatted as decimal128, 34 digit precision) without mutating any
 // argument and error if there is an overflow.
 func (x Dec) Quo(y Dec) (Dec, error) {
+	if x.IsNaN() || y.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot divide with a NaN argument")
+	}
 	var z Dec
 	_, err := dec128Context.Quo(&z.dec, &x.dec, &y.dec)
 	if z.IsNaN() {
@@ -235,6 +244,9 @@ func (x Dec) Quo(y Dec) (Dec, error) {
 // MulExact returns a new dec with value x * y. The product must not be rounded or
 // ErrUnexpectedRounding will be returned.
 func (x Dec) MulExact(y Dec) (Dec, error) {
+	if x.IsNaN() || y.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot MulExact with a NaN argument")
+	}
 	var z Dec
 	condition, err := dec128Context.Mul(&z.dec, &x.dec, &y.dec)
 	if err != nil {
@@ -251,6 +263,9 @@ func (x Dec) MulExact(y Dec) (Dec, error) {
 
 // QuoExact is a version of Quo that returns ErrUnexpectedRounding if any rounding occurred.
 func (x Dec) QuoExact(y Dec) (Dec, error) {
+	if x.IsNaN() || y.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot QuoExact with a NaN argument")
+	}
 	var z Dec
 	condition, err := dec128Context.Quo(&z.dec, &x.dec, &y.dec)
 	if err != nil {
@@ -268,6 +283,9 @@ func (x Dec) QuoExact(y Dec) (Dec, error) {
 // QuoInteger returns a new integral Dec with value `x/y` (formatted as decimal128, with 34 digit precision)
 // without mutating any argument and error if there is an overflow.
 func (x Dec) QuoInteger(y Dec) (Dec, error) {
+	if x.IsNaN() || y.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot QuoInteger with a NaN argument")
+	}
 	var z Dec
 	_, err := dec128Context.QuoInteger(&z.dec, &x.dec, &y.dec)
 	if z.IsNaN() {
@@ -279,6 +297,9 @@ func (x Dec) QuoInteger(y Dec) (Dec, error) {
 // Rem returns the integral remainder from `x/y` (formatted as decimal128, with 34 digit precision) without
 // mutating any argument and error if the integer part of x/y cannot fit in 34 digit precision
 func (x Dec) Rem(y Dec) (Dec, error) {
+	if x.IsNaN() || y.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Rem with a NaN argument")
+	}
 	var z Dec
 	_, err := dec128Context.Rem(&z.dec, &x.dec, &y.dec)
 	if z.IsNaN() {
@@ -290,6 +311,9 @@ func (x Dec) Rem(y Dec) (Dec, error) {
 // Mul returns a new Dec with value `x*y` (formatted as decimal128, with 34 digit precision) without
 // mutating any argument and error if there is an overflow.
 func (x Dec) Mul(y Dec) (Dec, error) {
+	if x.IsNaN() || y.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Mul with a NaN argument")
+	}
 	var z Dec
 	_, err := dec128Context.Mul(&z.dec, &x.dec, &y.dec)
 	if z.IsNaN() {
@@ -301,6 +325,9 @@ func (x Dec) Mul(y Dec) (Dec, error) {
 // Neg negates the decimal and returns a new Dec with value `-x` without
 // mutating any argument and error if there is an overflow.
 func (x Dec) Neg() (Dec, error) {
+	if x.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Neg a NaN")
+	}
 	var z Dec
 	_, err := dec128Context.Neg(&z.dec, &x.dec)
 	if z.IsNaN() {
@@ -311,6 +338,9 @@ func (x Dec) Neg() (Dec, error) {
 
 // Log10 returns a new Dec with the value of the base 10 logarithm of x, without mutating x.
 func Log10(x Dec) (Dec, error) {
+	if x.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Log10 a NaN")
+	}
 	var z Dec
 	_, err := dec128Context.Log10(&z.dec, &x.dec)
 	if z.IsNaN() {
@@ -321,6 +351,9 @@ func Log10(x Dec) (Dec, error) {
 
 // Ln returns a new Dec with the value of the natural logarithm of x, without mutating x.
 func Ln(x Dec) (Dec, error) {
+	if x.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Ln a NaN")
+	}
 	var z Dec
 	_, err := dec128Context.Ln(&z.dec, &x.dec)
 	if z.IsNaN() {
@@ -331,6 +364,9 @@ func Ln(x Dec) (Dec, error) {
 
 // Exp returns a new Dec with the value of e^x, without mutating x.
 func Exp(x Dec) (Dec, error) {
+	if x.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Exp a NaN")
+	}
 	var z Dec
 	_, err := dec128Context.Exp(&z.dec, &x.dec)
 	if z.IsNaN() {
@@ -341,6 +377,9 @@ func Exp(x Dec) (Dec, error) {
 
 // Exp10 returns a new Dec with the value of 10^x, without mutating x.
 func Exp10(x Dec) (Dec, error) {
+	if x.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Exp10 a NaN")
+	}
 	var ten = NewDecFromInt64(10)
 	var z Dec
 	_, err := dec128Context.Pow(&z.dec, &ten.dec, &x.dec)
@@ -352,6 +391,9 @@ func Exp10(x Dec) (Dec, error) {
 
 // Pow returns a new Dec with the value of x**y, without mutating x or y.
 func Pow(x Dec, y Dec) (Dec, error) {
+	if x.IsNaN() || y.IsNaN() {
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Pow with a NaN argument")
+	}
 	var z Dec
 	_, err := dec128Context.Pow(&z.dec, &x.dec, &y.dec)
 	if z.IsNaN() {
@@ -363,7 +405,7 @@ func Pow(x Dec, y Dec) (Dec, error) {
 // returns the max of x and y without mutating x or y.
 func Max(x Dec, y Dec) (Dec, error) {
 	if x.IsNaN() || y.IsNaN() {
-		return Dec{}, errorsmod.Wrap(ErrNaN, "Max result is NaN")
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Max with a NaN argument")
 	}
 	var z Dec
 	if x.Cmp(y) == GreaterThan {
@@ -377,7 +419,7 @@ func Max(x Dec, y Dec) (Dec, error) {
 // returns the min of x and y without mutating x or y.
 func Min(x Dec, y Dec) (Dec, error) {
 	if x.IsNaN() || y.IsNaN() {
-		return Dec{}, errorsmod.Wrap(ErrNaN, "Min result is NaN")
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Min with a NaN argument")
 	}
 	var z Dec
 	if x.Cmp(y) == LessThan {
@@ -391,7 +433,7 @@ func Min(x Dec, y Dec) (Dec, error) {
 // Sqrt returns a new Dec with the value of the square root of x, without mutating x.
 func (x Dec) Sqrt() (Dec, error) {
 	if x.IsNaN() {
-		return Dec{}, errorsmod.Wrap(ErrNaN, "Cannot sqrt a NaN")
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Sqrt a NaN")
 	}
 	var z Dec
 	_, err := dec128Context.Sqrt(&z.dec, &x.dec)
@@ -401,7 +443,7 @@ func (x Dec) Sqrt() (Dec, error) {
 // Abs returns a new Dec with the absolute value of x, without mutating x.
 func (x Dec) Abs() (Dec, error) {
 	if x.IsNaN() {
-		return Dec{}, errorsmod.Wrap(ErrNaN, "Cannot abs a NaN")
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Abs a NaN")
 	}
 	var z Dec
 	z.dec.Abs(&x.dec)
@@ -411,7 +453,7 @@ func (x Dec) Abs() (Dec, error) {
 // Ceil returns a new Dec with the value of x rounded up to the nearest integer, without mutating x.
 func (x Dec) Ceil() (Dec, error) {
 	if x.IsNaN() {
-		return Dec{}, errorsmod.Wrap(ErrNaN, "Cannot ceil a NaN")
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Ceil a NaN")
 	}
 	var z Dec
 	_, err := dec128Context.Ceil(&z.dec, &x.dec)
@@ -421,7 +463,7 @@ func (x Dec) Ceil() (Dec, error) {
 // Floor returns a new Dec with the value of x rounded down to the nearest integer, without mutating x.
 func (x Dec) Floor() (Dec, error) {
 	if x.IsNaN() {
-		return Dec{}, errorsmod.Wrap(ErrNaN, "Cannot floor a NaN")
+		return Dec{}, errorsmod.Wrap(ErrNaN, "cannot Floor a NaN")
 	}
 	var z Dec
 	_, err := dec128Context.Floor(&z.dec, &x.dec)
@@ -432,7 +474,7 @@ func (x Dec) Floor() (Dec, error) {
 // fit precisely into an int64.
 func (x Dec) Int64() (int64, error) {
 	if x.IsNaN() {
-		return 0, errorsmod.Wrap(ErrNaN, "Cannot convert NaN to int64")
+		return 0, errorsmod.Wrap(ErrNaN, "cannot convert NaN to int64")
 	}
 	return x.dec.Int64()
 }
@@ -441,7 +483,7 @@ func (x Dec) Int64() (int64, error) {
 // fit precisely into an int64.
 func (x Dec) UInt64() (uint64, error) {
 	if x.IsNaN() {
-		return 0, errorsmod.Wrap(ErrNaN, "Cannot convert NaN to uint64")
+		return 0, errorsmod.Wrap(ErrNaN, "cannot convert NaN to uint64")
 	}
 	val, err := x.dec.Int64()
 	res := uint64(val)
@@ -452,13 +494,13 @@ func (x Dec) UInt64() (uint64, error) {
 // fit precisely into an *big.Int.
 func (x Dec) BigInt() (*big.Int, error) {
 	if x.IsNaN() {
-		return nil, errorsmod.Wrap(ErrNaN, "Cannot convert NaN to big.Int")
+		return nil, errorsmod.Wrap(ErrNaN, "cannot convert NaN to big.Int")
 	}
 	y, _ := x.Reduce()
 	z := &big.Int{}
 	z, ok := z.SetString(y.String(), 10)
 	if !ok {
-		return nil, ErrNonIntegeral
+		return nil, ErrNonIntegral
 	}
 	return z, nil
 }
@@ -466,7 +508,7 @@ func (x Dec) BigInt() (*big.Int, error) {
 // Coeff copies x into a big int while minimizing trailing zeroes
 func (x Dec) Coeff() (big.Int, error) {
 	if x.IsNaN() {
-		return big.Int{}, errorsmod.Wrap(ErrNaN, "Cannot convert NaN to big.Int")
+		return big.Int{}, errorsmod.Wrap(ErrNaN, "cannot convert NaN to big.Int")
 	}
 	y, _ := x.Reduce()
 	var r = y.dec.Coeff
@@ -511,9 +553,12 @@ func bigIntOverflows(i *big.Int) bool {
 // SdkIntTrim rounds decimal number to the integer towards zero and converts it to `sdkmath.Int`.
 // returns error if the Dec is not representable in an sdkmath.Int
 func (x Dec) SdkIntTrim() (sdkmath.Int, error) {
+	if x.IsNaN() {
+		return sdkmath.Int{}, errorsmod.Wrap(ErrNaN, "cannot trim NaN to sdkmath.Int")
+	}
 	r, err := x.Coeff()
 	if err != nil {
-		return sdkmath.Int{}, errorsmod.Wrap(err, "Unable to trim to sdkmath.Int")
+		return sdkmath.Int{}, errorsmod.Wrap(err, "cannot trim to sdkmath.Int")
 	}
 	if bigIntOverflows(&r) {
 		return sdkmath.Int{}, errorsmod.Wrap(ErrOverflow, "decimal is not representable as an sdkmath.Int")
@@ -524,6 +569,9 @@ func (x Dec) SdkIntTrim() (sdkmath.Int, error) {
 // SdkLegacyDec converts Dec to `sdkmath.LegacyDec`
 // can return nil if the value is not representable in a LegacyDec
 func (x Dec) SdkLegacyDec() (sdkmath.LegacyDec, error) {
+	if x.IsNaN() {
+		return sdkmath.LegacyDec{}, errorsmod.Wrap(ErrNaN, "cannot convert NaN to sdkmath.LegacyDec")
+	}
 	stringRep := x.dec.Text('f')
 	return sdkmath.LegacyNewDecFromStr(stringRep)
 }
@@ -697,7 +745,7 @@ func (x Dec) Reduce() (Dec, int) {
 // if some math is within a delta
 func InDelta(expected, result Dec, epsilon Dec) (bool, error) {
 	if expected.IsNaN() || result.IsNaN() {
-		return false, errorsmod.Wrap(ErrNaN, "Cannot compare NaN")
+		return false, errorsmod.Wrap(ErrNaN, "cannot compare NaN")
 	}
 	delta, err := expected.Sub(result)
 	if err != nil {
@@ -718,7 +766,7 @@ func InDelta(expected, result Dec, epsilon Dec) (bool, error) {
 func SlicesInDelta(a, b []Dec, epsilon Dec) (bool, error) {
 	lenA := len(a)
 	if lenA != len(b) {
-		return false, errorsmod.Wrap(ErrNotMatchingLength, "Unable to check if slices are within delta")
+		return false, errorsmod.Wrap(ErrNotMatchingLength, "cannot check if slices are within delta")
 	}
 	for i := 0; i < lenA; i++ {
 		// for performance reasons we do not call InDelta

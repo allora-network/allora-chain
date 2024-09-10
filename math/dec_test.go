@@ -6,6 +6,7 @@ package math_test
 
 import (
 	"fmt"
+	goMath "math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -712,7 +713,7 @@ func TestToBigInt(t *testing.T) {
 		{i1, i1, nil},
 		{"1000000000000000000000000000000000000123456789.00000000", i1, nil},
 		{"123.456e6", "123456000", nil},
-		{"12345.6", "", alloraMath.ErrNonIntegeral},
+		{"12345.6", "", alloraMath.ErrNonIntegral},
 	}
 	for idx, tc := range tcs {
 		a, err := alloraMath.NewDecFromString(tc.intStr)
@@ -952,4 +953,274 @@ func TestSumDecSlice(t *testing.T) {
 	sum, err = alloraMath.SumDecSlice(x)
 	require.NoError(t, err)
 	require.True(t, sum.Equal(expectedSum), "Expected sum to be 2")
+}
+
+func TestNaNCreation(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	require.True(t, nan.IsNaN())
+	require.Equal(t, "NaN", nan.String())
+}
+
+func TestNewDecFromStringEmptyString(t *testing.T) {
+	emptyString, err := alloraMath.NewDecFromString("")
+	require.NoError(t, err)
+	require.Equal(t, alloraMath.ZeroDec(), emptyString)
+}
+
+// only covers happy paths
+func TestNewDecFromUint64(t *testing.T) {
+	aDec, err := alloraMath.NewDecFromUint64(uint64(0))
+	require.NoError(t, err)
+	require.True(
+		t,
+		alloraMath.ZeroDec().Equal(aDec),
+		"%s != %s",
+		alloraMath.ZeroDec().String(),
+		aDec.String(),
+	)
+
+	aDec, err = alloraMath.NewDecFromUint64(uint64(1))
+	require.NoError(t, err)
+	require.True(
+		t, alloraMath.OneDec().Equal(aDec),
+		"%s != %s",
+		alloraMath.OneDec().String(),
+		aDec.String(),
+	)
+
+	aDec, err = alloraMath.NewDecFromUint64(uint64(1337))
+	require.NoError(t, err)
+	require.True(
+		t,
+		alloraMath.MustNewDecFromString("1337").Equal(aDec),
+		"%s != %s",
+		alloraMath.MustNewDecFromString("1337").String(),
+		aDec.String(),
+	)
+
+	maxUint := uint64(goMath.MaxUint64)
+	aDec, err = alloraMath.NewDecFromUint64(maxUint)
+	require.NoError(t, err)
+	maxUintString := strconv.FormatUint(maxUint, 10)
+	require.Equal(t, maxUintString, aDec.String())
+}
+
+// only covers happy path for now
+func TestNewDecFromSdkInt(t *testing.T) {
+	anInt := cosmosMath.NewInt(1337)
+	aDec, err := alloraMath.NewDecFromSdkInt(anInt)
+	require.NoError(t, err)
+	require.True(t,
+		aDec.Equal(alloraMath.MustNewDecFromString("1337")),
+		"%s != %s",
+		aDec.String(),
+		alloraMath.MustNewDecFromString("1337").String(),
+	)
+}
+
+// only covers happy path for now
+func TestNewDecFromSdkLegacyDec(t *testing.T) {
+	aLegacyDec := cosmosMath.LegacyMustNewDecFromStr("1337.123456789")
+	aDec, err := alloraMath.NewDecFromSdkLegacyDec(aLegacyDec)
+	require.NoError(t, err)
+	aDecFromString, err := alloraMath.NewDecFromString("1337.123456789")
+	require.True(t,
+		aDec.Equal(aDecFromString),
+		"%s != %s",
+		aDec.String(),
+		aDecFromString.String(),
+	)
+}
+
+func TestAddFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := dec.Add(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestSubFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := dec.Sub(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestMulFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := dec.Mul(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestQuoFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := dec.Quo(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestMulExactFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := dec.MulExact(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestQuoExactFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := dec.QuoExact(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestQuoIntegerFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := dec.QuoInteger(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestRemFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := dec.Rem(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestNegFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.Neg()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestLog10FailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := alloraMath.Log10(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestLnFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := alloraMath.Ln(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestExpFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := alloraMath.Exp(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestExp10FailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := alloraMath.Exp10(nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestPowFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := alloraMath.Pow(dec, nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestMaxFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := alloraMath.Max(dec, nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestMinFailNaN(t *testing.T) {
+	dec := alloraMath.OneDec()
+	nan := alloraMath.NewNaN()
+	_, err := alloraMath.Min(dec, nan)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestSqrtFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.Sqrt()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestAbsFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.Abs()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestCeilFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.Ceil()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestFloorFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.Floor()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestInt64FailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.Int64()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestUInt64FailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.UInt64()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestBigIntFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.BigInt()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestCoeffFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.Coeff()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestSdkIntTrimFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.SdkIntTrim()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestSdkLegacyDecFailNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	_, err := nan.SdkLegacyDec()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
 }
