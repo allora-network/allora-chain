@@ -42,8 +42,8 @@ var (
 	ErrNonIntegeral       = errorsmod.Register(mathCodespace, 3, "value is non-integral")
 	ErrInfiniteString     = errorsmod.Register(mathCodespace, 4, "value is infinite")
 	ErrOverflow           = errorsmod.Register(mathCodespace, 5, "overflow")
-	ErrNaN                = errorsmod.Register(mathCodespace, 5, "Not a Number (NaN) is not permitted in this context")
-	ErrNotMatchingLength  = errorsmod.Register(mathCodespace, 6, "slices are not of the same length")
+	ErrNaN                = errorsmod.Register(mathCodespace, 6, "Not a Number (NaN) is not permitted in this context")
+	ErrNotMatchingLength  = errorsmod.Register(mathCodespace, 7, "slices are not of the same length")
 )
 
 // The number 0 encoded as Dec
