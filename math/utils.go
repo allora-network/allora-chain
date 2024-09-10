@@ -22,6 +22,9 @@ func CalcEma(
 ) (Dec, error) {
 	// If first iteration, then return just the new value
 	if firstTime || current.Equal(previous) || previous.isNaN {
+		if current.isNaN {
+			return ZeroDec(), errors.New("at least one ema operand should not be NaN")
+		}
 		return current, nil
 	}
 	if current.isNaN {
