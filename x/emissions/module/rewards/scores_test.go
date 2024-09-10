@@ -193,7 +193,9 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	for i, reputerScore := range scores {
 		scoreDelta, err := reputerScore.Score.Sub(expectedScores[i])
 		s.Require().NoError(err)
-		deltaTightness := scoreDelta.Abs().
+		absScoreDelta, err := scoreDelta.Abs()
+		s.Require().NoError(err)
+		deltaTightness := absScoreDelta.
 			Cmp(alloraMath.MustNewDecFromString("0.00001"))
 		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
 			s.Fail("Expected reward is not equal to the actual reward")
@@ -361,7 +363,9 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	for i, reputerScore := range scores {
 		delta, err := reputerScore.Score.Sub(expectedScores[i])
 		s.Require().NoError(err)
-		deltaTightness := delta.Abs().Cmp(alloraMath.MustNewDecFromString("0.00001"))
+		absScoreDelta, err := delta.Abs()
+		s.Require().NoError(err)
+		deltaTightness := absScoreDelta.Cmp(alloraMath.MustNewDecFromString("0.00001"))
 		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
 			s.Fail("Expected reward is not equal to the actual reward")
 		}

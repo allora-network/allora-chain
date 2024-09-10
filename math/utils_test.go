@@ -18,7 +18,9 @@ func TestCalcEmaSimple(t *testing.T) {
 
 	result, err := alloraMath.CalcEma(alpha, current, previous, false)
 	require.NoError(t, err)
-	require.True(t, alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001")))
+	inDelta, err := alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001"))
+	require.NoError(t, err)
+	require.True(t, inDelta)
 }
 
 func TestCalcEmaWithNoPrior(t *testing.T) {
@@ -31,7 +33,9 @@ func TestCalcEmaWithNoPrior(t *testing.T) {
 
 	result, err := alloraMath.CalcEma(alpha, current, previous, true)
 	require.NoError(t, err)
-	require.True(t, alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001")))
+	inDelta, err := alloraMath.InDelta(expected, result, alloraMath.MustNewDecFromString("0.0001"))
+	require.NoError(t, err)
+	require.True(t, inDelta)
 }
 
 func TestStdDev(t *testing.T) {
@@ -62,22 +66,24 @@ func TestStdDev(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := alloraMath.StdDev(tt.data)
 			require.NoError(t, err)
-			require.True(t, alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.0001")))
+			inDelta, err := alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.0001"))
+			require.NoError(t, err)
+			require.True(t, inDelta)
 		})
 	}
 }
 
 func TestStdDevOneValueShouldBeZero(t *testing.T) {
 	stdDev, err := alloraMath.StdDev([]alloraMath.Dec{alloraMath.MustNewDecFromString("-0.00675")})
+
 	require.NoError(t, err)
-	require.True(
-		t,
-		alloraMath.InDelta(
-			alloraMath.MustNewDecFromString("0"),
-			stdDev,
-			alloraMath.MustNewDecFromString("0.0001"),
-		),
+	inDelta, err := alloraMath.InDelta(
+		alloraMath.MustNewDecFromString("0"),
+		stdDev,
+		alloraMath.MustNewDecFromString("0.0001"),
 	)
+	require.NoError(t, err)
+	require.True(t, inDelta)
 }
 
 func TestPhiSimple(t *testing.T) {
@@ -87,7 +93,9 @@ func TestPhiSimple(t *testing.T) {
 	// we expect a value very very close to 64
 	result, err := alloraMath.Phi(p, c, x)
 	require.NoError(t, err)
-	require.False(t, alloraMath.InDelta(alloraMath.NewDecFromInt64(64), result, alloraMath.MustNewDecFromString("0.001")))
+	inDelta, err := alloraMath.InDelta(alloraMath.NewDecFromInt64(64), result, alloraMath.MustNewDecFromString("0.001"))
+	require.NoError(t, err)
+	require.False(t, inDelta)
 }
 
 // φ'_p(x) = p / (exp(p * (c - x)) + 1)
@@ -139,12 +147,14 @@ func TestGradient(t *testing.T) {
 				require.ErrorIs(t, err, tc.expectedErr)
 			} else {
 				require.NoError(t, err)
+				inDelta, err := alloraMath.InDelta(
+					tc.expected,
+					result,
+					alloraMath.MustNewDecFromString("0.00001"))
+				require.NoError(t, err)
 				require.True(
 					t,
-					alloraMath.InDelta(
-						tc.expected,
-						result,
-						alloraMath.MustNewDecFromString("0.00001")),
+					inDelta,
 					"result should match expected value within epsilon",
 					tc.expected.String(),
 					result.String(),
@@ -245,7 +255,9 @@ func TestWeightedInferences(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, result, len(expected))
 	for i, r := range result {
-		require.True(t, alloraMath.InDelta(expected[i], r, alloraMath.MustNewDecFromString("0.000001")))
+		inDelta, err := alloraMath.InDelta(expected[i], r, alloraMath.MustNewDecFromString("0.000001"))
+		require.NoError(t, err)
+		require.True(t, inDelta)
 	}
 }
 
@@ -283,6 +295,8 @@ func TestWeightedInferences2(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, result, len(expected))
 	for i, r := range result {
-		require.True(t, alloraMath.InDelta(expected[i], r, alloraMath.MustNewDecFromString("0.000001")))
+		inDelta, err := alloraMath.InDelta(expected[i], r, alloraMath.MustNewDecFromString("0.000001"))
+		require.NoError(t, err)
+		require.True(t, inDelta)
 	}
 }

@@ -820,7 +820,8 @@ func TestInDelta(t *testing.T) {
 
 	// Run test cases
 	for _, tc := range testCases {
-		result := alloraMath.InDelta(tc.expected, tc.result, tc.epsilon)
+		result, err := alloraMath.InDelta(tc.expected, tc.result, tc.epsilon)
+		require.NoError(t, err)
 		require.Equal(t, tc.expectedResult, result)
 	}
 }
@@ -888,7 +889,8 @@ func TestSlicesInDelta(t *testing.T) {
 	// Run test cases
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := alloraMath.SlicesInDelta(tc.a, tc.b, tc.epsilon)
+			result, err := alloraMath.SlicesInDelta(tc.a, tc.b, tc.epsilon)
+			require.NoError(t, err)
 			require.Equal(t, tc.expected, result)
 		})
 	}
