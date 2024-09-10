@@ -19,15 +19,16 @@ func CalcEma(
 	previous Dec,
 	firstTime bool,
 ) (Dec, error) {
-	// If first iteration, then return just the new value
-	if firstTime || current.Equal(previous) || previous.isNaN {
-		if current.isNaN {
-			return ZeroDec(), errors.New("at least one ema operand should not be NaN")
-		}
-		return current, nil
-	}
+	// don't allow computation on NaN values
 	if current.isNaN {
-		return previous, nil
+		return Dec{}, errors.New("calcEma current value must not be NaN")
+	}
+	if previous.isNaN {
+		return Dec{}, errors.New("calcEma previous value must not be NaN")
+	}
+	// If first iteration, then return just the new value
+	if firstTime || current.Equal(previous) {
+		return current, nil
 	}
 	alphaCurrent, err := alpha.Mul(current)
 	if err != nil {
@@ -94,7 +95,7 @@ func StdDev(data []Dec) (Dec, error) {
 	// Calculate the mean, excluding NaN values
 	for _, v := range data {
 		if v.isNaN { // Check if the value is NaN
-			continue // Skip NaN values
+			return Dec{}, errors.New("input data contains NaN values")
 		}
 		mean, err = mean.Add(v)
 		if err != nil {
