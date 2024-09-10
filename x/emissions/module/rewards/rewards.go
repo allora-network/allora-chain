@@ -80,9 +80,11 @@ func EmitRewards(
 		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
 		// If the topic has no reward nonce, skip it
 		if err != nil || topicRewardNonce == 0 {
+			Logger(ctx).Info(fmt.Sprintf("Topic %d has no valid reward nonce, skipping", topicId))
 			continue
 		}
 
+		Logger(ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", topicId, topicRewardNonce, topicReward))
 		// Distribute rewards between topic participants
 		totalRewardsDistribution, rewardInTopicToReputers, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
