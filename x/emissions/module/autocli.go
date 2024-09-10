@@ -376,7 +376,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetReputersScoresAtBlock",
-					Use:       "reputer-scores [topic_id] [block_height]",
+					Use:       "reputer-scores-at-block [topic_id] [block_height]",
 					Short:     "Return reputer scores at block. Note: the chain only stores up to MaxSamplesToScaleScores many scores per actor type per topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -385,7 +385,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetStakeRemovalForReputerAndTopicId",
-					Use:       "reputer-scores [reputer] [topic_id]",
+					Use:       "stake-removal [reputer] [topic_id]",
 					Short:     "Return stake removal information for reputer in topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "reputer"},
