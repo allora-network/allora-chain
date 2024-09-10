@@ -2,9 +2,8 @@ package math
 
 import (
 	"cmp"
-	"sort"
-
 	"errors"
+	"sort"
 )
 
 // all exponential moving average functions take the form
@@ -21,8 +20,14 @@ func CalcEma(
 	firstTime bool,
 ) (Dec, error) {
 	// If first iteration, then return just the new value
+	if current.isNaN {
+		return ZeroDec(), errors.New("Current EMA operand should be NaN")
+	}
 	if firstTime || current.Equal(previous) {
 		return current, nil
+	}
+	if previous.isNaN {
+		return ZeroDec(), errors.New("Previous EMA operand should be NaN")
 	}
 	alphaCurrent, err := alpha.Mul(current)
 	if err != nil {
@@ -83,12 +88,23 @@ func StdDev(data []Dec) (Dec, error) {
 	}
 
 	mean := ZeroDec()
+	var count int64 // To count valid numbers
 	var err error
+
+	// Calculate the mean, excluding NaN values
 	for _, v := range data {
+		if v.isNaN { // Check if the value is NaN
+			continue // Skip NaN values
+		}
 		mean, err = mean.Add(v)
 		if err != nil {
 			return Dec{}, err
 		}
+		count++ // Increment count of valid numbers
+	}
+
+	if count == 0 {
+		return ZeroDec(), nil // Return ZeroDec if all values were NaN
 	}
 	lenData := NewDecFromInt64(int64(len(data)))
 	mean, err = mean.Quo(lenData)
@@ -131,6 +147,12 @@ func StdDev(data []Dec) (Dec, error) {
 
 // Median calculates the median of a slice of `Dec`
 func Median(data []Dec) (Dec, error) {
+	for _, v := range data {
+		if v.isNaN {
+			return Dec{}, errors.New("input data contains NaN values")
+		}
+	}
+
 	n := len(data)
 	if n == 0 {
 		return ZeroDec(), nil
@@ -159,6 +181,10 @@ func Median(data []Dec) (Dec, error) {
 // Implements the new gradient function phi prime
 // φ'_p(x) = p / (exp(p * (c - x)) + 1)
 func Gradient(p, c, x Dec) (Dec, error) {
+	if p.isNaN || c.isNaN || x.isNaN {
+		return Dec{}, errors.New("input values must not be NaN")
+	}
+
 	// Calculate c - x
 	cMinusX, err := c.Sub(x)
 	if err != nil {
@@ -195,6 +221,9 @@ func Gradient(p, c, x Dec) (Dec, error) {
 // Implements the potential function phi for the module
 // ϕ_p(x) = ln(1 + e^(p * (x - c)))
 func Phi(p, c, x Dec) (Dec, error) {
+	if p.isNaN || c.isNaN || x.isNaN {
+		return Dec{}, errors.New("input values must not be NaN")
+	}
 	// Calculate p * (x - c)
 	xMinusC, err := x.Sub(c)
 	if err != nil {
@@ -228,6 +257,11 @@ func Phi(p, c, x Dec) (Dec, error) {
 
 // CumulativeSum calculates the cumulative sum of an array of Dec values.
 func CumulativeSum(arr []Dec) ([]Dec, error) {
+	for _, val := range arr {
+		if val.isNaN {
+			return nil, errors.New("input array contains NaN values")
+		}
+	}
 	result := make([]Dec, len(arr))
 	sum := ZeroDec()
 
@@ -244,6 +278,21 @@ func CumulativeSum(arr []Dec) ([]Dec, error) {
 
 // LinearInterpolation performs linear interpolation on Dec values.
 func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
+	for _, xi := range x {
+		if xi.isNaN {
+			return nil, errors.New("input x contains NaN values")
+		}
+	}
+	for _, xpi := range xp {
+		if xpi.isNaN {
+			return nil, errors.New("input xp contains NaN values")
+		}
+	}
+	for _, fpi := range fp {
+		if fpi.isNaN {
+			return nil, errors.New("input fp contains NaN values")
+		}
+	}
 	if len(xp) != len(fp) {
 		return nil, errors.New("xp and fp must have the same length")
 	}
@@ -290,6 +339,21 @@ func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
 
 // WeightedPercentile calculates weighted percentiles of Dec values.
 func WeightedPercentile(data, weights, percentiles []Dec) ([]Dec, error) {
+	for _, d := range data {
+		if d.isNaN {
+			return nil, errors.New("input data contains NaN values")
+		}
+	}
+	for _, w := range weights {
+		if w.isNaN {
+			return nil, errors.New("input weights contain NaN values")
+		}
+	}
+	for _, p := range percentiles {
+		if p.isNaN {
+			return nil, errors.New("input percentiles contain NaN values")
+		}
+	}
 	if len(weights) != len(data) {
 		return nil, errors.New("the length of data and weights must be the same")
 	}
