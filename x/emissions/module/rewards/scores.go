@@ -158,6 +158,7 @@ func GenerateInferenceScores(
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 		newScores = append(newScores, newScore)
+		types.EmitNewInfererScoresSetEvent(ctx, newScores)
 		return newScores, nil
 	}
 	topic, err := keeper.GetTopic(ctx, topicId)
@@ -234,6 +235,7 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 		newScores = append(newScores, newScore)
+		types.EmitNewForecasterScoresSetEvent(ctx, newScores)
 		return newScores, nil
 	}
 
