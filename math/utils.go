@@ -20,14 +20,14 @@ func CalcEma(
 	firstTime bool,
 ) (Dec, error) {
 	// If first iteration, then return just the new value
-	if firstTime || current.Equal(previous) || previous.isNaN {
-		if current.isNaN {
-			return ZeroDec(), errors.New("at least one ema operand should not be NaN")
-		}
+	if current.isNaN {
+		return ZeroDec(), errors.New("Current EMA operand should be NaN")
+	}
+	if firstTime || current.Equal(previous) {
 		return current, nil
 	}
-	if current.isNaN {
-		return previous, nil
+	if previous.isNaN {
+		return ZeroDec(), errors.New("Previous EMA operand should be NaN")
 	}
 	alphaCurrent, err := alpha.Mul(current)
 	if err != nil {
