@@ -19,16 +19,15 @@ func CalcEma(
 	previous Dec,
 	firstTime bool,
 ) (Dec, error) {
-	// don't allow computation on NaN values
-	if current.isNaN {
-		return Dec{}, errors.New("calcEma current value must not be NaN")
-	}
-	if previous.isNaN {
-		return Dec{}, errors.New("calcEma previous value must not be NaN")
-	}
 	// If first iteration, then return just the new value
+	if current.isNaN {
+		return ZeroDec(), errors.New("Current EMA operand should be NaN")
+	}
 	if firstTime || current.Equal(previous) {
 		return current, nil
+	}
+	if previous.isNaN {
+		return ZeroDec(), errors.New("Previous EMA operand should be NaN")
 	}
 	alphaCurrent, err := alpha.Mul(current)
 	if err != nil {
