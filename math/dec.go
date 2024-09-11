@@ -108,10 +108,10 @@ func MustNewDecFromString(s string) Dec {
 func NewNonNegativeDecFromString(s string) (Dec, error) {
 	d, err := NewDecFromString(s)
 	if err != nil {
-		return Dec{}, ErrInvalidDecString.Wrap(err.Error())
+		return Dec{}, errorsmod.Wrap(ErrInvalidDecString, err.Error())
 	}
 	if d.IsNegative() {
-		return Dec{}, ErrInvalidDecString.Wrapf("expected a non-negative decimal, got %s", s)
+		return Dec{}, errorsmod.Wrapf(ErrInvalidDecString, "expected a non-negative decimal, got %s", s)
 	}
 	return d, nil
 }
@@ -127,7 +127,7 @@ func NewNonNegativeFixedDecFromString(s string, max uint32) (Dec, error) {
 		return Dec{}, err
 	}
 	if d.NumDecimalPlaces() > max {
-		return Dec{}, fmt.Errorf("%s exceeds maximum decimal places: %d", s, max)
+		return Dec{}, errorsmod.Wrapf(ErrInvalidDecString, "%s exceeds maximum decimal places: %d", s, max)
 	}
 	return d, nil
 }
@@ -138,10 +138,10 @@ func NewNonNegativeFixedDecFromString(s string, max uint32) (Dec, error) {
 func NewPositiveDecFromString(s string) (Dec, error) {
 	d, err := NewDecFromString(s)
 	if err != nil {
-		return Dec{}, ErrInvalidDecString.Wrap(err.Error())
+		return Dec{}, errorsmod.Wrap(ErrInvalidDecString, err.Error())
 	}
 	if !d.IsPositive() || !d.IsFinite() {
-		return Dec{}, ErrInvalidDecString.Wrapf("expected a positive decimal, got %s", s)
+		return Dec{}, errorsmod.Wrapf(ErrInvalidDecString, "expected a positive decimal, got %s", s)
 	}
 	return d, nil
 }
@@ -157,7 +157,7 @@ func NewPositiveFixedDecFromString(s string, max uint32) (Dec, error) {
 		return Dec{}, err
 	}
 	if d.NumDecimalPlaces() > max {
-		return Dec{}, fmt.Errorf("%s exceeds maximum decimal places: %d", s, max)
+		return Dec{}, errorsmod.Wrapf(ErrInvalidDecString, "%s exceeds maximum decimal places: %d", s, max)
 	}
 	return d, nil
 }
