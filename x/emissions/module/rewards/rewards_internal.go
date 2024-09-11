@@ -1,6 +1,7 @@
 package rewards
 
 import (
+	"fmt"
 	"sort"
 
 	"cosmossdk.io/errors"
@@ -815,12 +816,18 @@ func ExtractValues(bundle *types.ValueBundle) []alloraMath.Dec {
 		return bundle.InfererValues[i].Worker < bundle.InfererValues[j].Worker
 	})
 	for _, v := range bundle.InfererValues {
+		if v.Value.IsNaN() {
+			fmt.Printf("INFERERVALUES Value is Nan \n")
+		}
 		values = append(values, v.Value)
 	}
 	sort.Slice(bundle.ForecasterValues, func(i, j int) bool {
 		return bundle.ForecasterValues[i].Worker < bundle.ForecasterValues[j].Worker
 	})
 	for _, v := range bundle.ForecasterValues {
+		if v.Value.IsNaN() {
+			fmt.Printf("FCVALUES Value is Nan \n")
+		}
 		values = append(values, v.Value)
 	}
 	sort.Slice(bundle.OneOutInfererForecasterValues, func(i, j int) bool {

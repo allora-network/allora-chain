@@ -500,6 +500,247 @@ func GetNetworkLossFromCsv(
 	}, nil
 }
 
+func GetEmptyReputerValueBundles(reputers []string, topicId uint64) emissionstypes.ReputerValueBundles {
+	var valueBundles []*emissionstypes.ReputerValueBundle
+	for _, reputer := range reputers {
+		bundle := GetEmptyReputerValueBundle(reputer, topicId)
+		valueBundles = append(valueBundles, bundle)
+	}
+
+	return emissionstypes.ReputerValueBundles{
+		ReputerValueBundles: valueBundles,
+	}
+}
+
+func GetEmptyReputerValueBundle(reputer string, topicId uint64) *emissionstypes.ReputerValueBundle {
+	return &emissionstypes.ReputerValueBundle{
+		ValueBundle: &emissionstypes.ValueBundle{
+			TopicId:                       topicId,
+			Reputer:                       reputer,
+			CombinedValue:                 alloraMath.NewNaN(),
+			InfererValues:                 []*emissionstypes.WorkerAttributedValue{},
+			NaiveValue:                    alloraMath.NewNaN(),
+			ForecasterValues:              []*emissionstypes.WorkerAttributedValue{},
+			OneOutInfererForecasterValues: []*emissionstypes.OneOutInfererForecasterValues{},
+			OneOutInfererValues:           []*emissionstypes.WithheldWorkerAttributedValue{},
+			OneOutForecasterValues:        []*emissionstypes.WithheldWorkerAttributedValue{},
+			OneInForecasterValues:         []*emissionstypes.WorkerAttributedValue{},
+		},
+	}
+}
+
+func GetReputersDataNaN(
+	topicId uint64,
+	inferers []string,
+	forecasters []string,
+	reputers []string,
+	epochGet func(header string) alloraMath.Dec,
+) (emissionstypes.ReputerValueBundles, error) {
+	if len(inferers) != 5 {
+		return emissionstypes.ReputerValueBundles{}, fmt.Errorf("expected 5 inferers, got %d", len(inferers))
+	}
+	if len(forecasters) != 3 {
+		return emissionstypes.ReputerValueBundles{}, fmt.Errorf("expected 3 forecasters, got %d", len(forecasters))
+	}
+	if len(reputers) != 5 {
+		return emissionstypes.ReputerValueBundles{}, fmt.Errorf("expected 5 reputers, got %d", len(reputers))
+	}
+	return emissionstypes.ReputerValueBundles{
+		ReputerValueBundles: []*emissionstypes.ReputerValueBundle{
+			{
+				ValueBundle: &emissionstypes.ValueBundle{
+					TopicId:       topicId,
+					Reputer:       reputers[0],
+					CombinedValue: epochGet("reputer_0_loss_network_inference"),
+					InfererValues: []*emissionstypes.WorkerAttributedValue{
+						{
+							Worker: inferers[0],
+							Value:  epochGet("reputer_0_loss_inference_0"),
+						},
+						{
+							Worker: inferers[1],
+							Value:  epochGet("reputer_0_loss_inference_1"),
+						},
+						{
+							Worker: "allo13pejkc3t9cnf92e3d8m3mm825jwcejq2jttttt",
+							Value:  epochGet("reputer_0_loss_inference_2"),
+						},
+					},
+					NaiveValue: epochGet("reputer_0_loss_naive_network_inference"),
+					ForecasterValues: []*emissionstypes.WorkerAttributedValue{
+						{
+							Worker: forecasters[0],
+							Value:  epochGet("reputer_0_loss_forecast_implied_inference_0"),
+						},
+						{
+							Worker: forecasters[1],
+							Value:  epochGet("reputer_0_loss_forecast_implied_inference_1"),
+						},
+					},
+					OneOutInfererForecasterValues: []*emissionstypes.OneOutInfererForecasterValues{
+						{
+							Forecaster: forecasters[0],
+							OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+								{
+									Worker: inferers[0],
+									Value:  epochGet("reputer_0_loss_forecast_implied_inference_0_oneout_0"),
+								},
+								{
+									Worker: inferers[1],
+									Value:  epochGet("reputer_0_loss_forecast_implied_inference_0_oneout_1"),
+								},
+							},
+						},
+						{
+							Forecaster: forecasters[1],
+							OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+								{
+									Worker: inferers[0],
+									Value:  epochGet("reputer_0_loss_forecast_implied_inference_1_oneout_0"),
+								},
+								{
+									Worker: inferers[1],
+									Value:  epochGet("reputer_0_loss_forecast_implied_inference_1_oneout_1"),
+								},
+							},
+						},
+						{
+							Forecaster: forecasters[2],
+							OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+								{
+									Worker: inferers[0],
+									Value:  epochGet("reputer_0_loss_forecast_implied_inference_2_oneout_0"),
+								},
+								{
+									Worker: inferers[1],
+									Value:  epochGet("reputer_0_loss_forecast_implied_inference_2_oneout_1"),
+								},
+							},
+						},
+					},
+					OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+						// {
+						// 	Worker: inferers[0],
+						// 	Value:  epochGet("reputer_0_loss_network_inference_oneout_0"),
+						// },
+						// {
+						// 	Worker: inferers[1],
+						// 	Value:  epochGet("reputer_0_loss_network_inference_oneout_1"),
+						// },
+					},
+					OneOutForecasterValues: []*emissionstypes.WithheldWorkerAttributedValue{
+						{
+							Worker: forecasters[0],
+							Value:  epochGet("reputer_0_loss_network_inference_oneout_5"),
+						},
+						{
+							Worker: forecasters[1],
+							Value:  epochGet("reputer_0_loss_network_inference_oneout_6"),
+						},
+					},
+					OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
+						{
+							Worker: forecasters[0],
+							Value:  epochGet("reputer_0_loss_naive_network_inference_onein_0"),
+						},
+						{
+							Worker: forecasters[1],
+							Value:  epochGet("reputer_0_loss_naive_network_inference_onein_1"),
+						},
+					},
+				},
+			},
+			{
+				ValueBundle: &emissionstypes.ValueBundle{
+					TopicId:       topicId,
+					Reputer:       reputers[1],
+					CombinedValue: epochGet("reputer_1_loss_network_inference"),
+					InfererValues: []*emissionstypes.WorkerAttributedValue{
+						{
+							Worker: inferers[3],
+							Value:  epochGet("reputer_1_loss_inference_3"),
+						},
+						{
+							Worker: inferers[4],
+							Value:  epochGet("reputer_1_loss_inference_4"),
+						},
+					},
+					NaiveValue: epochGet("reputer_1_loss_naive_network_inference"),
+					ForecasterValues: []*emissionstypes.WorkerAttributedValue{
+						{
+							Worker: forecasters[2],
+							Value:  epochGet("reputer_1_loss_forecast_implied_inference_2"),
+						},
+					},
+					OneOutInfererForecasterValues: []*emissionstypes.OneOutInfererForecasterValues{
+						{
+							Forecaster: forecasters[0],
+							OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+								{
+									Worker: inferers[3],
+									Value:  epochGet("reputer_1_loss_forecast_implied_inference_0_oneout_3"),
+								},
+								{
+									Worker: inferers[4],
+									Value:  epochGet("reputer_1_loss_forecast_implied_inference_0_oneout_4"),
+								},
+							},
+						},
+						{
+							Forecaster: forecasters[1],
+							OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+								{
+									Worker: inferers[3],
+									Value:  epochGet("reputer_1_loss_forecast_implied_inference_1_oneout_3"),
+								},
+								{
+									Worker: inferers[4],
+									Value:  epochGet("reputer_1_loss_forecast_implied_inference_1_oneout_4"),
+								},
+							},
+						},
+						{
+							Forecaster: forecasters[2],
+							OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+								{
+									Worker: inferers[3],
+									Value:  epochGet("reputer_1_loss_forecast_implied_inference_2_oneout_3"),
+								},
+								{
+									Worker: inferers[4],
+									Value:  epochGet("reputer_1_loss_forecast_implied_inference_2_oneout_4"),
+								},
+							},
+						},
+					},
+					OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
+						{
+							Worker: inferers[3],
+							Value:  epochGet("reputer_1_loss_network_inference_oneout_3"),
+						},
+						{
+							Worker: inferers[4],
+							Value:  epochGet("reputer_1_loss_network_inference_oneout_4"),
+						},
+					},
+					OneOutForecasterValues: []*emissionstypes.WithheldWorkerAttributedValue{
+						{
+							Worker: forecasters[2],
+							Value:  epochGet("reputer_1_loss_network_inference_oneout_7"),
+						},
+					},
+					OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
+						{
+							Worker: forecasters[2],
+							Value:  epochGet("reputer_1_loss_naive_network_inference_onein_2"),
+						},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
 func GetReputersDataFromCsv(
 	topicId uint64,
 	inferers []string,
@@ -548,7 +789,7 @@ func GetReputersDataFromCsv(
 					NaiveValue: epochGet("reputer_0_loss_naive_network_inference"),
 					ForecasterValues: []*emissionstypes.WorkerAttributedValue{
 						{
-							Worker: forecasters[0],
+							Worker: "allo1wzqp7hle75z9axswq66c8kzuqu45lc92aa2aaa",
 							Value:  epochGet("reputer_0_loss_forecast_implied_inference_0"),
 						},
 						{

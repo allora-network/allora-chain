@@ -1,6 +1,8 @@
 package rewards
 
 import (
+	"fmt"
+
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -32,7 +34,6 @@ func GenerateReputerScores(
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
 	}
-
 	// Fetch reputers data
 	var reputers []string
 	var reputerStakes []alloraMath.Dec
@@ -86,7 +87,7 @@ func GenerateReputerScores(
 		return []types.Score{}, errors.Wrapf(err, "Error getting GetAllReputersOutput")
 	}
 
-	// Insert new coeffients and scores
+	// Insert new coefficients and scores
 	var newScores []types.Score
 	var emaScores []types.Score
 	for i, reputer := range reputers {
@@ -380,6 +381,7 @@ func EnsureWorkerPresence(reportedLosses types.ReputerValueBundles) types.Repute
 func createNaNWithheldValues(workers map[string]struct{}) []*types.WithheldWorkerAttributedValue {
 	var values []*types.WithheldWorkerAttributedValue
 	for worker := range workers {
+		fmt.Printf("Adding NaN for worker %s \n", worker)
 		values = append(values, &types.WithheldWorkerAttributedValue{
 			Worker: worker,
 			Value:  alloraMath.NewNaN(),
@@ -404,6 +406,7 @@ func EnsureAllWorkersPresent(
 
 	for _, worker := range sortedWorkers {
 		if !foundWorkers[worker] {
+			fmt.Printf("Adding NaN for worker %s \n", worker)
 			values = append(values, &types.WorkerAttributedValue{
 				Worker: worker,
 				Value:  alloraMath.NewNaN(),
@@ -430,6 +433,7 @@ func EnsureAllWorkersPresentWithheld(
 
 	for _, worker := range sortedWorkers {
 		if !foundWorkers[worker] {
+			fmt.Printf("Adding NaN for worker %s \n", worker)
 			values = append(values, &types.WithheldWorkerAttributedValue{
 				Worker: worker,
 				Value:  alloraMath.NewNaN(),

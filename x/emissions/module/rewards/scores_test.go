@@ -2,6 +2,7 @@ package rewards_test
 
 import (
 	"encoding/hex"
+	"fmt"
 	"math/rand"
 	"strconv"
 
@@ -13,6 +14,351 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+func (s *RewardsTestSuite) TestGenerateReputerScores_WithNaN() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch300Get := epochGet[300]
+	epoch301Get := epochGet[301]
+	block := int64(1003)
+
+	newTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
+
+	reputer0 := s.addrs[0].String()
+	reputer1 := s.addrs[1].String()
+	reputer2 := s.addrs[1].String()
+	reputer3 := s.addrs[1].String()
+	reputerAddresses := []string{reputer0, reputer1}
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
+	cosmosOneE18Dec, err := alloraMath.NewDecFromSdkInt(cosmosOneE18)
+	s.Require().NoError(err)
+
+	reputer0Stake, err := epoch301Get("reputer_stake_0").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer0StakeInt, err := reputer0Stake.BigInt()
+	s.Require().NoError(err)
+	reputer1Stake, err := epoch301Get("reputer_stake_1").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer1StakeInt, err := reputer1Stake.BigInt()
+	s.Require().NoError(err)
+
+	var stakes = []cosmosMath.Int{
+		cosmosMath.NewIntFromBigInt(reputer0StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer1StakeInt),
+	}
+	var coefficients = []alloraMath.Dec{
+		epoch300Get("reputer_listening_coefficient_0"),
+		epoch300Get("reputer_listening_coefficient_1"),
+	}
+	for i, addr := range reputerAddresses {
+		addrBech, err := sdk.AccAddressFromBech32(addr)
+		s.Require().NoError(err)
+
+		s.MintTokensToAddress(addrBech, stakes[i])
+
+		err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId, addr, stakes[i])
+		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId,
+			addr,
+			types.ListeningCoefficient{Coefficient: coefficients[i]},
+		)
+		s.Require().NoError(err)
+	}
+
+	// Setup: Create a context and a keeper mock
+	ctx := s.ctx // Use the context from the test suite
+	keeper := s.emissionsKeeper
+
+	// Create reported losses with NaN values
+	reportedLosses := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			{
+				ValueBundle: &types.ValueBundle{
+					InfererValues: []*types.WorkerAttributedValue{
+						{Worker: reputer0, Value: alloraMath.NewDecFromInt64(10)},
+					},
+					ForecasterValues: []*types.WorkerAttributedValue{
+						{Worker: reputer2, Value: alloraMath.NewDecFromInt64(10)},
+					},
+				},
+			},
+			{
+				ValueBundle: &types.ValueBundle{
+					InfererValues: []*types.WorkerAttributedValue{
+						{Worker: reputer2, Value: alloraMath.NewDecFromInt64(10)},
+					},
+					ForecasterValues: []*types.WorkerAttributedValue{
+						{Worker: reputer3, Value: alloraMath.NewDecFromInt64(10)},
+					},
+				},
+			},
+		},
+	}
+
+	// Call the GenerateReputerScores function
+	scores, err := rewards.GenerateReputerScores(ctx, keeper, 1, block, reportedLosses)
+
+	// Check for errors
+	s.Require().NoError(err, "Expected no error from GenerateReputerScores")
+
+	// Check if scores contain NaN values
+	for _, score := range scores {
+		s.Require().True(score.Score.IsNaN(), "Expected score to be NaN")
+	}
+
+	// Check if quantiles contain NaN values
+	topicEmaScoreQuantile, err := keeper.GetPreviousTopicQuantileReputerScoreEma(ctx, 1)
+	s.Require().NoError(err, "Expected no error when getting quantile")
+	s.Require().True(topicEmaScoreQuantile.IsNaN(), "Expected quantile to be NaN")
+
+}
+
+func (s *RewardsTestSuite) TestGetReputersScoresEmptyReputerBundle() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch300Get := epochGet[300]
+	epoch301Get := epochGet[301]
+	block := int64(1003)
+
+	newTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
+
+	reputer0 := s.addrs[0].String()
+	reputer1 := s.addrs[1].String()
+	reputerAddresses := []string{reputer0, reputer1}
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
+	cosmosOneE18Dec, err := alloraMath.NewDecFromSdkInt(cosmosOneE18)
+	s.Require().NoError(err)
+
+	reputer0Stake, err := epoch301Get("reputer_stake_0").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer0StakeInt, err := reputer0Stake.BigInt()
+	s.Require().NoError(err)
+	reputer1Stake, err := epoch301Get("reputer_stake_1").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer1StakeInt, err := reputer1Stake.BigInt()
+	s.Require().NoError(err)
+
+	var stakes = []cosmosMath.Int{
+		cosmosMath.NewIntFromBigInt(reputer0StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer1StakeInt),
+	}
+	var coefficients = []alloraMath.Dec{
+		epoch300Get("reputer_listening_coefficient_0"),
+		epoch300Get("reputer_listening_coefficient_1"),
+	}
+	for i, addr := range reputerAddresses {
+		addrBech, err := sdk.AccAddressFromBech32(addr)
+		s.Require().NoError(err)
+
+		s.MintTokensToAddress(addrBech, stakes[i])
+
+		err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId, addr, stakes[i])
+		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId,
+			addr,
+			types.ListeningCoefficient{Coefficient: coefficients[i]},
+		)
+		s.Require().NoError(err)
+	}
+	// -- changes here
+	reportedLosses := testutil.GetEmptyReputerValueBundles(
+		reputerAddresses,
+		topicId)
+
+	scores, err := rewards.GenerateReputerScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		reportedLosses,
+	)
+	s.Require().NoError(err)
+	for _, score := range scores {
+		s.Require().False(score.Score.IsNaN(), "Expected score to not be NaN")
+		s.Require().Contains(reputerAddresses, score.Address)
+	}
+	fmt.Printf("Scores: %v", scores)
+}
+
+func (s *RewardsTestSuite) TestGetReputersScoresNaN() {
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epoch300Get := epochGet[300]
+	epoch301Get := epochGet[301]
+	block := int64(1003)
+
+	newTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
+
+	reputer0 := s.addrs[0].String()
+	reputer1 := s.addrs[1].String()
+	reputer2 := s.addrs[2].String()
+	reputer3 := s.addrs[3].String()
+	reputer4 := s.addrs[4].String()
+	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
+	fmt.Printf("Reputer address: %v\n", reputerAddresses)
+	inferer0 := s.addrs[5].String()
+	inferer1 := s.addrs[6].String()
+	inferer2 := s.addrs[7].String()
+	inferer3 := s.addrs[8].String()
+	inferer4 := s.addrs[9].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	forecaster0 := s.addrs[10].String()
+	forecaster1 := s.addrs[11].String()
+	forecaster2 := s.addrs[12].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
+	cosmosOneE18Dec, err := alloraMath.NewDecFromSdkInt(cosmosOneE18)
+	s.Require().NoError(err)
+
+	reputer0Stake, err := epoch301Get("reputer_stake_0").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer0StakeInt, err := reputer0Stake.BigInt()
+	s.Require().NoError(err)
+	reputer1Stake, err := epoch301Get("reputer_stake_1").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer1StakeInt, err := reputer1Stake.BigInt()
+	s.Require().NoError(err)
+	reputer2Stake, err := epoch301Get("reputer_stake_2").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer2StakeInt, err := reputer2Stake.BigInt()
+	s.Require().NoError(err)
+	reputer3Stake, err := epoch301Get("reputer_stake_3").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer3StakeInt, err := reputer3Stake.BigInt()
+	s.Require().NoError(err)
+	reputer4Stake, err := epoch301Get("reputer_stake_4").Mul(cosmosOneE18Dec)
+	s.Require().NoError(err)
+	reputer4StakeInt, err := reputer4Stake.BigInt()
+	s.Require().NoError(err)
+
+	var stakes = []cosmosMath.Int{
+		cosmosMath.NewIntFromBigInt(reputer0StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer1StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer2StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer3StakeInt),
+		cosmosMath.NewIntFromBigInt(reputer4StakeInt),
+	}
+	var coefficients = []alloraMath.Dec{
+		epoch300Get("reputer_listening_coefficient_0"),
+		epoch300Get("reputer_listening_coefficient_1"),
+		epoch300Get("reputer_listening_coefficient_2"),
+		epoch300Get("reputer_listening_coefficient_3"),
+		epoch300Get("reputer_listening_coefficient_4"),
+	}
+	for i, addr := range reputerAddresses {
+		addrBech, err := sdk.AccAddressFromBech32(addr)
+		s.Require().NoError(err)
+
+		s.MintTokensToAddress(addrBech, stakes[i])
+
+		err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId, addr, stakes[i])
+		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.SetListeningCoefficient(
+			s.ctx,
+			topicId,
+			addr,
+			types.ListeningCoefficient{Coefficient: coefficients[i]},
+		)
+		s.Require().NoError(err)
+	}
+
+	reportedLosses, err := testutil.GetReputersDataNaN(
+		topicId,
+		infererAddresses,
+		forecasterAddresses,
+		reputerAddresses,
+		epoch301Get,
+	)
+	reportedLosses.ReputerValueBundles = append(reportedLosses.ReputerValueBundles, testutil.GetEmptyReputerValueBundle("allo1test", topicId))
+	// fmt.Printf("reportedLosses: %v", reportedLosses)
+
+	// Generate new re
+	// Generate new reputer scores
+	scores, err := rewards.GenerateReputerScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		reportedLosses,
+	)
+	s.Require().NoError(err)
+	fmt.Printf("Scores: %v", scores)
+	for _, score := range scores {
+		s.Require().False(score.Score.IsNaN(), "Expected score to not be NaN")
+	}
+
+	// expectedScores := []alloraMath.Dec{
+	// 	epoch301Get("reputer_score_0"),
+	// 	epoch301Get("reputer_score_1"),
+	// 	epoch301Get("reputer_score_2"),
+	// 	epoch301Get("reputer_score_3"),
+	// 	epoch301Get("reputer_score_4"),
+	// }
+	// for i, reputerScore := range scores {
+	// 	testutil.InEpsilon5(s.T(), reputerScore.Score, expectedScores[i].String())
+	// }
+
+}
 
 func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
