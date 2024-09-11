@@ -45,6 +45,7 @@ var (
 	ErrOverflow           = errorsmod.Register(mathCodespace, 5, "overflow")
 	ErrNaN                = errorsmod.Register(mathCodespace, 6, "NaN not permitted in this context")
 	ErrNotMatchingLength  = errorsmod.Register(mathCodespace, 7, "slices are not of the same length")
+	ErrOutOfRange         = errorsmod.Register(mathCodespace, 8, "value is out of range")
 )
 
 // The number 0 encoded as Dec
@@ -108,10 +109,10 @@ func MustNewDecFromString(s string) Dec {
 func NewNonNegativeDecFromString(s string) (Dec, error) {
 	d, err := NewDecFromString(s)
 	if err != nil {
-		return Dec{}, ErrInvalidDecString.Wrap(err.Error())
+		return Dec{}, errorsmod.Wrap(ErrInvalidDecString, err.Error())
 	}
 	if d.IsNegative() {
-		return Dec{}, ErrInvalidDecString.Wrapf("expected a non-negative decimal, got %s", s)
+		return Dec{}, errorsmod.Wrapf(ErrInvalidDecString, "expected a non-negative decimal, got %s", s)
 	}
 	return d, nil
 }
@@ -127,7 +128,7 @@ func NewNonNegativeFixedDecFromString(s string, max uint32) (Dec, error) {
 		return Dec{}, err
 	}
 	if d.NumDecimalPlaces() > max {
-		return Dec{}, fmt.Errorf("%s exceeds maximum decimal places: %d", s, max)
+		return Dec{}, errorsmod.Wrapf(ErrInvalidDecString, "%s exceeds maximum decimal places: %d", s, max)
 	}
 	return d, nil
 }
@@ -138,10 +139,10 @@ func NewNonNegativeFixedDecFromString(s string, max uint32) (Dec, error) {
 func NewPositiveDecFromString(s string) (Dec, error) {
 	d, err := NewDecFromString(s)
 	if err != nil {
-		return Dec{}, ErrInvalidDecString.Wrap(err.Error())
+		return Dec{}, errorsmod.Wrap(ErrInvalidDecString, err.Error())
 	}
 	if !d.IsPositive() || !d.IsFinite() {
-		return Dec{}, ErrInvalidDecString.Wrapf("expected a positive decimal, got %s", s)
+		return Dec{}, errorsmod.Wrapf(ErrInvalidDecString, "expected a positive decimal, got %s", s)
 	}
 	return d, nil
 }
@@ -157,7 +158,7 @@ func NewPositiveFixedDecFromString(s string, max uint32) (Dec, error) {
 		return Dec{}, err
 	}
 	if d.NumDecimalPlaces() > max {
-		return Dec{}, fmt.Errorf("%s exceeds maximum decimal places: %d", s, max)
+		return Dec{}, errorsmod.Wrapf(ErrInvalidDecString, "%s exceeds maximum decimal places: %d", s, max)
 	}
 	return d, nil
 }
@@ -750,62 +751,4 @@ func (x Dec) Reduce() (Dec, int) {
 	y := Dec{}
 	_, n := y.dec.Reduce(&x.dec)
 	return y, n
-}
-
-// helper function for test suites that want to check
-// if some math is within a delta
-func InDelta(expected, result Dec, epsilon Dec) (bool, error) {
-	if expected.IsNaN() || result.IsNaN() {
-		return false, errorsmod.Wrap(ErrNaN, "cannot compare NaN")
-	}
-	delta, err := expected.Sub(result)
-	if err != nil {
-		return false, nil
-	}
-	deltaAbs, err := delta.Abs()
-	if err != nil {
-		return false, errorsmod.Wrap(err, "error getting absolute value")
-	}
-	compare := deltaAbs.Cmp(epsilon)
-	if compare == LessThan || compare == EqualTo {
-		return true, nil
-	}
-	return false, nil
-}
-
-// Helper function to compare two slices of alloraMath.Dec within a delta
-func SlicesInDelta(a, b []Dec, epsilon Dec) (bool, error) {
-	lenA := len(a)
-	if lenA != len(b) {
-		return false, errorsmod.Wrap(ErrNotMatchingLength, "cannot check if slices are within delta")
-	}
-	for i := 0; i < lenA; i++ {
-		// for performance reasons we do not call InDelta
-		// pass by copy causes this to run slow af for large slices
-		delta, err := a[i].Sub(b[i])
-		if err != nil {
-			return false, errorsmod.Wrapf(err, "error subtracting %v from %v", b[i], a[i])
-		}
-		deltaAbs, err := delta.Abs()
-		if err != nil {
-			return false, errorsmod.Wrap(err, "error getting absolute value")
-		}
-		if deltaAbs.Cmp(epsilon) == GreaterThan {
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
-// Generic Sum function, given an array of values returns its sum
-func SumDecSlice(x []Dec) (Dec, error) {
-	sum := ZeroDec()
-	var err error
-	for _, v := range x {
-		sum, err = sum.Add(v)
-		if err != nil {
-			return Dec{}, errorsmod.Wrapf(err, "error adding %v + %v", v, sum)
-		}
-	}
-	return sum, nil
 }
