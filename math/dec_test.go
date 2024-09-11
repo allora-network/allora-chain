@@ -1024,6 +1024,7 @@ func TestNewDecFromSdkLegacyDec(t *testing.T) {
 	aDec, err := alloraMath.NewDecFromSdkLegacyDec(aLegacyDec)
 	require.NoError(t, err)
 	aDecFromString, err := alloraMath.NewDecFromString("1337.123456789")
+	require.NoError(t, err)
 	require.True(t,
 		aDec.Equal(aDecFromString),
 		"%s != %s",
