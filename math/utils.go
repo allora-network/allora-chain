@@ -2,8 +2,9 @@ package math
 
 import (
 	"cmp"
-	"errors"
 	"sort"
+
+	errorsmod "cosmossdk.io/errors"
 )
 
 // all exponential moving average functions take the form
@@ -21,13 +22,16 @@ func CalcEma(
 ) (Dec, error) {
 	// If first iteration, then return just the new value
 	if current.isNaN {
-		return ZeroDec(), errors.New("Current EMA operand should be NaN")
+		return ZeroDec(), errorsmod.Wrap(ErrNaN, "CalcEma current EMA operand should not be NaN")
 	}
 	if firstTime || current.Equal(previous) {
 		return current, nil
 	}
 	if previous.isNaN {
-		return ZeroDec(), errors.New("Previous EMA operand should be NaN")
+		return ZeroDec(), errorsmod.Wrap(ErrNaN, "CalcEma previous EMA operand should not be NaN")
+	}
+	if alpha.isNaN {
+		return ZeroDec(), errorsmod.Wrap(ErrNaN, "CalcEma alpha EMA operand should not be NaN")
 	}
 	alphaCurrent, err := alpha.Mul(current)
 	if err != nil {
@@ -61,6 +65,7 @@ func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 
 // Generic function that sorts the keys of a map.
 // Used for deterministic ranging of arrays with weights in a map
+// the keys are sorted by the value they map to, in descending order
 // whose keys may not include some values in the array.
 // When an array element is not in the map, it is not included in the output array.
 func GetSortedElementsByDecWeightDesc[K cmp.Ordered](m map[K]*Dec) []K {
@@ -94,7 +99,7 @@ func StdDev(data []Dec) (Dec, error) {
 	// Calculate the mean, excluding NaN values
 	for _, v := range data {
 		if v.isNaN { // Check if the value is NaN
-			continue // Skip NaN values
+			return Dec{}, errorsmod.Wrap(ErrNaN, "stddev input data contains NaN values")
 		}
 		mean, err = mean.Add(v)
 		if err != nil {
@@ -149,7 +154,7 @@ func StdDev(data []Dec) (Dec, error) {
 func Median(data []Dec) (Dec, error) {
 	for _, v := range data {
 		if v.isNaN {
-			return Dec{}, errors.New("input data contains NaN values")
+			return Dec{}, errorsmod.Wrap(ErrNaN, "median input data contains NaN values")
 		}
 	}
 
@@ -182,7 +187,7 @@ func Median(data []Dec) (Dec, error) {
 // φ'_p(x) = p / (exp(p * (c - x)) + 1)
 func Gradient(p, c, x Dec) (Dec, error) {
 	if p.isNaN || c.isNaN || x.isNaN {
-		return Dec{}, errors.New("input values must not be NaN")
+		return Dec{}, errorsmod.Wrap(ErrNaN, "gradient input values must not be NaN")
 	}
 
 	// Calculate c - x
@@ -222,7 +227,7 @@ func Gradient(p, c, x Dec) (Dec, error) {
 // ϕ_p(x) = ln(1 + e^(p * (x - c)))
 func Phi(p, c, x Dec) (Dec, error) {
 	if p.isNaN || c.isNaN || x.isNaN {
-		return Dec{}, errors.New("input values must not be NaN")
+		return Dec{}, errorsmod.Wrap(ErrNaN, "phi input values must not be NaN")
 	}
 	// Calculate p * (x - c)
 	xMinusC, err := x.Sub(c)
@@ -259,7 +264,7 @@ func Phi(p, c, x Dec) (Dec, error) {
 func CumulativeSum(arr []Dec) ([]Dec, error) {
 	for _, val := range arr {
 		if val.isNaN {
-			return nil, errors.New("input array contains NaN values")
+			return nil, errorsmod.Wrap(ErrNaN, "cumulative sum input array contains NaN values")
 		}
 	}
 	result := make([]Dec, len(arr))
@@ -280,21 +285,21 @@ func CumulativeSum(arr []Dec) ([]Dec, error) {
 func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
 	for _, xi := range x {
 		if xi.isNaN {
-			return nil, errors.New("input x contains NaN values")
+			return nil, errorsmod.Wrap(ErrNaN, "linear interpolation input x contains NaN values")
 		}
 	}
 	for _, xpi := range xp {
 		if xpi.isNaN {
-			return nil, errors.New("input xp contains NaN values")
+			return nil, errorsmod.Wrap(ErrNaN, "linear interpolation input xp contains NaN values")
 		}
 	}
 	for _, fpi := range fp {
 		if fpi.isNaN {
-			return nil, errors.New("input fp contains NaN values")
+			return nil, errorsmod.Wrap(ErrNaN, "linear interpolation input fp contains NaN values")
 		}
 	}
 	if len(xp) != len(fp) {
-		return nil, errors.New("xp and fp must have the same length")
+		return nil, errorsmod.Wrap(ErrNotMatchingLength, "linear interpolation input xp and fp must have the same length")
 	}
 	result := make([]Dec, len(x))
 	for i, xi := range x {
@@ -341,27 +346,27 @@ func LinearInterpolation(x, xp, fp []Dec) ([]Dec, error) {
 func WeightedPercentile(data, weights, percentiles []Dec) ([]Dec, error) {
 	for _, d := range data {
 		if d.isNaN {
-			return nil, errors.New("input data contains NaN values")
+			return nil, errorsmod.Wrap(ErrNaN, "weighted percentile input data contains NaN values")
 		}
 	}
 	for _, w := range weights {
 		if w.isNaN {
-			return nil, errors.New("input weights contain NaN values")
+			return nil, errorsmod.Wrap(ErrNaN, "weighted percentile input weights contain NaN values")
 		}
 	}
 	for _, p := range percentiles {
 		if p.isNaN {
-			return nil, errors.New("input percentiles contain NaN values")
+			return nil, errorsmod.Wrap(ErrNaN, "weighted percentile input percentiles contain NaN values")
 		}
 	}
 	if len(weights) != len(data) {
-		return nil, errors.New("the length of data and weights must be the same")
+		return nil, errorsmod.Wrap(ErrNotMatchingLength, "weighted percentile input data and weights must have the same length")
 	}
 	hundred := MustNewDecFromString("100")
 	zero := ZeroDec()
 	for _, p := range percentiles {
 		if p.Gt(hundred) || p.Lt(zero) {
-			return nil, errors.New("percentile must have a value between 0 and 100")
+			return nil, errorsmod.Wrap(ErrOutOfRange, "percentile must have a value between 0 and 100")
 		}
 	}
 
@@ -420,4 +425,62 @@ func WeightedPercentile(data, weights, percentiles []Dec) ([]Dec, error) {
 	}
 
 	return result, nil
+}
+
+// helper function for test suites that want to check
+// if some math is within a delta
+func InDelta(expected, result Dec, epsilon Dec) (bool, error) {
+	if expected.IsNaN() || result.IsNaN() {
+		return false, errorsmod.Wrap(ErrNaN, "cannot compare NaN")
+	}
+	delta, err := expected.Sub(result)
+	if err != nil {
+		return false, nil
+	}
+	deltaAbs, err := delta.Abs()
+	if err != nil {
+		return false, errorsmod.Wrap(err, "error getting absolute value")
+	}
+	compare := deltaAbs.Cmp(epsilon)
+	if compare == LessThan || compare == EqualTo {
+		return true, nil
+	}
+	return false, nil
+}
+
+// Helper function to compare two slices of alloraMath.Dec within a delta
+func SlicesInDelta(a, b []Dec, epsilon Dec) (bool, error) {
+	lenA := len(a)
+	if lenA != len(b) {
+		return false, errorsmod.Wrap(ErrNotMatchingLength, "cannot check if slices are within delta")
+	}
+	for i := 0; i < lenA; i++ {
+		// for performance reasons we do not call InDelta
+		// pass by copy causes this to run slow af for large slices
+		delta, err := a[i].Sub(b[i])
+		if err != nil {
+			return false, errorsmod.Wrapf(err, "error subtracting %v from %v", b[i], a[i])
+		}
+		deltaAbs, err := delta.Abs()
+		if err != nil {
+			return false, errorsmod.Wrap(err, "error getting absolute value")
+		}
+		if deltaAbs.Cmp(epsilon) == GreaterThan {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+// Generic Sum function, given an array of values returns its sum
+func SumDecSlice(x []Dec) (Dec, error) {
+	sum := ZeroDec()
+	var err error
+	for _, v := range x {
+		sum, err = sum.Add(v)
+		if err != nil {
+			return Dec{}, errorsmod.Wrapf(err, "error adding %v + %v", v, sum)
+		}
+	}
+	return sum, nil
 }

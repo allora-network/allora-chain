@@ -59,8 +59,10 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	}
 
 	for i, reputerReward := range reputerRewards {
+		inDelta, err := alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01"))
+		s.Require().NoError(err)
 		s.Require().True(
-			alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01")),
+			inDelta,
 			"expected: %s, got: %s",
 			expectedRewards[i].String(),
 			reputerReward.Reward.String(),
@@ -274,8 +276,10 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	}
 
 	for i, reputerReward := range reputerRewards {
+		inDelta, err := alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01"))
+		s.Require().NoError(err)
 		s.Require().True(
-			alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01")),
+			inDelta,
 			"expected: %s, got: %s",
 			expectedRewards[i].String(),
 			reputerReward.Reward.String(),

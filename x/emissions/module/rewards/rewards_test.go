@@ -794,7 +794,18 @@ func areTaskRewardsEqualIgnoringTopicId(s *RewardsTestSuite, A []types.TaskRewar
 					s.Fail("Worker %v found twice", taskRewardA.Address)
 				}
 				found = true
-				if !alloraMath.InDelta(taskRewardA.Reward, taskRewardB.Reward, alloraMath.MustNewDecFromString("0.00001")) {
+				inDelta, err := alloraMath.InDelta(
+					taskRewardA.Reward,
+					taskRewardB.Reward,
+					alloraMath.MustNewDecFromString("0.00001"),
+				)
+				if err != nil {
+					s.Fail("Error finding out if taskRewardA in delta with taskRewardB",
+						taskRewardA.Reward.String(),
+						taskRewardB.Reward.String(),
+					)
+				}
+				if !inDelta {
 					return false
 				}
 			}
@@ -1332,12 +1343,14 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 			s.Require().NoError(err)
 		}
 	}
+	inDelta, err := alloraMath.InDelta(
+		firstTotalReputerReward,
+		calcFirstTotalReputerReward,
+		alloraMath.MustNewDecFromString("0.0001"),
+	)
+	s.Require().NoError(err)
 	s.Require().True(
-		alloraMath.InDelta(
-			firstTotalReputerReward,
-			calcFirstTotalReputerReward,
-			alloraMath.MustNewDecFromString("0.0001"),
-		),
+		inDelta,
 		"expected: %s, got: %s",
 		firstTotalReputerReward.String(),
 		calcFirstTotalReputerReward.String(),
@@ -1475,12 +1488,14 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 			s.Require().NoError(err)
 		}
 	}
+	inDelta, err = alloraMath.InDelta(
+		secondTotalReputerReward,
+		calcSecondTotalReputerReward,
+		alloraMath.MustNewDecFromString("0.0001"),
+	)
+	s.Require().NoError(err)
 	s.Require().True(
-		alloraMath.InDelta(
-			secondTotalReputerReward,
-			calcSecondTotalReputerReward,
-			alloraMath.MustNewDecFromString("0.0001"),
-		),
+		inDelta,
 		"expected: %s, got: %s",
 		secondTotalReputerReward.String(),
 		calcSecondTotalReputerReward.String(),

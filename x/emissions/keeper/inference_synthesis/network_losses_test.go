@@ -54,7 +54,9 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 				s.Require().ErrorIs(err, tc.expectedErr, "Error should match the expected error")
 			} else {
 				s.Require().NoError(err, "No error expected but got one")
-				s.Require().True(alloraMath.InDelta(tc.expectedLoss.UnnormalizedWeightedLoss, updatedLoss.UnnormalizedWeightedLoss, alloraMath.MustNewDecFromString("0.00001")), "UnnormalizedWeightedLoss should match the expected value within epsilon")
+				inDelta, err := alloraMath.InDelta(tc.expectedLoss.UnnormalizedWeightedLoss, updatedLoss.UnnormalizedWeightedLoss, alloraMath.MustNewDecFromString("0.00001"))
+				s.Require().NoError(err)
+				s.Require().True(inDelta, "UnnormalizedWeightedLoss should match the expected value within epsilon")
 				s.Require().Equal(tc.expectedLoss.SumWeight, updatedLoss.SumWeight, "Sum of weights should match the expected value")
 			}
 		})
