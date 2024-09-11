@@ -38,6 +38,28 @@ func TestCalcEmaWithNoPrior(t *testing.T) {
 	require.True(t, inDelta)
 }
 
+func TestCalcEmaWithNaN(t *testing.T) {
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	current := alloraMath.MustNewDecFromString("300")
+	previous := alloraMath.NewNaN()
+
+	_, err := alloraMath.CalcEma(alpha, current, previous, false)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	previous = alloraMath.MustNewDecFromString("200")
+	current = alloraMath.NewNaN()
+	_, err = alloraMath.CalcEma(alpha, current, previous, false)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	current = alloraMath.MustNewDecFromString("300")
+	alpha = alloraMath.NewNaN()
+	_, err = alloraMath.CalcEma(alpha, current, previous, false)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
 func TestStdDev(t *testing.T) {
 	tests := []struct {
 		name string
@@ -84,6 +106,12 @@ func TestStdDevOneValueShouldBeZero(t *testing.T) {
 	)
 	require.NoError(t, err)
 	require.True(t, inDelta)
+}
+
+func TestStdDevWithNaN(t *testing.T) {
+	_, err := alloraMath.StdDev([]alloraMath.Dec{alloraMath.OneDec(), alloraMath.NewNaN(), alloraMath.ZeroDec()})
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
 }
 
 func TestPhiSimple(t *testing.T) {
@@ -164,6 +192,12 @@ func TestGradient(t *testing.T) {
 	}
 }
 
+func TestGradientWithNaN(t *testing.T) {
+	_, err := alloraMath.Gradient(alloraMath.MustNewDecFromString("2"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("1"))
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
 func TestMedian(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -225,6 +259,12 @@ func TestMedian(t *testing.T) {
 	}
 }
 
+func TestMedianWithNaN(t *testing.T) {
+	_, err := alloraMath.Median([]alloraMath.Dec{alloraMath.OneDec(), alloraMath.NewNaN(), alloraMath.ZeroDec()})
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
 func TestWeightedInferences(t *testing.T) {
 	data := []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("1"),
@@ -259,6 +299,41 @@ func TestWeightedInferences(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, inDelta)
 	}
+}
+
+func TestPhiWithNaN(t *testing.T) {
+	_, err := alloraMath.Phi(alloraMath.MustNewDecFromString("2"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("1"))
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestCumulativeSumWithNaN(t *testing.T) {
+	_, err := alloraMath.CumulativeSum([]alloraMath.Dec{alloraMath.OneDec(), alloraMath.NewNaN(), alloraMath.ZeroDec()})
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestLinearInterpolationWithNaN(t *testing.T) {
+	x := []alloraMath.Dec{alloraMath.MustNewDecFromString("2"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("1")}
+	xp := []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("3")}
+	fp := []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("3")}
+	_, err := alloraMath.LinearInterpolation(x, xp, fp)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	x = []alloraMath.Dec{alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("1")}
+	xp = []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.NewNaN(), alloraMath.MustNewDecFromString("3")}
+	fp = []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("3")}
+	_, err = alloraMath.LinearInterpolation(x, xp, fp)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	x = []alloraMath.Dec{alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("1")}
+	xp = []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.MustNewDecFromString("3")}
+	fp = []alloraMath.Dec{alloraMath.MustNewDecFromString("1"), alloraMath.MustNewDecFromString("2"), alloraMath.NewNaN()}
+	_, err = alloraMath.LinearInterpolation(x, xp, fp)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
 }
 
 func TestWeightedInferences2(t *testing.T) {
@@ -299,4 +374,123 @@ func TestWeightedInferences2(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, inDelta)
 	}
+}
+
+func TestWeightedPercentileWithNaN(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("20"),
+		alloraMath.NewNaN(),
+		alloraMath.MustNewDecFromString("40"),
+		alloraMath.MustNewDecFromString("50"),
+	}
+	weights := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+		alloraMath.MustNewDecFromString("0.3"),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.5"),
+	}
+	percentiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("25"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.MustNewDecFromString("75"),
+		alloraMath.MustNewDecFromString("90"),
+	}
+	_, err := alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	data = []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("20"),
+		alloraMath.MustNewDecFromString("30"),
+		alloraMath.MustNewDecFromString("40"),
+		alloraMath.MustNewDecFromString("50"),
+	}
+	weights = []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+		alloraMath.NewNaN(),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.5"),
+	}
+	_, err = alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+
+	weights = []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+		alloraMath.MustNewDecFromString("0.3"),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.5"),
+	}
+	percentiles = []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("10"),
+		alloraMath.MustNewDecFromString("25"),
+		alloraMath.MustNewDecFromString("50"),
+		alloraMath.NewNaN(),
+		alloraMath.MustNewDecFromString("90"),
+	}
+	_, err = alloraMath.WeightedPercentile(data, weights, percentiles)
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrNaN)
+}
+
+func TestGetSortedKeys(t *testing.T) {
+	m := map[int32]struct{}{
+		5: {},
+		3: {},
+		2: {},
+		4: {},
+		1: {},
+	}
+
+	expected := []int32{1, 2, 3, 4, 5}
+	keys := alloraMath.GetSortedKeys[int32](m)
+	require.Equal(t, expected, keys)
+
+	m2 := map[string]struct{}{
+		"5.5":  {},
+		"3.25": {},
+		"2.1":  {},
+		"4.75": {},
+		"1":    {},
+	}
+	expected2 := []string{
+		"1",
+		"2.1",
+		"3.25",
+		"4.75",
+		"5.5",
+	}
+	keys2 := alloraMath.GetSortedKeys(m2)
+	require.Equal(t, expected2, keys2)
+}
+
+func TestGetSortedKeysWithEmptyMap(t *testing.T) {
+	m := map[int32]struct{}{}
+	keys := alloraMath.GetSortedKeys(m)
+	require.Equal(t, []int32{}, keys)
+}
+
+func TestGetSortedElementsByDecWeightDesc(t *testing.T) {
+	dec1 := alloraMath.MustNewDecFromString("0.5")
+	dec2 := alloraMath.MustNewDecFromString("0.2")
+	dec3 := alloraMath.MustNewDecFromString("0.1")
+	dec4 := alloraMath.MustNewDecFromString("0.7")
+	dec5 := alloraMath.MustNewDecFromString("0.4")
+	m := map[int32]*alloraMath.Dec{
+		1: &dec1,
+		2: &dec2,
+		3: &dec3,
+		4: &dec4,
+		5: &dec5,
+	}
+
+	expected := []int32{4, 1, 5, 2, 3}
+	keys := alloraMath.GetSortedElementsByDecWeightDesc(m)
+	require.Equal(t, expected, keys)
 }

@@ -22,13 +22,16 @@ func CalcEma(
 ) (Dec, error) {
 	// If first iteration, then return just the new value
 	if current.isNaN {
-		return ZeroDec(), errorsmod.Wrap(ErrNaN, "CalcEma current EMA operand should be NaN")
+		return ZeroDec(), errorsmod.Wrap(ErrNaN, "CalcEma current EMA operand should not be NaN")
 	}
 	if firstTime || current.Equal(previous) {
 		return current, nil
 	}
 	if previous.isNaN {
-		return ZeroDec(), errorsmod.Wrap(ErrNaN, "CalcEma previous EMA operand should be NaN")
+		return ZeroDec(), errorsmod.Wrap(ErrNaN, "CalcEma previous EMA operand should not be NaN")
+	}
+	if alpha.isNaN {
+		return ZeroDec(), errorsmod.Wrap(ErrNaN, "CalcEma alpha EMA operand should not be NaN")
 	}
 	alphaCurrent, err := alpha.Mul(current)
 	if err != nil {
@@ -62,6 +65,7 @@ func GetSortedKeys[K cmp.Ordered, V any](m map[K]V) []K {
 
 // Generic function that sorts the keys of a map.
 // Used for deterministic ranging of arrays with weights in a map
+// the keys are sorted by the value they map to, in descending order
 // whose keys may not include some values in the array.
 // When an array element is not in the map, it is not included in the output array.
 func GetSortedElementsByDecWeightDesc[K cmp.Ordered](m map[K]*Dec) []K {
