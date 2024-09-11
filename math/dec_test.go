@@ -1224,3 +1224,159 @@ func TestSdkLegacyDecFailNaN(t *testing.T) {
 	require.Error(t, err)
 	require.ErrorIs(t, err, alloraMath.ErrNaN)
 }
+
+func TestNeg(t *testing.T) {
+	number := alloraMath.MustNewDecFromString("123")
+	negated, err := number.Neg()
+	require.NoError(t, err)
+	require.Equal(t, "-123", negated.String())
+
+	negatedNumber := alloraMath.MustNewDecFromString("-123")
+	negated, err = negatedNumber.Neg()
+	require.NoError(t, err)
+	require.Equal(t, "123", negated.String())
+
+	aDecimal := alloraMath.MustNewDecFromString("123.5")
+	negated, err = aDecimal.Neg()
+	require.NoError(t, err)
+	require.Equal(t, "-123.5", negated.String())
+
+	aNegativeDecimal := alloraMath.MustNewDecFromString("-123.5")
+	negated, err = aNegativeDecimal.Neg()
+	require.NoError(t, err)
+	require.Equal(t, "123.5", negated.String())
+}
+
+func TestMax(t *testing.T) {
+	max, err := alloraMath.Max(alloraMath.MustNewDecFromString("123"), alloraMath.MustNewDecFromString("124"))
+	require.NoError(t, err)
+	require.Equal(t, "124", max.String())
+
+	max, err = alloraMath.Max(alloraMath.MustNewDecFromString("-123"), alloraMath.MustNewDecFromString("-124"))
+	require.NoError(t, err)
+	require.Equal(t, "-123", max.String())
+}
+
+func TestMin(t *testing.T) {
+	min, err := alloraMath.Min(alloraMath.MustNewDecFromString("123"), alloraMath.MustNewDecFromString("124"))
+	require.NoError(t, err)
+	require.Equal(t, "123", min.String())
+
+	min, err = alloraMath.Min(alloraMath.MustNewDecFromString("-123"), alloraMath.MustNewDecFromString("-124"))
+	require.NoError(t, err)
+	require.Equal(t, "-124", min.String())
+}
+
+func TestUint64(t *testing.T) {
+	num, err := alloraMath.NewDecFromUint64(123)
+	require.NoError(t, err)
+	result, err := num.UInt64()
+	require.NoError(t, err)
+	require.Equal(t, uint64(123), result)
+
+	num, err = alloraMath.NewDecFromUint64(goMath.MaxUint64)
+	require.NoError(t, err)
+	result, err = num.UInt64()
+	require.NoError(t, err)
+	require.Equal(t, uint64(goMath.MaxUint64), result)
+}
+
+func TestUint64FailOverflow(t *testing.T) {
+	num, err := alloraMath.NewDecFromUint64(goMath.MaxUint64)
+	require.NoError(t, err)
+	num, err = num.Add(alloraMath.OneDec())
+	require.NoError(t, err)
+	_, err = num.UInt64()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrOverflow)
+}
+
+func TestUint64FailNegative(t *testing.T) {
+	num := alloraMath.NewDecFromInt64(-1)
+	_, err := num.UInt64()
+	require.Error(t, err)
+	require.ErrorIs(t, err, alloraMath.ErrOverflow)
+}
+
+func TestMarshal(t *testing.T) {
+	dec := alloraMath.MustNewDecFromString("123.456")
+	bytes, err := dec.Marshal()
+	require.NoError(t, err)
+	require.Equal(t, []byte("123.456"), bytes)
+}
+
+func TestMarshalTo(t *testing.T) {
+	testNum := "123.456"
+	dec := alloraMath.MustNewDecFromString(testNum)
+	buf := make([]byte, 10)
+	n, err := dec.MarshalTo(buf)
+	require.NoError(t, err)
+	require.NotZero(t, n)
+	require.Len(t, testNum, n)
+	require.Equal(t, []byte(testNum), buf[:n])
+}
+
+func TestSize(t *testing.T) {
+	dec := alloraMath.MustNewDecFromString("123.456")
+	require.Equal(t, 7, dec.Size())
+}
+
+func TestMarshalNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	bytes, err := nan.Marshal()
+	require.NoError(t, err)
+	require.Equal(t, []byte("NaN"), bytes)
+}
+
+func TestUnmarshalNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	bytes, err := nan.Marshal()
+	require.NoError(t, err)
+	require.Equal(t, []byte("NaN"), bytes)
+}
+
+func TestUnmarshal(t *testing.T) {
+	dec := alloraMath.MustNewDecFromString("123.456")
+	bytes, err := dec.Marshal()
+	require.NoError(t, err)
+
+	unmarshaled := alloraMath.Dec{}
+	require.NoError(t, unmarshaled.Unmarshal(bytes))
+	require.Equal(t, dec, unmarshaled)
+}
+
+func TestMarshalJSON(t *testing.T) {
+	dec := alloraMath.MustNewDecFromString("123.456")
+	json, err := dec.MarshalJSON()
+	require.NoError(t, err)
+	require.Equal(t, "\"123.456\"", string(json))
+}
+
+func TestUnmarshalJSON(t *testing.T) {
+	dec := alloraMath.MustNewDecFromString("123.456")
+	json, err := dec.MarshalJSON()
+	require.NoError(t, err)
+	require.Equal(t, "\"123.456\"", string(json))
+
+	unmarshaled := alloraMath.Dec{}
+	require.NoError(t, unmarshaled.UnmarshalJSON(json))
+	require.Equal(t, dec, unmarshaled)
+}
+
+func TestMarshalJSONNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	json, err := nan.MarshalJSON()
+	require.NoError(t, err)
+	require.Equal(t, "\"NaN\"", string(json))
+}
+
+func TestUnmarshalJSONNaN(t *testing.T) {
+	nan := alloraMath.NewNaN()
+	json, err := nan.MarshalJSON()
+	require.NoError(t, err)
+	require.Equal(t, "\"NaN\"", string(json))
+
+	unmarshaled := alloraMath.Dec{}
+	require.NoError(t, unmarshaled.UnmarshalJSON(json))
+	require.Equal(t, nan, unmarshaled)
+}

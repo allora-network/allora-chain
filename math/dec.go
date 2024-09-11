@@ -7,6 +7,7 @@ package math
 import (
 	"encoding/json"
 	"fmt"
+	goMath "math"
 	"math/big"
 	"math/bits"
 
@@ -485,9 +486,19 @@ func (x Dec) UInt64() (uint64, error) {
 	if x.IsNaN() {
 		return 0, errorsmod.Wrap(ErrNaN, "cannot convert NaN to uint64")
 	}
-	val, err := x.dec.Int64()
-	res := uint64(val)
-	return res, err
+	bigInt, err := x.BigInt()
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "cannot convert to uint64")
+	}
+	bigMaxUint := big.Int{}
+	bigMaxUint.SetUint64(goMath.MaxUint64)
+	if bigInt.Cmp(&bigMaxUint) == GreaterThan {
+		return 0, errorsmod.Wrap(ErrOverflow, "decimal is not representable as an uint64")
+	}
+	if bigInt.Sign() == -1 {
+		return 0, errorsmod.Wrap(ErrOverflow, "negative number cannot be represented in uint64")
+	}
+	return bigInt.Uint64(), nil
 }
 
 // BigInt converts x to a *big.Int or returns an error if x cannot
