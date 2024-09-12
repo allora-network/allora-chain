@@ -68,7 +68,7 @@ func (s *InferenceSynthesisTestSuite) TestComputeAndBuildEMRegret() {
 
 	blockHeight := int64(123)
 
-	result, err := inferencesynthesis.ComputeAndBuildEMRegret(lossA, lossB, previous, alpha, blockHeight)
+	result, err := inferencesynthesis.ComputeAndBuildEMARegret(lossA, lossB, previous, alpha, blockHeight)
 	require.NoError(err)
 
 	expected, err := alloraMath.NewDecFromString("210")

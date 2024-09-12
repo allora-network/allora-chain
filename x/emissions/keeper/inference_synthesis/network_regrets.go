@@ -72,7 +72,7 @@ func ConvertValueBundleToNetworkLossesByWorker(
 	}
 }
 
-func ComputeAndBuildEMRegret(
+func ComputeAndBuildEMARegret(
 	lossA Loss,
 	lossB Loss,
 	previousRegret Regret,
@@ -124,7 +124,7 @@ func GetCalcSetNetworkRegrets(
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get inferer regret")
 		}
-		newInfererRegret, err := ComputeAndBuildEMRegret(
+		newInfererRegret, err := ComputeAndBuildEMARegret(
 			networkLosses.CombinedValue,                             // L_i
 			networkLossesByWorker.InfererLosses[infererLoss.Worker], // L_ij
 			lastRegret.Value,
@@ -153,7 +153,7 @@ func GetCalcSetNetworkRegrets(
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
 		}
-		newForecasterRegret, err := ComputeAndBuildEMRegret(
+		newForecasterRegret, err := ComputeAndBuildEMARegret(
 			networkLosses.CombinedValue,                                   // L_i
 			networkLossesByWorker.ForecasterLosses[forecasterLoss.Worker], // L_ik
 			lastRegret.Value,
@@ -178,7 +178,7 @@ func GetCalcSetNetworkRegrets(
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get inferer regret")
 		}
-		newInfererRegret, err := ComputeAndBuildEMRegret(
+		newInfererRegret, err := ComputeAndBuildEMARegret(
 			networkLosses.NaiveValue,                                // L^-_i
 			networkLossesByWorker.InfererLosses[infererLoss.Worker], // L_ij
 			lastRegret.Value,
@@ -205,7 +205,7 @@ func GetCalcSetNetworkRegrets(
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-out inferer inferer regret")
 			}
-			newOneOutInfererInfererRegret, err := ComputeAndBuildEMRegret(
+			newOneOutInfererInfererRegret, err := ComputeAndBuildEMARegret(
 				networkLossesByWorker.OneOutInfererLosses[oneOutInfererLoss.Worker], // L^-_j'i
 				networkLossesByWorker.InfererLosses[infererLoss.Worker],             // L_ij
 				lastRegret.Value,
@@ -229,7 +229,7 @@ func GetCalcSetNetworkRegrets(
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-out inferer forecaster regret")
 			}
-			newOneOutInfererForecasterRegret, err := ComputeAndBuildEMRegret(
+			newOneOutInfererForecasterRegret, err := ComputeAndBuildEMARegret(
 				networkLossesByWorker.OneOutInfererLosses[oneOutInfererLoss.Worker],                                                   // L^-_j'i
 				networkLossesByWorker.OneOutInfererForecasterLosses[oneOutInfererForecasterLoss.Forecaster][oneOutInfererLoss.Worker], // L^-_j'ik
 				lastRegret.Value,
@@ -257,7 +257,7 @@ func GetCalcSetNetworkRegrets(
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-out forecaster inferer regret")
 			}
-			newOneOutForecasterInfererRegret, err := ComputeAndBuildEMRegret(
+			newOneOutForecasterInfererRegret, err := ComputeAndBuildEMARegret(
 				networkLossesByWorker.OneOutForecasterLosses[oneOutForecasterLoss.Worker], // L^-_k'i
 				networkLossesByWorker.InfererLosses[infererloss.Worker],                   // L_ij
 				lastRegret.Value,
@@ -281,7 +281,7 @@ func GetCalcSetNetworkRegrets(
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-out forecaster forecaster regret")
 			}
-			newOneOutForecasterForecasterRegret, err := ComputeAndBuildEMRegret(
+			newOneOutForecasterForecasterRegret, err := ComputeAndBuildEMARegret(
 				networkLossesByWorker.OneOutForecasterLosses[oneOutForecasterLoss.Worker], // L^-_k'i
 				networkLossesByWorker.ForecasterLosses[forecasterLoss.Worker],             // L_ik
 				lastRegret.Value,
@@ -310,7 +310,7 @@ func GetCalcSetNetworkRegrets(
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 			}
-			newOneInForecasterRegret, err := ComputeAndBuildEMRegret(
+			newOneInForecasterRegret, err := ComputeAndBuildEMARegret(
 				networkLossesByWorker.OneInForecasterLosses[oneInForecasterLoss.Worker], // L^+_k'i
 				networkLossesByWorker.InfererLosses[infererLoss.Worker],                 // L_ij
 				lastRegret.Value,
@@ -330,7 +330,7 @@ func GetCalcSetNetworkRegrets(
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
 		}
-		newOneInForecasterRegret, err := ComputeAndBuildEMRegret(
+		newOneInForecasterRegret, err := ComputeAndBuildEMARegret(
 			networkLossesByWorker.OneInForecasterLosses[oneInForecasterLoss.Worker], // L^+_k'i
 			networkLossesByWorker.ForecasterLosses[oneInForecasterLoss.Worker],      // L_ik'
 			lastRegret.Value,
