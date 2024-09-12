@@ -20,7 +20,7 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 	epoch301Get := epochGet[301]
 	block := int64(1003)
 
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  s.addrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -148,7 +148,7 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 }
 
 func (s *RewardsTestSuite) TestGetInferenceScores() {
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  s.addrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -193,7 +193,9 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 	for i, reputerScore := range scores {
 		scoreDelta, err := reputerScore.Score.Sub(expectedScores[i])
 		s.Require().NoError(err)
-		deltaTightness := scoreDelta.Abs().
+		absScoreDelta, err := scoreDelta.Abs()
+		s.Require().NoError(err)
+		deltaTightness := absScoreDelta.
 			Cmp(alloraMath.MustNewDecFromString("0.00001"))
 		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
 			s.Fail("Expected reward is not equal to the actual reward")
@@ -204,7 +206,7 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  s.addrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -265,7 +267,7 @@ func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 // and the second with higher one out losses.
 // We then compare the resulting scores and check that the higher one out losses result in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  s.addrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -318,7 +320,7 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 
 func (s *RewardsTestSuite) TestGetForecastScores() {
 	block := int64(1003)
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  s.addrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -361,7 +363,9 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 	for i, reputerScore := range scores {
 		delta, err := reputerScore.Score.Sub(expectedScores[i])
 		s.Require().NoError(err)
-		deltaTightness := delta.Abs().Cmp(alloraMath.MustNewDecFromString("0.00001"))
+		absScoreDelta, err := delta.Abs()
+		s.Require().NoError(err)
+		deltaTightness := absScoreDelta.Cmp(alloraMath.MustNewDecFromString("0.00001"))
 		if !(deltaTightness == alloraMath.LessThan || deltaTightness == alloraMath.EqualTo) {
 			s.Fail("Expected reward is not equal to the actual reward")
 		}
@@ -371,7 +375,7 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  s.addrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -431,7 +435,7 @@ func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 // We then compare the resulting forecaster scores and check that the higher one out losses result
 // in higher scores.
 func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  s.addrs[0].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",

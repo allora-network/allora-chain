@@ -50,6 +50,7 @@ func DefaultParams() Params {
 		DataSendingFee:                      cosmosMath.NewInt(10),                        // how much workers and reputers must pay to send payload
 		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
 		MaxActiveTopicsPerBlock:             uint64(1),                                    // maximum number of active topics per block
+		MaxStringLength:                     uint64(255),                                  // maximum length of strings uploaded to the chain
 	}
 }
 
@@ -142,7 +143,7 @@ func (p Params) Validate() error {
 	if err := validateMaxSerializedMsgLength(p.MaxSerializedMsgLength); err != nil {
 		return err
 	}
-	if err := validateBlocksPerMonth(p.BlocksPerMonth); err != nil {
+	if err := ValidateBlocksPerMonth(p.BlocksPerMonth); err != nil {
 		return err
 	}
 	if err := validatePRewardInference(p.PRewardInference); err != nil {
@@ -173,6 +174,9 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateMaxActiveTopicsPerBlock(p.MaxActiveTopicsPerBlock); err != nil {
+		return err
+	}
+	if err := validateMaxStringLength(p.MaxStringLength); err != nil {
 		return err
 	}
 	return nil
@@ -487,7 +491,7 @@ func validateMaxSerializedMsgLength(i int64) error {
 
 // Number of blocks in a month.
 // should be a number on the order of 525,960
-func validateBlocksPerMonth(i uint64) error {
+func ValidateBlocksPerMonth(i uint64) error {
 	if i == 0 {
 		return fmt.Errorf("blocks per month must be positive: %d", i)
 	}
@@ -502,6 +506,12 @@ func validateHalfMaxProcessStakeRemovalsEndBlock(i uint64) error {
 	return nil
 }
 
+// the maximum length of the metadata string when creating a new topic
+// should be non-negative, enforced by uint type
+func validateMaxStringLength(_ uint64) error {
+	return nil
+}
+
 // Whether an alloraDec is between the value of [0, 1] inclusive
 func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
 	return a.Gte(alloraMath.ZeroDec()) && a.Lte(alloraMath.OneDec())
@@ -510,6 +520,12 @@ func isAlloraDecBetweenZeroAndOneInclusive(a alloraMath.Dec) bool {
 // Whether an alloraDec is between the value of (0, 1) exclusive
 func isAlloraDecBetweenZeroAndOneExclusive(a alloraMath.Dec) bool {
 	return a.Gt(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
+}
+
+// Whether an alloraDec is between the values of [0, 1)
+// inclusive on 0 and exclusive on 1
+func isAlloraDecZeroOrLessThanOne(a alloraMath.Dec) bool {
+	return a.Gte(alloraMath.ZeroDec()) && a.Lt(alloraMath.OneDec())
 }
 
 // How much workers and reputers must pay to send data.

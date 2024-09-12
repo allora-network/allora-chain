@@ -43,6 +43,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.0
+
+### Summary
+
+1. Implement a fix for incomplete migration of topic fields from the v0.4.0 upgrade. 
+2. Add additional RPC endpoint to allow for recalculating 
+   the inflation rate / target emission rate more often than once per month.
+3. Update to use rewardable topics as active topics instead of using them separately.
+4. Other miscellaneous minor fixes
+
+### Added
+
+* [#584](https://github.com/allora-network/allora-chain/pull/584) Allow admins to force target emission recalculation on params update and via dedicated mint RPC endpoint
+* [#592](https://github.com/allora-network/allora-chain/pull/592) Update to use rewardable topics as active topics and rename `PickChurnableActiveTopics` to `UpdateNoncesOfActiveTopics`
+
+### Fixed
+
+* [#582](https://github.com/allora-network/allora-chain/pull/582) Additional topic fields validation
+* [#587](https://github.com/allora-network/allora-chain/pull/587) Update Migration Tests to include NaN Initial Regrets Test
+* [#590](https://github.com/allora-network/allora-chain/pull/590) Clear NaN in maps by deleting all map values during migration
+* [#595](https://github.com/allora-network/allora-chain/pull/592) Emit inference and forecast score events in case of 1 actor
+* [#596](https://github.com/allora-network/allora-chain/pull/596) EMA protection against NaN values
+* [#598](https://github.com/allora-network/allora-chain/pull/598) Math Operations on NaNs Should Return Errors
+
+### Security
+
+* [#588](https://github.com/allora-network/allora-chain/pull/588)  Add String Max Length Module Parameter, Enforce Max String Length on Creation of New Topics
+
 ## v0.4.0
 
 ### Summary

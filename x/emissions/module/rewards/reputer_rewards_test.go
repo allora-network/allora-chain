@@ -59,8 +59,10 @@ func (s *RewardsTestSuite) TestGetReputersRewards() {
 	}
 
 	for i, reputerReward := range reputerRewards {
+		inDelta, err := alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01"))
+		s.Require().NoError(err)
 		s.Require().True(
-			alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01")),
+			inDelta,
 			"expected: %s, got: %s",
 			expectedRewards[i].String(),
 			reputerReward.Reward.String(),
@@ -274,8 +276,10 @@ func (s *RewardsTestSuite) TestGetReputersRewardsShouldIncreaseRewardsAfterRemov
 	}
 
 	for i, reputerReward := range reputerRewards {
+		inDelta, err := alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01"))
+		s.Require().NoError(err)
 		s.Require().True(
-			alloraMath.InDelta(expectedRewards[i], reputerReward.Reward, alloraMath.MustNewDecFromString("0.01")),
+			inDelta,
 			"expected: %s, got: %s",
 			expectedRewards[i].String(),
 			reputerReward.Reward.String(),
@@ -655,9 +659,9 @@ func mockReputersData(s *RewardsTestSuite, topicId uint64, block int64, reputerA
 	return reputerValueBundles, nil
 }
 
-func CreateTopic(ctx context.Context, msgServer types.MsgServer, creator string) (uint64, error) {
+func CreateTopic(ctx context.Context, msgServer types.MsgServiceServer, creator string) (uint64, error) {
 	// Create topic
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  creator,
 		Metadata:                 "test",
 		LossMethod:               "mse",

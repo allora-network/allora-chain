@@ -36,12 +36,8 @@ func EmitRewards(
 		return errors.Wrapf(err, "failed to get module params")
 	}
 
-	rewardableTopics, err := k.GetRewardableTopics(ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get rewardable topics")
-	}
 	// Sorted, active topics by weight descending. Still need skim top N to truly be the rewardable topics
-	sortedRewardableTopics := alloraMath.GetSortedElementsByDecWeightDesc(rewardableTopics, weights)
+	sortedRewardableTopics := alloraMath.GetSortedElementsByDecWeightDesc(weights)
 	Logger(ctx).Debug(fmt.Sprintf("Rewardable topics: %v", sortedRewardableTopics))
 
 	if len(sortedRewardableTopics) == 0 {
@@ -84,9 +80,11 @@ func EmitRewards(
 		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
 		// If the topic has no reward nonce, skip it
 		if err != nil || topicRewardNonce == 0 {
+			Logger(ctx).Info(fmt.Sprintf("Topic %d has no valid reward nonce, skipping", topicId))
 			continue
 		}
 
+		Logger(ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", topicId, topicRewardNonce, topicReward))
 		// Distribute rewards between topic participants
 		totalRewardsDistribution, rewardInTopicToReputers, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 		if err != nil {
@@ -135,18 +133,6 @@ func EmitRewards(
 					"Failed to prune records after rewards for Topic, Skipping:\nTopic Id %d\nTopic Reward Amount %s\nError:\n%s\n\n",
 					topicId,
 					topicReward.String(),
-					err.Error(),
-				),
-			)
-			continue
-		}
-
-		err = k.RemoveRewardableTopic(ctx, topicId)
-		if err != nil {
-			Logger(ctx).Warn(
-				fmt.Sprintf(
-					"Failed to remove rewardable topic:\nTopic Id %d\nError:\n%s\n\n",
-					topicId,
 					err.Error(),
 				),
 			)
@@ -564,7 +550,9 @@ func pruneRecordsAfterRewards(
 	// This is to leave the necessary data for the remaining
 	// unfulfilled nonces to be fulfilled
 	oldestNonce -= minEpochLengthRecordLimit * topic.EpochLength
-
+	if oldestNonce < 0 {
+		oldestNonce = 0
+	}
 	// Prune old records after rewards have been paid out
 	err = k.PruneRecordsAfterRewards(ctx, topicId, oldestNonce)
 	if err != nil {

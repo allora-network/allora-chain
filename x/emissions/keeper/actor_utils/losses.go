@@ -194,11 +194,6 @@ func CloseReputerNonce(
 		return err
 	}
 
-	err = k.AddRewardableTopic(ctx, topicId)
-	if err != nil {
-		return err
-	}
-
 	err = k.SetReputerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		return err

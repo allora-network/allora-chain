@@ -11,6 +11,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
 	migrationV2 "github.com/allora-network/allora-chain/x/emissions/migrations/v2"
 	migrationV3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
+	migrationV4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -28,7 +29,7 @@ var (
 )
 
 // ConsensusVersion defines the current module consensus version.
-const ConsensusVersion = 3
+const ConsensusVersion = 4
 
 type AppModule struct {
 	cdc    codec.Codec
@@ -69,7 +70,7 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterMsgServer(cfg.MsgServer(), msgserver.NewMsgServerImpl(am.keeper))
+	types.RegisterMsgServiceServer(cfg.MsgServer(), msgserver.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), queryserver.NewQueryServerImpl(am.keeper))
 
 	if err := cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {
@@ -81,6 +82,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		return migrationV3.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 2 to 3: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 3, func(ctx sdk.Context) error {
+		return migrationV4.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 3 to 4: %v", types.ModuleName, err))
 	}
 }
 

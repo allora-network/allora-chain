@@ -6,7 +6,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddToWhitelistAdmin) (*types.MsgAddToWhitelistAdminResponse, error) {
+func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhitelistAdminRequest) (*types.AddToWhitelistAdminResponse, error) {
 	// Validate the sender address
 	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
 		return nil, err
@@ -28,10 +28,10 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.MsgAddTo
 	if err != nil {
 		return nil, err
 	}
-	return &types.MsgAddToWhitelistAdminResponse{}, nil
+	return &types.AddToWhitelistAdminResponse{}, nil
 }
 
-func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.MsgRemoveFromWhitelistAdmin) (*types.MsgRemoveFromWhitelistAdminResponse, error) {
+func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.RemoveFromWhitelistAdminRequest) (*types.RemoveFromWhitelistAdminResponse, error) {
 	// Validate the sender address
 	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
 		return nil, err
@@ -53,5 +53,5 @@ func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.Msg
 	if err != nil {
 		return nil, err
 	}
-	return &types.MsgRemoveFromWhitelistAdminResponse{}, nil
+	return &types.RemoveFromWhitelistAdminResponse{}, nil
 }

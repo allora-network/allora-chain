@@ -728,7 +728,7 @@ func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context,
 
 /// PARAMETERS
 
-func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
+func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
 	return k.params.Set(ctx, params)
 }
 
@@ -2207,37 +2207,6 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 		return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 	}
 	return nil
-}
-
-// REWARDABLE TOPICS
-
-// Get the rewardable topics
-func (k *Keeper) GetRewardableTopics(ctx context.Context) ([]TopicId, error) {
-	iter, err := k.rewardableTopics.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	topics := make([]TopicId, 0)
-	for ; iter.Valid(); iter.Next() {
-		topicId, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		topics = append(topics, topicId)
-	}
-
-	return topics, nil
-}
-
-// Add a topic as rewardable
-func (k *Keeper) AddRewardableTopic(ctx context.Context, topicId TopicId) error {
-	return k.rewardableTopics.Set(ctx, topicId)
-}
-
-func (k *Keeper) RemoveRewardableTopic(ctx context.Context, topicId TopicId) error {
-	return k.rewardableTopics.Remove(ctx, topicId)
 }
 
 /// SCORES

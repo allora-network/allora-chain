@@ -64,7 +64,7 @@ type KeeperTestSuite struct {
 	bankKeeper      bankkeeper.BaseKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
-	msgServer       types.MsgServer
+	msgServer       types.MsgServiceServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
@@ -179,11 +179,11 @@ func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
 
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
-	// Create a MsgCreateNewTopic message
+	// Create a CreateNewTopicRequest message
 
 	creator := sdk.AccAddress(PKS[0].Address())
 
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  creator.String(),
 		Metadata:                 metadata,
 		LossMethod:               "method",
@@ -1933,7 +1933,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 	keeper := s.emissionsKeeper
 
 	params := types.Params{
-		Version:                         "v0.3.0",
+		Version:                         "v0.5.0",
 		MinTopicWeight:                  alloraMath.NewDecFromInt64(100),
 		RequiredMinimumStake:            cosmosMath.NewInt(1),
 		RemoveStakeDelayWindow:          172800,
@@ -2424,36 +2424,6 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	// Verify initial revenue
 	feeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
-}
-
-/// REWARDABLE TOPICS
-
-func (s *KeeperTestSuite) TestRewardableTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(789)
-	topicId2 := uint64(101112)
-
-	// Add rewardable topics
-	err := keeper.AddRewardableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	err = keeper.AddRewardableTopic(ctx, topicId2)
-	s.Require().NoError(err)
-
-	// Ensure the topics are retrieved
-	retrievedIds, err := keeper.GetRewardableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(retrievedIds, 2, "Should retrieve all rewardable topics")
-
-	// Reset the rewardable topics
-	err = keeper.RemoveRewardableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	// Ensure no topics remain
-	remainingIds, err := keeper.GetRewardableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(remainingIds, 1)
 }
 
 /// SCORES

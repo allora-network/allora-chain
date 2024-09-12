@@ -266,35 +266,3 @@ func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
 	s.Require().NoError(err, "Should not error when retrieving existing revenue")
 	s.Require().Equal(feeRev.String(), initialRevenueInt.String(), "Revenue should match the initial setup")
 }
-
-func (s *QueryServerTestSuite) TestGetRewardableTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(789)
-	topicId2 := uint64(101112)
-
-	// Add rewardable topics
-	err := keeper.AddRewardableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	err = keeper.AddRewardableTopic(ctx, topicId2)
-	s.Require().NoError(err)
-
-	// Ensure the topics are retrieved
-	req := &types.QueryRewardableTopicsRequest{}
-	response, err := s.queryServer.GetRewardableTopics(ctx, req)
-	retrievedIds := response.RewardableTopicIds
-	s.Require().NoError(err)
-	s.Require().Len(retrievedIds, 2, "Should retrieve all rewardable topics")
-
-	// Reset the rewardable topics
-	err = keeper.RemoveRewardableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	// Ensure no topics remain
-	req = &types.QueryRewardableTopicsRequest{}
-	response, err = s.queryServer.GetRewardableTopics(ctx, req)
-	remainingIds := response.RewardableTopicIds
-	s.Require().NoError(err)
-	s.Require().Len(remainingIds, 1)
-}

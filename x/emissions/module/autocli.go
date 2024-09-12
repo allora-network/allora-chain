@@ -2,7 +2,8 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	statev3 "github.com/allora-network/allora-chain/x/emissions/api/v3"
+	statev3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
+	statev4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
@@ -44,11 +45,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
 					},
-				},
-				{
-					RpcMethod: "GetRewardableTopics",
-					Use:       "rewardable-topics",
-					Short:     "Get Rewardable Topics",
 				},
 				{
 					RpcMethod: "GetReputerStakeInTopic",
@@ -380,7 +376,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetReputersScoresAtBlock",
-					Use:       "reputer-scores [topic_id] [block_height]",
+					Use:       "reputer-scores-at-block [topic_id] [block_height]",
 					Short:     "Return reputer scores at block. Note: the chain only stores up to MaxSamplesToScaleScores many scores per actor type per topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -389,7 +385,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetStakeRemovalForReputerAndTopicId",
-					Use:       "reputer-scores [reputer] [topic_id]",
+					Use:       "stake-removal [reputer] [topic_id]",
 					Short:     "Return stake removal information for reputer in topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "reputer"},
@@ -666,7 +662,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service: statev3.Msg_ServiceDesc.ServiceName,
+			Service: statev4.MsgService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",

@@ -68,7 +68,6 @@ const (
 	Query_TopicExists_FullMethodName                                 = "/emissions.v3.Query/TopicExists"
 	Query_IsTopicActive_FullMethodName                               = "/emissions.v3.Query/IsTopicActive"
 	Query_GetTopicFeeRevenue_FullMethodName                          = "/emissions.v3.Query/GetTopicFeeRevenue"
-	Query_GetRewardableTopics_FullMethodName                         = "/emissions.v3.Query/GetRewardableTopics"
 	Query_GetInfererScoreEma_FullMethodName                          = "/emissions.v3.Query/GetInfererScoreEma"
 	Query_GetForecasterScoreEma_FullMethodName                       = "/emissions.v3.Query/GetForecasterScoreEma"
 	Query_GetReputerScoreEma_FullMethodName                          = "/emissions.v3.Query/GetReputerScoreEma"
@@ -152,7 +151,6 @@ type QueryClient interface {
 	TopicExists(ctx context.Context, in *QueryTopicExistsRequest, opts ...grpc.CallOption) (*QueryTopicExistsResponse, error)
 	IsTopicActive(ctx context.Context, in *QueryIsTopicActiveRequest, opts ...grpc.CallOption) (*QueryIsTopicActiveResponse, error)
 	GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeRevenueRequest, opts ...grpc.CallOption) (*QueryTopicFeeRevenueResponse, error)
-	GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error)
 	GetInfererScoreEma(ctx context.Context, in *QueryGetInfererScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetInfererScoreEmaResponse, error)
 	GetForecasterScoreEma(ctx context.Context, in *QueryGetForecasterScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetForecasterScoreEmaResponse, error)
 	GetReputerScoreEma(ctx context.Context, in *QueryGetReputerScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetReputerScoreEmaResponse, error)
@@ -631,15 +629,6 @@ func (c *queryClient) GetTopicFeeRevenue(ctx context.Context, in *QueryTopicFeeR
 	return out, nil
 }
 
-func (c *queryClient) GetRewardableTopics(ctx context.Context, in *QueryRewardableTopicsRequest, opts ...grpc.CallOption) (*QueryRewardableTopicsResponse, error) {
-	out := new(QueryRewardableTopicsResponse)
-	err := c.cc.Invoke(ctx, Query_GetRewardableTopics_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *queryClient) GetInfererScoreEma(ctx context.Context, in *QueryGetInfererScoreEmaRequest, opts ...grpc.CallOption) (*QueryGetInfererScoreEmaResponse, error) {
 	out := new(QueryGetInfererScoreEmaResponse)
 	err := c.cc.Invoke(ctx, Query_GetInfererScoreEma_FullMethodName, in, out, opts...)
@@ -937,7 +926,6 @@ type QueryServer interface {
 	TopicExists(context.Context, *QueryTopicExistsRequest) (*QueryTopicExistsResponse, error)
 	IsTopicActive(context.Context, *QueryIsTopicActiveRequest) (*QueryIsTopicActiveResponse, error)
 	GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error)
-	GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error)
 	GetInfererScoreEma(context.Context, *QueryGetInfererScoreEmaRequest) (*QueryGetInfererScoreEmaResponse, error)
 	GetForecasterScoreEma(context.Context, *QueryGetForecasterScoreEmaRequest) (*QueryGetForecasterScoreEmaResponse, error)
 	GetReputerScoreEma(context.Context, *QueryGetReputerScoreEmaRequest) (*QueryGetReputerScoreEmaResponse, error)
@@ -1118,9 +1106,6 @@ func (UnimplementedQueryServer) IsTopicActive(context.Context, *QueryIsTopicActi
 }
 func (UnimplementedQueryServer) GetTopicFeeRevenue(context.Context, *QueryTopicFeeRevenueRequest) (*QueryTopicFeeRevenueResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicFeeRevenue not implemented")
-}
-func (UnimplementedQueryServer) GetRewardableTopics(context.Context, *QueryRewardableTopicsRequest) (*QueryRewardableTopicsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRewardableTopics not implemented")
 }
 func (UnimplementedQueryServer) GetInfererScoreEma(context.Context, *QueryGetInfererScoreEmaRequest) (*QueryGetInfererScoreEmaResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInfererScoreEma not implemented")
@@ -2098,24 +2083,6 @@ func _Query_GetTopicFeeRevenue_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GetRewardableTopics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryRewardableTopicsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).GetRewardableTopics(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Query_GetRewardableTopics_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GetRewardableTopics(ctx, req.(*QueryRewardableTopicsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Query_GetInfererScoreEma_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(QueryGetInfererScoreEmaRequest)
 	if err := dec(in); err != nil {
@@ -2804,10 +2771,6 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicFeeRevenue",
 			Handler:    _Query_GetTopicFeeRevenue_Handler,
-		},
-		{
-			MethodName: "GetRewardableTopics",
-			Handler:    _Query_GetRewardableTopics_Handler,
 		},
 		{
 			MethodName: "GetInfererScoreEma",

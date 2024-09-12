@@ -254,22 +254,32 @@ func ForecastingUtility(
 			maxInfererScore = score.Score
 		}
 	}
-	scoreDenominator := maxInfererScore.Abs()
+	scoreDenominator, err := maxInfererScore.Abs()
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err taking abs of maxInfererScore")
+	}
 	if maxInfererScore.IsZero() {
 		if forecastingTaskUtilityScore.IsZero() {
 			return zeroPointFive, alloraMath.Dec{}, nil
 		} else {
-			scoreDenominator = forecastingTaskUtilityScore.Abs()
+			scoreDenominator, err = forecastingTaskUtilityScore.Abs()
+			if err != nil {
+				return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err taking abs of forecastingTaskUtilityScore")
+			}
 		}
 	}
 
-	scoreNumerator, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(alloraMath.ZeroDec(), maxInfererScore))
+	minBetweenMaxInfererScoreAndZero, err := alloraMath.Min(alloraMath.ZeroDec(), maxInfererScore)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err getting min between 0 and maxInfererScore")
+	}
+	scoreNumerator, err := forecastingTaskUtilityScore.Sub(minBetweenMaxInfererScoreAndZero)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err subtracting maxInfererScore from forecastingTaskUtilityScore")
 	}
 	scoreRatio, err := scoreNumerator.Quo(scoreDenominator)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err dividing scoreNumerator by scoreDenominator")
 	}
 
 	// Calculate alpha * (scoreRatio)
