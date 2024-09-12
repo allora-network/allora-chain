@@ -14,7 +14,7 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	ctx := context.Background()
 	topicIdStart, err := m.Client.QueryEmissions().GetNextTopicId(
 		ctx,
-		&emissionstypes.QueryNextTopicIdRequest{},
+		&emissionstypes.GetNextTopicIdRequest{},
 	)
 	require.NoError(m.T, err)
 	require.Positive(m.T, topicIdStart.NextTopicId)
@@ -46,14 +46,14 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.Equal(m.T, topicIdStart.NextTopicId, topicId)
 	topicIdEnd, err := m.Client.QueryEmissions().GetNextTopicId(
 		ctx,
-		&emissionstypes.QueryNextTopicIdRequest{},
+		&emissionstypes.GetNextTopicIdRequest{},
 	)
 	require.NoError(m.T, err)
 	require.Equal(m.T, topicIdEnd.NextTopicId, topicId+1)
 
 	storedTopicResponse, err := m.Client.QueryEmissions().GetTopic(
 		ctx,
-		&emissionstypes.QueryTopicRequest{
+		&emissionstypes.GetTopicRequest{
 			TopicId: topicId,
 		},
 	)

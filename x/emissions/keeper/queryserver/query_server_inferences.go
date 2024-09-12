@@ -14,7 +14,7 @@ import (
 )
 
 // GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
-func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *emissionstypes.QueryWorkerLatestInferenceRequest) (*emissionstypes.QueryWorkerLatestInferenceResponse, error) {
+func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *emissionstypes.GetWorkerLatestInferenceByTopicIdRequest) (*emissionstypes.GetWorkerLatestInferenceByTopicIdResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.WorkerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -31,10 +31,10 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 		return nil, err
 	}
 
-	return &emissionstypes.QueryWorkerLatestInferenceResponse{LatestInference: &inference}, nil
+	return &emissionstypes.GetWorkerLatestInferenceByTopicIdResponse{LatestInference: &inference}, nil
 }
 
-func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.QueryInferencesAtBlockRequest) (*emissionstypes.QueryInferencesAtBlockResponse, error) {
+func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.GetInferencesAtBlockRequest) (*emissionstypes.GetInferencesAtBlockResponse, error) {
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -47,14 +47,14 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionsty
 		return nil, err
 	}
 
-	return &emissionstypes.QueryInferencesAtBlockResponse{Inferences: inferences}, nil
+	return &emissionstypes.GetInferencesAtBlockResponse{Inferences: inferences}, nil
 }
 
 // Return full set of inferences in I_i from the chain
 func (qs queryServer) GetNetworkInferencesAtBlock(
 	ctx context.Context,
-	req *emissionstypes.QueryNetworkInferencesAtBlockRequest,
-) (*emissionstypes.QueryNetworkInferencesAtBlockResponse, error) {
+	req *emissionstypes.GetNetworkInferencesAtBlockRequest,
+) (*emissionstypes.GetNetworkInferencesAtBlockResponse, error) {
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -73,15 +73,15 @@ func (qs queryServer) GetNetworkInferencesAtBlock(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryNetworkInferencesAtBlockResponse{NetworkInferences: networkInferences}, nil
+	return &emissionstypes.GetNetworkInferencesAtBlockResponse{NetworkInferences: networkInferences}, nil
 }
 
 // Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences
-func (qs queryServer) GetLatestNetworkInference(
+func (qs queryServer) GetLatestNetworkInferences(
 	ctx context.Context,
-	req *emissionstypes.QueryLatestNetworkInferencesRequest,
+	req *emissionstypes.GetLatestNetworkInferencesRequest,
 ) (
-	*emissionstypes.QueryLatestNetworkInferencesResponse,
+	*emissionstypes.GetLatestNetworkInferencesResponse,
 	error,
 ) {
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
@@ -123,7 +123,7 @@ func (qs queryServer) GetLatestNetworkInference(
 	inferers := alloraMath.GetSortedKeys(infererWeights)
 	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
 
-	return &emissionstypes.QueryLatestNetworkInferencesResponse{
+	return &emissionstypes.GetLatestNetworkInferencesResponse{
 		NetworkInferences:                networkInferences,
 		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
 		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
@@ -135,11 +135,11 @@ func (qs queryServer) GetLatestNetworkInference(
 	}, nil
 }
 
-func (qs queryServer) GetLatestAvailableNetworkInference(
+func (qs queryServer) GetLatestAvailableNetworkInferences(
 	ctx context.Context,
-	req *emissionstypes.QueryLatestAvailableNetworkInferencesRequest,
+	req *emissionstypes.GetLatestAvailableNetworkInferencesRequest,
 ) (
-	*emissionstypes.QueryLatestAvailableNetworkInferencesResponse,
+	*emissionstypes.GetLatestAvailableNetworkInferencesResponse,
 	error,
 ) {
 	lastWorkerCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
@@ -185,7 +185,7 @@ func (qs queryServer) GetLatestAvailableNetworkInference(
 	inferers := alloraMath.GetSortedKeys(infererWeights)
 	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
 
-	return &emissionstypes.QueryLatestAvailableNetworkInferencesResponse{
+	return &emissionstypes.GetLatestAvailableNetworkInferencesResponse{
 		NetworkInferences:                networkInferences,
 		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
 		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
@@ -247,9 +247,9 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 
 func (qs queryServer) GetLatestTopicInferences(
 	ctx context.Context,
-	req *emissionstypes.QueryLatestTopicInferencesRequest,
+	req *emissionstypes.GetLatestTopicInferencesRequest,
 ) (
-	*emissionstypes.QueryLatestTopicInferencesResponse,
+	*emissionstypes.GetLatestTopicInferencesResponse,
 	error,
 ) {
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
@@ -264,27 +264,27 @@ func (qs queryServer) GetLatestTopicInferences(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryLatestTopicInferencesResponse{Inferences: inferences, BlockHeight: blockHeight}, nil
+	return &emissionstypes.GetLatestTopicInferencesResponse{Inferences: inferences, BlockHeight: blockHeight}, nil
 }
 
 func (qs queryServer) IsWorkerNonceUnfulfilled(
 	ctx context.Context,
-	req *emissionstypes.QueryIsWorkerNonceUnfulfilledRequest,
+	req *emissionstypes.IsWorkerNonceUnfulfilledRequest,
 ) (
-	*emissionstypes.QueryIsWorkerNonceUnfulfilledResponse,
+	*emissionstypes.IsWorkerNonceUnfulfilledResponse,
 	error,
 ) {
 	isWorkerNonceUnfulfilled, err :=
 		qs.k.IsWorkerNonceUnfulfilled(ctx, req.TopicId, &emissionstypes.Nonce{BlockHeight: req.BlockHeight})
 
-	return &emissionstypes.QueryIsWorkerNonceUnfulfilledResponse{IsWorkerNonceUnfulfilled: isWorkerNonceUnfulfilled}, err
+	return &emissionstypes.IsWorkerNonceUnfulfilledResponse{IsWorkerNonceUnfulfilled: isWorkerNonceUnfulfilled}, err
 }
 
 func (qs queryServer) GetUnfulfilledWorkerNonces(
 	ctx context.Context,
-	req *emissionstypes.QueryUnfulfilledWorkerNoncesRequest,
+	req *emissionstypes.GetUnfulfilledWorkerNoncesRequest,
 ) (
-	*emissionstypes.QueryUnfulfilledWorkerNoncesResponse,
+	*emissionstypes.GetUnfulfilledWorkerNoncesResponse,
 	error,
 ) {
 	unfulfilledNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
@@ -292,14 +292,14 @@ func (qs queryServer) GetUnfulfilledWorkerNonces(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryUnfulfilledWorkerNoncesResponse{Nonces: &unfulfilledNonces}, nil
+	return &emissionstypes.GetUnfulfilledWorkerNoncesResponse{Nonces: &unfulfilledNonces}, nil
 }
 
 func (qs queryServer) GetInfererNetworkRegret(
 	ctx context.Context,
-	req *emissionstypes.QueryInfererNetworkRegretRequest,
+	req *emissionstypes.GetInfererNetworkRegretRequest,
 ) (
-	*emissionstypes.QueryInfererNetworkRegretResponse,
+	*emissionstypes.GetInfererNetworkRegretResponse,
 	error,
 ) {
 	infererNetworkRegret, _, err := qs.k.GetInfererNetworkRegret(ctx, req.TopicId, req.ActorId)
@@ -307,14 +307,14 @@ func (qs queryServer) GetInfererNetworkRegret(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryInfererNetworkRegretResponse{Regret: &infererNetworkRegret}, nil
+	return &emissionstypes.GetInfererNetworkRegretResponse{Regret: &infererNetworkRegret}, nil
 }
 
 func (qs queryServer) GetForecasterNetworkRegret(
 	ctx context.Context,
-	req *emissionstypes.QueryForecasterNetworkRegretRequest,
+	req *emissionstypes.GetForecasterNetworkRegretRequest,
 ) (
-	*emissionstypes.QueryForecasterNetworkRegretResponse,
+	*emissionstypes.GetForecasterNetworkRegretResponse,
 	error,
 ) {
 	forecasterNetworkRegret, _, err := qs.k.GetForecasterNetworkRegret(ctx, req.TopicId, req.Worker)
@@ -322,14 +322,14 @@ func (qs queryServer) GetForecasterNetworkRegret(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryForecasterNetworkRegretResponse{Regret: &forecasterNetworkRegret}, nil
+	return &emissionstypes.GetForecasterNetworkRegretResponse{Regret: &forecasterNetworkRegret}, nil
 }
 
 func (qs queryServer) GetOneInForecasterNetworkRegret(
 	ctx context.Context,
-	req *emissionstypes.QueryOneInForecasterNetworkRegretRequest,
+	req *emissionstypes.GetOneInForecasterNetworkRegretRequest,
 ) (
-	*emissionstypes.QueryOneInForecasterNetworkRegretResponse,
+	*emissionstypes.GetOneInForecasterNetworkRegretResponse,
 	error,
 ) {
 	oneInForecasterNetworkRegret, _, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Inferer)
@@ -337,14 +337,14 @@ func (qs queryServer) GetOneInForecasterNetworkRegret(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryOneInForecasterNetworkRegretResponse{Regret: &oneInForecasterNetworkRegret}, nil
+	return &emissionstypes.GetOneInForecasterNetworkRegretResponse{Regret: &oneInForecasterNetworkRegret}, nil
 }
 
 func (qs queryServer) GetNaiveInfererNetworkRegret(
 	ctx context.Context,
-	req *emissionstypes.QueryNaiveInfererNetworkRegretRequest,
+	req *emissionstypes.GetNaiveInfererNetworkRegretRequest,
 ) (
-	*emissionstypes.QueryNaiveInfererNetworkRegretResponse,
+	*emissionstypes.GetNaiveInfererNetworkRegretResponse,
 	error,
 ) {
 	regret, _, err := qs.k.GetNaiveInfererNetworkRegret(ctx, req.TopicId, req.Inferer)
@@ -352,14 +352,14 @@ func (qs queryServer) GetNaiveInfererNetworkRegret(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryNaiveInfererNetworkRegretResponse{Regret: &regret}, nil
+	return &emissionstypes.GetNaiveInfererNetworkRegretResponse{Regret: &regret}, nil
 }
 
 func (qs queryServer) GetOneOutInfererInfererNetworkRegret(
 	ctx context.Context,
-	req *emissionstypes.QueryOneOutInfererInfererNetworkRegretRequest,
+	req *emissionstypes.GetOneOutInfererInfererNetworkRegretRequest,
 ) (
-	*emissionstypes.QueryOneOutInfererInfererNetworkRegretResponse,
+	*emissionstypes.GetOneOutInfererInfererNetworkRegretResponse,
 	error,
 ) {
 	regret, _, err := qs.k.GetOneOutInfererInfererNetworkRegret(ctx, req.TopicId, req.OneOutInferer, req.Inferer)
@@ -367,14 +367,14 @@ func (qs queryServer) GetOneOutInfererInfererNetworkRegret(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryOneOutInfererInfererNetworkRegretResponse{Regret: &regret}, nil
+	return &emissionstypes.GetOneOutInfererInfererNetworkRegretResponse{Regret: &regret}, nil
 }
 
 func (qs queryServer) GetOneOutInfererForecasterNetworkRegret(
 	ctx context.Context,
-	req *emissionstypes.QueryOneOutInfererForecasterNetworkRegretRequest,
+	req *emissionstypes.GetOneOutInfererForecasterNetworkRegretRequest,
 ) (
-	*emissionstypes.QueryOneOutInfererForecasterNetworkRegretResponse,
+	*emissionstypes.GetOneOutInfererForecasterNetworkRegretResponse,
 	error,
 ) {
 	regret, _, err := qs.k.GetOneOutInfererForecasterNetworkRegret(ctx, req.TopicId, req.OneOutInferer, req.Forecaster)
@@ -382,14 +382,14 @@ func (qs queryServer) GetOneOutInfererForecasterNetworkRegret(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryOneOutInfererForecasterNetworkRegretResponse{Regret: &regret}, nil
+	return &emissionstypes.GetOneOutInfererForecasterNetworkRegretResponse{Regret: &regret}, nil
 }
 
 func (qs queryServer) GetOneOutForecasterInfererNetworkRegret(
 	ctx context.Context,
-	req *emissionstypes.QueryOneOutForecasterInfererNetworkRegretRequest,
+	req *emissionstypes.GetOneOutForecasterInfererNetworkRegretRequest,
 ) (
-	*emissionstypes.QueryOneOutForecasterInfererNetworkRegretResponse,
+	*emissionstypes.GetOneOutForecasterInfererNetworkRegretResponse,
 	error,
 ) {
 	regret, _, err := qs.k.GetOneOutForecasterInfererNetworkRegret(ctx, req.TopicId, req.OneOutForecaster, req.Inferer)
@@ -397,14 +397,14 @@ func (qs queryServer) GetOneOutForecasterInfererNetworkRegret(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryOneOutForecasterInfererNetworkRegretResponse{Regret: &regret}, nil
+	return &emissionstypes.GetOneOutForecasterInfererNetworkRegretResponse{Regret: &regret}, nil
 }
 
 func (qs queryServer) GetOneOutForecasterForecasterNetworkRegret(
 	ctx context.Context,
-	req *emissionstypes.QueryOneOutForecasterForecasterNetworkRegretRequest,
+	req *emissionstypes.GetOneOutForecasterForecasterNetworkRegretRequest,
 ) (
-	*emissionstypes.QueryOneOutForecasterForecasterNetworkRegretResponse,
+	*emissionstypes.GetOneOutForecasterForecasterNetworkRegretResponse,
 	error,
 ) {
 	regret, _, err := qs.k.GetOneOutForecasterForecasterNetworkRegret(ctx, req.TopicId, req.OneOutForecaster, req.Forecaster)
@@ -412,5 +412,5 @@ func (qs queryServer) GetOneOutForecasterForecasterNetworkRegret(
 		return nil, err
 	}
 
-	return &emissionstypes.QueryOneOutForecasterForecasterNetworkRegretResponse{Regret: &regret}, nil
+	return &emissionstypes.GetOneOutForecasterForecasterNetworkRegretResponse{Regret: &regret}, nil
 }

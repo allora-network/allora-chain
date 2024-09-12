@@ -25,7 +25,7 @@ func (s *QueryServerTestSuite) TestGetNetworkLossBundleAtBlock() {
 
 	response, err := queryServer.GetNetworkLossBundleAtBlock(
 		ctx,
-		&types.QueryNetworkLossBundleAtBlockRequest{
+		&types.GetNetworkLossBundleAtBlockRequest{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 		},
@@ -42,7 +42,7 @@ func (s *QueryServerTestSuite) TestIsReputerNonceUnfulfilled() {
 	topicId := uint64(1)
 	newNonce := &types.Nonce{BlockHeight: 42}
 
-	req := &types.QueryIsReputerNonceUnfulfilledRequest{
+	req := &types.IsReputerNonceUnfulfilledRequest{
 		TopicId:     topicId,
 		BlockHeight: newNonce.BlockHeight,
 	}
@@ -67,7 +67,7 @@ func (s *QueryServerTestSuite) TestGetUnfulfilledReputerNonces() {
 	topicId := uint64(1)
 
 	// Initially, ensure no unfulfilled nonces exist
-	req := &types.QueryUnfulfilledReputerNoncesRequest{
+	req := &types.GetUnfulfilledReputerNoncesRequest{
 		TopicId: topicId,
 	}
 	response, err := s.queryServer.GetUnfulfilledReputerNonces(s.ctx, req)
@@ -100,7 +100,7 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 	block := types.BlockHeight(100)
 	reputerLossBundles := types.ReputerValueBundles{}
 
-	req := &types.QueryReputerLossBundlesAtBlockRequest{
+	req := &types.GetReputerLossBundlesAtBlockRequest{
 		TopicId:     topicId,
 		BlockHeight: block,
 	}
@@ -139,7 +139,7 @@ func (s *QueryServerTestSuite) TestGetDeleteDelegateStake() {
 	err := keeper.SetDelegateStakeRemoval(ctx, removalInfo)
 	s.Require().NoError(err)
 
-	req := &types.QueryDelegateStakeRemovalRequest{
+	req := &types.GetDelegateStakeRemovalRequest{
 		BlockHeight: removalInfo.BlockRemovalStarted,
 		TopicId:     removalInfo.TopicId,
 		Reputer:     removalInfo.Reputer,

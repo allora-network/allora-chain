@@ -59,7 +59,7 @@ type QueryServerTestSuite struct {
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
 	msgServer       types.MsgServiceServer
-	queryServer     types.QueryServer
+	queryServer     types.QueryServiceServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string

@@ -14,19 +14,19 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-// TotalStake defines the handler for the Query/TotalStake RPC method.
-func (qs queryServer) GetTotalStake(ctx context.Context, req *types.QueryTotalStakeRequest) (*types.QueryTotalStakeResponse, error) {
+// TotalStake defines the handler for the Get/TotalStake RPC method.
+func (qs queryServer) GetTotalStake(ctx context.Context, req *types.GetTotalStakeRequest) (*types.GetTotalStakeResponse, error) {
 	totalStake, err := qs.k.GetTotalStake(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &types.QueryTotalStakeResponse{Amount: totalStake}, nil
+	return &types.GetTotalStakeResponse{Amount: totalStake}, nil
 }
 
 // Retrieves all stake in a topic for a given reputer address,
 // including reputer's stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
-func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.QueryReputerStakeInTopicRequest) (*types.QueryReputerStakeInTopicResponse, error) {
+func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.GetReputerStakeInTopicRequest) (*types.GetReputerStakeInTopicResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -42,14 +42,13 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Que
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
-	return &types.QueryReputerStakeInTopicResponse{Amount: stake}, nil
+	return &types.GetReputerStakeInTopicResponse{Amount: stake}, nil
 }
 
 // Retrieves all stake in a topic for a given set of reputer addresses,
 // including their stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
-func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *types.QueryMultiReputerStakeInTopicRequest) (*types.QueryMultiReputerStakeInTopicResponse, error) {
+func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *types.GetMultiReputerStakeInTopicRequest) (*types.GetMultiReputerStakeInTopicResponse, error) {
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -79,14 +78,14 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 		stakes[i] = &types.StakeInfo{TopicId: req.TopicId, Reputer: address, Amount: stake}
 	}
 
-	return &types.QueryMultiReputerStakeInTopicResponse{Amounts: stakes}, nil
+	return &types.GetMultiReputerStakeInTopicResponse{Amounts: stakes}, nil
 }
 
 // Retrieves the stake that a reputer has in themselves in a given topic
 // this is computed from the differences in the delegated stake data structure
 // and the total stake data structure. Which means if invariants are ever violated
 // in the data structures for staking, this function will return an incorrect value.
-func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req *types.QueryStakeFromReputerInTopicInSelfRequest) (*types.QueryStakeFromReputerInTopicInSelfResponse, error) {
+func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req *types.GetStakeFromReputerInTopicInSelfRequest) (*types.GetStakeFromReputerInTopicInSelfResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -110,11 +109,11 @@ func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req 
 	if stakeFromReputerInTopicInSelf.IsNegative() {
 		return nil, errors.Wrap(types.ErrInvariantFailure, "stake from reputer in topic in self is negative")
 	}
-	return &types.QueryStakeFromReputerInTopicInSelfResponse{Amount: stakeFromReputerInTopicInSelf}, nil
+	return &types.GetStakeFromReputerInTopicInSelfResponse{Amount: stakeFromReputerInTopicInSelf}, nil
 }
 
 // Retrieves total delegate stake on a given reputer address in a given topic
-func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.QueryDelegateStakeInTopicInReputerRequest) (*types.QueryDelegateStakeInTopicInReputerResponse, error) {
+func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.GetDelegateStakeInTopicInReputerRequest) (*types.GetDelegateStakeInTopicInReputerResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -131,10 +130,10 @@ func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req 
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryDelegateStakeInTopicInReputerResponse{Amount: stake}, nil
+	return &types.GetDelegateStakeInTopicInReputerResponse{Amount: stake}, nil
 }
 
-func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicInReputerRequest) (*types.QueryStakeFromDelegatorInTopicInReputerResponse, error) {
+func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.GetStakeFromDelegatorInTopicInReputerRequest) (*types.GetStakeFromDelegatorInTopicInReputerResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid reputer address: %s", err)
 	}
@@ -158,10 +157,10 @@ func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context,
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &types.QueryStakeFromDelegatorInTopicInReputerResponse{Amount: stakeInt}, nil
+	return &types.GetStakeFromDelegatorInTopicInReputerResponse{Amount: stakeInt}, nil
 }
 
-func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.QueryStakeFromDelegatorInTopicRequest) (*types.QueryStakeFromDelegatorInTopicResponse, error) {
+func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.GetStakeFromDelegatorInTopicRequest) (*types.GetStakeFromDelegatorInTopicResponse, error) {
 	if err := qs.k.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -178,11 +177,11 @@ func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *typ
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryStakeFromDelegatorInTopicResponse{Amount: stake}, nil
+	return &types.GetStakeFromDelegatorInTopicResponse{Amount: stake}, nil
 }
 
 // Retrieves total stake in a given topic
-func (qs queryServer) GetTopicStake(ctx context.Context, req *types.QueryTopicStakeRequest) (*types.QueryTopicStakeResponse, error) {
+func (qs queryServer) GetTopicStake(ctx context.Context, req *types.GetTopicStakeRequest) (*types.GetTopicStakeResponse, error) {
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -195,13 +194,13 @@ func (qs queryServer) GetTopicStake(ctx context.Context, req *types.QueryTopicSt
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryTopicStakeResponse{Amount: stake}, nil
+	return &types.GetTopicStakeResponse{Amount: stake}, nil
 }
 
 func (qs queryServer) GetStakeRemovalsUpUntilBlock(
 	ctx context.Context,
-	req *types.QueryStakeRemovalsUpUntilBlockRequest,
-) (*types.QueryStakeRemovalsUpUntilBlockResponse, error) {
+	req *types.GetStakeRemovalsUpUntilBlockRequest,
+) (*types.GetStakeRemovalsUpUntilBlockResponse, error) {
 	moduleParams, err := qs.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -219,13 +218,13 @@ func (qs queryServer) GetStakeRemovalsUpUntilBlock(
 	for i := 0; i < len(removals); i++ {
 		removalPointers = append(removalPointers, &removals[i])
 	}
-	return &types.QueryStakeRemovalsUpUntilBlockResponse{Removals: removalPointers}, err
+	return &types.GetStakeRemovalsUpUntilBlockResponse{Removals: removalPointers}, err
 }
 
 func (qs queryServer) GetDelegateStakeRemovalsUpUntilBlock(
 	ctx context.Context,
-	req *types.QueryDelegateStakeRemovalsUpUntilBlockRequest,
-) (*types.QueryDelegateStakeRemovalsUpUntilBlockResponse, error) {
+	req *types.GetDelegateStakeRemovalsUpUntilBlockRequest,
+) (*types.GetDelegateStakeRemovalsUpUntilBlockResponse, error) {
 	moduleParams, err := qs.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -243,13 +242,13 @@ func (qs queryServer) GetDelegateStakeRemovalsUpUntilBlock(
 	for i := 0; i < len(removals); i++ {
 		removalPointers = append(removalPointers, &removals[i])
 	}
-	return &types.QueryDelegateStakeRemovalsUpUntilBlockResponse{Removals: removalPointers}, err
+	return &types.GetDelegateStakeRemovalsUpUntilBlockResponse{Removals: removalPointers}, err
 }
 
 func (qs queryServer) GetStakeRemovalInfo(
 	ctx context.Context,
-	req *types.QueryStakeRemovalInfoRequest,
-) (*types.QueryStakeRemovalInfoResponse, error) {
+	req *types.GetStakeRemovalInfoRequest,
+) (*types.GetStakeRemovalInfoResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	if err := qs.k.ValidateStringIsBech32(req.Reputer); err != nil {
@@ -270,13 +269,13 @@ func (qs queryServer) GetStakeRemovalInfo(
 	if !found {
 		return nil, status.Error(codes.NotFound, "no stake removal found")
 	}
-	return &types.QueryStakeRemovalInfoResponse{Removal: &removal}, err
+	return &types.GetStakeRemovalInfoResponse{Removal: &removal}, err
 }
 
 func (qs queryServer) GetDelegateStakeRemovalInfo(
 	ctx context.Context,
-	req *types.QueryDelegateStakeRemovalInfoRequest,
-) (*types.QueryDelegateStakeRemovalInfoResponse, error) {
+	req *types.GetDelegateStakeRemovalInfoRequest,
+) (*types.GetDelegateStakeRemovalInfoResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	if err := qs.k.ValidateStringIsBech32(req.Reputer); err != nil {
@@ -301,14 +300,14 @@ func (qs queryServer) GetDelegateStakeRemovalInfo(
 	if !found {
 		return nil, status.Error(codes.NotFound, "no delegate stake removal found")
 	}
-	return &types.QueryDelegateStakeRemovalInfoResponse{Removal: &removal}, err
+	return &types.GetDelegateStakeRemovalInfoResponse{Removal: &removal}, err
 }
 
 func (qs queryServer) GetStakeReputerAuthority(
 	ctx context.Context,
-	req *types.QueryStakeReputerAuthorityRequest,
+	req *types.GetStakeReputerAuthorityRequest,
 ) (
-	*types.QueryStakeReputerAuthorityResponse,
+	*types.GetStakeReputerAuthorityResponse,
 	error,
 ) {
 	stakeReputerAuthority, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.Reputer)
@@ -316,14 +315,14 @@ func (qs queryServer) GetStakeReputerAuthority(
 		return nil, err
 	}
 
-	return &types.QueryStakeReputerAuthorityResponse{Authority: stakeReputerAuthority}, nil
+	return &types.GetStakeReputerAuthorityResponse{Authority: stakeReputerAuthority}, nil
 }
 
 func (qs queryServer) GetDelegateStakePlacement(
 	ctx context.Context,
-	req *types.QueryDelegateStakePlacementRequest,
+	req *types.GetDelegateStakePlacementRequest,
 ) (
-	*types.QueryDelegateStakePlacementResponse,
+	*types.GetDelegateStakePlacementResponse,
 	error,
 ) {
 	delegateStakePlacement, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, req.Delegator, req.Target)
@@ -331,14 +330,14 @@ func (qs queryServer) GetDelegateStakePlacement(
 		return nil, err
 	}
 
-	return &types.QueryDelegateStakePlacementResponse{DelegatorInfo: &delegateStakePlacement}, nil
+	return &types.GetDelegateStakePlacementResponse{DelegatorInfo: &delegateStakePlacement}, nil
 }
 
 func (qs queryServer) GetDelegateStakeUponReputer(
 	ctx context.Context,
-	req *types.QueryDelegateStakeUponReputerRequest,
+	req *types.GetDelegateStakeUponReputerRequest,
 ) (
-	*types.QueryDelegateStakeUponReputerResponse,
+	*types.GetDelegateStakeUponReputerResponse,
 	error,
 ) {
 	delegateStakeUponReputer, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, req.Target)
@@ -346,14 +345,14 @@ func (qs queryServer) GetDelegateStakeUponReputer(
 		return nil, err
 	}
 
-	return &types.QueryDelegateStakeUponReputerResponse{Stake: delegateStakeUponReputer}, nil
+	return &types.GetDelegateStakeUponReputerResponse{Stake: delegateStakeUponReputer}, nil
 }
 
 func (qs queryServer) GetDelegateRewardPerShare(
 	ctx context.Context,
-	req *types.QueryDelegateRewardPerShareRequest,
+	req *types.GetDelegateRewardPerShareRequest,
 ) (
-	*types.QueryDelegateRewardPerShareResponse,
+	*types.GetDelegateRewardPerShareResponse,
 	error,
 ) {
 	delegateRewardPerShare, err := qs.k.GetDelegateRewardPerShare(ctx, req.TopicId, req.Reputer)
@@ -361,14 +360,14 @@ func (qs queryServer) GetDelegateRewardPerShare(
 		return nil, err
 	}
 
-	return &types.QueryDelegateRewardPerShareResponse{RewardPerShare: delegateRewardPerShare}, nil
+	return &types.GetDelegateRewardPerShareResponse{RewardPerShare: delegateRewardPerShare}, nil
 }
 
 func (qs queryServer) GetStakeRemovalForReputerAndTopicId(
 	ctx context.Context,
-	req *types.QueryStakeRemovalForReputerAndTopicIdRequest,
+	req *types.GetStakeRemovalForReputerAndTopicIdRequest,
 ) (
-	*types.QueryStakeRemovalForReputerAndTopicIdResponse,
+	*types.GetStakeRemovalForReputerAndTopicIdResponse,
 	error,
 ) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
@@ -377,17 +376,17 @@ func (qs queryServer) GetStakeRemovalForReputerAndTopicId(
 		return nil, err
 	}
 	if !found {
-		return &types.QueryStakeRemovalForReputerAndTopicIdResponse{}, nil
+		return &types.GetStakeRemovalForReputerAndTopicIdResponse{}, nil
 	}
 
-	return &types.QueryStakeRemovalForReputerAndTopicIdResponse{StakeRemovalInfo: &stakeRemovalInfo}, nil
+	return &types.GetStakeRemovalForReputerAndTopicIdResponse{StakeRemovalInfo: &stakeRemovalInfo}, nil
 }
 
 func (qs queryServer) GetDelegateStakeRemoval(
 	ctx context.Context,
-	req *types.QueryDelegateStakeRemovalRequest,
+	req *types.GetDelegateStakeRemovalRequest,
 ) (
-	*types.QueryDelegateStakeRemovalResponse,
+	*types.GetDelegateStakeRemovalResponse,
 	error,
 ) {
 	delegateStakeRemoval, err := qs.k.GetDelegateStakeRemoval(ctx, req.BlockHeight, req.TopicId, req.Delegator, req.Reputer)
@@ -395,5 +394,5 @@ func (qs queryServer) GetDelegateStakeRemoval(
 		return nil, err
 	}
 
-	return &types.QueryDelegateStakeRemovalResponse{StakeRemovalInfo: &delegateStakeRemoval}, nil
+	return &types.GetDelegateStakeRemovalResponse{StakeRemovalInfo: &delegateStakeRemoval}, nil
 }
