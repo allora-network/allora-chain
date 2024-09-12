@@ -25,7 +25,57 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// go through the genesis state object
 
 	// params Params
-	if err := k.SetParams(ctx, data.Params); err != nil {
+	// to avoid issues with conflicting genesis params
+	// (e.g. loading an old genesis into a later version,
+	// which is problematic but useful for testing)
+	// we manually struct exhaust copy the fields we care about for
+	// params, leaving the old unused params out
+	// when we get struct exhaust linter up and running this will
+	// make sure this operation is safe
+	paramsCopy := &types.Params{
+		Version:                             data.Params.Version,
+		MaxSerializedMsgLength:              data.Params.MaxSerializedMsgLength,
+		MinTopicWeight:                      data.Params.MinTopicWeight,
+		RequiredMinimumStake:                data.Params.RequiredMinimumStake,
+		RemoveStakeDelayWindow:              data.Params.RemoveStakeDelayWindow,
+		MinEpochLength:                      data.Params.MinEpochLength,
+		BetaEntropy:                         data.Params.BetaEntropy,
+		LearningRate:                        data.Params.LearningRate,
+		MaxGradientThreshold:                data.Params.MaxGradientThreshold,
+		MinStakeFraction:                    data.Params.MinStakeFraction,
+		MaxUnfulfilledWorkerRequests:        data.Params.MaxUnfulfilledWorkerRequests,
+		MaxUnfulfilledReputerRequests:       data.Params.MaxUnfulfilledReputerRequests,
+		TopicRewardStakeImportance:          data.Params.TopicRewardStakeImportance,
+		TopicRewardFeeRevenueImportance:     data.Params.TopicRewardFeeRevenueImportance,
+		TopicRewardAlpha:                    data.Params.TopicRewardAlpha,
+		TaskRewardAlpha:                     data.Params.TaskRewardAlpha,
+		ValidatorsVsAlloraPercentReward:     data.Params.ValidatorsVsAlloraPercentReward,
+		MaxSamplesToScaleScores:             data.Params.MaxSamplesToScaleScores,
+		MaxTopInferersToReward:              data.Params.MaxTopInferersToReward,
+		MaxTopForecastersToReward:           data.Params.MaxTopForecastersToReward,
+		MaxTopReputersToReward:              data.Params.MaxTopReputersToReward,
+		CreateTopicFee:                      data.Params.CreateTopicFee,
+		GradientDescentMaxIters:             data.Params.GradientDescentMaxIters,
+		RegistrationFee:                     data.Params.RegistrationFee,
+		DefaultPageLimit:                    data.Params.DefaultPageLimit,
+		MaxPageLimit:                        data.Params.MaxPageLimit,
+		MinEpochLengthRecordLimit:           data.Params.MinEpochLengthRecordLimit,
+		BlocksPerMonth:                      data.Params.BlocksPerMonth,
+		PRewardInference:                    data.Params.PRewardInference,
+		PRewardForecast:                     data.Params.PRewardForecast,
+		PRewardReputer:                      data.Params.PRewardReputer,
+		CRewardInference:                    data.Params.CRewardInference,
+		CRewardForecast:                     data.Params.CRewardForecast,
+		CNorm:                               data.Params.CNorm,
+		EpsilonReputer:                      data.Params.EpsilonReputer,
+		HalfMaxProcessStakeRemovalsEndBlock: data.Params.HalfMaxProcessStakeRemovalsEndBlock,
+		EpsilonSafeDiv:                      data.Params.EpsilonSafeDiv,
+		DataSendingFee:                      data.Params.DataSendingFee,
+		MaxElementsPerForecast:              data.Params.MaxElementsPerForecast,
+		MaxActiveTopicsPerBlock:             data.Params.MaxActiveTopicsPerBlock,
+		MaxStringLength:                     data.Params.MaxStringLength,
+	}
+	if err := k.SetParams(ctx, *paramsCopy); err != nil {
 		return errors.Wrap(err, "error setting params")
 	}
 	// nextTopicId uint64
@@ -217,12 +267,19 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 			}
 		}
 	}
-	// TotalStake cosmossdk_io_math.Int
-	if data.TotalStake.GT(cosmosMath.ZeroInt()) {
-		if err := k.totalStake.Set(ctx, data.TotalStake); err != nil {
-			return errors.Wrap(err, "error setting totalStake")
+	if !data.TotalStake.IsNil() {
+		// TotalStake cosmossdk_io_math.Int
+		if data.TotalStake.GT(cosmosMath.ZeroInt()) {
+			if err := k.totalStake.Set(ctx, data.TotalStake); err != nil {
+				return errors.Wrap(err, "error setting totalStake")
+			}
+		} else {
+			if err := k.totalStake.Set(ctx, cosmosMath.ZeroInt()); err != nil {
+				return errors.Wrap(err, "error setting totalStake to zero int")
+			}
 		}
 	} else {
+
 		if err := k.totalStake.Set(ctx, cosmosMath.ZeroInt()); err != nil {
 			return errors.Wrap(err, "error setting totalStake to zero int")
 		}
