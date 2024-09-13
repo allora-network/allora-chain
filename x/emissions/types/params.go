@@ -3,6 +3,8 @@ package types
 import (
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
+
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
 )
@@ -57,127 +59,127 @@ func DefaultParams() Params {
 // Validate does the sanity check on the params.
 func (p Params) Validate() error {
 	if err := validateVersion(p.Version); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: version")
 	}
 	if err := validateMinTopicWeight(p.MinTopicWeight); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: min topic weight")
 	}
 	if err := validateRequiredMinimumStake(p.RequiredMinimumStake); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: required minimum stake")
 	}
 	if err := validateRemoveStakeDelayWindow(p.RemoveStakeDelayWindow); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: remove stake delay window")
 	}
 	if err := validateMinEpochLength(p.MinEpochLength); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: min epoch length")
 	}
 	if err := validateBetaEntropy(p.BetaEntropy); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: beta entropy")
 	}
 	if err := validateLearningRate(p.LearningRate); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: learning rate")
 	}
 	if err := validateGradientDescentMaxIters(p.GradientDescentMaxIters); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: gradient descent max iters")
 	}
 	if err := validateMaxGradientThreshold(p.MaxGradientThreshold); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max gradient threshold")
 	}
 	if err := validateMinStakeFraction(p.MinStakeFraction); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: min stake fraction")
 	}
 	if err := validateEpsilonReputer(p.EpsilonReputer); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: epsilon reputer")
 	}
 	if err := validateEpsilonSafeDiv(p.EpsilonSafeDiv); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: epsilon safe div")
 	}
 	if err := validateMaxUnfulfilledWorkerRequests(p.MaxUnfulfilledWorkerRequests); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max unfulfilled worker requests")
 	}
 	if err := validateMaxUnfulfilledReputerRequests(p.MaxUnfulfilledReputerRequests); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max unfulfilled reputer requests")
 	}
 	if err := validateTopicRewardStakeImportance(p.TopicRewardStakeImportance); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: topic reward stake importance")
 	}
 	if err := validateTopicRewardFeeRevenueImportance(p.TopicRewardFeeRevenueImportance); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: topic reward fee revenue importance")
 	}
 	if err := validateTopicRewardAlpha(p.TopicRewardAlpha); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: topic reward alpha")
 	}
 	if err := validateTaskRewardAlpha(p.TaskRewardAlpha); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: task reward alpha")
 	}
 	if err := validateValidatorsVsAlloraPercentReward(p.ValidatorsVsAlloraPercentReward); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: validators vs allora percent reward")
 	}
 	if err := validateMaxSamplesToScaleScores(p.MaxSamplesToScaleScores); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max samples to scale scores")
 	}
 	if err := validateMaxTopInferersToReward(p.MaxTopInferersToReward); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max top inferers to reward")
 	}
 	if err := validateMaxTopForecastersToReward(p.MaxTopForecastersToReward); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max top forecasters to reward")
 	}
 	if err := validateMaxTopReputersToReward(p.MaxTopReputersToReward); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max top reputers to reward")
 	}
 	if err := validateCreateTopicFee(p.CreateTopicFee); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: create topic fee")
 	}
 	if err := validateRegistrationFee(p.RegistrationFee); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: registration fee")
 	}
 	if err := validateDefaultPageLimit(p.DefaultPageLimit); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: default page limit")
 	}
 	if err := validateMaxPageLimit(p.MaxPageLimit); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max page limit")
 	}
 	if err := validateMinEpochLengthRecordLimit(p.MinEpochLengthRecordLimit); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: min epoch length record limit")
 	}
 	if err := validateMaxSerializedMsgLength(p.MaxSerializedMsgLength); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max serialized msg length")
 	}
 	if err := ValidateBlocksPerMonth(p.BlocksPerMonth); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: blocks per month")
 	}
 	if err := validatePRewardInference(p.PRewardInference); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: p reward inference")
 	}
 	if err := validatePRewardForecast(p.PRewardForecast); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: p reward forecast")
 	}
 	if err := validatePRewardReputer(p.PRewardReputer); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: p reward reputer")
 	}
 	if err := validateCRewardInference(p.CRewardInference); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: c reward inference")
 	}
 	if err := validateCRewardForecast(p.CRewardForecast); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: c reward forecast")
 	}
 	if err := validateCNorm(p.CNorm); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: c norm")
 	}
 	if err := validateHalfMaxProcessStakeRemovalsEndBlock(p.HalfMaxProcessStakeRemovalsEndBlock); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: half max process stake removals end block")
 	}
 	if err := validateDataSendingFee(p.DataSendingFee); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: data sending fee")
 	}
 	if err := validateMaxElementsPerForecast(p.MaxElementsPerForecast); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max elements per forecast")
 	}
 	if err := validateMaxActiveTopicsPerBlock(p.MaxActiveTopicsPerBlock); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max active topics per block")
 	}
 	if err := validateMaxStringLength(p.MaxStringLength); err != nil {
-		return err
+		return errorsmod.Wrap(err, "params validation failure: max string length")
 	}
 	return nil
 }
@@ -198,6 +200,9 @@ func validateVersion(v string) error {
 // Total weight for a topic < this => don't run inference solicatation or loss update.
 // Should be >= 0
 func validateMinTopicWeight(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if i.IsNegative() {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -207,8 +212,8 @@ func validateMinTopicWeight(i alloraMath.Dec) error {
 // Minimum stake required to be a worker or reputer.
 // Should be >= 0.
 func validateRequiredMinimumStake(i cosmosMath.Int) error {
-	if i.IsNegative() {
-		return ErrValidationMustBeGreaterthanZero
+	if err := ValidateSdkIntRepresentingMonetaryValue(i); err != nil {
+		return errorsmod.Wrap(err, ErrValidationMustBeGreaterthanZero.Error())
 	}
 	return nil
 }
@@ -234,6 +239,9 @@ func validateMinEpochLength(i BlockHeight) error {
 // controls resilience of reward payouts against copycat workers
 // Should be 0 <= i <= 1
 func validateBetaEntropy(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -243,6 +251,9 @@ func validateBetaEntropy(i alloraMath.Dec) error {
 // Speed of gradient descent.
 // Should be 0 < x < 1
 func validateLearningRate(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -261,6 +272,9 @@ func validateGradientDescentMaxIters(i uint64) error {
 // Gradient descent stops when gradient falls below this.
 // Should be 0 < i < 1
 func validateMaxGradientThreshold(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -270,6 +284,9 @@ func validateMaxGradientThreshold(i alloraMath.Dec) error {
 // minimum fraction of stake that should be listened to when setting consensus listening coefficients.
 // Should be between 0 and 1.
 func validateMinStakeFraction(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -279,6 +296,9 @@ func validateMinStakeFraction(i alloraMath.Dec) error {
 // Small tolerance quantity used to cap reputer scores at infinitesimally close proximities.
 // Should be close to zero, but not zero. i > 0
 func validateEpsilonReputer(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -287,6 +307,9 @@ func validateEpsilonReputer(i alloraMath.Dec) error {
 
 // Small tolerance quantity used to cap division by zero.
 func validateEpsilonSafeDiv(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -296,6 +319,9 @@ func validateEpsilonSafeDiv(i alloraMath.Dec) error {
 // fiducial value for rewards calculation
 // should be x > 0
 func validatePRewardInference(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -305,6 +331,9 @@ func validatePRewardInference(i alloraMath.Dec) error {
 // fiducial value for rewards calculation
 // should be x > 0
 func validatePRewardForecast(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -314,6 +343,9 @@ func validatePRewardForecast(i alloraMath.Dec) error {
 // fiducial value for rewards calculation
 // should be x > 0
 func validatePRewardReputer(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -323,6 +355,9 @@ func validatePRewardReputer(i alloraMath.Dec) error {
 // fiducial value for rewards calculation
 // should be x > 0
 func validateCRewardInference(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -332,6 +367,9 @@ func validateCRewardInference(i alloraMath.Dec) error {
 // fiducial value for rewards calculation
 // should be x > 0
 func validateCRewardForecast(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -341,6 +379,9 @@ func validateCRewardForecast(i alloraMath.Dec) error {
 // fiducial value for inference synthesis
 // should be x > 0
 func validateCNorm(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
@@ -362,6 +403,9 @@ func validateMaxUnfulfilledReputerRequests(_ uint64) error {
 // importance of stake in determining rewards for a topic.
 // should be between 0 and 1.
 func validateTopicRewardStakeImportance(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -371,6 +415,9 @@ func validateTopicRewardStakeImportance(i alloraMath.Dec) error {
 // importance of fee revenue in determining rewards for a topic.
 // should be between 0 and 1.
 func validateTopicRewardFeeRevenueImportance(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -380,6 +427,9 @@ func validateTopicRewardFeeRevenueImportance(i alloraMath.Dec) error {
 // alpha for topic reward calculation; coupled with blocktime, or how often rewards are calculated
 // should be 0 < x < 1
 func validateTopicRewardAlpha(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -389,7 +439,10 @@ func validateTopicRewardAlpha(i alloraMath.Dec) error {
 // alpha for task reward calculation used to calculate  ~U_ij, ~V_ik, ~W_im
 // should be 0 < x <= 1 (note the difference on both sides!)
 func validateTaskRewardAlpha(i alloraMath.Dec) error {
-	if i.Lte(alloraMath.ZeroDec()) || i.Gt(alloraMath.OneDec()) {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
+	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -398,6 +451,9 @@ func validateTaskRewardAlpha(i alloraMath.Dec) error {
 // percent reward to go to cosmos network validators.
 // Should be a value between 0 and 1.
 func validateValidatorsVsAlloraPercentReward(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
@@ -444,8 +500,8 @@ func validateMaxTopReputersToReward(_ uint64) error {
 // topic registration fee
 // must be positive or zero
 func validateCreateTopicFee(i cosmosMath.Int) error {
-	if i.IsNegative() {
-		return ErrValidationMustBeGreaterthanZero
+	if err := ValidateSdkIntRepresentingMonetaryValue(i); err != nil {
+		return errorsmod.Wrap(err, ErrValidationMustBeGreaterthanZero.Error())
 	}
 	return nil
 }
@@ -453,8 +509,8 @@ func validateCreateTopicFee(i cosmosMath.Int) error {
 // How much workers and reputers must pay to register per topic.
 // Should be non-negative.
 func validateRegistrationFee(i cosmosMath.Int) error {
-	if i.IsNegative() {
-		return ErrValidationMustBeGreaterthanZero
+	if err := ValidateSdkIntRepresentingMonetaryValue(i); err != nil {
+		return errorsmod.Wrap(err, ErrValidationMustBeGreaterthanZero.Error())
 	}
 	return nil
 }
@@ -531,8 +587,8 @@ func isAlloraDecZeroOrLessThanOne(a alloraMath.Dec) bool {
 // How much workers and reputers must pay to send data.
 // Should be non-negative.
 func validateDataSendingFee(i cosmosMath.Int) error {
-	if i.IsNegative() {
-		return ErrValidationMustBeGreaterthanZero
+	if err := ValidateSdkIntRepresentingMonetaryValue(i); err != nil {
+		return errorsmod.Wrap(err, ErrValidationMustBeGreaterthanZero.Error())
 	}
 	return nil
 }

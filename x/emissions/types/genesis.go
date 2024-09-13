@@ -1,9 +1,5 @@
 package types
 
-import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-)
-
 // NewGenesisState creates a new genesis state with default values.
 func NewGenesisState() *GenesisState {
 	return &GenesisState{
@@ -12,6 +8,10 @@ func NewGenesisState() *GenesisState {
 	}
 }
 
+// DefaultCoreTeamAddresses returns the default core team addresses
+// used for administration of params for the emissions module
+// long term should be managed by the standard cosmos-sdk
+// gov module
 func DefaultCoreTeamAddresses() []string {
 	return []string{
 		"allo16270t36amc3y6wk2wqupg6gvg26x6dc2nr5xwl",
@@ -25,21 +25,4 @@ func DefaultCoreTeamAddresses() []string {
 		"allo1uff55lgqpjkw2mlsx2q0p8q8z7k7p00w9s4s0f",
 		"allo136eeqhawxx66sjgsfeqk9gewq0e0msyu5tjmj3",
 	}
-}
-
-// Validate performs basic genesis state validation returning an error upon any
-func (gs *GenesisState) Validate() error {
-	if err := gs.Params.Validate(); err != nil {
-		return err
-	}
-
-	// Ensure that the core team addresses are valid
-	for _, addr := range gs.CoreTeamAddresses {
-		_, err := sdk.AccAddressFromBech32(addr)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
