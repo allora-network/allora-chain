@@ -16,7 +16,7 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	// Record Alice stake before adding more
 	aliceStakedBefore, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
 		ctx,
-		&emissionstypes.QueryReputerStakeInTopicRequest{
+		&emissionstypes.GetReputerStakeInTopicRequest{
 			TopicId: 1,
 			Address: m.AliceAddr,
 		},
@@ -39,7 +39,7 @@ func StakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	// Check Alice has stake on the topic
 	aliceStakedAfter, err := m.Client.QueryEmissions().GetReputerStakeInTopic(
 		ctx,
-		&emissionstypes.QueryReputerStakeInTopicRequest{
+		&emissionstypes.GetReputerStakeInTopicRequest{
 			TopicId: 1,
 			Address: m.AliceAddr,
 		},
@@ -54,7 +54,7 @@ func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 	// Record Bob stake before adding more
 	bobStakedBefore, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
-		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
+		&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
@@ -79,7 +79,7 @@ func StakeBobOnAliceAsReputerTopic1(m testCommon.TestConfig) {
 	// Check Alice has stake on the topic
 	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
-		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
+		&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
@@ -95,7 +95,7 @@ func StakingChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Staking Alice as Reputer ---")
 	StakeAliceAsReputerTopic1(m)
 
-	res, _ := m.Client.QueryEmissions().GetTopic(ctx, &emissionstypes.QueryTopicRequest{
+	res, _ := m.Client.QueryEmissions().GetTopic(ctx, &emissionstypes.GetTopicRequest{
 		TopicId: uint64(1),
 	})
 	// Topic is not expected to be funded yet => expect 0 weight => topic not active!
@@ -114,7 +114,7 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
 	aliceStakeBefore, err := m.Client.QueryEmissions().GetStakeFromReputerInTopicInSelf(
 		ctx,
-		&emissionstypes.QueryStakeFromReputerInTopicInSelfRequest{
+		&emissionstypes.GetStakeFromReputerInTopicInSelfRequest{
 			TopicId:        1,
 			ReputerAddress: m.AliceAddr,
 		},
@@ -141,7 +141,7 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	// check the unstake removal is queued
 	stakeRemoval, err := m.Client.QueryEmissions().GetStakeRemovalInfo(
 		ctx,
-		&emissionstypes.QueryStakeRemovalInfoRequest{
+		&emissionstypes.GetStakeRemovalInfoRequest{
 			TopicId: 1,
 			Reputer: m.AliceAddr,
 		},
@@ -159,7 +159,7 @@ func UnstakeAliceAsReputerTopic1(m testCommon.TestConfig) {
 	// Check Alice has zero stake left
 	aliceStakedAfter, err := m.Client.QueryEmissions().GetStakeFromReputerInTopicInSelf(
 		ctx,
-		&emissionstypes.QueryStakeFromReputerInTopicInSelfRequest{
+		&emissionstypes.GetStakeFromReputerInTopicInSelfRequest{
 			TopicId:        1,
 			ReputerAddress: m.AliceAddr,
 		},
@@ -180,7 +180,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	ctx := context.Background()
 	bobStake, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
-		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
+		&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,
@@ -209,7 +209,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	// check the unstake removal is queued
 	stakeRemoval, err := m.Client.QueryEmissions().GetDelegateStakeRemovalInfo(
 		ctx,
-		&emissionstypes.QueryDelegateStakeRemovalInfoRequest{
+		&emissionstypes.GetDelegateStakeRemovalInfoRequest{
 			TopicId:   1,
 			Delegator: m.BobAddr,
 			Reputer:   m.AliceAddr,
@@ -225,7 +225,7 @@ func UnstakeBobAsDelegatorOnAliceTopic1(m testCommon.TestConfig) {
 	// Check Bob has zero stake left
 	bobStakedAfter, err := m.Client.QueryEmissions().GetStakeFromDelegatorInTopicInReputer(
 		ctx,
-		&emissionstypes.QueryStakeFromDelegatorInTopicInReputerRequest{
+		&emissionstypes.GetStakeFromDelegatorInTopicInReputerRequest{
 			TopicId:          1,
 			DelegatorAddress: m.BobAddr,
 			ReputerAddress:   m.AliceAddr,

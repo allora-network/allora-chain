@@ -2,7 +2,6 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	statev3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
 	statev4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
 )
 
@@ -10,10 +9,10 @@ import (
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: statev3.Query_ServiceDesc.ServiceName,
+			Service: statev4.QueryService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
-					RpcMethod: "Params",
+					RpcMethod: "GetParams",
 					Use:       "params",
 					Short:     "Get the current module parameters",
 				},
@@ -158,8 +157,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestAvailableNetworkInference",
-					Use:       "latest-available-network-inference [topic_id]",
+					RpcMethod: "GetLatestAvailableNetworkInferences",
+					Use:       "latest-available-network-inferences [topic_id]",
 					Short:     "Returns network inference only if all available information to compute the inference is present",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -568,8 +567,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestNetworkInference",
-					Use:       "latest-network-inference [topic_id]",
+					RpcMethod: "GetLatestNetworkInferences",
+					Use:       "latest-network-inferences [topic_id]",
 					Short:     "Get the latest Network inferences and weights for a topic. Will return whatever information it has available.",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},

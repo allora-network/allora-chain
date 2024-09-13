@@ -14,7 +14,7 @@ func (s *QueryServerTestSuite) TestParams() {
 	err := keeper.SetParams(ctx, expectedParams)
 	s.Require().NoError(err, "Setting parameters should not produce an error")
 
-	response, err := queryServer.Params(ctx, &types.QueryParamsRequest{})
+	response, err := queryServer.GetParams(ctx, &types.GetParamsRequest{})
 
 	s.Require().NoError(err, "Retrieving parameters should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")

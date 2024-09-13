@@ -8,9 +8,9 @@ import (
 
 func (qs queryServer) GetPreviousReputerRewardFraction(
 	ctx context.Context,
-	req *types.QueryPreviousReputerRewardFractionRequest,
+	req *types.GetPreviousReputerRewardFractionRequest,
 ) (
-	*types.QueryPreviousReputerRewardFractionResponse,
+	*types.GetPreviousReputerRewardFractionResponse,
 	error,
 ) {
 	rewardFraction, notFound, err := qs.k.GetPreviousReputerRewardFraction(ctx, req.TopicId, req.Reputer)
@@ -18,14 +18,14 @@ func (qs queryServer) GetPreviousReputerRewardFraction(
 		return nil, err
 	}
 
-	return &types.QueryPreviousReputerRewardFractionResponse{RewardFraction: rewardFraction, NotFound: notFound}, nil
+	return &types.GetPreviousReputerRewardFractionResponse{RewardFraction: rewardFraction, NotFound: notFound}, nil
 }
 
 func (qs queryServer) GetPreviousInferenceRewardFraction(
 	ctx context.Context,
-	req *types.QueryPreviousInferenceRewardFractionRequest,
+	req *types.GetPreviousInferenceRewardFractionRequest,
 ) (
-	*types.QueryPreviousInferenceRewardFractionResponse,
+	*types.GetPreviousInferenceRewardFractionResponse,
 	error,
 ) {
 	rewardFraction, notFound, err := qs.k.GetPreviousInferenceRewardFraction(ctx, req.TopicId, req.Worker)
@@ -33,14 +33,14 @@ func (qs queryServer) GetPreviousInferenceRewardFraction(
 		return nil, err
 	}
 
-	return &types.QueryPreviousInferenceRewardFractionResponse{RewardFraction: rewardFraction, NotFound: notFound}, nil
+	return &types.GetPreviousInferenceRewardFractionResponse{RewardFraction: rewardFraction, NotFound: notFound}, nil
 }
 
 func (qs queryServer) GetPreviousForecastRewardFraction(
 	ctx context.Context,
-	req *types.QueryPreviousForecastRewardFractionRequest,
+	req *types.GetPreviousForecastRewardFractionRequest,
 ) (
-	*types.QueryPreviousForecastRewardFractionResponse,
+	*types.GetPreviousForecastRewardFractionResponse,
 	error,
 ) {
 	rewardFraction, notFound, err := qs.k.GetPreviousForecastRewardFraction(ctx, req.TopicId, req.Worker)
@@ -48,14 +48,14 @@ func (qs queryServer) GetPreviousForecastRewardFraction(
 		return nil, err
 	}
 
-	return &types.QueryPreviousForecastRewardFractionResponse{RewardFraction: rewardFraction, NotFound: notFound}, nil
+	return &types.GetPreviousForecastRewardFractionResponse{RewardFraction: rewardFraction, NotFound: notFound}, nil
 }
 
 func (qs queryServer) GetPreviousPercentageRewardToStakedReputers(
 	ctx context.Context,
-	req *types.QueryPreviousPercentageRewardToStakedReputersRequest,
+	req *types.GetPreviousPercentageRewardToStakedReputersRequest,
 ) (
-	*types.QueryPreviousPercentageRewardToStakedReputersResponse,
+	*types.GetPreviousPercentageRewardToStakedReputersResponse,
 	error,
 ) {
 	percentageReward, err := qs.k.GetPreviousPercentageRewardToStakedReputers(ctx)
@@ -63,14 +63,14 @@ func (qs queryServer) GetPreviousPercentageRewardToStakedReputers(
 		return nil, err
 	}
 
-	return &types.QueryPreviousPercentageRewardToStakedReputersResponse{PercentageReward: percentageReward}, nil
+	return &types.GetPreviousPercentageRewardToStakedReputersResponse{PercentageReward: percentageReward}, nil
 }
 
 func (qs queryServer) GetTotalRewardToDistribute(
 	ctx context.Context,
-	req *types.QueryTotalRewardToDistributeRequest,
+	req *types.GetTotalRewardToDistributeRequest,
 ) (
-	*types.QueryTotalRewardToDistributeResponse,
+	*types.GetTotalRewardToDistributeResponse,
 	error,
 ) {
 	totalReward, err := qs.k.GetTotalRewardToDistribute(ctx)
@@ -78,5 +78,5 @@ func (qs queryServer) GetTotalRewardToDistribute(
 		return nil, err
 	}
 
-	return &types.QueryTotalRewardToDistributeResponse{TotalReward: totalReward}, nil
+	return &types.GetTotalRewardToDistributeResponse{TotalReward: totalReward}, nil
 }
