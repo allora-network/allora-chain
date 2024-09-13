@@ -658,6 +658,11 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "TriggerMigration",
+					Use:       "trigger-migration",
+					Short:     "trigger v4 migration script",
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{

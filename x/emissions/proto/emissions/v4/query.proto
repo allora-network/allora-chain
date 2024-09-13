@@ -399,7 +399,15 @@ service QueryService {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v4/next_churning_block_by_topic_id/{topic_id}";
   }
+
+  rpc TriggerMigration(TriggerMigrationRequest) returns (TriggerMigrationResponse) {
+    option (google.api.http).get = "/emissions/v4/trigger_migration";
+  }
 }
+
+message TriggerMigrationRequest {}
+
+message TriggerMigrationResponse {}
 
 message GetNaiveInfererNetworkRegretRequest {
   uint64 topic_id = 1;

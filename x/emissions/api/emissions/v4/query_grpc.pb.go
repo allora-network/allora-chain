@@ -95,6 +95,7 @@ const (
 	QueryService_GetOneOutForecasterForecasterNetworkRegret_FullMethodName  = "/emissions.v4.QueryService/GetOneOutForecasterForecasterNetworkRegret"
 	QueryService_GetActiveTopicsAtBlock_FullMethodName                      = "/emissions.v4.QueryService/GetActiveTopicsAtBlock"
 	QueryService_GetNextChurningBlockByTopicId_FullMethodName               = "/emissions.v4.QueryService/GetNextChurningBlockByTopicId"
+	QueryService_TriggerMigration_FullMethodName                            = "/emissions.v4.QueryService/TriggerMigration"
 )
 
 // QueryServiceClient is the client API for QueryService service.
@@ -178,6 +179,7 @@ type QueryServiceClient interface {
 	GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, in *GetOneOutForecasterForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*GetOneOutForecasterForecasterNetworkRegretResponse, error)
 	GetActiveTopicsAtBlock(ctx context.Context, in *GetActiveTopicsAtBlockRequest, opts ...grpc.CallOption) (*GetActiveTopicsAtBlockResponse, error)
 	GetNextChurningBlockByTopicId(ctx context.Context, in *GetNextChurningBlockByTopicIdRequest, opts ...grpc.CallOption) (*GetNextChurningBlockByTopicIdResponse, error)
+	TriggerMigration(ctx context.Context, in *TriggerMigrationRequest, opts ...grpc.CallOption) (*TriggerMigrationResponse, error)
 }
 
 type queryServiceClient struct {
@@ -872,6 +874,15 @@ func (c *queryServiceClient) GetNextChurningBlockByTopicId(ctx context.Context, 
 	return out, nil
 }
 
+func (c *queryServiceClient) TriggerMigration(ctx context.Context, in *TriggerMigrationRequest, opts ...grpc.CallOption) (*TriggerMigrationResponse, error) {
+	out := new(TriggerMigrationResponse)
+	err := c.cc.Invoke(ctx, QueryService_TriggerMigration_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServiceServer is the server API for QueryService service.
 // All implementations must embed UnimplementedQueryServiceServer
 // for forward compatibility
@@ -953,6 +964,7 @@ type QueryServiceServer interface {
 	GetOneOutForecasterForecasterNetworkRegret(context.Context, *GetOneOutForecasterForecasterNetworkRegretRequest) (*GetOneOutForecasterForecasterNetworkRegretResponse, error)
 	GetActiveTopicsAtBlock(context.Context, *GetActiveTopicsAtBlockRequest) (*GetActiveTopicsAtBlockResponse, error)
 	GetNextChurningBlockByTopicId(context.Context, *GetNextChurningBlockByTopicIdRequest) (*GetNextChurningBlockByTopicIdResponse, error)
+	TriggerMigration(context.Context, *TriggerMigrationRequest) (*TriggerMigrationResponse, error)
 	mustEmbedUnimplementedQueryServiceServer()
 }
 
@@ -1187,6 +1199,9 @@ func (UnimplementedQueryServiceServer) GetActiveTopicsAtBlock(context.Context, *
 }
 func (UnimplementedQueryServiceServer) GetNextChurningBlockByTopicId(context.Context, *GetNextChurningBlockByTopicIdRequest) (*GetNextChurningBlockByTopicIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNextChurningBlockByTopicId not implemented")
+}
+func (UnimplementedQueryServiceServer) TriggerMigration(context.Context, *TriggerMigrationRequest) (*TriggerMigrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TriggerMigration not implemented")
 }
 func (UnimplementedQueryServiceServer) mustEmbedUnimplementedQueryServiceServer() {}
 
@@ -2569,6 +2584,24 @@ func _QueryService_GetNextChurningBlockByTopicId_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueryService_TriggerMigration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TriggerMigrationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).TriggerMigration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_TriggerMigration_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).TriggerMigration(ctx, req.(*TriggerMigrationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // QueryService_ServiceDesc is the grpc.ServiceDesc for QueryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2879,6 +2912,10 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNextChurningBlockByTopicId",
 			Handler:    _QueryService_GetNextChurningBlockByTopicId_Handler,
+		},
+		{
+			MethodName: "TriggerMigration",
+			Handler:    _QueryService_TriggerMigration_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
