@@ -100,7 +100,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 			}
 		}
-		err = am.keeper.DeleteWorkerWindowBlockheight(sdkCtx, blockHeight)
+		err = am.keeper.DeleteWorkerWindowBlockHeight(sdkCtx, blockHeight)
 		if err != nil {
 			sdkCtx.Logger().Warn(fmt.Sprintf("Error deleting worker window blockheight: %s", err.Error()))
 		}
