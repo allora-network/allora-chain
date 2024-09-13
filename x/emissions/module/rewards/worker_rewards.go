@@ -143,6 +143,15 @@ func getInferenceOrForecastTaskEntropy(
 	entropy alloraMath.Dec,
 	err error,
 ) {
+	if len(workers) == 0 {
+		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "empty worker set")
+	}
+	if len(workersFractions) == 0 {
+		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "empty fractions set")
+	}
+	if len(workers) != len(workersFractions) {
+		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "different dimensions on reputer and reward fractions")
+	}
 	numWorkers := len(workers)
 	emaRewardFractions := make([]alloraMath.Dec, numWorkers)
 	var previousRewardFraction alloraMath.Dec
@@ -170,6 +179,9 @@ func getInferenceOrForecastTaskEntropy(
 		}
 	}
 
+	if len(emaRewardFractions) == 0 {
+		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "invalid reward fractions after EMA calculation")
+	}
 	// Calculate modified reward fractions and persist for next round
 	numberRatio, err := NumberRatio(emaRewardFractions)
 	if err != nil {
