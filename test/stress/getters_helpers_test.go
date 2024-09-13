@@ -70,10 +70,10 @@ func getApproximateBlockTimeSeconds(m testCommon.TestConfig) time.Duration {
 // Get the most recent topic
 func getLastTopic(
 	ctx context.Context,
-	query types.QueryClient,
+	query types.QueryServiceClient,
 	topicID uint64,
 ) (*types.Topic, error) {
-	topicResponse, err := query.GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicID})
+	topicResponse, err := query.GetTopic(ctx, &types.GetTopicRequest{TopicId: topicID})
 	if err == nil {
 		return topicResponse.Topic, nil
 	}
@@ -105,11 +105,11 @@ func getAccountBalance(
 // get from the emissions module what the reputer's stake is
 func getReputerStake(
 	ctx context.Context,
-	queryClient types.QueryClient,
+	queryClient types.QueryServiceClient,
 	topicId uint64,
 	reputerAddress string,
 ) (alloraMath.Dec, error) {
-	req := &types.QueryReputerStakeInTopicRequest{
+	req := &types.GetReputerStakeInTopicRequest{
 		Address: reputerAddress,
 		TopicId: topicId,
 	}
@@ -144,7 +144,7 @@ func getNonZeroTopicEpochLastRan(
 	for retries := 0; retries < maxRetries; retries++ {
 		topicResponse, err := m.Client.QueryEmissions().GetTopic(
 			ctx,
-			&types.QueryTopicRequest{TopicId: topicId},
+			&types.GetTopicRequest{TopicId: topicId},
 		)
 		if err == nil {
 			storedTopic := topicResponse.Topic

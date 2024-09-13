@@ -30,7 +30,7 @@ func doInferenceAndReputation(
 		topicId,
 	)
 	ctx := context.Background()
-	resp, err := m.Client.QueryEmissions().GetTopic(ctx, &emissionstypes.QueryTopicRequest{
+	resp, err := m.Client.QueryEmissions().GetTopic(ctx, &emissionstypes.GetTopicRequest{
 		TopicId: topicId,
 	})
 	requireNoError(m.T, data.failOnErr, err)
@@ -95,7 +95,7 @@ func findActiveTopicsAtThisBlock(
 		return nil
 	}
 	ctx := context.Background()
-	response, err := m.Client.QueryEmissions().GetActiveTopicsAtBlock(ctx, &emissionstypes.QueryActiveTopicsAtBlockRequest{
+	response, err := m.Client.QueryEmissions().GetActiveTopicsAtBlock(ctx, &emissionstypes.GetActiveTopicsAtBlockRequest{
 		BlockHeight: blockHeight,
 	})
 	requireNoError(m.T, data.failOnErr, err)

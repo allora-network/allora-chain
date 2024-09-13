@@ -18,7 +18,7 @@ func (s *QueryServerTestSuite) TestGetTotalStake() {
 	err := keeper.SetTotalStake(ctx, expectedTotalStake)
 	s.Require().NoError(err, "SetTotalStake should not produce an error")
 
-	req := &types.QueryTotalStakeRequest{}
+	req := &types.GetTotalStakeRequest{}
 	response, err := queryServer.GetTotalStake(ctx, req)
 	s.Require().NoError(err, "GetTotalStake should not produce an error")
 	s.Require().NotNil(response, "The response should not be nil")
@@ -39,7 +39,7 @@ func (s *QueryServerTestSuite) TestGetReputerStakeInTopic() {
 	err = keeper.AddReputerStake(ctx, topicId, reputerAddr, initialStake)
 	s.Require().NoError(err, "AddStake should not produce an error")
 
-	req := &types.QueryReputerStakeInTopicRequest{
+	req := &types.GetReputerStakeInTopicRequest{
 		Address: reputerAddr,
 		TopicId: topicId,
 	}
@@ -70,7 +70,7 @@ func (s *QueryServerTestSuite) TestGetMultiReputerStakeInTopic() {
 	err = keeper.AddReputerStake(ctx, topicId, reputer2Addr, initialStake2)
 	s.Require().NoError(err, "AddStake should not produce an error")
 
-	req := &types.QueryMultiReputerStakeInTopicRequest{
+	req := &types.GetMultiReputerStakeInTopicRequest{
 		Addresses: []string{reputer1Addr, reputer2Addr},
 		TopicId:   topicId,
 	}
@@ -100,7 +100,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeInTopicInReputer() {
 	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, initialStakeAmount)
 	s.Require().NoError(err, "AddDelegateStake should not produce an error")
 
-	req := &types.QueryDelegateStakeInTopicInReputerRequest{
+	req := &types.GetDelegateStakeInTopicInReputerRequest{
 		ReputerAddress: reputerAddr,
 		TopicId:        topicId,
 	}
@@ -129,7 +129,7 @@ func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopicInReputer() {
 	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, reputerAddr, stakeAmount)
 	s.Require().NoError(err, "AddDelegateStake should not produce an error")
 
-	req := &types.QueryStakeFromDelegatorInTopicInReputerRequest{
+	req := &types.GetStakeFromDelegatorInTopicInReputerRequest{
 		DelegatorAddress: delegatorAddr,
 		ReputerAddress:   reputerAddr,
 		TopicId:          topicId,
@@ -160,7 +160,7 @@ func (s *QueryServerTestSuite) TestGetStakeFromDelegatorInTopic() {
 	err = keeper.AddDelegateStake(ctx, topicId, delegatorAddr, PKS[1].Address().String(), additionalStakeAmount)
 	s.Require().NoError(err)
 
-	req := &types.QueryStakeFromDelegatorInTopicRequest{
+	req := &types.GetStakeFromDelegatorInTopicRequest{
 		DelegatorAddress: delegatorAddr,
 		TopicId:          topicId,
 	}
@@ -185,7 +185,7 @@ func (s *QueryServerTestSuite) TestGetTopicStake() {
 	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
-	req := &types.QueryTopicStakeRequest{
+	req := &types.GetTopicStakeRequest{
 		TopicId: topicId,
 	}
 
@@ -212,7 +212,7 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalInfo() {
 	}
 	err := keeper.SetStakeRemoval(ctx, removal)
 	s.Require().NoError(err, "SetStakeRemoval should not produce an error")
-	req := &types.QueryStakeRemovalInfoRequest{
+	req := &types.GetStakeRemovalInfoRequest{
 		TopicId: topicId,
 		Reputer: address,
 	}
@@ -243,7 +243,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalInfo() {
 
 	err := keeper.SetDelegateStakeRemoval(ctx, expectedRemoval)
 	s.Require().NoError(err, "SetStakeRemoval should not produce an error")
-	req := &types.QueryDelegateStakeRemovalInfoRequest{
+	req := &types.GetDelegateStakeRemovalInfoRequest{
 		TopicId:   topicId,
 		Delegator: delegatorAddress,
 		Reputer:   reputerAddress,
@@ -282,7 +282,7 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalsForBlock() {
 		require.NoError(err, "SetStakeRemoval should not produce an error")
 	}
 
-	req := &types.QueryStakeRemovalsUpUntilBlockRequest{
+	req := &types.GetStakeRemovalsUpUntilBlockRequest{
 		BlockHeight: blockHeight,
 	}
 
@@ -323,7 +323,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeRemovalsForBlock() {
 		require.NoError(err, "SetStakeRemoval should not produce an error")
 	}
 
-	req := &types.QueryDelegateStakeRemovalsUpUntilBlockRequest{
+	req := &types.GetDelegateStakeRemovalsUpUntilBlockRequest{
 		BlockHeight: blockHeight,
 	}
 
@@ -346,7 +346,7 @@ func (s *QueryServerTestSuite) TestGetStakeReputerAuthority() {
 	err := keeper.AddReputerStake(ctx, topicId, reputerAddr, stakeAmount)
 	s.Require().NoError(err)
 
-	req := &types.QueryStakeReputerAuthorityRequest{
+	req := &types.GetStakeReputerAuthorityRequest{
 		TopicId: topicId,
 		Reputer: reputerAddr,
 	}
@@ -387,7 +387,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakePlacement() {
 	require.NoError(err)
 	require.Equal(cosmosMath.ZeroInt(), reputerStake, "Stake amount mismatch")
 
-	req := &types.QueryDelegateStakePlacementRequest{
+	req := &types.GetDelegateStakePlacementRequest{
 		TopicId:   topicId,
 		Delegator: delegatorAddr.String(),
 		Target:    reputerAddr.String(),
@@ -459,7 +459,7 @@ func (s *QueryServerTestSuite) TestGetDelegateStakeUponReputer() {
 	stakeUponReputer, err := keeper.GetDelegateStakeUponReputer(ctx, topicId, reputerAddr)
 	s.Require().NoError(err)
 	s.Require().Equal(expected, stakeUponReputer, "Remaining reputer stake should be initial minus removed amount")
-	req := &types.QueryDelegateStakeUponReputerRequest{
+	req := &types.GetDelegateStakeUponReputerRequest{
 		TopicId: topicId,
 		Target:  reputerAddr,
 	}
@@ -497,7 +497,7 @@ func (s *QueryServerTestSuite) TestGetStakeRemovalForReputerAndTopicId() {
 	err = k.SetStakeRemoval(ctx, anotherStakeRemoval)
 	s.Require().NoError(err)
 
-	req := &types.QueryStakeRemovalForReputerAndTopicIdRequest{
+	req := &types.GetStakeRemovalForReputerAndTopicIdRequest{
 		Reputer: reputer,
 		TopicId: topicId,
 	}

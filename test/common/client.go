@@ -32,18 +32,18 @@ const (
 
 // where to get ahold of a node
 type Client struct {
-	RpcConnectionType  RpcConnectionType               // what kind of rpc connection to use
-	Clients            []cosmosclient.Client           // clients to attach to
-	QueryAuths         []authtypes.QueryClient         // query clients for auth
-	QueryBanks         []banktypes.QueryClient         // query clients for bank
-	QueryDistributions []distributiontypes.QueryClient // query clients for distribution
-	QueryEmissionses   []emissionstypes.QueryClient    // query clients for emissions
-	QueryMints         []minttypes.QueryClient         // query clients for mint
-	QueryGovs          []govtypesv1.QueryClient        // query clients for gov
-	QueryUpgrades      []upgradetypes.QueryClient      // query clients for upgrades
-	RpcCounterSeed     int64                           // if round-robin which RPC to use next, if random, seed to use
-	RpcCounterMutex    *sync.Mutex                     // mutex for the counter
-	Rand               *rand.Rand                      // random number generator
+	RpcConnectionType  RpcConnectionType                   // what kind of rpc connection to use
+	Clients            []cosmosclient.Client               // clients to attach to
+	QueryAuths         []authtypes.QueryClient             // query clients for auth
+	QueryBanks         []banktypes.QueryClient             // query clients for bank
+	QueryDistributions []distributiontypes.QueryClient     // query clients for distribution
+	QueryEmissionses   []emissionstypes.QueryServiceClient // query clients for emissions
+	QueryMints         []minttypes.QueryClient             // query clients for mint
+	QueryGovs          []govtypesv1.QueryClient            // query clients for gov
+	QueryUpgrades      []upgradetypes.QueryClient          // query clients for upgrades
+	RpcCounterSeed     int64                               // if round-robin which RPC to use next, if random, seed to use
+	RpcCounterMutex    *sync.Mutex                         // mutex for the counter
+	Rand               *rand.Rand                          // random number generator
 
 	accountRegistry      cosmosaccount.Registry // registry for accounts
 	accountRegistryMutex *sync.Mutex            // mutex for the registry
@@ -65,7 +65,7 @@ func NewClient(
 	client.QueryAuths = make([]authtypes.QueryClient, len(nodeRpcAddresses))
 	client.QueryBanks = make([]banktypes.QueryClient, len(nodeRpcAddresses))
 	client.QueryDistributions = make([]distributiontypes.QueryClient, len(nodeRpcAddresses))
-	client.QueryEmissionses = make([]emissionstypes.QueryClient, len(nodeRpcAddresses))
+	client.QueryEmissionses = make([]emissionstypes.QueryServiceClient, len(nodeRpcAddresses))
 	client.QueryMints = make([]minttypes.QueryClient, len(nodeRpcAddresses))
 	client.QueryGovs = make([]govtypesv1.QueryClient, len(nodeRpcAddresses))
 	client.QueryUpgrades = make([]upgradetypes.QueryClient, len(nodeRpcAddresses))
@@ -93,7 +93,7 @@ func NewClient(
 		client.QueryAuths[i] = authtypes.NewQueryClient(ccCtx)
 		client.QueryBanks[i] = banktypes.NewQueryClient(ccCtx)
 		client.QueryDistributions[i] = distributiontypes.NewQueryClient(ccCtx)
-		client.QueryEmissionses[i] = emissionstypes.NewQueryClient(ccCtx)
+		client.QueryEmissionses[i] = emissionstypes.NewQueryServiceClient(ccCtx)
 		client.QueryMints[i] = minttypes.NewQueryClient(ccCtx)
 		client.QueryGovs[i] = govtypesv1.NewQueryClient(ccCtx)
 		client.QueryUpgrades[i] = upgradetypes.NewQueryClient(ccCtx)
@@ -145,7 +145,7 @@ func (c *Client) QueryDistribution() distributiontypes.QueryClient {
 	return c.QueryDistributions[c.getNextClientNumber()]
 }
 
-func (c *Client) QueryEmissions() emissionstypes.QueryClient {
+func (c *Client) QueryEmissions() emissionstypes.QueryServiceClient {
 	return c.QueryEmissionses[c.getNextClientNumber()]
 }
 

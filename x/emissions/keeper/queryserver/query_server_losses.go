@@ -9,7 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *types.QueryNetworkLossBundleAtBlockRequest) (*types.QueryNetworkLossBundleAtBlockResponse, error) {
+func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *types.GetNetworkLossBundleAtBlockRequest) (*types.GetNetworkLossBundleAtBlockResponse, error) {
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -22,27 +22,27 @@ func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *type
 		return nil, err
 	}
 
-	return &types.QueryNetworkLossBundleAtBlockResponse{LossBundle: networkLoss}, nil
+	return &types.GetNetworkLossBundleAtBlockResponse{LossBundle: networkLoss}, nil
 }
 
 func (qs queryServer) IsReputerNonceUnfulfilled(
 	ctx context.Context,
-	req *types.QueryIsReputerNonceUnfulfilledRequest,
+	req *types.IsReputerNonceUnfulfilledRequest,
 ) (
-	*types.QueryIsReputerNonceUnfulfilledResponse,
+	*types.IsReputerNonceUnfulfilledResponse,
 	error,
 ) {
 	isReputerNonceUnfulfilled, err :=
 		qs.k.IsReputerNonceUnfulfilled(ctx, req.TopicId, &types.Nonce{BlockHeight: req.BlockHeight})
 
-	return &types.QueryIsReputerNonceUnfulfilledResponse{IsReputerNonceUnfulfilled: isReputerNonceUnfulfilled}, err
+	return &types.IsReputerNonceUnfulfilledResponse{IsReputerNonceUnfulfilled: isReputerNonceUnfulfilled}, err
 }
 
 func (qs queryServer) GetUnfulfilledReputerNonces(
 	ctx context.Context,
-	req *types.QueryUnfulfilledReputerNoncesRequest,
+	req *types.GetUnfulfilledReputerNoncesRequest,
 ) (
-	*types.QueryUnfulfilledReputerNoncesResponse,
+	*types.GetUnfulfilledReputerNoncesResponse,
 	error,
 ) {
 	unfulfilledNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
@@ -50,14 +50,14 @@ func (qs queryServer) GetUnfulfilledReputerNonces(
 		return nil, err
 	}
 
-	return &types.QueryUnfulfilledReputerNoncesResponse{Nonces: &unfulfilledNonces}, nil
+	return &types.GetUnfulfilledReputerNoncesResponse{Nonces: &unfulfilledNonces}, nil
 }
 
 func (qs queryServer) GetReputerLossBundlesAtBlock(
 	ctx context.Context,
-	req *types.QueryReputerLossBundlesAtBlockRequest,
+	req *types.GetReputerLossBundlesAtBlockRequest,
 ) (
-	*types.QueryReputerLossBundlesAtBlockResponse,
+	*types.GetReputerLossBundlesAtBlockResponse,
 	error,
 ) {
 	reputerLossBundles, err := qs.k.GetReputerLossBundlesAtBlock(ctx, req.TopicId, req.BlockHeight)
@@ -65,5 +65,5 @@ func (qs queryServer) GetReputerLossBundlesAtBlock(
 		return nil, err
 	}
 
-	return &types.QueryReputerLossBundlesAtBlockResponse{LossBundles: reputerLossBundles}, nil
+	return &types.GetReputerLossBundlesAtBlockResponse{LossBundles: reputerLossBundles}, nil
 }

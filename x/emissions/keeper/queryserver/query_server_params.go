@@ -10,11 +10,11 @@ import (
 )
 
 // Params defines the handler for the Query/Params RPC method.
-func (qs queryServer) Params(ctx context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+func (qs queryServer) GetParams(ctx context.Context, req *types.GetParamsRequest) (*types.GetParamsResponse, error) {
 	params, err := qs.k.GetParams(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryParamsResponse{Params: params}, nil
+	return &types.GetParamsResponse{Params: params}, nil
 }

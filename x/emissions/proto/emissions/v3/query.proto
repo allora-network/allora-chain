@@ -265,6 +265,11 @@ service Query {
     option (google.api.http).get = "/emissions/v3/topic_fee_revenue/{topic_id}";
   }
 
+  rpc GetRewardableTopics(QueryRewardableTopicsRequest) returns (QueryRewardableTopicsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v3/rewardable_topics";
+  }
+
   rpc GetInfererScoreEma(QueryGetInfererScoreEmaRequest) returns (QueryGetInfererScoreEmaResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v3/inferer_score_ema/{topic_id}/{inferer}";
@@ -999,6 +1004,12 @@ message QueryTopicFeeRevenueResponse {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+message QueryRewardableTopicsRequest {}
+
+message QueryRewardableTopicsResponse {
+  repeated uint64 rewardable_topic_ids = 1;
 }
 
 message QueryGetInfererScoreEmaRequest {

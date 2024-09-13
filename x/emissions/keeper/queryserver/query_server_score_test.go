@@ -19,7 +19,7 @@ func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 	err := keeper.SetInfererScoreEma(ctx, topicId, worker, newScore)
 	s.Require().NoError(err, "Setting an inferer score should not fail")
 
-	req := &types.QueryGetInfererScoreEmaRequest{
+	req := &types.GetInfererScoreEmaRequest{
 		TopicId: topicId,
 		Inferer: worker,
 	}
@@ -44,7 +44,7 @@ func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
 	// Set a new score for forecaster
 	_ = keeper.SetForecasterScoreEma(ctx, topicId, forecaster, newScore)
 
-	req := &types.QueryGetForecasterScoreEmaRequest{
+	req := &types.GetForecasterScoreEmaRequest{
 		TopicId:    topicId,
 		Forecaster: forecaster,
 	}
@@ -66,7 +66,7 @@ func (s *QueryServerTestSuite) TestGetReputerScoreEma() {
 	// Set a new score for reputer
 	_ = keeper.SetReputerScoreEma(ctx, topicId, reputer, newScore)
 
-	req := &types.QueryGetReputerScoreEmaRequest{
+	req := &types.GetReputerScoreEmaRequest{
 		TopicId: topicId,
 		Reputer: reputer,
 	}
@@ -97,7 +97,7 @@ func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 	}
 
 	// Get scores for the worker up to block 105
-	req := &types.QueryInferenceScoresUntilBlockRequest{
+	req := &types.GetInferenceScoresUntilBlockRequest{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
@@ -143,7 +143,7 @@ func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	}
 
 	// Fetch scores to check if trimming happened
-	req := &types.QueryWorkerInferenceScoresAtBlockRequest{
+	req := &types.GetWorkerInferenceScoresAtBlockRequest{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
@@ -170,7 +170,7 @@ func (s *QueryServerTestSuite) TestGetForecastScoresUntilBlock() {
 		_ = keeper.InsertWorkerForecastScore(ctx, topicId, i, score)
 	}
 
-	req := &types.QueryForecastScoresUntilBlockRequest{
+	req := &types.GetForecastScoresUntilBlockRequest{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
@@ -198,7 +198,7 @@ func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
 	}
 
 	// Fetch scores at the specific block
-	req := &types.QueryWorkerForecastScoresAtBlockRequest{
+	req := &types.GetWorkerForecastScoresAtBlockRequest{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
@@ -227,7 +227,7 @@ func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
 	}
 
 	// Fetch scores at the specific block
-	req := &types.QueryReputersScoresAtBlockRequest{
+	req := &types.GetReputersScoresAtBlockRequest{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 	}
@@ -246,7 +246,7 @@ func (s *QueryServerTestSuite) TestGetListeningCoefficient() {
 	reputer := "sampleReputerAddress"
 
 	// Attempt to fetch a coefficient before setting it
-	req := &types.QueryListeningCoefficientRequest{
+	req := &types.GetListeningCoefficientRequest{
 		TopicId: topicId,
 		Reputer: reputer,
 	}
@@ -315,7 +315,7 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 	}
 	// call the query function
 
-	req := &types.QueryCurrentLowestInfererScoreRequest{TopicId: topicId}
+	req := &types.GetCurrentLowestInfererScoreRequest{TopicId: topicId}
 
 	response, err := s.queryServer.GetCurrentLowestInfererScore(ctx, req)
 	require.NoError(err, "Fetching current lowest inferer score should not fail")
@@ -372,7 +372,7 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 	}
 
 	// call the query function
-	req := &types.QueryCurrentLowestForecasterScoreRequest{TopicId: topicId}
+	req := &types.GetCurrentLowestForecasterScoreRequest{TopicId: topicId}
 
 	response, err := s.queryServer.GetCurrentLowestForecasterScore(ctx, req)
 	require.NoError(err, "Fetching current lowest forecaster score should not fail")
@@ -444,7 +444,7 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 	}
 
 	// call the query function
-	req := &types.QueryCurrentLowestReputerScoreRequest{TopicId: topicId}
+	req := &types.GetCurrentLowestReputerScoreRequest{TopicId: topicId}
 
 	response, err := s.queryServer.GetCurrentLowestReputerScore(ctx, req)
 	require.NoError(err, "Fetching current lowest reputer score should not fail")

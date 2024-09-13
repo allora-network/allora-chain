@@ -55,7 +55,7 @@ func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the state module.
 func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {
-	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
+	if err := types.RegisterQueryServiceHandlerClient(context.Background(), mux, types.NewQueryServiceClient(clientCtx)); err != nil {
 		panic(err)
 	}
 }
@@ -71,7 +71,7 @@ func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
 // RegisterServices registers a gRPC query service to respond to the module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServiceServer(cfg.MsgServer(), msgserver.NewMsgServerImpl(am.keeper))
-	types.RegisterQueryServer(cfg.QueryServer(), queryserver.NewQueryServerImpl(am.keeper))
+	types.RegisterQueryServiceServer(cfg.QueryServer(), queryserver.NewQueryServerImpl(am.keeper))
 
 	if err := cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {
 		return migrationV2.MigrateStore(ctx, am.keeper)
