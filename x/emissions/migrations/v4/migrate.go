@@ -258,7 +258,6 @@ func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cd
 	safelyClearWholeMap(store, emissionstypes.PreviousForecastRewardFractionKey)
 	ctx.Logger().Info("MIGRATION V4: RESETTING PreviousReputerRewardFractionKey MAP")
 	safelyClearWholeMap(store, emissionstypes.PreviousReputerRewardFractionKey)
-
 }
 
 // copyTopic duplicates a topic into a new struct
