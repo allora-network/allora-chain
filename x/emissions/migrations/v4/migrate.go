@@ -244,6 +244,20 @@ func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cd
 	safelyClearWholeMap(store, emissionstypes.LatestOneOutForecasterInfererNetworkRegretsKey)
 	ctx.Logger().Info("MIGRATION V4: RESETTING latestOneOutForecasterForecasterNetworkRegrets MAP")
 	safelyClearWholeMap(store, emissionstypes.LatestOneOutForecasterForecasterNetworkRegretsKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING ReputerListeningCoefficientKey MAP")
+	safelyClearWholeMap(store, emissionstypes.ReputerListeningCoefficientKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING PreviousTopicQuantileInfererScoreEmaKey MAP")
+	safelyClearWholeMap(store, emissionstypes.PreviousTopicQuantileInfererScoreEmaKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING PreviousTopicQuantileForecasterScoreEmaKey MAP")
+	safelyClearWholeMap(store, emissionstypes.PreviousTopicQuantileForecasterScoreEmaKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING PreviousTopicQuantileReputerScoreEmaKey MAP")
+	safelyClearWholeMap(store, emissionstypes.PreviousTopicQuantileReputerScoreEmaKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING PreviousInferenceRewardFractionKey MAP")
+	safelyClearWholeMap(store, emissionstypes.PreviousInferenceRewardFractionKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING PreviousForecastRewardFractionKey MAP")
+	safelyClearWholeMap(store, emissionstypes.PreviousForecastRewardFractionKey)
+	ctx.Logger().Info("MIGRATION V4: RESETTING PreviousReputerRewardFractionKey MAP")
+	safelyClearWholeMap(store, emissionstypes.PreviousReputerRewardFractionKey)
 }
 
 // copyTopic duplicates a topic into a new struct

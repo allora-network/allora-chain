@@ -1512,7 +1512,6 @@ func (k *Keeper) RemoveDelegateStake(
 	totalStakeNew := totalStake.Sub(stakeToRemove)
 
 	// SET NEW VALUES AFTER CHECKS
-
 	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting stake from delegator failed")
 	}
@@ -1595,7 +1594,7 @@ func (k *Keeper) GetStakeReputerAuthority(ctx context.Context, topicId TopicId, 
 // Includes the stake placed by delegators on the reputer in that topic.
 func (k *Keeper) SetStakeReputerAuthority(ctx context.Context, topicId TopicId, reputer ActorId, amount cosmosMath.Int) error {
 	key := collections.Join(topicId, reputer)
-	if amount.IsZero() {
+	if amount.IsNil() || amount.IsZero() {
 		return k.stakeReputerAuthority.Remove(ctx, key)
 	}
 	return k.stakeReputerAuthority.Set(ctx, key, amount)
@@ -1661,6 +1660,9 @@ func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId,
 // Set the share on specific reputer and topicId
 func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer ActorId, share alloraMath.Dec) error {
 	key := collections.Join(topicId, reputer)
+	if err := types.ValidateDec(share); err != nil { // Added error check
+		return errorsmod.Wrapf(err, "SetDelegateRewardPerShare: invalid share")
+	}
 	return k.delegateRewardPerShare.Set(ctx, key, share)
 }
 
@@ -2469,6 +2471,9 @@ func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, 
 }
 
 func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TopicId, reputer ActorId, coefficient types.ListeningCoefficient) error {
+	if err := types.ValidateDec(coefficient.Coefficient); err != nil { // Added error check
+		return errorsmod.Wrapf(err, "SetListeningCoefficient: invalid coefficient")
+	}
 	key := collections.Join(topicId, reputer)
 	return k.reputerListeningCoefficient.Set(ctx, key, coefficient)
 }
