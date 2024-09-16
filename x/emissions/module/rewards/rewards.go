@@ -141,7 +141,7 @@ func getDistributionAndPayoutRewardsToTopicActors(
 
 	Logger(ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", topicId, topicRewardNonce, topicReward))
 
-	// Distribute rewards between topic participants
+	// Get the distribution of rewards across actor types and participants in this topic
 	totalRewardsDistribution, rewardInTopicToActors, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)
 	if err != nil {
 		return alloraMath.ZeroDec(), errors.Wrapf(err, "Failed to Generate Rewards for Topic %d", topicId)
