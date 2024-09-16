@@ -152,13 +152,13 @@ func findFirstValidStakeRemovalFromChain(m *testcommon.TestConfig) (emissionstyp
 	if err != nil {
 		return emissionstypes.StakeRemovalInfo{}, false, err
 	}
-	moduleParams, err := m.Client.QueryEmissions().Params(ctx, &emissionstypes.QueryParamsRequest{})
+	moduleParams, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
 	if err != nil {
 		return emissionstypes.StakeRemovalInfo{}, false, err
 	}
 	blockHeightEnd := blockHeightNow + moduleParams.Params.RemoveStakeDelayWindow
 	for i := blockHeightNow; i < blockHeightEnd; i++ {
-		query := &emissionstypes.QueryStakeRemovalsUpUntilBlockRequest{
+		query := &emissionstypes.GetStakeRemovalsUpUntilBlockRequest{
 			BlockHeight: i,
 		}
 		resp, err := m.Client.QueryEmissions().GetStakeRemovalsUpUntilBlock(ctx, query)
@@ -366,13 +366,13 @@ func findFirstValidDelegateStakeRemovalFromChain(m *testcommon.TestConfig) (emis
 	if err != nil {
 		return emissionstypes.DelegateStakeRemovalInfo{}, false, err
 	}
-	moduleParams, err := m.Client.QueryEmissions().Params(ctx, &emissionstypes.QueryParamsRequest{})
+	moduleParams, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
 	if err != nil {
 		return emissionstypes.DelegateStakeRemovalInfo{}, false, err
 	}
 	blockHeightEnd := blockHeightNow + moduleParams.Params.RemoveStakeDelayWindow
 	for i := blockHeightNow; i < blockHeightEnd; i++ {
-		query := &emissionstypes.QueryDelegateStakeRemovalsUpUntilBlockRequest{
+		query := &emissionstypes.GetDelegateStakeRemovalsUpUntilBlockRequest{
 			BlockHeight: i,
 		}
 		resp, err := m.Client.QueryEmissions().GetDelegateStakeRemovalsUpUntilBlock(ctx, query)

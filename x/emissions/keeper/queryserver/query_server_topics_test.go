@@ -25,7 +25,7 @@ func (s *QueryServerTestSuite) TestGetNextTopicId() {
 		s.Require().NoError(err, "Setting a new topic should not fail")
 	}
 
-	req := &types.QueryNextTopicIdRequest{}
+	req := &types.GetNextTopicIdRequest{}
 
 	response, err := queryServer.GetNextTopicId(ctx, req)
 	s.Require().NoError(err, "GetNextTopicId should not produce an error")
@@ -42,7 +42,7 @@ func (s *QueryServerTestSuite) TestGetTopic() {
 	topicId, err := keeper.GetNextTopicId(ctx)
 	s.Require().NoError(err)
 	metadata := "metadata"
-	req := &types.QueryTopicRequest{TopicId: topicId}
+	req := &types.GetTopicRequest{TopicId: topicId}
 
 	// Setting up a new topic
 	newTopic := types.Topic{Id: topicId, Metadata: metadata}
@@ -75,7 +75,7 @@ func (s *QueryServerTestSuite) TestGetLatestCommit() {
 		&nonce,
 	)
 
-	req := &types.QueryTopicLastReputerCommitInfoRequest{
+	req := &types.GetTopicLastReputerCommitInfoRequest{
 		TopicId: topic.Id,
 	}
 
@@ -98,7 +98,7 @@ func (s *QueryServerTestSuite) TestGetLatestCommit() {
 		&nonce,
 	)
 
-	req2 := &types.QueryTopicLastWorkerCommitInfoRequest{
+	req2 := &types.GetTopicLastWorkerCommitInfoRequest{
 		TopicId: topic2.Id,
 	}
 
@@ -115,7 +115,7 @@ func (s *QueryServerTestSuite) TestGetSetDeleteTopicRewardNonce() {
 	topicId := uint64(1)
 
 	// Test Get on an unset topicId, should return 0
-	req := &types.QueryTopicRewardNonceRequest{
+	req := &types.GetTopicRewardNonceRequest{
 		TopicId: topicId,
 	}
 	response, err := s.queryServer.GetTopicRewardNonce(ctx, req)
@@ -156,7 +156,7 @@ func (s *QueryServerTestSuite) TestGetPreviousTopicWeight() {
 	s.Require().NoError(err, "Setting previous topic weight should not fail")
 
 	// Get the previously set topic weight
-	req := &types.QueryPreviousTopicWeightRequest{TopicId: topicId}
+	req := &types.GetPreviousTopicWeightRequest{TopicId: topicId}
 	response, err := s.queryServer.GetPreviousTopicWeight(ctx, req)
 	retrievedWeight := response.Weight
 
@@ -170,7 +170,7 @@ func (s *QueryServerTestSuite) TestTopicExists() {
 
 	// Test a topic ID that does not exist
 	nonExistentTopicId := uint64(999) // Assuming this ID has not been used
-	req := &types.QueryTopicExistsRequest{TopicId: nonExistentTopicId}
+	req := &types.TopicExistsRequest{TopicId: nonExistentTopicId}
 	response, err := s.queryServer.TopicExists(ctx, req)
 	exists := response.Exists
 	s.Require().NoError(err, "Checking existence for a non-existent topic should not fail")
@@ -186,7 +186,7 @@ func (s *QueryServerTestSuite) TestTopicExists() {
 	s.Require().NoError(err, "Setting a new topic should not fail")
 
 	// Test the newly created topic ID
-	req = &types.QueryTopicExistsRequest{TopicId: existentTopicId}
+	req = &types.TopicExistsRequest{TopicId: existentTopicId}
 	response, err = s.queryServer.TopicExists(ctx, req)
 	exists = response.Exists
 	s.Require().NoError(err, "Checking existence for an existent topic should not fail")
@@ -207,7 +207,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active
-	req := &types.QueryIsTopicActiveRequest{TopicId: topicId}
+	req := &types.IsTopicActiveRequest{TopicId: topicId}
 	response, err := s.queryServer.IsTopicActive(ctx, req)
 	topicActive := response.IsActive
 
@@ -219,7 +219,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	s.Require().NoError(err, "Inactivating topic should not fail")
 
 	// Check if topic is inactive
-	req = &types.QueryIsTopicActiveRequest{TopicId: topicId}
+	req = &types.IsTopicActiveRequest{TopicId: topicId}
 	response, err = s.queryServer.IsTopicActive(ctx, req)
 	topicActive = response.IsActive
 	s.Require().NoError(err, "Getting topic should not fail after inactivation")
@@ -230,7 +230,7 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	s.Require().NoError(err, "Reactivating topic should not fail")
 
 	// Check if topic is active again
-	req = &types.QueryIsTopicActiveRequest{TopicId: topicId}
+	req = &types.IsTopicActiveRequest{TopicId: topicId}
 	response, err = s.queryServer.IsTopicActive(ctx, req)
 	topicActive = response.IsActive
 	s.Require().NoError(err, "Getting topic should not fail after reactivation")
@@ -247,7 +247,7 @@ func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
 	s.Require().NoError(err, "Setting a new topic should not fail")
 
 	// Test getting revenue for a topic with no existing revenue
-	req := &types.QueryTopicFeeRevenueRequest{TopicId: topicId}
+	req := &types.GetTopicFeeRevenueRequest{TopicId: topicId}
 	response, err := s.queryServer.GetTopicFeeRevenue(ctx, req)
 	feeRev := response.FeeRevenue
 	s.Require().NoError(err, "Should not error when revenue does not exist")
@@ -260,7 +260,7 @@ func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
 	s.Require().NoError(err, "Adding revenue should not fail")
 
 	// Test getting revenue for a topic with existing revenue
-	req = &types.QueryTopicFeeRevenueRequest{TopicId: topicId}
+	req = &types.GetTopicFeeRevenueRequest{TopicId: topicId}
 	response, err = s.queryServer.GetTopicFeeRevenue(ctx, req)
 	feeRev = response.FeeRevenue
 	s.Require().NoError(err, "Should not error when retrieving existing revenue")

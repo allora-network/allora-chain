@@ -12,8 +12,8 @@ import (
 // get the emissions params from outside the chain
 func GetEmissionsParams(m testCommon.TestConfig) emissionstypes.Params {
 	ctx := context.Background()
-	paramsReq := &emissionstypes.QueryParamsRequest{}
-	p, err := m.Client.QueryEmissions().Params(
+	paramsReq := &emissionstypes.GetParamsRequest{}
+	p, err := m.Client.QueryEmissions().GetParams(
 		ctx,
 		paramsReq,
 	)

@@ -33,7 +33,7 @@ func CheckTopic1Activated(m testCommon.TestConfig) {
 	// Fetch only active topics
 	topicIsActive, err := m.Client.QueryEmissions().IsTopicActive(
 		ctx,
-		&emissionstypes.QueryIsTopicActiveRequest{TopicId: 1},
+		&emissionstypes.IsTopicActiveRequest{TopicId: 1},
 	)
 	require.NoError(m.T, err, "Fetching active topics should not produce an error")
 

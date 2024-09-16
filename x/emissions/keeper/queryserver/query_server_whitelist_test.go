@@ -16,7 +16,7 @@ func (s *QueryServerTestSuite) TestIsWhitelistAdmin() {
 	err := keeper.AddWhitelistAdmin(ctx, testAddress)
 	s.Require().NoError(err, "AddWhitelistAdmin should not produce an error")
 
-	req := &types.QueryIsWhitelistAdminRequest{
+	req := &types.IsWhitelistAdminRequest{
 		Address: testAddress,
 	}
 
@@ -25,7 +25,7 @@ func (s *QueryServerTestSuite) TestIsWhitelistAdmin() {
 	s.Require().NotNil(response, "The response should not be nil")
 	s.Require().True(response.IsAdmin, "The IsAdmin field should be true for the test address")
 
-	req = &types.QueryIsWhitelistAdminRequest{
+	req = &types.IsWhitelistAdminRequest{
 		Address: antitestAddress,
 	}
 

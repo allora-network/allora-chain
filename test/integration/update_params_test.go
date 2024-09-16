@@ -11,7 +11,7 @@ import (
 
 func checkIfAdmin(m testCommon.TestConfig, address string) bool {
 	ctx := context.Background()
-	paramsReq := &emissionstypes.QueryIsWhitelistAdminRequest{
+	paramsReq := &emissionstypes.IsWhitelistAdminRequest{
 		Address: address,
 	}
 	p, err := m.Client.QueryEmissions().IsWhitelistAdmin(

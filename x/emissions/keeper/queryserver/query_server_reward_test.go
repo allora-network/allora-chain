@@ -12,7 +12,7 @@ func (s *QueryServerTestSuite) TestGetPreviousReputerRewardFraction() {
 	reputer := "reputerAddressExample"
 
 	// Attempt to fetch a reward fraction before setting it
-	req := &types.QueryPreviousReputerRewardFractionRequest{
+	req := &types.GetPreviousReputerRewardFractionRequest{
 		TopicId: topicId,
 		Reputer: reputer,
 	}
@@ -46,7 +46,7 @@ func (s *QueryServerTestSuite) TestGetPreviousInferenceRewardFraction() {
 	worker := "workerAddressExample"
 
 	// Attempt to fetch a reward fraction before setting it
-	req := &types.QueryPreviousInferenceRewardFractionRequest{
+	req := &types.GetPreviousInferenceRewardFractionRequest{
 		TopicId: topicId,
 		Worker:  worker,
 	}
@@ -79,7 +79,7 @@ func (s *QueryServerTestSuite) TestGetPreviousForecastRewardFraction() {
 	worker := "forecastWorkerAddress"
 
 	// Attempt to fetch the reward fraction before setting it, expecting default value
-	req := &types.QueryPreviousForecastRewardFractionRequest{
+	req := &types.GetPreviousForecastRewardFractionRequest{
 		TopicId: topicId,
 		Worker:  worker,
 	}
@@ -124,7 +124,7 @@ func (s *QueryServerTestSuite) TestGetPreviousPercentageRewardToStakedReputers()
 		fetchedPercentageReward.String(),
 		previousPercentageReward.String(),
 	)
-	req := &types.QueryPreviousPercentageRewardToStakedReputersRequest{}
+	req := &types.GetPreviousPercentageRewardToStakedReputersRequest{}
 	response, err := s.queryServer.GetPreviousPercentageRewardToStakedReputers(ctx, req)
 	s.Require().NoError(err)
 	fetchedPercentageReward = response.PercentageReward

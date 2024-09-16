@@ -5,10 +5,10 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-var _ types.QueryServer = queryServer{}
+var _ types.QueryServiceServer = queryServer{}
 
 // NewQueryServerImpl returns an implementation of the module QueryServer.
-func NewQueryServerImpl(k keeper.Keeper) types.QueryServer {
+func NewQueryServerImpl(k keeper.Keeper) types.QueryServiceServer {
 	return queryServer{k}
 }
 
