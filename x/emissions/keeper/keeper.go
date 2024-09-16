@@ -1660,8 +1660,8 @@ func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId,
 // Set the share on specific reputer and topicId
 func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer ActorId, share alloraMath.Dec) error {
 	key := collections.Join(topicId, reputer)
-	if share.IsNaN() || !share.IsFinite() {
-		return errorsmod.Wrapf(types.ErrInvariantFailure, "SetDelegateRewardPerShare: invalid share: NaN")
+	if err := types.ValidateDec(share); err != nil { // Added error check
+		return errorsmod.Wrapf(err, "SetDelegateRewardPerShare: invalid share")
 	}
 	return k.delegateRewardPerShare.Set(ctx, key, share)
 }
@@ -2471,8 +2471,8 @@ func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, 
 }
 
 func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TopicId, reputer ActorId, coefficient types.ListeningCoefficient) error {
-	if coefficient.Coefficient.IsNaN() {
-		return errorsmod.Wrapf(types.ErrInvariantFailure, "Listening coefficient is NaN")
+	if err := types.ValidateDec(coefficient.Coefficient); err != nil { // Added error check
+		return errorsmod.Wrapf(err, "SetListeningCoefficient: invalid coefficient")
 	}
 	key := collections.Join(topicId, reputer)
 	return k.reputerListeningCoefficient.Set(ctx, key, coefficient)
