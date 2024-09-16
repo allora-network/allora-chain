@@ -66,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#595](https://github.com/allora-network/allora-chain/pull/592) Emit inference and forecast score events in case of 1 actor
 * [#596](https://github.com/allora-network/allora-chain/pull/596) EMA protection against NaN values
 * [#598](https://github.com/allora-network/allora-chain/pull/598) Math Operations on NaNs Should Return Errors
+* [#604](https://github.com/allora-network/allora-chain/pull/604) Migration: clean additional stores. Ensure record pruning on reward failure. Autocli fix of multi-reputer-stake function.
 
 ### Security
 

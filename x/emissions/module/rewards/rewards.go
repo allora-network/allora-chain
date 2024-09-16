@@ -77,11 +77,11 @@ func EmitRewards(
 			continue
 		}
 		// Defer pruning records after rewards payout
-		defer func() {
+		defer func(topicId uint64, topicRewardNonce int64) {
 			if err := pruneRecordsAfterRewards(ctx, k, moduleParams.MinEpochLengthRecordLimit, topicId, topicRewardNonce); err != nil {
-				Logger(ctx).Error(fmt.Sprintf("Failed to prune records after rewards for Topic %d, nonce %d, error: %s", topicId, topicRewardNonce, err.Error()))
+				Logger(ctx).Error(fmt.Sprintf("Failed to prune records after rewards for Topic %d, nonce: %d, err: %s", topicId, topicRewardNonce, err.Error()))
 			}
-		}()
+		}(topicId, topicRewardNonce)
 
 		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicRewards, moduleParams)
 		if err != nil {
