@@ -78,7 +78,7 @@ func EmitRewards(
 		}
 
 		// Process the topic if the nonce is valid
-		rewardInTopicToReputers, err := processTopic(ctx, k, topicId, topicRewardNonce, topicRewards, moduleParams)
+		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicRewards, moduleParams)
 		if err != nil {
 			Logger(ctx).Error(fmt.Sprintf("Failed to process rewards for topic %d: %s", topicId, err.Error()))
 			// Prune records after rewards anyway in case of error
@@ -87,6 +87,11 @@ func EmitRewards(
 				return errors.Wrapf(err, "Failed to prune records after rewards for Topic %d", topicId)
 			}
 			continue
+		}
+		// Prune records after rewards payout. Code duplicity for maintaining clear err handling pattern
+		err = pruneRecordsAfterRewards(ctx, k, moduleParams.MinEpochLengthRecordLimit, topicId, topicRewardNonce)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to prune records after rewards for Topic %d", topicId)
 		}
 
 		// Add rewardInTopicToReputers to totalRewardToStakedReputers
@@ -122,7 +127,7 @@ func EmitRewards(
 }
 
 // New function for processing each topic individually
-func processTopic(
+func getDistributionAndPayoutRewardsToTopicActors(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
