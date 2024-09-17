@@ -163,9 +163,9 @@ func GetfUniqueAgg(numForecasters alloraMath.Dec) (alloraMath.Dec, error) {
 	return ret, nil
 }
 
-// GetFinalWorkerScoreForecastTask calculates the worker score in forecast task.
+// GetFinalWorkerPerformanceScore calculates the worker performance score.
 // T_ik
-func GetFinalWorkerScoreForecastTask(
+func GetFinalWorkerPerformanceScore(
 	scoreOneIn,
 	scoreOneOut,
 	fUniqueAgg alloraMath.Dec,

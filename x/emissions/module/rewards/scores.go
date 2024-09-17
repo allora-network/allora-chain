@@ -233,7 +233,7 @@ func GenerateForecastScores(
 		newScore := types.Score{
 			TopicId:     topicId,
 			BlockHeight: block,
-			Address:     networkLosses.InfererValues[0].Worker,
+			Address:     networkLosses.ForecasterValues[0].Worker,
 			Score:       alloraMath.ZeroDec(),
 		}
 		err := keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
@@ -269,8 +269,8 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
 
-		// Calculate forecast score
-		workerFinalScore, err := GetFinalWorkerScoreForecastTask(workerScoreOneIn, workersScoresOneOut[i], fUniqueAgg)
+		// Calculate worker performance score
+		workerPerformanceScore, err := GetFinalWorkerPerformanceScore(workerScoreOneIn, workersScoresOneOut[i], fUniqueAgg)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting final worker score forecast task")
 		}
@@ -279,7 +279,7 @@ func GenerateForecastScores(
 			TopicId:     topicId,
 			BlockHeight: block,
 			Address:     oneInNaiveLoss.Worker,
-			Score:       workerFinalScore,
+			Score:       workerPerformanceScore,
 		}
 		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
 		if err != nil {
@@ -305,6 +305,14 @@ func GenerateForecastScores(
 		return nil, err
 	}
 
+	// Calculate forecast task score and emit
+	forecastingTaskScore, err := networkLosses.NaiveValue.Sub(networkLosses.CombinedValue)
+	if err != nil {
+		return []types.Score{}, errors.Wrapf(err, "Error calculaing forecast task score")
+	}
+	types.EmitNewForecastTaskScoreSetEvent(ctx, topicId, forecastingTaskScore)
+
+	// Emit forecaster performance scores
 	types.EmitNewForecasterScoresSetEvent(ctx, newScores)
 	return newScores, nil
 }

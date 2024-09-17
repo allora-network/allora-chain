@@ -199,6 +199,11 @@ func CloseReputerNonce(
 		return err
 	}
 
+	types.EmitNewReputerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
+	if err != nil {
+		return err
+	}
+
 	sdkCtx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topicId, nonce))
 	return nil
 }

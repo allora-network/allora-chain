@@ -118,6 +118,8 @@ func EmitRewards(
 		}
 	}
 
+	// Emit reward of each topic
+	types.EmitNewTopicRewardSetEvent(ctx, topicRewards)
 	return nil
 }
 

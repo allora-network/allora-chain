@@ -611,7 +611,7 @@ func TestGetStakeWeightedLoss(t *testing.T) {
 	}
 }
 
-func TestGetFinalWorkerScoreForecastTask(t *testing.T) {
+func TestGetFinalWorkerPerformanceScore(t *testing.T) {
 	tests := []struct {
 		name        string
 		scoreOneIn  alloraMath.Dec
@@ -630,12 +630,12 @@ func TestGetFinalWorkerScoreForecastTask(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewards.GetFinalWorkerScoreForecastTask(tt.scoreOneIn, tt.scoreOneOut, tt.fUniqueAgg)
+			got, err := rewards.GetFinalWorkerPerformanceScore(tt.scoreOneIn, tt.scoreOneOut, tt.fUniqueAgg)
 			require.NoError(t, err)
 			inDelta, err := alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.00001"))
 			require.NoError(t, err)
 			if !inDelta {
-				t.Errorf("GetFinalWorkerScoreForecastTask() got = %v, want %v", got, tt.want)
+				t.Errorf("GetFinalWorkerPerformanceScore() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

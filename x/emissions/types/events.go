@@ -75,6 +75,34 @@ func EmitNewReputerAndDelegatorRewardsSettledEvent(ctx sdk.Context, blockHeight 
 	}
 }
 
+func EmitNewWorkerLastCommitSetEvent(ctx sdk.Context, topicId TopicId, height BlockHeight, nonce *Nonce) {
+	err := ctx.EventManager().EmitTypedEvent(NewWorkerLastCommitSetEventBase(topicId, height, nonce))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewWorkerLastCommitSetEvent: ", err.Error())
+	}
+}
+
+func EmitNewReputerLastCommitSetEvent(ctx sdk.Context, topicId TopicId, height BlockHeight, nonce *Nonce) {
+	err := ctx.EventManager().EmitTypedEvent(NewReputerLastCommitSetEventBase(topicId, height, nonce))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewReputerLastCommitSetEvent: ", err.Error())
+	}
+}
+
+func EmitNewForecastTaskScoreSetEvent(ctx sdk.Context, topicId TopicId, score alloraMath.Dec) {
+	err := ctx.EventManager().EmitTypedEvent(NewForecastTaskScoreSetEventBase(topicId, score))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewReputerLastCommitSetEvent: ", err.Error())
+	}
+}
+
+func EmitNewTopicRewardSetEvent(ctx sdk.Context, topicRewards map[uint64]*alloraMath.Dec) {
+	err := ctx.EventManager().EmitTypedEvent(NewTopicRewardSetEventBase(topicRewards))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewTopicRewardSetEvent: ", err.Error())
+	}
+}
+
 /// Utils
 
 // Assumes length of `scores` is at least 1
@@ -119,5 +147,41 @@ func NewNetworkLossSetEventBase(topicId TopicId, blockHeight BlockHeight, lossVa
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		ValueBundle: &lossValueBundle,
+	}
+}
+
+func NewWorkerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, nonce *Nonce) proto.Message {
+	return &EventWorkerLastCommitSet{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Nonce:       nonce,
+	}
+}
+
+func NewReputerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, nonce *Nonce) proto.Message {
+	return &EventReputerLastCommitSet{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Nonce:       nonce,
+	}
+}
+
+func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) proto.Message {
+	return &EventForecastTaskScoreSet{
+		TopicId: topicId,
+		Score:   score,
+	}
+}
+
+func NewTopicRewardSetEventBase(topicRewards map[uint64]*alloraMath.Dec) proto.Message {
+	ids := make([]uint64, 0)
+	rewardValues := make([]alloraMath.Dec, 0)
+	for topic, reward := range topicRewards {
+		ids = append(ids, topic)
+		rewardValues = append(rewardValues, *reward)
+	}
+	return &EventTopicRewardsSet{
+		TopicIds: ids,
+		Rewards:  rewardValues,
 	}
 }
