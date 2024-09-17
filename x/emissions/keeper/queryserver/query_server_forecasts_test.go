@@ -1,6 +1,7 @@
 package queryserver_test
 
 import (
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -14,12 +15,28 @@ func (s *QueryServerTestSuite) TestGetForecastsAtBlock() {
 	expectedForecasts := types.Forecasts{
 		Forecasts: []*types.Forecast{
 			{
-				TopicId:    topicId,
-				Forecaster: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+				TopicId:     topicId,
+				Forecaster:  s.addrsStr[6],
+				BlockHeight: blockHeight,
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: s.addrsStr[4],
+						Value:   alloraMath.MustNewDecFromString("0.5"),
+					},
+				},
+				ExtraData: nil,
 			},
 			{
-				TopicId:    topicId,
-				Forecaster: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+				TopicId:     topicId,
+				Forecaster:  s.addrsStr[7],
+				BlockHeight: blockHeight,
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: s.addrsStr[4],
+						Value:   alloraMath.MustNewDecFromString("0.5"),
+					},
+				},
+				ExtraData: nil,
 			},
 		},
 	}

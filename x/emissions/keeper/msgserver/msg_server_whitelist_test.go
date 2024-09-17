@@ -2,7 +2,6 @@ package msgserver_test
 
 import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *MsgServerTestSuite) TestAddWhitelistAdmin() {
@@ -10,7 +9,7 @@ func (s *MsgServerTestSuite) TestAddWhitelistAdmin() {
 	require := s.Require()
 	msgServer := s.msgServer
 
-	adminAddr := sdk.AccAddress(PKS[0].Address()).String()
+	adminAddr := s.addrsStr[0]
 	newAdminAddr := nonAdminAccounts[0].String()
 
 	// Verify that newAdminAddr is not a whitelist admin
@@ -38,12 +37,12 @@ func (s *MsgServerTestSuite) TestAddWhitelistAdminInvalidUnauthorized() {
 	require := s.Require()
 
 	nonAdminAddr := nonAdminAccounts[0]
-	targetAddr := sdk.AccAddress(PKS[1].Address())
+	targetAddr := s.addrsStr[1]
 
 	// Attempt to add targetAddr to whitelist by nonAdminAddr
 	msg := &types.AddToWhitelistAdminRequest{
 		Sender:  nonAdminAddr.String(),
-		Address: targetAddr.String(),
+		Address: targetAddr,
 	}
 
 	_, err := s.msgServer.AddToWhitelistAdmin(ctx, msg)
@@ -55,8 +54,8 @@ func (s *MsgServerTestSuite) TestRemoveWhitelistAdmin() {
 	require := s.Require()
 	msgServer := s.msgServer
 
-	adminAddr := sdk.AccAddress(PKS[0].Address()).String()
-	adminToRemove := sdk.AccAddress(PKS[1].Address()).String()
+	adminAddr := s.addrsStr[0]
+	adminToRemove := s.addrsStr[1]
 
 	// Attempt to remove adminToRemove from the whitelist by adminAddr
 	removeMsg := &types.RemoveFromWhitelistAdminRequest{
@@ -81,7 +80,7 @@ func (s *MsgServerTestSuite) TestRemoveWhitelistAdminInvalidUnauthorized() {
 	// Attempt to remove an admin from whitelist by nonAdminAddr
 	msg := &types.RemoveFromWhitelistAdminRequest{
 		Sender:  nonAdminAddr.String(),
-		Address: Addr.String(),
+		Address: s.addrsStr[0],
 	}
 
 	_, err := s.msgServer.RemoveFromWhitelistAdmin(ctx, msg)

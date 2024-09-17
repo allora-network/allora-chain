@@ -2,6 +2,7 @@ package queryserver_test
 
 import (
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -15,9 +16,20 @@ func (s *QueryServerTestSuite) TestGetNetworkLossBundleAtBlock() {
 
 	// Set up a sample NetworkLossBundle
 	expectedBundle := &types.ValueBundle{
-		TopicId:   topicId,
-		Reputer:   "sample_reputer",
-		ExtraData: []byte("sample_extra_data"),
+		TopicId: topicId,
+		Reputer: s.addrsStr[0],
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{
+				BlockHeight: blockHeight,
+			},
+		},
+		ExtraData:                     []byte("sample_extra_data"),
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 	}
 
 	err := keeper.InsertNetworkLossBundleAtBlock(ctx, topicId, blockHeight, *expectedBundle)
@@ -98,8 +110,30 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 	require := s.Require()
 	topicId := uint64(1)
 	block := types.BlockHeight(100)
-	reputerLossBundles := types.ReputerValueBundles{}
-
+	valueBundle := types.ValueBundle{
+		TopicId:                       topicId,
+		Reputer:                       s.addrsStr[0],
+		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+		ExtraData:                     []byte("sample_extra_data"),
+		CombinedValue:                 alloraMath.NewDecFromInt64(100),
+		NaiveValue:                    alloraMath.NewDecFromInt64(100),
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}
+	signature := s.signValueBundle(&valueBundle, s.privKeys[0])
+	reputerLossBundles := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			{
+				ValueBundle: &valueBundle,
+				Signature:   signature,
+				Pubkey:      s.pubKeyHexStr[0],
+			},
+		},
+	}
 	req := &types.GetReputerLossBundlesAtBlockRequest{
 		TopicId:     topicId,
 		BlockHeight: block,
