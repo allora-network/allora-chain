@@ -12,7 +12,7 @@ func EmitNewInfererScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_INFERER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, scores))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewInfererScoresSetEvent: ", err.Error())
 	}
@@ -49,7 +49,7 @@ func EmitNewInfererRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight,
 	if len(rewards) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_INFERER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, blockHeight, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewInfererRewardsSettledEvent: ", err.Error())
 	}
