@@ -12,7 +12,7 @@ func EmitNewInfererScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_INFERER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_INFERER, scores))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewInfererScoresSetEvent: ", err.Error())
 	}
@@ -22,7 +22,7 @@ func EmitNewForecasterScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_FORECASTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, scores))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewForecasterScoresSetEvent: ", err.Error())
 	}
@@ -32,7 +32,7 @@ func EmitNewReputerScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_REPUTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_REPUTER, scores))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewReputerScoresSetEvent: ", err.Error())
 	}
@@ -49,7 +49,7 @@ func EmitNewInfererRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight,
 	if len(rewards) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_INFERER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_INFERER, blockHeight, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewInfererRewardsSettledEvent: ", err.Error())
 	}
@@ -59,7 +59,7 @@ func EmitNewForecasterRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeig
 	if len(rewards) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_FORECASTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, blockHeight, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewForecasterRewardsSettledEvent: ", err.Error())
 	}
@@ -69,7 +69,7 @@ func EmitNewReputerAndDelegatorRewardsSettledEvent(ctx sdk.Context, blockHeight 
 	if len(rewards) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_REPUTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_REPUTER, blockHeight, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewReputerAndDelegatorRewardsSettledEvent: ", err.Error())
 	}

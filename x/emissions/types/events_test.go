@@ -497,5 +497,4 @@ func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
 	require.Contains(t, events[0].Attributes[0].Value, `["0","10","20","30","40"]`)
 	require.Contains(t, events[0].Attributes[1].Key, "topic_ids")
 	require.Contains(t, events[0].Attributes[1].Value, `["1","2","3","4","5"]`)
-
 }

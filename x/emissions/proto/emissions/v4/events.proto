@@ -22,9 +22,9 @@ option go_package = "github.com/allora-network/allora-chain/x/emissions/types";
 // height as soon as one event from the topic is recorded.
 
 enum ActorType {
-  INFERER = 0;
-  FORECASTER = 1;
-  REPUTER = 2;
+  ACTOR_TYPE_INFERER = 0;
+  ACTOR_TYPE_FORECASTER = 1;
+  ACTOR_TYPE_REPUTER = 2;
 }
 
 message EventScoresSet {
