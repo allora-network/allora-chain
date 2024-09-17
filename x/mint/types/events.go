@@ -21,14 +21,14 @@ func NewTokenomicsSetEventBase(stakedTokenAmount, circulatingAmount, emissionsAm
 	}
 }
 
-func EmitNewEcosystemTokenMintSetEvent(ctx sdk.Context, blockHeight int64, amount math.Int) {
+func EmitNewEcosystemTokenMintSetEvent(ctx sdk.Context, blockHeight uint64, amount math.Int) {
 	err := ctx.EventManager().EmitTypedEvent(EcosystemTokenMintSetEventBase(blockHeight, amount))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting EmitNewEcosystemTokenMintSetEvent: ", err.Error())
 	}
 }
 
-func EcosystemTokenMintSetEventBase(blockHeight int64, tokenAmount math.Int) proto.Message {
+func EcosystemTokenMintSetEventBase(blockHeight uint64, tokenAmount math.Int) proto.Message {
 	return &EventEcosystemTokenMintSet{
 		BlockHeight: blockHeight,
 		TokenAmount: tokenAmount,

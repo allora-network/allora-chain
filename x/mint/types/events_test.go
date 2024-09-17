@@ -32,7 +32,7 @@ func TestEmitNewTokenomicsSetEvent(t *testing.T) {
 
 func TestEmitNewEcosystemTokenMintedSetEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
-	blockHeight := int64(1)
+	blockHeight := uint64(1)
 	tokenAmount := math.NewInt(10)
 
 	types.EmitNewEcosystemTokenMintSetEvent(ctx, blockHeight, tokenAmount)

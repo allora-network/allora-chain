@@ -641,8 +641,8 @@ func (x *fastReflection_EventEcosystemTokenMintSet) Interface() protoreflect.Pro
 // While iterating, mutating operations may only be performed
 // on the current field descriptor.
 func (x *fastReflection_EventEcosystemTokenMintSet) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
-	if x.BlockHeight != int64(0) {
-		value := protoreflect.ValueOfInt64(x.BlockHeight)
+	if x.BlockHeight != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.BlockHeight)
 		if !f(fd_EventEcosystemTokenMintSet_block_height, value) {
 			return
 		}
@@ -669,7 +669,7 @@ func (x *fastReflection_EventEcosystemTokenMintSet) Range(f func(protoreflect.Fi
 func (x *fastReflection_EventEcosystemTokenMintSet) Has(fd protoreflect.FieldDescriptor) bool {
 	switch fd.FullName() {
 	case "mint.v3.EventEcosystemTokenMintSet.block_height":
-		return x.BlockHeight != int64(0)
+		return x.BlockHeight != uint64(0)
 	case "mint.v3.EventEcosystemTokenMintSet.token_amount":
 		return x.TokenAmount != ""
 	default:
@@ -689,7 +689,7 @@ func (x *fastReflection_EventEcosystemTokenMintSet) Has(fd protoreflect.FieldDes
 func (x *fastReflection_EventEcosystemTokenMintSet) Clear(fd protoreflect.FieldDescriptor) {
 	switch fd.FullName() {
 	case "mint.v3.EventEcosystemTokenMintSet.block_height":
-		x.BlockHeight = int64(0)
+		x.BlockHeight = uint64(0)
 	case "mint.v3.EventEcosystemTokenMintSet.token_amount":
 		x.TokenAmount = ""
 	default:
@@ -710,7 +710,7 @@ func (x *fastReflection_EventEcosystemTokenMintSet) Get(descriptor protoreflect.
 	switch descriptor.FullName() {
 	case "mint.v3.EventEcosystemTokenMintSet.block_height":
 		value := x.BlockHeight
-		return protoreflect.ValueOfInt64(value)
+		return protoreflect.ValueOfUint64(value)
 	case "mint.v3.EventEcosystemTokenMintSet.token_amount":
 		value := x.TokenAmount
 		return protoreflect.ValueOfString(value)
@@ -735,7 +735,7 @@ func (x *fastReflection_EventEcosystemTokenMintSet) Get(descriptor protoreflect.
 func (x *fastReflection_EventEcosystemTokenMintSet) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
 	switch fd.FullName() {
 	case "mint.v3.EventEcosystemTokenMintSet.block_height":
-		x.BlockHeight = value.Int()
+		x.BlockHeight = value.Uint()
 	case "mint.v3.EventEcosystemTokenMintSet.token_amount":
 		x.TokenAmount = value.Interface().(string)
 	default:
@@ -776,7 +776,7 @@ func (x *fastReflection_EventEcosystemTokenMintSet) Mutable(fd protoreflect.Fiel
 func (x *fastReflection_EventEcosystemTokenMintSet) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
 	switch fd.FullName() {
 	case "mint.v3.EventEcosystemTokenMintSet.block_height":
-		return protoreflect.ValueOfInt64(int64(0))
+		return protoreflect.ValueOfUint64(uint64(0))
 	case "mint.v3.EventEcosystemTokenMintSet.token_amount":
 		return protoreflect.ValueOfString("")
 	default:
@@ -959,7 +959,7 @@ func (x *fastReflection_EventEcosystemTokenMintSet) ProtoMethods() *protoiface.M
 					}
 					b := dAtA[iNdEx]
 					iNdEx++
-					x.BlockHeight |= int64(b&0x7F) << shift
+					x.BlockHeight |= uint64(b&0x7F) << shift
 					if b < 0x80 {
 						break
 					}
@@ -1100,7 +1100,7 @@ type EventEcosystemTokenMintSet struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	BlockHeight int64  `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	BlockHeight uint64 `protobuf:"varint,1,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
 	TokenAmount string `protobuf:"bytes,2,opt,name=token_amount,json=tokenAmount,proto3" json:"token_amount,omitempty"`
 }
 
@@ -1124,7 +1124,7 @@ func (*EventEcosystemTokenMintSet) Descriptor() ([]byte, []int) {
 	return file_mint_v3_events_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *EventEcosystemTokenMintSet) GetBlockHeight() int64 {
+func (x *EventEcosystemTokenMintSet) GetBlockHeight() uint64 {
 	if x != nil {
 		return x.BlockHeight
 	}
@@ -1169,7 +1169,7 @@ var file_mint_v3_events_proto_rawDesc = []byte{
 	0x69, 0x6f, 0x6e, 0x73, 0x41, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x94, 0x01, 0x0a, 0x1a, 0x45,
 	0x76, 0x65, 0x6e, 0x74, 0x45, 0x63, 0x6f, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x54, 0x6f, 0x6b,
 	0x65, 0x6e, 0x4d, 0x69, 0x6e, 0x74, 0x53, 0x65, 0x74, 0x12, 0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f,
-	0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
 	0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74, 0x12, 0x53, 0x0a, 0x0c,
 	0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x5f, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01,
 	0x28, 0x09, 0x42, 0x30, 0xc8, 0xde, 0x1f, 0x00, 0xda, 0xde, 0x1f, 0x15, 0x63, 0x6f, 0x73, 0x6d,

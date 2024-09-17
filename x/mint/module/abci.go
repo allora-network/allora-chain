@@ -89,7 +89,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		if err != nil {
 			return err
 		}
-		types.EmitNewEcosystemTokenMintSetEvent(sdkCtx, int64(blockHeight), tokensToMint)
+		types.EmitNewEcosystemTokenMintSetEvent(sdkCtx, blockHeight, tokensToMint)
 	}
 	// pay out the computed block emissions from the ecosystem account
 	// if it came from collected fees, great, if it came from minting, also fine

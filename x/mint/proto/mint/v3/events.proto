@@ -29,7 +29,7 @@ message EventTokenomicsSet {
 }
 
 message EventEcosystemTokenMintSet {
-  int64 block_height = 1;
+  uint64 block_height = 1;
   string token_amount = 2 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
