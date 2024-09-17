@@ -174,11 +174,10 @@ func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) pro
 }
 
 func NewTopicRewardSetEventBase(topicRewards map[uint64]*alloraMath.Dec) proto.Message {
-	ids := make([]uint64, 0)
+	ids := alloraMath.GetSortedKeys(topicRewards)
 	rewardValues := make([]alloraMath.Dec, 0)
-	for topic, reward := range topicRewards {
-		ids = append(ids, topic)
-		rewardValues = append(rewardValues, *reward)
+	for _, id := range ids {
+		rewardValues = append(rewardValues, *topicRewards[id])
 	}
 	return &EventTopicRewardsSet{
 		TopicIds: ids,
