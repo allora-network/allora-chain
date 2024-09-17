@@ -40,7 +40,6 @@ func GenerateReputerScores(
 	var losses [][]alloraMath.Dec
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
 		reputers = append(reputers, reportedLoss.ValueBundle.Reputer)
-
 		// Get reputer topic stake
 		reputerStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reportedLoss.ValueBundle.Reputer)
 		if err != nil {
@@ -50,13 +49,20 @@ func GenerateReputerScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error converting reputer stake to Dec")
 		}
-		reputerStakes = append(reputerStakes, reputerStakeDec)
-
+		if reputerStakeDec.IsNaN() {
+			return []types.Score{}, errors.Wrap(types.ErrInvalidReputerData, "Error invalid reputer Stake: NaN")
+		}
 		// Get reputer listening coefficient
 		res, err := keeper.GetListeningCoefficient(ctx, topicId, reportedLoss.ValueBundle.Reputer)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting GetListeningCoefficient")
 		}
+		if res.Coefficient.IsNaN() {
+			return []types.Score{}, errors.Wrap(types.ErrInvalidReputerData, "Error invalid reputer Stake: NaN")
+		}
+
+		// defer addition until all errors are checked to ensure no partial data is added
+		reputerStakes = append(reputerStakes, reputerStakeDec)
 		reputerListeningCoefficients = append(reputerListeningCoefficients, res.Coefficient)
 
 		// Get all reported losses from bundle

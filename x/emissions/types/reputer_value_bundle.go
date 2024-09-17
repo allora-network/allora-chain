@@ -34,11 +34,11 @@ func (bundle *ReputerValueBundle) Validate() error {
 		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "value bundle's reputer request nonce cannot be nil")
 	}
 
-	if err := validateDec(bundle.ValueBundle.CombinedValue); err != nil {
+	if err := ValidateDec(bundle.ValueBundle.CombinedValue); err != nil {
 		return err
 	}
 
-	if err := validateDec(bundle.ValueBundle.NaiveValue); err != nil {
+	if err := ValidateDec(bundle.ValueBundle.NaiveValue); err != nil {
 		return err
 	}
 

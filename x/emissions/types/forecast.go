@@ -24,7 +24,7 @@ func (forecast *Forecast) Validate() error {
 		if err != nil {
 			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid inferer address (%s)", err)
 		}
-		if err := validateDec(elem.Value); err != nil {
+		if err := ValidateDec(elem.Value); err != nil {
 			return err
 		}
 	}

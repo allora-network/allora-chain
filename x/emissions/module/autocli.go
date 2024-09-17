@@ -74,7 +74,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetDelegateStakePlacement",
-					Use:       "delegate-reward-per-share [topic_id] [delegator] [target]",
+					Use:       "delegate-stake-placement [topic_id] [delegator] [target]",
 					Short:     "Get amount of token delegated to a target by a delegator in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -258,7 +258,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetMultiReputerStakeInTopic",
-					Use:       "multi-coefficient [addresses] [topic_id]",
+					Use:       "multi-reputer-stake [addresses] [topic_id]",
 					Short:     "Returns stakes for each reputer in a given list. List can be up to MaxPageLimit in length. Default to 0 if does not exist",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "addresses"},
