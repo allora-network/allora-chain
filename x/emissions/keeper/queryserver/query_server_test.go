@@ -2,6 +2,7 @@ package queryserver_test
 
 import (
 	"crypto/ed25519"
+	"encoding/hex"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -21,7 +23,6 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	mintTypes "github.com/allora-network/allora-chain/x/mint/types"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -44,12 +45,6 @@ type ChainKey struct {
 	priKey ed25519.PrivateKey
 }
 
-var (
-	PKS     = simtestutil.CreateTestPubKeys(10)
-	Addr    = sdk.AccAddress(PKS[0].Address())
-	ValAddr = GeneratePrivateKeys(10)
-)
-
 type QueryServerTestSuite struct {
 	suite.Suite
 
@@ -61,8 +56,10 @@ type QueryServerTestSuite struct {
 	msgServer       types.MsgServiceServer
 	queryServer     types.QueryServiceServer
 	key             *storetypes.KVStoreKey
+	privKeys        []secp256k1.PrivKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
+	pubKeyHexStr    []string
 }
 
 func TestQueryServerTestSuite(t *testing.T) {
@@ -100,15 +97,21 @@ func (s *QueryServerTestSuite) SetupTest() {
 		authtypes.NewModuleAddress("gov").String(),
 	)
 
-	var addrs = make([]sdk.AccAddress, 0)
-	var addrsStr = make([]string, 0)
-	pubkeys := simtestutil.CreateTestPubKeys(5)
-	for i := 0; i < 5; i++ {
-		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
-		addrsStr = append(addrsStr, addrs[i].String())
+	countAddrs := 11
+	var privKeys = make([]secp256k1.PrivKey, countAddrs)
+	var pubKeyHexStr = make([]string, countAddrs)
+	var addrs = make([]sdk.AccAddress, countAddrs)
+	var addrsStr = make([]string, countAddrs)
+	for i := 0; i < countAddrs; i++ {
+		privKeys[i] = secp256k1.GenPrivKey()
+		addrs[i] = sdk.AccAddress(privKeys[i].PubKey().Address())
+		pubKeyHexStr[i] = hex.EncodeToString(privKeys[i].PubKey().Bytes())
+		addrsStr[i] = addrs[i].String()
 	}
+	s.privKeys = privKeys
 	s.addrs = addrs
 	s.addrsStr = addrsStr
+	s.pubKeyHexStr = pubKeyHexStr
 
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		encCfg.Codec,
@@ -175,7 +178,7 @@ func (s *QueryServerTestSuite) CreateOneTopic() uint64 {
 	metadata := "Some metadata for the new topic"
 	// Create a CreateNewTopicRequest message
 
-	creator := sdk.AccAddress(PKS[0].Address())
+	creator := s.addrs[0]
 
 	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  creator.String(),
@@ -208,7 +211,7 @@ func (s *QueryServerTestSuite) TestCreateSeveralTopics() {
 	metadata := "Some metadata for the new topic"
 	// Create a CreateNewTopicRequest message
 
-	creator := sdk.AccAddress(PKS[0].Address())
+	creator := s.addrs[0]
 
 	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  creator.String(),
@@ -254,4 +257,38 @@ func (s *QueryServerTestSuite) TestCreateSeveralTopics() {
 	s.Require().NoError(err)
 	s.Require().NotNil(result)
 	s.Require().Equal(initialTopicId+2, result)
+}
+
+func (s *QueryServerTestSuite) mockTopic() types.Topic {
+	return types.Topic{
+		Id:                       uint64(1),
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "whatever",
+		LossMethod:               "loss",
+		EpochLastEnded:           2,
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		WorkerSubmissionWindow:   100,
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.1"),
+		InitialRegret:            alloraMath.MustNewDecFromString("0.1"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.1"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.1"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.1"),
+	}
+}
+
+func (s *QueryServerTestSuite) signValueBundle(valueBundle *types.ValueBundle, privateKey secp256k1.PrivKey) []byte {
+	require := s.Require()
+	src := make([]byte, 0)
+	src, err := valueBundle.XXX_Marshal(src, true)
+	require.NoError(err, "Marshall reputer value bundle should not return an error")
+
+	valueBundleSignature, err := privateKey.Sign(src)
+	require.NoError(err, "Sign should not return an error")
+
+	return valueBundleSignature
 }

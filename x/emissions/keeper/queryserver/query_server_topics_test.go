@@ -20,7 +20,8 @@ func (s *QueryServerTestSuite) TestGetNextTopicId() {
 		topicId, err := keeper.IncrementTopicId(ctx)
 		s.Require().NoError(err, "Incrementing topic ID should not fail")
 
-		newTopic := types.Topic{Id: topicId}
+		newTopic := s.mockTopic()
+		newTopic.Id = topicId
 		err = keeper.SetTopic(ctx, topicId, newTopic)
 		s.Require().NoError(err, "Setting a new topic should not fail")
 	}
@@ -45,7 +46,9 @@ func (s *QueryServerTestSuite) TestGetTopic() {
 	req := &types.GetTopicRequest{TopicId: topicId}
 
 	// Setting up a new topic
-	newTopic := types.Topic{Id: topicId, Metadata: metadata}
+	newTopic := s.mockTopic()
+	newTopic.Id = topicId
+	newTopic.Metadata = metadata
 	err = keeper.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
 
@@ -67,7 +70,7 @@ func (s *QueryServerTestSuite) TestGetLatestCommit() {
 		BlockHeight: 95,
 	}
 
-	topic := types.Topic{Id: 1}
+	topic := s.mockTopic()
 	_ = keeper.SetReputerTopicLastCommit(
 		ctx,
 		topic.Id,
@@ -85,7 +88,8 @@ func (s *QueryServerTestSuite) TestGetLatestCommit() {
 	s.Require().Equal(int64(blockHeight), response.LastCommit.BlockHeight, "Retrieved blockheight should match")
 	s.Require().Equal(&nonce, response.LastCommit.Nonce, "The metadata of the retrieved nonce should match")
 
-	topic2 := types.Topic{Id: 2}
+	topic2 := s.mockTopic()
+	topic2.Id = 2
 	blockHeight = 101
 	nonce = types.Nonce{
 		BlockHeight: 98,
@@ -180,7 +184,8 @@ func (s *QueryServerTestSuite) TestTopicExists() {
 	existentTopicId, err := keeper.IncrementTopicId(ctx)
 	s.Require().NoError(err, "Incrementing topic ID should not fail")
 
-	newTopic := types.Topic{Id: existentTopicId}
+	newTopic := s.mockTopic()
+	newTopic.Id = existentTopicId
 
 	err = keeper.SetTopic(ctx, existentTopicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
@@ -199,7 +204,8 @@ func (s *QueryServerTestSuite) TestIsTopicActive() {
 	topicId := uint64(3)
 
 	// Assume topic initially active
-	initialTopic := types.Topic{Id: topicId}
+	initialTopic := s.mockTopic()
+	initialTopic.Id = topicId
 	_ = keeper.SetTopic(ctx, topicId, initialTopic)
 
 	// Activate the topic
@@ -242,7 +248,8 @@ func (s *QueryServerTestSuite) TestGetTopicFeeRevenue() {
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
 
-	newTopic := types.Topic{Id: topicId}
+	newTopic := s.mockTopic()
+	newTopic.Id = topicId
 	err := keeper.SetTopic(ctx, topicId, newTopic)
 	s.Require().NoError(err, "Setting a new topic should not fail")
 

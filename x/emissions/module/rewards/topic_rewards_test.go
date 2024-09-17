@@ -9,37 +9,68 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func mockTopic(s *RewardsTestSuite) types.Topic {
+	return types.Topic{
+		Id:                       1,
+		Creator:                  s.addrs[5].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		WorkerSubmissionWindow:   10,
+	}
+}
+
 func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	ctx := s.ctx
 	maxActiveTopicsNum := uint64(2)
-	params := types.Params{
-		BlocksPerMonth:                  864000,
-		MaxActiveTopicsPerBlock:         maxActiveTopicsNum,
-		MaxPageLimit:                    uint64(100),
-		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),
-		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("1"),
-		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("3"),
-	}
+	params := types.DefaultParams()
+	params.BlocksPerMonth = 864000
+	params.MaxActiveTopicsPerBlock = maxActiveTopicsNum
+	params.MaxPageLimit = uint64(100)
+	params.TopicRewardAlpha = alloraMath.MustNewDecFromString("0.5")
+	params.TopicRewardStakeImportance = alloraMath.OneDec()
+	params.TopicRewardFeeRevenueImportance = alloraMath.MustNewDecFromString("1")
 	err := s.emissionsKeeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
 	setTopicWeight := func(topicId uint64, revenue, stake int64) {
-		_ = s.emissionsKeeper.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue))
-		_ = s.emissionsKeeper.SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake))
+		err = s.emissionsKeeper.AddTopicFeeRevenue(ctx, topicId, cosmosMath.NewInt(revenue))
+		s.Require().NoError(err)
+		err = s.emissionsKeeper.SetTopicStake(ctx, topicId, cosmosMath.NewInt(stake))
+		s.Require().NoError(err)
 	}
 
 	ctx = s.ctx.WithBlockHeight(1)
 	// Assume topic initially active
-	topic1 := types.Topic{Id: 1, EpochLength: 15}
-	topic2 := types.Topic{Id: 2, EpochLength: 15}
+	topic1 := mockTopic(s)
+	topic1.Id = 1
+	topic1.EpochLength = 15
+	topic1.GroundTruthLag = topic1.EpochLength
+	topic1.WorkerSubmissionWindow = topic1.EpochLength
+	topic2 := mockTopic(s)
+	topic2.Id = 2
+	topic2.EpochLength = 15
+	topic2.GroundTruthLag = topic2.EpochLength
+	topic2.WorkerSubmissionWindow = topic2.EpochLength
 
-	setTopicWeight(topic1.Id, 10, 10)
-	_ = s.emissionsKeeper.SetTopic(ctx, topic1.Id, topic1)
+	setTopicWeight(topic1.Id, 150, 10)
+	err = s.emissionsKeeper.SetTopic(ctx, topic1.Id, topic1)
+	s.Require().NoError(err)
 	err = s.emissionsKeeper.ActivateTopic(ctx, topic1.Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
-	setTopicWeight(topic2.Id, 30, 10)
-	_ = s.emissionsKeeper.SetTopic(ctx, topic2.Id, topic2)
+	setTopicWeight(topic2.Id, 300, 10)
+	err = s.emissionsKeeper.SetTopic(ctx, topic2.Id, topic2)
+	s.Require().NoError(err)
 	err = s.emissionsKeeper.ActivateTopic(ctx, topic2.Id)
 	s.Require().NoError(err, "Activating topic should not fail")
 
@@ -56,14 +87,6 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Equal(2, len(activeTopics.TopicIds), "Should retrieve exactly two active topics")
 
-	params = types.Params{
-		MaxActiveTopicsPerBlock:         maxActiveTopicsNum,
-		MaxPageLimit:                    uint64(100),
-		TopicRewardAlpha:                alloraMath.MustNewDecFromString("0.5"),
-		TopicRewardStakeImportance:      alloraMath.MustNewDecFromString("1"),
-		TopicRewardFeeRevenueImportance: alloraMath.MustNewDecFromString("3"),
-		MinTopicWeight:                  alloraMath.MustNewDecFromString("10"),
-	}
 	err = s.emissionsKeeper.SetParams(ctx, params)
 	s.Require().NoError(err)
 
@@ -76,34 +99,34 @@ func (s *RewardsTestSuite) TestGetAndUpdateActiveTopicWeights() {
 	s.Require().NoError(err, "Fetching active topics should not produce an error")
 	s.Require().Equal(1, len(activeTopics.TopicIds), "Should retrieve exactly one active topics")
 }
+
 func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	block := int64(1)
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	s.SetParamsForTest()
 
-	reputerAddrs := s.returnAddresses(0, 3)
-
-	workerAddrs := s.returnAddresses(3, 3)
+	reputerIndexes := s.returnIndexes(0, 3)
+	workerIndexes := s.returnIndexes(3, 3)
 	// setup topics
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	alphaRegret := alloraMath.MustNewDecFromString("0.1")
 	epochLength := int64(100)
-	topicId0 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
+	topicId0 := s.setUpTopicWithEpochLength(block, workerIndexes, reputerIndexes, stake, alphaRegret, epochLength)
 	//topicId1 := s.setUpTopicWithEpochLength(block, workerAddrs, reputerAddrs, stake, alphaRegret, epochLength)
 	//
 	// setup values to be identical for both topics
 	reputerValues := []TestWorkerValue{
-		{Address: reputerAddrs[0], Value: "0.2"},
-		{Address: reputerAddrs[1], Value: "0.2"},
-		{Address: reputerAddrs[2], Value: "0.2"},
+		{Index: reputerIndexes[0], Value: "0.2"},
+		{Index: reputerIndexes[1], Value: "0.2"},
+		{Index: reputerIndexes[2], Value: "0.2"},
 	}
 
 	workerValues := []TestWorkerValue{
-		{Address: workerAddrs[0], Value: "0.2"},
-		{Address: workerAddrs[1], Value: "0.2"},
-		{Address: workerAddrs[2], Value: "0.2"},
+		{Index: workerIndexes[0], Value: "0.2"},
+		{Index: workerIndexes[1], Value: "0.2"},
+		{Index: workerIndexes[2], Value: "0.2"},
 	}
 
 	// mint some rewards to give out
@@ -121,7 +144,7 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	s.Require().NoError(err)
 
 	// Insert inference
-	inferenceBundles := GenerateSimpleWorkerDataBundles(s, topicId0, topic0.EpochLastEnded, block, workerValues, workerAddrs)
+	inferenceBundles := generateSimpleWorkerDataBundles(s, topicId0, topic0.EpochLastEnded, block, workerValues, workerIndexes)
 	for _, payload := range inferenceBundles {
 		s.RegisterAllWorkersOfPayload(topicId0, payload)
 		_, err = s.msgServer.InsertWorkerPayload(s.ctx, &types.InsertWorkerPayloadRequest{
@@ -140,14 +163,13 @@ func (s *RewardsTestSuite) TestGetRewardAndRemovedRewardableTopics() {
 	s.Require().NoError(err)
 
 	// Generate loss data
-	lossBundles := GenerateSimpleLossBundles(
+	lossBundles := generateSimpleLossBundles(
 		s,
 		topicId0,
 		topic0.EpochLastEnded,
-		block,
 		workerValues,
 		reputerValues,
-		workerAddrs[0],
+		s.addrs[workerIndexes[0]],
 		"0.1",
 		"0.1",
 	)

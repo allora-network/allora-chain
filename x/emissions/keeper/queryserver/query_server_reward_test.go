@@ -9,7 +9,7 @@ func (s *QueryServerTestSuite) TestGetPreviousReputerRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputer := "reputerAddressExample"
+	reputer := s.addrsStr[2]
 
 	// Attempt to fetch a reward fraction before setting it
 	req := &types.GetPreviousReputerRewardFractionRequest{
@@ -43,7 +43,7 @@ func (s *QueryServerTestSuite) TestGetPreviousInferenceRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := "workerAddressExample"
+	worker := s.addrsStr[1]
 
 	// Attempt to fetch a reward fraction before setting it
 	req := &types.GetPreviousInferenceRewardFractionRequest{
@@ -76,7 +76,7 @@ func (s *QueryServerTestSuite) TestGetPreviousForecastRewardFraction() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := "forecastWorkerAddress"
+	worker := s.addrsStr[3]
 
 	// Attempt to fetch the reward fraction before setting it, expecting default value
 	req := &types.GetPreviousForecastRewardFractionRequest{

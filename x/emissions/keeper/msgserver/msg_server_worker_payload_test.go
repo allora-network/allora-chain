@@ -10,8 +10,9 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func getNewAddress() string {
-	return sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()).String()
+func getNewAddress() (sdk.AccAddress, string) {
+	addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
+	return addr, addr.String()
 }
 
 func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayload(
@@ -26,74 +27,71 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	nonce := types.Nonce{BlockHeight: blockHeight}
-	topicId := s.CreateOneTopic()
+	topic := s.CreateOneTopic()
+
+	// Mock setup for addresses
+	reputerAddr, reputer := getNewAddress()
+	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address())
+	worker := workerAddr.String()
+	_, Inferer2 := getNewAddress()
+	_, Inferer3 := getNewAddress()
+	_, Inferer4 := getNewAddress()
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		Owner:       "worker-owner-sample",
-		NodeAddress: "worker-node-address-sample",
+		Owner:       worker,
+		NodeAddress: worker,
 	}
-
-	// Mock setup for addresses
-	reputerAddr := getNewAddress()
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
-	Inferer2Addr := getNewAddress()
-	Inferer3Addr := getNewAddress()
-	Inferer4Addr := getNewAddress()
 
 	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
 
 	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
-	err = keeper.AddWorkerNonce(ctx, topicId, &nonce)
+	s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, moduleParams.RegistrationFee)
+	err = keeper.AddWorkerNonce(ctx, topic.Id, &nonce)
 	s.Require().NoError(err)
-	err = keeper.InsertWorker(ctx, topicId, workerAddr, workerInfo)
+	err = keeper.InsertWorker(ctx, topic.Id, worker, workerInfo)
 	s.Require().NoError(err)
-	err = keeper.InsertWorker(ctx, topicId, Inferer2Addr, workerInfo)
+	err = keeper.InsertWorker(ctx, topic.Id, Inferer2, workerInfo)
 	s.Require().NoError(err)
-	err = keeper.InsertWorker(ctx, topicId, Inferer3Addr, workerInfo)
+	err = keeper.InsertWorker(ctx, topic.Id, Inferer3, workerInfo)
 	s.Require().NoError(err)
-	err = keeper.InsertWorker(ctx, topicId, Inferer4Addr, workerInfo)
-	s.Require().NoError(err)
-
-	topic, _ := s.emissionsKeeper.GetTopic(ctx, topicId)
-	err = s.emissionsKeeper.SetTopic(ctx, topicId, topic)
+	err = keeper.InsertWorker(ctx, topic.Id, Inferer4, workerInfo)
 	s.Require().NoError(err)
 
 	// Create a InsertWorkerPayloadRequest message
 	workerMsg := types.InsertWorkerPayloadRequest{
-		Sender: workerAddr,
+		Sender: worker,
 		WorkerDataBundle: &types.WorkerDataBundle{
-			Worker:  workerAddr,
+			Worker:  worker,
 			Nonce:   &nonce,
-			TopicId: topicId,
+			TopicId: topic.Id,
 			InferenceForecastsBundle: &types.InferenceForecastBundle{
 				Inference: &types.Inference{
-					TopicId:     topicId,
+					TopicId:     topic.Id,
 					BlockHeight: nonce.BlockHeight,
-					Inferer:     workerAddr,
+					Inferer:     worker,
 					Value:       alloraMath.NewDecFromInt64(100),
 				},
 				Forecast: &types.Forecast{
-					TopicId:     topicId,
+					TopicId:     topic.Id,
 					BlockHeight: nonce.BlockHeight,
-					Forecaster:  workerAddr,
+					Forecaster:  worker,
 					ForecastElements: []*types.ForecastElement{
 						{
-							Inferer: workerAddr,
+							Inferer: worker,
 							Value:   alloraMath.NewDecFromInt64(100),
 						},
 						{
-							Inferer: Inferer2Addr,
+							Inferer: Inferer2,
 							Value:   alloraMath.NewDecFromInt64(101),
 						},
 						{
-							Inferer: Inferer3Addr,
+							Inferer: Inferer3,
 							Value:   alloraMath.NewDecFromInt64(102),
 						},
 						{
-							Inferer: Inferer4Addr,
+							Inferer: Inferer4,
 							Value:   alloraMath.NewDecFromInt64(103),
 						},
 					},
@@ -102,7 +100,7 @@ func (s *MsgServerTestSuite) setUpMsgInsertWorkerPayloadWithBlockHeight(
 		},
 	}
 
-	return workerMsg, topicId
+	return workerMsg, topic.Id
 }
 func (s *MsgServerTestSuite) signMsgInsertWorkerPayload(workerMsg types.InsertWorkerPayloadRequest, workerPrivateKey secp256k1.PrivKey) types.InsertWorkerPayloadRequest {
 	require := s.Require()
@@ -458,42 +456,36 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
-	topicId := uint64(0)
 	nonce := types.Nonce{BlockHeight: 1}
+
+	// Mock setup for addresses
+	reputer := s.addrsStr[0]
+	reputerAddr := s.addrs[0]
+	worker := s.addrsStr[1]
+	workerPrivateKey := s.privKeys[1]
+	workerPubKeyBytes := s.pubKeyHexStr[1]
+	workerAddr := s.addrs[1]
+	InfererAddr := s.addrsStr[2]
+	ForecasterAddr := s.addrsStr[3]
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		Owner:       "worker-owner-sample",
-		NodeAddress: "worker-node-address-sample",
+		Owner:       worker,
+		NodeAddress: worker,
 	}
-	// Mock setup for addresses
-
-	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address()).String()
-
-	workerPrivateKey := secp256k1.GenPrivKey()
-	workerPublicKeyBytes := workerPrivateKey.PubKey().Bytes()
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
-
-	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address()).String()
-
-	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
 	moduleParams, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
 	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
-	err = keeper.AddWorkerNonce(ctx, 0, &nonce)
+	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, moduleParams.RegistrationFee)
+	err = keeper.AddWorkerNonce(ctx, topicId, &nonce)
 	require.NoError(err)
 	err = keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
 	require.NoError(err)
 	err = keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
 	require.NoError(err)
-	err = s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
-	require.NoError(err)
+	s.CreateOneTopic()
 
 	forecastElements := []*types.ForecastElement{}
 	for i := 0; i < 1000000; i++ {
@@ -505,7 +497,7 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 
 	// Create a InsertWorkerPayloadRequest message
 	workerMsg := &types.InsertWorkerPayloadRequest{
-		Sender: workerAddr,
+		Sender: worker,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker: InfererAddr,
 			InferenceForecastsBundle: &types.InferenceForecastBundle{
@@ -532,7 +524,7 @@ func (s *MsgServerTestSuite) TestInsertingHugeBundleWorkerPayloadFails() {
 	sig, err := workerPrivateKey.Sign(src)
 	require.NoError(err, "Sign should not return an error")
 	workerMsg.WorkerDataBundle.InferencesForecastsBundleSignature = sig
-	workerMsg.WorkerDataBundle.Pubkey = hex.EncodeToString(workerPublicKeyBytes)
+	workerMsg.WorkerDataBundle.Pubkey = workerPubKeyBytes
 	_, err = msgServer.InsertWorkerPayload(ctx, workerMsg)
 	require.ErrorIs(err, types.ErrQueryTooLarge)
 }
@@ -541,70 +533,62 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadVerifyFailed() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 	keeper := s.emissionsKeeper
-	topicId := uint64(0)
+	topicId := uint64(1)
 	nonce := types.Nonce{BlockHeight: 1}
+
+	// Mock setup for addresses
+	reputer := s.addrsStr[0]
+	reputerAddr := s.addrs[0]
+	worker := s.addrsStr[1]
+	workerAddr := s.addrs[1]
+	Inferer := s.addrsStr[2]
+	Forecaster := s.addrsStr[3]
+	Inferer2 := s.addrsStr[4]
 
 	// Define sample OffchainNode information for a worker
 	workerInfo := types.OffchainNode{
-		Owner:       "worker-owner-sample",
-		NodeAddress: "worker-node-address-sample",
+		Owner:       worker,
+		NodeAddress: worker,
 	}
-	// Mock setup for addresses
-
-	reputerPrivateKey := secp256k1.GenPrivKey()
-	reputerAddr := sdk.AccAddress(reputerPrivateKey.PubKey().Address()).String()
-
-	workerPrivateKey := secp256k1.GenPrivKey()
-	workerAddr := sdk.AccAddress(workerPrivateKey.PubKey().Address()).String()
-
-	InfererPrivateKey := secp256k1.GenPrivKey()
-	InfererAddr := sdk.AccAddress(InfererPrivateKey.PubKey().Address()).String()
-
-	Inferer2PrivateKey := secp256k1.GenPrivKey()
-	Inferer2Addr := sdk.AccAddress(Inferer2PrivateKey.PubKey().Address()).String()
-
-	ForecasterPrivateKey := secp256k1.GenPrivKey()
-	ForecasterAddr := sdk.AccAddress(ForecasterPrivateKey.PubKey().Address()).String()
 
 	moduleParams, err := keeper.GetParams(ctx)
 	require.NoError(err)
 
 	// Create topic 0 and register reputer in it
-	s.commonStakingSetup(ctx, reputerAddr, workerAddr, moduleParams.RegistrationFee)
-	err = keeper.AddWorkerNonce(ctx, 0, &nonce)
+	s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, moduleParams.RegistrationFee)
+	err = keeper.AddWorkerNonce(ctx, topicId, &nonce)
 	require.NoError(err)
-	err = keeper.InsertWorker(ctx, topicId, InfererAddr, workerInfo)
+	err = keeper.InsertWorker(ctx, topicId, Inferer, workerInfo)
 	require.NoError(err)
-	err = keeper.InsertWorker(ctx, topicId, ForecasterAddr, workerInfo)
+	err = keeper.InsertWorker(ctx, topicId, Forecaster, workerInfo)
 	require.NoError(err)
-	err = s.emissionsKeeper.SetTopic(ctx, topicId, types.Topic{Id: topicId})
-	require.NoError(err)
+	s.CreateOneTopic()
 
 	// Create a InsertWorkerPayloadRequest message
 	workerMsg := &types.InsertWorkerPayloadRequest{
-		Sender: workerAddr,
+		Sender: worker,
 		WorkerDataBundle: &types.WorkerDataBundle{
-			Worker:  InfererAddr,
+			Worker:  Inferer,
 			TopicId: topicId,
 			Nonce:   &nonce,
 			InferenceForecastsBundle: &types.InferenceForecastBundle{
 				Inference: &types.Inference{
 					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
-					Inferer:     InfererAddr,
+					Inferer:     Inferer,
 					Value:       alloraMath.NewDecFromInt64(100),
 				},
 				Forecast: &types.Forecast{
-					TopicId:     0,
+					TopicId:     topicId,
 					BlockHeight: nonce.BlockHeight,
-					Forecaster:  ForecasterAddr,
+					Forecaster:  Forecaster,
 					ForecastElements: []*types.ForecastElement{
 						{
-							Inferer: InfererAddr,
+							Inferer: Inferer,
 							Value:   alloraMath.NewDecFromInt64(100),
 						},
 						{
-							Inferer: Inferer2Addr,
+							Inferer: Inferer2,
 							Value:   alloraMath.NewDecFromInt64(100),
 						},
 					},

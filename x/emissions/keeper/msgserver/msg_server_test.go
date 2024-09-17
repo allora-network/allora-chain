@@ -14,16 +14,17 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -46,12 +47,7 @@ type ChainKey struct {
 	priKey ed25519.PrivateKey
 }
 
-var (
-	nonAdminAccounts = simtestutil.CreateRandomAccounts(4)
-	PKS              = simtestutil.CreateTestPubKeys(10)
-	Addr             = sdk.AccAddress(PKS[0].Address())
-	ValAddr          = GeneratePrivateKeys(10)
-)
+var _, _, nonAdminAccounts, _ = alloratestutil.GenerateTestAccounts(4)
 
 type MsgServerTestSuite struct {
 	suite.Suite
@@ -66,6 +62,8 @@ type MsgServerTestSuite struct {
 	appModule       module.AppModule
 	msgServer       types.MsgServiceServer
 	key             *storetypes.KVStoreKey
+	privKeys        []secp256k1.PrivKey
+	pubKeyHexStr    []string
 	addrs           []sdk.AccAddress
 	addrsStr        []string
 }
@@ -108,15 +106,7 @@ func (s *MsgServerTestSuite) SetupTest() {
 		authtypes.NewModuleAddress("gov").String(),
 	)
 
-	var addrs = make([]sdk.AccAddress, 0)
-	var addrsStr = make([]string, 0)
-	pubkeys := simtestutil.CreateTestPubKeys(5)
-	for i := 0; i < 5; i++ {
-		addrs = append(addrs, sdk.AccAddress(pubkeys[i].Address()))
-		addrsStr = append(addrsStr, addrs[i].String())
-	}
-	s.addrs = addrs
-	s.addrsStr = addrsStr
+	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = alloratestutil.GenerateTestAccounts(12)
 
 	bankKeeper := bankkeeper.NewBaseKeeper(
 		encCfg.Codec,
@@ -146,7 +136,7 @@ func (s *MsgServerTestSuite) SetupTest() {
 	s.appModule = appModule
 
 	// Add all tests addresses in whitelists
-	for _, addr := range addrsStr {
+	for _, addr := range s.addrsStr {
 		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
 		s.Require().NoError(err)
 	}
@@ -180,27 +170,26 @@ func (s *MsgServerTestSuite) MintTokensToModule(moduleName string, amount cosmos
 	s.Require().NoError(err)
 }
 
-func (s *MsgServerTestSuite) CreateOneTopic() uint64 {
+func (s *MsgServerTestSuite) CreateOneTopic() types.Topic {
 	result := s.CreateCustomEpochTopic(10800)
 	return result
 }
 
-func (s *MsgServerTestSuite) CreateCustomEpochTopic(epochLen int64) uint64 {
+func (s *MsgServerTestSuite) CreateCustomEpochTopic(epochLen int64) types.Topic {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
+	creator := 9
 	// Create a CreateNewTopicRequest message
-
-	creator := sdk.AccAddress(PKS[0].Address())
-
 	newTopicMsg := &types.CreateNewTopicRequest{
-		Creator:                  creator.String(),
+		Creator:                  s.addrsStr[creator],
 		Metadata:                 metadata,
 		LossMethod:               "mse",
 		EpochLength:              epochLen,
 		GroundTruthLag:           epochLen,
+		AllowNegative:            false,
 		WorkerSubmissionWindow:   10,
 		AlphaRegret:              alloraMath.NewDecFromInt64(1),
 		PNorm:                    alloraMath.NewDecFromInt64(3),
@@ -211,12 +200,28 @@ func (s *MsgServerTestSuite) CreateCustomEpochTopic(epochLen int64) uint64 {
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 	}
 
-	s.MintTokensToAddress(creator, types.DefaultParams().CreateTopicFee)
+	s.MintTokensToAddress(s.addrs[creator], types.DefaultParams().CreateTopicFee)
 
 	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	require.NoError(err, "CreateTopic fails on first creation")
 
-	return result.TopicId
+	return types.Topic{
+		Id:                       result.TopicId,
+		Creator:                  newTopicMsg.Creator,
+		Metadata:                 newTopicMsg.Metadata,
+		LossMethod:               newTopicMsg.LossMethod,
+		EpochLength:              newTopicMsg.EpochLength,
+		GroundTruthLag:           newTopicMsg.GroundTruthLag,
+		WorkerSubmissionWindow:   newTopicMsg.WorkerSubmissionWindow,
+		AlphaRegret:              newTopicMsg.AlphaRegret,
+		AllowNegative:            newTopicMsg.AllowNegative,
+		PNorm:                    newTopicMsg.PNorm,
+		Epsilon:                  newTopicMsg.Epsilon,
+		MeritSortitionAlpha:      newTopicMsg.MeritSortitionAlpha,
+		ActiveInfererQuantile:    newTopicMsg.ActiveInfererQuantile,
+		ActiveForecasterQuantile: newTopicMsg.ActiveForecasterQuantile,
+		ActiveReputerQuantile:    newTopicMsg.ActiveReputerQuantile,
+	}
 }
 
 func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
@@ -225,8 +230,7 @@ func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 	// Mock setup for metadata and validation steps
 	metadata := "Some metadata for the new topic"
 	// Create a CreateNewTopicRequest message
-
-	creator := sdk.AccAddress(PKS[0].Address())
+	creator := s.addrs[0]
 
 	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  creator.String(),

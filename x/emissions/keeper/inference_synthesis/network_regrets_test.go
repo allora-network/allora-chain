@@ -16,24 +16,24 @@ func (s *InferenceSynthesisTestSuite) TestConvertValueBundleToNetworkLossesByWor
 		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
 		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
+			{Worker: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("0.1")},
+			{Worker: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("0.2")},
 		},
 		ForecasterValues: []*emissionstypes.WorkerAttributedValue{
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
+			{Worker: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("0.1")},
+			{Worker: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("0.2")},
 		},
 		OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
+			{Worker: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("0.1")},
+			{Worker: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("0.2")},
 		},
 		OneOutForecasterValues: []*emissionstypes.WithheldWorkerAttributedValue{
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
+			{Worker: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("0.1")},
+			{Worker: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("0.2")},
 		},
 		OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
-			{Worker: "worker1", Value: alloraMath.MustNewDecFromString("0.1")},
-			{Worker: "worker2", Value: alloraMath.MustNewDecFromString("0.2")},
+			{Worker: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("0.1")},
+			{Worker: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("0.2")},
 		},
 	}
 
@@ -46,16 +46,16 @@ func (s *InferenceSynthesisTestSuite) TestConvertValueBundleToNetworkLossesByWor
 	// Check if each worker's losses are set correctly
 	expectedLoss := alloraMath.MustNewDecFromString("0.1")
 	expectedLoss2 := alloraMath.MustNewDecFromString("0.2")
-	require.Equal(expectedLoss, result.InfererLosses["worker1"])
-	require.Equal(expectedLoss2, result.InfererLosses["worker2"])
-	require.Equal(expectedLoss, result.ForecasterLosses["worker1"])
-	require.Equal(expectedLoss2, result.ForecasterLosses["worker2"])
-	require.Equal(expectedLoss, result.OneOutInfererLosses["worker1"])
-	require.Equal(expectedLoss2, result.OneOutInfererLosses["worker2"])
-	require.Equal(expectedLoss, result.OneOutForecasterLosses["worker1"])
-	require.Equal(expectedLoss2, result.OneOutForecasterLosses["worker2"])
-	require.Equal(expectedLoss, result.OneInForecasterLosses["worker1"])
-	require.Equal(expectedLoss2, result.OneInForecasterLosses["worker2"])
+	require.Equal(expectedLoss, result.InfererLosses[s.addrsStr[1]])
+	require.Equal(expectedLoss2, result.InfererLosses[s.addrsStr[2]])
+	require.Equal(expectedLoss, result.ForecasterLosses[s.addrsStr[1]])
+	require.Equal(expectedLoss2, result.ForecasterLosses[s.addrsStr[2]])
+	require.Equal(expectedLoss, result.OneOutInfererLosses[s.addrsStr[1]])
+	require.Equal(expectedLoss2, result.OneOutInfererLosses[s.addrsStr[2]])
+	require.Equal(expectedLoss, result.OneOutForecasterLosses[s.addrsStr[1]])
+	require.Equal(expectedLoss2, result.OneOutForecasterLosses[s.addrsStr[2]])
+	require.Equal(expectedLoss, result.OneInForecasterLosses[s.addrsStr[1]])
+	require.Equal(expectedLoss2, result.OneInForecasterLosses[s.addrsStr[2]])
 }
 
 func (s *InferenceSynthesisTestSuite) TestComputeAndBuildEMRegret() {
@@ -84,33 +84,30 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 
 	topicId := uint64(2)
 	// Create new topic
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		InitialRegret:          alloraMath.MustNewDecFromString("0"),
-	})
-	s.Require().NoError(err)
+	topic := s.mockTopic()
+	topic.InitialRegret = alloraMath.ZeroDec()
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
+	require.NoError(err)
 
-	worker1 := "worker1"
-	worker2 := "worker2"
-	worker3 := "worker3"
+	worker1 := s.addrsStr[1]
+	worker2 := s.addrsStr[2]
+	worker3 := s.addrsStr[3]
 
 	pNorm := alloraMath.MustNewDecFromString("0.1")
 	cNorm := alloraMath.MustNewDecFromString("0.1")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 
+	blockHeight := int64(42)
+	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+	reputerRequestNonce := emissionstypes.ReputerRequestNonce{
+		ReputerNonce: &nonce,
+	}
 	valueBundle := emissionstypes.ValueBundle{
-		CombinedValue: alloraMath.MustNewDecFromString("500"),
-		NaiveValue:    alloraMath.MustNewDecFromString("123"),
+		TopicId:             topicId,
+		ReputerRequestNonce: &reputerRequestNonce,
+		Reputer:             s.addrsStr[9],
+		ExtraData:           nil,
+		CombinedValue:       alloraMath.NewDecFromInt64(500),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
@@ -119,18 +116,21 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 		},
+		NaiveValue:          alloraMath.NewDecFromInt64(123),
+		OneOutInfererValues: nil,
 		OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 		},
+		OneOutForecasterValues:        nil,
+		OneOutInfererForecasterValues: nil,
 	}
-	blockHeight := int64(42)
-	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+
 	alpha := alloraMath.MustNewDecFromString("0.1")
 
 	timestampedValue := emissionstypes.TimestampedValue{
 		BlockHeight: blockHeight,
-		Value:       alloraMath.MustNewDecFromString("200"),
+		Value:       alloraMath.NewDecFromInt64(200),
 	}
 
 	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker1, timestampedValue)
@@ -191,8 +191,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require.NoError(err)
 
 	bothAccs := []string{worker1, worker2}
-	expected := alloraMath.MustNewDecFromString("210")
-	// expectedOneIn := alloraMath.MustNewDecFromString("180")
+	expected := alloraMath.NewDecFromInt64(210)
 
 	// New potential participant should not start with zero regret since we already have participants with prior regrets which will
 	// be used to calculate the initial regret in the topic
@@ -243,9 +242,9 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	require := s.Require()
 	k := s.emissionsKeeper
 
-	worker1 := "worker1"
-	worker2 := "worker2"
-	worker3 := "worker3"
+	worker1 := s.addrsStr[1]
+	worker2 := s.addrsStr[2]
+	worker3 := s.addrsStr[3]
 
 	pNorm := alloraMath.MustNewDecFromString("0.1")
 	cNorm := alloraMath.MustNewDecFromString("0.1")
@@ -373,13 +372,17 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 	forecaster2 := s.addrs[7].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
+	reputer0 := s.addrs[8].String()
+
 	err := testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epochPrevGet)
 	require.NoError(err)
 
 	networkLosses, err := testutil.GetNetworkLossFromCsv(
 		topicId,
+		blockHeight,
 		infererAddresses,
 		forecasterAddresses,
+		reputer0,
 		epoch301Get,
 	)
 	s.Require().NoError(err)
@@ -473,13 +476,16 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	cNorm := alloraMath.MustNewDecFromString("0.1")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 
-	worker0 := "worker0"
-	worker1 := "worker1"
-	worker2 := "worker2"
+	worker0 := s.addrsStr[0]
+	worker1 := s.addrsStr[1]
+	worker2 := s.addrsStr[2]
 
 	networkLossesValueBundle0 := emissionstypes.ValueBundle{
-		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
-		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
+		TopicId:             topicId,
+		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{ReputerNonce: &nonce},
+		Reputer:             s.addrsStr[9],
+		ExtraData:           nil,
+		CombinedValue:       alloraMath.MustNewDecFromString("0.1"),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.2")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
@@ -490,16 +496,23 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
 		},
+		NaiveValue:             alloraMath.MustNewDecFromString("0.1"),
+		OneOutInfererValues:    nil,
+		OneOutForecasterValues: nil,
 		OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.2")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
 		},
+		OneOutInfererForecasterValues: nil,
 	}
 
 	networkLossesValueBundle1 := emissionstypes.ValueBundle{
-		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
-		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
+		TopicId:             topicId,
+		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{ReputerNonce: &nonce},
+		Reputer:             s.addrsStr[9],
+		ExtraData:           nil,
+		CombinedValue:       alloraMath.MustNewDecFromString("0.1"),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
@@ -510,11 +523,15 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
 		},
+		NaiveValue:             alloraMath.MustNewDecFromString("0.1"),
+		OneOutInfererValues:    nil,
+		OneOutForecasterValues: nil,
 		OneInForecasterValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: worker0, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker1, Value: alloraMath.MustNewDecFromString("0.3")},
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("0.4")},
 		},
+		OneOutInfererForecasterValues: nil,
 	}
 
 	resetRegrets := func() {

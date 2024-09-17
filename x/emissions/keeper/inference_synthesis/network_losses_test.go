@@ -63,7 +63,7 @@ func (s *InferenceSynthesisTestSuite) TestRunningWeightedAvgUpdate() {
 	}
 }
 
-func getTestCasesOneWorker() []struct {
+func (s *InferenceSynthesisTestSuite) getTestCasesOneWorker() []struct {
 	name            string
 	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
 	reportedLosses  emissions.ReputerValueBundles
@@ -71,6 +71,48 @@ func getTestCasesOneWorker() []struct {
 	expectedOutput  emissions.ValueBundle
 	expectedError   error
 } {
+	valueBundle := &emissions.ValueBundle{
+		TopicId: uint64(1),
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+		},
+		Reputer:       s.addrsStr[1],
+		ExtraData:     nil,
+		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
+		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
+		InfererValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		ForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneInForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutInfererForecasterValues: nil,
+	}
+	signature := s.signValueBundle(valueBundle, s.privKeys[1])
 	return []struct {
 		name            string
 		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
@@ -82,46 +124,14 @@ func getTestCasesOneWorker() []struct {
 		{
 			name: "simple one reputer combined loss",
 			stakesByReputer: map[inferencesynthesis.Worker]cosmosMath.Int{
-				"worker1": inferencesynthesis.CosmosIntOneE18(), // 1 token
+				s.addrsStr[1]: inferencesynthesis.CosmosIntOneE18(), // 1 token
 			},
 			reportedLosses: emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{
 					{
-						ValueBundle: &emissions.ValueBundle{
-							Reputer:       "worker1",
-							CombinedValue: alloraMath.MustNewDecFromString("0.1"),
-							NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
-							InfererValues: []*emissions.WorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-							ForecasterValues: []*emissions.WorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-							OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-							OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-							OneInForecasterValues: []*emissions.WorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-						},
+						ValueBundle: valueBundle,
+						Signature:   signature,
+						Pubkey:      s.pubKeyHexStr[1],
 					},
 				},
 			},
@@ -131,31 +141,31 @@ func getTestCasesOneWorker() []struct {
 				NaiveValue:    alloraMath.MustNewDecFromString("0.1587401051968199"),
 				InfererValues: []*emissions.WorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
 					},
 				},
 				ForecasterValues: []*emissions.WorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
 					},
 				},
 				OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
 					},
 				},
 				OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
 					},
 				},
 				OneInForecasterValues: []*emissions.WorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
 					},
 				},
@@ -165,7 +175,7 @@ func getTestCasesOneWorker() []struct {
 	}
 }
 
-func getTestCasesTwoWorkers() []struct {
+func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 	name            string
 	stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
 	reportedLosses  emissions.ReputerValueBundles
@@ -173,6 +183,130 @@ func getTestCasesTwoWorkers() []struct {
 	expectedOutput  emissions.ValueBundle
 	expectedError   error
 } {
+	valueBundle1 := emissions.ValueBundle{
+		TopicId: uint64(1),
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+		},
+		Reputer:       s.addrsStr[1],
+		ExtraData:     nil,
+		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
+		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
+		InfererValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		ForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneInForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.1"),
+			},
+		},
+		OneOutInfererForecasterValues: nil,
+	}
+	signature1 := s.signValueBundle(&valueBundle1, s.privKeys[1])
+
+	valueBundle2 := emissions.ValueBundle{
+		TopicId: uint64(1),
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+		},
+		Reputer:       s.addrsStr[2],
+		CombinedValue: alloraMath.MustNewDecFromString("0.2"),
+		NaiveValue:    alloraMath.MustNewDecFromString("0.2"),
+		InfererValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		ForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneInForecasterValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: s.addrsStr[1],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+			{
+				Worker: s.addrsStr[2],
+				Value:  alloraMath.MustNewDecFromString("0.2"),
+			},
+		},
+		OneOutInfererForecasterValues: nil,
+	}
+	signature2 := s.signValueBundle(&valueBundle2, s.privKeys[2])
 	return []struct {
 		name            string
 		stakesByReputer map[inferencesynthesis.Worker]cosmosMath.Int
@@ -184,124 +318,20 @@ func getTestCasesTwoWorkers() []struct {
 		{
 			name: "simple two reputer combined loss",
 			stakesByReputer: map[inferencesynthesis.Worker]cosmosMath.Int{
-				"worker1": inferencesynthesis.CosmosIntOneE18(),           // 1 token
-				"worker2": inferencesynthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
+				s.addrsStr[1]: inferencesynthesis.CosmosIntOneE18(),           // 1 token
+				s.addrsStr[2]: inferencesynthesis.CosmosIntOneE18().MulRaw(2), // 2 tokens
 			},
 			reportedLosses: emissions.ReputerValueBundles{
 				ReputerValueBundles: []*emissions.ReputerValueBundle{
 					{
-						ValueBundle: &emissions.ValueBundle{
-							Reputer:       "worker1",
-							CombinedValue: alloraMath.MustNewDecFromString("0.1"),
-							NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
-							InfererValues: []*emissions.WorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-							ForecasterValues: []*emissions.WorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-							OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-							OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-							OneInForecasterValues: []*emissions.WorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.1"),
-								},
-							},
-						},
+						ValueBundle: &valueBundle1,
+						Signature:   signature1,
+						Pubkey:      s.pubKeyHexStr[1],
 					},
 					{
-						ValueBundle: &emissions.ValueBundle{
-							Reputer:       "worker2",
-							CombinedValue: alloraMath.MustNewDecFromString("0.2"),
-							NaiveValue:    alloraMath.MustNewDecFromString("0.2"),
-							InfererValues: []*emissions.WorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-							},
-							ForecasterValues: []*emissions.WorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-							},
-							OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-							},
-							OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-							},
-							OneInForecasterValues: []*emissions.WorkerAttributedValue{
-								{
-									Worker: "worker1",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-								{
-									Worker: "worker2",
-									Value:  alloraMath.MustNewDecFromString("0.2"),
-								},
-							},
-						},
+						ValueBundle: &valueBundle2,
+						Signature:   signature2,
+						Pubkey:      s.pubKeyHexStr[2],
 					},
 				},
 			},
@@ -311,51 +341,51 @@ func getTestCasesTwoWorkers() []struct {
 				NaiveValue:    alloraMath.MustNewDecFromString("0.166666666"),
 				InfererValues: []*emissions.WorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
-						Worker: "worker2",
+						Worker: s.addrsStr[2],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
 				ForecasterValues: []*emissions.WorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
-						Worker: "worker2",
+						Worker: s.addrsStr[2],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
 				OneOutInfererValues: []*emissions.WithheldWorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
-						Worker: "worker2",
+						Worker: s.addrsStr[2],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
 				OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
-						Worker: "worker2",
+						Worker: s.addrsStr[2],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
 				OneInForecasterValues: []*emissions.WorkerAttributedValue{
 					{
-						Worker: "worker1",
+						Worker: s.addrsStr[1],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 					{
-						Worker: "worker2",
+						Worker: s.addrsStr[2],
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
@@ -366,13 +396,15 @@ func getTestCasesTwoWorkers() []struct {
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkLosses() {
-	tests := getTestCasesTwoWorkers()
+	tests := s.getTestCasesTwoWorkers()
 
+	topicId := uint64(1)
+	block := int64(100)
 	require := s.Require()
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			output, err := inferencesynthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses)
+			output, err := inferencesynthesis.CalcNetworkLosses(topicId, block, tc.stakesByReputer, tc.reportedLosses)
 			if tc.expectedError != nil {
 				require.Error(err)
 				require.EqualError(err, tc.expectedError.Error())
@@ -420,24 +452,51 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch301Get := epochGet[301]
 	topicId := uint64(1)
+	blockHeight := int64(301)
 
-	reputer0 := s.addrs[0].String()
-	reputer1 := s.addrs[1].String()
-	reputer2 := s.addrs[2].String()
-	reputer3 := s.addrs[3].String()
-	reputer4 := s.addrs[4].String()
-	reputerAddresses := []string{reputer0, reputer1, reputer2, reputer3, reputer4}
+	reputer0 := s.addrsStr[0]
+	reputer1 := s.addrsStr[1]
+	reputer2 := s.addrsStr[2]
+	reputer3 := s.addrsStr[3]
+	reputer4 := s.addrsStr[4]
+	reputers := []testutil.ReputerKey{
+		{
+			Address:    reputer0,
+			PrivateKey: s.privKeys[0],
+			PubKeyHex:  s.pubKeyHexStr[0],
+		},
+		{
+			Address:    reputer1,
+			PrivateKey: s.privKeys[1],
+			PubKeyHex:  s.pubKeyHexStr[1],
+		},
+		{
+			Address:    reputer2,
+			PrivateKey: s.privKeys[2],
+			PubKeyHex:  s.pubKeyHexStr[2],
+		},
+		{
+			Address:    reputer3,
+			PrivateKey: s.privKeys[3],
+			PubKeyHex:  s.pubKeyHexStr[3],
+		},
+		{
+			Address:    reputer4,
+			PrivateKey: s.privKeys[4],
+			PubKeyHex:  s.pubKeyHexStr[4],
+		},
+	}
 
-	inferer0 := s.addrs[5].String()
-	inferer1 := s.addrs[6].String()
-	inferer2 := s.addrs[7].String()
-	inferer3 := s.addrs[8].String()
-	inferer4 := s.addrs[9].String()
+	inferer0 := s.addrsStr[5]
+	inferer1 := s.addrsStr[6]
+	inferer2 := s.addrsStr[7]
+	inferer3 := s.addrsStr[8]
+	inferer4 := s.addrsStr[9]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := s.addrs[10].String()
-	forecaster1 := s.addrs[11].String()
-	forecaster2 := s.addrs[12].String()
+	forecaster0 := s.addrsStr[10]
+	forecaster1 := s.addrsStr[11]
+	forecaster2 := s.addrsStr[12]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	cosmosOneE18 := inferencesynthesis.CosmosIntOneE18()
@@ -475,20 +534,23 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 
 	reportedLosses, err := testutil.GetReputersDataFromCsv(
 		topicId,
+		blockHeight,
 		infererAddresses,
 		forecasterAddresses,
-		reputerAddresses,
+		reputers,
 		epoch301Get,
 	)
 	s.Require().NoError(err)
 
-	networkLosses, err := inferencesynthesis.CalcNetworkLosses(stakesByReputer, reportedLosses)
+	networkLosses, err := inferencesynthesis.CalcNetworkLosses(topicId, blockHeight, stakesByReputer, reportedLosses)
 	s.Require().NoError(err)
 
 	expectedNetworkLosses, err := testutil.GetNetworkLossFromCsv(
 		topicId,
+		blockHeight,
 		infererAddresses,
 		forecasterAddresses,
+		reputer0,
 		epoch301Get,
 	)
 	s.Require().NoError(err)
@@ -574,13 +636,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesFromCsv() {
 }
 
 func (s *InferenceSynthesisTestSuite) TestCalcNetworkLossesCombined() {
-	tests := append(getTestCasesOneWorker(), getTestCasesTwoWorkers()...)
+	tests := append(s.getTestCasesOneWorker(), s.getTestCasesTwoWorkers()...)
 
+	topicId := uint64(1)
+	block := int64(100)
 	require := s.Require()
 
 	for _, tc := range tests {
 		s.Run(tc.name, func() {
-			output, err := inferencesynthesis.CalcNetworkLosses(tc.stakesByReputer, tc.reportedLosses)
+			output, err := inferencesynthesis.CalcNetworkLosses(topicId, block, tc.stakesByReputer, tc.reportedLosses)
 			if tc.expectedError != nil {
 				require.Error(err)
 				require.EqualError(err, tc.expectedError.Error())

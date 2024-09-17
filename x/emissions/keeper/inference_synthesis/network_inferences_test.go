@@ -84,44 +84,27 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	blockHeightPreviousLosses := int64(200)
 
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
-	reputerRequestNonce := &emissionstypes.ReputerRequestNonce{
-		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
-	}
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
-	})
+	topic := s.mockTopic()
+	topic.InitialRegret = alloraMath.ZeroDec()
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	s.Require().NoError(err)
 
-	inferer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
-	inferer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
-	inferer2 := "allo1k9ss0xfer54nyack5678frl36e5g3rj2yzxtfj"
-	inferer3 := "allo18ljxewge4vqrkk09tm5heldqg25yj8d9ekgkw5"
-	inferer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
+	inferer0 := s.addrsStr[0]
+	inferer1 := s.addrsStr[1]
+	inferer2 := s.addrsStr[2]
+	inferer3 := s.addrsStr[3]
+	inferer4 := s.addrsStr[4]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := "allo1pluvmvsmvecg2ccuqxa6ugzvc3a5udfyy0t76v"
-	forecaster1 := "allo1e92saykj94jw3z55g4d3lfz098ppk0suwzc03a"
-	forecaster2 := "allo1pk6mxny5p79t8zhkm23z7u3zmfuz2gn0snxkkt"
+	forecaster0 := s.addrsStr[5]
+	forecaster1 := s.addrsStr[6]
+	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	// Set Previous Loss
-	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
-		CombinedValue:       epoch2Get("network_loss"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
-	})
+	valueBundlePrevious := s.mockEmptyValueBundle(epoch2Get("network_loss"))
+	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, valueBundlePrevious)
 	require.NoError(err)
 
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch3Get)
@@ -130,14 +113,25 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
-	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch3Get)
+	forecasts, err := testutil.GetForecastsFromCsv(
+		topicId,
+		blockHeight,
+		infererAddresses,
+		forecasterAddresses,
+		epoch3Get,
+	)
 	s.Require().NoError(err)
 
 	err = keeper.InsertForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
-	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
+	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId,
+		blockHeight,
+		infererAddresses,
+		forecasterAddresses,
+		epoch2Get,
+	)
 	s.Require().NoError(err)
 
 	// Calculate
@@ -232,27 +226,16 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 	blockHeight := int64(300)
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
-	})
+	topic := s.mockTopic()
+	topic.InitialRegret = alloraMath.ZeroDec()
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	s.Require().NoError(err)
 
-	inferer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
-	inferer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
-	inferer2 := "allo1k9ss0xfer54nyack5678frl36e5g3rj2yzxtfj"
-	inferer3 := "allo18ljxewge4vqrkk09tm5heldqg25yj8d9ekgkw5"
-	inferer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
+	inferer0 := s.addrsStr[0]
+	inferer1 := s.addrsStr[1]
+	inferer2 := s.addrsStr[2]
+	inferer3 := s.addrsStr[3]
+	inferer4 := s.addrsStr[4]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
@@ -279,43 +262,24 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	topicId := uint64(1)
 	blockHeight := int64(300)
 	blockHeightPreviousLosses := int64(200)
-
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
-	reputerRequestNonce := &emissionstypes.ReputerRequestNonce{
-		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
-	}
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
-		// Set Initial Regret
-		InitialRegret: alloraMath.MustNewDecFromString("-1.8331309069480215"),
-	})
+	topic := s.mockTopic()
+	topic.InitialRegret = alloraMath.MustNewDecFromString("-1.8331309069480215")
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	s.Require().NoError(err)
 
-	inferer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
-	inferer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
-	inferer2 := "allo1k9ss0xfer54nyack5678frl36e5g3rj2yzxtfj"
-	inferer3 := "allo18ljxewge4vqrkk09tm5heldqg25yj8d9ekgkw5"
-	inferer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
+	inferer0 := s.addrsStr[0]
+	inferer1 := s.addrsStr[1]
+	inferer2 := s.addrsStr[2]
+	inferer3 := s.addrsStr[3]
+	inferer4 := s.addrsStr[4]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
 	// Set Previous Loss
-	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
-		CombinedValue:       epoch1Get("network_loss"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
-	})
+	valueBundlePrevious := s.mockEmptyValueBundle(epoch1Get("network_loss"))
+	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(
+		s.ctx, topicId, blockHeightPreviousLosses, valueBundlePrevious)
 	s.Require().NoError(err)
 
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
@@ -325,7 +289,8 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
-	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, []string{"allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"}, []string{}, epoch1Get)
+	err = testutil.SetRegretsFromPreviousEpoch(
+		s.ctx, s.emissionsKeeper, topicId, blockHeight, []string{inferer0}, []string{}, epoch1Get)
 	s.Require().NoError(err)
 
 	valueBundle, _, _, _, _, _, err :=
@@ -365,48 +330,29 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	topicId := uint64(1)
 	blockHeight := int64(300)
 	blockHeightPreviousLosses := int64(200)
-
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
-	reputerRequestNonce := &emissionstypes.ReputerRequestNonce{
-		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
-	}
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
-		// Set Initial Regret
-		InitialRegret: alloraMath.MustNewDecFromString("-3.7780955644806307"),
-	})
+	topic := s.mockTopic()
+	topic.InitialRegret = alloraMath.MustNewDecFromString("-3.7780955644806307")
+
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	s.Require().NoError(err)
 
-	inferer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
-	inferer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
-	inferer2 := "allo1k9ss0xfer54nyack5678frl36e5g3rj2yzxtfj"
-	inferer3 := "allo18ljxewge4vqrkk09tm5heldqg25yj8d9ekgkw5"
-	inferer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
+	inferer0 := s.addrsStr[0]
+	inferer1 := s.addrsStr[1]
+	inferer2 := s.addrsStr[2]
+	inferer3 := s.addrsStr[3]
+	inferer4 := s.addrsStr[4]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := "allo1pluvmvsmvecg2ccuqxa6ugzvc3a5udfyy0t76v"
-	forecaster1 := "allo1e92saykj94jw3z55g4d3lfz098ppk0suwzc03a"
-	forecaster2 := "allo1pk6mxny5p79t8zhkm23z7u3zmfuz2gn0snxkkt"
+	forecaster0 := s.addrsStr[5]
+	forecaster1 := s.addrsStr[6]
+	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	// Set Previous Loss
-	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
-		CombinedValue:       epoch1Get("network_loss"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
-	})
+	emptyValueBundle := s.mockEmptyValueBundle(epoch1Get("network_loss"))
+	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emptyValueBundle)
 	s.Require().NoError(err)
 
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
@@ -422,7 +368,15 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
-	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, []string{"allo1pluvmvsmvecg2ccuqxa6ugzvc3a5udfyy0t76v"}, epoch1Get)
+	err = testutil.SetRegretsFromPreviousEpoch(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		blockHeight,
+		infererAddresses,
+		[]string{forecaster0},
+		epoch1Get,
+	)
 	s.Require().NoError(err)
 
 	// Calculate
@@ -519,46 +473,30 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	blockHeightPreviousLosses := int64(200)
 
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
-	reputerRequestNonce := &emissionstypes.ReputerRequestNonce{
-		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
-	}
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
-		// Set Initial Regret
-		InitialRegret: alloraMath.MustNewDecFromString("-3.0557074373274475"),
-	})
+	topic := s.mockTopic()
+	topic.InitialRegret = alloraMath.MustNewDecFromString("-3.0557074373274475")
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	s.Require().NoError(err)
 
-	inferer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
-	inferer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
-	inferer2 := "allo1k9ss0xfer54nyack5678frl36e5g3rj2yzxtfj"
-	inferer3 := "allo18ljxewge4vqrkk09tm5heldqg25yj8d9ekgkw5"
-	inferer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
+	inferer0 := s.addrsStr[0]
+	inferer1 := s.addrsStr[1]
+	inferer2 := s.addrsStr[2]
+	inferer3 := s.addrsStr[3]
+	inferer4 := s.addrsStr[4]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := "allo1pluvmvsmvecg2ccuqxa6ugzvc3a5udfyy0t76v"
-	forecaster1 := "allo1e92saykj94jw3z55g4d3lfz098ppk0suwzc03a"
-	forecaster2 := "allo1pk6mxny5p79t8zhkm23z7u3zmfuz2gn0snxkkt"
+	forecaster0 := s.addrsStr[5]
+	forecaster1 := s.addrsStr[6]
+	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	// Set Previous Loss
-	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
-		CombinedValue:       epoch1Get("network_loss"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
-	})
+	emptyValueBundle := s.mockEmptyValueBundle(epoch1Get("network_loss"))
+	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(
+		s.ctx, topicId, blockHeightPreviousLosses,
+		emptyValueBundle,
+	)
 	s.Require().NoError(err)
 
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
@@ -674,63 +612,47 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	topicId := uint64(1)
 	blockHeightInferences := int64(300)
 	blockHeightPreviousLosses := int64(200)
-
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeightInferences}
-	reputerRequestNonce := &emissionstypes.ReputerRequestNonce{
-		ReputerNonce: &emissionstypes.Nonce{BlockHeight: blockHeightPreviousLosses},
-	}
 
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.1"),
-		AllowNegative:          false,
-		Epsilon:                alloraMath.MustNewDecFromString("0.01"),
-	})
-	s.Require().NoError(err)
+	topic := s.mockTopic()
+	topic.InitialRegret = alloraMath.ZeroDec()
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
+	require.NoError(err)
 
-	inferer0 := "allo1m5v6rgjtxh4xszrrzqacwjh4ve6r0za2gxx9qr"
-	inferer1 := "allo1e7cj9839ht2xm8urynqs5279hrvqd8neusvp2x"
-	inferer2 := "allo1k9ss0xfer54nyack5678frl36e5g3rj2yzxtfj"
-	inferer3 := "allo18ljxewge4vqrkk09tm5heldqg25yj8d9ekgkw5"
-	inferer4 := "allo1k36ljvn8z0u49sagdg46p75psgreh23kdjn3l0"
+	inferer0 := s.addrsStr[0]
+	inferer1 := s.addrsStr[1]
+	inferer2 := s.addrsStr[2]
+	inferer3 := s.addrsStr[3]
+	inferer4 := s.addrsStr[4]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := "allo1pluvmvsmvecg2ccuqxa6ugzvc3a5udfyy0t76v"
-	forecaster1 := "allo1e92saykj94jw3z55g4d3lfz098ppk0suwzc03a"
-	forecaster2 := "allo1pk6mxny5p79t8zhkm23z7u3zmfuz2gn0snxkkt"
+	forecaster0 := s.addrsStr[5]
+	forecaster1 := s.addrsStr[6]
+	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	// Set Previous Loss
-	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, emissionstypes.ValueBundle{
-		CombinedValue:       epoch2Get("network_loss"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
-	})
+	valueBundlePrevious := s.mockEmptyValueBundle(epoch2Get("network_loss"))
+	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, blockHeightPreviousLosses, valueBundlePrevious)
 	require.NoError(err)
 
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeightInferences, infererAddresses, epoch3Get)
-	s.Require().NoError(err)
+	require.NoError(err)
 
 	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
-	s.Require().NoError(err)
+	require.NoError(err)
 
-	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch3Get)
-	s.Require().NoError(err)
+	forecasts, err := testutil.GetForecastsFromCsv(
+		topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch3Get)
+	require.NoError(err)
 
 	err = keeper.InsertForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
-	s.Require().NoError(err)
+	require.NoError(err)
 
 	// Set regrets from the previous epoch
-	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch2Get)
-	s.Require().NoError(err)
+	err = testutil.SetRegretsFromPreviousEpoch(
+		s.ctx, s.emissionsKeeper, topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch2Get)
+	require.NoError(err)
 
 	// Calculate
 	valueBundle, _, _, _, _, _, err :=
@@ -744,7 +666,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
 	testutil.InEpsilon5(s.T(), valueBundle.NaiveValue, epoch3Get("network_naive_inference").String())
 
-	s.Require().Len(valueBundle.InfererValues, 5)
+	require.Len(valueBundle.InfererValues, 5)
 	for _, inference := range inferences.Inferences {
 		found := false
 		for _, infererValue := range valueBundle.InfererValues {
@@ -756,7 +678,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 		require.True(found, "Inference not found")
 	}
 
-	s.Require().Len(valueBundle.ForecasterValues, 3)
+	require.Len(valueBundle.ForecasterValues, 3)
 	for _, forecasterValue := range valueBundle.ForecasterValues {
 		switch forecasterValue.Worker {
 		case forecaster0:
@@ -770,7 +692,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 		}
 	}
 
-	s.Require().Len(valueBundle.OneOutInfererValues, 5)
+	require.Len(valueBundle.OneOutInfererValues, 5)
 	for _, oneOutInfererValue := range valueBundle.OneOutInfererValues {
 		switch oneOutInfererValue.Worker {
 		case inferer0:
@@ -788,7 +710,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 		}
 	}
 
-	s.Require().Len(valueBundle.OneOutForecasterValues, 3)
+	require.Len(valueBundle.OneOutForecasterValues, 3)
 	for _, oneOutForecasterValue := range valueBundle.OneOutForecasterValues {
 		switch oneOutForecasterValue.Worker {
 		case forecaster0:
@@ -802,7 +724,7 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 		}
 	}
 
-	s.Require().Len(valueBundle.OneInForecasterValues, 3)
+	require.Len(valueBundle.OneInForecasterValues, 3)
 	for _, oneInForecasterValue := range valueBundle.OneInForecasterValues {
 		switch oneInForecasterValue.Worker {
 		case forecaster0:
@@ -823,26 +745,29 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 	topicId := uint64(1)
 	blockHeight := int64(300)
 
-	inferer1 := "worker1"
-	inferer2 := "worker2"
-	inferer3 := "worker3"
+	inferer1 := s.addrsStr[1]
+	inferer2 := s.addrsStr[2]
+	inferer3 := s.addrsStr[3]
 
 	inferences := emissionstypes.Inferences{
 		Inferences: []*emissionstypes.Inference{
 			{
-				TopicId: topicId,
-				Inferer: inferer1,
-				Value:   alloraMath.MustNewDecFromString("10.0"),
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Inferer:     inferer1,
+				Value:       alloraMath.MustNewDecFromString("10.0"),
 			},
 			{
-				TopicId: topicId,
-				Inferer: inferer2,
-				Value:   alloraMath.MustNewDecFromString("30.0"),
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Inferer:     inferer2,
+				Value:       alloraMath.MustNewDecFromString("30.0"),
 			},
 			{
-				TopicId: topicId,
-				Inferer: inferer3,
-				Value:   alloraMath.MustNewDecFromString("20.0"),
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Inferer:     inferer3,
+				Value:       alloraMath.MustNewDecFromString("20.0"),
 			},
 		},
 	}
