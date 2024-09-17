@@ -103,7 +103,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 				Forecaster: "forecaster0",
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("3")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("4")},
+					{Inferer: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("4")},
 				},
 			},
 		},
@@ -113,15 +113,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"forecaster0": {Value: alloraMath.MustNewDecFromString("1.055841253742177320400327600231111")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("2")},
+		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
+		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("2")},
 	}
 	palette := inferencesynthesis.SynthPalette{
 		Logger:              inferencesynthesis.Logger(s.ctx),
 		InferenceByWorker:   inferenceByWorker,
 		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
 		Forecasters:         []string{"forecaster0"},
-		Inferers:            []string{"worker0", "worker1"},
+		Inferers:            []string{"worker0", s.addrsStr[1]},
 		NetworkCombinedLoss: networkCombinedLoss,
 		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
@@ -159,7 +159,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			{
 				Forecaster: "worker0",
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("4")},
+					{Inferer: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("4")},
 				},
 			},
 		},
@@ -169,15 +169,15 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"worker0": {Value: alloraMath.MustNewDecFromString("2")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("2")},
+		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
+		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("2")},
 	}
 	palette := inferencesynthesis.SynthPalette{
 		Logger:              inferencesynthesis.Logger(s.ctx),
 		InferenceByWorker:   inferenceByWorker,
 		ForecastByWorker:    map[string]*emissionstypes.Forecast{"worker0": forecasts.Forecasts[0]},
 		Forecasters:         []string{"worker0"},
-		Inferers:            []string{"worker0", "worker1"},
+		Inferers:            []string{"worker0", s.addrsStr[1]},
 		NetworkCombinedLoss: networkCombinedLoss,
 		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
@@ -216,41 +216,41 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 				Forecaster: "worker0",
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("1")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("2")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("3")},
+					{Inferer: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("2")},
+					{Inferer: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("3")},
 				},
 			},
 			{
-				Forecaster: "worker1",
+				Forecaster: s.addrsStr[1],
 				ForecastElements: []*emissionstypes.ForecastElement{
 					{Inferer: "worker0", Value: alloraMath.MustNewDecFromString("4")},
-					{Inferer: "worker1", Value: alloraMath.MustNewDecFromString("5")},
-					{Inferer: "worker2", Value: alloraMath.MustNewDecFromString("6")},
+					{Inferer: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("5")},
+					{Inferer: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("6")},
 				},
 			},
 		},
 	}
 
 	expected := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1.158380376510523897775902553985830")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("1.149124717287201046499545990921485")},
-		"worker2": nil,
+		"worker0":     {Value: alloraMath.MustNewDecFromString("1.158380376510523897775902553985830")},
+		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("1.149124717287201046499545990921485")},
+		s.addrsStr[2]: nil,
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: alloraMath.MustNewDecFromString("1")},
-		"worker1": {Value: alloraMath.MustNewDecFromString("2")},
-		"worker2": {Value: alloraMath.MustNewDecFromString("3")},
+		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
+		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("2")},
+		s.addrsStr[2]: {Value: alloraMath.MustNewDecFromString("3")},
 	}
 	palette := inferencesynthesis.SynthPalette{
 		Logger:            inferencesynthesis.Logger(s.ctx),
 		InferenceByWorker: inferenceByWorker,
 		ForecastByWorker: map[string]*emissionstypes.Forecast{
-			"worker0": forecasts.Forecasts[0],
-			"worker1": forecasts.Forecasts[1],
-			// "worker2": forecasts.Forecasts[2],
+			"worker0":     forecasts.Forecasts[0],
+			s.addrsStr[1]: forecasts.Forecasts[1],
+			// s.addrsStr[2]: forecasts.Forecasts[2],
 		},
-		Forecasters:         []string{"worker0", "worker1", "worker2"},
-		Inferers:            []string{"worker0", "worker1", "worker2"},
+		Forecasters:         []string{"worker0", s.addrsStr[1], s.addrsStr[2]},
+		Inferers:            []string{"worker0", s.addrsStr[1], s.addrsStr[2]},
 		NetworkCombinedLoss: networkCombinedLoss,
 		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
@@ -287,16 +287,23 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch2Get := epochGet[302]
 
+	worker0 := s.addrsStr[0]
+	worker1 := s.addrsStr[1]
+	worker2 := s.addrsStr[2]
+	worker3 := s.addrsStr[3]
+	worker4 := s.addrsStr[4]
+	forecaster0 := s.addrsStr[5]
+
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
 			{
-				Forecaster: "forecaster0",
+				Forecaster: forecaster0,
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker0", Value: epoch2Get("forecasted_loss_0_for_0")},
-					{Inferer: "worker1", Value: epoch2Get("forecasted_loss_0_for_1")},
-					{Inferer: "worker2", Value: epoch2Get("forecasted_loss_0_for_2")},
-					{Inferer: "worker3", Value: epoch2Get("forecasted_loss_0_for_3")},
-					{Inferer: "worker4", Value: epoch2Get("forecasted_loss_0_for_4")},
+					{Inferer: worker0, Value: epoch2Get("forecasted_loss_0_for_0")},
+					{Inferer: worker1, Value: epoch2Get("forecasted_loss_0_for_1")},
+					{Inferer: worker2, Value: epoch2Get("forecasted_loss_0_for_2")},
+					{Inferer: worker3, Value: epoch2Get("forecasted_loss_0_for_3")},
+					{Inferer: worker4, Value: epoch2Get("forecasted_loss_0_for_4")},
 				},
 			},
 		},
@@ -306,20 +313,20 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
-		"forecaster0": {Value: epoch2Get("forecast_implied_inference_0")},
+		forecaster0: {Value: epoch2Get("forecast_implied_inference_0")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: epoch2Get("inference_0")},
-		"worker1": {Value: epoch2Get("inference_1")},
-		"worker2": {Value: epoch2Get("inference_2")},
-		"worker3": {Value: epoch2Get("inference_3")},
-		"worker4": {Value: epoch2Get("inference_4")},
+		worker0: {Value: epoch2Get("inference_0")},
+		worker1: {Value: epoch2Get("inference_1")},
+		worker2: {Value: epoch2Get("inference_2")},
+		worker3: {Value: epoch2Get("inference_3")},
+		worker4: {Value: epoch2Get("inference_4")},
 	}
 	palette := inferencesynthesis.SynthPalette{
 		InferenceByWorker:   inferenceByWorker,
-		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
-		Forecasters:         []string{"forecaster0"},
-		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
+		ForecastByWorker:    map[string]*emissionstypes.Forecast{forecaster0: forecasts.Forecasts[0]},
+		Forecasters:         []string{forecaster0},
+		Inferers:            []string{worker0, worker1, worker2, worker3, worker4},
 		NetworkCombinedLoss: networkCombinedLoss,
 		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,
@@ -349,16 +356,23 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[303]
 
+	worker0 := s.addrsStr[0]
+	worker1 := s.addrsStr[1]
+	worker2 := s.addrsStr[2]
+	worker3 := s.addrsStr[3]
+	worker4 := s.addrsStr[4]
+	forecaster0 := s.addrsStr[5]
+
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
 			{
-				Forecaster: "forecaster0",
+				Forecaster: forecaster0,
 				ForecastElements: []*emissionstypes.ForecastElement{
-					{Inferer: "worker0", Value: epoch3Get("forecasted_loss_0_for_0")},
-					{Inferer: "worker1", Value: epoch3Get("forecasted_loss_0_for_1")},
-					{Inferer: "worker2", Value: epoch3Get("forecasted_loss_0_for_2")},
-					{Inferer: "worker3", Value: epoch3Get("forecasted_loss_0_for_3")},
-					{Inferer: "worker4", Value: epoch3Get("forecasted_loss_0_for_4")},
+					{Inferer: worker0, Value: epoch3Get("forecasted_loss_0_for_0")},
+					{Inferer: worker1, Value: epoch3Get("forecasted_loss_0_for_1")},
+					{Inferer: worker2, Value: epoch3Get("forecasted_loss_0_for_2")},
+					{Inferer: worker3, Value: epoch3Get("forecasted_loss_0_for_3")},
+					{Inferer: worker4, Value: epoch3Get("forecasted_loss_0_for_4")},
 				},
 			},
 		},
@@ -369,21 +383,21 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	expected := map[string]*emissionstypes.Inference{
-		"forecaster0": {Value: epoch3Get("forecast_implied_inference_0")},
+		forecaster0: {Value: epoch3Get("forecast_implied_inference_0")},
 	}
 	inferenceByWorker := map[string]*emissionstypes.Inference{
-		"worker0": {Value: epoch3Get("inference_0")},
-		"worker1": {Value: epoch3Get("inference_1")},
-		"worker2": {Value: epoch3Get("inference_2")},
-		"worker3": {Value: epoch3Get("inference_3")},
-		"worker4": {Value: epoch3Get("inference_4")},
+		worker0: {Value: epoch3Get("inference_0")},
+		worker1: {Value: epoch3Get("inference_1")},
+		worker2: {Value: epoch3Get("inference_2")},
+		worker3: {Value: epoch3Get("inference_3")},
+		worker4: {Value: epoch3Get("inference_4")},
 	}
 	palette := inferencesynthesis.SynthPalette{
 		Logger:              inferencesynthesis.Logger(s.ctx),
 		InferenceByWorker:   inferenceByWorker,
-		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
-		Forecasters:         []string{"forecaster0"},
-		Inferers:            []string{"worker0", "worker1", "worker2", "worker3", "worker4"},
+		ForecastByWorker:    map[string]*emissionstypes.Forecast{forecaster0: forecasts.Forecasts[0]},
+		Forecasters:         []string{forecaster0},
+		Inferers:            []string{worker0, worker1, worker2, worker3, worker4},
 		NetworkCombinedLoss: networkCombinedLoss,
 		EpsilonTopic:        epsilon,
 		PNorm:               pNorm,

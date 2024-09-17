@@ -33,7 +33,7 @@ func TestSynthPalette_Clone(t *testing.T) {
 		Inferers:                         []synth.Worker{"inferer1", "inferer2"},
 		InferenceByWorker:                inferencesByWorker,
 		InfererRegrets:                   make(map[synth.Worker]*alloraMath.Dec),
-		Forecasters:                      []synth.Worker{"forecaster1", "forecaster2"},
+		Forecasters:                      []synth.Worker{"allo13kenskkx7e0v253m3kcgwfc67cmx00fgwpgj6h", "forecaster2"},
 		ForecastByWorker:                 make(map[synth.Worker]*emissionstypes.Forecast),
 		ForecastImpliedInferenceByWorker: make(map[synth.Worker]*emissionstypes.Inference),
 		ForecasterRegrets:                make(map[synth.Worker]*alloraMath.Dec),
