@@ -89,7 +89,7 @@ func EmitNewReputerLastCommitSetEvent(ctx sdk.Context, topicId TopicId, height B
 	}
 }
 
-func EmitNewForecastTaskScoreSetEvent(ctx sdk.Context, topicId TopicId, score alloraMath.Dec) {
+func EmitNewForecastTaskUtilityScoreSetEvent(ctx sdk.Context, topicId TopicId, score alloraMath.Dec) {
 	err := ctx.EventManager().EmitTypedEvent(NewForecastTaskScoreSetEventBase(topicId, score))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting EmitNewReputerLastCommitSetEvent: ", err.Error())

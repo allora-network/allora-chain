@@ -312,13 +312,6 @@ func GenerateForecastScores(
 		return nil, err
 	}
 
-	// Calculate forecast task score and emit
-	forecastingTaskScore, err := networkLosses.NaiveValue.Sub(networkLosses.CombinedValue)
-	if err != nil {
-		return []types.Score{}, errors.Wrapf(err, "Error calculaing forecast task score")
-	}
-	types.EmitNewForecastTaskScoreSetEvent(ctx, topicId, forecastingTaskScore)
-
 	// Emit forecaster performance scores
 	types.EmitNewForecasterScoresSetEvent(ctx, newScores)
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)

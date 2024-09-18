@@ -424,7 +424,7 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	score, err := loss.NaiveValue.Sub(loss.CombinedValue)
 	require.NoError(t, err)
 
-	types.EmitNewForecastTaskScoreSetEvent(ctx, topicId, score)
+	types.EmitNewForecastTaskUtilityScoreSetEvent(ctx, topicId, score)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
