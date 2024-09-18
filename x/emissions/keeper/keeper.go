@@ -174,13 +174,13 @@ type Keeper struct {
 	lastDripBlock collections.Map[TopicId, BlockHeight]
 
 	// map registered inferer to nonce of last attempted participation
-	lastInfererPayloadNonce collections.Map[ActorId, BlockHeight]
+	lastInfererPayloadNonce collections.Map[collections.Pair[TopicId, ActorId], BlockHeight]
 
 	// map registered forecaster to nonce of last attempted participation
-	lastForecasterPayloadNonce collections.Map[ActorId, BlockHeight]
+	lastForecasterPayloadNonce collections.Map[collections.Pair[TopicId, ActorId], BlockHeight]
 
 	// map registered reputer to nonce of last attempted participation
-	lastReputerPayloadNonce collections.Map[ActorId, BlockHeight]
+	lastReputerPayloadNonce collections.Map[collections.Pair[TopicId, ActorId], BlockHeight]
 
 	/// REGRETS
 
@@ -290,9 +290,9 @@ func NewKeeper(
 		previousTopicQuantileInfererScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileInfererScoreEmaKey, "previous_topic_quantile_inferer_score_ema", collections.Uint64Key, alloraMath.DecValue),
 		previousTopicQuantileForecasterScoreEma: collections.NewMap(sb, types.PreviousTopicQuantileForecasterScoreEmaKey, "previous_topic_quantile_forecaster_score_ema", collections.Uint64Key, alloraMath.DecValue),
 		previousTopicQuantileReputerScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileReputerScoreEmaKey, "previous_topic_quantile_reputer_score_ema", collections.Uint64Key, alloraMath.DecValue),
-		lastInfererPayloadNonce:                 collections.NewMap(sb, types.LastInfererPayloadNonceKey, "last_inferer_payload_nonce", collections.StringKey, collections.Int64Value),
-		lastForecasterPayloadNonce:              collections.NewMap(sb, types.LastForecasterPayloadNonceKey, "last_forecaster_payload_nonce", collections.StringKey, collections.Int64Value),
-		lastReputerPayloadNonce:                 collections.NewMap(sb, types.LastReputerPayloadNonceKey, "last_reputer_payload_nonce", collections.StringKey, collections.Int64Value),
+		lastInfererPayloadNonce:                 collections.NewMap(sb, types.LastInfererPayloadNonceKey, "last_inferer_payload_nonce", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Int64Value),
+		lastForecasterPayloadNonce:              collections.NewMap(sb, types.LastForecasterPayloadNonceKey, "last_forecaster_payload_nonce", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Int64Value),
+		lastReputerPayloadNonce:                 collections.NewMap(sb, types.LastReputerPayloadNonceKey, "last_reputer_payload_nonce", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Int64Value),
 	}
 
 	schema, err := sb.Build()
@@ -315,28 +315,34 @@ func (k *Keeper) GetBinaryCodec() codec.BinaryCodec {
 
 /// NONCES
 
-func (k *Keeper) GetLastInfererPayloadNonce(ctx context.Context, inferer ActorId) (BlockHeight, error) {
-	return k.lastInfererPayloadNonce.Get(ctx, inferer)
+func (k *Keeper) GetLastInfererPayloadNonce(ctx context.Context, topicId TopicId, inferer ActorId) (BlockHeight, error) {
+	key := collections.Join(topicId, inferer)
+	return k.lastInfererPayloadNonce.Get(ctx, key)
 }
 
-func (k *Keeper) SetLastInfererPayloadNonce(ctx context.Context, inferer ActorId, nonce BlockHeight) error {
-	return k.lastInfererPayloadNonce.Set(ctx, inferer, nonce)
+func (k *Keeper) SetLastInfererPayloadNonce(ctx context.Context, topicId TopicId, inferer ActorId, nonce BlockHeight) error {
+	key := collections.Join(topicId, inferer)
+	return k.lastInfererPayloadNonce.Set(ctx, key, nonce)
 }
 
-func (k *Keeper) GetLastForecasterPayloadNonce(ctx context.Context, forecaster ActorId) (BlockHeight, error) {
-	return k.lastForecasterPayloadNonce.Get(ctx, forecaster)
+func (k *Keeper) GetLastForecasterPayloadNonce(ctx context.Context, topicId TopicId, forecaster ActorId) (BlockHeight, error) {
+	key := collections.Join(topicId, forecaster)
+	return k.lastForecasterPayloadNonce.Get(ctx, key)
 }
 
-func (k *Keeper) SetLastForecasterPayloadNonce(ctx context.Context, forecaster ActorId, nonce BlockHeight) error {
-	return k.lastForecasterPayloadNonce.Set(ctx, forecaster, nonce)
+func (k *Keeper) SetLastForecasterPayloadNonce(ctx context.Context, topicId TopicId, forecaster ActorId, nonce BlockHeight) error {
+	key := collections.Join(topicId, forecaster)
+	return k.lastForecasterPayloadNonce.Set(ctx, key, nonce)
 }
 
-func (k *Keeper) GetLastReputerPayloadNonce(ctx context.Context, reputer ActorId) (BlockHeight, error) {
-	return k.lastReputerPayloadNonce.Get(ctx, reputer)
+func (k *Keeper) GetLastReputerPayloadNonce(ctx context.Context, topicId TopicId, reputer ActorId) (BlockHeight, error) {
+	key := collections.Join(topicId, reputer)
+	return k.lastReputerPayloadNonce.Get(ctx, key)
 }
 
-func (k *Keeper) SetLastReputerPayloadNonce(ctx context.Context, reputer ActorId, nonce BlockHeight) error {
-	return k.lastReputerPayloadNonce.Set(ctx, reputer, nonce)
+func (k *Keeper) SetLastReputerPayloadNonce(ctx context.Context, topicId TopicId, reputer ActorId, nonce BlockHeight) error {
+	key := collections.Join(topicId, reputer)
+	return k.lastReputerPayloadNonce.Set(ctx, key, nonce)
 }
 
 // GetTopicIds returns the TopicIds for a given BlockHeight.
@@ -840,7 +846,7 @@ func (k *Keeper) AppendInference(
 		return errors.New("invalid inference: inferer is empty or nil")
 	}
 
-	defer k.SetLastInfererPayloadNonce(ctx, inference.Inferer, nonceBlockHeight)
+	defer k.SetLastInfererPayloadNonce(ctx, topic.Id, inference.Inferer, nonceBlockHeight)
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
@@ -864,7 +870,7 @@ func (k *Keeper) AppendInference(
 		return errorsmod.Wrapf(err, "Error getting inferer score ema")
 	}
 	// Only calc and save if there's a new update
-	lastNonce, err := k.GetLastInfererPayloadNonce(ctx, inference.Inferer)
+	lastNonce, err := k.GetLastInfererPayloadNonce(ctx, topic.Id, inference.Inferer)
 	if err != nil {
 		return err
 	}
@@ -944,7 +950,7 @@ func (k *Keeper) AppendForecast(
 		return errors.New("invalid forecast: forecast elements are empty")
 	}
 
-	defer k.SetLastForecasterPayloadNonce(ctx, forecast.Forecaster, nonceBlockHeight)
+	defer k.SetLastForecasterPayloadNonce(ctx, topic.Id, forecast.Forecaster, nonceBlockHeight)
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
@@ -968,7 +974,7 @@ func (k *Keeper) AppendForecast(
 		return errorsmod.Wrapf(err, "Error getting forecaster score ema")
 	}
 	// Only calc and save if there's a new update
-	lastNonce, err := k.GetLastForecasterPayloadNonce(ctx, forecast.Forecaster)
+	lastNonce, err := k.GetLastForecasterPayloadNonce(ctx, topic.Id, forecast.Forecaster)
 	if err != nil {
 		return err
 	}
@@ -1081,7 +1087,7 @@ func (k *Keeper) AppendReputerLoss(
 		return errors.New("invalid reputerLoss bundle: reputer is empty")
 	}
 
-	defer k.SetLastReputerPayloadNonce(ctx, reputerLoss.ValueBundle.Reputer, nonceBlockHeight)
+	defer k.SetLastReputerPayloadNonce(ctx, topic.Id, reputerLoss.ValueBundle.Reputer, nonceBlockHeight)
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
@@ -1105,7 +1111,7 @@ func (k *Keeper) AppendReputerLoss(
 		return err
 	}
 	// Only calc and save if there's a new update
-	lastNonce, err := k.GetLastReputerPayloadNonce(ctx, reputerLoss.ValueBundle.Reputer)
+	lastNonce, err := k.GetLastReputerPayloadNonce(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
 		return err
 	}
