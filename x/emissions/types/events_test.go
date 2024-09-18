@@ -498,3 +498,61 @@ func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
 	require.Contains(t, events[0].Attributes[1].Key, "topic_ids")
 	require.Contains(t, events[0].Attributes[1].Value, `["1","2","3","4","5"]`)
 }
+
+func TestEmitNewEMAScoresSetEventWithScores(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	activeArr := make(map[string]bool)
+	emaScores := []types.Score{
+		{
+			TopicId:     uint64(1),
+			BlockHeight: int64(10),
+			Address:     "address1",
+			Score:       alloraMath.NewDecFromInt64(100),
+		},
+		{
+			TopicId:     uint64(1),
+			BlockHeight: int64(10),
+			Address:     "address2",
+			Score:       alloraMath.NewDecFromInt64(200),
+		},
+	}
+
+	activeArr[emaScores[0].Address] = true
+	activeArr[emaScores[1].Address] = false
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr)
+	activeArr[emaScores[0].Address] = false
+	activeArr[emaScores[1].Address] = false
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)
+	activeArr[emaScores[0].Address] = true
+	activeArr[emaScores[1].Address] = true
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 3)
+
+	event := events[0]
+	require.Equal(t, "emissions.v4.EventEMAScoresSet", event.Type)
+
+	require.Contains(t, events[0].Attributes[0].Key, "actor_type")
+	require.Contains(t, events[0].Attributes[0].Value, "\"ACTOR_TYPE_INFERER_UNSPECIFIED\"")
+	require.Contains(t, events[0].Attributes[1].Key, "addresses")
+	require.Contains(t, events[0].Attributes[1].Value, "[\"address1\",\"address2\"]")
+	require.Contains(t, events[0].Attributes[2].Key, "is_active")
+	require.Contains(t, events[0].Attributes[2].Value, "[true,false]")
+	require.Contains(t, events[0].Attributes[3].Key, "nonce")
+	require.Contains(t, events[0].Attributes[3].Value, "\"10\"")
+	require.Contains(t, events[0].Attributes[4].Key, "scores")
+	require.Contains(t, events[0].Attributes[4].Value, "[\"100\",\"200\"]")
+	require.Contains(t, events[0].Attributes[5].Key, "topic_id")
+	require.Contains(t, events[0].Attributes[5].Value, "\"1\"")
+
+	require.Contains(t, events[1].Attributes[0].Key, "actor_type")
+	require.Contains(t, events[1].Attributes[0].Value, "\"ACTOR_TYPE_FORECASTER\"")
+	require.Contains(t, events[1].Attributes[2].Key, "is_active")
+	require.Contains(t, events[1].Attributes[2].Value, "[false,false]")
+
+	require.Contains(t, events[2].Attributes[0].Key, "actor_type")
+	require.Contains(t, events[2].Attributes[0].Value, "\"ACTOR_TYPE_REPUTER\"")
+	require.Contains(t, events[2].Attributes[2].Key, "is_active")
+	require.Contains(t, events[2].Attributes[2].Value, "[true,true]")
+}

@@ -103,6 +103,16 @@ func EmitNewTopicRewardSetEvent(ctx sdk.Context, topicRewards map[uint64]*allora
 	}
 }
 
+func EmitNewActorEMAScoresSetEvent(ctx sdk.Context, actorType ActorType, scores []Score, activations map[string]bool) {
+	if len(scores) < 1 {
+		return
+	}
+	err := ctx.EventManager().EmitTypedEvent(NewEMAScoresSetEventBase(actorType, scores, activations))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewActorEMAScoresSetEvent: ", err.Error())
+	}
+}
+
 /// Utils
 
 // Assumes length of `scores` is at least 1
@@ -182,5 +192,27 @@ func NewTopicRewardSetEventBase(topicRewards map[uint64]*alloraMath.Dec) proto.M
 	return &EventTopicRewardsSet{
 		TopicIds: ids,
 		Rewards:  rewardValues,
+	}
+}
+
+// Assumes length of `scores` is at least 1
+func NewEMAScoresSetEventBase(actorType ActorType, scores []Score, activations map[string]bool) proto.Message {
+	topicId := scores[0].TopicId
+	blockHeight := scores[0].BlockHeight
+	activeArr := make([]bool, len(scores))
+	addresses := make([]string, len(scores))
+	scoreValues := make([]alloraMath.Dec, len(scores))
+	for i, score := range scores {
+		addresses[i] = score.Address
+		scoreValues[i] = score.Score
+		activeArr[i] = activations[addresses[i]]
+	}
+	return &EventEMAScoresSet{
+		ActorType: actorType,
+		TopicId:   topicId,
+		Nonce:     blockHeight,
+		Addresses: addresses,
+		Scores:    scoreValues,
+		IsActive:  activeArr,
 	}
 }
