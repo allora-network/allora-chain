@@ -1,5 +1,5 @@
 syntax = "proto3";
-package mint.v3;
+package mint.v2;
 
 import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
