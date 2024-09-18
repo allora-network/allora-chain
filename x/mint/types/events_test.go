@@ -21,7 +21,7 @@ func TestEmitNewTokenomicsSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
-	require.Equal(t, "mint.v3.EventTokenomicsSet", events[0].Type)
+	require.Equal(t, "mint.v2.EventTokenomicsSet", events[0].Type)
 	require.Contains(t, events[0].Attributes[0].Key, "circulating_supply")
 	require.Contains(t, events[0].Attributes[0].Value, circulatingSupply.String())
 	require.Contains(t, events[0].Attributes[1].Key, "emissions_amount")
@@ -40,7 +40,7 @@ func TestEmitNewEcosystemTokenMintedSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
-	require.Equal(t, "mint.v3.EventEcosystemTokenMintSet", events[0].Type)
+	require.Equal(t, "mint.v2.EventEcosystemTokenMintSet", events[0].Type)
 	require.Contains(t, events[0].Attributes[0].Key, "block_height")
 	require.Contains(t, events[0].Attributes[0].Value, "1")
 	require.Contains(t, events[0].Attributes[1].Key, "token_amount")
