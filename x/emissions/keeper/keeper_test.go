@@ -3549,7 +3549,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().Greater(updatedWorker2ScoreVal, ogWorker2ScoreVal, "worker2 score should go up given large ema value")
 	s.Require().Greater(updatedWorker2ScoreVal, worker5OgScoreVal, "worker2 could not overtake worker5, but not in this epoch")
 	// EMA score should be updated with the new time of update given that it was updated then
-	s.Require().Equal(blockHeightInferences, updatedWorker2Score.BlockHeight)
+	s.Require().Equal(nonce.BlockHeight, updatedWorker2Score.BlockHeight)
 
 	// Ensure passive set participant can't update their score within the same epoch
 	blockHeightInferences = blockHeightInferences + 1 // within the same epoch => no update
