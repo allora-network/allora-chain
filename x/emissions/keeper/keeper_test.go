@@ -3497,7 +3497,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	newInference := types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
-	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference)
 	s.Require().NoError(err)
 	newAllInferences, err := k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3516,7 +3516,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	}
 	worker5OgScore, err := k.GetInfererScoreEma(ctx, topicId, worker5)
 	s.Require().NoError(err)
-	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2)
 	s.Require().NoError(err)
 	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3556,7 +3556,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	newInference2 = types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
-	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2)
 	s.Require().Error(err, types.ErrCantUpdateEmaMoreThanOncePerWindow.Error())
 	// Confirm no change in EMA score
 	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
@@ -3668,7 +3668,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
-	err = k.AppendForecast(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newForecast)
+	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newForecast)
 	s.Require().NoError(err)
 	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3693,8 +3693,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 			},
 		},
 	}
-	blockHeightInferences = blockHeightInferences + topic.EpochLength
-	err = k.AppendForecast(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
+	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newInference2)
 	s.Require().NoError(err)
 	newAllForecasts, err = k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3775,8 +3774,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	}
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
-	blockHeight = blockHeight + topic.EpochLength
-	err = k.AppendReputerLoss(ctx, topic, blockHeight, nonce.BlockHeight, &newReputerLoss)
+	err = k.AppendReputerLoss(ctx, topic, nonce.BlockHeight, &newReputerLoss)
 	s.Require().NoError(err)
 	newAllReputerLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3795,8 +3793,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			TopicId:             topicId,
 		},
 	}
-	blockHeight = blockHeight + topic.EpochLength
-	err = k.AppendReputerLoss(ctx, topic, blockHeight, nonce.BlockHeight, &newReputerLoss2)
+	err = k.AppendReputerLoss(ctx, topic, nonce.BlockHeight, &newReputerLoss2)
 	s.Require().NoError(err)
 	newAllReputerLosses, err = k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
