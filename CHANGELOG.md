@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#584](https://github.com/allora-network/allora-chain/pull/584) Allow admins to force target emission recalculation on params update and via dedicated mint RPC endpoint
 * [#592](https://github.com/allora-network/allora-chain/pull/592) Update to use rewardable topics as active topics and rename `PickChurnableActiveTopics` to `UpdateNoncesOfActiveTopics`
 * [#602](https://github.com/allora-network/allora-chain/pull/602) Refactor: Fix query server proto v4 (refactors [#592](https://github.com/allora-network/allora-chain/pull/592))
+* [#607](https://github.com/allora-network/allora-chain/pull/607) Add events for building research monitoring suite
 
 ### Fixed
 

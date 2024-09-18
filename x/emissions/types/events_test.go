@@ -2,6 +2,7 @@ package types_test
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -44,7 +45,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v3.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v4.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -103,7 +104,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v3.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v4.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -162,7 +163,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v3.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v4.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -219,7 +220,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v3.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v4.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -276,7 +277,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v3.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v4.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -333,7 +334,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v3.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v4.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -389,7 +390,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v3.EventNetworkLossSet", event.Type)
+	require.Equal(t, "emissions.v4.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 3)
@@ -405,4 +406,153 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Equal(t, loss.OneOutInfererValues, result.OneOutInfererValues)
 	require.Equal(t, loss.OneOutForecasterValues, result.OneOutForecasterValues)
 	require.Equal(t, loss.OneInForecasterValues, result.OneInForecasterValues)
+}
+
+func TestEmitNewForecastTaskSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId := uint64(1)
+	loss := types.ValueBundle{
+		CombinedValue:          alloraMath.MustNewDecFromString("10"),
+		NaiveValue:             alloraMath.MustNewDecFromString("20"),
+		InfererValues:          []*types.WorkerAttributedValue{{Worker: "TestInferer", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "TestForecaster", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "TestInferer2", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer3", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "TestForecaster3", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster4", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "TestForecaster5", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster6", Value: alloraMath.MustNewDecFromString("0.0112")}},
+	}
+
+	score, err := loss.NaiveValue.Sub(loss.CombinedValue)
+	require.NoError(t, err)
+
+	types.EmitNewForecastTaskUtilityScoreSetEvent(ctx, topicId, score)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v4.EventForecastTaskScoreSet", event.Type)
+
+	require.Contains(t, event.Attributes[0].Key, "score")
+	require.Contains(t, event.Attributes[0].Value, "10")
+
+	require.Contains(t, event.Attributes[1].Key, "topic_id")
+	require.Contains(t, event.Attributes[1].Value, "1")
+}
+
+func TestNewLastCommitSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicId1 := uint64(1)
+	topicId2 := uint64(2)
+	workerHeight := int64(10)
+	worker2Height := int64(20)
+	reputerHeight := int64(30)
+	types.EmitNewWorkerLastCommitSetEvent(ctx, topicId1, workerHeight, &types.Nonce{BlockHeight: workerHeight - 5})
+	types.EmitNewWorkerLastCommitSetEvent(ctx, topicId1, worker2Height, &types.Nonce{BlockHeight: worker2Height - 5})
+	types.EmitNewReputerLastCommitSetEvent(ctx, topicId2, reputerHeight, &types.Nonce{BlockHeight: reputerHeight - 5})
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 3)
+
+	require.Equal(t, "emissions.v4.EventWorkerLastCommitSet", events[0].Type)
+	require.Equal(t, "emissions.v4.EventWorkerLastCommitSet", events[1].Type)
+	require.Equal(t, "emissions.v4.EventReputerLastCommitSet", events[2].Type)
+
+	require.Contains(t, events[0].Attributes[0].Key, "block_height")
+	require.Contains(t, events[0].Attributes[1].Key, "nonce")
+	require.Contains(t, events[0].Attributes[2].Key, "topic_id")
+	require.Contains(t, events[0].Attributes[0].Value, "10")
+	require.Contains(t, events[0].Attributes[1].Value, "{\"block_height\":\"5\"}")
+	require.Contains(t, events[0].Attributes[2].Value, "1")
+
+	require.Contains(t, events[1].Attributes[0].Key, "block_height")
+	require.Contains(t, events[1].Attributes[1].Key, "nonce")
+	require.Contains(t, events[1].Attributes[2].Key, "topic_id")
+	require.Contains(t, events[1].Attributes[0].Value, "20")
+	require.Contains(t, events[1].Attributes[1].Value, "{\"block_height\":\"15\"}")
+	require.Contains(t, events[1].Attributes[2].Value, "1")
+
+	require.Contains(t, events[2].Attributes[0].Key, "block_height")
+	require.Contains(t, events[2].Attributes[1].Key, "nonce")
+	require.Contains(t, events[2].Attributes[2].Key, "topic_id")
+	require.Contains(t, events[2].Attributes[0].Value, "30")
+	require.Contains(t, events[2].Attributes[1].Value, "{\"block_height\":\"25\"}")
+	require.Contains(t, events[2].Attributes[2].Value, "2")
+}
+
+func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	var topicIds = []uint64{1, 2, 3, 4, 5}
+	topicRewards := make(map[uint64]*alloraMath.Dec)
+	for index, id := range topicIds {
+		reward := alloraMath.MustNewDecFromString(strconv.Itoa(10 * index))
+		topicRewards[id] = &reward
+	}
+
+	types.EmitNewTopicRewardSetEvent(ctx, topicRewards)
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	require.Equal(t, "emissions.v4.EventTopicRewardsSet", events[0].Type)
+	require.Contains(t, events[0].Attributes[0].Key, "rewards")
+	require.Contains(t, events[0].Attributes[0].Value, `["0","10","20","30","40"]`)
+	require.Contains(t, events[0].Attributes[1].Key, "topic_ids")
+	require.Contains(t, events[0].Attributes[1].Value, `["1","2","3","4","5"]`)
+}
+
+func TestEmitNewEMAScoresSetEventWithScores(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	activeArr := make(map[string]bool)
+	emaScores := []types.Score{
+		{
+			TopicId:     uint64(1),
+			BlockHeight: int64(10),
+			Address:     "address1",
+			Score:       alloraMath.NewDecFromInt64(100),
+		},
+		{
+			TopicId:     uint64(1),
+			BlockHeight: int64(10),
+			Address:     "address2",
+			Score:       alloraMath.NewDecFromInt64(200),
+		},
+	}
+
+	activeArr[emaScores[0].Address] = true
+	activeArr[emaScores[1].Address] = false
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr)
+	activeArr[emaScores[0].Address] = false
+	activeArr[emaScores[1].Address] = false
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)
+	activeArr[emaScores[0].Address] = true
+	activeArr[emaScores[1].Address] = true
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 3)
+
+	event := events[0]
+	require.Equal(t, "emissions.v4.EventEMAScoresSet", event.Type)
+
+	require.Contains(t, events[0].Attributes[0].Key, "actor_type")
+	require.Contains(t, events[0].Attributes[0].Value, "\"ACTOR_TYPE_INFERER_UNSPECIFIED\"")
+	require.Contains(t, events[0].Attributes[1].Key, "addresses")
+	require.Contains(t, events[0].Attributes[1].Value, "[\"address1\",\"address2\"]")
+	require.Contains(t, events[0].Attributes[2].Key, "is_active")
+	require.Contains(t, events[0].Attributes[2].Value, "[true,false]")
+	require.Contains(t, events[0].Attributes[3].Key, "nonce")
+	require.Contains(t, events[0].Attributes[3].Value, "\"10\"")
+	require.Contains(t, events[0].Attributes[4].Key, "scores")
+	require.Contains(t, events[0].Attributes[4].Value, "[\"100\",\"200\"]")
+	require.Contains(t, events[0].Attributes[5].Key, "topic_id")
+	require.Contains(t, events[0].Attributes[5].Value, "\"1\"")
+
+	require.Contains(t, events[1].Attributes[0].Key, "actor_type")
+	require.Contains(t, events[1].Attributes[0].Value, "\"ACTOR_TYPE_FORECASTER\"")
+	require.Contains(t, events[1].Attributes[2].Key, "is_active")
+	require.Contains(t, events[1].Attributes[2].Value, "[false,false]")
+
+	require.Contains(t, events[2].Attributes[0].Key, "actor_type")
+	require.Contains(t, events[2].Attributes[0].Value, "\"ACTOR_TYPE_REPUTER\"")
+	require.Contains(t, events[2].Attributes[2].Key, "is_active")
+	require.Contains(t, events[2].Attributes[2].Value, "[true,true]")
 }

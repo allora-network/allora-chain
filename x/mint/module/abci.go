@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
+	"github.com/allora-network/allora-chain/x/mint/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
@@ -88,6 +89,7 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 		if err != nil {
 			return err
 		}
+		types.EmitNewEcosystemTokenMintSetEvent(sdkCtx, blockHeight, tokensToMint)
 	}
 	// pay out the computed block emissions from the ecosystem account
 	// if it came from collected fees, great, if it came from minting, also fine

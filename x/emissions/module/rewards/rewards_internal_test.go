@@ -139,7 +139,7 @@ func (s *RewardsMathTestSuite) TestInferenceRewardsSimple() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
 	totalReward := alloraMath.MustNewDecFromString("2.0")
-	chi, gamma, _, err := rewards.GetChiAndGamma(
+	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -181,7 +181,7 @@ func (s *RewardsMathTestSuite) TestInferenceRewardsZero() {
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
-	chi, gamma, _, err := rewards.GetChiAndGamma(
+	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -217,7 +217,7 @@ func (s *RewardsMathTestSuite) TestForecastRewardsSimple() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
 	totalReward := alloraMath.MustNewDecFromString("2.0")
-	chi, gamma, _, err := rewards.GetChiAndGamma(
+	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -265,7 +265,7 @@ func (s *RewardsMathTestSuite) TestU_iOverV_i() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
 	totalReward := alloraMath.MustNewDecFromString("2.0")
-	chi, gamma, _, err := rewards.GetChiAndGamma(
+	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -320,7 +320,7 @@ func (s *RewardsMathTestSuite) TestForecastRewardsZero() {
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
-	chi, gamma, _, err := rewards.GetChiAndGamma(
+	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		alloraMath.MustNewDecFromString("2"), // log10(L_i- (naive))
 		alloraMath.MustNewDecFromString("1"), // log10(L_i (network))
 		alloraMath.MustNewDecFromString("2.0"),
@@ -611,7 +611,7 @@ func TestGetStakeWeightedLoss(t *testing.T) {
 	}
 }
 
-func TestGetFinalWorkerScoreForecastTask(t *testing.T) {
+func TestGetFinalWorkerPerformanceScore(t *testing.T) {
 	tests := []struct {
 		name        string
 		scoreOneIn  alloraMath.Dec
@@ -630,12 +630,12 @@ func TestGetFinalWorkerScoreForecastTask(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := rewards.GetFinalWorkerScoreForecastTask(tt.scoreOneIn, tt.scoreOneOut, tt.fUniqueAgg)
+			got, err := rewards.GetFinalWorkerPerformanceScore(tt.scoreOneIn, tt.scoreOneOut, tt.fUniqueAgg)
 			require.NoError(t, err)
 			inDelta, err := alloraMath.InDelta(tt.want, got, alloraMath.MustNewDecFromString("0.00001"))
 			require.NoError(t, err)
 			if !inDelta {
-				t.Errorf("GetFinalWorkerScoreForecastTask() got = %v, want %v", got, tt.want)
+				t.Errorf("GetFinalWorkerPerformanceScore() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

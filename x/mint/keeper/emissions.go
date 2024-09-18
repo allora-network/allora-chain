@@ -346,6 +346,7 @@ func GetEmissionPerMonth(
 		ecosystemBalance.String(),
 		ecosystemMintSupplyRemaining.String(),
 	)
+
 	targetRewardEmissionPerUnitStakedToken,
 		err := GetTargetRewardEmissionPerUnitStakedToken(
 		params.FEmission,
@@ -386,5 +387,8 @@ func GetEmissionPerMonth(
 		previousRewardEmissionPerUnitStakedToken,
 	)
 	emissionPerMonth = GetTotalEmissionPerMonth(emissionPerUnitStakedToken, networkStaked)
+
+	// Emit event for updating tokenomic data
+	types.EmitNewTokenomicsSetEvent(ctx, networkStaked, circulatingSupply, emissionPerMonth)
 	return emissionPerMonth, emissionPerUnitStakedToken, nil
 }

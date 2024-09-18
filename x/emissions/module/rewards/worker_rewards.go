@@ -384,13 +384,13 @@ func GetChiAndGamma(
 	infererScores []types.Score,
 	previousForecasterScoreRatio alloraMath.Dec,
 	alpha alloraMath.Dec,
-) (alloraMath.Dec, alloraMath.Dec, alloraMath.Dec, error) {
+) (alloraMath.Dec, alloraMath.Dec, alloraMath.Dec, alloraMath.Dec, error) {
 	forecastingTaskUtilityScore, err := ForecastingPerformanceScore(
 		naiveNetworkInferenceLoss,
 		networkInferenceLoss,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting performance score")
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting performance score")
 	}
 	chi, updatedForecasterScoreRatio, err := ForecastingUtility(
 		forecastingTaskUtilityScore,
@@ -399,7 +399,7 @@ func GetChiAndGamma(
 		alpha,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
 	}
 	gamma, err := NormalizationFactor(
 		entropyInference,
@@ -407,9 +407,9 @@ func GetChiAndGamma(
 		chi,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate normalization factor")
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate normalization factor")
 	}
-	return chi, gamma, updatedForecasterScoreRatio, nil
+	return chi, gamma, updatedForecasterScoreRatio, forecastingTaskUtilityScore, nil
 }
 
 // inference rewards calculation
