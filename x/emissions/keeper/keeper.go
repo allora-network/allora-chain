@@ -173,6 +173,15 @@ type Keeper struct {
 	// map of (topic) -> last dripped block
 	lastDripBlock collections.Map[TopicId, BlockHeight]
 
+	// map registered inferer to nonce of last attempted participation
+	lastInfererPayloadNonce collections.Map[ActorId, BlockHeight]
+
+	// map registered forecaster to nonce of last attempted participation
+	lastForecasterPayloadNonce collections.Map[ActorId, BlockHeight]
+
+	// map registered reputer to nonce of last attempted participation
+	lastReputerPayloadNonce collections.Map[ActorId, BlockHeight]
+
 	/// REGRETS
 
 	// map of (topic, worker) -> regret of worker from comparing loss of worker relative to loss of other inferers
@@ -281,6 +290,9 @@ func NewKeeper(
 		previousTopicQuantileInfererScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileInfererScoreEmaKey, "previous_topic_quantile_inferer_score_ema", collections.Uint64Key, alloraMath.DecValue),
 		previousTopicQuantileForecasterScoreEma: collections.NewMap(sb, types.PreviousTopicQuantileForecasterScoreEmaKey, "previous_topic_quantile_forecaster_score_ema", collections.Uint64Key, alloraMath.DecValue),
 		previousTopicQuantileReputerScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileReputerScoreEmaKey, "previous_topic_quantile_reputer_score_ema", collections.Uint64Key, alloraMath.DecValue),
+		lastInfererPayloadNonce:                 collections.NewMap(sb, types.LastInfererPayloadNonceKey, "last_inferer_payload_nonce", collections.StringKey, collections.Int64Value),
+		lastForecasterPayloadNonce:              collections.NewMap(sb, types.LastForecasterPayloadNonceKey, "last_forecaster_payload_nonce", collections.StringKey, collections.Int64Value),
+		lastReputerPayloadNonce:                 collections.NewMap(sb, types.LastReputerPayloadNonceKey, "last_reputer_payload_nonce", collections.StringKey, collections.Int64Value),
 	}
 
 	schema, err := sb.Build()
@@ -302,6 +314,30 @@ func (k *Keeper) GetBinaryCodec() codec.BinaryCodec {
 }
 
 /// NONCES
+
+func (k *Keeper) GetLastInfererPayloadNonce(ctx context.Context, inferer ActorId) (BlockHeight, error) {
+	return k.lastInfererPayloadNonce.Get(ctx, inferer)
+}
+
+func (k *Keeper) SetLastInfererPayloadNonce(ctx context.Context, inferer ActorId, nonce BlockHeight) error {
+	return k.lastInfererPayloadNonce.Set(ctx, inferer, nonce)
+}
+
+func (k *Keeper) GetLastForecasterPayloadNonce(ctx context.Context, forecaster ActorId) (BlockHeight, error) {
+	return k.lastForecasterPayloadNonce.Get(ctx, forecaster)
+}
+
+func (k *Keeper) SetLastForecasterPayloadNonce(ctx context.Context, forecaster ActorId, nonce BlockHeight) error {
+	return k.lastForecasterPayloadNonce.Set(ctx, forecaster, nonce)
+}
+
+func (k *Keeper) GetLastReputerPayloadNonce(ctx context.Context, reputer ActorId) (BlockHeight, error) {
+	return k.lastReputerPayloadNonce.Get(ctx, reputer)
+}
+
+func (k *Keeper) SetLastReputerPayloadNonce(ctx context.Context, reputer ActorId, nonce BlockHeight) error {
+	return k.lastReputerPayloadNonce.Set(ctx, reputer, nonce)
+}
 
 // GetTopicIds returns the TopicIds for a given BlockHeight.
 // If no TopicIds are found for the BlockHeight, it returns an empty slice.
@@ -803,6 +839,9 @@ func (k *Keeper) AppendInference(
 	if inference == nil || inference.Inferer == "" {
 		return errors.New("invalid inference: inferer is empty or nil")
 	}
+
+	defer k.SetLastInfererPayloadNonce(ctx, inference.Inferer, nonceBlockHeight)
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
@@ -825,8 +864,11 @@ func (k *Keeper) AppendInference(
 		return errorsmod.Wrapf(err, "Error getting inferer score ema")
 	}
 	// Only calc and save if there's a new update
-	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+	lastNonce, err := k.GetLastInfererPayloadNonce(ctx, inference.Inferer)
+	if err != nil {
+		return err
+	}
+	if lastNonce >= nonceBlockHeight {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -901,6 +943,9 @@ func (k *Keeper) AppendForecast(
 	if len(forecast.ForecastElements) == 0 {
 		return errors.New("invalid forecast: forecast elements are empty")
 	}
+
+	defer k.SetLastForecasterPayloadNonce(ctx, forecast.Forecaster, nonceBlockHeight)
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
@@ -923,8 +968,11 @@ func (k *Keeper) AppendForecast(
 		return errorsmod.Wrapf(err, "Error getting forecaster score ema")
 	}
 	// Only calc and save if there's a new update
-	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+	lastNonce, err := k.GetLastForecasterPayloadNonce(ctx, forecast.Forecaster)
+	if err != nil {
+		return err
+	}
+	if lastNonce >= nonceBlockHeight {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -1032,6 +1080,9 @@ func (k *Keeper) AppendReputerLoss(
 	if reputerLoss.ValueBundle.Reputer == "" {
 		return errors.New("invalid reputerLoss bundle: reputer is empty")
 	}
+
+	defer k.SetLastReputerPayloadNonce(ctx, reputerLoss.ValueBundle.Reputer, nonceBlockHeight)
+
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
 		return err
@@ -1054,8 +1105,11 @@ func (k *Keeper) AppendReputerLoss(
 		return err
 	}
 	// Only calc and save if there's a new update
-	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.EpochLength {
+	lastNonce, err := k.GetLastReputerPayloadNonce(ctx, reputerLoss.ValueBundle.Reputer)
+	if err != nil {
+		return err
+	}
+	if lastNonce >= nonceBlockHeight {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
