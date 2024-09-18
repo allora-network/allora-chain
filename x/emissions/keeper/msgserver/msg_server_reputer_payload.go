@@ -89,7 +89,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	err = ms.k.AppendReputerLoss(ctx, topic, blockHeight, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err = ms.k.AppendReputerLoss(sdkCtx, topic, blockHeight, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
 	if err != nil {
 		return nil, err
 	}

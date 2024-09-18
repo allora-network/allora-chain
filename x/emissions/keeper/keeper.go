@@ -794,7 +794,7 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 
 // Append individual inference for a topic/block
 func (k *Keeper) AppendInference(
-	ctx context.Context,
+	ctx sdk.Context,
 	topic types.Topic,
 	blockHeight BlockHeight,
 	nonceBlockHeight BlockHeight,
@@ -889,7 +889,7 @@ func (k *Keeper) InsertInferences(
 
 // Append individual forecast for a topic/block
 func (k *Keeper) AppendForecast(
-	ctx context.Context,
+	ctx sdk.Context,
 	topic types.Topic,
 	blockHeight BlockHeight,
 	nonceBlockHeight BlockHeight,
@@ -1017,7 +1017,7 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 
 // Append loss bundle for a topic and blockHeight
 func (k *Keeper) AppendReputerLoss(
-	ctx context.Context,
+	ctx sdk.Context,
 	topic types.Topic,
 	blockHeight BlockHeight,
 	nonceBlockHeight BlockHeight,
