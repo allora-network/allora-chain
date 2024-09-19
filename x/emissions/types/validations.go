@@ -6,7 +6,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-func validateDec(value alloraMath.Dec) error {
+func ValidateDec(value alloraMath.Dec) error {
 	if value.IsNaN() {
 		return errors.Wrap(sdkerrors.ErrInvalidRequest, "value cannot be NaN")
 	}

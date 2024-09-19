@@ -143,6 +143,15 @@ func getInferenceOrForecastTaskEntropy(
 	entropy alloraMath.Dec,
 	err error,
 ) {
+	if len(workers) == 0 {
+		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "empty worker set")
+	}
+	if len(workersFractions) == 0 {
+		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "empty fractions set")
+	}
+	if len(workers) != len(workersFractions) {
+		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "different dimensions on reputer and reward fractions")
+	}
 	numWorkers := len(workers)
 	emaRewardFractions := make([]alloraMath.Dec, numWorkers)
 	var previousRewardFraction alloraMath.Dec
@@ -170,6 +179,9 @@ func getInferenceOrForecastTaskEntropy(
 		}
 	}
 
+	if len(emaRewardFractions) == 0 {
+		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "invalid reward fractions after EMA calculation")
+	}
 	// Calculate modified reward fractions and persist for next round
 	numberRatio, err := NumberRatio(emaRewardFractions)
 	if err != nil {
@@ -254,22 +266,32 @@ func ForecastingUtility(
 			maxInfererScore = score.Score
 		}
 	}
-	scoreDenominator := maxInfererScore.Abs()
+	scoreDenominator, err := maxInfererScore.Abs()
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err taking abs of maxInfererScore")
+	}
 	if maxInfererScore.IsZero() {
 		if forecastingTaskUtilityScore.IsZero() {
 			return zeroPointFive, alloraMath.Dec{}, nil
 		} else {
-			scoreDenominator = forecastingTaskUtilityScore.Abs()
+			scoreDenominator, err = forecastingTaskUtilityScore.Abs()
+			if err != nil {
+				return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err taking abs of forecastingTaskUtilityScore")
+			}
 		}
 	}
 
-	scoreNumerator, err := forecastingTaskUtilityScore.Sub(alloraMath.Min(alloraMath.ZeroDec(), maxInfererScore))
+	minBetweenMaxInfererScoreAndZero, err := alloraMath.Min(alloraMath.ZeroDec(), maxInfererScore)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err getting min between 0 and maxInfererScore")
+	}
+	scoreNumerator, err := forecastingTaskUtilityScore.Sub(minBetweenMaxInfererScoreAndZero)
+	if err != nil {
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err subtracting maxInfererScore from forecastingTaskUtilityScore")
 	}
 	scoreRatio, err := scoreNumerator.Quo(scoreDenominator)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, err
+		return alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrap(err, "ForecastingUtility err dividing scoreNumerator by scoreDenominator")
 	}
 
 	// Calculate alpha * (scoreRatio)
@@ -362,13 +384,13 @@ func GetChiAndGamma(
 	infererScores []types.Score,
 	previousForecasterScoreRatio alloraMath.Dec,
 	alpha alloraMath.Dec,
-) (alloraMath.Dec, alloraMath.Dec, alloraMath.Dec, error) {
+) (alloraMath.Dec, alloraMath.Dec, alloraMath.Dec, alloraMath.Dec, error) {
 	forecastingTaskUtilityScore, err := ForecastingPerformanceScore(
 		naiveNetworkInferenceLoss,
 		networkInferenceLoss,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting performance score")
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting performance score")
 	}
 	chi, updatedForecasterScoreRatio, err := ForecastingUtility(
 		forecastingTaskUtilityScore,
@@ -377,7 +399,7 @@ func GetChiAndGamma(
 		alpha,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate forecasting utility")
 	}
 	gamma, err := NormalizationFactor(
 		entropyInference,
@@ -385,9 +407,9 @@ func GetChiAndGamma(
 		chi,
 	)
 	if err != nil {
-		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate normalization factor")
+		return alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate normalization factor")
 	}
-	return chi, gamma, updatedForecasterScoreRatio, nil
+	return chi, gamma, updatedForecasterScoreRatio, forecastingTaskUtilityScore, nil
 }
 
 // inference rewards calculation

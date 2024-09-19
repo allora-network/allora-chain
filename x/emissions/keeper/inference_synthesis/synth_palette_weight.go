@@ -33,7 +33,11 @@ func (p *SynthPalette) CalcWeightsGivenWorkers() (RegretInformedWeights, error) 
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
 	}
 	// Add epsilon to standard deviation
-	stdDevRegretsPlusEpsilon, err := stdDevRegrets.Abs().Add(p.EpsilonTopic)
+	absStdDevRegrets, err := stdDevRegrets.Abs()
+	if err != nil {
+		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating absolute value of standard deviation")
+	}
+	stdDevRegretsPlusEpsilon, err := absStdDevRegrets.Add(p.EpsilonTopic)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation")
 	}

@@ -54,6 +54,19 @@ linters-settings:
           - ["ID", "RPC", "IDS", "JSON"] # AllowList
           - [] # DenyList
           - - upperCaseConst: true
+  gosec:
+    config:
+      G101:
+        pattern: "(?i)passwd|pass|password|pwd|secret|private_key|token|pw|apiKey|bearer|cred|mneumonic|seed|seedphrase|entropy"
+        ignore_entropy: false
+        # Maximum allowed entropy of the string.
+        entropy_threshold: "80.0"
+        # Maximum allowed value of entropy/string length.
+        # Is taken into account if entropy >= entropy_threshold/2.
+        per_char_threshold: "3.0"
+        # Calculate entropy for first N chars of the string.
+        truncate: "32"
+
 issues:
   exclude-rules:
     - linters:

@@ -32,7 +32,7 @@ proto-gen:
 	@$(protoImage) sh ./scripts/protocgen.sh
 	@go mod tidy
 
-proto-format:
+proto-format proto-fmt:
 	@$(protoImage) buf format proto/ -w
 
 proto-lint:

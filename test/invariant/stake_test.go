@@ -30,7 +30,7 @@ func stakeAsReputer(
 		" in amount",
 		amount.String(),
 	)
-	msg := emissionstypes.MsgAddStake{
+	msg := emissionstypes.AddStakeRequest{
 		Sender:  actor.addr,
 		TopicId: topicId,
 		Amount:  *amount,
@@ -48,7 +48,7 @@ func stakeAsReputer(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgAddStakeResponse{}
+	response := &emissionstypes.AddStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -104,7 +104,7 @@ func unstakeAsReputer(
 		" in amount",
 		amount.String(),
 	)
-	msg := emissionstypes.MsgRemoveStake{
+	msg := emissionstypes.RemoveStakeRequest{
 		Sender:  actor.addr,
 		TopicId: topicId,
 		Amount:  *amount,
@@ -122,7 +122,7 @@ func unstakeAsReputer(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgRemoveStakeResponse{}
+	response := &emissionstypes.RemoveStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -152,13 +152,13 @@ func findFirstValidStakeRemovalFromChain(m *testcommon.TestConfig) (emissionstyp
 	if err != nil {
 		return emissionstypes.StakeRemovalInfo{}, false, err
 	}
-	moduleParams, err := m.Client.QueryEmissions().Params(ctx, &emissionstypes.QueryParamsRequest{})
+	moduleParams, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
 	if err != nil {
 		return emissionstypes.StakeRemovalInfo{}, false, err
 	}
 	blockHeightEnd := blockHeightNow + moduleParams.Params.RemoveStakeDelayWindow
 	for i := blockHeightNow; i < blockHeightEnd; i++ {
-		query := &emissionstypes.QueryStakeRemovalsUpUntilBlockRequest{
+		query := &emissionstypes.GetStakeRemovalsUpUntilBlockRequest{
 			BlockHeight: i,
 		}
 		resp, err := m.Client.QueryEmissions().GetStakeRemovalsUpUntilBlock(ctx, query)
@@ -194,7 +194,7 @@ func cancelStakeRemoval(
 		"in topic id",
 		topicId,
 	)
-	msg := emissionstypes.MsgCancelRemoveStake{
+	msg := emissionstypes.CancelRemoveStakeRequest{
 		Sender:  actor.addr,
 		TopicId: topicId,
 	}
@@ -211,7 +211,7 @@ func cancelStakeRemoval(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgCancelRemoveStakeResponse{}
+	response := &emissionstypes.RemoveStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -248,7 +248,7 @@ func delegateStake(
 		" in amount",
 		amount.String(),
 	)
-	msg := emissionstypes.MsgDelegateStake{
+	msg := emissionstypes.DelegateStakeRequest{
 		Sender:  delegator.addr,
 		Reputer: reputer.addr,
 		TopicId: topicId,
@@ -267,7 +267,7 @@ func delegateStake(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	registerWorkerResponse := &emissionstypes.MsgDelegateStakeResponse{}
+	registerWorkerResponse := &emissionstypes.DelegateStakeResponse{}
 	err = txResp.Decode(registerWorkerResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -315,7 +315,7 @@ func undelegateStake(
 		" in amount ",
 		amount.String(),
 	)
-	msg := emissionstypes.MsgRemoveDelegateStake{
+	msg := emissionstypes.RemoveDelegateStakeRequest{
 		Sender:  delegator.addr,
 		Reputer: reputer.addr,
 		TopicId: topicId,
@@ -334,7 +334,7 @@ func undelegateStake(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgRemoveDelegateStakeResponse{}
+	response := &emissionstypes.RemoveDelegateStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -366,13 +366,13 @@ func findFirstValidDelegateStakeRemovalFromChain(m *testcommon.TestConfig) (emis
 	if err != nil {
 		return emissionstypes.DelegateStakeRemovalInfo{}, false, err
 	}
-	moduleParams, err := m.Client.QueryEmissions().Params(ctx, &emissionstypes.QueryParamsRequest{})
+	moduleParams, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
 	if err != nil {
 		return emissionstypes.DelegateStakeRemovalInfo{}, false, err
 	}
 	blockHeightEnd := blockHeightNow + moduleParams.Params.RemoveStakeDelayWindow
 	for i := blockHeightNow; i < blockHeightEnd; i++ {
-		query := &emissionstypes.QueryDelegateStakeRemovalsUpUntilBlockRequest{
+		query := &emissionstypes.GetDelegateStakeRemovalsUpUntilBlockRequest{
 			BlockHeight: i,
 		}
 		resp, err := m.Client.QueryEmissions().GetDelegateStakeRemovalsUpUntilBlock(ctx, query)
@@ -408,7 +408,7 @@ func cancelDelegateStakeRemoval(
 		"in topic id",
 		topicId,
 	)
-	msg := emissionstypes.MsgCancelRemoveDelegateStake{
+	msg := emissionstypes.CancelRemoveDelegateStakeRequest{
 		Sender:    delegator.addr,
 		TopicId:   topicId,
 		Delegator: delegator.addr,
@@ -427,7 +427,7 @@ func cancelDelegateStakeRemoval(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgCancelRemoveDelegateStakeResponse{}
+	response := &emissionstypes.CancelRemoveDelegateStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
@@ -458,7 +458,7 @@ func collectDelegatorRewards(
 		" in topic id ",
 		topicId,
 	)
-	msg := emissionstypes.MsgRewardDelegateStake{
+	msg := emissionstypes.RewardDelegateStakeRequest{
 		Sender:  delegator.addr,
 		TopicId: topicId,
 		Reputer: reputer.addr,
@@ -476,7 +476,7 @@ func collectDelegatorRewards(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.MsgRewardDelegateStakeResponse{}
+	response := &emissionstypes.RewardDelegateStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)

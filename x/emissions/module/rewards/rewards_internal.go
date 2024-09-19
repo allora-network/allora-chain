@@ -64,9 +64,12 @@ func GetMappingFunctionValues(
 	if len(latestTimeStepsScores) > 1 {
 		stdDev, err = alloraMath.StdDev(latestTimeStepsScores)
 		if err != nil {
-			return nil, errors.Wrapf(err, "err getting stdDev")
+			return nil, errors.Wrapf(err, "GetMappingFunctionValues err getting stdDev")
 		}
-		stdDev = stdDev.Abs()
+		stdDev, err = stdDev.Abs()
+		if err != nil {
+			return nil, errors.Wrapf(err, "GetMappingFunctionValues err taking abs of stdDev")
+		}
 	}
 
 	ret := make([]alloraMath.Dec, len(latestWorkerScores))
@@ -160,9 +163,9 @@ func GetfUniqueAgg(numForecasters alloraMath.Dec) (alloraMath.Dec, error) {
 	return ret, nil
 }
 
-// GetFinalWorkerScoreForecastTask calculates the worker score in forecast task.
+// GetFinalWorkerPerformanceScore calculates the worker performance score.
 // T_ik
-func GetFinalWorkerScoreForecastTask(
+func GetFinalWorkerPerformanceScore(
 	scoreOneIn,
 	scoreOneOut,
 	fUniqueAgg alloraMath.Dec,
@@ -508,13 +511,21 @@ func GetAllReputersOutput(
 			if err != nil {
 				return nil, nil, err
 			}
-			newCoefficients[j] = alloraMath.Min(
-				alloraMath.Max(
-					coefficientsPlusLearningRateTimesGradient,
-					alloraMath.ZeroDec(),
-				),
+			max, err := alloraMath.Max(
+				coefficientsPlusLearningRateTimesGradient,
+				alloraMath.ZeroDec(),
+			)
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "GetAllReputersOutput, err taking max")
+			}
+			min, err := alloraMath.Min(
+				max,
 				alloraMath.OneDec(),
 			)
+			if err != nil {
+				return nil, nil, errors.Wrap(err, "GetAllReputersOutput, err taking min")
+			}
+			newCoefficients[j] = min
 		}
 
 		sumStakes, err := alloraMath.SumDecSlice(stakes)
@@ -612,9 +623,12 @@ func maxAbsDifference(a, b []alloraMath.Dec) (alloraMath.Dec, error) {
 	for i := range a {
 		subtraction, err := a[i].Sub(b[i])
 		if err != nil {
-			return alloraMath.Dec{}, err
+			return alloraMath.Dec{}, errors.Wrap(err, "maxAbsDifference, err subtracting")
 		}
-		diff := subtraction.Abs()
+		diff, err := subtraction.Abs()
+		if err != nil {
+			return alloraMath.Dec{}, errors.Wrap(err, "maxAbsDifference, err taking absolute value")
+		}
 		if diff.Gt(maxDiff) {
 			maxDiff = diff
 		}
@@ -642,21 +656,24 @@ func GetAdjustedStake(
 	}
 	denominator, err := sumWeighted(allListeningCoefficients, allStakes)
 	if err != nil {
-		return alloraMath.ZeroDec(), err
+		return alloraMath.ZeroDec(), errors.Wrap(err, "GetAdjustedStake, err calculating denominator")
 	}
 	numReputersTimesListeningCoefficent, err := numReputers.Mul(listeningCoefficient)
 	if err != nil {
-		return alloraMath.ZeroDec(), err
+		return alloraMath.ZeroDec(), errors.Wrap(err, "GetAdjustedStake, err calculating numReputersTimesListeningCoefficent")
 	}
 	numerator, err := numReputersTimesListeningCoefficent.Mul(stake)
 	if err != nil {
-		return alloraMath.ZeroDec(), err
+		return alloraMath.ZeroDec(), errors.Wrap(err, "GetAdjustedStake, err calculating numerator")
 	}
 	stakeFraction, err := numerator.Quo(denominator)
 	if err != nil {
-		return alloraMath.ZeroDec(), err
+		return alloraMath.ZeroDec(), errors.Wrap(err, "GetAdjustedStake, err calculating stakeFraction")
 	}
-	ret := alloraMath.Min(stakeFraction, alloraMath.OneDec())
+	ret, err := alloraMath.Min(stakeFraction, alloraMath.OneDec())
+	if err != nil {
+		return alloraMath.ZeroDec(), errors.Wrap(err, "GetAdjustedStake, err taking min")
+	}
 	return ret, nil
 }
 

@@ -10,7 +10,7 @@ import (
 )
 
 func createNewTopic(s *RewardsTestSuite) uint64 {
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  s.addrs[5].String(),
 		Metadata:                 "test",
 		LossMethod:               "mse",
@@ -495,7 +495,7 @@ func (s *RewardsTestSuite) TestInferenceRewardsFromCsv() {
 		{Score: epoch3Get("inferer_score_3")},
 		{Score: epoch3Get("inferer_score_4")},
 	}
-	chi, gamma, _, err := rewards.GetChiAndGamma(
+	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
 		epoch3Get("network_loss"),
 		epoch3Get("inferers_entropy"),
@@ -533,7 +533,7 @@ func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
 		{Score: epoch3Get("inferer_score_3")},
 		{Score: epoch3Get("inferer_score_4")},
 	}
-	chi, gamma, _, err := rewards.GetChiAndGamma(
+	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
 		epoch3Get("network_loss"),
 		epoch3Get("inferers_entropy"),

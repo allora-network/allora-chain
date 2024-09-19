@@ -2,17 +2,17 @@ package module
 
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
-	statev3 "github.com/allora-network/allora-chain/x/emissions/api/v3"
+	statev4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: statev3.Query_ServiceDesc.ServiceName,
+			Service: statev4.QueryService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
-					RpcMethod: "Params",
+					RpcMethod: "GetParams",
 					Use:       "params",
 					Short:     "Get the current module parameters",
 				},
@@ -46,11 +46,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetRewardableTopics",
-					Use:       "rewardable-topics",
-					Short:     "Get Rewardable Topics",
-				},
-				{
 					RpcMethod: "GetReputerStakeInTopic",
 					Use:       "stake-in-topic-reputer [address] [topic_id]",
 					Short:     "Get reputer stake in a topic, including stake delegated to them in that topic",
@@ -79,7 +74,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetDelegateStakePlacement",
-					Use:       "delegate-reward-per-share [topic_id] [delegator] [target]",
+					Use:       "delegate-stake-placement [topic_id] [delegator] [target]",
 					Short:     "Get amount of token delegated to a target by a delegator in a topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -162,8 +157,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestAvailableNetworkInference",
-					Use:       "latest-available-network-inference [topic_id]",
+					RpcMethod: "GetLatestAvailableNetworkInferences",
+					Use:       "latest-available-network-inferences [topic_id]",
 					Short:     "Returns network inference only if all available information to compute the inference is present",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -263,7 +258,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetMultiReputerStakeInTopic",
-					Use:       "multi-coefficient [addresses] [topic_id]",
+					Use:       "multi-reputer-stake [addresses] [topic_id]",
 					Short:     "Returns stakes for each reputer in a given list. List can be up to MaxPageLimit in length. Default to 0 if does not exist",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "addresses"},
@@ -380,7 +375,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetReputersScoresAtBlock",
-					Use:       "reputer-scores [topic_id] [block_height]",
+					Use:       "reputer-scores-at-block [topic_id] [block_height]",
 					Short:     "Return reputer scores at block. Note: the chain only stores up to MaxSamplesToScaleScores many scores per actor type per topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -389,7 +384,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "GetStakeRemovalForReputerAndTopicId",
-					Use:       "reputer-scores [reputer] [topic_id]",
+					Use:       "stake-removal [reputer] [topic_id]",
 					Short:     "Return stake removal information for reputer in topic",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "reputer"},
@@ -572,8 +567,8 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
-					RpcMethod: "GetLatestNetworkInference",
-					Use:       "latest-network-inference [topic_id]",
+					RpcMethod: "GetLatestNetworkInferences",
+					Use:       "latest-network-inferences [topic_id]",
 					Short:     "Get the latest Network inferences and weights for a topic. Will return whatever information it has available.",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 						{ProtoField: "topic_id"},
@@ -666,7 +661,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
-			Service: statev3.Msg_ServiceDesc.ServiceName,
+			Service: statev4.MsgService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",

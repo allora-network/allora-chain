@@ -12,7 +12,7 @@ func EmitNewInfererScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_INFERER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, scores))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewInfererScoresSetEvent: ", err.Error())
 	}
@@ -22,7 +22,7 @@ func EmitNewForecasterScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_FORECASTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, scores))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewForecasterScoresSetEvent: ", err.Error())
 	}
@@ -32,7 +32,7 @@ func EmitNewReputerScoresSetEvent(ctx sdk.Context, scores []Score) {
 	if len(scores) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_REPUTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_REPUTER, scores))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewReputerScoresSetEvent: ", err.Error())
 	}
@@ -49,7 +49,7 @@ func EmitNewInfererRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight,
 	if len(rewards) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_INFERER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, blockHeight, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewInfererRewardsSettledEvent: ", err.Error())
 	}
@@ -59,7 +59,7 @@ func EmitNewForecasterRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeig
 	if len(rewards) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_FORECASTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, blockHeight, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewForecasterRewardsSettledEvent: ", err.Error())
 	}
@@ -69,9 +69,47 @@ func EmitNewReputerAndDelegatorRewardsSettledEvent(ctx sdk.Context, blockHeight 
 	if len(rewards) < 1 {
 		return
 	}
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_REPUTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_REPUTER, blockHeight, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewReputerAndDelegatorRewardsSettledEvent: ", err.Error())
+	}
+}
+
+func EmitNewWorkerLastCommitSetEvent(ctx sdk.Context, topicId TopicId, height BlockHeight, nonce *Nonce) {
+	err := ctx.EventManager().EmitTypedEvent(NewWorkerLastCommitSetEventBase(topicId, height, nonce))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewWorkerLastCommitSetEvent: ", err.Error())
+	}
+}
+
+func EmitNewReputerLastCommitSetEvent(ctx sdk.Context, topicId TopicId, height BlockHeight, nonce *Nonce) {
+	err := ctx.EventManager().EmitTypedEvent(NewReputerLastCommitSetEventBase(topicId, height, nonce))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewReputerLastCommitSetEvent: ", err.Error())
+	}
+}
+
+func EmitNewForecastTaskUtilityScoreSetEvent(ctx sdk.Context, topicId TopicId, score alloraMath.Dec) {
+	err := ctx.EventManager().EmitTypedEvent(NewForecastTaskScoreSetEventBase(topicId, score))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewReputerLastCommitSetEvent: ", err.Error())
+	}
+}
+
+func EmitNewTopicRewardSetEvent(ctx sdk.Context, topicRewards map[uint64]*alloraMath.Dec) {
+	err := ctx.EventManager().EmitTypedEvent(NewTopicRewardSetEventBase(topicRewards))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewTopicRewardSetEvent: ", err.Error())
+	}
+}
+
+func EmitNewActorEMAScoresSetEvent(ctx sdk.Context, actorType ActorType, scores []Score, activations map[string]bool) {
+	if len(scores) < 1 {
+		return
+	}
+	err := ctx.EventManager().EmitTypedEvent(NewEMAScoresSetEventBase(actorType, scores, activations))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewActorEMAScoresSetEvent: ", err.Error())
 	}
 }
 
@@ -119,5 +157,62 @@ func NewNetworkLossSetEventBase(topicId TopicId, blockHeight BlockHeight, lossVa
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
 		ValueBundle: &lossValueBundle,
+	}
+}
+
+func NewWorkerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, nonce *Nonce) proto.Message {
+	return &EventWorkerLastCommitSet{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Nonce:       nonce,
+	}
+}
+
+func NewReputerLastCommitSetEventBase(topicId TopicId, blockHeight BlockHeight, nonce *Nonce) proto.Message {
+	return &EventReputerLastCommitSet{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Nonce:       nonce,
+	}
+}
+
+func NewForecastTaskScoreSetEventBase(topicId TopicId, score alloraMath.Dec) proto.Message {
+	return &EventForecastTaskScoreSet{
+		TopicId: topicId,
+		Score:   score,
+	}
+}
+
+func NewTopicRewardSetEventBase(topicRewards map[uint64]*alloraMath.Dec) proto.Message {
+	ids := alloraMath.GetSortedKeys(topicRewards)
+	rewardValues := make([]alloraMath.Dec, 0)
+	for _, id := range ids {
+		rewardValues = append(rewardValues, *topicRewards[id])
+	}
+	return &EventTopicRewardsSet{
+		TopicIds: ids,
+		Rewards:  rewardValues,
+	}
+}
+
+// Assumes length of `scores` is at least 1
+func NewEMAScoresSetEventBase(actorType ActorType, scores []Score, activations map[string]bool) proto.Message {
+	topicId := scores[0].TopicId
+	blockHeight := scores[0].BlockHeight
+	activeArr := make([]bool, len(scores))
+	addresses := make([]string, len(scores))
+	scoreValues := make([]alloraMath.Dec, len(scores))
+	for i, score := range scores {
+		addresses[i] = score.Address
+		scoreValues[i] = score.Score
+		activeArr[i] = activations[addresses[i]]
+	}
+	return &EventEMAScoresSet{
+		ActorType: actorType,
+		TopicId:   topicId,
+		Nonce:     blockHeight,
+		Addresses: addresses,
+		Scores:    scoreValues,
+		IsActive:  activeArr,
 	}
 }

@@ -230,3 +230,9 @@ func (m *MockBankKeeper) GetBalance(ctx context.Context, addr types.AccAddress, 
 	ret0, _ := ret[0].(types.Coin)
 	return ret0
 }
+
+// GetSupply indicates an expected call of GetSupply.
+func (mr *MockBankKeeperMockRecorder) GetBalance(ctx context.Context, addr types.AccAddress, denom string) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBalance", reflect.TypeOf((*MockBankKeeper)(nil).GetBalance), ctx, addr, denom)
+}

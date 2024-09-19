@@ -133,12 +133,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
 		s.Require().True(exists, "Expected key does not exist in result map")
+		inDelta, err := alloraMath.InDelta(
+			expectedValue.Value,
+			actualValue.Value,
+			alloraMath.MustNewDecFromString("0.0001"),
+		)
+		s.Require().NoError(err)
 		s.Require().True(
-			alloraMath.InDelta(
-				expectedValue.Value,
-				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.0001"),
-			), "Values do not match for key: %s %s %s",
+			inDelta, "Values do not match for key: %s %s %s",
 			key,
 			expectedValue.Value.String(),
 			actualValue.Value.String(),
@@ -187,12 +189,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
 		s.Require().True(exists, "Expected key does not exist in result map")
+		inDelta, err := alloraMath.InDelta(
+			expectedValue.Value,
+			actualValue.Value,
+			alloraMath.MustNewDecFromString("0.00001"),
+		)
+		s.Require().NoError(err)
 		s.Require().True(
-			alloraMath.InDelta(
-				expectedValue.Value,
-				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.00001"),
-			), "Values do not match for key: %s %s %s",
+			inDelta, "Values do not match for key: %s %s %s",
 			key,
 			expectedValue.Value.String(),
 			actualValue.Value.String(),
@@ -263,12 +267,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 			s.Require().Nil(actualValue, "Expected key %v to be nil", key)
 		} else {
 			s.Require().True(exists, "Expected key %v does not exist in result map", key)
+			inDelta, err := alloraMath.InDelta(
+				expectedValue.Value,
+				actualValue.Value,
+				alloraMath.MustNewDecFromString("0.0001"),
+			)
+			s.Require().NoError(err)
 			s.Require().True(
-				alloraMath.InDelta(
-					expectedValue.Value,
-					actualValue.Value,
-					alloraMath.MustNewDecFromString("0.0001"),
-				), "Values do not match for key: %s %s %s",
+				inDelta, "Values do not match for key: %s %s %s",
 				key,
 				expectedValue.Value.String(),
 				actualValue.Value.String(),
@@ -324,12 +330,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
 		s.Require().True(exists, "Expected key does not exist in result map")
+		inDelta, err := alloraMath.InDelta(
+			expectedValue.Value,
+			actualValue.Value,
+			alloraMath.MustNewDecFromString("0.001"),
+		)
+		s.Require().NoError(err)
 		s.Require().True(
-			alloraMath.InDelta(
-				expectedValue.Value,
-				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.001"),
-			), "Values do not match for key: %s %s %s",
+			inDelta, "Values do not match for key: %s %s %s",
 			key,
 			expectedValue.Value.String(),
 			actualValue.Value.String(),
@@ -386,12 +394,14 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
 		s.Require().True(exists, "Expected key does not exist in result map")
+		inDelta, err := alloraMath.InDelta(
+			expectedValue.Value,
+			actualValue.Value,
+			alloraMath.MustNewDecFromString("0.01"),
+		)
+		s.Require().NoError(err)
 		s.Require().True(
-			alloraMath.InDelta(
-				expectedValue.Value,
-				actualValue.Value,
-				alloraMath.MustNewDecFromString("0.01"),
-			), "Values do not match for key: %s %s %s",
+			inDelta, "Values do not match for key: %s %s %s",
 			key,
 			expectedValue.Value.String(),
 			actualValue.Value.String(),

@@ -181,7 +181,7 @@ func generateSingleWorkerBundle(
 	infererAddress := workers[workerAddressName].addr
 	infererValue := alloraMath.NewDecFromInt64(int64(rand.Intn(300) + 3000))
 
-	// Create a MsgInsertReputerPayload message
+	// Create a InsertReputerPayloadRequest message
 	workerDataBundle := &emissionstypes.WorkerDataBundle{
 		Worker: infererAddress,
 		InferenceForecastsBundle: &emissionstypes.InferenceForecastBundle{

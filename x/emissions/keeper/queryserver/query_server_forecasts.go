@@ -9,7 +9,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (qs queryServer) GetForecastsAtBlock(ctx context.Context, req *types.QueryForecastsAtBlockRequest) (*types.QueryForecastsAtBlockResponse, error) {
+func (qs queryServer) GetForecastsAtBlock(ctx context.Context, req *types.GetForecastsAtBlockRequest) (*types.GetForecastsAtBlockResponse, error) {
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -22,5 +22,5 @@ func (qs queryServer) GetForecastsAtBlock(ctx context.Context, req *types.QueryF
 		return nil, err
 	}
 
-	return &types.QueryForecastsAtBlockResponse{Forecasts: forecasts}, nil
+	return &types.GetForecastsAtBlockResponse{Forecasts: forecasts}, nil
 }

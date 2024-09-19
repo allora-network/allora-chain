@@ -17,8 +17,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 
-	// Create a MsgCreateNewTopic message
-	newTopicMsg := &types.MsgCreateNewTopic{
+	// Create a CreateNewTopicRequest message
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,
 		Metadata:                 "Some metadata for the new topic",
 		LossMethod:               "mse",
@@ -60,8 +60,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 	senderAddr := sdk.AccAddress(PKS[0].Address())
 	sender := senderAddr.String()
 
-	// Create a MsgCreateNewTopic message
-	newTopicMsg := &types.MsgCreateNewTopic{
+	// Create a CreateNewTopicRequest message
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,
 		Metadata:                 "Some metadata for the new topic",
 		LossMethod:               "mse",
@@ -100,4 +100,66 @@ func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {
 	s.Require().NoError(err)
 	s.Require().NotNil(topic)
 	s.Require().Equal(topic.EpochLastEnded, inferenceTs)
+}
+
+func (s *MsgServerTestSuite) TestMsgCreateNewTopicTooLongMetadataFails() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+
+	newTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		Metadata:                 strings.Repeat("a", 257),
+	}
+
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+
+	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.Error(err)
+	require.Nil(result)
+	require.ErrorContains(err, "metadata invalid")
+}
+
+func (s *MsgServerTestSuite) TestMsgCreateNewTopicTooLongLossMethodFails() {
+	ctx, msgServer := s.ctx, s.msgServer
+	require := s.Require()
+
+	senderAddr := sdk.AccAddress(PKS[0].Address())
+	sender := senderAddr.String()
+
+	newTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  sender,
+		Metadata:                 "Some metadata for the new topic",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		AlphaRegret:              alloraMath.NewDecFromInt64(1),
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		LossMethod:               strings.Repeat("a", 257),
+	}
+
+	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
+
+	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.Error(err)
+	require.Nil(result)
+	require.ErrorContains(err, "loss method invalid")
 }

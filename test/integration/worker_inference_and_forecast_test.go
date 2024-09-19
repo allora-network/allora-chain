@@ -15,11 +15,11 @@ import (
 
 func waitForNextChurningBlock(m testCommon.TestConfig, topicId uint64) (*types.Topic, error) {
 	ctx := context.Background()
-	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topicId})
+	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topicId})
 	if err != nil {
 		return nil, err
 	}
-	nextBlockResponse, err := m.Client.QueryEmissions().GetNextChurningBlockByTopicId(ctx, &types.QueryNextChurningBlockByTopicIdRequest{TopicId: topicId})
+	nextBlockResponse, err := m.Client.QueryEmissions().GetNextChurningBlockByTopicId(ctx, &types.GetNextChurningBlockByTopicIdRequest{TopicId: topicId})
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 	// Define inferer address as Bob's address
 	InfererAddress1 := m.BobAddr
 
-	workerMsg := &types.MsgInsertWorkerPayload{
+	workerMsg := &types.InsertWorkerPayloadRequest{
 		Sender: InfererAddress1,
 		WorkerDataBundle: &types.WorkerDataBundle{
 			Worker:  InfererAddress1,
@@ -100,7 +100,7 @@ func InsertWorkerBundle(m testCommon.TestConfig, topic *types.Topic) (int64, err
 	if err != nil {
 		return 0, err
 	}
-	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topic.Id})
+	topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topic.Id})
 	if err != nil {
 		return 0, err
 	}
@@ -188,7 +188,7 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 	}
 	reputerPublicKeyBytes := pubKey.Bytes()
 
-	lossesMsg := &types.MsgInsertReputerPayload{
+	lossesMsg := &types.InsertReputerPayloadRequest{
 		Sender: reputerAddr,
 		ReputerValueBundle: &types.ReputerValueBundle{
 			ValueBundle: reputerValueBundle,
@@ -210,10 +210,10 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 	return nil
 }
 
-func ValidateQueryNetworkLossBundle(m testCommon.TestConfig, topicId uint64, BlockHeightCurrent int64) {
+func ValidateGetNetworkLossBundle(m testCommon.TestConfig, topicId uint64, BlockHeightCurrent int64) {
 	ctx := context.Background()
 	result, err := m.Client.QueryEmissions().GetNetworkLossBundleAtBlock(ctx,
-		&types.QueryNetworkLossBundleAtBlockRequest{
+		&types.GetNetworkLossBundleAtBlockRequest{
 			TopicId:     topicId,
 			BlockHeight: BlockHeightCurrent,
 		},
@@ -237,7 +237,7 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 	// Waiting for ground truth lag to pass
 	m.T.Log(time.Now(), "--- Waiting to Insert Worker Bundle ---")
 	blockHeightNonce, err := RunWithRetry(m, 3, 2*time.Second, func() (int64, error) {
-		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.QueryTopicRequest{TopicId: topic.Id})
+		topicResponse, err := m.Client.QueryEmissions().GetTopic(ctx, &types.GetTopicRequest{TopicId: topic.Id})
 		if err != nil {
 			return 0, err
 		}
@@ -273,7 +273,7 @@ func WorkerInferenceAndForecastChecks(m testCommon.TestConfig) {
 		require.NoError(m.T, err)
 	}
 
-	ValidateQueryNetworkLossBundle(m, topic.Id, blockHeightNonce)
+	ValidateGetNetworkLossBundle(m, topic.Id, blockHeightNonce)
 	m.T.Log(time.Now(), "--- END  Worker Inference, Forecast and Reputation test ---")
 }
 

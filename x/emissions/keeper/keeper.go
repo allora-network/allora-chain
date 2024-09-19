@@ -728,7 +728,7 @@ func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context,
 
 /// PARAMETERS
 
-func (k *Keeper) SetParams(ctx context.Context, params types.Params) error {
+func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
 	return k.params.Set(ctx, params)
 }
 
@@ -794,9 +794,8 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 
 // Append individual inference for a topic/block
 func (k *Keeper) AppendInference(
-	ctx context.Context,
+	ctx sdk.Context,
 	topic types.Topic,
-	blockHeight BlockHeight,
 	nonceBlockHeight BlockHeight,
 	inference *types.Inference,
 ) error {
@@ -825,8 +824,7 @@ func (k *Keeper) AppendInference(
 		return errorsmod.Wrapf(err, "Error getting inferer score ema")
 	}
 	// Only calc and save if there's a new update
-	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+	if previousEmaScore.BlockHeight >= nonceBlockHeight {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -848,7 +846,7 @@ func (k *Keeper) AppendInference(
 		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 			ctx,
 			topic,
-			blockHeight,
+			nonceBlockHeight,
 			inferences.Inferences[lowScoreIndex].Inferer,
 		)
 		if err != nil {
@@ -861,7 +859,7 @@ func (k *Keeper) AppendInference(
 		return k.InsertInferences(ctx, topic.Id, nonceBlockHeight, inferences)
 	} else {
 		// Update EMA score for the current inferer, who is the lowest score inferer
-		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, blockHeight, inference.Inferer)
+		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, inference.Inferer)
 		if err != nil {
 			return err
 		}
@@ -889,9 +887,8 @@ func (k *Keeper) InsertInferences(
 
 // Append individual forecast for a topic/block
 func (k *Keeper) AppendForecast(
-	ctx context.Context,
+	ctx sdk.Context,
 	topic types.Topic,
-	blockHeight BlockHeight,
 	nonceBlockHeight BlockHeight,
 	forecast *types.Forecast,
 ) error {
@@ -923,8 +920,7 @@ func (k *Keeper) AppendForecast(
 		return errorsmod.Wrapf(err, "Error getting forecaster score ema")
 	}
 	// Only calc and save if there's a new update
-	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+	if previousEmaScore.BlockHeight >= nonceBlockHeight {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -946,7 +942,7 @@ func (k *Keeper) AppendForecast(
 		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 			ctx,
 			topic,
-			blockHeight,
+			nonceBlockHeight,
 			forecasts.Forecasts[lowScoreIndex].Forecaster,
 		)
 		if err != nil {
@@ -959,7 +955,7 @@ func (k *Keeper) AppendForecast(
 		return k.InsertForecasts(ctx, topic.Id, nonceBlockHeight, forecasts)
 	} else {
 		// Update EMA score for the current forecaster, who is the lowest score forecaster
-		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, blockHeight, forecast.Forecaster)
+		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, forecast.Forecaster)
 		if err != nil {
 			return err
 		}
@@ -1017,9 +1013,8 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 
 // Append loss bundle for a topic and blockHeight
 func (k *Keeper) AppendReputerLoss(
-	ctx context.Context,
+	ctx sdk.Context,
 	topic types.Topic,
-	blockHeight BlockHeight,
 	nonceBlockHeight BlockHeight,
 	reputerLoss *types.ReputerValueBundle,
 ) error {
@@ -1054,8 +1049,7 @@ func (k *Keeper) AppendReputerLoss(
 		return err
 	}
 	// Only calc and save if there's a new update
-	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.EpochLength {
+	if previousEmaScore.BlockHeight >= nonceBlockHeight {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -1077,7 +1071,7 @@ func (k *Keeper) AppendReputerLoss(
 		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
 			ctx,
 			topic,
-			blockHeight,
+			nonceBlockHeight,
 			reputerLossBundles.ReputerValueBundles[lowScoreIndex].ValueBundle.Reputer,
 		)
 		if err != nil {
@@ -1091,7 +1085,7 @@ func (k *Keeper) AppendReputerLoss(
 		return k.InsertReputerLossBundlesAtBlock(ctx, topic.Id, nonceBlockHeight, reputerLossBundles)
 	} else {
 		// Update EMA score for the current reputer, who is the lowest score reputer
-		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, blockHeight, reputerLoss.ValueBundle.Reputer)
+		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
 			return err
 		}
@@ -1512,7 +1506,6 @@ func (k *Keeper) RemoveDelegateStake(
 	totalStakeNew := totalStake.Sub(stakeToRemove)
 
 	// SET NEW VALUES AFTER CHECKS
-
 	if err := k.SetStakeFromDelegator(ctx, topicId, delegator, stakeFromDelegatorNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting stake from delegator failed")
 	}
@@ -1595,7 +1588,7 @@ func (k *Keeper) GetStakeReputerAuthority(ctx context.Context, topicId TopicId, 
 // Includes the stake placed by delegators on the reputer in that topic.
 func (k *Keeper) SetStakeReputerAuthority(ctx context.Context, topicId TopicId, reputer ActorId, amount cosmosMath.Int) error {
 	key := collections.Join(topicId, reputer)
-	if amount.IsZero() {
+	if amount.IsNil() || amount.IsZero() {
 		return k.stakeReputerAuthority.Remove(ctx, key)
 	}
 	return k.stakeReputerAuthority.Set(ctx, key, amount)
@@ -1661,6 +1654,9 @@ func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId,
 // Set the share on specific reputer and topicId
 func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer ActorId, share alloraMath.Dec) error {
 	key := collections.Join(topicId, reputer)
+	if err := types.ValidateDec(share); err != nil { // Added error check
+		return errorsmod.Wrapf(err, "SetDelegateRewardPerShare: invalid share")
+	}
 	return k.delegateRewardPerShare.Set(ctx, key, share)
 }
 
@@ -2209,37 +2205,6 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	return nil
 }
 
-// REWARDABLE TOPICS
-
-// Get the rewardable topics
-func (k *Keeper) GetRewardableTopics(ctx context.Context) ([]TopicId, error) {
-	iter, err := k.rewardableTopics.Iterate(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	topics := make([]TopicId, 0)
-	for ; iter.Valid(); iter.Next() {
-		topicId, err := iter.Key()
-		if err != nil {
-			return nil, err
-		}
-		topics = append(topics, topicId)
-	}
-
-	return topics, nil
-}
-
-// Add a topic as rewardable
-func (k *Keeper) AddRewardableTopic(ctx context.Context, topicId TopicId) error {
-	return k.rewardableTopics.Set(ctx, topicId)
-}
-
-func (k *Keeper) RemoveRewardableTopic(ctx context.Context, topicId TopicId) error {
-	return k.rewardableTopics.Remove(ctx, topicId)
-}
-
 /// SCORES
 
 // If the new score is older than the current score, don't update
@@ -2500,6 +2465,9 @@ func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, 
 }
 
 func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TopicId, reputer ActorId, coefficient types.ListeningCoefficient) error {
+	if err := types.ValidateDec(coefficient.Coefficient); err != nil { // Added error check
+		return errorsmod.Wrapf(err, "SetListeningCoefficient: invalid coefficient")
+	}
 	key := collections.Join(topicId, reputer)
 	return k.reputerListeningCoefficient.Set(ctx, key, coefficient)
 }

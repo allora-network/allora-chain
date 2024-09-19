@@ -14,12 +14,12 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	ctx := context.Background()
 	topicIdStart, err := m.Client.QueryEmissions().GetNextTopicId(
 		ctx,
-		&emissionstypes.QueryNextTopicIdRequest{},
+		&emissionstypes.GetNextTopicIdRequest{},
 	)
 	require.NoError(m.T, err)
 	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
-	createTopicRequest := &emissionstypes.MsgCreateNewTopic{
+	createTopicRequest := &emissionstypes.CreateNewTopicRequest{
 		Creator:                  m.AliceAddr,
 		Metadata:                 "ETH 24h Prediction",
 		LossMethod:               "mse",
@@ -39,21 +39,21 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	createTopicResponse := &emissionstypes.MsgCreateNewTopicResponse{}
+	createTopicResponse := &emissionstypes.CreateNewTopicResponse{}
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.T, err)
 	topicId = createTopicResponse.TopicId
 	require.Equal(m.T, topicIdStart.NextTopicId, topicId)
 	topicIdEnd, err := m.Client.QueryEmissions().GetNextTopicId(
 		ctx,
-		&emissionstypes.QueryNextTopicIdRequest{},
+		&emissionstypes.GetNextTopicIdRequest{},
 	)
 	require.NoError(m.T, err)
 	require.Equal(m.T, topicIdEnd.NextTopicId, topicId+1)
 
 	storedTopicResponse, err := m.Client.QueryEmissions().GetTopic(
 		ctx,
-		&emissionstypes.QueryTopicRequest{
+		&emissionstypes.GetTopicRequest{
 			TopicId: topicId,
 		},
 	)

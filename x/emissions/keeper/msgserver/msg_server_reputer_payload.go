@@ -10,7 +10,7 @@ import (
 )
 
 // A tx function that accepts a individual loss and possibly returns an error
-func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInsertReputerPayload) (*types.MsgInsertReputerPayloadResponse, error) {
+func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (*types.InsertReputerPayloadResponse, error) {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, err
@@ -89,10 +89,11 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.MsgInse
 		return nil, err
 	}
 
-	err = ms.k.AppendReputerLoss(ctx, topic, blockHeight, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err = ms.k.AppendReputerLoss(sdkCtx, topic, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.MsgInsertReputerPayloadResponse{}, nil
+	return &types.InsertReputerPayloadResponse{}, nil
 }

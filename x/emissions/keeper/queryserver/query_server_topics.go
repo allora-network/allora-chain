@@ -11,16 +11,16 @@ import (
 )
 
 // NextTopicId is a monotonically increasing counter that is used to assign unique IDs to topics.
-func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.QueryNextTopicIdRequest) (*types.QueryNextTopicIdResponse, error) {
+func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.GetNextTopicIdRequest) (*types.GetNextTopicIdResponse, error) {
 	nextTopicId, err := qs.k.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return &types.QueryNextTopicIdResponse{NextTopicId: nextTopicId}, nil
+	return &types.GetNextTopicIdResponse{NextTopicId: nextTopicId}, nil
 }
 
-// Topics defines the handler for the Query/Topics RPC method.
-func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest) (*types.QueryTopicResponse, error) {
+// Topics defines the handler for the Get/Topics RPC method.
+func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) (*types.GetTopicResponse, error) {
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting topic")
@@ -43,7 +43,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest
 		return nil, errors.Wrapf(err, "error getting current topic weight")
 	}
 
-	return &types.QueryTopicResponse{
+	return &types.GetTopicResponse{
 		Topic:            &topic,
 		Weight:           currentTopicWeight.String(),
 		EffectiveRevenue: currentTopicRevenue.String(),
@@ -51,30 +51,30 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.QueryTopicRequest
 }
 
 // Return last payload timestamp & nonce by worker/reputer
-func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *types.QueryTopicLastWorkerCommitInfoRequest) (*types.QueryTopicLastWorkerCommitInfoResponse, error) {
+func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *types.GetTopicLastWorkerCommitInfoRequest) (*types.GetTopicLastWorkerCommitInfoResponse, error) {
 	lastCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryTopicLastWorkerCommitInfoResponse{LastCommit: &lastCommit}, nil
+	return &types.GetTopicLastWorkerCommitInfoResponse{LastCommit: &lastCommit}, nil
 }
 
 // Return last payload timestamp & nonce by worker/reputer
-func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *types.QueryTopicLastReputerCommitInfoRequest) (*types.QueryTopicLastReputerCommitInfoResponse, error) {
+func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *types.GetTopicLastReputerCommitInfoRequest) (*types.GetTopicLastReputerCommitInfoResponse, error) {
 	lastCommit, err := qs.k.GetReputerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryTopicLastReputerCommitInfoResponse{LastCommit: &lastCommit}, nil
+	return &types.GetTopicLastReputerCommitInfoResponse{LastCommit: &lastCommit}, nil
 }
 
 func (qs queryServer) GetTopicRewardNonce(
 	ctx context.Context,
-	req *types.QueryTopicRewardNonceRequest,
+	req *types.GetTopicRewardNonceRequest,
 ) (
-	*types.QueryTopicRewardNonceResponse,
+	*types.GetTopicRewardNonceResponse,
 	error,
 ) {
 	nonce, err := qs.k.GetTopicRewardNonce(ctx, req.TopicId)
@@ -82,14 +82,14 @@ func (qs queryServer) GetTopicRewardNonce(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &types.QueryTopicRewardNonceResponse{Nonce: nonce}, nil
+	return &types.GetTopicRewardNonceResponse{Nonce: nonce}, nil
 }
 
 func (qs queryServer) GetPreviousTopicWeight(
 	ctx context.Context,
-	req *types.QueryPreviousTopicWeightRequest,
+	req *types.GetPreviousTopicWeightRequest,
 ) (
-	*types.QueryPreviousTopicWeightResponse,
+	*types.GetPreviousTopicWeightResponse,
 	error,
 ) {
 	previousTopicWeight, notFound, err := qs.k.GetPreviousTopicWeight(ctx, req.TopicId)
@@ -97,14 +97,14 @@ func (qs queryServer) GetPreviousTopicWeight(
 		return nil, err
 	}
 
-	return &types.QueryPreviousTopicWeightResponse{Weight: previousTopicWeight, NotFound: notFound}, nil
+	return &types.GetPreviousTopicWeightResponse{Weight: previousTopicWeight, NotFound: notFound}, nil
 }
 
 func (qs queryServer) TopicExists(
 	ctx context.Context,
-	req *types.QueryTopicExistsRequest,
+	req *types.TopicExistsRequest,
 ) (
-	*types.QueryTopicExistsResponse,
+	*types.TopicExistsResponse,
 	error,
 ) {
 	exists, err := qs.k.TopicExists(ctx, req.TopicId)
@@ -112,14 +112,14 @@ func (qs queryServer) TopicExists(
 		return nil, err
 	}
 
-	return &types.QueryTopicExistsResponse{Exists: exists}, nil
+	return &types.TopicExistsResponse{Exists: exists}, nil
 }
 
 func (qs queryServer) IsTopicActive(
 	ctx context.Context,
-	req *types.QueryIsTopicActiveRequest,
+	req *types.IsTopicActiveRequest,
 ) (
-	*types.QueryIsTopicActiveResponse,
+	*types.IsTopicActiveResponse,
 	error,
 ) {
 	isActive, err := qs.k.IsTopicActive(ctx, req.TopicId)
@@ -127,14 +127,14 @@ func (qs queryServer) IsTopicActive(
 		return nil, err
 	}
 
-	return &types.QueryIsTopicActiveResponse{IsActive: isActive}, nil
+	return &types.IsTopicActiveResponse{IsActive: isActive}, nil
 }
 
 func (qs queryServer) GetTopicFeeRevenue(
 	ctx context.Context,
-	req *types.QueryTopicFeeRevenueRequest,
+	req *types.GetTopicFeeRevenueRequest,
 ) (
-	*types.QueryTopicFeeRevenueResponse,
+	*types.GetTopicFeeRevenueResponse,
 	error,
 ) {
 	feeRevenue, err := qs.k.GetTopicFeeRevenue(ctx, req.TopicId)
@@ -142,28 +142,13 @@ func (qs queryServer) GetTopicFeeRevenue(
 		return nil, err
 	}
 
-	return &types.QueryTopicFeeRevenueResponse{FeeRevenue: feeRevenue}, nil
-}
-
-func (qs queryServer) GetRewardableTopics(
-	ctx context.Context,
-	req *types.QueryRewardableTopicsRequest,
-) (
-	*types.QueryRewardableTopicsResponse,
-	error,
-) {
-	rewardableTopics, err := qs.k.GetRewardableTopics(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.QueryRewardableTopicsResponse{RewardableTopicIds: rewardableTopics}, nil
+	return &types.GetTopicFeeRevenueResponse{FeeRevenue: feeRevenue}, nil
 }
 
 func (qs queryServer) GetActiveTopicsAtBlock(
 	ctx context.Context,
-	req *types.QueryActiveTopicsAtBlockRequest,
-) (*types.QueryActiveTopicsAtBlockResponse, error) {
+	req *types.GetActiveTopicsAtBlockRequest,
+) (*types.GetActiveTopicsAtBlockResponse, error) {
 	activeTopicIds, err := qs.k.GetActiveTopicIdsAtBlock(ctx, req.BlockHeight)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -177,16 +162,16 @@ func (qs queryServer) GetActiveTopicsAtBlock(
 		topics = append(topics, &topic)
 	}
 
-	return &types.QueryActiveTopicsAtBlockResponse{Topics: topics}, nil
+	return &types.GetActiveTopicsAtBlockResponse{Topics: topics}, nil
 }
 
 func (qs queryServer) GetNextChurningBlockByTopicId(
 	ctx context.Context,
-	req *types.QueryNextChurningBlockByTopicIdRequest,
-) (*types.QueryNextChurningBlockByTopicIdResponse, error) {
+	req *types.GetNextChurningBlockByTopicIdRequest,
+) (*types.GetNextChurningBlockByTopicIdResponse, error) {
 	blockHeight, _, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
 	if err != nil {
-		return &types.QueryNextChurningBlockByTopicIdResponse{BlockHeight: 0}, err
+		return &types.GetNextChurningBlockByTopicIdResponse{BlockHeight: 0}, err
 	}
-	return &types.QueryNextChurningBlockByTopicIdResponse{BlockHeight: blockHeight}, nil
+	return &types.GetNextChurningBlockByTopicIdResponse{BlockHeight: blockHeight}, nil
 }

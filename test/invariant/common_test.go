@@ -70,7 +70,7 @@ func getActorName(seed int, actorIndex int) string {
 func pickRandomTopicId(m *testcommon.TestConfig) (uint64, error) {
 	ctx := context.Background()
 	numTopicsResponse, err := m.Client.QueryEmissions().
-		GetNextTopicId(ctx, &emissionstypes.QueryNextTopicIdRequest{})
+		GetNextTopicId(ctx, &emissionstypes.GetNextTopicIdRequest{})
 	if err != nil {
 		return 1, err
 	}

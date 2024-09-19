@@ -30,7 +30,7 @@ func doInferenceAndReputation(
 		topicId,
 	)
 	ctx := context.Background()
-	resp, err := m.Client.QueryEmissions().GetTopic(ctx, &emissionstypes.QueryTopicRequest{
+	resp, err := m.Client.QueryEmissions().GetTopic(ctx, &emissionstypes.GetTopicRequest{
 		TopicId: topicId,
 	})
 	requireNoError(m.T, data.failOnErr, err)
@@ -95,7 +95,7 @@ func findActiveTopicsAtThisBlock(
 		return nil
 	}
 	ctx := context.Background()
-	response, err := m.Client.QueryEmissions().GetActiveTopicsAtBlock(ctx, &emissionstypes.QueryActiveTopicsAtBlockRequest{
+	response, err := m.Client.QueryEmissions().GetActiveTopicsAtBlock(ctx, &emissionstypes.GetActiveTopicsAtBlockRequest{
 		BlockHeight: blockHeight,
 	})
 	requireNoError(m.T, data.failOnErr, err)
@@ -183,7 +183,7 @@ func sendWorkerPayload(
 ) bool {
 	wasErr := false
 
-	workerMsg := &emissionstypes.MsgInsertWorkerPayload{
+	workerMsg := &emissionstypes.InsertWorkerPayloadRequest{
 		Sender:           sender.addr,
 		WorkerDataBundle: WorkerDataBundles,
 	}
@@ -223,7 +223,7 @@ func createAndSendReputerPayloads(
 	for _, reputer := range reputers {
 		valueBundle := createReputerValueBundle(m, topicId, reputer, workers, reputerNonce)
 		signedValueBundle := signReputerValueBundle(m, reputer, valueBundle)
-		lossesMsg := &emissionstypes.MsgInsertReputerPayload{
+		lossesMsg := &emissionstypes.InsertReputerPayloadRequest{
 			Sender:             reputer.addr,
 			ReputerValueBundle: signedValueBundle,
 		}
@@ -281,7 +281,7 @@ func signReputerValueBundle(
 	require.NoError(m.T, err, "Sign should not return an error")
 	reputerPublicKeyBytes := pubKey.Bytes()
 
-	// Create a MsgInsertReputerPayload message
+	// Create a InsertReputerPayloadRequest message
 	reputerValueBundle := &emissionstypes.ReputerValueBundle{
 		ValueBundle: &valueBundle,
 		Signature:   valueBundleSignature,

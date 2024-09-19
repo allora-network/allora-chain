@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Calculates and saves the EMA scores for a active set worker and topic.
@@ -120,7 +121,7 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaForActiveSet(
 // Uses the last saved topic quantile score to calculate the EMA.
 // This is useful for updating EMAs of workers in the passive set.
 func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
-	ctx context.Context,
+	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,
 	worker ActorId,
@@ -153,6 +154,10 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 	if err != nil {
 		return errors.Wrapf(err, "error setting latest inferer score")
 	}
+
+	emaScores := []types.Score{emaScore}
+	activeArr := map[string]bool{worker: false}
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr)
 	return nil
 }
 
@@ -160,7 +165,7 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 // Uses the last saved topic quantile score to calculate the EMA.
 // This is useful for updating EMAs of workers in the passive set.
 func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
-	ctx context.Context,
+	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,
 	worker ActorId,
@@ -193,6 +198,10 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 	if err != nil {
 		return errors.Wrapf(err, "error setting latest forecaster score")
 	}
+
+	emaScores := []types.Score{emaScore}
+	activeArr := map[string]bool{worker: false}
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)
 	return nil
 }
 
@@ -200,7 +209,7 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 // Uses the last saved topic quantile score to calculate the EMA.
 // This is useful for updating EMAs of reputers in the passive set.
 func (k *Keeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
-	ctx context.Context,
+	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,
 	reputer ActorId,
@@ -234,5 +243,9 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
 	if err != nil {
 		return errors.Wrapf(err, "error setting latest reputer score")
 	}
+
+	emaScores := []types.Score{emaScore}
+	activeArr := map[string]bool{reputer: false}
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
 	return nil
 }

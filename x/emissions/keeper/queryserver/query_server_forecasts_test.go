@@ -31,7 +31,7 @@ func (s *QueryServerTestSuite) TestGetForecastsAtBlock() {
 
 	results, err := queryserver.GetForecastsAtBlock(
 		ctx,
-		&types.QueryForecastsAtBlockRequest{
+		&types.GetForecastsAtBlockRequest{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 		},

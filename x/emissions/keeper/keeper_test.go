@@ -64,7 +64,7 @@ type KeeperTestSuite struct {
 	bankKeeper      bankkeeper.BaseKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
-	msgServer       types.MsgServer
+	msgServer       types.MsgServiceServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
@@ -179,11 +179,11 @@ func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
 
 	// Create a topic first
 	metadata := "Some metadata for the new topic"
-	// Create a MsgCreateNewTopic message
+	// Create a CreateNewTopicRequest message
 
 	creator := sdk.AccAddress(PKS[0].Address())
 
-	newTopicMsg := &types.MsgCreateNewTopic{
+	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  creator.String(),
 		Metadata:                 metadata,
 		LossMethod:               "method",
@@ -1933,7 +1933,7 @@ func (s *KeeperTestSuite) TestSetParams() {
 	keeper := s.emissionsKeeper
 
 	params := types.Params{
-		Version:                         "v0.3.0",
+		Version:                         "v0.5.0",
 		MinTopicWeight:                  alloraMath.NewDecFromInt64(100),
 		RequiredMinimumStake:            cosmosMath.NewInt(1),
 		RemoveStakeDelayWindow:          172800,
@@ -2424,36 +2424,6 @@ func (s *KeeperTestSuite) TestAddTopicFeeRevenue() {
 	// Verify initial revenue
 	feeRev, _ := keeper.GetTopicFeeRevenue(ctx, topicId)
 	s.Require().Equal(initialAmount, feeRev, "Initial revenue should be correctly recorded")
-}
-
-/// REWARDABLE TOPICS
-
-func (s *KeeperTestSuite) TestRewardableTopics() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	topicId := uint64(789)
-	topicId2 := uint64(101112)
-
-	// Add rewardable topics
-	err := keeper.AddRewardableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	err = keeper.AddRewardableTopic(ctx, topicId2)
-	s.Require().NoError(err)
-
-	// Ensure the topics are retrieved
-	retrievedIds, err := keeper.GetRewardableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(retrievedIds, 2, "Should retrieve all rewardable topics")
-
-	// Reset the rewardable topics
-	err = keeper.RemoveRewardableTopic(ctx, topicId)
-	s.Require().NoError(err)
-
-	// Ensure no topics remain
-	remainingIds, err := keeper.GetRewardableTopics(ctx)
-	s.Require().NoError(err)
-	s.Require().Len(remainingIds, 1)
 }
 
 /// SCORES
@@ -3527,7 +3497,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	newInference := types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
-	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference)
 	s.Require().NoError(err)
 	newAllInferences, err := k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3546,7 +3516,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	}
 	worker5OgScore, err := k.GetInfererScoreEma(ctx, topicId, worker5)
 	s.Require().NoError(err)
-	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2)
 	s.Require().NoError(err)
 	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3579,14 +3549,14 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().Greater(updatedWorker2ScoreVal, ogWorker2ScoreVal, "worker2 score should go up given large ema value")
 	s.Require().Greater(updatedWorker2ScoreVal, worker5OgScoreVal, "worker2 could not overtake worker5, but not in this epoch")
 	// EMA score should be updated with the new time of update given that it was updated then
-	s.Require().Equal(blockHeightInferences, updatedWorker2Score.BlockHeight)
+	s.Require().Equal(nonce.BlockHeight, updatedWorker2Score.BlockHeight)
 
 	// Ensure passive set participant can't update their score within the same epoch
 	blockHeightInferences = blockHeightInferences + 1 // within the same epoch => no update
 	newInference2 = types.Inference{
 		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.52"),
 	}
-	err = k.AppendInference(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2)
 	s.Require().Error(err, types.ErrCantUpdateEmaMoreThanOncePerWindow.Error())
 	// Confirm no change in EMA score
 	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
@@ -3698,7 +3668,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
-	err = k.AppendForecast(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newForecast)
+	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newForecast)
 	s.Require().NoError(err)
 	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3723,8 +3693,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 			},
 		},
 	}
-	blockHeightInferences = blockHeightInferences + topic.EpochLength
-	err = k.AppendForecast(ctx, topic, blockHeightInferences, nonce.BlockHeight, &newInference2)
+	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newInference2)
 	s.Require().NoError(err)
 	newAllForecasts, err = k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3805,8 +3774,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	}
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
-	blockHeight = blockHeight + topic.EpochLength
-	err = k.AppendReputerLoss(ctx, topic, blockHeight, nonce.BlockHeight, &newReputerLoss)
+	err = k.AppendReputerLoss(ctx, topic, nonce.BlockHeight, &newReputerLoss)
 	s.Require().NoError(err)
 	newAllReputerLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -3825,8 +3793,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			TopicId:             topicId,
 		},
 	}
-	blockHeight = blockHeight + topic.EpochLength
-	err = k.AppendReputerLoss(ctx, topic, blockHeight, nonce.BlockHeight, &newReputerLoss2)
+	err = k.AppendReputerLoss(ctx, topic, nonce.BlockHeight, &newReputerLoss2)
 	s.Require().NoError(err)
 	newAllReputerLosses, err = k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)

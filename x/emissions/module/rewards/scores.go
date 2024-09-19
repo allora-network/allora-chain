@@ -40,7 +40,6 @@ func GenerateReputerScores(
 	var losses [][]alloraMath.Dec
 	for _, reportedLoss := range reportedLosses.ReputerValueBundles {
 		reputers = append(reputers, reportedLoss.ValueBundle.Reputer)
-
 		// Get reputer topic stake
 		reputerStake, err := keeper.GetStakeReputerAuthority(ctx, topicId, reportedLoss.ValueBundle.Reputer)
 		if err != nil {
@@ -50,13 +49,20 @@ func GenerateReputerScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error converting reputer stake to Dec")
 		}
-		reputerStakes = append(reputerStakes, reputerStakeDec)
-
+		if reputerStakeDec.IsNaN() {
+			return []types.Score{}, errors.Wrap(types.ErrInvalidReputerData, "Error invalid reputer Stake: NaN")
+		}
 		// Get reputer listening coefficient
 		res, err := keeper.GetListeningCoefficient(ctx, topicId, reportedLoss.ValueBundle.Reputer)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting GetListeningCoefficient")
 		}
+		if res.Coefficient.IsNaN() {
+			return []types.Score{}, errors.Wrap(types.ErrInvalidReputerData, "Error invalid reputer Stake: NaN")
+		}
+
+		// defer addition until all errors are checked to ensure no partial data is added
+		reputerStakes = append(reputerStakes, reputerStakeDec)
 		reputerListeningCoefficients = append(reputerListeningCoefficients, res.Coefficient)
 
 		// Get all reported losses from bundle
@@ -89,6 +95,7 @@ func GenerateReputerScores(
 	// Insert new coeffients and scores
 	var newScores []types.Score
 	var emaScores []types.Score
+	activeArr := make(map[string]bool)
 	for i, reputer := range reputers {
 		err := keeper.SetListeningCoefficient(
 			ctx,
@@ -116,6 +123,7 @@ func GenerateReputerScores(
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving reputer score ema")
 		}
 
+		activeArr[reputer] = true
 		newScores = append(newScores, newScore)
 		emaScores = append(emaScores, emaScore)
 	}
@@ -131,6 +139,7 @@ func GenerateReputerScores(
 	}
 
 	types.EmitNewReputerScoresSetEvent(ctx, newScores)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
 	return newScores, nil
 }
 
@@ -144,6 +153,7 @@ func GenerateInferenceScores(
 ) ([]types.Score, error) {
 	var newScores []types.Score
 	var emaScores []types.Score
+	activeArr := make(map[string]bool)
 	// If there is only one inferer, set score to 0
 	// More than one inferer is required to have one-out losses
 	if len(networkLosses.InfererValues) == 1 {
@@ -158,6 +168,7 @@ func GenerateInferenceScores(
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 		newScores = append(newScores, newScore)
+		types.EmitNewInfererScoresSetEvent(ctx, newScores)
 		return newScores, nil
 	}
 	topic, err := keeper.GetTopic(ctx, topicId)
@@ -186,7 +197,7 @@ func GenerateInferenceScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving inferer score ema")
 		}
-
+		activeArr[oneOutLoss.Worker] = true
 		newScores = append(newScores, newScore)
 		emaScores = append(emaScores, emaScore)
 	}
@@ -202,6 +213,7 @@ func GenerateInferenceScores(
 	}
 
 	types.EmitNewInfererScoresSetEvent(ctx, newScores)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr)
 	return newScores, nil
 }
 
@@ -215,6 +227,7 @@ func GenerateForecastScores(
 ) ([]types.Score, error) {
 	var newScores []types.Score
 	var emaScores []types.Score
+	activeArr := make(map[string]bool)
 	topic, err := keeper.GetTopic(ctx, topicId)
 	if err != nil {
 		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
@@ -226,7 +239,7 @@ func GenerateForecastScores(
 		newScore := types.Score{
 			TopicId:     topicId,
 			BlockHeight: block,
-			Address:     networkLosses.InfererValues[0].Worker,
+			Address:     networkLosses.ForecasterValues[0].Worker,
 			Score:       alloraMath.ZeroDec(),
 		}
 		err := keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
@@ -234,6 +247,7 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 		newScores = append(newScores, newScore)
+		types.EmitNewForecasterScoresSetEvent(ctx, newScores)
 		return newScores, nil
 	}
 
@@ -261,8 +275,8 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
 
-		// Calculate forecast score
-		workerFinalScore, err := GetFinalWorkerScoreForecastTask(workerScoreOneIn, workersScoresOneOut[i], fUniqueAgg)
+		// Calculate worker performance score
+		workerPerformanceScore, err := GetFinalWorkerPerformanceScore(workerScoreOneIn, workersScoresOneOut[i], fUniqueAgg)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error getting final worker score forecast task")
 		}
@@ -271,7 +285,7 @@ func GenerateForecastScores(
 			TopicId:     topicId,
 			BlockHeight: block,
 			Address:     oneInNaiveLoss.Worker,
-			Score:       workerFinalScore,
+			Score:       workerPerformanceScore,
 		}
 		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
 		if err != nil {
@@ -283,6 +297,7 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving forecaster score ema")
 		}
 
+		activeArr[oneInNaiveLoss.Worker] = true
 		newScores = append(newScores, newScore)
 		emaScores = append(emaScores, emaScore)
 	}
@@ -297,7 +312,9 @@ func GenerateForecastScores(
 		return nil, err
 	}
 
+	// Emit forecaster performance scores
 	types.EmitNewForecasterScoresSetEvent(ctx, newScores)
+	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)
 	return newScores, nil
 }
 

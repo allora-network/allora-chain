@@ -14,7 +14,7 @@ import (
 // Only 1 payload per registered worker is kept, ignore the rest. In particular, take the first payload from each
 // registered worker and none from any unregistered actor.
 // Signatures, anti-sybil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
-func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInsertWorkerPayload) (*types.MsgInsertWorkerPayloadResponse, error) {
+func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (*types.InsertWorkerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
@@ -87,7 +87,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 				"inferer not using the same topic as bundle")
 		}
 
-		err = ms.k.AppendInference(ctx, topic, blockHeight, nonce.BlockHeight, inference)
+		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
@@ -148,12 +148,12 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.MsgInser
 
 		if len(acceptedForecastElements) > 0 {
 			forecast.ForecastElements = acceptedForecastElements
-			err = ms.k.AppendForecast(ctx, topic, blockHeight, nonce.BlockHeight, forecast)
+			err = ms.k.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast)
 			if err != nil {
 				return nil, errorsmod.Wrapf(err,
 					"Error appending forecast")
 			}
 		}
 	}
-	return &types.MsgInsertWorkerPayloadResponse{}, nil
+	return &types.InsertWorkerPayloadResponse{}, nil
 }

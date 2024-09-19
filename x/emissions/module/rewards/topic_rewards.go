@@ -47,10 +47,9 @@ func GetTopicRewardFraction(
 	return (*topicWeight).Quo(totalWeight)
 }
 
-// "Churn-ready topic" is active, has an epoch that ended, and is in top N by weights, has non-zero weight.
-// We iterate through active topics, fetch their weight, skim the top N by weight (these are the churnable topics)
-// then finally apply a function on each of these churnable topics.
-func PickChurnableActiveTopics(
+// At the end of epoch, we should update nonce status of active topics, skim the top N by weight.
+// Update worker/reputer nonces, also add reward topic nonce to get reward for this nonce.
+func UpdateNoncesOfActiveTopics(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	block BlockHeight,

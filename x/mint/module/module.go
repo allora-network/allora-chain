@@ -8,7 +8,7 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
-	modulev1 "github.com/allora-network/allora-chain/x/mint/api/module/v1"
+	modulev1 "github.com/allora-network/allora-chain/x/mint/api/mint/module/v1"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -106,7 +106,7 @@ func (am AppModule) IsAppModule() {}
 // RegisterServices registers a gRPC query service to respond to the
 // module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	types.RegisterMsgServiceServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServerImpl(am.keeper))
 }
 

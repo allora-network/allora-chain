@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	modulev1 "github.com/allora-network/allora-chain/x/emissions/api/module/v1"
+	modulev1 "github.com/allora-network/allora-chain/x/emissions/api/emissions/module/v1"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )

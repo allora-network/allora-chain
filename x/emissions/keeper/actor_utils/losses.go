@@ -194,16 +194,12 @@ func CloseReputerNonce(
 		return err
 	}
 
-	err = k.AddRewardableTopic(ctx, topicId)
-	if err != nil {
-		return err
-	}
-
 	err = k.SetReputerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
 	if err != nil {
 		return err
 	}
 
+	types.EmitNewReputerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	sdkCtx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topicId, nonce))
 	return nil
 }

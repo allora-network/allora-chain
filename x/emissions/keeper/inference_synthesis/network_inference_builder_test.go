@@ -17,7 +17,6 @@ import (
 	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
-	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec/address"
@@ -48,7 +47,6 @@ type InferenceSynthesisTestSuite struct {
 	bankKeeper      keeper.BankKeeper
 	emissionsKeeper keeper.Keeper
 	appModule       module.AppModule
-	msgServer       emissionstypes.MsgServer
 	key             *storetypes.KVStoreKey
 	addrs           []sdk.AccAddress
 	addrsStr        []string
@@ -118,7 +116,6 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 	appModule := module.NewAppModule(encCfg.Codec, s.emissionsKeeper)
 	defaultGenesis := appModule.DefaultGenesis(encCfg.Codec)
 	appModule.InitGenesis(ctx, encCfg.Codec, defaultGenesis)
-	s.msgServer = msgserver.NewMsgServerImpl(s.emissionsKeeper)
 	s.appModule = appModule
 
 	// Add all tests addresses in whitelists

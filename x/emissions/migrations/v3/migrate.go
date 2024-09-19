@@ -11,7 +11,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/types"
+	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	types "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"

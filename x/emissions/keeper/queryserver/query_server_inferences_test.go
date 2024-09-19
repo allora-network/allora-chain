@@ -37,7 +37,7 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 
 	results, err := queryServer.GetInferencesAtBlock(
 		ctx,
-		&types.QueryInferencesAtBlockRequest{
+		&types.GetInferencesAtBlockRequest{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 		},
@@ -62,7 +62,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	// Testing non-existent topic
 	_, err = queryServer.GetWorkerLatestInferenceByTopicId(
 		ctx,
-		&types.QueryWorkerLatestInferenceRequest{
+		&types.GetWorkerLatestInferenceByTopicIdRequest{
 			TopicId:       999, // non-existent topic
 			WorkerAddress: workerAddress,
 		},
@@ -72,7 +72,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	// Testing non-existent worker
 	_, err = queryServer.GetWorkerLatestInferenceByTopicId(
 		ctx,
-		&types.QueryWorkerLatestInferenceRequest{
+		&types.GetWorkerLatestInferenceByTopicIdRequest{
 			TopicId:       topicId,
 			WorkerAddress: wrongWorkerAddress,
 		},
@@ -97,7 +97,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 	// Testing successful retrieval
 	response, err := queryServer.GetWorkerLatestInferenceByTopicId(
 		ctx,
-		&types.QueryWorkerLatestInferenceRequest{
+		&types.GetWorkerLatestInferenceByTopicIdRequest{
 			TopicId:       topicId,
 			WorkerAddress: workerAddress,
 		},
@@ -247,7 +247,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 	require.NoError(err)
 
 	// Test querying the server
-	req := &types.QueryNetworkInferencesAtBlockRequest{
+	req := &types.GetNetworkInferencesAtBlockRequest{
 		TopicId:                  topicId,
 		BlockHeightLastInference: blockHeight,
 	}
@@ -412,10 +412,10 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 	require.NoError(err)
 
 	// Test querying the server
-	req := &types.QueryLatestNetworkInferencesRequest{
+	req := &types.GetLatestNetworkInferencesRequest{
 		TopicId: topicId,
 	}
-	response, err := queryServer.GetLatestNetworkInference(s.ctx, req)
+	response, err := queryServer.GetLatestNetworkInferences(s.ctx, req)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 
@@ -430,7 +430,7 @@ func (s *QueryServerTestSuite) TestIsWorkerNonceUnfulfilled() {
 	topicId := uint64(1)
 	newNonce := &types.Nonce{BlockHeight: 42}
 
-	req := &types.QueryIsWorkerNonceUnfulfilledRequest{
+	req := &types.IsWorkerNonceUnfulfilledRequest{
 		TopicId:     topicId,
 		BlockHeight: newNonce.BlockHeight,
 	}
@@ -455,7 +455,7 @@ func (s *QueryServerTestSuite) TestGetUnfulfilledWorkerNonces() {
 	topicId := uint64(1)
 
 	// Initially, ensure no unfulfilled nonces exist
-	req := &types.QueryUnfulfilledWorkerNoncesRequest{
+	req := &types.GetUnfulfilledWorkerNoncesRequest{
 		TopicId: topicId,
 	}
 	response, err := s.queryServer.GetUnfulfilledWorkerNonces(s.ctx, req)
@@ -492,7 +492,7 @@ func (s *QueryServerTestSuite) TestGetInfererNetworkRegret() {
 		Value:       alloraMath.NewDecFromInt64(0),
 	}
 
-	req := &types.QueryInfererNetworkRegretRequest{
+	req := &types.GetInfererNetworkRegretRequest{
 		TopicId: topicId,
 		ActorId: worker,
 	}
@@ -521,7 +521,7 @@ func (s *QueryServerTestSuite) TestGetForecasterNetworkRegret() {
 		Value:       alloraMath.NewDecFromInt64(0),
 	}
 
-	req := &types.QueryForecasterNetworkRegretRequest{
+	req := &types.GetForecasterNetworkRegretRequest{
 		TopicId: topicId,
 		Worker:  worker,
 	}
@@ -551,7 +551,7 @@ func (s *QueryServerTestSuite) TestGetOneInForecasterNetworkRegret() {
 		Value:       alloraMath.NewDecFromInt64(0),
 	}
 
-	req := &types.QueryOneInForecasterNetworkRegretRequest{
+	req := &types.GetOneInForecasterNetworkRegretRequest{
 		TopicId:    topicId,
 		Forecaster: forecaster,
 		Inferer:    inferer,
@@ -577,7 +577,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 	topicId := s.CreateOneTopic()
 
 	// Initially, there should be no inferences, so we expect an empty result
-	req := &types.QueryLatestTopicInferencesRequest{
+	req := &types.GetLatestTopicInferencesRequest{
 		TopicId: topicId,
 	}
 	response, err := s.queryServer.GetLatestTopicInferences(ctx, req)
@@ -811,10 +811,10 @@ func (s *QueryServerTestSuite) TestGetLatestAvailableNetworkInference() {
 	require.NoError(err)
 
 	// Test querying the server
-	req := &types.QueryLatestAvailableNetworkInferencesRequest{
+	req := &types.GetLatestAvailableNetworkInferencesRequest{
 		TopicId: topicId,
 	}
-	response, err := queryServer.GetLatestAvailableNetworkInference(s.ctx, req)
+	response, err := queryServer.GetLatestAvailableNetworkInferences(s.ctx, req)
 	require.NoError(err)
 	require.NotNil(response, "Response should not be nil")
 
@@ -992,9 +992,9 @@ func (s *QueryServerTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMis
 	require.NoError(err)
 
 	// Test querying the server
-	req := &types.QueryLatestAvailableNetworkInferencesRequest{
+	req := &types.GetLatestAvailableNetworkInferencesRequest{
 		TopicId: topicId,
 	}
-	_, err = queryServer.GetLatestAvailableNetworkInference(s.ctx, req)
+	_, err = queryServer.GetLatestAvailableNetworkInferences(s.ctx, req)
 	require.Error(err)
 }
