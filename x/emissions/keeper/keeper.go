@@ -796,7 +796,6 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 func (k *Keeper) AppendInference(
 	ctx sdk.Context,
 	topic types.Topic,
-	blockHeight BlockHeight,
 	nonceBlockHeight BlockHeight,
 	inference *types.Inference,
 ) error {
@@ -825,8 +824,7 @@ func (k *Keeper) AppendInference(
 		return errorsmod.Wrapf(err, "Error getting inferer score ema")
 	}
 	// Only calc and save if there's a new update
-	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+	if previousEmaScore.BlockHeight >= nonceBlockHeight {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -848,7 +846,7 @@ func (k *Keeper) AppendInference(
 		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 			ctx,
 			topic,
-			blockHeight,
+			nonceBlockHeight,
 			inferences.Inferences[lowScoreIndex].Inferer,
 		)
 		if err != nil {
@@ -861,7 +859,7 @@ func (k *Keeper) AppendInference(
 		return k.InsertInferences(ctx, topic.Id, nonceBlockHeight, inferences)
 	} else {
 		// Update EMA score for the current inferer, who is the lowest score inferer
-		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, blockHeight, inference.Inferer)
+		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, inference.Inferer)
 		if err != nil {
 			return err
 		}
@@ -891,7 +889,6 @@ func (k *Keeper) InsertInferences(
 func (k *Keeper) AppendForecast(
 	ctx sdk.Context,
 	topic types.Topic,
-	blockHeight BlockHeight,
 	nonceBlockHeight BlockHeight,
 	forecast *types.Forecast,
 ) error {
@@ -923,8 +920,7 @@ func (k *Keeper) AppendForecast(
 		return errorsmod.Wrapf(err, "Error getting forecaster score ema")
 	}
 	// Only calc and save if there's a new update
-	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.WorkerSubmissionWindow {
+	if previousEmaScore.BlockHeight >= nonceBlockHeight {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -946,7 +942,7 @@ func (k *Keeper) AppendForecast(
 		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 			ctx,
 			topic,
-			blockHeight,
+			nonceBlockHeight,
 			forecasts.Forecasts[lowScoreIndex].Forecaster,
 		)
 		if err != nil {
@@ -959,7 +955,7 @@ func (k *Keeper) AppendForecast(
 		return k.InsertForecasts(ctx, topic.Id, nonceBlockHeight, forecasts)
 	} else {
 		// Update EMA score for the current forecaster, who is the lowest score forecaster
-		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, blockHeight, forecast.Forecaster)
+		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, forecast.Forecaster)
 		if err != nil {
 			return err
 		}
@@ -1019,7 +1015,6 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 func (k *Keeper) AppendReputerLoss(
 	ctx sdk.Context,
 	topic types.Topic,
-	blockHeight BlockHeight,
 	nonceBlockHeight BlockHeight,
 	reputerLoss *types.ReputerValueBundle,
 ) error {
@@ -1054,8 +1049,7 @@ func (k *Keeper) AppendReputerLoss(
 		return err
 	}
 	// Only calc and save if there's a new update
-	if previousEmaScore.BlockHeight != 0 &&
-		blockHeight-previousEmaScore.BlockHeight <= topic.EpochLength {
+	if previousEmaScore.BlockHeight >= nonceBlockHeight {
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
@@ -1077,7 +1071,7 @@ func (k *Keeper) AppendReputerLoss(
 		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
 			ctx,
 			topic,
-			blockHeight,
+			nonceBlockHeight,
 			reputerLossBundles.ReputerValueBundles[lowScoreIndex].ValueBundle.Reputer,
 		)
 		if err != nil {
@@ -1091,7 +1085,7 @@ func (k *Keeper) AppendReputerLoss(
 		return k.InsertReputerLossBundlesAtBlock(ctx, topic.Id, nonceBlockHeight, reputerLossBundles)
 	} else {
 		// Update EMA score for the current reputer, who is the lowest score reputer
-		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, blockHeight, reputerLoss.ValueBundle.Reputer)
+		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
 			return err
 		}

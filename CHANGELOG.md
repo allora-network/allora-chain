@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 * [#588](https://github.com/allora-network/allora-chain/pull/588)  Add String Max Length Module Parameter, Enforce Max String Length on Creation of New Topics
+* [#610](https://github.com/allora-network/allora-chain/pull/610) Ensure that BlockHeight of scores is consistently set to be a topic epoch nonce. Also simplify the condition for idempotent payload submission.
 
 ## v0.4.0
 

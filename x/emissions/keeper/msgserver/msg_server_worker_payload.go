@@ -87,7 +87,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 				"inferer not using the same topic as bundle")
 		}
 
-		err = ms.k.AppendInference(sdkCtx, topic, blockHeight, nonce.BlockHeight, inference)
+		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
@@ -148,7 +148,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 
 		if len(acceptedForecastElements) > 0 {
 			forecast.ForecastElements = acceptedForecastElements
-			err = ms.k.AppendForecast(sdkCtx, topic, blockHeight, nonce.BlockHeight, forecast)
+			err = ms.k.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast)
 			if err != nil {
 				return nil, errorsmod.Wrapf(err,
 					"Error appending forecast")
