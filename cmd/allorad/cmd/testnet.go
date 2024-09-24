@@ -9,8 +9,6 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/types/bech32"
-
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/libs/bytes"
@@ -23,6 +21,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -31,6 +30,10 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/allora-network/allora-chain/app"
+)
+
+const (
+	valVotingPower int64 = 900000000000000
 )
 
 var (
