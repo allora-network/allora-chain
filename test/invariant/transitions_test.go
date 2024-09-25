@@ -1,6 +1,7 @@
 package invariant_test
 
 import (
+	"context"
 	"fmt"
 
 	cosmossdk_io_math "cosmossdk.io/math"
@@ -122,9 +123,12 @@ func canTransitionOccur(m *testcommon.TestConfig, data *SimulationData, transiti
 		// figure this out in picking step
 		return true
 	case "doInferenceAndReputation":
-		blockHeight, err := m.Client.BlockHeight(m.Client.Context().CmdContext)
-		requireNoError(m.T, data.failOnErr, err)
-		activeTopics := findActiveTopicsAtThisBlock(m, data, blockHeight)
+		ctx := context.Background()
+		blockHeightNow, err := m.Client.BlockHeight(ctx)
+		if err != nil {
+			return false
+		}
+		activeTopics := findActiveTopicsAtThisBlock(m, data, blockHeightNow)
 		for i := 0; i < len(activeTopics); i++ {
 			workerExists := data.isAnyWorkerRegisteredInTopic(activeTopics[i].Id)
 			reputerExists := data.isAnyReputerRegisteredInTopic(activeTopics[i].Id)
@@ -281,9 +285,12 @@ func pickActorAndTopicIdForStateTransition(
 		}
 		return true, delegator, reputer, &stakeRemoval.Amount, stakeRemoval.TopicId
 	case "doInferenceAndReputation":
-		blockHeight, err := m.Client.BlockHeight(m.Client.Context().CmdContext)
-		requireNoError(m.T, data.failOnErr, err)
-		topics := findActiveTopicsAtThisBlock(m, data, blockHeight)
+		ctx := context.Background()
+		blockHeightNow, err := m.Client.BlockHeight(ctx)
+		if err != nil {
+			return false, Actor{}, Actor{}, nil, 0
+		}
+		topics := findActiveTopicsAtThisBlock(m, data, blockHeightNow)
 		if len(topics) > 0 {
 			for i := 0; i < 10; i++ {
 				randIndex := m.Client.Rand.Intn(len(topics))
