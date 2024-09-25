@@ -82,7 +82,7 @@ docker run \
     -e HOME=/data \
     -e VALIDATOR_NUMBER=$VALIDATOR_NUMBER \
     --entrypoint=/data/generate_genesis.sh \
-    $DOCKER_IMAGE > /dev/null 2>&1
+    $DOCKER_IMAGE
 
 echo "Ensure permissions on data folder after genesis generation"
 docker run \
