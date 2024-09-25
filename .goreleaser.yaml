@@ -1,0 +1,44 @@
+version: 2
+
+builds:
+  - #
+    id: "allora-chain"
+
+    # Path to main.go file or main package.
+    # Notice: when used with `gomod.proxy`, this must be a package.
+    main: ./cmd/allorad
+
+    # Binary name.
+    # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
+    binary: allorad
+
+    # GOOS list to build for.
+    # For more info refer to: https://go.dev/doc/install/source#environment
+    goos:
+      - linux
+      - darwin
+      - windows
+
+    # GOARCH to build for.
+    # For more info refer to: https://go.dev/doc/install/source#environment
+    goarch:
+      - amd64
+      - arm64
+
+    # Environment variables
+    env:
+      - CGO_ENABLED=0
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+
+checksum:
+  disable: false
+
+source:
+  enabled: true
