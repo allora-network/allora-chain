@@ -37,13 +37,17 @@ func doInferenceAndReputation(
 	wasErr = orErr(wasErr, err)
 	topic := resp.Topic
 	workerNonce := topic.EpochLastEnded + topic.EpochLength
-	iterLog(m.T, iteration, "waiting for next epoch to start so we can produce inferences for the current epoch: ", workerNonce+1)
-	err = m.Client.WaitForBlockHeight(ctx, workerNonce+1)
-	requireNoError(m.T, data.failOnErr, err)
-	wasErr = orErr(wasErr, err)
 	blockHeightNow, err := m.Client.BlockHeight(ctx)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
+	if blockHeightNow < workerNonce+1 {
+		iterLog(m.T, iteration, "waiting for next epoch to start so we can produce inferences for the current epoch: ", workerNonce+1)
+		err = m.Client.WaitForBlockHeight(ctx, workerNonce+1)
+		// Update block height
+		blockHeightNow, err = m.Client.BlockHeight(ctx)
+		requireNoError(m.T, data.failOnErr, err)
+		wasErr = orErr(wasErr, err)
+	}
 	workers := data.getWorkersForTopic(topicId)
 	if len(workers) == 0 {
 		iterFailLog(m.T, iteration, "len of workers in active topic should always be greater than 0 ", topicId)
