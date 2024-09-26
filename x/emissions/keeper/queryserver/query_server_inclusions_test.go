@@ -16,6 +16,15 @@ func (s *QueryServerTestSuite) TestGetCountInfererInclusionsInTopic() {
 		Inferer: inferer,
 	})
 	s.Require().NoError(err)
+	s.Equal(results.Count, uint64(0))
+
+	err = s.emissionsKeeper.IncrementCountInfererInclusionsInTopic(s.ctx, topicId, inferer)
+	s.Require().NoError(err)
+	results, err = queryserver.GetCountInfererInclusionsInTopic(ctx, &types.GetCountInfererInclusionsInTopicRequest{
+		TopicId: topicId,
+		Inferer: inferer,
+	})
+	s.Require().NoError(err)
 	s.Equal(results.Count, uint64(1))
 }
 
@@ -31,5 +40,15 @@ func (s *QueryServerTestSuite) TestGetCountForecasterInclusionsInTopic() {
 		Forecaster: forecaster,
 	})
 	s.Require().NoError(err)
+	s.Equal(results.Count, uint64(0))
+
+	err = s.emissionsKeeper.IncrementCountForecasterInclusionsInTopic(s.ctx, topicId, forecaster)
+	s.Require().NoError(err)
+	results, err = queryserver.GetCountForecasterInclusionsInTopic(ctx, &types.GetCountForecasterInclusionsInTopicRequest{
+		TopicId:    topicId,
+		Forecaster: forecaster,
+	})
+	s.Require().NoError(err)
 	s.Equal(results.Count, uint64(1))
+
 }

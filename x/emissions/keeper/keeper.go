@@ -585,6 +585,9 @@ func (k *Keeper) GetCountInfererInclusionsInTopic(ctx context.Context, topicId T
 	key := collections.Join(topicId, inferer)
 	count, err := k.countInfererInclusionsInTopic.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil
+		}
 		return 0, err
 	}
 	return count, nil
@@ -604,6 +607,9 @@ func (k *Keeper) GetCountForecasterInclusionsInTopic(ctx context.Context, topicI
 	key := collections.Join(topicId, forecaster)
 	count, err := k.countForecasterInclusionsInTopic.Get(ctx, key)
 	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return 0, nil
+		}
 		return 0, err
 	}
 	return count, nil

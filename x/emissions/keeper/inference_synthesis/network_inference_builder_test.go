@@ -487,6 +487,23 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 	return networkInferenceBuilder, epochGetters
 }
 
+func (s *InferenceSynthesisTestSuite) incrementRegretsInTopic(
+	topicId uint64,
+	actor string,
+	times int,
+	actorType emissionstypes.ActorType,
+) {
+	for index := 0; index < times; index++ {
+		if actorType == emissionstypes.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED {
+			err := s.emissionsKeeper.IncrementCountInfererInclusionsInTopic(s.ctx, topicId, actor)
+			s.Require().NoError(err)
+		} else if actorType == emissionstypes.ActorType_ACTOR_TYPE_FORECASTER {
+			err := s.emissionsKeeper.IncrementCountForecasterInclusionsInTopic(s.ctx, topicId, actor)
+			s.Require().NoError(err)
+		}
+	}
+}
+
 func (s *InferenceSynthesisTestSuite) testCorrectCombinedInitialValueForEpoch(epoch int) {
 	networkInferenceBuilder, epochGet := s.getEpochValueBundleByEpoch(epoch)
 	valueBundle := networkInferenceBuilder.SetCombinedValue().Build()
