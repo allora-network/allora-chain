@@ -11,10 +11,10 @@ import (
 
 // Given the current set of inferers and forecasters in the palette, calculate their
 // weights using the current regrets
-func CalcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
+func calcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
 	var regrets []alloraMath.Dec
-	infererRegrets := p.GetInfererRegretsSlice()
-	forecasterRegrets := p.GetForecasterRegretsSlice()
+	infererRegrets := getInfererRegretsSlice(p)
+	forecasterRegrets := getForecasterRegretsSlice(p)
 
 	if len(infererRegrets) > 0 {
 		regrets = append(regrets, infererRegrets...)
@@ -122,7 +122,7 @@ func CalcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
 // w_il = φ'_p(\hatR_i-1,l)
 // \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
 // given inferences, forecast-implied inferences, and network regrets
-func CalcWeightedInference(p SynthPalette, weights RegretInformedWeights) (InferenceValue, error) {
+func calcWeightedInference(p SynthPalette, weights RegretInformedWeights) (InferenceValue, error) {
 	runningUnnormalizedI_i := alloraMath.ZeroDec() //nolint:revive // var-naming: don't use underscores in Go names
 	sumWeights := alloraMath.ZeroDec()
 	err := error(nil)
@@ -155,7 +155,7 @@ func CalcWeightedInference(p SynthPalette, weights RegretInformedWeights) (Infer
 				p.Logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in CalcWeightedInference %v", inferer))
 				continue
 			}
-			runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
+			runningUnnormalizedI_i, sumWeights, err = accumulateWeights(
 				*inferenceByWorker,
 				infererWeight,
 				p.AllInferersAreNew,
@@ -181,7 +181,7 @@ func CalcWeightedInference(p SynthPalette, weights RegretInformedWeights) (Infer
 				p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in CalcWeightedInference %v", forecaster))
 				continue
 			}
-			runningUnnormalizedI_i, sumWeights, err = AccumulateWeights(
+			runningUnnormalizedI_i, sumWeights, err = accumulateWeights(
 				*workerForecastImpliedInference,
 				forecasterWeight,
 				false,
@@ -205,7 +205,7 @@ func CalcWeightedInference(p SynthPalette, weights RegretInformedWeights) (Infer
 	return ret, nil
 }
 
-func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
+func getInfererRegretsSlice(p SynthPalette) []alloraMath.Dec {
 	var regrets []alloraMath.Dec
 	if len(p.InfererRegrets) == 0 {
 		return regrets
@@ -222,7 +222,7 @@ func (p *SynthPalette) GetInfererRegretsSlice() []alloraMath.Dec {
 	return regrets
 }
 
-func (p *SynthPalette) GetForecasterRegretsSlice() []alloraMath.Dec {
+func getForecasterRegretsSlice(p SynthPalette) []alloraMath.Dec {
 	var regrets []alloraMath.Dec
 	if len(p.ForecasterRegrets) == 0 {
 		return regrets
@@ -292,7 +292,7 @@ func (p *SynthPalette) UpdateForecastersInfo(newForecasters []Worker) error {
 	return nil
 }
 
-func AccumulateWeights(
+func accumulateWeights(
 	inference emissionstypes.Inference,
 	weight alloraMath.Dec,
 	allPeersAreNew bool,

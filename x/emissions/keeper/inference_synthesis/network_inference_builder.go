@@ -13,13 +13,13 @@ func GetCombinedInference(palette SynthPalette) (
 	weights RegretInformedWeights, combinedInference InferenceValue, err error) {
 	palette.Logger.Debug(fmt.Sprintf("Calculating combined inference for topic %v", palette.TopicId))
 
-	weights, err = CalcWeightsGivenWorkers(palette)
+	weights, err = calcWeightsGivenWorkers(palette)
 	if err != nil {
 		return RegretInformedWeights{}, InferenceValue{}, errorsmod.Wrap(err, "Error calculating weights for combined inference")
 	}
 
 	paletteCopy := palette.Clone()
-	combinedInference, err = CalcWeightedInference(paletteCopy, weights)
+	combinedInference, err = calcWeightedInference(paletteCopy, weights)
 	if err != nil {
 		return RegretInformedWeights{}, InferenceValue{}, errorsmod.Wrap(err, "Error calculating combined inference")
 	}
@@ -77,12 +77,12 @@ func GetNaiveInference(palette SynthPalette) (naiveInference alloraMath.Dec, err
 		palette.InfererRegrets[inferer] = &regret.Value
 	}
 
-	weights, err := CalcWeightsGivenWorkers(palette)
+	weights, err := calcWeightsGivenWorkers(palette)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "Error calculating weights for naive inference")
 	}
 
-	naiveInference, err = CalcWeightedInference(palette, weights)
+	naiveInference, err = calcWeightedInference(palette, weights)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "Error calculating naive inference")
 	}
@@ -141,12 +141,12 @@ func calcOneOutInfererInference(palette SynthPalette, withheldInferer Worker) (
 		paletteCopy.ForecasterRegrets[forecaster] = &regret.Value
 	}
 
-	weights, err := CalcWeightsGivenWorkers(paletteCopy)
+	weights, err := calcWeightsGivenWorkers(paletteCopy)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
 	}
 
-	oneOutNetworkInferenceWithoutInferer, err = CalcWeightedInference(paletteCopy, weights)
+	oneOutNetworkInferenceWithoutInferer, err = calcWeightedInference(paletteCopy, weights)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for inferer")
 	}
@@ -219,12 +219,12 @@ func calcOneOutForecasterInference(palette SynthPalette, withheldForecaster Work
 		palette.ForecasterRegrets[forecaster] = &regret.Value
 	}
 
-	weights, err := CalcWeightsGivenWorkers(palette)
+	weights, err := calcWeightsGivenWorkers(palette)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for forecaster")
 	}
 
-	oneOutNetworkInferenceWithoutInferer, err = CalcWeightedInference(palette, weights)
+	oneOutNetworkInferenceWithoutInferer, err = calcWeightedInference(palette, weights)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-out inference for inferer")
 	}
@@ -297,12 +297,12 @@ func calcOneInValue(palette SynthPalette, oneInForecaster Worker) (
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error updating inferers")
 	}
 
-	weights, err := CalcWeightsGivenWorkers(palette)
+	weights, err := calcWeightsGivenWorkers(palette)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating weights for one-in inferences")
 	}
 	// Calculate the network inference with just this forecaster's forecast-implied inference
-	oneInInference, err = CalcWeightedInference(palette, weights)
+	oneInInference, err = calcWeightedInference(palette, weights)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "Error calculating one-in inference")
 	}
