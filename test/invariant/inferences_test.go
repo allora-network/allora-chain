@@ -43,6 +43,8 @@ func doInferenceAndReputation(
 	if blockHeightNow < workerNonce+1 {
 		iterLog(m.T, iteration, "waiting for next epoch to start so we can produce inferences for the current epoch: ", workerNonce+1)
 		err = m.Client.WaitForBlockHeight(ctx, workerNonce+1)
+		requireNoError(m.T, data.failOnErr, err)
+		wasErr = orErr(wasErr, err)
 		// Update block height
 		blockHeightNow, err = m.Client.BlockHeight(ctx)
 		requireNoError(m.T, data.failOnErr, err)
