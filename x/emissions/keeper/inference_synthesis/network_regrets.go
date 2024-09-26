@@ -121,10 +121,18 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		return errorsmod.Wrapf(err, "failed to get topic")
 	}
 
-	ShouldAddWorkerRegret := func(worker Worker, newParticipant bool) (bool, error) {
-		numInclusions, err := args.K.GetCountInfererInclusionsInTopic(args.Ctx, args.TopicId, worker)
-		if err != nil {
-			return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
+	ShouldAddWorkerRegret := func(worker Worker, newParticipant bool, workerType emissions.ActorType) (bool, error) {
+		numInclusions := uint64(0)
+		if workerType == emissions.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED {
+			numInclusions, err = args.K.GetCountInfererInclusionsInTopic(args.Ctx, args.TopicId, worker)
+			if err != nil {
+				return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
+			}
+		} else if workerType == emissions.ActorType_ACTOR_TYPE_FORECASTER {
+			numInclusions, err = args.K.GetCountForecasterInclusionsInTopic(args.Ctx, args.TopicId, worker)
+			if err != nil {
+				return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
+			}
 		}
 		numInclusionsDec, err := alloraMath.NewDecFromUint64(numInclusions)
 		if err != nil {
@@ -134,7 +142,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		if err != nil {
 			return false, errorsmod.Wrapf(err, "failed to get one over alpha")
 		}
-		return !newParticipant && numInclusionsDec.Gt(oneOverAlpha), nil
+		return !newParticipant && numInclusionsDec.Gte(oneOverAlpha), nil
 	}
 
 	// R_ij - Inferer Regrets
@@ -158,7 +166,11 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 			return errorsmod.Wrapf(err, "Error setting inferer regret")
 		}
 
-		shouldAddWorkerRegret, err := ShouldAddWorkerRegret(infererLoss.Worker, newParticipant)
+		shouldAddWorkerRegret, err := ShouldAddWorkerRegret(
+			infererLoss.Worker,
+			newParticipant,
+			emissions.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED,
+		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error checking if should add worker regret")
 		}
@@ -188,7 +200,11 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 			return errorsmod.Wrapf(err, "Error setting forecaster regret")
 		}
 
-		shouldAddWorkerRegret, err := ShouldAddWorkerRegret(forecasterLoss.Worker, newParticipant)
+		shouldAddWorkerRegret, err := ShouldAddWorkerRegret(
+			forecasterLoss.Worker,
+			newParticipant,
+			emissions.ActorType_ACTOR_TYPE_FORECASTER,
+		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error checking if should add worker regret")
 		}

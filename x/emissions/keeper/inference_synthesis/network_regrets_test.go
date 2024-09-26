@@ -135,28 +135,30 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 
 	alpha := alloraMath.MustNewDecFromString("0.1")
 
-	timestampedValue := emissionstypes.TimestampedValue{
+	regretVal := emissionstypes.TimestampedValue{
 		BlockHeight: blockHeight,
 		Value:       alloraMath.NewDecFromInt64(200),
 	}
 
-	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker1, timestampedValue)
+	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker1, regretVal)
 	require.NoError(err)
-	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker2, timestampedValue)
+	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker2, regretVal)
 	require.NoError(err)
-	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker1, timestampedValue)
+	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker1, regretVal)
 	require.NoError(err)
-	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker2, timestampedValue)
+	err = k.SetForecasterNetworkRegret(s.ctx, topicId, worker2, regretVal)
 	require.NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker1, worker1, timestampedValue)
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker1, worker1, regretVal)
 	require.NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker1, worker2, timestampedValue)
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker1, worker2, regretVal)
 	require.NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker2, worker1, timestampedValue)
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker2, worker1, regretVal)
 	require.NoError(err)
-	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker2, worker2, timestampedValue)
+	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker2, worker2, regretVal)
 	require.NoError(err)
 
+	s.incrementRegretsInTopic(topicId, worker1, 2, emissionstypes.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED)
+	s.incrementRegretsInTopic(topicId, worker2, 2, emissionstypes.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED)
 	// New potential participant should start with zero regret at this point since the initial regret in the topic is zero
 	// It will be updated after the first regret calculation
 	worker3LastRegret, worker3NoPriorRegret, err := k.GetInfererNetworkRegret(s.ctx, topicId, worker3)
