@@ -6,7 +6,6 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -431,7 +430,7 @@ func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pN
 	}
 
 	// Calculate percentile
-	percentile, err := actorutils.GetQuantileOfDecs(regrets, alloraMath.MustNewDecFromString("0.25"))
+	percentile, err := alloraMath.GetQuantileOfDecs(regrets, alloraMath.MustNewDecFromString("0.25"))
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}

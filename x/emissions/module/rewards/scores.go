@@ -129,7 +129,7 @@ func GenerateReputerScores(
 	}
 
 	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveReputerQuantile)
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveReputerQuantile)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func GenerateInferenceScores(
 	}
 
 	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveInfererQuantile)
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveInfererQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error getting quantile of scores")
 	}
@@ -303,7 +303,7 @@ func GenerateForecastScores(
 	}
 
 	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveForecasterQuantile)
+	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveForecasterQuantile)
 	if err != nil {
 		return nil, err
 	}
