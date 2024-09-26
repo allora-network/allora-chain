@@ -19,6 +19,1750 @@ import (
 )
 
 var (
+	md_GetCountInfererInclusionsInTopicRequest          protoreflect.MessageDescriptor
+	fd_GetCountInfererInclusionsInTopicRequest_topic_id protoreflect.FieldDescriptor
+	fd_GetCountInfererInclusionsInTopicRequest_inferer  protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v4_query_proto_init()
+	md_GetCountInfererInclusionsInTopicRequest = File_emissions_v4_query_proto.Messages().ByName("GetCountInfererInclusionsInTopicRequest")
+	fd_GetCountInfererInclusionsInTopicRequest_topic_id = md_GetCountInfererInclusionsInTopicRequest.Fields().ByName("topic_id")
+	fd_GetCountInfererInclusionsInTopicRequest_inferer = md_GetCountInfererInclusionsInTopicRequest.Fields().ByName("inferer")
+}
+
+var _ protoreflect.Message = (*fastReflection_GetCountInfererInclusionsInTopicRequest)(nil)
+
+type fastReflection_GetCountInfererInclusionsInTopicRequest GetCountInfererInclusionsInTopicRequest
+
+func (x *GetCountInfererInclusionsInTopicRequest) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_GetCountInfererInclusionsInTopicRequest)(x)
+}
+
+func (x *GetCountInfererInclusionsInTopicRequest) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v4_query_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_GetCountInfererInclusionsInTopicRequest_messageType fastReflection_GetCountInfererInclusionsInTopicRequest_messageType
+var _ protoreflect.MessageType = fastReflection_GetCountInfererInclusionsInTopicRequest_messageType{}
+
+type fastReflection_GetCountInfererInclusionsInTopicRequest_messageType struct{}
+
+func (x fastReflection_GetCountInfererInclusionsInTopicRequest_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_GetCountInfererInclusionsInTopicRequest)(nil)
+}
+func (x fastReflection_GetCountInfererInclusionsInTopicRequest_messageType) New() protoreflect.Message {
+	return new(fastReflection_GetCountInfererInclusionsInTopicRequest)
+}
+func (x fastReflection_GetCountInfererInclusionsInTopicRequest_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_GetCountInfererInclusionsInTopicRequest
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) Descriptor() protoreflect.MessageDescriptor {
+	return md_GetCountInfererInclusionsInTopicRequest
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) Type() protoreflect.MessageType {
+	return _fastReflection_GetCountInfererInclusionsInTopicRequest_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) New() protoreflect.Message {
+	return new(fastReflection_GetCountInfererInclusionsInTopicRequest)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) Interface() protoreflect.ProtoMessage {
+	return (*GetCountInfererInclusionsInTopicRequest)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_GetCountInfererInclusionsInTopicRequest_topic_id, value) {
+			return
+		}
+	}
+	if x.Inferer != "" {
+		value := protoreflect.ValueOfString(x.Inferer)
+		if !f(fd_GetCountInfererInclusionsInTopicRequest_inferer, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.inferer":
+		return x.Inferer != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.inferer":
+		x.Inferer = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.inferer":
+		value := x.Inferer
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicRequest does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.inferer":
+		x.Inferer = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v4.GetCountInfererInclusionsInTopicRequest is not mutable"))
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.inferer":
+		panic(fmt.Errorf("field inferer of message emissions.v4.GetCountInfererInclusionsInTopicRequest is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v4.GetCountInfererInclusionsInTopicRequest.inferer":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v4.GetCountInfererInclusionsInTopicRequest", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_GetCountInfererInclusionsInTopicRequest) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*GetCountInfererInclusionsInTopicRequest)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		l = len(x.Inferer)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*GetCountInfererInclusionsInTopicRequest)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Inferer) > 0 {
+			i -= len(x.Inferer)
+			copy(dAtA[i:], x.Inferer)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Inferer)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*GetCountInfererInclusionsInTopicRequest)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: GetCountInfererInclusionsInTopicRequest: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: GetCountInfererInclusionsInTopicRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Inferer", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Inferer = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_GetCountInfererInclusionsInTopicResponse       protoreflect.MessageDescriptor
+	fd_GetCountInfererInclusionsInTopicResponse_count protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v4_query_proto_init()
+	md_GetCountInfererInclusionsInTopicResponse = File_emissions_v4_query_proto.Messages().ByName("GetCountInfererInclusionsInTopicResponse")
+	fd_GetCountInfererInclusionsInTopicResponse_count = md_GetCountInfererInclusionsInTopicResponse.Fields().ByName("count")
+}
+
+var _ protoreflect.Message = (*fastReflection_GetCountInfererInclusionsInTopicResponse)(nil)
+
+type fastReflection_GetCountInfererInclusionsInTopicResponse GetCountInfererInclusionsInTopicResponse
+
+func (x *GetCountInfererInclusionsInTopicResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_GetCountInfererInclusionsInTopicResponse)(x)
+}
+
+func (x *GetCountInfererInclusionsInTopicResponse) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v4_query_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_GetCountInfererInclusionsInTopicResponse_messageType fastReflection_GetCountInfererInclusionsInTopicResponse_messageType
+var _ protoreflect.MessageType = fastReflection_GetCountInfererInclusionsInTopicResponse_messageType{}
+
+type fastReflection_GetCountInfererInclusionsInTopicResponse_messageType struct{}
+
+func (x fastReflection_GetCountInfererInclusionsInTopicResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_GetCountInfererInclusionsInTopicResponse)(nil)
+}
+func (x fastReflection_GetCountInfererInclusionsInTopicResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_GetCountInfererInclusionsInTopicResponse)
+}
+func (x fastReflection_GetCountInfererInclusionsInTopicResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_GetCountInfererInclusionsInTopicResponse
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_GetCountInfererInclusionsInTopicResponse
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) Type() protoreflect.MessageType {
+	return _fastReflection_GetCountInfererInclusionsInTopicResponse_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) New() protoreflect.Message {
+	return new(fastReflection_GetCountInfererInclusionsInTopicResponse)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) Interface() protoreflect.ProtoMessage {
+	return (*GetCountInfererInclusionsInTopicResponse)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Count != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Count)
+		if !f(fd_GetCountInfererInclusionsInTopicResponse_count, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicResponse.count":
+		return x.Count != uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicResponse.count":
+		x.Count = uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicResponse.count":
+		value := x.Count
+		return protoreflect.ValueOfUint64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicResponse does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicResponse.count":
+		x.Count = value.Uint()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicResponse.count":
+		panic(fmt.Errorf("field count of message emissions.v4.GetCountInfererInclusionsInTopicResponse is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountInfererInclusionsInTopicResponse.count":
+		return protoreflect.ValueOfUint64(uint64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountInfererInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountInfererInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v4.GetCountInfererInclusionsInTopicResponse", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_GetCountInfererInclusionsInTopicResponse) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*GetCountInfererInclusionsInTopicResponse)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.Count != 0 {
+			n += 1 + runtime.Sov(uint64(x.Count))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*GetCountInfererInclusionsInTopicResponse)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.Count != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Count))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*GetCountInfererInclusionsInTopicResponse)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: GetCountInfererInclusionsInTopicResponse: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: GetCountInfererInclusionsInTopicResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Count", wireType)
+				}
+				x.Count = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Count |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_GetCountForecasterInclusionsInTopicRequest            protoreflect.MessageDescriptor
+	fd_GetCountForecasterInclusionsInTopicRequest_topic_id   protoreflect.FieldDescriptor
+	fd_GetCountForecasterInclusionsInTopicRequest_forecaster protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v4_query_proto_init()
+	md_GetCountForecasterInclusionsInTopicRequest = File_emissions_v4_query_proto.Messages().ByName("GetCountForecasterInclusionsInTopicRequest")
+	fd_GetCountForecasterInclusionsInTopicRequest_topic_id = md_GetCountForecasterInclusionsInTopicRequest.Fields().ByName("topic_id")
+	fd_GetCountForecasterInclusionsInTopicRequest_forecaster = md_GetCountForecasterInclusionsInTopicRequest.Fields().ByName("forecaster")
+}
+
+var _ protoreflect.Message = (*fastReflection_GetCountForecasterInclusionsInTopicRequest)(nil)
+
+type fastReflection_GetCountForecasterInclusionsInTopicRequest GetCountForecasterInclusionsInTopicRequest
+
+func (x *GetCountForecasterInclusionsInTopicRequest) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_GetCountForecasterInclusionsInTopicRequest)(x)
+}
+
+func (x *GetCountForecasterInclusionsInTopicRequest) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v4_query_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_GetCountForecasterInclusionsInTopicRequest_messageType fastReflection_GetCountForecasterInclusionsInTopicRequest_messageType
+var _ protoreflect.MessageType = fastReflection_GetCountForecasterInclusionsInTopicRequest_messageType{}
+
+type fastReflection_GetCountForecasterInclusionsInTopicRequest_messageType struct{}
+
+func (x fastReflection_GetCountForecasterInclusionsInTopicRequest_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_GetCountForecasterInclusionsInTopicRequest)(nil)
+}
+func (x fastReflection_GetCountForecasterInclusionsInTopicRequest_messageType) New() protoreflect.Message {
+	return new(fastReflection_GetCountForecasterInclusionsInTopicRequest)
+}
+func (x fastReflection_GetCountForecasterInclusionsInTopicRequest_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_GetCountForecasterInclusionsInTopicRequest
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) Descriptor() protoreflect.MessageDescriptor {
+	return md_GetCountForecasterInclusionsInTopicRequest
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) Type() protoreflect.MessageType {
+	return _fastReflection_GetCountForecasterInclusionsInTopicRequest_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) New() protoreflect.Message {
+	return new(fastReflection_GetCountForecasterInclusionsInTopicRequest)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) Interface() protoreflect.ProtoMessage {
+	return (*GetCountForecasterInclusionsInTopicRequest)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.TopicId != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.TopicId)
+		if !f(fd_GetCountForecasterInclusionsInTopicRequest_topic_id, value) {
+			return
+		}
+	}
+	if x.Forecaster != "" {
+		value := protoreflect.ValueOfString(x.Forecaster)
+		if !f(fd_GetCountForecasterInclusionsInTopicRequest_forecaster, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.topic_id":
+		return x.TopicId != uint64(0)
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.forecaster":
+		return x.Forecaster != ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.topic_id":
+		x.TopicId = uint64(0)
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.forecaster":
+		x.Forecaster = ""
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.topic_id":
+		value := x.TopicId
+		return protoreflect.ValueOfUint64(value)
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.forecaster":
+		value := x.Forecaster
+		return protoreflect.ValueOfString(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicRequest does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.topic_id":
+		x.TopicId = value.Uint()
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.forecaster":
+		x.Forecaster = value.Interface().(string)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.topic_id":
+		panic(fmt.Errorf("field topic_id of message emissions.v4.GetCountForecasterInclusionsInTopicRequest is not mutable"))
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.forecaster":
+		panic(fmt.Errorf("field forecaster of message emissions.v4.GetCountForecasterInclusionsInTopicRequest is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.topic_id":
+		return protoreflect.ValueOfUint64(uint64(0))
+	case "emissions.v4.GetCountForecasterInclusionsInTopicRequest.forecaster":
+		return protoreflect.ValueOfString("")
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicRequest"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicRequest does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v4.GetCountForecasterInclusionsInTopicRequest", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicRequest) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*GetCountForecasterInclusionsInTopicRequest)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.TopicId != 0 {
+			n += 1 + runtime.Sov(uint64(x.TopicId))
+		}
+		l = len(x.Forecaster)
+		if l > 0 {
+			n += 1 + l + runtime.Sov(uint64(l))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*GetCountForecasterInclusionsInTopicRequest)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.Forecaster) > 0 {
+			i -= len(x.Forecaster)
+			copy(dAtA[i:], x.Forecaster)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.Forecaster)))
+			i--
+			dAtA[i] = 0x12
+		}
+		if x.TopicId != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.TopicId))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*GetCountForecasterInclusionsInTopicRequest)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: GetCountForecasterInclusionsInTopicRequest: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: GetCountForecasterInclusionsInTopicRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicId", wireType)
+				}
+				x.TopicId = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.TopicId |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			case 2:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Forecaster", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.Forecaster = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
+	md_GetCountForecasterInclusionsInTopicResponse       protoreflect.MessageDescriptor
+	fd_GetCountForecasterInclusionsInTopicResponse_count protoreflect.FieldDescriptor
+)
+
+func init() {
+	file_emissions_v4_query_proto_init()
+	md_GetCountForecasterInclusionsInTopicResponse = File_emissions_v4_query_proto.Messages().ByName("GetCountForecasterInclusionsInTopicResponse")
+	fd_GetCountForecasterInclusionsInTopicResponse_count = md_GetCountForecasterInclusionsInTopicResponse.Fields().ByName("count")
+}
+
+var _ protoreflect.Message = (*fastReflection_GetCountForecasterInclusionsInTopicResponse)(nil)
+
+type fastReflection_GetCountForecasterInclusionsInTopicResponse GetCountForecasterInclusionsInTopicResponse
+
+func (x *GetCountForecasterInclusionsInTopicResponse) ProtoReflect() protoreflect.Message {
+	return (*fastReflection_GetCountForecasterInclusionsInTopicResponse)(x)
+}
+
+func (x *GetCountForecasterInclusionsInTopicResponse) slowProtoReflect() protoreflect.Message {
+	mi := &file_emissions_v4_query_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+var _fastReflection_GetCountForecasterInclusionsInTopicResponse_messageType fastReflection_GetCountForecasterInclusionsInTopicResponse_messageType
+var _ protoreflect.MessageType = fastReflection_GetCountForecasterInclusionsInTopicResponse_messageType{}
+
+type fastReflection_GetCountForecasterInclusionsInTopicResponse_messageType struct{}
+
+func (x fastReflection_GetCountForecasterInclusionsInTopicResponse_messageType) Zero() protoreflect.Message {
+	return (*fastReflection_GetCountForecasterInclusionsInTopicResponse)(nil)
+}
+func (x fastReflection_GetCountForecasterInclusionsInTopicResponse_messageType) New() protoreflect.Message {
+	return new(fastReflection_GetCountForecasterInclusionsInTopicResponse)
+}
+func (x fastReflection_GetCountForecasterInclusionsInTopicResponse_messageType) Descriptor() protoreflect.MessageDescriptor {
+	return md_GetCountForecasterInclusionsInTopicResponse
+}
+
+// Descriptor returns message descriptor, which contains only the protobuf
+// type information for the message.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) Descriptor() protoreflect.MessageDescriptor {
+	return md_GetCountForecasterInclusionsInTopicResponse
+}
+
+// Type returns the message type, which encapsulates both Go and protobuf
+// type information. If the Go type information is not needed,
+// it is recommended that the message descriptor be used instead.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) Type() protoreflect.MessageType {
+	return _fastReflection_GetCountForecasterInclusionsInTopicResponse_messageType
+}
+
+// New returns a newly allocated and mutable empty message.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) New() protoreflect.Message {
+	return new(fastReflection_GetCountForecasterInclusionsInTopicResponse)
+}
+
+// Interface unwraps the message reflection interface and
+// returns the underlying ProtoMessage interface.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) Interface() protoreflect.ProtoMessage {
+	return (*GetCountForecasterInclusionsInTopicResponse)(x)
+}
+
+// Range iterates over every populated field in an undefined order,
+// calling f for each field descriptor and value encountered.
+// Range returns immediately if f returns false.
+// While iterating, mutating operations may only be performed
+// on the current field descriptor.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) Range(f func(protoreflect.FieldDescriptor, protoreflect.Value) bool) {
+	if x.Count != uint64(0) {
+		value := protoreflect.ValueOfUint64(x.Count)
+		if !f(fd_GetCountForecasterInclusionsInTopicResponse_count, value) {
+			return
+		}
+	}
+}
+
+// Has reports whether a field is populated.
+//
+// Some fields have the property of nullability where it is possible to
+// distinguish between the default value of a field and whether the field
+// was explicitly populated with the default value. Singular message fields,
+// member fields of a oneof, and proto2 scalar fields are nullable. Such
+// fields are populated only if explicitly set.
+//
+// In other cases (aside from the nullable cases above),
+// a proto3 scalar field is populated if it contains a non-zero value, and
+// a repeated field is populated if it is non-empty.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) Has(fd protoreflect.FieldDescriptor) bool {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicResponse.count":
+		return x.Count != uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Clear clears the field such that a subsequent Has call reports false.
+//
+// Clearing an extension field clears both the extension type and value
+// associated with the given field number.
+//
+// Clear is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) Clear(fd protoreflect.FieldDescriptor) {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicResponse.count":
+		x.Count = uint64(0)
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Get retrieves the value for a field.
+//
+// For unpopulated scalars, it returns the default value, where
+// the default value of a bytes scalar is guaranteed to be a copy.
+// For unpopulated composite types, it returns an empty, read-only view
+// of the value; to obtain a mutable reference, use Mutable.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) Get(descriptor protoreflect.FieldDescriptor) protoreflect.Value {
+	switch descriptor.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicResponse.count":
+		value := x.Count
+		return protoreflect.ValueOfUint64(value)
+	default:
+		if descriptor.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicResponse does not contain field %s", descriptor.FullName()))
+	}
+}
+
+// Set stores the value for a field.
+//
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType.
+// When setting a composite type, it is unspecified whether the stored value
+// aliases the source's memory in any way. If the composite value is an
+// empty, read-only value, then it panics.
+//
+// Set is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) Set(fd protoreflect.FieldDescriptor, value protoreflect.Value) {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicResponse.count":
+		x.Count = value.Uint()
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// Mutable returns a mutable reference to a composite type.
+//
+// If the field is unpopulated, it may allocate a composite value.
+// For a field belonging to a oneof, it implicitly clears any other field
+// that may be currently set within the same oneof.
+// For extension fields, it implicitly stores the provided ExtensionType
+// if not already stored.
+// It panics if the field does not contain a composite type.
+//
+// Mutable is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) Mutable(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicResponse.count":
+		panic(fmt.Errorf("field count of message emissions.v4.GetCountForecasterInclusionsInTopicResponse is not mutable"))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// NewField returns a new value that is assignable to the field
+// for the given descriptor. For scalars, this returns the default value.
+// For lists, maps, and messages, this returns a new, empty, mutable value.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) NewField(fd protoreflect.FieldDescriptor) protoreflect.Value {
+	switch fd.FullName() {
+	case "emissions.v4.GetCountForecasterInclusionsInTopicResponse.count":
+		return protoreflect.ValueOfUint64(uint64(0))
+	default:
+		if fd.IsExtension() {
+			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v4.GetCountForecasterInclusionsInTopicResponse"))
+		}
+		panic(fmt.Errorf("message emissions.v4.GetCountForecasterInclusionsInTopicResponse does not contain field %s", fd.FullName()))
+	}
+}
+
+// WhichOneof reports which field within the oneof is populated,
+// returning nil if none are populated.
+// It panics if the oneof descriptor does not belong to this message.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) WhichOneof(d protoreflect.OneofDescriptor) protoreflect.FieldDescriptor {
+	switch d.FullName() {
+	default:
+		panic(fmt.Errorf("%s is not a oneof field in emissions.v4.GetCountForecasterInclusionsInTopicResponse", d.FullName()))
+	}
+	panic("unreachable")
+}
+
+// GetUnknown retrieves the entire list of unknown fields.
+// The caller may only mutate the contents of the RawFields
+// if the mutated bytes are stored back into the message with SetUnknown.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) GetUnknown() protoreflect.RawFields {
+	return x.unknownFields
+}
+
+// SetUnknown stores an entire list of unknown fields.
+// The raw fields must be syntactically valid according to the wire format.
+// An implementation may panic if this is not the case.
+// Once stored, the caller must not mutate the content of the RawFields.
+// An empty RawFields may be passed to clear the fields.
+//
+// SetUnknown is a mutating operation and unsafe for concurrent use.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) SetUnknown(fields protoreflect.RawFields) {
+	x.unknownFields = fields
+}
+
+// IsValid reports whether the message is valid.
+//
+// An invalid message is an empty, read-only value.
+//
+// An invalid message often corresponds to a nil pointer of the concrete
+// message type, but the details are implementation dependent.
+// Validity is not part of the protobuf data model, and may not
+// be preserved in marshaling or other operations.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) IsValid() bool {
+	return x != nil
+}
+
+// ProtoMethods returns optional fastReflectionFeature-path implementations of various operations.
+// This method may return nil.
+//
+// The returned methods type is identical to
+// "google.golang.org/protobuf/runtime/protoiface".Methods.
+// Consult the protoiface package documentation for details.
+func (x *fastReflection_GetCountForecasterInclusionsInTopicResponse) ProtoMethods() *protoiface.Methods {
+	size := func(input protoiface.SizeInput) protoiface.SizeOutput {
+		x := input.Message.Interface().(*GetCountForecasterInclusionsInTopicResponse)
+		if x == nil {
+			return protoiface.SizeOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Size:              0,
+			}
+		}
+		options := runtime.SizeInputToOptions(input)
+		_ = options
+		var n int
+		var l int
+		_ = l
+		if x.Count != 0 {
+			n += 1 + runtime.Sov(uint64(x.Count))
+		}
+		if x.unknownFields != nil {
+			n += len(x.unknownFields)
+		}
+		return protoiface.SizeOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Size:              n,
+		}
+	}
+
+	marshal := func(input protoiface.MarshalInput) (protoiface.MarshalOutput, error) {
+		x := input.Message.Interface().(*GetCountForecasterInclusionsInTopicResponse)
+		if x == nil {
+			return protoiface.MarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Buf:               input.Buf,
+			}, nil
+		}
+		options := runtime.MarshalInputToOptions(input)
+		_ = options
+		size := options.Size(x)
+		dAtA := make([]byte, size)
+		i := len(dAtA)
+		_ = i
+		var l int
+		_ = l
+		if x.unknownFields != nil {
+			i -= len(x.unknownFields)
+			copy(dAtA[i:], x.unknownFields)
+		}
+		if x.Count != 0 {
+			i = runtime.EncodeVarint(dAtA, i, uint64(x.Count))
+			i--
+			dAtA[i] = 0x8
+		}
+		if input.Buf != nil {
+			input.Buf = append(input.Buf, dAtA...)
+		} else {
+			input.Buf = dAtA
+		}
+		return protoiface.MarshalOutput{
+			NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+			Buf:               input.Buf,
+		}, nil
+	}
+	unmarshal := func(input protoiface.UnmarshalInput) (protoiface.UnmarshalOutput, error) {
+		x := input.Message.Interface().(*GetCountForecasterInclusionsInTopicResponse)
+		if x == nil {
+			return protoiface.UnmarshalOutput{
+				NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+				Flags:             input.Flags,
+			}, nil
+		}
+		options := runtime.UnmarshalInputToOptions(input)
+		_ = options
+		dAtA := input.Buf
+		l := len(dAtA)
+		iNdEx := 0
+		for iNdEx < l {
+			preIndex := iNdEx
+			var wire uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+				}
+				if iNdEx >= l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				wire |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			fieldNum := int32(wire >> 3)
+			wireType := int(wire & 0x7)
+			if wireType == 4 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: GetCountForecasterInclusionsInTopicResponse: wiretype end group for non-group")
+			}
+			if fieldNum <= 0 {
+				return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: GetCountForecasterInclusionsInTopicResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			}
+			switch fieldNum {
+			case 1:
+				if wireType != 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field Count", wireType)
+				}
+				x.Count = 0
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					x.Count |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+			default:
+				iNdEx = preIndex
+				skippy, err := runtime.Skip(dAtA[iNdEx:])
+				if err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				if (skippy < 0) || (iNdEx+skippy) < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if (iNdEx + skippy) > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				if !options.DiscardUnknown {
+					x.unknownFields = append(x.unknownFields, dAtA[iNdEx:iNdEx+skippy]...)
+				}
+				iNdEx += skippy
+			}
+		}
+
+		if iNdEx > l {
+			return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+		}
+		return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, nil
+	}
+	return &protoiface.Methods{
+		NoUnkeyedLiterals: struct{}{},
+		Flags:             protoiface.SupportMarshalDeterministic | protoiface.SupportUnmarshalDiscardUnknown,
+		Size:              size,
+		Marshal:           marshal,
+		Unmarshal:         unmarshal,
+		Merge:             nil,
+		CheckInitialized:  nil,
+	}
+}
+
+var (
 	md_GetNaiveInfererNetworkRegretRequest          protoreflect.MessageDescriptor
 	fd_GetNaiveInfererNetworkRegretRequest_topic_id protoreflect.FieldDescriptor
 	fd_GetNaiveInfererNetworkRegretRequest_inferer  protoreflect.FieldDescriptor
@@ -40,7 +1784,7 @@ func (x *GetNaiveInfererNetworkRegretRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetNaiveInfererNetworkRegretRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[0]
+	mi := &file_emissions_v4_query_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -506,7 +2250,7 @@ func (x *GetNaiveInfererNetworkRegretResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetNaiveInfererNetworkRegretResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[1]
+	mi := &file_emissions_v4_query_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -945,7 +2689,7 @@ func (x *GetOneOutInfererInfererNetworkRegretRequest) ProtoReflect() protoreflec
 }
 
 func (x *GetOneOutInfererInfererNetworkRegretRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[2]
+	mi := &file_emissions_v4_query_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1473,7 +3217,7 @@ func (x *GetOneOutInfererInfererNetworkRegretResponse) ProtoReflect() protorefle
 }
 
 func (x *GetOneOutInfererInfererNetworkRegretResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[3]
+	mi := &file_emissions_v4_query_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1912,7 +3656,7 @@ func (x *GetOneOutInfererForecasterNetworkRegretRequest) ProtoReflect() protoref
 }
 
 func (x *GetOneOutInfererForecasterNetworkRegretRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[4]
+	mi := &file_emissions_v4_query_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2440,7 +4184,7 @@ func (x *GetOneOutInfererForecasterNetworkRegretResponse) ProtoReflect() protore
 }
 
 func (x *GetOneOutInfererForecasterNetworkRegretResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[5]
+	mi := &file_emissions_v4_query_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2879,7 +4623,7 @@ func (x *GetOneOutForecasterInfererNetworkRegretRequest) ProtoReflect() protoref
 }
 
 func (x *GetOneOutForecasterInfererNetworkRegretRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[6]
+	mi := &file_emissions_v4_query_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3407,7 +5151,7 @@ func (x *GetOneOutForecasterInfererNetworkRegretResponse) ProtoReflect() protore
 }
 
 func (x *GetOneOutForecasterInfererNetworkRegretResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[7]
+	mi := &file_emissions_v4_query_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3846,7 +5590,7 @@ func (x *GetOneOutForecasterForecasterNetworkRegretRequest) ProtoReflect() proto
 }
 
 func (x *GetOneOutForecasterForecasterNetworkRegretRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[8]
+	mi := &file_emissions_v4_query_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4374,7 +6118,7 @@ func (x *GetOneOutForecasterForecasterNetworkRegretResponse) ProtoReflect() prot
 }
 
 func (x *GetOneOutForecasterForecasterNetworkRegretResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[9]
+	mi := &file_emissions_v4_query_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4807,7 +6551,7 @@ func (x *GetParamsRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetParamsRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[10]
+	mi := &file_emissions_v4_query_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5165,7 +6909,7 @@ func (x *GetParamsResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetParamsResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[11]
+	mi := &file_emissions_v4_query_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5598,7 +7342,7 @@ func (x *GetTotalStakeRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTotalStakeRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[12]
+	mi := &file_emissions_v4_query_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5956,7 +7700,7 @@ func (x *GetTotalStakeResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTotalStakeResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[13]
+	mi := &file_emissions_v4_query_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6378,7 +8122,7 @@ func (x *GetReputerStakeInTopicRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetReputerStakeInTopicRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[14]
+	mi := &file_emissions_v4_query_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6844,7 +8588,7 @@ func (x *GetReputerStakeInTopicResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetReputerStakeInTopicResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[15]
+	mi := &file_emissions_v4_query_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7312,7 +9056,7 @@ func (x *GetMultiReputerStakeInTopicRequest) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetMultiReputerStakeInTopicRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[16]
+	mi := &file_emissions_v4_query_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7843,7 +9587,7 @@ func (x *GetMultiReputerStakeInTopicResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetMultiReputerStakeInTopicResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[17]
+	mi := &file_emissions_v4_query_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8288,7 +10032,7 @@ func (x *GetStakeFromReputerInTopicInSelfRequest) ProtoReflect() protoreflect.Me
 }
 
 func (x *GetStakeFromReputerInTopicInSelfRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[18]
+	mi := &file_emissions_v4_query_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8754,7 +10498,7 @@ func (x *GetStakeFromReputerInTopicInSelfResponse) ProtoReflect() protoreflect.M
 }
 
 func (x *GetStakeFromReputerInTopicInSelfResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[19]
+	mi := &file_emissions_v4_query_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9176,7 +10920,7 @@ func (x *GetDelegateStakeInTopicInReputerRequest) ProtoReflect() protoreflect.Me
 }
 
 func (x *GetDelegateStakeInTopicInReputerRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[20]
+	mi := &file_emissions_v4_query_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9642,7 +11386,7 @@ func (x *GetDelegateStakeInTopicInReputerResponse) ProtoReflect() protoreflect.M
 }
 
 func (x *GetDelegateStakeInTopicInReputerResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[21]
+	mi := &file_emissions_v4_query_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10066,7 +11810,7 @@ func (x *GetStakeFromDelegatorInTopicInReputerRequest) ProtoReflect() protorefle
 }
 
 func (x *GetStakeFromDelegatorInTopicInReputerRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[22]
+	mi := &file_emissions_v4_query_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10594,7 +12338,7 @@ func (x *GetStakeFromDelegatorInTopicInReputerResponse) ProtoReflect() protorefl
 }
 
 func (x *GetStakeFromDelegatorInTopicInReputerResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[23]
+	mi := &file_emissions_v4_query_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11016,7 +12760,7 @@ func (x *GetStakeFromDelegatorInTopicRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetStakeFromDelegatorInTopicRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[24]
+	mi := &file_emissions_v4_query_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11482,7 +13226,7 @@ func (x *GetStakeFromDelegatorInTopicResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetStakeFromDelegatorInTopicResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[25]
+	mi := &file_emissions_v4_query_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11902,7 +13646,7 @@ func (x *GetTopicStakeRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTopicStakeRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[26]
+	mi := &file_emissions_v4_query_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12306,7 +14050,7 @@ func (x *GetTopicStakeResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTopicStakeResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[27]
+	mi := &file_emissions_v4_query_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12728,7 +14472,7 @@ func (x *GetNetworkLossBundleAtBlockRequest) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetNetworkLossBundleAtBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[28]
+	mi := &file_emissions_v4_query_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13178,7 +14922,7 @@ func (x *GetNetworkLossBundleAtBlockResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetNetworkLossBundleAtBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[29]
+	mi := &file_emissions_v4_query_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13611,7 +15355,7 @@ func (x *GetNextTopicIdRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetNextTopicIdRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[30]
+	mi := &file_emissions_v4_query_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13969,7 +15713,7 @@ func (x *GetNextTopicIdResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetNextTopicIdResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[31]
+	mi := &file_emissions_v4_query_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14373,7 +16117,7 @@ func (x *GetTopicRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTopicRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[32]
+	mi := &file_emissions_v4_query_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14781,7 +16525,7 @@ func (x *GetTopicResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTopicResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[33]
+	mi := &file_emissions_v4_query_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15340,7 +17084,7 @@ func (x *GetActiveTopicsRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetActiveTopicsRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[34]
+	mi := &file_emissions_v4_query_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15828,7 +17572,7 @@ func (x *GetActiveTopicsResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetActiveTopicsResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[35]
+	mi := &file_emissions_v4_query_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16350,7 +18094,7 @@ func (x *GetInferencesAtBlockRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetInferencesAtBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[36]
+	mi := &file_emissions_v4_query_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16800,7 +18544,7 @@ func (x *GetInferencesAtBlockResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetInferencesAtBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[37]
+	mi := &file_emissions_v4_query_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17235,7 +18979,7 @@ func (x *GetLatestTopicInferencesRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetLatestTopicInferencesRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[38]
+	mi := &file_emissions_v4_query_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17641,7 +19385,7 @@ func (x *GetLatestTopicInferencesResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetLatestTopicInferencesResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[39]
+	mi := &file_emissions_v4_query_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18124,7 +19868,7 @@ func (x *GetForecastsAtBlockRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetForecastsAtBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[40]
+	mi := &file_emissions_v4_query_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18574,7 +20318,7 @@ func (x *GetForecastsAtBlockResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetForecastsAtBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[41]
+	mi := &file_emissions_v4_query_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19011,7 +20755,7 @@ func (x *GetWorkerLatestInferenceByTopicIdRequest) ProtoReflect() protoreflect.M
 }
 
 func (x *GetWorkerLatestInferenceByTopicIdRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[42]
+	mi := &file_emissions_v4_query_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19477,7 +21221,7 @@ func (x *GetWorkerLatestInferenceByTopicIdResponse) ProtoReflect() protoreflect.
 }
 
 func (x *GetWorkerLatestInferenceByTopicIdResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[43]
+	mi := &file_emissions_v4_query_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19912,7 +21656,7 @@ func (x *GetWorkerNodeInfoRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetWorkerNodeInfoRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[44]
+	mi := &file_emissions_v4_query_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20332,7 +22076,7 @@ func (x *GetWorkerNodeInfoResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetWorkerNodeInfoResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[45]
+	mi := &file_emissions_v4_query_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20767,7 +22511,7 @@ func (x *GetReputerNodeInfoRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetReputerNodeInfoRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[46]
+	mi := &file_emissions_v4_query_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21187,7 +22931,7 @@ func (x *GetReputerNodeInfoResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetReputerNodeInfoResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[47]
+	mi := &file_emissions_v4_query_proto_msgTypes[51]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21624,7 +23368,7 @@ func (x *GetNetworkInferencesAtBlockRequest) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetNetworkInferencesAtBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[48]
+	mi := &file_emissions_v4_query_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22074,7 +23818,7 @@ func (x *GetLatestNetworkInferencesRequest) ProtoReflect() protoreflect.Message 
 }
 
 func (x *GetLatestNetworkInferencesRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[49]
+	mi := &file_emissions_v4_query_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22478,7 +24222,7 @@ func (x *GetLatestAvailableNetworkInferencesRequest) ProtoReflect() protoreflect
 }
 
 func (x *GetLatestAvailableNetworkInferencesRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[50]
+	mi := &file_emissions_v4_query_proto_msgTypes[54]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22884,7 +24628,7 @@ func (x *IsWorkerNonceUnfulfilledRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *IsWorkerNonceUnfulfilledRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[51]
+	mi := &file_emissions_v4_query_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23334,7 +25078,7 @@ func (x *IsWorkerNonceUnfulfilledResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *IsWorkerNonceUnfulfilledResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[52]
+	mi := &file_emissions_v4_query_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23744,7 +25488,7 @@ func (x *GetUnfulfilledReputerNoncesRequest) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetUnfulfilledReputerNoncesRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[53]
+	mi := &file_emissions_v4_query_proto_msgTypes[57]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24148,7 +25892,7 @@ func (x *GetUnfulfilledReputerNoncesResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetUnfulfilledReputerNoncesResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[54]
+	mi := &file_emissions_v4_query_proto_msgTypes[58]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24583,7 +26327,7 @@ func (x *GetUnfulfilledWorkerNoncesRequest) ProtoReflect() protoreflect.Message 
 }
 
 func (x *GetUnfulfilledWorkerNoncesRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[55]
+	mi := &file_emissions_v4_query_proto_msgTypes[59]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24987,7 +26731,7 @@ func (x *GetUnfulfilledWorkerNoncesResponse) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetUnfulfilledWorkerNoncesResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[56]
+	mi := &file_emissions_v4_query_proto_msgTypes[60]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -25424,7 +27168,7 @@ func (x *GetInfererNetworkRegretRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetInfererNetworkRegretRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[57]
+	mi := &file_emissions_v4_query_proto_msgTypes[61]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -25890,7 +27634,7 @@ func (x *GetInfererNetworkRegretResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetInfererNetworkRegretResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[58]
+	mi := &file_emissions_v4_query_proto_msgTypes[62]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -26327,7 +28071,7 @@ func (x *GetForecasterNetworkRegretRequest) ProtoReflect() protoreflect.Message 
 }
 
 func (x *GetForecasterNetworkRegretRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[59]
+	mi := &file_emissions_v4_query_proto_msgTypes[63]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -26793,7 +28537,7 @@ func (x *GetForecasterNetworkRegretResponse) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetForecasterNetworkRegretResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[60]
+	mi := &file_emissions_v4_query_proto_msgTypes[64]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -27232,7 +28976,7 @@ func (x *GetOneInForecasterNetworkRegretRequest) ProtoReflect() protoreflect.Mes
 }
 
 func (x *GetOneInForecasterNetworkRegretRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[61]
+	mi := &file_emissions_v4_query_proto_msgTypes[65]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -27760,7 +29504,7 @@ func (x *GetOneInForecasterNetworkRegretResponse) ProtoReflect() protoreflect.Me
 }
 
 func (x *GetOneInForecasterNetworkRegretResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[62]
+	mi := &file_emissions_v4_query_proto_msgTypes[66]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -28197,7 +29941,7 @@ func (x *IsReputerNonceUnfulfilledRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *IsReputerNonceUnfulfilledRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[63]
+	mi := &file_emissions_v4_query_proto_msgTypes[67]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -28647,7 +30391,7 @@ func (x *IsReputerNonceUnfulfilledResponse) ProtoReflect() protoreflect.Message 
 }
 
 func (x *IsReputerNonceUnfulfilledResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[64]
+	mi := &file_emissions_v4_query_proto_msgTypes[68]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -29057,7 +30801,7 @@ func (x *GetNetworkInferencesAtBlockResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetNetworkInferencesAtBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[65]
+	mi := &file_emissions_v4_query_proto_msgTypes[69]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -29751,7 +31495,7 @@ func (x *GetLatestNetworkInferencesResponse) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetLatestNetworkInferencesResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[66]
+	mi := &file_emissions_v4_query_proto_msgTypes[70]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -30944,7 +32688,7 @@ func (x *GetLatestAvailableNetworkInferencesResponse) ProtoReflect() protoreflec
 }
 
 func (x *GetLatestAvailableNetworkInferencesResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[67]
+	mi := &file_emissions_v4_query_proto_msgTypes[71]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -31880,7 +33624,7 @@ func (x *IsWorkerRegisteredInTopicIdRequest) ProtoReflect() protoreflect.Message
 }
 
 func (x *IsWorkerRegisteredInTopicIdRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[68]
+	mi := &file_emissions_v4_query_proto_msgTypes[72]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -32346,7 +34090,7 @@ func (x *IsWorkerRegisteredInTopicIdResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *IsWorkerRegisteredInTopicIdResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[69]
+	mi := &file_emissions_v4_query_proto_msgTypes[73]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -32758,7 +34502,7 @@ func (x *IsReputerRegisteredInTopicIdRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *IsReputerRegisteredInTopicIdRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[70]
+	mi := &file_emissions_v4_query_proto_msgTypes[74]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -33224,7 +34968,7 @@ func (x *IsReputerRegisteredInTopicIdResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *IsReputerRegisteredInTopicIdResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[71]
+	mi := &file_emissions_v4_query_proto_msgTypes[75]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -33634,7 +35378,7 @@ func (x *IsWhitelistAdminRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *IsWhitelistAdminRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[72]
+	mi := &file_emissions_v4_query_proto_msgTypes[76]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -34054,7 +35798,7 @@ func (x *IsWhitelistAdminResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *IsWhitelistAdminResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[73]
+	mi := &file_emissions_v4_query_proto_msgTypes[77]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -34464,7 +36208,7 @@ func (x *GetStakeRemovalsUpUntilBlockRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetStakeRemovalsUpUntilBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[74]
+	mi := &file_emissions_v4_query_proto_msgTypes[78]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -34919,7 +36663,7 @@ func (x *GetStakeRemovalsUpUntilBlockResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetStakeRemovalsUpUntilBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[75]
+	mi := &file_emissions_v4_query_proto_msgTypes[79]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -35362,7 +37106,7 @@ func (x *GetDelegateStakeRemovalsUpUntilBlockRequest) ProtoReflect() protoreflec
 }
 
 func (x *GetDelegateStakeRemovalsUpUntilBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[76]
+	mi := &file_emissions_v4_query_proto_msgTypes[80]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -35817,7 +37561,7 @@ func (x *GetDelegateStakeRemovalsUpUntilBlockResponse) ProtoReflect() protorefle
 }
 
 func (x *GetDelegateStakeRemovalsUpUntilBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[77]
+	mi := &file_emissions_v4_query_proto_msgTypes[81]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -36262,7 +38006,7 @@ func (x *GetStakeRemovalInfoRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetStakeRemovalInfoRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[78]
+	mi := &file_emissions_v4_query_proto_msgTypes[82]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -36728,7 +38472,7 @@ func (x *GetStakeRemovalInfoResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetStakeRemovalInfoResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[79]
+	mi := &file_emissions_v4_query_proto_msgTypes[83]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -37167,7 +38911,7 @@ func (x *GetDelegateStakeRemovalInfoRequest) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetDelegateStakeRemovalInfoRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[80]
+	mi := &file_emissions_v4_query_proto_msgTypes[84]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -37695,7 +39439,7 @@ func (x *GetDelegateStakeRemovalInfoResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetDelegateStakeRemovalInfoResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[81]
+	mi := &file_emissions_v4_query_proto_msgTypes[85]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -38130,7 +39874,7 @@ func (x *GetTopicLastWorkerCommitInfoRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetTopicLastWorkerCommitInfoRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[82]
+	mi := &file_emissions_v4_query_proto_msgTypes[86]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -38534,7 +40278,7 @@ func (x *GetTopicLastWorkerCommitInfoResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetTopicLastWorkerCommitInfoResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[83]
+	mi := &file_emissions_v4_query_proto_msgTypes[87]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -38969,7 +40713,7 @@ func (x *GetTopicLastReputerCommitInfoRequest) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetTopicLastReputerCommitInfoRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[84]
+	mi := &file_emissions_v4_query_proto_msgTypes[88]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -39373,7 +41117,7 @@ func (x *GetTopicLastReputerCommitInfoResponse) ProtoReflect() protoreflect.Mess
 }
 
 func (x *GetTopicLastReputerCommitInfoResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[85]
+	mi := &file_emissions_v4_query_proto_msgTypes[89]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -39808,7 +41552,7 @@ func (x *GetTopicRewardNonceRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTopicRewardNonceRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[86]
+	mi := &file_emissions_v4_query_proto_msgTypes[90]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -40212,7 +41956,7 @@ func (x *GetTopicRewardNonceResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTopicRewardNonceResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[87]
+	mi := &file_emissions_v4_query_proto_msgTypes[91]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -40618,7 +42362,7 @@ func (x *GetReputerLossBundlesAtBlockRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetReputerLossBundlesAtBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[88]
+	mi := &file_emissions_v4_query_proto_msgTypes[92]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -41068,7 +42812,7 @@ func (x *GetReputerLossBundlesAtBlockResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetReputerLossBundlesAtBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[89]
+	mi := &file_emissions_v4_query_proto_msgTypes[93]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -41505,7 +43249,7 @@ func (x *GetStakeReputerAuthorityRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetStakeReputerAuthorityRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[90]
+	mi := &file_emissions_v4_query_proto_msgTypes[94]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -41971,7 +43715,7 @@ func (x *GetStakeReputerAuthorityResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetStakeReputerAuthorityResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[91]
+	mi := &file_emissions_v4_query_proto_msgTypes[95]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -42395,7 +44139,7 @@ func (x *GetDelegateStakePlacementRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetDelegateStakePlacementRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[92]
+	mi := &file_emissions_v4_query_proto_msgTypes[96]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -42923,7 +44667,7 @@ func (x *GetDelegateStakePlacementResponse) ProtoReflect() protoreflect.Message 
 }
 
 func (x *GetDelegateStakePlacementResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[93]
+	mi := &file_emissions_v4_query_proto_msgTypes[97]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -43360,7 +45104,7 @@ func (x *GetDelegateStakeUponReputerRequest) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetDelegateStakeUponReputerRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[94]
+	mi := &file_emissions_v4_query_proto_msgTypes[98]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -43826,7 +45570,7 @@ func (x *GetDelegateStakeUponReputerResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetDelegateStakeUponReputerResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[95]
+	mi := &file_emissions_v4_query_proto_msgTypes[99]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44248,7 +45992,7 @@ func (x *GetDelegateRewardPerShareRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetDelegateRewardPerShareRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[96]
+	mi := &file_emissions_v4_query_proto_msgTypes[100]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -44714,7 +46458,7 @@ func (x *GetDelegateRewardPerShareResponse) ProtoReflect() protoreflect.Message 
 }
 
 func (x *GetDelegateRewardPerShareResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[97]
+	mi := &file_emissions_v4_query_proto_msgTypes[101]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45136,7 +46880,7 @@ func (x *GetStakeRemovalForReputerAndTopicIdRequest) ProtoReflect() protoreflect
 }
 
 func (x *GetStakeRemovalForReputerAndTopicIdRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[98]
+	mi := &file_emissions_v4_query_proto_msgTypes[102]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -45602,7 +47346,7 @@ func (x *GetStakeRemovalForReputerAndTopicIdResponse) ProtoReflect() protoreflec
 }
 
 func (x *GetStakeRemovalForReputerAndTopicIdResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[99]
+	mi := &file_emissions_v4_query_proto_msgTypes[103]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46043,7 +47787,7 @@ func (x *GetDelegateStakeRemovalRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetDelegateStakeRemovalRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[100]
+	mi := &file_emissions_v4_query_proto_msgTypes[104]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -46617,7 +48361,7 @@ func (x *GetDelegateStakeRemovalResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetDelegateStakeRemovalResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[101]
+	mi := &file_emissions_v4_query_proto_msgTypes[105]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47052,7 +48796,7 @@ func (x *GetPreviousTopicWeightRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetPreviousTopicWeightRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[102]
+	mi := &file_emissions_v4_query_proto_msgTypes[106]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47458,7 +49202,7 @@ func (x *GetPreviousTopicWeightResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetPreviousTopicWeightResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[103]
+	mi := &file_emissions_v4_query_proto_msgTypes[107]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -47930,7 +49674,7 @@ func (x *TopicExistsRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *TopicExistsRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[104]
+	mi := &file_emissions_v4_query_proto_msgTypes[108]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48334,7 +50078,7 @@ func (x *TopicExistsResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *TopicExistsResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[105]
+	mi := &file_emissions_v4_query_proto_msgTypes[109]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -48744,7 +50488,7 @@ func (x *IsTopicActiveRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *IsTopicActiveRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[106]
+	mi := &file_emissions_v4_query_proto_msgTypes[110]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49148,7 +50892,7 @@ func (x *IsTopicActiveResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *IsTopicActiveResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[107]
+	mi := &file_emissions_v4_query_proto_msgTypes[111]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49558,7 +51302,7 @@ func (x *GetTopicFeeRevenueRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTopicFeeRevenueRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[108]
+	mi := &file_emissions_v4_query_proto_msgTypes[112]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -49962,7 +51706,7 @@ func (x *GetTopicFeeRevenueResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetTopicFeeRevenueResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[109]
+	mi := &file_emissions_v4_query_proto_msgTypes[113]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50384,7 +52128,7 @@ func (x *GetInfererScoreEmaRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetInfererScoreEmaRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[110]
+	mi := &file_emissions_v4_query_proto_msgTypes[114]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -50850,7 +52594,7 @@ func (x *GetInfererScoreEmaResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetInfererScoreEmaResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[111]
+	mi := &file_emissions_v4_query_proto_msgTypes[115]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51287,7 +53031,7 @@ func (x *GetForecasterScoreEmaRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetForecasterScoreEmaRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[112]
+	mi := &file_emissions_v4_query_proto_msgTypes[116]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -51753,7 +53497,7 @@ func (x *GetForecasterScoreEmaResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetForecasterScoreEmaResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[113]
+	mi := &file_emissions_v4_query_proto_msgTypes[117]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52190,7 +53934,7 @@ func (x *GetReputerScoreEmaRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetReputerScoreEmaRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[114]
+	mi := &file_emissions_v4_query_proto_msgTypes[118]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -52656,7 +54400,7 @@ func (x *GetReputerScoreEmaResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetReputerScoreEmaResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[115]
+	mi := &file_emissions_v4_query_proto_msgTypes[119]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53093,7 +54837,7 @@ func (x *GetInferenceScoresUntilBlockRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetInferenceScoresUntilBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[116]
+	mi := &file_emissions_v4_query_proto_msgTypes[120]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -53594,7 +55338,7 @@ func (x *GetInferenceScoresUntilBlockResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetInferenceScoresUntilBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[117]
+	mi := &file_emissions_v4_query_proto_msgTypes[121]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54037,7 +55781,7 @@ func (x *GetPreviousTopicQuantileForecasterScoreEmaRequest) ProtoReflect() proto
 }
 
 func (x *GetPreviousTopicQuantileForecasterScoreEmaRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[118]
+	mi := &file_emissions_v4_query_proto_msgTypes[122]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54441,7 +56185,7 @@ func (x *GetPreviousTopicQuantileForecasterScoreEmaResponse) ProtoReflect() prot
 }
 
 func (x *GetPreviousTopicQuantileForecasterScoreEmaResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[119]
+	mi := &file_emissions_v4_query_proto_msgTypes[123]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54861,7 +56605,7 @@ func (x *GetPreviousTopicQuantileInfererScoreEmaRequest) ProtoReflect() protoref
 }
 
 func (x *GetPreviousTopicQuantileInfererScoreEmaRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[120]
+	mi := &file_emissions_v4_query_proto_msgTypes[124]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55265,7 +57009,7 @@ func (x *GetPreviousTopicQuantileInfererScoreEmaResponse) ProtoReflect() protore
 }
 
 func (x *GetPreviousTopicQuantileInfererScoreEmaResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[121]
+	mi := &file_emissions_v4_query_proto_msgTypes[125]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55685,7 +57429,7 @@ func (x *GetPreviousTopicQuantileReputerScoreEmaRequest) ProtoReflect() protoref
 }
 
 func (x *GetPreviousTopicQuantileReputerScoreEmaRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[122]
+	mi := &file_emissions_v4_query_proto_msgTypes[126]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56089,7 +57833,7 @@ func (x *GetPreviousTopicQuantileReputerScoreEmaResponse) ProtoReflect() protore
 }
 
 func (x *GetPreviousTopicQuantileReputerScoreEmaResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[123]
+	mi := &file_emissions_v4_query_proto_msgTypes[127]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56511,7 +58255,7 @@ func (x *GetWorkerInferenceScoresAtBlockRequest) ProtoReflect() protoreflect.Mes
 }
 
 func (x *GetWorkerInferenceScoresAtBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[124]
+	mi := &file_emissions_v4_query_proto_msgTypes[128]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56961,7 +58705,7 @@ func (x *GetWorkerInferenceScoresAtBlockResponse) ProtoReflect() protoreflect.Me
 }
 
 func (x *GetWorkerInferenceScoresAtBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[125]
+	mi := &file_emissions_v4_query_proto_msgTypes[129]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57396,7 +59140,7 @@ func (x *GetCurrentLowestInfererScoreRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetCurrentLowestInfererScoreRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[126]
+	mi := &file_emissions_v4_query_proto_msgTypes[130]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57800,7 +59544,7 @@ func (x *GetCurrentLowestInfererScoreResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetCurrentLowestInfererScoreResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[127]
+	mi := &file_emissions_v4_query_proto_msgTypes[131]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58237,7 +59981,7 @@ func (x *GetForecastScoresUntilBlockRequest) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetForecastScoresUntilBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[128]
+	mi := &file_emissions_v4_query_proto_msgTypes[132]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -58738,7 +60482,7 @@ func (x *GetForecastScoresUntilBlockResponse) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetForecastScoresUntilBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[129]
+	mi := &file_emissions_v4_query_proto_msgTypes[133]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59183,7 +60927,7 @@ func (x *GetWorkerForecastScoresAtBlockRequest) ProtoReflect() protoreflect.Mess
 }
 
 func (x *GetWorkerForecastScoresAtBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[130]
+	mi := &file_emissions_v4_query_proto_msgTypes[134]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59633,7 +61377,7 @@ func (x *GetWorkerForecastScoresAtBlockResponse) ProtoReflect() protoreflect.Mes
 }
 
 func (x *GetWorkerForecastScoresAtBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[131]
+	mi := &file_emissions_v4_query_proto_msgTypes[135]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60068,7 +61812,7 @@ func (x *GetCurrentLowestForecasterScoreRequest) ProtoReflect() protoreflect.Mes
 }
 
 func (x *GetCurrentLowestForecasterScoreRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[132]
+	mi := &file_emissions_v4_query_proto_msgTypes[136]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60472,7 +62216,7 @@ func (x *GetCurrentLowestForecasterScoreResponse) ProtoReflect() protoreflect.Me
 }
 
 func (x *GetCurrentLowestForecasterScoreResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[133]
+	mi := &file_emissions_v4_query_proto_msgTypes[137]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60909,7 +62653,7 @@ func (x *GetReputersScoresAtBlockRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetReputersScoresAtBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[134]
+	mi := &file_emissions_v4_query_proto_msgTypes[138]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61359,7 +63103,7 @@ func (x *GetReputersScoresAtBlockResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetReputersScoresAtBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[135]
+	mi := &file_emissions_v4_query_proto_msgTypes[139]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61794,7 +63538,7 @@ func (x *GetCurrentLowestReputerScoreRequest) ProtoReflect() protoreflect.Messag
 }
 
 func (x *GetCurrentLowestReputerScoreRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[136]
+	mi := &file_emissions_v4_query_proto_msgTypes[140]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62198,7 +63942,7 @@ func (x *GetCurrentLowestReputerScoreResponse) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetCurrentLowestReputerScoreResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[137]
+	mi := &file_emissions_v4_query_proto_msgTypes[141]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62635,7 +64379,7 @@ func (x *GetListeningCoefficientRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetListeningCoefficientRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[138]
+	mi := &file_emissions_v4_query_proto_msgTypes[142]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63101,7 +64845,7 @@ func (x *GetListeningCoefficientResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetListeningCoefficientResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[139]
+	mi := &file_emissions_v4_query_proto_msgTypes[143]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -63538,7 +65282,7 @@ func (x *GetPreviousReputerRewardFractionRequest) ProtoReflect() protoreflect.Me
 }
 
 func (x *GetPreviousReputerRewardFractionRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[140]
+	mi := &file_emissions_v4_query_proto_msgTypes[144]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64006,7 +65750,7 @@ func (x *GetPreviousReputerRewardFractionResponse) ProtoReflect() protoreflect.M
 }
 
 func (x *GetPreviousReputerRewardFractionResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[141]
+	mi := &file_emissions_v4_query_proto_msgTypes[145]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64480,7 +66224,7 @@ func (x *GetPreviousInferenceRewardFractionRequest) ProtoReflect() protoreflect.
 }
 
 func (x *GetPreviousInferenceRewardFractionRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[142]
+	mi := &file_emissions_v4_query_proto_msgTypes[146]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64948,7 +66692,7 @@ func (x *GetPreviousInferenceRewardFractionResponse) ProtoReflect() protoreflect
 }
 
 func (x *GetPreviousInferenceRewardFractionResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[143]
+	mi := &file_emissions_v4_query_proto_msgTypes[147]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65422,7 +67166,7 @@ func (x *GetPreviousForecastRewardFractionRequest) ProtoReflect() protoreflect.M
 }
 
 func (x *GetPreviousForecastRewardFractionRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[144]
+	mi := &file_emissions_v4_query_proto_msgTypes[148]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -65890,7 +67634,7 @@ func (x *GetPreviousForecastRewardFractionResponse) ProtoReflect() protoreflect.
 }
 
 func (x *GetPreviousForecastRewardFractionResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[145]
+	mi := &file_emissions_v4_query_proto_msgTypes[149]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66360,7 +68104,7 @@ func (x *GetPreviousPercentageRewardToStakedReputersRequest) ProtoReflect() prot
 }
 
 func (x *GetPreviousPercentageRewardToStakedReputersRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[146]
+	mi := &file_emissions_v4_query_proto_msgTypes[150]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -66718,7 +68462,7 @@ func (x *GetPreviousPercentageRewardToStakedReputersResponse) ProtoReflect() pro
 }
 
 func (x *GetPreviousPercentageRewardToStakedReputersResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[147]
+	mi := &file_emissions_v4_query_proto_msgTypes[151]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67136,7 +68880,7 @@ func (x *GetTotalRewardToDistributeRequest) ProtoReflect() protoreflect.Message 
 }
 
 func (x *GetTotalRewardToDistributeRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[148]
+	mi := &file_emissions_v4_query_proto_msgTypes[152]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67494,7 +69238,7 @@ func (x *GetTotalRewardToDistributeResponse) ProtoReflect() protoreflect.Message
 }
 
 func (x *GetTotalRewardToDistributeResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[149]
+	mi := &file_emissions_v4_query_proto_msgTypes[153]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67914,7 +69658,7 @@ func (x *GetActiveTopicsAtBlockRequest) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetActiveTopicsAtBlockRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[150]
+	mi := &file_emissions_v4_query_proto_msgTypes[154]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -68371,7 +70115,7 @@ func (x *GetActiveTopicsAtBlockResponse) ProtoReflect() protoreflect.Message {
 }
 
 func (x *GetActiveTopicsAtBlockResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[151]
+	mi := &file_emissions_v4_query_proto_msgTypes[155]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -68891,7 +70635,7 @@ func (x *GetNextChurningBlockByTopicIdRequest) ProtoReflect() protoreflect.Messa
 }
 
 func (x *GetNextChurningBlockByTopicIdRequest) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[152]
+	mi := &file_emissions_v4_query_proto_msgTypes[156]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -69295,7 +71039,7 @@ func (x *GetNextChurningBlockByTopicIdResponse) ProtoReflect() protoreflect.Mess
 }
 
 func (x *GetNextChurningBlockByTopicIdResponse) slowProtoReflect() protoreflect.Message {
-	mi := &file_emissions_v4_query_proto_msgTypes[153]
+	mi := &file_emissions_v4_query_proto_msgTypes[157]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -69692,6 +71436,162 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type GetCountInfererInclusionsInTopicRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Inferer string `protobuf:"bytes,2,opt,name=inferer,proto3" json:"inferer,omitempty"`
+}
+
+func (x *GetCountInfererInclusionsInTopicRequest) Reset() {
+	*x = GetCountInfererInclusionsInTopicRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v4_query_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCountInfererInclusionsInTopicRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCountInfererInclusionsInTopicRequest) ProtoMessage() {}
+
+// Deprecated: Use GetCountInfererInclusionsInTopicRequest.ProtoReflect.Descriptor instead.
+func (*GetCountInfererInclusionsInTopicRequest) Descriptor() ([]byte, []int) {
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GetCountInfererInclusionsInTopicRequest) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *GetCountInfererInclusionsInTopicRequest) GetInferer() string {
+	if x != nil {
+		return x.Inferer
+	}
+	return ""
+}
+
+type GetCountInfererInclusionsInTopicResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Count uint64 `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+}
+
+func (x *GetCountInfererInclusionsInTopicResponse) Reset() {
+	*x = GetCountInfererInclusionsInTopicResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v4_query_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCountInfererInclusionsInTopicResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCountInfererInclusionsInTopicResponse) ProtoMessage() {}
+
+// Deprecated: Use GetCountInfererInclusionsInTopicResponse.ProtoReflect.Descriptor instead.
+func (*GetCountInfererInclusionsInTopicResponse) Descriptor() ([]byte, []int) {
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetCountInfererInclusionsInTopicResponse) GetCount() uint64 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+type GetCountForecasterInclusionsInTopicRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TopicId    uint64 `protobuf:"varint,1,opt,name=topic_id,json=topicId,proto3" json:"topic_id,omitempty"`
+	Forecaster string `protobuf:"bytes,2,opt,name=forecaster,proto3" json:"forecaster,omitempty"`
+}
+
+func (x *GetCountForecasterInclusionsInTopicRequest) Reset() {
+	*x = GetCountForecasterInclusionsInTopicRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v4_query_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCountForecasterInclusionsInTopicRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCountForecasterInclusionsInTopicRequest) ProtoMessage() {}
+
+// Deprecated: Use GetCountForecasterInclusionsInTopicRequest.ProtoReflect.Descriptor instead.
+func (*GetCountForecasterInclusionsInTopicRequest) Descriptor() ([]byte, []int) {
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetCountForecasterInclusionsInTopicRequest) GetTopicId() uint64 {
+	if x != nil {
+		return x.TopicId
+	}
+	return 0
+}
+
+func (x *GetCountForecasterInclusionsInTopicRequest) GetForecaster() string {
+	if x != nil {
+		return x.Forecaster
+	}
+	return ""
+}
+
+type GetCountForecasterInclusionsInTopicResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Count uint64 `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+}
+
+func (x *GetCountForecasterInclusionsInTopicResponse) Reset() {
+	*x = GetCountForecasterInclusionsInTopicResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_emissions_v4_query_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCountForecasterInclusionsInTopicResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCountForecasterInclusionsInTopicResponse) ProtoMessage() {}
+
+// Deprecated: Use GetCountForecasterInclusionsInTopicResponse.ProtoReflect.Descriptor instead.
+func (*GetCountForecasterInclusionsInTopicResponse) Descriptor() ([]byte, []int) {
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetCountForecasterInclusionsInTopicResponse) GetCount() uint64 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
 type GetNaiveInfererNetworkRegretRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -69704,7 +71604,7 @@ type GetNaiveInfererNetworkRegretRequest struct {
 func (x *GetNaiveInfererNetworkRegretRequest) Reset() {
 	*x = GetNaiveInfererNetworkRegretRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[0]
+		mi := &file_emissions_v4_query_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -69718,7 +71618,7 @@ func (*GetNaiveInfererNetworkRegretRequest) ProtoMessage() {}
 
 // Deprecated: Use GetNaiveInfererNetworkRegretRequest.ProtoReflect.Descriptor instead.
 func (*GetNaiveInfererNetworkRegretRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{0}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetNaiveInfererNetworkRegretRequest) GetTopicId() uint64 {
@@ -69746,7 +71646,7 @@ type GetNaiveInfererNetworkRegretResponse struct {
 func (x *GetNaiveInfererNetworkRegretResponse) Reset() {
 	*x = GetNaiveInfererNetworkRegretResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[1]
+		mi := &file_emissions_v4_query_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -69760,7 +71660,7 @@ func (*GetNaiveInfererNetworkRegretResponse) ProtoMessage() {}
 
 // Deprecated: Use GetNaiveInfererNetworkRegretResponse.ProtoReflect.Descriptor instead.
 func (*GetNaiveInfererNetworkRegretResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{1}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetNaiveInfererNetworkRegretResponse) GetRegret() *v3.TimestampedValue {
@@ -69783,7 +71683,7 @@ type GetOneOutInfererInfererNetworkRegretRequest struct {
 func (x *GetOneOutInfererInfererNetworkRegretRequest) Reset() {
 	*x = GetOneOutInfererInfererNetworkRegretRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[2]
+		mi := &file_emissions_v4_query_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -69797,7 +71697,7 @@ func (*GetOneOutInfererInfererNetworkRegretRequest) ProtoMessage() {}
 
 // Deprecated: Use GetOneOutInfererInfererNetworkRegretRequest.ProtoReflect.Descriptor instead.
 func (*GetOneOutInfererInfererNetworkRegretRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{2}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetOneOutInfererInfererNetworkRegretRequest) GetTopicId() uint64 {
@@ -69832,7 +71732,7 @@ type GetOneOutInfererInfererNetworkRegretResponse struct {
 func (x *GetOneOutInfererInfererNetworkRegretResponse) Reset() {
 	*x = GetOneOutInfererInfererNetworkRegretResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[3]
+		mi := &file_emissions_v4_query_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -69846,7 +71746,7 @@ func (*GetOneOutInfererInfererNetworkRegretResponse) ProtoMessage() {}
 
 // Deprecated: Use GetOneOutInfererInfererNetworkRegretResponse.ProtoReflect.Descriptor instead.
 func (*GetOneOutInfererInfererNetworkRegretResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{3}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetOneOutInfererInfererNetworkRegretResponse) GetRegret() *v3.TimestampedValue {
@@ -69869,7 +71769,7 @@ type GetOneOutInfererForecasterNetworkRegretRequest struct {
 func (x *GetOneOutInfererForecasterNetworkRegretRequest) Reset() {
 	*x = GetOneOutInfererForecasterNetworkRegretRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[4]
+		mi := &file_emissions_v4_query_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -69883,7 +71783,7 @@ func (*GetOneOutInfererForecasterNetworkRegretRequest) ProtoMessage() {}
 
 // Deprecated: Use GetOneOutInfererForecasterNetworkRegretRequest.ProtoReflect.Descriptor instead.
 func (*GetOneOutInfererForecasterNetworkRegretRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{4}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetOneOutInfererForecasterNetworkRegretRequest) GetTopicId() uint64 {
@@ -69918,7 +71818,7 @@ type GetOneOutInfererForecasterNetworkRegretResponse struct {
 func (x *GetOneOutInfererForecasterNetworkRegretResponse) Reset() {
 	*x = GetOneOutInfererForecasterNetworkRegretResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[5]
+		mi := &file_emissions_v4_query_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -69932,7 +71832,7 @@ func (*GetOneOutInfererForecasterNetworkRegretResponse) ProtoMessage() {}
 
 // Deprecated: Use GetOneOutInfererForecasterNetworkRegretResponse.ProtoReflect.Descriptor instead.
 func (*GetOneOutInfererForecasterNetworkRegretResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{5}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetOneOutInfererForecasterNetworkRegretResponse) GetRegret() *v3.TimestampedValue {
@@ -69955,7 +71855,7 @@ type GetOneOutForecasterInfererNetworkRegretRequest struct {
 func (x *GetOneOutForecasterInfererNetworkRegretRequest) Reset() {
 	*x = GetOneOutForecasterInfererNetworkRegretRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[6]
+		mi := &file_emissions_v4_query_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -69969,7 +71869,7 @@ func (*GetOneOutForecasterInfererNetworkRegretRequest) ProtoMessage() {}
 
 // Deprecated: Use GetOneOutForecasterInfererNetworkRegretRequest.ProtoReflect.Descriptor instead.
 func (*GetOneOutForecasterInfererNetworkRegretRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{6}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetOneOutForecasterInfererNetworkRegretRequest) GetTopicId() uint64 {
@@ -70004,7 +71904,7 @@ type GetOneOutForecasterInfererNetworkRegretResponse struct {
 func (x *GetOneOutForecasterInfererNetworkRegretResponse) Reset() {
 	*x = GetOneOutForecasterInfererNetworkRegretResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[7]
+		mi := &file_emissions_v4_query_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70018,7 +71918,7 @@ func (*GetOneOutForecasterInfererNetworkRegretResponse) ProtoMessage() {}
 
 // Deprecated: Use GetOneOutForecasterInfererNetworkRegretResponse.ProtoReflect.Descriptor instead.
 func (*GetOneOutForecasterInfererNetworkRegretResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{7}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetOneOutForecasterInfererNetworkRegretResponse) GetRegret() *v3.TimestampedValue {
@@ -70041,7 +71941,7 @@ type GetOneOutForecasterForecasterNetworkRegretRequest struct {
 func (x *GetOneOutForecasterForecasterNetworkRegretRequest) Reset() {
 	*x = GetOneOutForecasterForecasterNetworkRegretRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[8]
+		mi := &file_emissions_v4_query_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70055,7 +71955,7 @@ func (*GetOneOutForecasterForecasterNetworkRegretRequest) ProtoMessage() {}
 
 // Deprecated: Use GetOneOutForecasterForecasterNetworkRegretRequest.ProtoReflect.Descriptor instead.
 func (*GetOneOutForecasterForecasterNetworkRegretRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{8}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetOneOutForecasterForecasterNetworkRegretRequest) GetTopicId() uint64 {
@@ -70090,7 +71990,7 @@ type GetOneOutForecasterForecasterNetworkRegretResponse struct {
 func (x *GetOneOutForecasterForecasterNetworkRegretResponse) Reset() {
 	*x = GetOneOutForecasterForecasterNetworkRegretResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[9]
+		mi := &file_emissions_v4_query_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70104,7 +72004,7 @@ func (*GetOneOutForecasterForecasterNetworkRegretResponse) ProtoMessage() {}
 
 // Deprecated: Use GetOneOutForecasterForecasterNetworkRegretResponse.ProtoReflect.Descriptor instead.
 func (*GetOneOutForecasterForecasterNetworkRegretResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{9}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetOneOutForecasterForecasterNetworkRegretResponse) GetRegret() *v3.TimestampedValue {
@@ -70124,7 +72024,7 @@ type GetParamsRequest struct {
 func (x *GetParamsRequest) Reset() {
 	*x = GetParamsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[10]
+		mi := &file_emissions_v4_query_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70138,7 +72038,7 @@ func (*GetParamsRequest) ProtoMessage() {}
 
 // Deprecated: Use GetParamsRequest.ProtoReflect.Descriptor instead.
 func (*GetParamsRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{10}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{14}
 }
 
 // GetParamsResponse is the response type for the Get/Params RPC method.
@@ -70154,7 +72054,7 @@ type GetParamsResponse struct {
 func (x *GetParamsResponse) Reset() {
 	*x = GetParamsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[11]
+		mi := &file_emissions_v4_query_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70168,7 +72068,7 @@ func (*GetParamsResponse) ProtoMessage() {}
 
 // Deprecated: Use GetParamsResponse.ProtoReflect.Descriptor instead.
 func (*GetParamsResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{11}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetParamsResponse) GetParams() *Params {
@@ -70188,7 +72088,7 @@ type GetTotalStakeRequest struct {
 func (x *GetTotalStakeRequest) Reset() {
 	*x = GetTotalStakeRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[12]
+		mi := &file_emissions_v4_query_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70202,7 +72102,7 @@ func (*GetTotalStakeRequest) ProtoMessage() {}
 
 // Deprecated: Use GetTotalStakeRequest.ProtoReflect.Descriptor instead.
 func (*GetTotalStakeRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{12}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{16}
 }
 
 // Total Stake returns the total amount of stake in the system
@@ -70220,7 +72120,7 @@ type GetTotalStakeResponse struct {
 func (x *GetTotalStakeResponse) Reset() {
 	*x = GetTotalStakeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[13]
+		mi := &file_emissions_v4_query_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70234,7 +72134,7 @@ func (*GetTotalStakeResponse) ProtoMessage() {}
 
 // Deprecated: Use GetTotalStakeResponse.ProtoReflect.Descriptor instead.
 func (*GetTotalStakeResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{13}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *GetTotalStakeResponse) GetAmount() string {
@@ -70256,7 +72156,7 @@ type GetReputerStakeInTopicRequest struct {
 func (x *GetReputerStakeInTopicRequest) Reset() {
 	*x = GetReputerStakeInTopicRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[14]
+		mi := &file_emissions_v4_query_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70270,7 +72170,7 @@ func (*GetReputerStakeInTopicRequest) ProtoMessage() {}
 
 // Deprecated: Use GetReputerStakeInTopicRequest.ProtoReflect.Descriptor instead.
 func (*GetReputerStakeInTopicRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{14}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GetReputerStakeInTopicRequest) GetAddress() string {
@@ -70298,7 +72198,7 @@ type GetReputerStakeInTopicResponse struct {
 func (x *GetReputerStakeInTopicResponse) Reset() {
 	*x = GetReputerStakeInTopicResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[15]
+		mi := &file_emissions_v4_query_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70312,7 +72212,7 @@ func (*GetReputerStakeInTopicResponse) ProtoMessage() {}
 
 // Deprecated: Use GetReputerStakeInTopicResponse.ProtoReflect.Descriptor instead.
 func (*GetReputerStakeInTopicResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{15}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GetReputerStakeInTopicResponse) GetAmount() string {
@@ -70334,7 +72234,7 @@ type GetMultiReputerStakeInTopicRequest struct {
 func (x *GetMultiReputerStakeInTopicRequest) Reset() {
 	*x = GetMultiReputerStakeInTopicRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[16]
+		mi := &file_emissions_v4_query_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70348,7 +72248,7 @@ func (*GetMultiReputerStakeInTopicRequest) ProtoMessage() {}
 
 // Deprecated: Use GetMultiReputerStakeInTopicRequest.ProtoReflect.Descriptor instead.
 func (*GetMultiReputerStakeInTopicRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{16}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetMultiReputerStakeInTopicRequest) GetAddresses() []string {
@@ -70376,7 +72276,7 @@ type GetMultiReputerStakeInTopicResponse struct {
 func (x *GetMultiReputerStakeInTopicResponse) Reset() {
 	*x = GetMultiReputerStakeInTopicResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[17]
+		mi := &file_emissions_v4_query_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70390,7 +72290,7 @@ func (*GetMultiReputerStakeInTopicResponse) ProtoMessage() {}
 
 // Deprecated: Use GetMultiReputerStakeInTopicResponse.ProtoReflect.Descriptor instead.
 func (*GetMultiReputerStakeInTopicResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{17}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *GetMultiReputerStakeInTopicResponse) GetAmounts() []*v3.StakeInfo {
@@ -70412,7 +72312,7 @@ type GetStakeFromReputerInTopicInSelfRequest struct {
 func (x *GetStakeFromReputerInTopicInSelfRequest) Reset() {
 	*x = GetStakeFromReputerInTopicInSelfRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[18]
+		mi := &file_emissions_v4_query_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70426,7 +72326,7 @@ func (*GetStakeFromReputerInTopicInSelfRequest) ProtoMessage() {}
 
 // Deprecated: Use GetStakeFromReputerInTopicInSelfRequest.ProtoReflect.Descriptor instead.
 func (*GetStakeFromReputerInTopicInSelfRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{18}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *GetStakeFromReputerInTopicInSelfRequest) GetReputerAddress() string {
@@ -70454,7 +72354,7 @@ type GetStakeFromReputerInTopicInSelfResponse struct {
 func (x *GetStakeFromReputerInTopicInSelfResponse) Reset() {
 	*x = GetStakeFromReputerInTopicInSelfResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[19]
+		mi := &file_emissions_v4_query_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70468,7 +72368,7 @@ func (*GetStakeFromReputerInTopicInSelfResponse) ProtoMessage() {}
 
 // Deprecated: Use GetStakeFromReputerInTopicInSelfResponse.ProtoReflect.Descriptor instead.
 func (*GetStakeFromReputerInTopicInSelfResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{19}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetStakeFromReputerInTopicInSelfResponse) GetAmount() string {
@@ -70490,7 +72390,7 @@ type GetDelegateStakeInTopicInReputerRequest struct {
 func (x *GetDelegateStakeInTopicInReputerRequest) Reset() {
 	*x = GetDelegateStakeInTopicInReputerRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[20]
+		mi := &file_emissions_v4_query_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70504,7 +72404,7 @@ func (*GetDelegateStakeInTopicInReputerRequest) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeInTopicInReputerRequest.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeInTopicInReputerRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{20}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GetDelegateStakeInTopicInReputerRequest) GetReputerAddress() string {
@@ -70532,7 +72432,7 @@ type GetDelegateStakeInTopicInReputerResponse struct {
 func (x *GetDelegateStakeInTopicInReputerResponse) Reset() {
 	*x = GetDelegateStakeInTopicInReputerResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[21]
+		mi := &file_emissions_v4_query_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70546,7 +72446,7 @@ func (*GetDelegateStakeInTopicInReputerResponse) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeInTopicInReputerResponse.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeInTopicInReputerResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{21}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *GetDelegateStakeInTopicInReputerResponse) GetAmount() string {
@@ -70569,7 +72469,7 @@ type GetStakeFromDelegatorInTopicInReputerRequest struct {
 func (x *GetStakeFromDelegatorInTopicInReputerRequest) Reset() {
 	*x = GetStakeFromDelegatorInTopicInReputerRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[22]
+		mi := &file_emissions_v4_query_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70583,7 +72483,7 @@ func (*GetStakeFromDelegatorInTopicInReputerRequest) ProtoMessage() {}
 
 // Deprecated: Use GetStakeFromDelegatorInTopicInReputerRequest.ProtoReflect.Descriptor instead.
 func (*GetStakeFromDelegatorInTopicInReputerRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{22}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *GetStakeFromDelegatorInTopicInReputerRequest) GetDelegatorAddress() string {
@@ -70618,7 +72518,7 @@ type GetStakeFromDelegatorInTopicInReputerResponse struct {
 func (x *GetStakeFromDelegatorInTopicInReputerResponse) Reset() {
 	*x = GetStakeFromDelegatorInTopicInReputerResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[23]
+		mi := &file_emissions_v4_query_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70632,7 +72532,7 @@ func (*GetStakeFromDelegatorInTopicInReputerResponse) ProtoMessage() {}
 
 // Deprecated: Use GetStakeFromDelegatorInTopicInReputerResponse.ProtoReflect.Descriptor instead.
 func (*GetStakeFromDelegatorInTopicInReputerResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{23}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *GetStakeFromDelegatorInTopicInReputerResponse) GetAmount() string {
@@ -70654,7 +72554,7 @@ type GetStakeFromDelegatorInTopicRequest struct {
 func (x *GetStakeFromDelegatorInTopicRequest) Reset() {
 	*x = GetStakeFromDelegatorInTopicRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[24]
+		mi := &file_emissions_v4_query_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70668,7 +72568,7 @@ func (*GetStakeFromDelegatorInTopicRequest) ProtoMessage() {}
 
 // Deprecated: Use GetStakeFromDelegatorInTopicRequest.ProtoReflect.Descriptor instead.
 func (*GetStakeFromDelegatorInTopicRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{24}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *GetStakeFromDelegatorInTopicRequest) GetDelegatorAddress() string {
@@ -70696,7 +72596,7 @@ type GetStakeFromDelegatorInTopicResponse struct {
 func (x *GetStakeFromDelegatorInTopicResponse) Reset() {
 	*x = GetStakeFromDelegatorInTopicResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[25]
+		mi := &file_emissions_v4_query_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70710,7 +72610,7 @@ func (*GetStakeFromDelegatorInTopicResponse) ProtoMessage() {}
 
 // Deprecated: Use GetStakeFromDelegatorInTopicResponse.ProtoReflect.Descriptor instead.
 func (*GetStakeFromDelegatorInTopicResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{25}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *GetStakeFromDelegatorInTopicResponse) GetAmount() string {
@@ -70731,7 +72631,7 @@ type GetTopicStakeRequest struct {
 func (x *GetTopicStakeRequest) Reset() {
 	*x = GetTopicStakeRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[26]
+		mi := &file_emissions_v4_query_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70745,7 +72645,7 @@ func (*GetTopicStakeRequest) ProtoMessage() {}
 
 // Deprecated: Use GetTopicStakeRequest.ProtoReflect.Descriptor instead.
 func (*GetTopicStakeRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{26}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *GetTopicStakeRequest) GetTopicId() uint64 {
@@ -70766,7 +72666,7 @@ type GetTopicStakeResponse struct {
 func (x *GetTopicStakeResponse) Reset() {
 	*x = GetTopicStakeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[27]
+		mi := &file_emissions_v4_query_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70780,7 +72680,7 @@ func (*GetTopicStakeResponse) ProtoMessage() {}
 
 // Deprecated: Use GetTopicStakeResponse.ProtoReflect.Descriptor instead.
 func (*GetTopicStakeResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{27}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *GetTopicStakeResponse) GetAmount() string {
@@ -70802,7 +72702,7 @@ type GetNetworkLossBundleAtBlockRequest struct {
 func (x *GetNetworkLossBundleAtBlockRequest) Reset() {
 	*x = GetNetworkLossBundleAtBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[28]
+		mi := &file_emissions_v4_query_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70816,7 +72716,7 @@ func (*GetNetworkLossBundleAtBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetNetworkLossBundleAtBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetNetworkLossBundleAtBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{28}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *GetNetworkLossBundleAtBlockRequest) GetTopicId() uint64 {
@@ -70844,7 +72744,7 @@ type GetNetworkLossBundleAtBlockResponse struct {
 func (x *GetNetworkLossBundleAtBlockResponse) Reset() {
 	*x = GetNetworkLossBundleAtBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[29]
+		mi := &file_emissions_v4_query_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70858,7 +72758,7 @@ func (*GetNetworkLossBundleAtBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetNetworkLossBundleAtBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetNetworkLossBundleAtBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{29}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetNetworkLossBundleAtBlockResponse) GetLossBundle() *v3.ValueBundle {
@@ -70877,7 +72777,7 @@ type GetNextTopicIdRequest struct {
 func (x *GetNextTopicIdRequest) Reset() {
 	*x = GetNextTopicIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[30]
+		mi := &file_emissions_v4_query_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70891,7 +72791,7 @@ func (*GetNextTopicIdRequest) ProtoMessage() {}
 
 // Deprecated: Use GetNextTopicIdRequest.ProtoReflect.Descriptor instead.
 func (*GetNextTopicIdRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{30}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{34}
 }
 
 type GetNextTopicIdResponse struct {
@@ -70905,7 +72805,7 @@ type GetNextTopicIdResponse struct {
 func (x *GetNextTopicIdResponse) Reset() {
 	*x = GetNextTopicIdResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[31]
+		mi := &file_emissions_v4_query_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70919,7 +72819,7 @@ func (*GetNextTopicIdResponse) ProtoMessage() {}
 
 // Deprecated: Use GetNextTopicIdResponse.ProtoReflect.Descriptor instead.
 func (*GetNextTopicIdResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{31}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *GetNextTopicIdResponse) GetNextTopicId() uint64 {
@@ -70940,7 +72840,7 @@ type GetTopicRequest struct {
 func (x *GetTopicRequest) Reset() {
 	*x = GetTopicRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[32]
+		mi := &file_emissions_v4_query_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70954,7 +72854,7 @@ func (*GetTopicRequest) ProtoMessage() {}
 
 // Deprecated: Use GetTopicRequest.ProtoReflect.Descriptor instead.
 func (*GetTopicRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{32}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *GetTopicRequest) GetTopicId() uint64 {
@@ -70977,7 +72877,7 @@ type GetTopicResponse struct {
 func (x *GetTopicResponse) Reset() {
 	*x = GetTopicResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[33]
+		mi := &file_emissions_v4_query_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -70991,7 +72891,7 @@ func (*GetTopicResponse) ProtoMessage() {}
 
 // Deprecated: Use GetTopicResponse.ProtoReflect.Descriptor instead.
 func (*GetTopicResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{33}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *GetTopicResponse) GetTopic() *v3.Topic {
@@ -71026,7 +72926,7 @@ type GetActiveTopicsRequest struct {
 func (x *GetActiveTopicsRequest) Reset() {
 	*x = GetActiveTopicsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[34]
+		mi := &file_emissions_v4_query_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71040,7 +72940,7 @@ func (*GetActiveTopicsRequest) ProtoMessage() {}
 
 // Deprecated: Use GetActiveTopicsRequest.ProtoReflect.Descriptor instead.
 func (*GetActiveTopicsRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{34}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *GetActiveTopicsRequest) GetPagination() *v3.SimpleCursorPaginationRequest {
@@ -71062,7 +72962,7 @@ type GetActiveTopicsResponse struct {
 func (x *GetActiveTopicsResponse) Reset() {
 	*x = GetActiveTopicsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[35]
+		mi := &file_emissions_v4_query_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71076,7 +72976,7 @@ func (*GetActiveTopicsResponse) ProtoMessage() {}
 
 // Deprecated: Use GetActiveTopicsResponse.ProtoReflect.Descriptor instead.
 func (*GetActiveTopicsResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{35}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *GetActiveTopicsResponse) GetTopics() []*v3.Topic {
@@ -71106,7 +73006,7 @@ type GetInferencesAtBlockRequest struct {
 func (x *GetInferencesAtBlockRequest) Reset() {
 	*x = GetInferencesAtBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[36]
+		mi := &file_emissions_v4_query_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71120,7 +73020,7 @@ func (*GetInferencesAtBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetInferencesAtBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetInferencesAtBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{36}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *GetInferencesAtBlockRequest) GetTopicId() uint64 {
@@ -71152,7 +73052,7 @@ type GetInferencesAtBlockResponse struct {
 func (x *GetInferencesAtBlockResponse) Reset() {
 	*x = GetInferencesAtBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[37]
+		mi := &file_emissions_v4_query_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71166,7 +73066,7 @@ func (*GetInferencesAtBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetInferencesAtBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetInferencesAtBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{37}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *GetInferencesAtBlockResponse) GetInferences() *v3.Inferences {
@@ -71187,7 +73087,7 @@ type GetLatestTopicInferencesRequest struct {
 func (x *GetLatestTopicInferencesRequest) Reset() {
 	*x = GetLatestTopicInferencesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[38]
+		mi := &file_emissions_v4_query_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71201,7 +73101,7 @@ func (*GetLatestTopicInferencesRequest) ProtoMessage() {}
 
 // Deprecated: Use GetLatestTopicInferencesRequest.ProtoReflect.Descriptor instead.
 func (*GetLatestTopicInferencesRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{38}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *GetLatestTopicInferencesRequest) GetTopicId() uint64 {
@@ -71223,7 +73123,7 @@ type GetLatestTopicInferencesResponse struct {
 func (x *GetLatestTopicInferencesResponse) Reset() {
 	*x = GetLatestTopicInferencesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[39]
+		mi := &file_emissions_v4_query_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71237,7 +73137,7 @@ func (*GetLatestTopicInferencesResponse) ProtoMessage() {}
 
 // Deprecated: Use GetLatestTopicInferencesResponse.ProtoReflect.Descriptor instead.
 func (*GetLatestTopicInferencesResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{39}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *GetLatestTopicInferencesResponse) GetInferences() *v3.Inferences {
@@ -71267,7 +73167,7 @@ type GetForecastsAtBlockRequest struct {
 func (x *GetForecastsAtBlockRequest) Reset() {
 	*x = GetForecastsAtBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[40]
+		mi := &file_emissions_v4_query_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71281,7 +73181,7 @@ func (*GetForecastsAtBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetForecastsAtBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetForecastsAtBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{40}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *GetForecastsAtBlockRequest) GetTopicId() uint64 {
@@ -71313,7 +73213,7 @@ type GetForecastsAtBlockResponse struct {
 func (x *GetForecastsAtBlockResponse) Reset() {
 	*x = GetForecastsAtBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[41]
+		mi := &file_emissions_v4_query_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71327,7 +73227,7 @@ func (*GetForecastsAtBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetForecastsAtBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetForecastsAtBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{41}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *GetForecastsAtBlockResponse) GetForecasts() *v3.Forecasts {
@@ -71349,7 +73249,7 @@ type GetWorkerLatestInferenceByTopicIdRequest struct {
 func (x *GetWorkerLatestInferenceByTopicIdRequest) Reset() {
 	*x = GetWorkerLatestInferenceByTopicIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[42]
+		mi := &file_emissions_v4_query_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71363,7 +73263,7 @@ func (*GetWorkerLatestInferenceByTopicIdRequest) ProtoMessage() {}
 
 // Deprecated: Use GetWorkerLatestInferenceByTopicIdRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkerLatestInferenceByTopicIdRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{42}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *GetWorkerLatestInferenceByTopicIdRequest) GetTopicId() uint64 {
@@ -71391,7 +73291,7 @@ type GetWorkerLatestInferenceByTopicIdResponse struct {
 func (x *GetWorkerLatestInferenceByTopicIdResponse) Reset() {
 	*x = GetWorkerLatestInferenceByTopicIdResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[43]
+		mi := &file_emissions_v4_query_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71405,7 +73305,7 @@ func (*GetWorkerLatestInferenceByTopicIdResponse) ProtoMessage() {}
 
 // Deprecated: Use GetWorkerLatestInferenceByTopicIdResponse.ProtoReflect.Descriptor instead.
 func (*GetWorkerLatestInferenceByTopicIdResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{43}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *GetWorkerLatestInferenceByTopicIdResponse) GetLatestInference() *v3.Inference {
@@ -71426,7 +73326,7 @@ type GetWorkerNodeInfoRequest struct {
 func (x *GetWorkerNodeInfoRequest) Reset() {
 	*x = GetWorkerNodeInfoRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[44]
+		mi := &file_emissions_v4_query_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71440,7 +73340,7 @@ func (*GetWorkerNodeInfoRequest) ProtoMessage() {}
 
 // Deprecated: Use GetWorkerNodeInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkerNodeInfoRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{44}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *GetWorkerNodeInfoRequest) GetAddress() string {
@@ -71461,7 +73361,7 @@ type GetWorkerNodeInfoResponse struct {
 func (x *GetWorkerNodeInfoResponse) Reset() {
 	*x = GetWorkerNodeInfoResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[45]
+		mi := &file_emissions_v4_query_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71475,7 +73375,7 @@ func (*GetWorkerNodeInfoResponse) ProtoMessage() {}
 
 // Deprecated: Use GetWorkerNodeInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetWorkerNodeInfoResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{45}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *GetWorkerNodeInfoResponse) GetNodeInfo() *v3.OffchainNode {
@@ -71496,7 +73396,7 @@ type GetReputerNodeInfoRequest struct {
 func (x *GetReputerNodeInfoRequest) Reset() {
 	*x = GetReputerNodeInfoRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[46]
+		mi := &file_emissions_v4_query_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71510,7 +73410,7 @@ func (*GetReputerNodeInfoRequest) ProtoMessage() {}
 
 // Deprecated: Use GetReputerNodeInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetReputerNodeInfoRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{46}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *GetReputerNodeInfoRequest) GetAddress() string {
@@ -71531,7 +73431,7 @@ type GetReputerNodeInfoResponse struct {
 func (x *GetReputerNodeInfoResponse) Reset() {
 	*x = GetReputerNodeInfoResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[47]
+		mi := &file_emissions_v4_query_proto_msgTypes[51]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71545,7 +73445,7 @@ func (*GetReputerNodeInfoResponse) ProtoMessage() {}
 
 // Deprecated: Use GetReputerNodeInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetReputerNodeInfoResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{47}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *GetReputerNodeInfoResponse) GetNodeInfo() *v3.OffchainNode {
@@ -71567,7 +73467,7 @@ type GetNetworkInferencesAtBlockRequest struct {
 func (x *GetNetworkInferencesAtBlockRequest) Reset() {
 	*x = GetNetworkInferencesAtBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[48]
+		mi := &file_emissions_v4_query_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71581,7 +73481,7 @@ func (*GetNetworkInferencesAtBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetNetworkInferencesAtBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetNetworkInferencesAtBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{48}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *GetNetworkInferencesAtBlockRequest) GetTopicId() uint64 {
@@ -71609,7 +73509,7 @@ type GetLatestNetworkInferencesRequest struct {
 func (x *GetLatestNetworkInferencesRequest) Reset() {
 	*x = GetLatestNetworkInferencesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[49]
+		mi := &file_emissions_v4_query_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71623,7 +73523,7 @@ func (*GetLatestNetworkInferencesRequest) ProtoMessage() {}
 
 // Deprecated: Use GetLatestNetworkInferencesRequest.ProtoReflect.Descriptor instead.
 func (*GetLatestNetworkInferencesRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{49}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *GetLatestNetworkInferencesRequest) GetTopicId() uint64 {
@@ -71644,7 +73544,7 @@ type GetLatestAvailableNetworkInferencesRequest struct {
 func (x *GetLatestAvailableNetworkInferencesRequest) Reset() {
 	*x = GetLatestAvailableNetworkInferencesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[50]
+		mi := &file_emissions_v4_query_proto_msgTypes[54]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71658,7 +73558,7 @@ func (*GetLatestAvailableNetworkInferencesRequest) ProtoMessage() {}
 
 // Deprecated: Use GetLatestAvailableNetworkInferencesRequest.ProtoReflect.Descriptor instead.
 func (*GetLatestAvailableNetworkInferencesRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{50}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *GetLatestAvailableNetworkInferencesRequest) GetTopicId() uint64 {
@@ -71680,7 +73580,7 @@ type IsWorkerNonceUnfulfilledRequest struct {
 func (x *IsWorkerNonceUnfulfilledRequest) Reset() {
 	*x = IsWorkerNonceUnfulfilledRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[51]
+		mi := &file_emissions_v4_query_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71694,7 +73594,7 @@ func (*IsWorkerNonceUnfulfilledRequest) ProtoMessage() {}
 
 // Deprecated: Use IsWorkerNonceUnfulfilledRequest.ProtoReflect.Descriptor instead.
 func (*IsWorkerNonceUnfulfilledRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{51}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *IsWorkerNonceUnfulfilledRequest) GetTopicId() uint64 {
@@ -71722,7 +73622,7 @@ type IsWorkerNonceUnfulfilledResponse struct {
 func (x *IsWorkerNonceUnfulfilledResponse) Reset() {
 	*x = IsWorkerNonceUnfulfilledResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[52]
+		mi := &file_emissions_v4_query_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71736,7 +73636,7 @@ func (*IsWorkerNonceUnfulfilledResponse) ProtoMessage() {}
 
 // Deprecated: Use IsWorkerNonceUnfulfilledResponse.ProtoReflect.Descriptor instead.
 func (*IsWorkerNonceUnfulfilledResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{52}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *IsWorkerNonceUnfulfilledResponse) GetIsWorkerNonceUnfulfilled() bool {
@@ -71757,7 +73657,7 @@ type GetUnfulfilledReputerNoncesRequest struct {
 func (x *GetUnfulfilledReputerNoncesRequest) Reset() {
 	*x = GetUnfulfilledReputerNoncesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[53]
+		mi := &file_emissions_v4_query_proto_msgTypes[57]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71771,7 +73671,7 @@ func (*GetUnfulfilledReputerNoncesRequest) ProtoMessage() {}
 
 // Deprecated: Use GetUnfulfilledReputerNoncesRequest.ProtoReflect.Descriptor instead.
 func (*GetUnfulfilledReputerNoncesRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{53}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *GetUnfulfilledReputerNoncesRequest) GetTopicId() uint64 {
@@ -71792,7 +73692,7 @@ type GetUnfulfilledReputerNoncesResponse struct {
 func (x *GetUnfulfilledReputerNoncesResponse) Reset() {
 	*x = GetUnfulfilledReputerNoncesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[54]
+		mi := &file_emissions_v4_query_proto_msgTypes[58]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71806,7 +73706,7 @@ func (*GetUnfulfilledReputerNoncesResponse) ProtoMessage() {}
 
 // Deprecated: Use GetUnfulfilledReputerNoncesResponse.ProtoReflect.Descriptor instead.
 func (*GetUnfulfilledReputerNoncesResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{54}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *GetUnfulfilledReputerNoncesResponse) GetNonces() *v3.ReputerRequestNonces {
@@ -71827,7 +73727,7 @@ type GetUnfulfilledWorkerNoncesRequest struct {
 func (x *GetUnfulfilledWorkerNoncesRequest) Reset() {
 	*x = GetUnfulfilledWorkerNoncesRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[55]
+		mi := &file_emissions_v4_query_proto_msgTypes[59]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71841,7 +73741,7 @@ func (*GetUnfulfilledWorkerNoncesRequest) ProtoMessage() {}
 
 // Deprecated: Use GetUnfulfilledWorkerNoncesRequest.ProtoReflect.Descriptor instead.
 func (*GetUnfulfilledWorkerNoncesRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{55}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *GetUnfulfilledWorkerNoncesRequest) GetTopicId() uint64 {
@@ -71862,7 +73762,7 @@ type GetUnfulfilledWorkerNoncesResponse struct {
 func (x *GetUnfulfilledWorkerNoncesResponse) Reset() {
 	*x = GetUnfulfilledWorkerNoncesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[56]
+		mi := &file_emissions_v4_query_proto_msgTypes[60]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71876,7 +73776,7 @@ func (*GetUnfulfilledWorkerNoncesResponse) ProtoMessage() {}
 
 // Deprecated: Use GetUnfulfilledWorkerNoncesResponse.ProtoReflect.Descriptor instead.
 func (*GetUnfulfilledWorkerNoncesResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{56}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *GetUnfulfilledWorkerNoncesResponse) GetNonces() *v3.Nonces {
@@ -71898,7 +73798,7 @@ type GetInfererNetworkRegretRequest struct {
 func (x *GetInfererNetworkRegretRequest) Reset() {
 	*x = GetInfererNetworkRegretRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[57]
+		mi := &file_emissions_v4_query_proto_msgTypes[61]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71912,7 +73812,7 @@ func (*GetInfererNetworkRegretRequest) ProtoMessage() {}
 
 // Deprecated: Use GetInfererNetworkRegretRequest.ProtoReflect.Descriptor instead.
 func (*GetInfererNetworkRegretRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{57}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *GetInfererNetworkRegretRequest) GetTopicId() uint64 {
@@ -71940,7 +73840,7 @@ type GetInfererNetworkRegretResponse struct {
 func (x *GetInfererNetworkRegretResponse) Reset() {
 	*x = GetInfererNetworkRegretResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[58]
+		mi := &file_emissions_v4_query_proto_msgTypes[62]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71954,7 +73854,7 @@ func (*GetInfererNetworkRegretResponse) ProtoMessage() {}
 
 // Deprecated: Use GetInfererNetworkRegretResponse.ProtoReflect.Descriptor instead.
 func (*GetInfererNetworkRegretResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{58}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *GetInfererNetworkRegretResponse) GetRegret() *v3.TimestampedValue {
@@ -71976,7 +73876,7 @@ type GetForecasterNetworkRegretRequest struct {
 func (x *GetForecasterNetworkRegretRequest) Reset() {
 	*x = GetForecasterNetworkRegretRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[59]
+		mi := &file_emissions_v4_query_proto_msgTypes[63]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -71990,7 +73890,7 @@ func (*GetForecasterNetworkRegretRequest) ProtoMessage() {}
 
 // Deprecated: Use GetForecasterNetworkRegretRequest.ProtoReflect.Descriptor instead.
 func (*GetForecasterNetworkRegretRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{59}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *GetForecasterNetworkRegretRequest) GetTopicId() uint64 {
@@ -72018,7 +73918,7 @@ type GetForecasterNetworkRegretResponse struct {
 func (x *GetForecasterNetworkRegretResponse) Reset() {
 	*x = GetForecasterNetworkRegretResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[60]
+		mi := &file_emissions_v4_query_proto_msgTypes[64]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72032,7 +73932,7 @@ func (*GetForecasterNetworkRegretResponse) ProtoMessage() {}
 
 // Deprecated: Use GetForecasterNetworkRegretResponse.ProtoReflect.Descriptor instead.
 func (*GetForecasterNetworkRegretResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{60}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *GetForecasterNetworkRegretResponse) GetRegret() *v3.TimestampedValue {
@@ -72055,7 +73955,7 @@ type GetOneInForecasterNetworkRegretRequest struct {
 func (x *GetOneInForecasterNetworkRegretRequest) Reset() {
 	*x = GetOneInForecasterNetworkRegretRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[61]
+		mi := &file_emissions_v4_query_proto_msgTypes[65]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72069,7 +73969,7 @@ func (*GetOneInForecasterNetworkRegretRequest) ProtoMessage() {}
 
 // Deprecated: Use GetOneInForecasterNetworkRegretRequest.ProtoReflect.Descriptor instead.
 func (*GetOneInForecasterNetworkRegretRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{61}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *GetOneInForecasterNetworkRegretRequest) GetTopicId() uint64 {
@@ -72104,7 +74004,7 @@ type GetOneInForecasterNetworkRegretResponse struct {
 func (x *GetOneInForecasterNetworkRegretResponse) Reset() {
 	*x = GetOneInForecasterNetworkRegretResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[62]
+		mi := &file_emissions_v4_query_proto_msgTypes[66]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72118,7 +74018,7 @@ func (*GetOneInForecasterNetworkRegretResponse) ProtoMessage() {}
 
 // Deprecated: Use GetOneInForecasterNetworkRegretResponse.ProtoReflect.Descriptor instead.
 func (*GetOneInForecasterNetworkRegretResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{62}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *GetOneInForecasterNetworkRegretResponse) GetRegret() *v3.TimestampedValue {
@@ -72140,7 +74040,7 @@ type IsReputerNonceUnfulfilledRequest struct {
 func (x *IsReputerNonceUnfulfilledRequest) Reset() {
 	*x = IsReputerNonceUnfulfilledRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[63]
+		mi := &file_emissions_v4_query_proto_msgTypes[67]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72154,7 +74054,7 @@ func (*IsReputerNonceUnfulfilledRequest) ProtoMessage() {}
 
 // Deprecated: Use IsReputerNonceUnfulfilledRequest.ProtoReflect.Descriptor instead.
 func (*IsReputerNonceUnfulfilledRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{63}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *IsReputerNonceUnfulfilledRequest) GetTopicId() uint64 {
@@ -72182,7 +74082,7 @@ type IsReputerNonceUnfulfilledResponse struct {
 func (x *IsReputerNonceUnfulfilledResponse) Reset() {
 	*x = IsReputerNonceUnfulfilledResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[64]
+		mi := &file_emissions_v4_query_proto_msgTypes[68]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72196,7 +74096,7 @@ func (*IsReputerNonceUnfulfilledResponse) ProtoMessage() {}
 
 // Deprecated: Use IsReputerNonceUnfulfilledResponse.ProtoReflect.Descriptor instead.
 func (*IsReputerNonceUnfulfilledResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{64}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *IsReputerNonceUnfulfilledResponse) GetIsReputerNonceUnfulfilled() bool {
@@ -72217,7 +74117,7 @@ type GetNetworkInferencesAtBlockResponse struct {
 func (x *GetNetworkInferencesAtBlockResponse) Reset() {
 	*x = GetNetworkInferencesAtBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[65]
+		mi := &file_emissions_v4_query_proto_msgTypes[69]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72231,7 +74131,7 @@ func (*GetNetworkInferencesAtBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetNetworkInferencesAtBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetNetworkInferencesAtBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{65}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *GetNetworkInferencesAtBlockResponse) GetNetworkInferences() *v3.ValueBundle {
@@ -72259,7 +74159,7 @@ type GetLatestNetworkInferencesResponse struct {
 func (x *GetLatestNetworkInferencesResponse) Reset() {
 	*x = GetLatestNetworkInferencesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[66]
+		mi := &file_emissions_v4_query_proto_msgTypes[70]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72273,7 +74173,7 @@ func (*GetLatestNetworkInferencesResponse) ProtoMessage() {}
 
 // Deprecated: Use GetLatestNetworkInferencesResponse.ProtoReflect.Descriptor instead.
 func (*GetLatestNetworkInferencesResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{66}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *GetLatestNetworkInferencesResponse) GetNetworkInferences() *v3.ValueBundle {
@@ -72350,7 +74250,7 @@ type GetLatestAvailableNetworkInferencesResponse struct {
 func (x *GetLatestAvailableNetworkInferencesResponse) Reset() {
 	*x = GetLatestAvailableNetworkInferencesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[67]
+		mi := &file_emissions_v4_query_proto_msgTypes[71]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72364,7 +74264,7 @@ func (*GetLatestAvailableNetworkInferencesResponse) ProtoMessage() {}
 
 // Deprecated: Use GetLatestAvailableNetworkInferencesResponse.ProtoReflect.Descriptor instead.
 func (*GetLatestAvailableNetworkInferencesResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{67}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *GetLatestAvailableNetworkInferencesResponse) GetNetworkInferences() *v3.ValueBundle {
@@ -72435,7 +74335,7 @@ type IsWorkerRegisteredInTopicIdRequest struct {
 func (x *IsWorkerRegisteredInTopicIdRequest) Reset() {
 	*x = IsWorkerRegisteredInTopicIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[68]
+		mi := &file_emissions_v4_query_proto_msgTypes[72]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72449,7 +74349,7 @@ func (*IsWorkerRegisteredInTopicIdRequest) ProtoMessage() {}
 
 // Deprecated: Use IsWorkerRegisteredInTopicIdRequest.ProtoReflect.Descriptor instead.
 func (*IsWorkerRegisteredInTopicIdRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{68}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *IsWorkerRegisteredInTopicIdRequest) GetTopicId() uint64 {
@@ -72477,7 +74377,7 @@ type IsWorkerRegisteredInTopicIdResponse struct {
 func (x *IsWorkerRegisteredInTopicIdResponse) Reset() {
 	*x = IsWorkerRegisteredInTopicIdResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[69]
+		mi := &file_emissions_v4_query_proto_msgTypes[73]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72491,7 +74391,7 @@ func (*IsWorkerRegisteredInTopicIdResponse) ProtoMessage() {}
 
 // Deprecated: Use IsWorkerRegisteredInTopicIdResponse.ProtoReflect.Descriptor instead.
 func (*IsWorkerRegisteredInTopicIdResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{69}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *IsWorkerRegisteredInTopicIdResponse) GetIsRegistered() bool {
@@ -72513,7 +74413,7 @@ type IsReputerRegisteredInTopicIdRequest struct {
 func (x *IsReputerRegisteredInTopicIdRequest) Reset() {
 	*x = IsReputerRegisteredInTopicIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[70]
+		mi := &file_emissions_v4_query_proto_msgTypes[74]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72527,7 +74427,7 @@ func (*IsReputerRegisteredInTopicIdRequest) ProtoMessage() {}
 
 // Deprecated: Use IsReputerRegisteredInTopicIdRequest.ProtoReflect.Descriptor instead.
 func (*IsReputerRegisteredInTopicIdRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{70}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *IsReputerRegisteredInTopicIdRequest) GetTopicId() uint64 {
@@ -72555,7 +74455,7 @@ type IsReputerRegisteredInTopicIdResponse struct {
 func (x *IsReputerRegisteredInTopicIdResponse) Reset() {
 	*x = IsReputerRegisteredInTopicIdResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[71]
+		mi := &file_emissions_v4_query_proto_msgTypes[75]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72569,7 +74469,7 @@ func (*IsReputerRegisteredInTopicIdResponse) ProtoMessage() {}
 
 // Deprecated: Use IsReputerRegisteredInTopicIdResponse.ProtoReflect.Descriptor instead.
 func (*IsReputerRegisteredInTopicIdResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{71}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *IsReputerRegisteredInTopicIdResponse) GetIsRegistered() bool {
@@ -72590,7 +74490,7 @@ type IsWhitelistAdminRequest struct {
 func (x *IsWhitelistAdminRequest) Reset() {
 	*x = IsWhitelistAdminRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[72]
+		mi := &file_emissions_v4_query_proto_msgTypes[76]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72604,7 +74504,7 @@ func (*IsWhitelistAdminRequest) ProtoMessage() {}
 
 // Deprecated: Use IsWhitelistAdminRequest.ProtoReflect.Descriptor instead.
 func (*IsWhitelistAdminRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{72}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *IsWhitelistAdminRequest) GetAddress() string {
@@ -72625,7 +74525,7 @@ type IsWhitelistAdminResponse struct {
 func (x *IsWhitelistAdminResponse) Reset() {
 	*x = IsWhitelistAdminResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[73]
+		mi := &file_emissions_v4_query_proto_msgTypes[77]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72639,7 +74539,7 @@ func (*IsWhitelistAdminResponse) ProtoMessage() {}
 
 // Deprecated: Use IsWhitelistAdminResponse.ProtoReflect.Descriptor instead.
 func (*IsWhitelistAdminResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{73}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *IsWhitelistAdminResponse) GetIsAdmin() bool {
@@ -72660,7 +74560,7 @@ type GetStakeRemovalsUpUntilBlockRequest struct {
 func (x *GetStakeRemovalsUpUntilBlockRequest) Reset() {
 	*x = GetStakeRemovalsUpUntilBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[74]
+		mi := &file_emissions_v4_query_proto_msgTypes[78]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72674,7 +74574,7 @@ func (*GetStakeRemovalsUpUntilBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetStakeRemovalsUpUntilBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetStakeRemovalsUpUntilBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{74}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *GetStakeRemovalsUpUntilBlockRequest) GetBlockHeight() int64 {
@@ -72695,7 +74595,7 @@ type GetStakeRemovalsUpUntilBlockResponse struct {
 func (x *GetStakeRemovalsUpUntilBlockResponse) Reset() {
 	*x = GetStakeRemovalsUpUntilBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[75]
+		mi := &file_emissions_v4_query_proto_msgTypes[79]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72709,7 +74609,7 @@ func (*GetStakeRemovalsUpUntilBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetStakeRemovalsUpUntilBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetStakeRemovalsUpUntilBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{75}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *GetStakeRemovalsUpUntilBlockResponse) GetRemovals() []*v3.StakeRemovalInfo {
@@ -72730,7 +74630,7 @@ type GetDelegateStakeRemovalsUpUntilBlockRequest struct {
 func (x *GetDelegateStakeRemovalsUpUntilBlockRequest) Reset() {
 	*x = GetDelegateStakeRemovalsUpUntilBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[76]
+		mi := &file_emissions_v4_query_proto_msgTypes[80]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72744,7 +74644,7 @@ func (*GetDelegateStakeRemovalsUpUntilBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeRemovalsUpUntilBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeRemovalsUpUntilBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{76}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *GetDelegateStakeRemovalsUpUntilBlockRequest) GetBlockHeight() int64 {
@@ -72765,7 +74665,7 @@ type GetDelegateStakeRemovalsUpUntilBlockResponse struct {
 func (x *GetDelegateStakeRemovalsUpUntilBlockResponse) Reset() {
 	*x = GetDelegateStakeRemovalsUpUntilBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[77]
+		mi := &file_emissions_v4_query_proto_msgTypes[81]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72779,7 +74679,7 @@ func (*GetDelegateStakeRemovalsUpUntilBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeRemovalsUpUntilBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeRemovalsUpUntilBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{77}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *GetDelegateStakeRemovalsUpUntilBlockResponse) GetRemovals() []*v3.DelegateStakeRemovalInfo {
@@ -72801,7 +74701,7 @@ type GetStakeRemovalInfoRequest struct {
 func (x *GetStakeRemovalInfoRequest) Reset() {
 	*x = GetStakeRemovalInfoRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[78]
+		mi := &file_emissions_v4_query_proto_msgTypes[82]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72815,7 +74715,7 @@ func (*GetStakeRemovalInfoRequest) ProtoMessage() {}
 
 // Deprecated: Use GetStakeRemovalInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetStakeRemovalInfoRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{78}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{82}
 }
 
 func (x *GetStakeRemovalInfoRequest) GetTopicId() uint64 {
@@ -72843,7 +74743,7 @@ type GetStakeRemovalInfoResponse struct {
 func (x *GetStakeRemovalInfoResponse) Reset() {
 	*x = GetStakeRemovalInfoResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[79]
+		mi := &file_emissions_v4_query_proto_msgTypes[83]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72857,7 +74757,7 @@ func (*GetStakeRemovalInfoResponse) ProtoMessage() {}
 
 // Deprecated: Use GetStakeRemovalInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetStakeRemovalInfoResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{79}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *GetStakeRemovalInfoResponse) GetRemoval() *v3.StakeRemovalInfo {
@@ -72880,7 +74780,7 @@ type GetDelegateStakeRemovalInfoRequest struct {
 func (x *GetDelegateStakeRemovalInfoRequest) Reset() {
 	*x = GetDelegateStakeRemovalInfoRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[80]
+		mi := &file_emissions_v4_query_proto_msgTypes[84]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72894,7 +74794,7 @@ func (*GetDelegateStakeRemovalInfoRequest) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeRemovalInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeRemovalInfoRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{80}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{84}
 }
 
 func (x *GetDelegateStakeRemovalInfoRequest) GetTopicId() uint64 {
@@ -72929,7 +74829,7 @@ type GetDelegateStakeRemovalInfoResponse struct {
 func (x *GetDelegateStakeRemovalInfoResponse) Reset() {
 	*x = GetDelegateStakeRemovalInfoResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[81]
+		mi := &file_emissions_v4_query_proto_msgTypes[85]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72943,7 +74843,7 @@ func (*GetDelegateStakeRemovalInfoResponse) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeRemovalInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeRemovalInfoResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{81}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *GetDelegateStakeRemovalInfoResponse) GetRemoval() *v3.DelegateStakeRemovalInfo {
@@ -72964,7 +74864,7 @@ type GetTopicLastWorkerCommitInfoRequest struct {
 func (x *GetTopicLastWorkerCommitInfoRequest) Reset() {
 	*x = GetTopicLastWorkerCommitInfoRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[82]
+		mi := &file_emissions_v4_query_proto_msgTypes[86]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -72978,7 +74878,7 @@ func (*GetTopicLastWorkerCommitInfoRequest) ProtoMessage() {}
 
 // Deprecated: Use GetTopicLastWorkerCommitInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetTopicLastWorkerCommitInfoRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{82}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *GetTopicLastWorkerCommitInfoRequest) GetTopicId() uint64 {
@@ -72999,7 +74899,7 @@ type GetTopicLastWorkerCommitInfoResponse struct {
 func (x *GetTopicLastWorkerCommitInfoResponse) Reset() {
 	*x = GetTopicLastWorkerCommitInfoResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[83]
+		mi := &file_emissions_v4_query_proto_msgTypes[87]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73013,7 +74913,7 @@ func (*GetTopicLastWorkerCommitInfoResponse) ProtoMessage() {}
 
 // Deprecated: Use GetTopicLastWorkerCommitInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetTopicLastWorkerCommitInfoResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{83}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *GetTopicLastWorkerCommitInfoResponse) GetLastCommit() *v3.TimestampedActorNonce {
@@ -73034,7 +74934,7 @@ type GetTopicLastReputerCommitInfoRequest struct {
 func (x *GetTopicLastReputerCommitInfoRequest) Reset() {
 	*x = GetTopicLastReputerCommitInfoRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[84]
+		mi := &file_emissions_v4_query_proto_msgTypes[88]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73048,7 +74948,7 @@ func (*GetTopicLastReputerCommitInfoRequest) ProtoMessage() {}
 
 // Deprecated: Use GetTopicLastReputerCommitInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetTopicLastReputerCommitInfoRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{84}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *GetTopicLastReputerCommitInfoRequest) GetTopicId() uint64 {
@@ -73069,7 +74969,7 @@ type GetTopicLastReputerCommitInfoResponse struct {
 func (x *GetTopicLastReputerCommitInfoResponse) Reset() {
 	*x = GetTopicLastReputerCommitInfoResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[85]
+		mi := &file_emissions_v4_query_proto_msgTypes[89]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73083,7 +74983,7 @@ func (*GetTopicLastReputerCommitInfoResponse) ProtoMessage() {}
 
 // Deprecated: Use GetTopicLastReputerCommitInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetTopicLastReputerCommitInfoResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{85}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *GetTopicLastReputerCommitInfoResponse) GetLastCommit() *v3.TimestampedActorNonce {
@@ -73104,7 +75004,7 @@ type GetTopicRewardNonceRequest struct {
 func (x *GetTopicRewardNonceRequest) Reset() {
 	*x = GetTopicRewardNonceRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[86]
+		mi := &file_emissions_v4_query_proto_msgTypes[90]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73118,7 +75018,7 @@ func (*GetTopicRewardNonceRequest) ProtoMessage() {}
 
 // Deprecated: Use GetTopicRewardNonceRequest.ProtoReflect.Descriptor instead.
 func (*GetTopicRewardNonceRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{86}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *GetTopicRewardNonceRequest) GetTopicId() uint64 {
@@ -73139,7 +75039,7 @@ type GetTopicRewardNonceResponse struct {
 func (x *GetTopicRewardNonceResponse) Reset() {
 	*x = GetTopicRewardNonceResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[87]
+		mi := &file_emissions_v4_query_proto_msgTypes[91]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73153,7 +75053,7 @@ func (*GetTopicRewardNonceResponse) ProtoMessage() {}
 
 // Deprecated: Use GetTopicRewardNonceResponse.ProtoReflect.Descriptor instead.
 func (*GetTopicRewardNonceResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{87}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *GetTopicRewardNonceResponse) GetNonce() int64 {
@@ -73175,7 +75075,7 @@ type GetReputerLossBundlesAtBlockRequest struct {
 func (x *GetReputerLossBundlesAtBlockRequest) Reset() {
 	*x = GetReputerLossBundlesAtBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[88]
+		mi := &file_emissions_v4_query_proto_msgTypes[92]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73189,7 +75089,7 @@ func (*GetReputerLossBundlesAtBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetReputerLossBundlesAtBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetReputerLossBundlesAtBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{88}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{92}
 }
 
 func (x *GetReputerLossBundlesAtBlockRequest) GetTopicId() uint64 {
@@ -73217,7 +75117,7 @@ type GetReputerLossBundlesAtBlockResponse struct {
 func (x *GetReputerLossBundlesAtBlockResponse) Reset() {
 	*x = GetReputerLossBundlesAtBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[89]
+		mi := &file_emissions_v4_query_proto_msgTypes[93]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73231,7 +75131,7 @@ func (*GetReputerLossBundlesAtBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetReputerLossBundlesAtBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetReputerLossBundlesAtBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{89}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *GetReputerLossBundlesAtBlockResponse) GetLossBundles() *v3.ReputerValueBundles {
@@ -73253,7 +75153,7 @@ type GetStakeReputerAuthorityRequest struct {
 func (x *GetStakeReputerAuthorityRequest) Reset() {
 	*x = GetStakeReputerAuthorityRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[90]
+		mi := &file_emissions_v4_query_proto_msgTypes[94]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73267,7 +75167,7 @@ func (*GetStakeReputerAuthorityRequest) ProtoMessage() {}
 
 // Deprecated: Use GetStakeReputerAuthorityRequest.ProtoReflect.Descriptor instead.
 func (*GetStakeReputerAuthorityRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{90}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *GetStakeReputerAuthorityRequest) GetTopicId() uint64 {
@@ -73295,7 +75195,7 @@ type GetStakeReputerAuthorityResponse struct {
 func (x *GetStakeReputerAuthorityResponse) Reset() {
 	*x = GetStakeReputerAuthorityResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[91]
+		mi := &file_emissions_v4_query_proto_msgTypes[95]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73309,7 +75209,7 @@ func (*GetStakeReputerAuthorityResponse) ProtoMessage() {}
 
 // Deprecated: Use GetStakeReputerAuthorityResponse.ProtoReflect.Descriptor instead.
 func (*GetStakeReputerAuthorityResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{91}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{95}
 }
 
 func (x *GetStakeReputerAuthorityResponse) GetAuthority() string {
@@ -73332,7 +75232,7 @@ type GetDelegateStakePlacementRequest struct {
 func (x *GetDelegateStakePlacementRequest) Reset() {
 	*x = GetDelegateStakePlacementRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[92]
+		mi := &file_emissions_v4_query_proto_msgTypes[96]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73346,7 +75246,7 @@ func (*GetDelegateStakePlacementRequest) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakePlacementRequest.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakePlacementRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{92}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *GetDelegateStakePlacementRequest) GetTopicId() uint64 {
@@ -73381,7 +75281,7 @@ type GetDelegateStakePlacementResponse struct {
 func (x *GetDelegateStakePlacementResponse) Reset() {
 	*x = GetDelegateStakePlacementResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[93]
+		mi := &file_emissions_v4_query_proto_msgTypes[97]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73395,7 +75295,7 @@ func (*GetDelegateStakePlacementResponse) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakePlacementResponse.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakePlacementResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{93}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *GetDelegateStakePlacementResponse) GetDelegatorInfo() *v3.DelegatorInfo {
@@ -73417,7 +75317,7 @@ type GetDelegateStakeUponReputerRequest struct {
 func (x *GetDelegateStakeUponReputerRequest) Reset() {
 	*x = GetDelegateStakeUponReputerRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[94]
+		mi := &file_emissions_v4_query_proto_msgTypes[98]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73431,7 +75331,7 @@ func (*GetDelegateStakeUponReputerRequest) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeUponReputerRequest.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeUponReputerRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{94}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{98}
 }
 
 func (x *GetDelegateStakeUponReputerRequest) GetTopicId() uint64 {
@@ -73459,7 +75359,7 @@ type GetDelegateStakeUponReputerResponse struct {
 func (x *GetDelegateStakeUponReputerResponse) Reset() {
 	*x = GetDelegateStakeUponReputerResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[95]
+		mi := &file_emissions_v4_query_proto_msgTypes[99]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73473,7 +75373,7 @@ func (*GetDelegateStakeUponReputerResponse) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeUponReputerResponse.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeUponReputerResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{95}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{99}
 }
 
 func (x *GetDelegateStakeUponReputerResponse) GetStake() string {
@@ -73495,7 +75395,7 @@ type GetDelegateRewardPerShareRequest struct {
 func (x *GetDelegateRewardPerShareRequest) Reset() {
 	*x = GetDelegateRewardPerShareRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[96]
+		mi := &file_emissions_v4_query_proto_msgTypes[100]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73509,7 +75409,7 @@ func (*GetDelegateRewardPerShareRequest) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateRewardPerShareRequest.ProtoReflect.Descriptor instead.
 func (*GetDelegateRewardPerShareRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{96}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{100}
 }
 
 func (x *GetDelegateRewardPerShareRequest) GetTopicId() uint64 {
@@ -73537,7 +75437,7 @@ type GetDelegateRewardPerShareResponse struct {
 func (x *GetDelegateRewardPerShareResponse) Reset() {
 	*x = GetDelegateRewardPerShareResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[97]
+		mi := &file_emissions_v4_query_proto_msgTypes[101]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73551,7 +75451,7 @@ func (*GetDelegateRewardPerShareResponse) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateRewardPerShareResponse.ProtoReflect.Descriptor instead.
 func (*GetDelegateRewardPerShareResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{97}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{101}
 }
 
 func (x *GetDelegateRewardPerShareResponse) GetRewardPerShare() string {
@@ -73573,7 +75473,7 @@ type GetStakeRemovalForReputerAndTopicIdRequest struct {
 func (x *GetStakeRemovalForReputerAndTopicIdRequest) Reset() {
 	*x = GetStakeRemovalForReputerAndTopicIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[98]
+		mi := &file_emissions_v4_query_proto_msgTypes[102]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73587,7 +75487,7 @@ func (*GetStakeRemovalForReputerAndTopicIdRequest) ProtoMessage() {}
 
 // Deprecated: Use GetStakeRemovalForReputerAndTopicIdRequest.ProtoReflect.Descriptor instead.
 func (*GetStakeRemovalForReputerAndTopicIdRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{98}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{102}
 }
 
 func (x *GetStakeRemovalForReputerAndTopicIdRequest) GetReputer() string {
@@ -73615,7 +75515,7 @@ type GetStakeRemovalForReputerAndTopicIdResponse struct {
 func (x *GetStakeRemovalForReputerAndTopicIdResponse) Reset() {
 	*x = GetStakeRemovalForReputerAndTopicIdResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[99]
+		mi := &file_emissions_v4_query_proto_msgTypes[103]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73629,7 +75529,7 @@ func (*GetStakeRemovalForReputerAndTopicIdResponse) ProtoMessage() {}
 
 // Deprecated: Use GetStakeRemovalForReputerAndTopicIdResponse.ProtoReflect.Descriptor instead.
 func (*GetStakeRemovalForReputerAndTopicIdResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{99}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *GetStakeRemovalForReputerAndTopicIdResponse) GetStakeRemovalInfo() *v3.StakeRemovalInfo {
@@ -73653,7 +75553,7 @@ type GetDelegateStakeRemovalRequest struct {
 func (x *GetDelegateStakeRemovalRequest) Reset() {
 	*x = GetDelegateStakeRemovalRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[100]
+		mi := &file_emissions_v4_query_proto_msgTypes[104]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73667,7 +75567,7 @@ func (*GetDelegateStakeRemovalRequest) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeRemovalRequest.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeRemovalRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{100}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{104}
 }
 
 func (x *GetDelegateStakeRemovalRequest) GetBlockHeight() int64 {
@@ -73709,7 +75609,7 @@ type GetDelegateStakeRemovalResponse struct {
 func (x *GetDelegateStakeRemovalResponse) Reset() {
 	*x = GetDelegateStakeRemovalResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[101]
+		mi := &file_emissions_v4_query_proto_msgTypes[105]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73723,7 +75623,7 @@ func (*GetDelegateStakeRemovalResponse) ProtoMessage() {}
 
 // Deprecated: Use GetDelegateStakeRemovalResponse.ProtoReflect.Descriptor instead.
 func (*GetDelegateStakeRemovalResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{101}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{105}
 }
 
 func (x *GetDelegateStakeRemovalResponse) GetStakeRemovalInfo() *v3.DelegateStakeRemovalInfo {
@@ -73744,7 +75644,7 @@ type GetPreviousTopicWeightRequest struct {
 func (x *GetPreviousTopicWeightRequest) Reset() {
 	*x = GetPreviousTopicWeightRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[102]
+		mi := &file_emissions_v4_query_proto_msgTypes[106]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73758,7 +75658,7 @@ func (*GetPreviousTopicWeightRequest) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousTopicWeightRequest.ProtoReflect.Descriptor instead.
 func (*GetPreviousTopicWeightRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{102}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{106}
 }
 
 func (x *GetPreviousTopicWeightRequest) GetTopicId() uint64 {
@@ -73780,7 +75680,7 @@ type GetPreviousTopicWeightResponse struct {
 func (x *GetPreviousTopicWeightResponse) Reset() {
 	*x = GetPreviousTopicWeightResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[103]
+		mi := &file_emissions_v4_query_proto_msgTypes[107]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73794,7 +75694,7 @@ func (*GetPreviousTopicWeightResponse) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousTopicWeightResponse.ProtoReflect.Descriptor instead.
 func (*GetPreviousTopicWeightResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{103}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{107}
 }
 
 func (x *GetPreviousTopicWeightResponse) GetWeight() string {
@@ -73822,7 +75722,7 @@ type TopicExistsRequest struct {
 func (x *TopicExistsRequest) Reset() {
 	*x = TopicExistsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[104]
+		mi := &file_emissions_v4_query_proto_msgTypes[108]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73836,7 +75736,7 @@ func (*TopicExistsRequest) ProtoMessage() {}
 
 // Deprecated: Use TopicExistsRequest.ProtoReflect.Descriptor instead.
 func (*TopicExistsRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{104}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{108}
 }
 
 func (x *TopicExistsRequest) GetTopicId() uint64 {
@@ -73857,7 +75757,7 @@ type TopicExistsResponse struct {
 func (x *TopicExistsResponse) Reset() {
 	*x = TopicExistsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[105]
+		mi := &file_emissions_v4_query_proto_msgTypes[109]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73871,7 +75771,7 @@ func (*TopicExistsResponse) ProtoMessage() {}
 
 // Deprecated: Use TopicExistsResponse.ProtoReflect.Descriptor instead.
 func (*TopicExistsResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{105}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{109}
 }
 
 func (x *TopicExistsResponse) GetExists() bool {
@@ -73892,7 +75792,7 @@ type IsTopicActiveRequest struct {
 func (x *IsTopicActiveRequest) Reset() {
 	*x = IsTopicActiveRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[106]
+		mi := &file_emissions_v4_query_proto_msgTypes[110]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73906,7 +75806,7 @@ func (*IsTopicActiveRequest) ProtoMessage() {}
 
 // Deprecated: Use IsTopicActiveRequest.ProtoReflect.Descriptor instead.
 func (*IsTopicActiveRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{106}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{110}
 }
 
 func (x *IsTopicActiveRequest) GetTopicId() uint64 {
@@ -73927,7 +75827,7 @@ type IsTopicActiveResponse struct {
 func (x *IsTopicActiveResponse) Reset() {
 	*x = IsTopicActiveResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[107]
+		mi := &file_emissions_v4_query_proto_msgTypes[111]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73941,7 +75841,7 @@ func (*IsTopicActiveResponse) ProtoMessage() {}
 
 // Deprecated: Use IsTopicActiveResponse.ProtoReflect.Descriptor instead.
 func (*IsTopicActiveResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{107}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{111}
 }
 
 func (x *IsTopicActiveResponse) GetIsActive() bool {
@@ -73962,7 +75862,7 @@ type GetTopicFeeRevenueRequest struct {
 func (x *GetTopicFeeRevenueRequest) Reset() {
 	*x = GetTopicFeeRevenueRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[108]
+		mi := &file_emissions_v4_query_proto_msgTypes[112]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -73976,7 +75876,7 @@ func (*GetTopicFeeRevenueRequest) ProtoMessage() {}
 
 // Deprecated: Use GetTopicFeeRevenueRequest.ProtoReflect.Descriptor instead.
 func (*GetTopicFeeRevenueRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{108}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{112}
 }
 
 func (x *GetTopicFeeRevenueRequest) GetTopicId() uint64 {
@@ -73997,7 +75897,7 @@ type GetTopicFeeRevenueResponse struct {
 func (x *GetTopicFeeRevenueResponse) Reset() {
 	*x = GetTopicFeeRevenueResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[109]
+		mi := &file_emissions_v4_query_proto_msgTypes[113]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74011,7 +75911,7 @@ func (*GetTopicFeeRevenueResponse) ProtoMessage() {}
 
 // Deprecated: Use GetTopicFeeRevenueResponse.ProtoReflect.Descriptor instead.
 func (*GetTopicFeeRevenueResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{109}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{113}
 }
 
 func (x *GetTopicFeeRevenueResponse) GetFeeRevenue() string {
@@ -74033,7 +75933,7 @@ type GetInfererScoreEmaRequest struct {
 func (x *GetInfererScoreEmaRequest) Reset() {
 	*x = GetInfererScoreEmaRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[110]
+		mi := &file_emissions_v4_query_proto_msgTypes[114]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74047,7 +75947,7 @@ func (*GetInfererScoreEmaRequest) ProtoMessage() {}
 
 // Deprecated: Use GetInfererScoreEmaRequest.ProtoReflect.Descriptor instead.
 func (*GetInfererScoreEmaRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{110}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{114}
 }
 
 func (x *GetInfererScoreEmaRequest) GetTopicId() uint64 {
@@ -74075,7 +75975,7 @@ type GetInfererScoreEmaResponse struct {
 func (x *GetInfererScoreEmaResponse) Reset() {
 	*x = GetInfererScoreEmaResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[111]
+		mi := &file_emissions_v4_query_proto_msgTypes[115]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74089,7 +75989,7 @@ func (*GetInfererScoreEmaResponse) ProtoMessage() {}
 
 // Deprecated: Use GetInfererScoreEmaResponse.ProtoReflect.Descriptor instead.
 func (*GetInfererScoreEmaResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{111}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{115}
 }
 
 func (x *GetInfererScoreEmaResponse) GetScore() *v3.Score {
@@ -74111,7 +76011,7 @@ type GetForecasterScoreEmaRequest struct {
 func (x *GetForecasterScoreEmaRequest) Reset() {
 	*x = GetForecasterScoreEmaRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[112]
+		mi := &file_emissions_v4_query_proto_msgTypes[116]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74125,7 +76025,7 @@ func (*GetForecasterScoreEmaRequest) ProtoMessage() {}
 
 // Deprecated: Use GetForecasterScoreEmaRequest.ProtoReflect.Descriptor instead.
 func (*GetForecasterScoreEmaRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{112}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{116}
 }
 
 func (x *GetForecasterScoreEmaRequest) GetTopicId() uint64 {
@@ -74153,7 +76053,7 @@ type GetForecasterScoreEmaResponse struct {
 func (x *GetForecasterScoreEmaResponse) Reset() {
 	*x = GetForecasterScoreEmaResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[113]
+		mi := &file_emissions_v4_query_proto_msgTypes[117]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74167,7 +76067,7 @@ func (*GetForecasterScoreEmaResponse) ProtoMessage() {}
 
 // Deprecated: Use GetForecasterScoreEmaResponse.ProtoReflect.Descriptor instead.
 func (*GetForecasterScoreEmaResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{113}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{117}
 }
 
 func (x *GetForecasterScoreEmaResponse) GetScore() *v3.Score {
@@ -74189,7 +76089,7 @@ type GetReputerScoreEmaRequest struct {
 func (x *GetReputerScoreEmaRequest) Reset() {
 	*x = GetReputerScoreEmaRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[114]
+		mi := &file_emissions_v4_query_proto_msgTypes[118]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74203,7 +76103,7 @@ func (*GetReputerScoreEmaRequest) ProtoMessage() {}
 
 // Deprecated: Use GetReputerScoreEmaRequest.ProtoReflect.Descriptor instead.
 func (*GetReputerScoreEmaRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{114}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{118}
 }
 
 func (x *GetReputerScoreEmaRequest) GetTopicId() uint64 {
@@ -74231,7 +76131,7 @@ type GetReputerScoreEmaResponse struct {
 func (x *GetReputerScoreEmaResponse) Reset() {
 	*x = GetReputerScoreEmaResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[115]
+		mi := &file_emissions_v4_query_proto_msgTypes[119]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74245,7 +76145,7 @@ func (*GetReputerScoreEmaResponse) ProtoMessage() {}
 
 // Deprecated: Use GetReputerScoreEmaResponse.ProtoReflect.Descriptor instead.
 func (*GetReputerScoreEmaResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{115}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{119}
 }
 
 func (x *GetReputerScoreEmaResponse) GetScore() *v3.Score {
@@ -74267,7 +76167,7 @@ type GetInferenceScoresUntilBlockRequest struct {
 func (x *GetInferenceScoresUntilBlockRequest) Reset() {
 	*x = GetInferenceScoresUntilBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[116]
+		mi := &file_emissions_v4_query_proto_msgTypes[120]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74281,7 +76181,7 @@ func (*GetInferenceScoresUntilBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetInferenceScoresUntilBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetInferenceScoresUntilBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{116}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{120}
 }
 
 func (x *GetInferenceScoresUntilBlockRequest) GetTopicId() uint64 {
@@ -74309,7 +76209,7 @@ type GetInferenceScoresUntilBlockResponse struct {
 func (x *GetInferenceScoresUntilBlockResponse) Reset() {
 	*x = GetInferenceScoresUntilBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[117]
+		mi := &file_emissions_v4_query_proto_msgTypes[121]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74323,7 +76223,7 @@ func (*GetInferenceScoresUntilBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetInferenceScoresUntilBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetInferenceScoresUntilBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{117}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{121}
 }
 
 func (x *GetInferenceScoresUntilBlockResponse) GetScores() []*v3.Score {
@@ -74344,7 +76244,7 @@ type GetPreviousTopicQuantileForecasterScoreEmaRequest struct {
 func (x *GetPreviousTopicQuantileForecasterScoreEmaRequest) Reset() {
 	*x = GetPreviousTopicQuantileForecasterScoreEmaRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[118]
+		mi := &file_emissions_v4_query_proto_msgTypes[122]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74358,7 +76258,7 @@ func (*GetPreviousTopicQuantileForecasterScoreEmaRequest) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousTopicQuantileForecasterScoreEmaRequest.ProtoReflect.Descriptor instead.
 func (*GetPreviousTopicQuantileForecasterScoreEmaRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{118}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{122}
 }
 
 func (x *GetPreviousTopicQuantileForecasterScoreEmaRequest) GetTopicId() uint64 {
@@ -74379,7 +76279,7 @@ type GetPreviousTopicQuantileForecasterScoreEmaResponse struct {
 func (x *GetPreviousTopicQuantileForecasterScoreEmaResponse) Reset() {
 	*x = GetPreviousTopicQuantileForecasterScoreEmaResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[119]
+		mi := &file_emissions_v4_query_proto_msgTypes[123]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74393,7 +76293,7 @@ func (*GetPreviousTopicQuantileForecasterScoreEmaResponse) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousTopicQuantileForecasterScoreEmaResponse.ProtoReflect.Descriptor instead.
 func (*GetPreviousTopicQuantileForecasterScoreEmaResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{119}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{123}
 }
 
 func (x *GetPreviousTopicQuantileForecasterScoreEmaResponse) GetValue() string {
@@ -74414,7 +76314,7 @@ type GetPreviousTopicQuantileInfererScoreEmaRequest struct {
 func (x *GetPreviousTopicQuantileInfererScoreEmaRequest) Reset() {
 	*x = GetPreviousTopicQuantileInfererScoreEmaRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[120]
+		mi := &file_emissions_v4_query_proto_msgTypes[124]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74428,7 +76328,7 @@ func (*GetPreviousTopicQuantileInfererScoreEmaRequest) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousTopicQuantileInfererScoreEmaRequest.ProtoReflect.Descriptor instead.
 func (*GetPreviousTopicQuantileInfererScoreEmaRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{120}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{124}
 }
 
 func (x *GetPreviousTopicQuantileInfererScoreEmaRequest) GetTopicId() uint64 {
@@ -74449,7 +76349,7 @@ type GetPreviousTopicQuantileInfererScoreEmaResponse struct {
 func (x *GetPreviousTopicQuantileInfererScoreEmaResponse) Reset() {
 	*x = GetPreviousTopicQuantileInfererScoreEmaResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[121]
+		mi := &file_emissions_v4_query_proto_msgTypes[125]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74463,7 +76363,7 @@ func (*GetPreviousTopicQuantileInfererScoreEmaResponse) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousTopicQuantileInfererScoreEmaResponse.ProtoReflect.Descriptor instead.
 func (*GetPreviousTopicQuantileInfererScoreEmaResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{121}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{125}
 }
 
 func (x *GetPreviousTopicQuantileInfererScoreEmaResponse) GetValue() string {
@@ -74484,7 +76384,7 @@ type GetPreviousTopicQuantileReputerScoreEmaRequest struct {
 func (x *GetPreviousTopicQuantileReputerScoreEmaRequest) Reset() {
 	*x = GetPreviousTopicQuantileReputerScoreEmaRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[122]
+		mi := &file_emissions_v4_query_proto_msgTypes[126]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74498,7 +76398,7 @@ func (*GetPreviousTopicQuantileReputerScoreEmaRequest) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousTopicQuantileReputerScoreEmaRequest.ProtoReflect.Descriptor instead.
 func (*GetPreviousTopicQuantileReputerScoreEmaRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{122}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{126}
 }
 
 func (x *GetPreviousTopicQuantileReputerScoreEmaRequest) GetTopicId() uint64 {
@@ -74519,7 +76419,7 @@ type GetPreviousTopicQuantileReputerScoreEmaResponse struct {
 func (x *GetPreviousTopicQuantileReputerScoreEmaResponse) Reset() {
 	*x = GetPreviousTopicQuantileReputerScoreEmaResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[123]
+		mi := &file_emissions_v4_query_proto_msgTypes[127]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74533,7 +76433,7 @@ func (*GetPreviousTopicQuantileReputerScoreEmaResponse) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousTopicQuantileReputerScoreEmaResponse.ProtoReflect.Descriptor instead.
 func (*GetPreviousTopicQuantileReputerScoreEmaResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{123}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{127}
 }
 
 func (x *GetPreviousTopicQuantileReputerScoreEmaResponse) GetValue() string {
@@ -74555,7 +76455,7 @@ type GetWorkerInferenceScoresAtBlockRequest struct {
 func (x *GetWorkerInferenceScoresAtBlockRequest) Reset() {
 	*x = GetWorkerInferenceScoresAtBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[124]
+		mi := &file_emissions_v4_query_proto_msgTypes[128]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74569,7 +76469,7 @@ func (*GetWorkerInferenceScoresAtBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetWorkerInferenceScoresAtBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkerInferenceScoresAtBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{124}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{128}
 }
 
 func (x *GetWorkerInferenceScoresAtBlockRequest) GetTopicId() uint64 {
@@ -74597,7 +76497,7 @@ type GetWorkerInferenceScoresAtBlockResponse struct {
 func (x *GetWorkerInferenceScoresAtBlockResponse) Reset() {
 	*x = GetWorkerInferenceScoresAtBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[125]
+		mi := &file_emissions_v4_query_proto_msgTypes[129]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74611,7 +76511,7 @@ func (*GetWorkerInferenceScoresAtBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetWorkerInferenceScoresAtBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetWorkerInferenceScoresAtBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{125}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{129}
 }
 
 func (x *GetWorkerInferenceScoresAtBlockResponse) GetScores() *v3.Scores {
@@ -74632,7 +76532,7 @@ type GetCurrentLowestInfererScoreRequest struct {
 func (x *GetCurrentLowestInfererScoreRequest) Reset() {
 	*x = GetCurrentLowestInfererScoreRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[126]
+		mi := &file_emissions_v4_query_proto_msgTypes[130]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74646,7 +76546,7 @@ func (*GetCurrentLowestInfererScoreRequest) ProtoMessage() {}
 
 // Deprecated: Use GetCurrentLowestInfererScoreRequest.ProtoReflect.Descriptor instead.
 func (*GetCurrentLowestInfererScoreRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{126}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{130}
 }
 
 func (x *GetCurrentLowestInfererScoreRequest) GetTopicId() uint64 {
@@ -74667,7 +76567,7 @@ type GetCurrentLowestInfererScoreResponse struct {
 func (x *GetCurrentLowestInfererScoreResponse) Reset() {
 	*x = GetCurrentLowestInfererScoreResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[127]
+		mi := &file_emissions_v4_query_proto_msgTypes[131]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74681,7 +76581,7 @@ func (*GetCurrentLowestInfererScoreResponse) ProtoMessage() {}
 
 // Deprecated: Use GetCurrentLowestInfererScoreResponse.ProtoReflect.Descriptor instead.
 func (*GetCurrentLowestInfererScoreResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{127}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{131}
 }
 
 func (x *GetCurrentLowestInfererScoreResponse) GetScore() *v3.Score {
@@ -74703,7 +76603,7 @@ type GetForecastScoresUntilBlockRequest struct {
 func (x *GetForecastScoresUntilBlockRequest) Reset() {
 	*x = GetForecastScoresUntilBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[128]
+		mi := &file_emissions_v4_query_proto_msgTypes[132]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74717,7 +76617,7 @@ func (*GetForecastScoresUntilBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetForecastScoresUntilBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetForecastScoresUntilBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{128}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{132}
 }
 
 func (x *GetForecastScoresUntilBlockRequest) GetTopicId() uint64 {
@@ -74745,7 +76645,7 @@ type GetForecastScoresUntilBlockResponse struct {
 func (x *GetForecastScoresUntilBlockResponse) Reset() {
 	*x = GetForecastScoresUntilBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[129]
+		mi := &file_emissions_v4_query_proto_msgTypes[133]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74759,7 +76659,7 @@ func (*GetForecastScoresUntilBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetForecastScoresUntilBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetForecastScoresUntilBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{129}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{133}
 }
 
 func (x *GetForecastScoresUntilBlockResponse) GetScores() []*v3.Score {
@@ -74781,7 +76681,7 @@ type GetWorkerForecastScoresAtBlockRequest struct {
 func (x *GetWorkerForecastScoresAtBlockRequest) Reset() {
 	*x = GetWorkerForecastScoresAtBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[130]
+		mi := &file_emissions_v4_query_proto_msgTypes[134]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74795,7 +76695,7 @@ func (*GetWorkerForecastScoresAtBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetWorkerForecastScoresAtBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetWorkerForecastScoresAtBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{130}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{134}
 }
 
 func (x *GetWorkerForecastScoresAtBlockRequest) GetTopicId() uint64 {
@@ -74823,7 +76723,7 @@ type GetWorkerForecastScoresAtBlockResponse struct {
 func (x *GetWorkerForecastScoresAtBlockResponse) Reset() {
 	*x = GetWorkerForecastScoresAtBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[131]
+		mi := &file_emissions_v4_query_proto_msgTypes[135]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74837,7 +76737,7 @@ func (*GetWorkerForecastScoresAtBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetWorkerForecastScoresAtBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetWorkerForecastScoresAtBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{131}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{135}
 }
 
 func (x *GetWorkerForecastScoresAtBlockResponse) GetScores() *v3.Scores {
@@ -74858,7 +76758,7 @@ type GetCurrentLowestForecasterScoreRequest struct {
 func (x *GetCurrentLowestForecasterScoreRequest) Reset() {
 	*x = GetCurrentLowestForecasterScoreRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[132]
+		mi := &file_emissions_v4_query_proto_msgTypes[136]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74872,7 +76772,7 @@ func (*GetCurrentLowestForecasterScoreRequest) ProtoMessage() {}
 
 // Deprecated: Use GetCurrentLowestForecasterScoreRequest.ProtoReflect.Descriptor instead.
 func (*GetCurrentLowestForecasterScoreRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{132}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{136}
 }
 
 func (x *GetCurrentLowestForecasterScoreRequest) GetTopicId() uint64 {
@@ -74893,7 +76793,7 @@ type GetCurrentLowestForecasterScoreResponse struct {
 func (x *GetCurrentLowestForecasterScoreResponse) Reset() {
 	*x = GetCurrentLowestForecasterScoreResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[133]
+		mi := &file_emissions_v4_query_proto_msgTypes[137]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74907,7 +76807,7 @@ func (*GetCurrentLowestForecasterScoreResponse) ProtoMessage() {}
 
 // Deprecated: Use GetCurrentLowestForecasterScoreResponse.ProtoReflect.Descriptor instead.
 func (*GetCurrentLowestForecasterScoreResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{133}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{137}
 }
 
 func (x *GetCurrentLowestForecasterScoreResponse) GetScore() *v3.Score {
@@ -74929,7 +76829,7 @@ type GetReputersScoresAtBlockRequest struct {
 func (x *GetReputersScoresAtBlockRequest) Reset() {
 	*x = GetReputersScoresAtBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[134]
+		mi := &file_emissions_v4_query_proto_msgTypes[138]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74943,7 +76843,7 @@ func (*GetReputersScoresAtBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetReputersScoresAtBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetReputersScoresAtBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{134}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{138}
 }
 
 func (x *GetReputersScoresAtBlockRequest) GetTopicId() uint64 {
@@ -74971,7 +76871,7 @@ type GetReputersScoresAtBlockResponse struct {
 func (x *GetReputersScoresAtBlockResponse) Reset() {
 	*x = GetReputersScoresAtBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[135]
+		mi := &file_emissions_v4_query_proto_msgTypes[139]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -74985,7 +76885,7 @@ func (*GetReputersScoresAtBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetReputersScoresAtBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetReputersScoresAtBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{135}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{139}
 }
 
 func (x *GetReputersScoresAtBlockResponse) GetScores() *v3.Scores {
@@ -75006,7 +76906,7 @@ type GetCurrentLowestReputerScoreRequest struct {
 func (x *GetCurrentLowestReputerScoreRequest) Reset() {
 	*x = GetCurrentLowestReputerScoreRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[136]
+		mi := &file_emissions_v4_query_proto_msgTypes[140]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75020,7 +76920,7 @@ func (*GetCurrentLowestReputerScoreRequest) ProtoMessage() {}
 
 // Deprecated: Use GetCurrentLowestReputerScoreRequest.ProtoReflect.Descriptor instead.
 func (*GetCurrentLowestReputerScoreRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{136}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{140}
 }
 
 func (x *GetCurrentLowestReputerScoreRequest) GetTopicId() uint64 {
@@ -75041,7 +76941,7 @@ type GetCurrentLowestReputerScoreResponse struct {
 func (x *GetCurrentLowestReputerScoreResponse) Reset() {
 	*x = GetCurrentLowestReputerScoreResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[137]
+		mi := &file_emissions_v4_query_proto_msgTypes[141]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75055,7 +76955,7 @@ func (*GetCurrentLowestReputerScoreResponse) ProtoMessage() {}
 
 // Deprecated: Use GetCurrentLowestReputerScoreResponse.ProtoReflect.Descriptor instead.
 func (*GetCurrentLowestReputerScoreResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{137}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{141}
 }
 
 func (x *GetCurrentLowestReputerScoreResponse) GetScore() *v3.Score {
@@ -75077,7 +76977,7 @@ type GetListeningCoefficientRequest struct {
 func (x *GetListeningCoefficientRequest) Reset() {
 	*x = GetListeningCoefficientRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[138]
+		mi := &file_emissions_v4_query_proto_msgTypes[142]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75091,7 +76991,7 @@ func (*GetListeningCoefficientRequest) ProtoMessage() {}
 
 // Deprecated: Use GetListeningCoefficientRequest.ProtoReflect.Descriptor instead.
 func (*GetListeningCoefficientRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{138}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{142}
 }
 
 func (x *GetListeningCoefficientRequest) GetTopicId() uint64 {
@@ -75119,7 +77019,7 @@ type GetListeningCoefficientResponse struct {
 func (x *GetListeningCoefficientResponse) Reset() {
 	*x = GetListeningCoefficientResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[139]
+		mi := &file_emissions_v4_query_proto_msgTypes[143]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75133,7 +77033,7 @@ func (*GetListeningCoefficientResponse) ProtoMessage() {}
 
 // Deprecated: Use GetListeningCoefficientResponse.ProtoReflect.Descriptor instead.
 func (*GetListeningCoefficientResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{139}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{143}
 }
 
 func (x *GetListeningCoefficientResponse) GetListeningCoefficient() *v3.ListeningCoefficient {
@@ -75155,7 +77055,7 @@ type GetPreviousReputerRewardFractionRequest struct {
 func (x *GetPreviousReputerRewardFractionRequest) Reset() {
 	*x = GetPreviousReputerRewardFractionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[140]
+		mi := &file_emissions_v4_query_proto_msgTypes[144]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75169,7 +77069,7 @@ func (*GetPreviousReputerRewardFractionRequest) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousReputerRewardFractionRequest.ProtoReflect.Descriptor instead.
 func (*GetPreviousReputerRewardFractionRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{140}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{144}
 }
 
 func (x *GetPreviousReputerRewardFractionRequest) GetTopicId() uint64 {
@@ -75198,7 +77098,7 @@ type GetPreviousReputerRewardFractionResponse struct {
 func (x *GetPreviousReputerRewardFractionResponse) Reset() {
 	*x = GetPreviousReputerRewardFractionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[141]
+		mi := &file_emissions_v4_query_proto_msgTypes[145]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75212,7 +77112,7 @@ func (*GetPreviousReputerRewardFractionResponse) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousReputerRewardFractionResponse.ProtoReflect.Descriptor instead.
 func (*GetPreviousReputerRewardFractionResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{141}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{145}
 }
 
 func (x *GetPreviousReputerRewardFractionResponse) GetRewardFraction() string {
@@ -75241,7 +77141,7 @@ type GetPreviousInferenceRewardFractionRequest struct {
 func (x *GetPreviousInferenceRewardFractionRequest) Reset() {
 	*x = GetPreviousInferenceRewardFractionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[142]
+		mi := &file_emissions_v4_query_proto_msgTypes[146]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75255,7 +77155,7 @@ func (*GetPreviousInferenceRewardFractionRequest) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousInferenceRewardFractionRequest.ProtoReflect.Descriptor instead.
 func (*GetPreviousInferenceRewardFractionRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{142}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{146}
 }
 
 func (x *GetPreviousInferenceRewardFractionRequest) GetTopicId() uint64 {
@@ -75284,7 +77184,7 @@ type GetPreviousInferenceRewardFractionResponse struct {
 func (x *GetPreviousInferenceRewardFractionResponse) Reset() {
 	*x = GetPreviousInferenceRewardFractionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[143]
+		mi := &file_emissions_v4_query_proto_msgTypes[147]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75298,7 +77198,7 @@ func (*GetPreviousInferenceRewardFractionResponse) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousInferenceRewardFractionResponse.ProtoReflect.Descriptor instead.
 func (*GetPreviousInferenceRewardFractionResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{143}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{147}
 }
 
 func (x *GetPreviousInferenceRewardFractionResponse) GetRewardFraction() string {
@@ -75327,7 +77227,7 @@ type GetPreviousForecastRewardFractionRequest struct {
 func (x *GetPreviousForecastRewardFractionRequest) Reset() {
 	*x = GetPreviousForecastRewardFractionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[144]
+		mi := &file_emissions_v4_query_proto_msgTypes[148]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75341,7 +77241,7 @@ func (*GetPreviousForecastRewardFractionRequest) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousForecastRewardFractionRequest.ProtoReflect.Descriptor instead.
 func (*GetPreviousForecastRewardFractionRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{144}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{148}
 }
 
 func (x *GetPreviousForecastRewardFractionRequest) GetTopicId() uint64 {
@@ -75370,7 +77270,7 @@ type GetPreviousForecastRewardFractionResponse struct {
 func (x *GetPreviousForecastRewardFractionResponse) Reset() {
 	*x = GetPreviousForecastRewardFractionResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[145]
+		mi := &file_emissions_v4_query_proto_msgTypes[149]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75384,7 +77284,7 @@ func (*GetPreviousForecastRewardFractionResponse) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousForecastRewardFractionResponse.ProtoReflect.Descriptor instead.
 func (*GetPreviousForecastRewardFractionResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{145}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{149}
 }
 
 func (x *GetPreviousForecastRewardFractionResponse) GetRewardFraction() string {
@@ -75410,7 +77310,7 @@ type GetPreviousPercentageRewardToStakedReputersRequest struct {
 func (x *GetPreviousPercentageRewardToStakedReputersRequest) Reset() {
 	*x = GetPreviousPercentageRewardToStakedReputersRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[146]
+		mi := &file_emissions_v4_query_proto_msgTypes[150]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75424,7 +77324,7 @@ func (*GetPreviousPercentageRewardToStakedReputersRequest) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousPercentageRewardToStakedReputersRequest.ProtoReflect.Descriptor instead.
 func (*GetPreviousPercentageRewardToStakedReputersRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{146}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{150}
 }
 
 type GetPreviousPercentageRewardToStakedReputersResponse struct {
@@ -75438,7 +77338,7 @@ type GetPreviousPercentageRewardToStakedReputersResponse struct {
 func (x *GetPreviousPercentageRewardToStakedReputersResponse) Reset() {
 	*x = GetPreviousPercentageRewardToStakedReputersResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[147]
+		mi := &file_emissions_v4_query_proto_msgTypes[151]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75452,7 +77352,7 @@ func (*GetPreviousPercentageRewardToStakedReputersResponse) ProtoMessage() {}
 
 // Deprecated: Use GetPreviousPercentageRewardToStakedReputersResponse.ProtoReflect.Descriptor instead.
 func (*GetPreviousPercentageRewardToStakedReputersResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{147}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{151}
 }
 
 func (x *GetPreviousPercentageRewardToStakedReputersResponse) GetPercentageReward() string {
@@ -75471,7 +77371,7 @@ type GetTotalRewardToDistributeRequest struct {
 func (x *GetTotalRewardToDistributeRequest) Reset() {
 	*x = GetTotalRewardToDistributeRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[148]
+		mi := &file_emissions_v4_query_proto_msgTypes[152]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75485,7 +77385,7 @@ func (*GetTotalRewardToDistributeRequest) ProtoMessage() {}
 
 // Deprecated: Use GetTotalRewardToDistributeRequest.ProtoReflect.Descriptor instead.
 func (*GetTotalRewardToDistributeRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{148}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{152}
 }
 
 type GetTotalRewardToDistributeResponse struct {
@@ -75499,7 +77399,7 @@ type GetTotalRewardToDistributeResponse struct {
 func (x *GetTotalRewardToDistributeResponse) Reset() {
 	*x = GetTotalRewardToDistributeResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[149]
+		mi := &file_emissions_v4_query_proto_msgTypes[153]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75513,7 +77413,7 @@ func (*GetTotalRewardToDistributeResponse) ProtoMessage() {}
 
 // Deprecated: Use GetTotalRewardToDistributeResponse.ProtoReflect.Descriptor instead.
 func (*GetTotalRewardToDistributeResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{149}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{153}
 }
 
 func (x *GetTotalRewardToDistributeResponse) GetTotalReward() string {
@@ -75534,7 +77434,7 @@ type GetActiveTopicsAtBlockRequest struct {
 func (x *GetActiveTopicsAtBlockRequest) Reset() {
 	*x = GetActiveTopicsAtBlockRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[150]
+		mi := &file_emissions_v4_query_proto_msgTypes[154]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75548,7 +77448,7 @@ func (*GetActiveTopicsAtBlockRequest) ProtoMessage() {}
 
 // Deprecated: Use GetActiveTopicsAtBlockRequest.ProtoReflect.Descriptor instead.
 func (*GetActiveTopicsAtBlockRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{150}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{154}
 }
 
 func (x *GetActiveTopicsAtBlockRequest) GetBlockHeight() int64 {
@@ -75570,7 +77470,7 @@ type GetActiveTopicsAtBlockResponse struct {
 func (x *GetActiveTopicsAtBlockResponse) Reset() {
 	*x = GetActiveTopicsAtBlockResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[151]
+		mi := &file_emissions_v4_query_proto_msgTypes[155]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75584,7 +77484,7 @@ func (*GetActiveTopicsAtBlockResponse) ProtoMessage() {}
 
 // Deprecated: Use GetActiveTopicsAtBlockResponse.ProtoReflect.Descriptor instead.
 func (*GetActiveTopicsAtBlockResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{151}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{155}
 }
 
 func (x *GetActiveTopicsAtBlockResponse) GetTopics() []*v3.Topic {
@@ -75612,7 +77512,7 @@ type GetNextChurningBlockByTopicIdRequest struct {
 func (x *GetNextChurningBlockByTopicIdRequest) Reset() {
 	*x = GetNextChurningBlockByTopicIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[152]
+		mi := &file_emissions_v4_query_proto_msgTypes[156]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75626,7 +77526,7 @@ func (*GetNextChurningBlockByTopicIdRequest) ProtoMessage() {}
 
 // Deprecated: Use GetNextChurningBlockByTopicIdRequest.ProtoReflect.Descriptor instead.
 func (*GetNextChurningBlockByTopicIdRequest) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{152}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{156}
 }
 
 func (x *GetNextChurningBlockByTopicIdRequest) GetTopicId() uint64 {
@@ -75647,7 +77547,7 @@ type GetNextChurningBlockByTopicIdResponse struct {
 func (x *GetNextChurningBlockByTopicIdResponse) Reset() {
 	*x = GetNextChurningBlockByTopicIdResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_emissions_v4_query_proto_msgTypes[153]
+		mi := &file_emissions_v4_query_proto_msgTypes[157]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -75661,7 +77561,7 @@ func (*GetNextChurningBlockByTopicIdResponse) ProtoMessage() {}
 
 // Deprecated: Use GetNextChurningBlockByTopicIdResponse.ProtoReflect.Descriptor instead.
 func (*GetNextChurningBlockByTopicIdResponse) Descriptor() ([]byte, []int) {
-	return file_emissions_v4_query_proto_rawDescGZIP(), []int{153}
+	return file_emissions_v4_query_proto_rawDescGZIP(), []int{157}
 }
 
 func (x *GetNextChurningBlockByTopicIdResponse) GetBlockHeight() int64 {
@@ -75701,7 +77601,28 @@ var file_emissions_v4_query_proto_rawDesc = []byte{
 	0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x1c, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x61, 0x70, 0x69,
 	0x2f, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x22, 0x5a, 0x0a, 0x23, 0x47, 0x65, 0x74, 0x4e, 0x61, 0x69, 0x76, 0x65, 0x49, 0x6e,
+	0x74, 0x6f, 0x22, 0x5e, 0x0a, 0x27, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x6e,
+	0x66, 0x65, 0x72, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c, 0x75, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x49,
+	0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a,
+	0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x69, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x69, 0x6e, 0x66, 0x65, 0x72,
+	0x65, 0x72, 0x22, 0x40, 0x0a, 0x28, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x6e,
+	0x66, 0x65, 0x72, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c, 0x75, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x49,
+	0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14,
+	0x0a, 0x05, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x63,
+	0x6f, 0x75, 0x6e, 0x74, 0x22, 0x67, 0x0a, 0x2a, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x75, 0x6e, 0x74,
+	0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c, 0x75, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x49, 0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x12, 0x1e, 0x0a,
+	0x0a, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x0a, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x22, 0x43, 0x0a,
+	0x2b, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73,
+	0x74, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c, 0x75, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x49, 0x6e, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a, 0x05,
+	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x05, 0x63, 0x6f, 0x75,
+	0x6e, 0x74, 0x22, 0x5a, 0x0a, 0x23, 0x47, 0x65, 0x74, 0x4e, 0x61, 0x69, 0x76, 0x65, 0x49, 0x6e,
 	0x66, 0x65, 0x72, 0x65, 0x72, 0x4e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x52, 0x65, 0x67, 0x72,
 	0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08, 0x74, 0x6f, 0x70,
 	0x69, 0x63, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x74, 0x6f, 0x70,
@@ -76703,7 +78624,7 @@ var file_emissions_v4_query_proto_rawDesc = []byte{
 	0x54, 0x6f, 0x70, 0x69, 0x63, 0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
 	0x21, 0x0a, 0x0c, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x48, 0x65, 0x69, 0x67,
-	0x68, 0x74, 0x32, 0xf3, 0x76, 0x0a, 0x0c, 0x51, 0x75, 0x65, 0x72, 0x79, 0x53, 0x65, 0x72, 0x76,
+	0x68, 0x74, 0x32, 0xd0, 0x7a, 0x0a, 0x0c, 0x51, 0x75, 0x65, 0x72, 0x79, 0x53, 0x65, 0x72, 0x76,
 	0x69, 0x63, 0x65, 0x12, 0x6a, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73,
 	0x12, 0x1e, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x34, 0x2e,
 	0x47, 0x65, 0x74, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
@@ -77654,20 +79575,49 @@ var file_emissions_v4_query_proto_rawDesc = []byte{
 	0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x34, 0x2f, 0x6e, 0x65,
 	0x78, 0x74, 0x5f, 0x63, 0x68, 0x75, 0x72, 0x6e, 0x69, 0x6e, 0x67, 0x5f, 0x62, 0x6c, 0x6f, 0x63,
 	0x6b, 0x5f, 0x62, 0x79, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x2f, 0x7b, 0x74,
-	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d,
-	0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x34, 0x42, 0x0a, 0x51,
-	0x75, 0x65, 0x72, 0x79, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e,
-	0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68,
-	0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f,
-	0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x34,
-	0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x34, 0xa2, 0x02, 0x03, 0x45,
-	0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56,
-	0x34, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x34,
-	0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x34, 0x5c,
-	0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x34, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x12, 0xe4, 0x01, 0x0a, 0x20, 0x47, 0x65, 0x74,
+	0x43, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c,
+	0x75, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x49, 0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x35, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x34, 0x2e, 0x47, 0x65, 0x74,
+	0x43, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c,
+	0x75, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x49, 0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x36, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x2e, 0x76, 0x34, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x6e, 0x66, 0x65,
+	0x72, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c, 0x75, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x49, 0x6e, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x51, 0x88, 0xe7,
+	0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x46, 0x12, 0x44, 0x2f, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x34, 0x2f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x69,
+	0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x5f, 0x69, 0x6e, 0x63, 0x6c, 0x75, 0x73, 0x69, 0x6f, 0x6e,
+	0x73, 0x5f, 0x69, 0x6e, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2f, 0x7b, 0x74, 0x6f, 0x70, 0x69,
+	0x63, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x7b, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x7d, 0x12,
+	0xf3, 0x01, 0x0a, 0x23, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x46, 0x6f, 0x72, 0x65,
+	0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c, 0x75, 0x73, 0x69, 0x6f, 0x6e, 0x73,
+	0x49, 0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x12, 0x38, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x34, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x46,
+	0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c, 0x75, 0x73, 0x69,
+	0x6f, 0x6e, 0x73, 0x49, 0x6e, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x39, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x34,
+	0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x75, 0x6e, 0x74, 0x46, 0x6f, 0x72, 0x65, 0x63, 0x61, 0x73,
+	0x74, 0x65, 0x72, 0x49, 0x6e, 0x63, 0x6c, 0x75, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x49, 0x6e, 0x54,
+	0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x57, 0x88, 0xe7,
+	0xb0, 0x2a, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x4c, 0x12, 0x4a, 0x2f, 0x65, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x34, 0x2f, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x66,
+	0x6f, 0x72, 0x65, 0x63, 0x61, 0x73, 0x74, 0x65, 0x72, 0x5f, 0x69, 0x6e, 0x63, 0x6c, 0x75, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x5f, 0x69, 0x6e, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x2f, 0x7b, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x7b, 0x66, 0x6f, 0x72, 0x65, 0x63, 0x61,
+	0x73, 0x74, 0x65, 0x72, 0x7d, 0x42, 0xc0, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x34, 0x42, 0x0a, 0x51, 0x75, 0x65, 0x72,
+	0x79, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77,
+	0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e,
+	0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69,
+	0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x34, 0x3b, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x34, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa,
+	0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x34, 0xca, 0x02,
+	0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x34, 0xe2, 0x02, 0x18,
+	0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x34, 0x5c, 0x47, 0x50, 0x42,
+	0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73,
+	0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x34, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -77682,397 +79632,405 @@ func file_emissions_v4_query_proto_rawDescGZIP() []byte {
 	return file_emissions_v4_query_proto_rawDescData
 }
 
-var file_emissions_v4_query_proto_msgTypes = make([]protoimpl.MessageInfo, 154)
+var file_emissions_v4_query_proto_msgTypes = make([]protoimpl.MessageInfo, 158)
 var file_emissions_v4_query_proto_goTypes = []interface{}{
-	(*GetNaiveInfererNetworkRegretRequest)(nil),                 // 0: emissions.v4.GetNaiveInfererNetworkRegretRequest
-	(*GetNaiveInfererNetworkRegretResponse)(nil),                // 1: emissions.v4.GetNaiveInfererNetworkRegretResponse
-	(*GetOneOutInfererInfererNetworkRegretRequest)(nil),         // 2: emissions.v4.GetOneOutInfererInfererNetworkRegretRequest
-	(*GetOneOutInfererInfererNetworkRegretResponse)(nil),        // 3: emissions.v4.GetOneOutInfererInfererNetworkRegretResponse
-	(*GetOneOutInfererForecasterNetworkRegretRequest)(nil),      // 4: emissions.v4.GetOneOutInfererForecasterNetworkRegretRequest
-	(*GetOneOutInfererForecasterNetworkRegretResponse)(nil),     // 5: emissions.v4.GetOneOutInfererForecasterNetworkRegretResponse
-	(*GetOneOutForecasterInfererNetworkRegretRequest)(nil),      // 6: emissions.v4.GetOneOutForecasterInfererNetworkRegretRequest
-	(*GetOneOutForecasterInfererNetworkRegretResponse)(nil),     // 7: emissions.v4.GetOneOutForecasterInfererNetworkRegretResponse
-	(*GetOneOutForecasterForecasterNetworkRegretRequest)(nil),   // 8: emissions.v4.GetOneOutForecasterForecasterNetworkRegretRequest
-	(*GetOneOutForecasterForecasterNetworkRegretResponse)(nil),  // 9: emissions.v4.GetOneOutForecasterForecasterNetworkRegretResponse
-	(*GetParamsRequest)(nil),                                    // 10: emissions.v4.GetParamsRequest
-	(*GetParamsResponse)(nil),                                   // 11: emissions.v4.GetParamsResponse
-	(*GetTotalStakeRequest)(nil),                                // 12: emissions.v4.GetTotalStakeRequest
-	(*GetTotalStakeResponse)(nil),                               // 13: emissions.v4.GetTotalStakeResponse
-	(*GetReputerStakeInTopicRequest)(nil),                       // 14: emissions.v4.GetReputerStakeInTopicRequest
-	(*GetReputerStakeInTopicResponse)(nil),                      // 15: emissions.v4.GetReputerStakeInTopicResponse
-	(*GetMultiReputerStakeInTopicRequest)(nil),                  // 16: emissions.v4.GetMultiReputerStakeInTopicRequest
-	(*GetMultiReputerStakeInTopicResponse)(nil),                 // 17: emissions.v4.GetMultiReputerStakeInTopicResponse
-	(*GetStakeFromReputerInTopicInSelfRequest)(nil),             // 18: emissions.v4.GetStakeFromReputerInTopicInSelfRequest
-	(*GetStakeFromReputerInTopicInSelfResponse)(nil),            // 19: emissions.v4.GetStakeFromReputerInTopicInSelfResponse
-	(*GetDelegateStakeInTopicInReputerRequest)(nil),             // 20: emissions.v4.GetDelegateStakeInTopicInReputerRequest
-	(*GetDelegateStakeInTopicInReputerResponse)(nil),            // 21: emissions.v4.GetDelegateStakeInTopicInReputerResponse
-	(*GetStakeFromDelegatorInTopicInReputerRequest)(nil),        // 22: emissions.v4.GetStakeFromDelegatorInTopicInReputerRequest
-	(*GetStakeFromDelegatorInTopicInReputerResponse)(nil),       // 23: emissions.v4.GetStakeFromDelegatorInTopicInReputerResponse
-	(*GetStakeFromDelegatorInTopicRequest)(nil),                 // 24: emissions.v4.GetStakeFromDelegatorInTopicRequest
-	(*GetStakeFromDelegatorInTopicResponse)(nil),                // 25: emissions.v4.GetStakeFromDelegatorInTopicResponse
-	(*GetTopicStakeRequest)(nil),                                // 26: emissions.v4.GetTopicStakeRequest
-	(*GetTopicStakeResponse)(nil),                               // 27: emissions.v4.GetTopicStakeResponse
-	(*GetNetworkLossBundleAtBlockRequest)(nil),                  // 28: emissions.v4.GetNetworkLossBundleAtBlockRequest
-	(*GetNetworkLossBundleAtBlockResponse)(nil),                 // 29: emissions.v4.GetNetworkLossBundleAtBlockResponse
-	(*GetNextTopicIdRequest)(nil),                               // 30: emissions.v4.GetNextTopicIdRequest
-	(*GetNextTopicIdResponse)(nil),                              // 31: emissions.v4.GetNextTopicIdResponse
-	(*GetTopicRequest)(nil),                                     // 32: emissions.v4.GetTopicRequest
-	(*GetTopicResponse)(nil),                                    // 33: emissions.v4.GetTopicResponse
-	(*GetActiveTopicsRequest)(nil),                              // 34: emissions.v4.GetActiveTopicsRequest
-	(*GetActiveTopicsResponse)(nil),                             // 35: emissions.v4.GetActiveTopicsResponse
-	(*GetInferencesAtBlockRequest)(nil),                         // 36: emissions.v4.GetInferencesAtBlockRequest
-	(*GetInferencesAtBlockResponse)(nil),                        // 37: emissions.v4.GetInferencesAtBlockResponse
-	(*GetLatestTopicInferencesRequest)(nil),                     // 38: emissions.v4.GetLatestTopicInferencesRequest
-	(*GetLatestTopicInferencesResponse)(nil),                    // 39: emissions.v4.GetLatestTopicInferencesResponse
-	(*GetForecastsAtBlockRequest)(nil),                          // 40: emissions.v4.GetForecastsAtBlockRequest
-	(*GetForecastsAtBlockResponse)(nil),                         // 41: emissions.v4.GetForecastsAtBlockResponse
-	(*GetWorkerLatestInferenceByTopicIdRequest)(nil),            // 42: emissions.v4.GetWorkerLatestInferenceByTopicIdRequest
-	(*GetWorkerLatestInferenceByTopicIdResponse)(nil),           // 43: emissions.v4.GetWorkerLatestInferenceByTopicIdResponse
-	(*GetWorkerNodeInfoRequest)(nil),                            // 44: emissions.v4.GetWorkerNodeInfoRequest
-	(*GetWorkerNodeInfoResponse)(nil),                           // 45: emissions.v4.GetWorkerNodeInfoResponse
-	(*GetReputerNodeInfoRequest)(nil),                           // 46: emissions.v4.GetReputerNodeInfoRequest
-	(*GetReputerNodeInfoResponse)(nil),                          // 47: emissions.v4.GetReputerNodeInfoResponse
-	(*GetNetworkInferencesAtBlockRequest)(nil),                  // 48: emissions.v4.GetNetworkInferencesAtBlockRequest
-	(*GetLatestNetworkInferencesRequest)(nil),                   // 49: emissions.v4.GetLatestNetworkInferencesRequest
-	(*GetLatestAvailableNetworkInferencesRequest)(nil),          // 50: emissions.v4.GetLatestAvailableNetworkInferencesRequest
-	(*IsWorkerNonceUnfulfilledRequest)(nil),                     // 51: emissions.v4.IsWorkerNonceUnfulfilledRequest
-	(*IsWorkerNonceUnfulfilledResponse)(nil),                    // 52: emissions.v4.IsWorkerNonceUnfulfilledResponse
-	(*GetUnfulfilledReputerNoncesRequest)(nil),                  // 53: emissions.v4.GetUnfulfilledReputerNoncesRequest
-	(*GetUnfulfilledReputerNoncesResponse)(nil),                 // 54: emissions.v4.GetUnfulfilledReputerNoncesResponse
-	(*GetUnfulfilledWorkerNoncesRequest)(nil),                   // 55: emissions.v4.GetUnfulfilledWorkerNoncesRequest
-	(*GetUnfulfilledWorkerNoncesResponse)(nil),                  // 56: emissions.v4.GetUnfulfilledWorkerNoncesResponse
-	(*GetInfererNetworkRegretRequest)(nil),                      // 57: emissions.v4.GetInfererNetworkRegretRequest
-	(*GetInfererNetworkRegretResponse)(nil),                     // 58: emissions.v4.GetInfererNetworkRegretResponse
-	(*GetForecasterNetworkRegretRequest)(nil),                   // 59: emissions.v4.GetForecasterNetworkRegretRequest
-	(*GetForecasterNetworkRegretResponse)(nil),                  // 60: emissions.v4.GetForecasterNetworkRegretResponse
-	(*GetOneInForecasterNetworkRegretRequest)(nil),              // 61: emissions.v4.GetOneInForecasterNetworkRegretRequest
-	(*GetOneInForecasterNetworkRegretResponse)(nil),             // 62: emissions.v4.GetOneInForecasterNetworkRegretResponse
-	(*IsReputerNonceUnfulfilledRequest)(nil),                    // 63: emissions.v4.IsReputerNonceUnfulfilledRequest
-	(*IsReputerNonceUnfulfilledResponse)(nil),                   // 64: emissions.v4.IsReputerNonceUnfulfilledResponse
-	(*GetNetworkInferencesAtBlockResponse)(nil),                 // 65: emissions.v4.GetNetworkInferencesAtBlockResponse
-	(*GetLatestNetworkInferencesResponse)(nil),                  // 66: emissions.v4.GetLatestNetworkInferencesResponse
-	(*GetLatestAvailableNetworkInferencesResponse)(nil),         // 67: emissions.v4.GetLatestAvailableNetworkInferencesResponse
-	(*IsWorkerRegisteredInTopicIdRequest)(nil),                  // 68: emissions.v4.IsWorkerRegisteredInTopicIdRequest
-	(*IsWorkerRegisteredInTopicIdResponse)(nil),                 // 69: emissions.v4.IsWorkerRegisteredInTopicIdResponse
-	(*IsReputerRegisteredInTopicIdRequest)(nil),                 // 70: emissions.v4.IsReputerRegisteredInTopicIdRequest
-	(*IsReputerRegisteredInTopicIdResponse)(nil),                // 71: emissions.v4.IsReputerRegisteredInTopicIdResponse
-	(*IsWhitelistAdminRequest)(nil),                             // 72: emissions.v4.IsWhitelistAdminRequest
-	(*IsWhitelistAdminResponse)(nil),                            // 73: emissions.v4.IsWhitelistAdminResponse
-	(*GetStakeRemovalsUpUntilBlockRequest)(nil),                 // 74: emissions.v4.GetStakeRemovalsUpUntilBlockRequest
-	(*GetStakeRemovalsUpUntilBlockResponse)(nil),                // 75: emissions.v4.GetStakeRemovalsUpUntilBlockResponse
-	(*GetDelegateStakeRemovalsUpUntilBlockRequest)(nil),         // 76: emissions.v4.GetDelegateStakeRemovalsUpUntilBlockRequest
-	(*GetDelegateStakeRemovalsUpUntilBlockResponse)(nil),        // 77: emissions.v4.GetDelegateStakeRemovalsUpUntilBlockResponse
-	(*GetStakeRemovalInfoRequest)(nil),                          // 78: emissions.v4.GetStakeRemovalInfoRequest
-	(*GetStakeRemovalInfoResponse)(nil),                         // 79: emissions.v4.GetStakeRemovalInfoResponse
-	(*GetDelegateStakeRemovalInfoRequest)(nil),                  // 80: emissions.v4.GetDelegateStakeRemovalInfoRequest
-	(*GetDelegateStakeRemovalInfoResponse)(nil),                 // 81: emissions.v4.GetDelegateStakeRemovalInfoResponse
-	(*GetTopicLastWorkerCommitInfoRequest)(nil),                 // 82: emissions.v4.GetTopicLastWorkerCommitInfoRequest
-	(*GetTopicLastWorkerCommitInfoResponse)(nil),                // 83: emissions.v4.GetTopicLastWorkerCommitInfoResponse
-	(*GetTopicLastReputerCommitInfoRequest)(nil),                // 84: emissions.v4.GetTopicLastReputerCommitInfoRequest
-	(*GetTopicLastReputerCommitInfoResponse)(nil),               // 85: emissions.v4.GetTopicLastReputerCommitInfoResponse
-	(*GetTopicRewardNonceRequest)(nil),                          // 86: emissions.v4.GetTopicRewardNonceRequest
-	(*GetTopicRewardNonceResponse)(nil),                         // 87: emissions.v4.GetTopicRewardNonceResponse
-	(*GetReputerLossBundlesAtBlockRequest)(nil),                 // 88: emissions.v4.GetReputerLossBundlesAtBlockRequest
-	(*GetReputerLossBundlesAtBlockResponse)(nil),                // 89: emissions.v4.GetReputerLossBundlesAtBlockResponse
-	(*GetStakeReputerAuthorityRequest)(nil),                     // 90: emissions.v4.GetStakeReputerAuthorityRequest
-	(*GetStakeReputerAuthorityResponse)(nil),                    // 91: emissions.v4.GetStakeReputerAuthorityResponse
-	(*GetDelegateStakePlacementRequest)(nil),                    // 92: emissions.v4.GetDelegateStakePlacementRequest
-	(*GetDelegateStakePlacementResponse)(nil),                   // 93: emissions.v4.GetDelegateStakePlacementResponse
-	(*GetDelegateStakeUponReputerRequest)(nil),                  // 94: emissions.v4.GetDelegateStakeUponReputerRequest
-	(*GetDelegateStakeUponReputerResponse)(nil),                 // 95: emissions.v4.GetDelegateStakeUponReputerResponse
-	(*GetDelegateRewardPerShareRequest)(nil),                    // 96: emissions.v4.GetDelegateRewardPerShareRequest
-	(*GetDelegateRewardPerShareResponse)(nil),                   // 97: emissions.v4.GetDelegateRewardPerShareResponse
-	(*GetStakeRemovalForReputerAndTopicIdRequest)(nil),          // 98: emissions.v4.GetStakeRemovalForReputerAndTopicIdRequest
-	(*GetStakeRemovalForReputerAndTopicIdResponse)(nil),         // 99: emissions.v4.GetStakeRemovalForReputerAndTopicIdResponse
-	(*GetDelegateStakeRemovalRequest)(nil),                      // 100: emissions.v4.GetDelegateStakeRemovalRequest
-	(*GetDelegateStakeRemovalResponse)(nil),                     // 101: emissions.v4.GetDelegateStakeRemovalResponse
-	(*GetPreviousTopicWeightRequest)(nil),                       // 102: emissions.v4.GetPreviousTopicWeightRequest
-	(*GetPreviousTopicWeightResponse)(nil),                      // 103: emissions.v4.GetPreviousTopicWeightResponse
-	(*TopicExistsRequest)(nil),                                  // 104: emissions.v4.TopicExistsRequest
-	(*TopicExistsResponse)(nil),                                 // 105: emissions.v4.TopicExistsResponse
-	(*IsTopicActiveRequest)(nil),                                // 106: emissions.v4.IsTopicActiveRequest
-	(*IsTopicActiveResponse)(nil),                               // 107: emissions.v4.IsTopicActiveResponse
-	(*GetTopicFeeRevenueRequest)(nil),                           // 108: emissions.v4.GetTopicFeeRevenueRequest
-	(*GetTopicFeeRevenueResponse)(nil),                          // 109: emissions.v4.GetTopicFeeRevenueResponse
-	(*GetInfererScoreEmaRequest)(nil),                           // 110: emissions.v4.GetInfererScoreEmaRequest
-	(*GetInfererScoreEmaResponse)(nil),                          // 111: emissions.v4.GetInfererScoreEmaResponse
-	(*GetForecasterScoreEmaRequest)(nil),                        // 112: emissions.v4.GetForecasterScoreEmaRequest
-	(*GetForecasterScoreEmaResponse)(nil),                       // 113: emissions.v4.GetForecasterScoreEmaResponse
-	(*GetReputerScoreEmaRequest)(nil),                           // 114: emissions.v4.GetReputerScoreEmaRequest
-	(*GetReputerScoreEmaResponse)(nil),                          // 115: emissions.v4.GetReputerScoreEmaResponse
-	(*GetInferenceScoresUntilBlockRequest)(nil),                 // 116: emissions.v4.GetInferenceScoresUntilBlockRequest
-	(*GetInferenceScoresUntilBlockResponse)(nil),                // 117: emissions.v4.GetInferenceScoresUntilBlockResponse
-	(*GetPreviousTopicQuantileForecasterScoreEmaRequest)(nil),   // 118: emissions.v4.GetPreviousTopicQuantileForecasterScoreEmaRequest
-	(*GetPreviousTopicQuantileForecasterScoreEmaResponse)(nil),  // 119: emissions.v4.GetPreviousTopicQuantileForecasterScoreEmaResponse
-	(*GetPreviousTopicQuantileInfererScoreEmaRequest)(nil),      // 120: emissions.v4.GetPreviousTopicQuantileInfererScoreEmaRequest
-	(*GetPreviousTopicQuantileInfererScoreEmaResponse)(nil),     // 121: emissions.v4.GetPreviousTopicQuantileInfererScoreEmaResponse
-	(*GetPreviousTopicQuantileReputerScoreEmaRequest)(nil),      // 122: emissions.v4.GetPreviousTopicQuantileReputerScoreEmaRequest
-	(*GetPreviousTopicQuantileReputerScoreEmaResponse)(nil),     // 123: emissions.v4.GetPreviousTopicQuantileReputerScoreEmaResponse
-	(*GetWorkerInferenceScoresAtBlockRequest)(nil),              // 124: emissions.v4.GetWorkerInferenceScoresAtBlockRequest
-	(*GetWorkerInferenceScoresAtBlockResponse)(nil),             // 125: emissions.v4.GetWorkerInferenceScoresAtBlockResponse
-	(*GetCurrentLowestInfererScoreRequest)(nil),                 // 126: emissions.v4.GetCurrentLowestInfererScoreRequest
-	(*GetCurrentLowestInfererScoreResponse)(nil),                // 127: emissions.v4.GetCurrentLowestInfererScoreResponse
-	(*GetForecastScoresUntilBlockRequest)(nil),                  // 128: emissions.v4.GetForecastScoresUntilBlockRequest
-	(*GetForecastScoresUntilBlockResponse)(nil),                 // 129: emissions.v4.GetForecastScoresUntilBlockResponse
-	(*GetWorkerForecastScoresAtBlockRequest)(nil),               // 130: emissions.v4.GetWorkerForecastScoresAtBlockRequest
-	(*GetWorkerForecastScoresAtBlockResponse)(nil),              // 131: emissions.v4.GetWorkerForecastScoresAtBlockResponse
-	(*GetCurrentLowestForecasterScoreRequest)(nil),              // 132: emissions.v4.GetCurrentLowestForecasterScoreRequest
-	(*GetCurrentLowestForecasterScoreResponse)(nil),             // 133: emissions.v4.GetCurrentLowestForecasterScoreResponse
-	(*GetReputersScoresAtBlockRequest)(nil),                     // 134: emissions.v4.GetReputersScoresAtBlockRequest
-	(*GetReputersScoresAtBlockResponse)(nil),                    // 135: emissions.v4.GetReputersScoresAtBlockResponse
-	(*GetCurrentLowestReputerScoreRequest)(nil),                 // 136: emissions.v4.GetCurrentLowestReputerScoreRequest
-	(*GetCurrentLowestReputerScoreResponse)(nil),                // 137: emissions.v4.GetCurrentLowestReputerScoreResponse
-	(*GetListeningCoefficientRequest)(nil),                      // 138: emissions.v4.GetListeningCoefficientRequest
-	(*GetListeningCoefficientResponse)(nil),                     // 139: emissions.v4.GetListeningCoefficientResponse
-	(*GetPreviousReputerRewardFractionRequest)(nil),             // 140: emissions.v4.GetPreviousReputerRewardFractionRequest
-	(*GetPreviousReputerRewardFractionResponse)(nil),            // 141: emissions.v4.GetPreviousReputerRewardFractionResponse
-	(*GetPreviousInferenceRewardFractionRequest)(nil),           // 142: emissions.v4.GetPreviousInferenceRewardFractionRequest
-	(*GetPreviousInferenceRewardFractionResponse)(nil),          // 143: emissions.v4.GetPreviousInferenceRewardFractionResponse
-	(*GetPreviousForecastRewardFractionRequest)(nil),            // 144: emissions.v4.GetPreviousForecastRewardFractionRequest
-	(*GetPreviousForecastRewardFractionResponse)(nil),           // 145: emissions.v4.GetPreviousForecastRewardFractionResponse
-	(*GetPreviousPercentageRewardToStakedReputersRequest)(nil),  // 146: emissions.v4.GetPreviousPercentageRewardToStakedReputersRequest
-	(*GetPreviousPercentageRewardToStakedReputersResponse)(nil), // 147: emissions.v4.GetPreviousPercentageRewardToStakedReputersResponse
-	(*GetTotalRewardToDistributeRequest)(nil),                   // 148: emissions.v4.GetTotalRewardToDistributeRequest
-	(*GetTotalRewardToDistributeResponse)(nil),                  // 149: emissions.v4.GetTotalRewardToDistributeResponse
-	(*GetActiveTopicsAtBlockRequest)(nil),                       // 150: emissions.v4.GetActiveTopicsAtBlockRequest
-	(*GetActiveTopicsAtBlockResponse)(nil),                      // 151: emissions.v4.GetActiveTopicsAtBlockResponse
-	(*GetNextChurningBlockByTopicIdRequest)(nil),                // 152: emissions.v4.GetNextChurningBlockByTopicIdRequest
-	(*GetNextChurningBlockByTopicIdResponse)(nil),               // 153: emissions.v4.GetNextChurningBlockByTopicIdResponse
-	(*v3.TimestampedValue)(nil),                                 // 154: emissions.v3.TimestampedValue
-	(*Params)(nil),                                              // 155: emissions.v4.Params
-	(*v3.StakeInfo)(nil),                                        // 156: emissions.v3.StakeInfo
-	(*v3.ValueBundle)(nil),                                      // 157: emissions.v3.ValueBundle
-	(*v3.Topic)(nil),                                            // 158: emissions.v3.Topic
-	(*v3.SimpleCursorPaginationRequest)(nil),                    // 159: emissions.v3.SimpleCursorPaginationRequest
-	(*v3.SimpleCursorPaginationResponse)(nil),                   // 160: emissions.v3.SimpleCursorPaginationResponse
-	(*v3.Inferences)(nil),                                       // 161: emissions.v3.Inferences
-	(*v3.Forecasts)(nil),                                        // 162: emissions.v3.Forecasts
-	(*v3.Inference)(nil),                                        // 163: emissions.v3.Inference
-	(*v3.OffchainNode)(nil),                                     // 164: emissions.v3.OffchainNode
-	(*v3.ReputerRequestNonces)(nil),                             // 165: emissions.v3.ReputerRequestNonces
-	(*v3.Nonces)(nil),                                           // 166: emissions.v3.Nonces
-	(*v3.RegretInformedWeight)(nil),                             // 167: emissions.v3.RegretInformedWeight
-	(*v3.WorkerAttributedValue)(nil),                            // 168: emissions.v3.WorkerAttributedValue
-	(*v3.StakeRemovalInfo)(nil),                                 // 169: emissions.v3.StakeRemovalInfo
-	(*v3.DelegateStakeRemovalInfo)(nil),                         // 170: emissions.v3.DelegateStakeRemovalInfo
-	(*v3.TimestampedActorNonce)(nil),                            // 171: emissions.v3.TimestampedActorNonce
-	(*v3.ReputerValueBundles)(nil),                              // 172: emissions.v3.ReputerValueBundles
-	(*v3.DelegatorInfo)(nil),                                    // 173: emissions.v3.DelegatorInfo
-	(*v3.Score)(nil),                                            // 174: emissions.v3.Score
-	(*v3.Scores)(nil),                                           // 175: emissions.v3.Scores
-	(*v3.ListeningCoefficient)(nil),                             // 176: emissions.v3.ListeningCoefficient
+	(*GetCountInfererInclusionsInTopicRequest)(nil),             // 0: emissions.v4.GetCountInfererInclusionsInTopicRequest
+	(*GetCountInfererInclusionsInTopicResponse)(nil),            // 1: emissions.v4.GetCountInfererInclusionsInTopicResponse
+	(*GetCountForecasterInclusionsInTopicRequest)(nil),          // 2: emissions.v4.GetCountForecasterInclusionsInTopicRequest
+	(*GetCountForecasterInclusionsInTopicResponse)(nil),         // 3: emissions.v4.GetCountForecasterInclusionsInTopicResponse
+	(*GetNaiveInfererNetworkRegretRequest)(nil),                 // 4: emissions.v4.GetNaiveInfererNetworkRegretRequest
+	(*GetNaiveInfererNetworkRegretResponse)(nil),                // 5: emissions.v4.GetNaiveInfererNetworkRegretResponse
+	(*GetOneOutInfererInfererNetworkRegretRequest)(nil),         // 6: emissions.v4.GetOneOutInfererInfererNetworkRegretRequest
+	(*GetOneOutInfererInfererNetworkRegretResponse)(nil),        // 7: emissions.v4.GetOneOutInfererInfererNetworkRegretResponse
+	(*GetOneOutInfererForecasterNetworkRegretRequest)(nil),      // 8: emissions.v4.GetOneOutInfererForecasterNetworkRegretRequest
+	(*GetOneOutInfererForecasterNetworkRegretResponse)(nil),     // 9: emissions.v4.GetOneOutInfererForecasterNetworkRegretResponse
+	(*GetOneOutForecasterInfererNetworkRegretRequest)(nil),      // 10: emissions.v4.GetOneOutForecasterInfererNetworkRegretRequest
+	(*GetOneOutForecasterInfererNetworkRegretResponse)(nil),     // 11: emissions.v4.GetOneOutForecasterInfererNetworkRegretResponse
+	(*GetOneOutForecasterForecasterNetworkRegretRequest)(nil),   // 12: emissions.v4.GetOneOutForecasterForecasterNetworkRegretRequest
+	(*GetOneOutForecasterForecasterNetworkRegretResponse)(nil),  // 13: emissions.v4.GetOneOutForecasterForecasterNetworkRegretResponse
+	(*GetParamsRequest)(nil),                                    // 14: emissions.v4.GetParamsRequest
+	(*GetParamsResponse)(nil),                                   // 15: emissions.v4.GetParamsResponse
+	(*GetTotalStakeRequest)(nil),                                // 16: emissions.v4.GetTotalStakeRequest
+	(*GetTotalStakeResponse)(nil),                               // 17: emissions.v4.GetTotalStakeResponse
+	(*GetReputerStakeInTopicRequest)(nil),                       // 18: emissions.v4.GetReputerStakeInTopicRequest
+	(*GetReputerStakeInTopicResponse)(nil),                      // 19: emissions.v4.GetReputerStakeInTopicResponse
+	(*GetMultiReputerStakeInTopicRequest)(nil),                  // 20: emissions.v4.GetMultiReputerStakeInTopicRequest
+	(*GetMultiReputerStakeInTopicResponse)(nil),                 // 21: emissions.v4.GetMultiReputerStakeInTopicResponse
+	(*GetStakeFromReputerInTopicInSelfRequest)(nil),             // 22: emissions.v4.GetStakeFromReputerInTopicInSelfRequest
+	(*GetStakeFromReputerInTopicInSelfResponse)(nil),            // 23: emissions.v4.GetStakeFromReputerInTopicInSelfResponse
+	(*GetDelegateStakeInTopicInReputerRequest)(nil),             // 24: emissions.v4.GetDelegateStakeInTopicInReputerRequest
+	(*GetDelegateStakeInTopicInReputerResponse)(nil),            // 25: emissions.v4.GetDelegateStakeInTopicInReputerResponse
+	(*GetStakeFromDelegatorInTopicInReputerRequest)(nil),        // 26: emissions.v4.GetStakeFromDelegatorInTopicInReputerRequest
+	(*GetStakeFromDelegatorInTopicInReputerResponse)(nil),       // 27: emissions.v4.GetStakeFromDelegatorInTopicInReputerResponse
+	(*GetStakeFromDelegatorInTopicRequest)(nil),                 // 28: emissions.v4.GetStakeFromDelegatorInTopicRequest
+	(*GetStakeFromDelegatorInTopicResponse)(nil),                // 29: emissions.v4.GetStakeFromDelegatorInTopicResponse
+	(*GetTopicStakeRequest)(nil),                                // 30: emissions.v4.GetTopicStakeRequest
+	(*GetTopicStakeResponse)(nil),                               // 31: emissions.v4.GetTopicStakeResponse
+	(*GetNetworkLossBundleAtBlockRequest)(nil),                  // 32: emissions.v4.GetNetworkLossBundleAtBlockRequest
+	(*GetNetworkLossBundleAtBlockResponse)(nil),                 // 33: emissions.v4.GetNetworkLossBundleAtBlockResponse
+	(*GetNextTopicIdRequest)(nil),                               // 34: emissions.v4.GetNextTopicIdRequest
+	(*GetNextTopicIdResponse)(nil),                              // 35: emissions.v4.GetNextTopicIdResponse
+	(*GetTopicRequest)(nil),                                     // 36: emissions.v4.GetTopicRequest
+	(*GetTopicResponse)(nil),                                    // 37: emissions.v4.GetTopicResponse
+	(*GetActiveTopicsRequest)(nil),                              // 38: emissions.v4.GetActiveTopicsRequest
+	(*GetActiveTopicsResponse)(nil),                             // 39: emissions.v4.GetActiveTopicsResponse
+	(*GetInferencesAtBlockRequest)(nil),                         // 40: emissions.v4.GetInferencesAtBlockRequest
+	(*GetInferencesAtBlockResponse)(nil),                        // 41: emissions.v4.GetInferencesAtBlockResponse
+	(*GetLatestTopicInferencesRequest)(nil),                     // 42: emissions.v4.GetLatestTopicInferencesRequest
+	(*GetLatestTopicInferencesResponse)(nil),                    // 43: emissions.v4.GetLatestTopicInferencesResponse
+	(*GetForecastsAtBlockRequest)(nil),                          // 44: emissions.v4.GetForecastsAtBlockRequest
+	(*GetForecastsAtBlockResponse)(nil),                         // 45: emissions.v4.GetForecastsAtBlockResponse
+	(*GetWorkerLatestInferenceByTopicIdRequest)(nil),            // 46: emissions.v4.GetWorkerLatestInferenceByTopicIdRequest
+	(*GetWorkerLatestInferenceByTopicIdResponse)(nil),           // 47: emissions.v4.GetWorkerLatestInferenceByTopicIdResponse
+	(*GetWorkerNodeInfoRequest)(nil),                            // 48: emissions.v4.GetWorkerNodeInfoRequest
+	(*GetWorkerNodeInfoResponse)(nil),                           // 49: emissions.v4.GetWorkerNodeInfoResponse
+	(*GetReputerNodeInfoRequest)(nil),                           // 50: emissions.v4.GetReputerNodeInfoRequest
+	(*GetReputerNodeInfoResponse)(nil),                          // 51: emissions.v4.GetReputerNodeInfoResponse
+	(*GetNetworkInferencesAtBlockRequest)(nil),                  // 52: emissions.v4.GetNetworkInferencesAtBlockRequest
+	(*GetLatestNetworkInferencesRequest)(nil),                   // 53: emissions.v4.GetLatestNetworkInferencesRequest
+	(*GetLatestAvailableNetworkInferencesRequest)(nil),          // 54: emissions.v4.GetLatestAvailableNetworkInferencesRequest
+	(*IsWorkerNonceUnfulfilledRequest)(nil),                     // 55: emissions.v4.IsWorkerNonceUnfulfilledRequest
+	(*IsWorkerNonceUnfulfilledResponse)(nil),                    // 56: emissions.v4.IsWorkerNonceUnfulfilledResponse
+	(*GetUnfulfilledReputerNoncesRequest)(nil),                  // 57: emissions.v4.GetUnfulfilledReputerNoncesRequest
+	(*GetUnfulfilledReputerNoncesResponse)(nil),                 // 58: emissions.v4.GetUnfulfilledReputerNoncesResponse
+	(*GetUnfulfilledWorkerNoncesRequest)(nil),                   // 59: emissions.v4.GetUnfulfilledWorkerNoncesRequest
+	(*GetUnfulfilledWorkerNoncesResponse)(nil),                  // 60: emissions.v4.GetUnfulfilledWorkerNoncesResponse
+	(*GetInfererNetworkRegretRequest)(nil),                      // 61: emissions.v4.GetInfererNetworkRegretRequest
+	(*GetInfererNetworkRegretResponse)(nil),                     // 62: emissions.v4.GetInfererNetworkRegretResponse
+	(*GetForecasterNetworkRegretRequest)(nil),                   // 63: emissions.v4.GetForecasterNetworkRegretRequest
+	(*GetForecasterNetworkRegretResponse)(nil),                  // 64: emissions.v4.GetForecasterNetworkRegretResponse
+	(*GetOneInForecasterNetworkRegretRequest)(nil),              // 65: emissions.v4.GetOneInForecasterNetworkRegretRequest
+	(*GetOneInForecasterNetworkRegretResponse)(nil),             // 66: emissions.v4.GetOneInForecasterNetworkRegretResponse
+	(*IsReputerNonceUnfulfilledRequest)(nil),                    // 67: emissions.v4.IsReputerNonceUnfulfilledRequest
+	(*IsReputerNonceUnfulfilledResponse)(nil),                   // 68: emissions.v4.IsReputerNonceUnfulfilledResponse
+	(*GetNetworkInferencesAtBlockResponse)(nil),                 // 69: emissions.v4.GetNetworkInferencesAtBlockResponse
+	(*GetLatestNetworkInferencesResponse)(nil),                  // 70: emissions.v4.GetLatestNetworkInferencesResponse
+	(*GetLatestAvailableNetworkInferencesResponse)(nil),         // 71: emissions.v4.GetLatestAvailableNetworkInferencesResponse
+	(*IsWorkerRegisteredInTopicIdRequest)(nil),                  // 72: emissions.v4.IsWorkerRegisteredInTopicIdRequest
+	(*IsWorkerRegisteredInTopicIdResponse)(nil),                 // 73: emissions.v4.IsWorkerRegisteredInTopicIdResponse
+	(*IsReputerRegisteredInTopicIdRequest)(nil),                 // 74: emissions.v4.IsReputerRegisteredInTopicIdRequest
+	(*IsReputerRegisteredInTopicIdResponse)(nil),                // 75: emissions.v4.IsReputerRegisteredInTopicIdResponse
+	(*IsWhitelistAdminRequest)(nil),                             // 76: emissions.v4.IsWhitelistAdminRequest
+	(*IsWhitelistAdminResponse)(nil),                            // 77: emissions.v4.IsWhitelistAdminResponse
+	(*GetStakeRemovalsUpUntilBlockRequest)(nil),                 // 78: emissions.v4.GetStakeRemovalsUpUntilBlockRequest
+	(*GetStakeRemovalsUpUntilBlockResponse)(nil),                // 79: emissions.v4.GetStakeRemovalsUpUntilBlockResponse
+	(*GetDelegateStakeRemovalsUpUntilBlockRequest)(nil),         // 80: emissions.v4.GetDelegateStakeRemovalsUpUntilBlockRequest
+	(*GetDelegateStakeRemovalsUpUntilBlockResponse)(nil),        // 81: emissions.v4.GetDelegateStakeRemovalsUpUntilBlockResponse
+	(*GetStakeRemovalInfoRequest)(nil),                          // 82: emissions.v4.GetStakeRemovalInfoRequest
+	(*GetStakeRemovalInfoResponse)(nil),                         // 83: emissions.v4.GetStakeRemovalInfoResponse
+	(*GetDelegateStakeRemovalInfoRequest)(nil),                  // 84: emissions.v4.GetDelegateStakeRemovalInfoRequest
+	(*GetDelegateStakeRemovalInfoResponse)(nil),                 // 85: emissions.v4.GetDelegateStakeRemovalInfoResponse
+	(*GetTopicLastWorkerCommitInfoRequest)(nil),                 // 86: emissions.v4.GetTopicLastWorkerCommitInfoRequest
+	(*GetTopicLastWorkerCommitInfoResponse)(nil),                // 87: emissions.v4.GetTopicLastWorkerCommitInfoResponse
+	(*GetTopicLastReputerCommitInfoRequest)(nil),                // 88: emissions.v4.GetTopicLastReputerCommitInfoRequest
+	(*GetTopicLastReputerCommitInfoResponse)(nil),               // 89: emissions.v4.GetTopicLastReputerCommitInfoResponse
+	(*GetTopicRewardNonceRequest)(nil),                          // 90: emissions.v4.GetTopicRewardNonceRequest
+	(*GetTopicRewardNonceResponse)(nil),                         // 91: emissions.v4.GetTopicRewardNonceResponse
+	(*GetReputerLossBundlesAtBlockRequest)(nil),                 // 92: emissions.v4.GetReputerLossBundlesAtBlockRequest
+	(*GetReputerLossBundlesAtBlockResponse)(nil),                // 93: emissions.v4.GetReputerLossBundlesAtBlockResponse
+	(*GetStakeReputerAuthorityRequest)(nil),                     // 94: emissions.v4.GetStakeReputerAuthorityRequest
+	(*GetStakeReputerAuthorityResponse)(nil),                    // 95: emissions.v4.GetStakeReputerAuthorityResponse
+	(*GetDelegateStakePlacementRequest)(nil),                    // 96: emissions.v4.GetDelegateStakePlacementRequest
+	(*GetDelegateStakePlacementResponse)(nil),                   // 97: emissions.v4.GetDelegateStakePlacementResponse
+	(*GetDelegateStakeUponReputerRequest)(nil),                  // 98: emissions.v4.GetDelegateStakeUponReputerRequest
+	(*GetDelegateStakeUponReputerResponse)(nil),                 // 99: emissions.v4.GetDelegateStakeUponReputerResponse
+	(*GetDelegateRewardPerShareRequest)(nil),                    // 100: emissions.v4.GetDelegateRewardPerShareRequest
+	(*GetDelegateRewardPerShareResponse)(nil),                   // 101: emissions.v4.GetDelegateRewardPerShareResponse
+	(*GetStakeRemovalForReputerAndTopicIdRequest)(nil),          // 102: emissions.v4.GetStakeRemovalForReputerAndTopicIdRequest
+	(*GetStakeRemovalForReputerAndTopicIdResponse)(nil),         // 103: emissions.v4.GetStakeRemovalForReputerAndTopicIdResponse
+	(*GetDelegateStakeRemovalRequest)(nil),                      // 104: emissions.v4.GetDelegateStakeRemovalRequest
+	(*GetDelegateStakeRemovalResponse)(nil),                     // 105: emissions.v4.GetDelegateStakeRemovalResponse
+	(*GetPreviousTopicWeightRequest)(nil),                       // 106: emissions.v4.GetPreviousTopicWeightRequest
+	(*GetPreviousTopicWeightResponse)(nil),                      // 107: emissions.v4.GetPreviousTopicWeightResponse
+	(*TopicExistsRequest)(nil),                                  // 108: emissions.v4.TopicExistsRequest
+	(*TopicExistsResponse)(nil),                                 // 109: emissions.v4.TopicExistsResponse
+	(*IsTopicActiveRequest)(nil),                                // 110: emissions.v4.IsTopicActiveRequest
+	(*IsTopicActiveResponse)(nil),                               // 111: emissions.v4.IsTopicActiveResponse
+	(*GetTopicFeeRevenueRequest)(nil),                           // 112: emissions.v4.GetTopicFeeRevenueRequest
+	(*GetTopicFeeRevenueResponse)(nil),                          // 113: emissions.v4.GetTopicFeeRevenueResponse
+	(*GetInfererScoreEmaRequest)(nil),                           // 114: emissions.v4.GetInfererScoreEmaRequest
+	(*GetInfererScoreEmaResponse)(nil),                          // 115: emissions.v4.GetInfererScoreEmaResponse
+	(*GetForecasterScoreEmaRequest)(nil),                        // 116: emissions.v4.GetForecasterScoreEmaRequest
+	(*GetForecasterScoreEmaResponse)(nil),                       // 117: emissions.v4.GetForecasterScoreEmaResponse
+	(*GetReputerScoreEmaRequest)(nil),                           // 118: emissions.v4.GetReputerScoreEmaRequest
+	(*GetReputerScoreEmaResponse)(nil),                          // 119: emissions.v4.GetReputerScoreEmaResponse
+	(*GetInferenceScoresUntilBlockRequest)(nil),                 // 120: emissions.v4.GetInferenceScoresUntilBlockRequest
+	(*GetInferenceScoresUntilBlockResponse)(nil),                // 121: emissions.v4.GetInferenceScoresUntilBlockResponse
+	(*GetPreviousTopicQuantileForecasterScoreEmaRequest)(nil),   // 122: emissions.v4.GetPreviousTopicQuantileForecasterScoreEmaRequest
+	(*GetPreviousTopicQuantileForecasterScoreEmaResponse)(nil),  // 123: emissions.v4.GetPreviousTopicQuantileForecasterScoreEmaResponse
+	(*GetPreviousTopicQuantileInfererScoreEmaRequest)(nil),      // 124: emissions.v4.GetPreviousTopicQuantileInfererScoreEmaRequest
+	(*GetPreviousTopicQuantileInfererScoreEmaResponse)(nil),     // 125: emissions.v4.GetPreviousTopicQuantileInfererScoreEmaResponse
+	(*GetPreviousTopicQuantileReputerScoreEmaRequest)(nil),      // 126: emissions.v4.GetPreviousTopicQuantileReputerScoreEmaRequest
+	(*GetPreviousTopicQuantileReputerScoreEmaResponse)(nil),     // 127: emissions.v4.GetPreviousTopicQuantileReputerScoreEmaResponse
+	(*GetWorkerInferenceScoresAtBlockRequest)(nil),              // 128: emissions.v4.GetWorkerInferenceScoresAtBlockRequest
+	(*GetWorkerInferenceScoresAtBlockResponse)(nil),             // 129: emissions.v4.GetWorkerInferenceScoresAtBlockResponse
+	(*GetCurrentLowestInfererScoreRequest)(nil),                 // 130: emissions.v4.GetCurrentLowestInfererScoreRequest
+	(*GetCurrentLowestInfererScoreResponse)(nil),                // 131: emissions.v4.GetCurrentLowestInfererScoreResponse
+	(*GetForecastScoresUntilBlockRequest)(nil),                  // 132: emissions.v4.GetForecastScoresUntilBlockRequest
+	(*GetForecastScoresUntilBlockResponse)(nil),                 // 133: emissions.v4.GetForecastScoresUntilBlockResponse
+	(*GetWorkerForecastScoresAtBlockRequest)(nil),               // 134: emissions.v4.GetWorkerForecastScoresAtBlockRequest
+	(*GetWorkerForecastScoresAtBlockResponse)(nil),              // 135: emissions.v4.GetWorkerForecastScoresAtBlockResponse
+	(*GetCurrentLowestForecasterScoreRequest)(nil),              // 136: emissions.v4.GetCurrentLowestForecasterScoreRequest
+	(*GetCurrentLowestForecasterScoreResponse)(nil),             // 137: emissions.v4.GetCurrentLowestForecasterScoreResponse
+	(*GetReputersScoresAtBlockRequest)(nil),                     // 138: emissions.v4.GetReputersScoresAtBlockRequest
+	(*GetReputersScoresAtBlockResponse)(nil),                    // 139: emissions.v4.GetReputersScoresAtBlockResponse
+	(*GetCurrentLowestReputerScoreRequest)(nil),                 // 140: emissions.v4.GetCurrentLowestReputerScoreRequest
+	(*GetCurrentLowestReputerScoreResponse)(nil),                // 141: emissions.v4.GetCurrentLowestReputerScoreResponse
+	(*GetListeningCoefficientRequest)(nil),                      // 142: emissions.v4.GetListeningCoefficientRequest
+	(*GetListeningCoefficientResponse)(nil),                     // 143: emissions.v4.GetListeningCoefficientResponse
+	(*GetPreviousReputerRewardFractionRequest)(nil),             // 144: emissions.v4.GetPreviousReputerRewardFractionRequest
+	(*GetPreviousReputerRewardFractionResponse)(nil),            // 145: emissions.v4.GetPreviousReputerRewardFractionResponse
+	(*GetPreviousInferenceRewardFractionRequest)(nil),           // 146: emissions.v4.GetPreviousInferenceRewardFractionRequest
+	(*GetPreviousInferenceRewardFractionResponse)(nil),          // 147: emissions.v4.GetPreviousInferenceRewardFractionResponse
+	(*GetPreviousForecastRewardFractionRequest)(nil),            // 148: emissions.v4.GetPreviousForecastRewardFractionRequest
+	(*GetPreviousForecastRewardFractionResponse)(nil),           // 149: emissions.v4.GetPreviousForecastRewardFractionResponse
+	(*GetPreviousPercentageRewardToStakedReputersRequest)(nil),  // 150: emissions.v4.GetPreviousPercentageRewardToStakedReputersRequest
+	(*GetPreviousPercentageRewardToStakedReputersResponse)(nil), // 151: emissions.v4.GetPreviousPercentageRewardToStakedReputersResponse
+	(*GetTotalRewardToDistributeRequest)(nil),                   // 152: emissions.v4.GetTotalRewardToDistributeRequest
+	(*GetTotalRewardToDistributeResponse)(nil),                  // 153: emissions.v4.GetTotalRewardToDistributeResponse
+	(*GetActiveTopicsAtBlockRequest)(nil),                       // 154: emissions.v4.GetActiveTopicsAtBlockRequest
+	(*GetActiveTopicsAtBlockResponse)(nil),                      // 155: emissions.v4.GetActiveTopicsAtBlockResponse
+	(*GetNextChurningBlockByTopicIdRequest)(nil),                // 156: emissions.v4.GetNextChurningBlockByTopicIdRequest
+	(*GetNextChurningBlockByTopicIdResponse)(nil),               // 157: emissions.v4.GetNextChurningBlockByTopicIdResponse
+	(*v3.TimestampedValue)(nil),                                 // 158: emissions.v3.TimestampedValue
+	(*Params)(nil),                                              // 159: emissions.v4.Params
+	(*v3.StakeInfo)(nil),                                        // 160: emissions.v3.StakeInfo
+	(*v3.ValueBundle)(nil),                                      // 161: emissions.v3.ValueBundle
+	(*v3.Topic)(nil),                                            // 162: emissions.v3.Topic
+	(*v3.SimpleCursorPaginationRequest)(nil),                    // 163: emissions.v3.SimpleCursorPaginationRequest
+	(*v3.SimpleCursorPaginationResponse)(nil),                   // 164: emissions.v3.SimpleCursorPaginationResponse
+	(*v3.Inferences)(nil),                                       // 165: emissions.v3.Inferences
+	(*v3.Forecasts)(nil),                                        // 166: emissions.v3.Forecasts
+	(*v3.Inference)(nil),                                        // 167: emissions.v3.Inference
+	(*v3.OffchainNode)(nil),                                     // 168: emissions.v3.OffchainNode
+	(*v3.ReputerRequestNonces)(nil),                             // 169: emissions.v3.ReputerRequestNonces
+	(*v3.Nonces)(nil),                                           // 170: emissions.v3.Nonces
+	(*v3.RegretInformedWeight)(nil),                             // 171: emissions.v3.RegretInformedWeight
+	(*v3.WorkerAttributedValue)(nil),                            // 172: emissions.v3.WorkerAttributedValue
+	(*v3.StakeRemovalInfo)(nil),                                 // 173: emissions.v3.StakeRemovalInfo
+	(*v3.DelegateStakeRemovalInfo)(nil),                         // 174: emissions.v3.DelegateStakeRemovalInfo
+	(*v3.TimestampedActorNonce)(nil),                            // 175: emissions.v3.TimestampedActorNonce
+	(*v3.ReputerValueBundles)(nil),                              // 176: emissions.v3.ReputerValueBundles
+	(*v3.DelegatorInfo)(nil),                                    // 177: emissions.v3.DelegatorInfo
+	(*v3.Score)(nil),                                            // 178: emissions.v3.Score
+	(*v3.Scores)(nil),                                           // 179: emissions.v3.Scores
+	(*v3.ListeningCoefficient)(nil),                             // 180: emissions.v3.ListeningCoefficient
 }
 var file_emissions_v4_query_proto_depIdxs = []int32{
-	154, // 0: emissions.v4.GetNaiveInfererNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
-	154, // 1: emissions.v4.GetOneOutInfererInfererNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
-	154, // 2: emissions.v4.GetOneOutInfererForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
-	154, // 3: emissions.v4.GetOneOutForecasterInfererNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
-	154, // 4: emissions.v4.GetOneOutForecasterForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
-	155, // 5: emissions.v4.GetParamsResponse.params:type_name -> emissions.v4.Params
-	156, // 6: emissions.v4.GetMultiReputerStakeInTopicResponse.amounts:type_name -> emissions.v3.StakeInfo
-	157, // 7: emissions.v4.GetNetworkLossBundleAtBlockResponse.loss_bundle:type_name -> emissions.v3.ValueBundle
-	158, // 8: emissions.v4.GetTopicResponse.topic:type_name -> emissions.v3.Topic
-	159, // 9: emissions.v4.GetActiveTopicsRequest.pagination:type_name -> emissions.v3.SimpleCursorPaginationRequest
-	158, // 10: emissions.v4.GetActiveTopicsResponse.topics:type_name -> emissions.v3.Topic
-	160, // 11: emissions.v4.GetActiveTopicsResponse.pagination:type_name -> emissions.v3.SimpleCursorPaginationResponse
-	161, // 12: emissions.v4.GetInferencesAtBlockResponse.inferences:type_name -> emissions.v3.Inferences
-	161, // 13: emissions.v4.GetLatestTopicInferencesResponse.inferences:type_name -> emissions.v3.Inferences
-	162, // 14: emissions.v4.GetForecastsAtBlockResponse.forecasts:type_name -> emissions.v3.Forecasts
-	163, // 15: emissions.v4.GetWorkerLatestInferenceByTopicIdResponse.latest_inference:type_name -> emissions.v3.Inference
-	164, // 16: emissions.v4.GetWorkerNodeInfoResponse.node_info:type_name -> emissions.v3.OffchainNode
-	164, // 17: emissions.v4.GetReputerNodeInfoResponse.node_info:type_name -> emissions.v3.OffchainNode
-	165, // 18: emissions.v4.GetUnfulfilledReputerNoncesResponse.nonces:type_name -> emissions.v3.ReputerRequestNonces
-	166, // 19: emissions.v4.GetUnfulfilledWorkerNoncesResponse.nonces:type_name -> emissions.v3.Nonces
-	154, // 20: emissions.v4.GetInfererNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
-	154, // 21: emissions.v4.GetForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
-	154, // 22: emissions.v4.GetOneInForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
-	157, // 23: emissions.v4.GetNetworkInferencesAtBlockResponse.network_inferences:type_name -> emissions.v3.ValueBundle
-	157, // 24: emissions.v4.GetLatestNetworkInferencesResponse.network_inferences:type_name -> emissions.v3.ValueBundle
-	167, // 25: emissions.v4.GetLatestNetworkInferencesResponse.inferer_weights:type_name -> emissions.v3.RegretInformedWeight
-	167, // 26: emissions.v4.GetLatestNetworkInferencesResponse.forecaster_weights:type_name -> emissions.v3.RegretInformedWeight
-	168, // 27: emissions.v4.GetLatestNetworkInferencesResponse.forecast_implied_inferences:type_name -> emissions.v3.WorkerAttributedValue
-	157, // 28: emissions.v4.GetLatestAvailableNetworkInferencesResponse.network_inferences:type_name -> emissions.v3.ValueBundle
-	167, // 29: emissions.v4.GetLatestAvailableNetworkInferencesResponse.inferer_weights:type_name -> emissions.v3.RegretInformedWeight
-	167, // 30: emissions.v4.GetLatestAvailableNetworkInferencesResponse.forecaster_weights:type_name -> emissions.v3.RegretInformedWeight
-	168, // 31: emissions.v4.GetLatestAvailableNetworkInferencesResponse.forecast_implied_inferences:type_name -> emissions.v3.WorkerAttributedValue
-	169, // 32: emissions.v4.GetStakeRemovalsUpUntilBlockResponse.removals:type_name -> emissions.v3.StakeRemovalInfo
-	170, // 33: emissions.v4.GetDelegateStakeRemovalsUpUntilBlockResponse.removals:type_name -> emissions.v3.DelegateStakeRemovalInfo
-	169, // 34: emissions.v4.GetStakeRemovalInfoResponse.removal:type_name -> emissions.v3.StakeRemovalInfo
-	170, // 35: emissions.v4.GetDelegateStakeRemovalInfoResponse.removal:type_name -> emissions.v3.DelegateStakeRemovalInfo
-	171, // 36: emissions.v4.GetTopicLastWorkerCommitInfoResponse.last_commit:type_name -> emissions.v3.TimestampedActorNonce
-	171, // 37: emissions.v4.GetTopicLastReputerCommitInfoResponse.last_commit:type_name -> emissions.v3.TimestampedActorNonce
-	172, // 38: emissions.v4.GetReputerLossBundlesAtBlockResponse.loss_bundles:type_name -> emissions.v3.ReputerValueBundles
-	173, // 39: emissions.v4.GetDelegateStakePlacementResponse.delegator_info:type_name -> emissions.v3.DelegatorInfo
-	169, // 40: emissions.v4.GetStakeRemovalForReputerAndTopicIdResponse.stake_removal_info:type_name -> emissions.v3.StakeRemovalInfo
-	170, // 41: emissions.v4.GetDelegateStakeRemovalResponse.stake_removal_info:type_name -> emissions.v3.DelegateStakeRemovalInfo
-	174, // 42: emissions.v4.GetInfererScoreEmaResponse.score:type_name -> emissions.v3.Score
-	174, // 43: emissions.v4.GetForecasterScoreEmaResponse.score:type_name -> emissions.v3.Score
-	174, // 44: emissions.v4.GetReputerScoreEmaResponse.score:type_name -> emissions.v3.Score
-	174, // 45: emissions.v4.GetInferenceScoresUntilBlockResponse.scores:type_name -> emissions.v3.Score
-	175, // 46: emissions.v4.GetWorkerInferenceScoresAtBlockResponse.scores:type_name -> emissions.v3.Scores
-	174, // 47: emissions.v4.GetCurrentLowestInfererScoreResponse.score:type_name -> emissions.v3.Score
-	174, // 48: emissions.v4.GetForecastScoresUntilBlockResponse.scores:type_name -> emissions.v3.Score
-	175, // 49: emissions.v4.GetWorkerForecastScoresAtBlockResponse.scores:type_name -> emissions.v3.Scores
-	174, // 50: emissions.v4.GetCurrentLowestForecasterScoreResponse.score:type_name -> emissions.v3.Score
-	175, // 51: emissions.v4.GetReputersScoresAtBlockResponse.scores:type_name -> emissions.v3.Scores
-	174, // 52: emissions.v4.GetCurrentLowestReputerScoreResponse.score:type_name -> emissions.v3.Score
-	176, // 53: emissions.v4.GetListeningCoefficientResponse.listening_coefficient:type_name -> emissions.v3.ListeningCoefficient
-	158, // 54: emissions.v4.GetActiveTopicsAtBlockResponse.topics:type_name -> emissions.v3.Topic
-	160, // 55: emissions.v4.GetActiveTopicsAtBlockResponse.pagination:type_name -> emissions.v3.SimpleCursorPaginationResponse
-	10,  // 56: emissions.v4.QueryService.GetParams:input_type -> emissions.v4.GetParamsRequest
-	30,  // 57: emissions.v4.QueryService.GetNextTopicId:input_type -> emissions.v4.GetNextTopicIdRequest
-	32,  // 58: emissions.v4.QueryService.GetTopic:input_type -> emissions.v4.GetTopicRequest
-	42,  // 59: emissions.v4.QueryService.GetWorkerLatestInferenceByTopicId:input_type -> emissions.v4.GetWorkerLatestInferenceByTopicIdRequest
-	36,  // 60: emissions.v4.QueryService.GetInferencesAtBlock:input_type -> emissions.v4.GetInferencesAtBlockRequest
-	38,  // 61: emissions.v4.QueryService.GetLatestTopicInferences:input_type -> emissions.v4.GetLatestTopicInferencesRequest
-	40,  // 62: emissions.v4.QueryService.GetForecastsAtBlock:input_type -> emissions.v4.GetForecastsAtBlockRequest
-	28,  // 63: emissions.v4.QueryService.GetNetworkLossBundleAtBlock:input_type -> emissions.v4.GetNetworkLossBundleAtBlockRequest
-	12,  // 64: emissions.v4.QueryService.GetTotalStake:input_type -> emissions.v4.GetTotalStakeRequest
-	14,  // 65: emissions.v4.QueryService.GetReputerStakeInTopic:input_type -> emissions.v4.GetReputerStakeInTopicRequest
-	16,  // 66: emissions.v4.QueryService.GetMultiReputerStakeInTopic:input_type -> emissions.v4.GetMultiReputerStakeInTopicRequest
-	18,  // 67: emissions.v4.QueryService.GetStakeFromReputerInTopicInSelf:input_type -> emissions.v4.GetStakeFromReputerInTopicInSelfRequest
-	20,  // 68: emissions.v4.QueryService.GetDelegateStakeInTopicInReputer:input_type -> emissions.v4.GetDelegateStakeInTopicInReputerRequest
-	22,  // 69: emissions.v4.QueryService.GetStakeFromDelegatorInTopicInReputer:input_type -> emissions.v4.GetStakeFromDelegatorInTopicInReputerRequest
-	24,  // 70: emissions.v4.QueryService.GetStakeFromDelegatorInTopic:input_type -> emissions.v4.GetStakeFromDelegatorInTopicRequest
-	26,  // 71: emissions.v4.QueryService.GetTopicStake:input_type -> emissions.v4.GetTopicStakeRequest
-	74,  // 72: emissions.v4.QueryService.GetStakeRemovalsUpUntilBlock:input_type -> emissions.v4.GetStakeRemovalsUpUntilBlockRequest
-	76,  // 73: emissions.v4.QueryService.GetDelegateStakeRemovalsUpUntilBlock:input_type -> emissions.v4.GetDelegateStakeRemovalsUpUntilBlockRequest
-	78,  // 74: emissions.v4.QueryService.GetStakeRemovalInfo:input_type -> emissions.v4.GetStakeRemovalInfoRequest
-	80,  // 75: emissions.v4.QueryService.GetDelegateStakeRemovalInfo:input_type -> emissions.v4.GetDelegateStakeRemovalInfoRequest
-	44,  // 76: emissions.v4.QueryService.GetWorkerNodeInfo:input_type -> emissions.v4.GetWorkerNodeInfoRequest
-	46,  // 77: emissions.v4.QueryService.GetReputerNodeInfo:input_type -> emissions.v4.GetReputerNodeInfoRequest
-	68,  // 78: emissions.v4.QueryService.IsWorkerRegisteredInTopicId:input_type -> emissions.v4.IsWorkerRegisteredInTopicIdRequest
-	70,  // 79: emissions.v4.QueryService.IsReputerRegisteredInTopicId:input_type -> emissions.v4.IsReputerRegisteredInTopicIdRequest
-	48,  // 80: emissions.v4.QueryService.GetNetworkInferencesAtBlock:input_type -> emissions.v4.GetNetworkInferencesAtBlockRequest
-	49,  // 81: emissions.v4.QueryService.GetLatestNetworkInferences:input_type -> emissions.v4.GetLatestNetworkInferencesRequest
-	50,  // 82: emissions.v4.QueryService.GetLatestAvailableNetworkInferences:input_type -> emissions.v4.GetLatestAvailableNetworkInferencesRequest
-	51,  // 83: emissions.v4.QueryService.IsWorkerNonceUnfulfilled:input_type -> emissions.v4.IsWorkerNonceUnfulfilledRequest
-	63,  // 84: emissions.v4.QueryService.IsReputerNonceUnfulfilled:input_type -> emissions.v4.IsReputerNonceUnfulfilledRequest
-	55,  // 85: emissions.v4.QueryService.GetUnfulfilledWorkerNonces:input_type -> emissions.v4.GetUnfulfilledWorkerNoncesRequest
-	53,  // 86: emissions.v4.QueryService.GetUnfulfilledReputerNonces:input_type -> emissions.v4.GetUnfulfilledReputerNoncesRequest
-	57,  // 87: emissions.v4.QueryService.GetInfererNetworkRegret:input_type -> emissions.v4.GetInfererNetworkRegretRequest
-	59,  // 88: emissions.v4.QueryService.GetForecasterNetworkRegret:input_type -> emissions.v4.GetForecasterNetworkRegretRequest
-	61,  // 89: emissions.v4.QueryService.GetOneInForecasterNetworkRegret:input_type -> emissions.v4.GetOneInForecasterNetworkRegretRequest
-	72,  // 90: emissions.v4.QueryService.IsWhitelistAdmin:input_type -> emissions.v4.IsWhitelistAdminRequest
-	82,  // 91: emissions.v4.QueryService.GetTopicLastWorkerCommitInfo:input_type -> emissions.v4.GetTopicLastWorkerCommitInfoRequest
-	84,  // 92: emissions.v4.QueryService.GetTopicLastReputerCommitInfo:input_type -> emissions.v4.GetTopicLastReputerCommitInfoRequest
-	86,  // 93: emissions.v4.QueryService.GetTopicRewardNonce:input_type -> emissions.v4.GetTopicRewardNonceRequest
-	88,  // 94: emissions.v4.QueryService.GetReputerLossBundlesAtBlock:input_type -> emissions.v4.GetReputerLossBundlesAtBlockRequest
-	90,  // 95: emissions.v4.QueryService.GetStakeReputerAuthority:input_type -> emissions.v4.GetStakeReputerAuthorityRequest
-	92,  // 96: emissions.v4.QueryService.GetDelegateStakePlacement:input_type -> emissions.v4.GetDelegateStakePlacementRequest
-	94,  // 97: emissions.v4.QueryService.GetDelegateStakeUponReputer:input_type -> emissions.v4.GetDelegateStakeUponReputerRequest
-	96,  // 98: emissions.v4.QueryService.GetDelegateRewardPerShare:input_type -> emissions.v4.GetDelegateRewardPerShareRequest
-	98,  // 99: emissions.v4.QueryService.GetStakeRemovalForReputerAndTopicId:input_type -> emissions.v4.GetStakeRemovalForReputerAndTopicIdRequest
-	100, // 100: emissions.v4.QueryService.GetDelegateStakeRemoval:input_type -> emissions.v4.GetDelegateStakeRemovalRequest
-	102, // 101: emissions.v4.QueryService.GetPreviousTopicWeight:input_type -> emissions.v4.GetPreviousTopicWeightRequest
-	104, // 102: emissions.v4.QueryService.TopicExists:input_type -> emissions.v4.TopicExistsRequest
-	106, // 103: emissions.v4.QueryService.IsTopicActive:input_type -> emissions.v4.IsTopicActiveRequest
-	108, // 104: emissions.v4.QueryService.GetTopicFeeRevenue:input_type -> emissions.v4.GetTopicFeeRevenueRequest
-	110, // 105: emissions.v4.QueryService.GetInfererScoreEma:input_type -> emissions.v4.GetInfererScoreEmaRequest
-	112, // 106: emissions.v4.QueryService.GetForecasterScoreEma:input_type -> emissions.v4.GetForecasterScoreEmaRequest
-	114, // 107: emissions.v4.QueryService.GetReputerScoreEma:input_type -> emissions.v4.GetReputerScoreEmaRequest
-	116, // 108: emissions.v4.QueryService.GetInferenceScoresUntilBlock:input_type -> emissions.v4.GetInferenceScoresUntilBlockRequest
-	118, // 109: emissions.v4.QueryService.GetPreviousTopicQuantileForecasterScoreEma:input_type -> emissions.v4.GetPreviousTopicQuantileForecasterScoreEmaRequest
-	120, // 110: emissions.v4.QueryService.GetPreviousTopicQuantileInfererScoreEma:input_type -> emissions.v4.GetPreviousTopicQuantileInfererScoreEmaRequest
-	122, // 111: emissions.v4.QueryService.GetPreviousTopicQuantileReputerScoreEma:input_type -> emissions.v4.GetPreviousTopicQuantileReputerScoreEmaRequest
-	124, // 112: emissions.v4.QueryService.GetWorkerInferenceScoresAtBlock:input_type -> emissions.v4.GetWorkerInferenceScoresAtBlockRequest
-	126, // 113: emissions.v4.QueryService.GetCurrentLowestInfererScore:input_type -> emissions.v4.GetCurrentLowestInfererScoreRequest
-	128, // 114: emissions.v4.QueryService.GetForecastScoresUntilBlock:input_type -> emissions.v4.GetForecastScoresUntilBlockRequest
-	130, // 115: emissions.v4.QueryService.GetWorkerForecastScoresAtBlock:input_type -> emissions.v4.GetWorkerForecastScoresAtBlockRequest
-	132, // 116: emissions.v4.QueryService.GetCurrentLowestForecasterScore:input_type -> emissions.v4.GetCurrentLowestForecasterScoreRequest
-	134, // 117: emissions.v4.QueryService.GetReputersScoresAtBlock:input_type -> emissions.v4.GetReputersScoresAtBlockRequest
-	136, // 118: emissions.v4.QueryService.GetCurrentLowestReputerScore:input_type -> emissions.v4.GetCurrentLowestReputerScoreRequest
-	138, // 119: emissions.v4.QueryService.GetListeningCoefficient:input_type -> emissions.v4.GetListeningCoefficientRequest
-	140, // 120: emissions.v4.QueryService.GetPreviousReputerRewardFraction:input_type -> emissions.v4.GetPreviousReputerRewardFractionRequest
-	142, // 121: emissions.v4.QueryService.GetPreviousInferenceRewardFraction:input_type -> emissions.v4.GetPreviousInferenceRewardFractionRequest
-	144, // 122: emissions.v4.QueryService.GetPreviousForecastRewardFraction:input_type -> emissions.v4.GetPreviousForecastRewardFractionRequest
-	146, // 123: emissions.v4.QueryService.GetPreviousPercentageRewardToStakedReputers:input_type -> emissions.v4.GetPreviousPercentageRewardToStakedReputersRequest
-	148, // 124: emissions.v4.QueryService.GetTotalRewardToDistribute:input_type -> emissions.v4.GetTotalRewardToDistributeRequest
-	0,   // 125: emissions.v4.QueryService.GetNaiveInfererNetworkRegret:input_type -> emissions.v4.GetNaiveInfererNetworkRegretRequest
-	2,   // 126: emissions.v4.QueryService.GetOneOutInfererInfererNetworkRegret:input_type -> emissions.v4.GetOneOutInfererInfererNetworkRegretRequest
-	4,   // 127: emissions.v4.QueryService.GetOneOutInfererForecasterNetworkRegret:input_type -> emissions.v4.GetOneOutInfererForecasterNetworkRegretRequest
-	6,   // 128: emissions.v4.QueryService.GetOneOutForecasterInfererNetworkRegret:input_type -> emissions.v4.GetOneOutForecasterInfererNetworkRegretRequest
-	8,   // 129: emissions.v4.QueryService.GetOneOutForecasterForecasterNetworkRegret:input_type -> emissions.v4.GetOneOutForecasterForecasterNetworkRegretRequest
-	150, // 130: emissions.v4.QueryService.GetActiveTopicsAtBlock:input_type -> emissions.v4.GetActiveTopicsAtBlockRequest
-	152, // 131: emissions.v4.QueryService.GetNextChurningBlockByTopicId:input_type -> emissions.v4.GetNextChurningBlockByTopicIdRequest
-	11,  // 132: emissions.v4.QueryService.GetParams:output_type -> emissions.v4.GetParamsResponse
-	31,  // 133: emissions.v4.QueryService.GetNextTopicId:output_type -> emissions.v4.GetNextTopicIdResponse
-	33,  // 134: emissions.v4.QueryService.GetTopic:output_type -> emissions.v4.GetTopicResponse
-	43,  // 135: emissions.v4.QueryService.GetWorkerLatestInferenceByTopicId:output_type -> emissions.v4.GetWorkerLatestInferenceByTopicIdResponse
-	37,  // 136: emissions.v4.QueryService.GetInferencesAtBlock:output_type -> emissions.v4.GetInferencesAtBlockResponse
-	39,  // 137: emissions.v4.QueryService.GetLatestTopicInferences:output_type -> emissions.v4.GetLatestTopicInferencesResponse
-	41,  // 138: emissions.v4.QueryService.GetForecastsAtBlock:output_type -> emissions.v4.GetForecastsAtBlockResponse
-	29,  // 139: emissions.v4.QueryService.GetNetworkLossBundleAtBlock:output_type -> emissions.v4.GetNetworkLossBundleAtBlockResponse
-	13,  // 140: emissions.v4.QueryService.GetTotalStake:output_type -> emissions.v4.GetTotalStakeResponse
-	15,  // 141: emissions.v4.QueryService.GetReputerStakeInTopic:output_type -> emissions.v4.GetReputerStakeInTopicResponse
-	17,  // 142: emissions.v4.QueryService.GetMultiReputerStakeInTopic:output_type -> emissions.v4.GetMultiReputerStakeInTopicResponse
-	19,  // 143: emissions.v4.QueryService.GetStakeFromReputerInTopicInSelf:output_type -> emissions.v4.GetStakeFromReputerInTopicInSelfResponse
-	21,  // 144: emissions.v4.QueryService.GetDelegateStakeInTopicInReputer:output_type -> emissions.v4.GetDelegateStakeInTopicInReputerResponse
-	23,  // 145: emissions.v4.QueryService.GetStakeFromDelegatorInTopicInReputer:output_type -> emissions.v4.GetStakeFromDelegatorInTopicInReputerResponse
-	25,  // 146: emissions.v4.QueryService.GetStakeFromDelegatorInTopic:output_type -> emissions.v4.GetStakeFromDelegatorInTopicResponse
-	27,  // 147: emissions.v4.QueryService.GetTopicStake:output_type -> emissions.v4.GetTopicStakeResponse
-	75,  // 148: emissions.v4.QueryService.GetStakeRemovalsUpUntilBlock:output_type -> emissions.v4.GetStakeRemovalsUpUntilBlockResponse
-	77,  // 149: emissions.v4.QueryService.GetDelegateStakeRemovalsUpUntilBlock:output_type -> emissions.v4.GetDelegateStakeRemovalsUpUntilBlockResponse
-	79,  // 150: emissions.v4.QueryService.GetStakeRemovalInfo:output_type -> emissions.v4.GetStakeRemovalInfoResponse
-	81,  // 151: emissions.v4.QueryService.GetDelegateStakeRemovalInfo:output_type -> emissions.v4.GetDelegateStakeRemovalInfoResponse
-	45,  // 152: emissions.v4.QueryService.GetWorkerNodeInfo:output_type -> emissions.v4.GetWorkerNodeInfoResponse
-	47,  // 153: emissions.v4.QueryService.GetReputerNodeInfo:output_type -> emissions.v4.GetReputerNodeInfoResponse
-	69,  // 154: emissions.v4.QueryService.IsWorkerRegisteredInTopicId:output_type -> emissions.v4.IsWorkerRegisteredInTopicIdResponse
-	71,  // 155: emissions.v4.QueryService.IsReputerRegisteredInTopicId:output_type -> emissions.v4.IsReputerRegisteredInTopicIdResponse
-	65,  // 156: emissions.v4.QueryService.GetNetworkInferencesAtBlock:output_type -> emissions.v4.GetNetworkInferencesAtBlockResponse
-	66,  // 157: emissions.v4.QueryService.GetLatestNetworkInferences:output_type -> emissions.v4.GetLatestNetworkInferencesResponse
-	67,  // 158: emissions.v4.QueryService.GetLatestAvailableNetworkInferences:output_type -> emissions.v4.GetLatestAvailableNetworkInferencesResponse
-	52,  // 159: emissions.v4.QueryService.IsWorkerNonceUnfulfilled:output_type -> emissions.v4.IsWorkerNonceUnfulfilledResponse
-	64,  // 160: emissions.v4.QueryService.IsReputerNonceUnfulfilled:output_type -> emissions.v4.IsReputerNonceUnfulfilledResponse
-	56,  // 161: emissions.v4.QueryService.GetUnfulfilledWorkerNonces:output_type -> emissions.v4.GetUnfulfilledWorkerNoncesResponse
-	54,  // 162: emissions.v4.QueryService.GetUnfulfilledReputerNonces:output_type -> emissions.v4.GetUnfulfilledReputerNoncesResponse
-	58,  // 163: emissions.v4.QueryService.GetInfererNetworkRegret:output_type -> emissions.v4.GetInfererNetworkRegretResponse
-	60,  // 164: emissions.v4.QueryService.GetForecasterNetworkRegret:output_type -> emissions.v4.GetForecasterNetworkRegretResponse
-	62,  // 165: emissions.v4.QueryService.GetOneInForecasterNetworkRegret:output_type -> emissions.v4.GetOneInForecasterNetworkRegretResponse
-	73,  // 166: emissions.v4.QueryService.IsWhitelistAdmin:output_type -> emissions.v4.IsWhitelistAdminResponse
-	83,  // 167: emissions.v4.QueryService.GetTopicLastWorkerCommitInfo:output_type -> emissions.v4.GetTopicLastWorkerCommitInfoResponse
-	85,  // 168: emissions.v4.QueryService.GetTopicLastReputerCommitInfo:output_type -> emissions.v4.GetTopicLastReputerCommitInfoResponse
-	87,  // 169: emissions.v4.QueryService.GetTopicRewardNonce:output_type -> emissions.v4.GetTopicRewardNonceResponse
-	89,  // 170: emissions.v4.QueryService.GetReputerLossBundlesAtBlock:output_type -> emissions.v4.GetReputerLossBundlesAtBlockResponse
-	91,  // 171: emissions.v4.QueryService.GetStakeReputerAuthority:output_type -> emissions.v4.GetStakeReputerAuthorityResponse
-	93,  // 172: emissions.v4.QueryService.GetDelegateStakePlacement:output_type -> emissions.v4.GetDelegateStakePlacementResponse
-	95,  // 173: emissions.v4.QueryService.GetDelegateStakeUponReputer:output_type -> emissions.v4.GetDelegateStakeUponReputerResponse
-	97,  // 174: emissions.v4.QueryService.GetDelegateRewardPerShare:output_type -> emissions.v4.GetDelegateRewardPerShareResponse
-	99,  // 175: emissions.v4.QueryService.GetStakeRemovalForReputerAndTopicId:output_type -> emissions.v4.GetStakeRemovalForReputerAndTopicIdResponse
-	101, // 176: emissions.v4.QueryService.GetDelegateStakeRemoval:output_type -> emissions.v4.GetDelegateStakeRemovalResponse
-	103, // 177: emissions.v4.QueryService.GetPreviousTopicWeight:output_type -> emissions.v4.GetPreviousTopicWeightResponse
-	105, // 178: emissions.v4.QueryService.TopicExists:output_type -> emissions.v4.TopicExistsResponse
-	107, // 179: emissions.v4.QueryService.IsTopicActive:output_type -> emissions.v4.IsTopicActiveResponse
-	109, // 180: emissions.v4.QueryService.GetTopicFeeRevenue:output_type -> emissions.v4.GetTopicFeeRevenueResponse
-	111, // 181: emissions.v4.QueryService.GetInfererScoreEma:output_type -> emissions.v4.GetInfererScoreEmaResponse
-	113, // 182: emissions.v4.QueryService.GetForecasterScoreEma:output_type -> emissions.v4.GetForecasterScoreEmaResponse
-	115, // 183: emissions.v4.QueryService.GetReputerScoreEma:output_type -> emissions.v4.GetReputerScoreEmaResponse
-	117, // 184: emissions.v4.QueryService.GetInferenceScoresUntilBlock:output_type -> emissions.v4.GetInferenceScoresUntilBlockResponse
-	119, // 185: emissions.v4.QueryService.GetPreviousTopicQuantileForecasterScoreEma:output_type -> emissions.v4.GetPreviousTopicQuantileForecasterScoreEmaResponse
-	121, // 186: emissions.v4.QueryService.GetPreviousTopicQuantileInfererScoreEma:output_type -> emissions.v4.GetPreviousTopicQuantileInfererScoreEmaResponse
-	123, // 187: emissions.v4.QueryService.GetPreviousTopicQuantileReputerScoreEma:output_type -> emissions.v4.GetPreviousTopicQuantileReputerScoreEmaResponse
-	125, // 188: emissions.v4.QueryService.GetWorkerInferenceScoresAtBlock:output_type -> emissions.v4.GetWorkerInferenceScoresAtBlockResponse
-	127, // 189: emissions.v4.QueryService.GetCurrentLowestInfererScore:output_type -> emissions.v4.GetCurrentLowestInfererScoreResponse
-	129, // 190: emissions.v4.QueryService.GetForecastScoresUntilBlock:output_type -> emissions.v4.GetForecastScoresUntilBlockResponse
-	131, // 191: emissions.v4.QueryService.GetWorkerForecastScoresAtBlock:output_type -> emissions.v4.GetWorkerForecastScoresAtBlockResponse
-	133, // 192: emissions.v4.QueryService.GetCurrentLowestForecasterScore:output_type -> emissions.v4.GetCurrentLowestForecasterScoreResponse
-	135, // 193: emissions.v4.QueryService.GetReputersScoresAtBlock:output_type -> emissions.v4.GetReputersScoresAtBlockResponse
-	137, // 194: emissions.v4.QueryService.GetCurrentLowestReputerScore:output_type -> emissions.v4.GetCurrentLowestReputerScoreResponse
-	139, // 195: emissions.v4.QueryService.GetListeningCoefficient:output_type -> emissions.v4.GetListeningCoefficientResponse
-	141, // 196: emissions.v4.QueryService.GetPreviousReputerRewardFraction:output_type -> emissions.v4.GetPreviousReputerRewardFractionResponse
-	143, // 197: emissions.v4.QueryService.GetPreviousInferenceRewardFraction:output_type -> emissions.v4.GetPreviousInferenceRewardFractionResponse
-	145, // 198: emissions.v4.QueryService.GetPreviousForecastRewardFraction:output_type -> emissions.v4.GetPreviousForecastRewardFractionResponse
-	147, // 199: emissions.v4.QueryService.GetPreviousPercentageRewardToStakedReputers:output_type -> emissions.v4.GetPreviousPercentageRewardToStakedReputersResponse
-	149, // 200: emissions.v4.QueryService.GetTotalRewardToDistribute:output_type -> emissions.v4.GetTotalRewardToDistributeResponse
-	1,   // 201: emissions.v4.QueryService.GetNaiveInfererNetworkRegret:output_type -> emissions.v4.GetNaiveInfererNetworkRegretResponse
-	3,   // 202: emissions.v4.QueryService.GetOneOutInfererInfererNetworkRegret:output_type -> emissions.v4.GetOneOutInfererInfererNetworkRegretResponse
-	5,   // 203: emissions.v4.QueryService.GetOneOutInfererForecasterNetworkRegret:output_type -> emissions.v4.GetOneOutInfererForecasterNetworkRegretResponse
-	7,   // 204: emissions.v4.QueryService.GetOneOutForecasterInfererNetworkRegret:output_type -> emissions.v4.GetOneOutForecasterInfererNetworkRegretResponse
-	9,   // 205: emissions.v4.QueryService.GetOneOutForecasterForecasterNetworkRegret:output_type -> emissions.v4.GetOneOutForecasterForecasterNetworkRegretResponse
-	151, // 206: emissions.v4.QueryService.GetActiveTopicsAtBlock:output_type -> emissions.v4.GetActiveTopicsAtBlockResponse
-	153, // 207: emissions.v4.QueryService.GetNextChurningBlockByTopicId:output_type -> emissions.v4.GetNextChurningBlockByTopicIdResponse
-	132, // [132:208] is the sub-list for method output_type
-	56,  // [56:132] is the sub-list for method input_type
+	158, // 0: emissions.v4.GetNaiveInfererNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
+	158, // 1: emissions.v4.GetOneOutInfererInfererNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
+	158, // 2: emissions.v4.GetOneOutInfererForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
+	158, // 3: emissions.v4.GetOneOutForecasterInfererNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
+	158, // 4: emissions.v4.GetOneOutForecasterForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
+	159, // 5: emissions.v4.GetParamsResponse.params:type_name -> emissions.v4.Params
+	160, // 6: emissions.v4.GetMultiReputerStakeInTopicResponse.amounts:type_name -> emissions.v3.StakeInfo
+	161, // 7: emissions.v4.GetNetworkLossBundleAtBlockResponse.loss_bundle:type_name -> emissions.v3.ValueBundle
+	162, // 8: emissions.v4.GetTopicResponse.topic:type_name -> emissions.v3.Topic
+	163, // 9: emissions.v4.GetActiveTopicsRequest.pagination:type_name -> emissions.v3.SimpleCursorPaginationRequest
+	162, // 10: emissions.v4.GetActiveTopicsResponse.topics:type_name -> emissions.v3.Topic
+	164, // 11: emissions.v4.GetActiveTopicsResponse.pagination:type_name -> emissions.v3.SimpleCursorPaginationResponse
+	165, // 12: emissions.v4.GetInferencesAtBlockResponse.inferences:type_name -> emissions.v3.Inferences
+	165, // 13: emissions.v4.GetLatestTopicInferencesResponse.inferences:type_name -> emissions.v3.Inferences
+	166, // 14: emissions.v4.GetForecastsAtBlockResponse.forecasts:type_name -> emissions.v3.Forecasts
+	167, // 15: emissions.v4.GetWorkerLatestInferenceByTopicIdResponse.latest_inference:type_name -> emissions.v3.Inference
+	168, // 16: emissions.v4.GetWorkerNodeInfoResponse.node_info:type_name -> emissions.v3.OffchainNode
+	168, // 17: emissions.v4.GetReputerNodeInfoResponse.node_info:type_name -> emissions.v3.OffchainNode
+	169, // 18: emissions.v4.GetUnfulfilledReputerNoncesResponse.nonces:type_name -> emissions.v3.ReputerRequestNonces
+	170, // 19: emissions.v4.GetUnfulfilledWorkerNoncesResponse.nonces:type_name -> emissions.v3.Nonces
+	158, // 20: emissions.v4.GetInfererNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
+	158, // 21: emissions.v4.GetForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
+	158, // 22: emissions.v4.GetOneInForecasterNetworkRegretResponse.regret:type_name -> emissions.v3.TimestampedValue
+	161, // 23: emissions.v4.GetNetworkInferencesAtBlockResponse.network_inferences:type_name -> emissions.v3.ValueBundle
+	161, // 24: emissions.v4.GetLatestNetworkInferencesResponse.network_inferences:type_name -> emissions.v3.ValueBundle
+	171, // 25: emissions.v4.GetLatestNetworkInferencesResponse.inferer_weights:type_name -> emissions.v3.RegretInformedWeight
+	171, // 26: emissions.v4.GetLatestNetworkInferencesResponse.forecaster_weights:type_name -> emissions.v3.RegretInformedWeight
+	172, // 27: emissions.v4.GetLatestNetworkInferencesResponse.forecast_implied_inferences:type_name -> emissions.v3.WorkerAttributedValue
+	161, // 28: emissions.v4.GetLatestAvailableNetworkInferencesResponse.network_inferences:type_name -> emissions.v3.ValueBundle
+	171, // 29: emissions.v4.GetLatestAvailableNetworkInferencesResponse.inferer_weights:type_name -> emissions.v3.RegretInformedWeight
+	171, // 30: emissions.v4.GetLatestAvailableNetworkInferencesResponse.forecaster_weights:type_name -> emissions.v3.RegretInformedWeight
+	172, // 31: emissions.v4.GetLatestAvailableNetworkInferencesResponse.forecast_implied_inferences:type_name -> emissions.v3.WorkerAttributedValue
+	173, // 32: emissions.v4.GetStakeRemovalsUpUntilBlockResponse.removals:type_name -> emissions.v3.StakeRemovalInfo
+	174, // 33: emissions.v4.GetDelegateStakeRemovalsUpUntilBlockResponse.removals:type_name -> emissions.v3.DelegateStakeRemovalInfo
+	173, // 34: emissions.v4.GetStakeRemovalInfoResponse.removal:type_name -> emissions.v3.StakeRemovalInfo
+	174, // 35: emissions.v4.GetDelegateStakeRemovalInfoResponse.removal:type_name -> emissions.v3.DelegateStakeRemovalInfo
+	175, // 36: emissions.v4.GetTopicLastWorkerCommitInfoResponse.last_commit:type_name -> emissions.v3.TimestampedActorNonce
+	175, // 37: emissions.v4.GetTopicLastReputerCommitInfoResponse.last_commit:type_name -> emissions.v3.TimestampedActorNonce
+	176, // 38: emissions.v4.GetReputerLossBundlesAtBlockResponse.loss_bundles:type_name -> emissions.v3.ReputerValueBundles
+	177, // 39: emissions.v4.GetDelegateStakePlacementResponse.delegator_info:type_name -> emissions.v3.DelegatorInfo
+	173, // 40: emissions.v4.GetStakeRemovalForReputerAndTopicIdResponse.stake_removal_info:type_name -> emissions.v3.StakeRemovalInfo
+	174, // 41: emissions.v4.GetDelegateStakeRemovalResponse.stake_removal_info:type_name -> emissions.v3.DelegateStakeRemovalInfo
+	178, // 42: emissions.v4.GetInfererScoreEmaResponse.score:type_name -> emissions.v3.Score
+	178, // 43: emissions.v4.GetForecasterScoreEmaResponse.score:type_name -> emissions.v3.Score
+	178, // 44: emissions.v4.GetReputerScoreEmaResponse.score:type_name -> emissions.v3.Score
+	178, // 45: emissions.v4.GetInferenceScoresUntilBlockResponse.scores:type_name -> emissions.v3.Score
+	179, // 46: emissions.v4.GetWorkerInferenceScoresAtBlockResponse.scores:type_name -> emissions.v3.Scores
+	178, // 47: emissions.v4.GetCurrentLowestInfererScoreResponse.score:type_name -> emissions.v3.Score
+	178, // 48: emissions.v4.GetForecastScoresUntilBlockResponse.scores:type_name -> emissions.v3.Score
+	179, // 49: emissions.v4.GetWorkerForecastScoresAtBlockResponse.scores:type_name -> emissions.v3.Scores
+	178, // 50: emissions.v4.GetCurrentLowestForecasterScoreResponse.score:type_name -> emissions.v3.Score
+	179, // 51: emissions.v4.GetReputersScoresAtBlockResponse.scores:type_name -> emissions.v3.Scores
+	178, // 52: emissions.v4.GetCurrentLowestReputerScoreResponse.score:type_name -> emissions.v3.Score
+	180, // 53: emissions.v4.GetListeningCoefficientResponse.listening_coefficient:type_name -> emissions.v3.ListeningCoefficient
+	162, // 54: emissions.v4.GetActiveTopicsAtBlockResponse.topics:type_name -> emissions.v3.Topic
+	164, // 55: emissions.v4.GetActiveTopicsAtBlockResponse.pagination:type_name -> emissions.v3.SimpleCursorPaginationResponse
+	14,  // 56: emissions.v4.QueryService.GetParams:input_type -> emissions.v4.GetParamsRequest
+	34,  // 57: emissions.v4.QueryService.GetNextTopicId:input_type -> emissions.v4.GetNextTopicIdRequest
+	36,  // 58: emissions.v4.QueryService.GetTopic:input_type -> emissions.v4.GetTopicRequest
+	46,  // 59: emissions.v4.QueryService.GetWorkerLatestInferenceByTopicId:input_type -> emissions.v4.GetWorkerLatestInferenceByTopicIdRequest
+	40,  // 60: emissions.v4.QueryService.GetInferencesAtBlock:input_type -> emissions.v4.GetInferencesAtBlockRequest
+	42,  // 61: emissions.v4.QueryService.GetLatestTopicInferences:input_type -> emissions.v4.GetLatestTopicInferencesRequest
+	44,  // 62: emissions.v4.QueryService.GetForecastsAtBlock:input_type -> emissions.v4.GetForecastsAtBlockRequest
+	32,  // 63: emissions.v4.QueryService.GetNetworkLossBundleAtBlock:input_type -> emissions.v4.GetNetworkLossBundleAtBlockRequest
+	16,  // 64: emissions.v4.QueryService.GetTotalStake:input_type -> emissions.v4.GetTotalStakeRequest
+	18,  // 65: emissions.v4.QueryService.GetReputerStakeInTopic:input_type -> emissions.v4.GetReputerStakeInTopicRequest
+	20,  // 66: emissions.v4.QueryService.GetMultiReputerStakeInTopic:input_type -> emissions.v4.GetMultiReputerStakeInTopicRequest
+	22,  // 67: emissions.v4.QueryService.GetStakeFromReputerInTopicInSelf:input_type -> emissions.v4.GetStakeFromReputerInTopicInSelfRequest
+	24,  // 68: emissions.v4.QueryService.GetDelegateStakeInTopicInReputer:input_type -> emissions.v4.GetDelegateStakeInTopicInReputerRequest
+	26,  // 69: emissions.v4.QueryService.GetStakeFromDelegatorInTopicInReputer:input_type -> emissions.v4.GetStakeFromDelegatorInTopicInReputerRequest
+	28,  // 70: emissions.v4.QueryService.GetStakeFromDelegatorInTopic:input_type -> emissions.v4.GetStakeFromDelegatorInTopicRequest
+	30,  // 71: emissions.v4.QueryService.GetTopicStake:input_type -> emissions.v4.GetTopicStakeRequest
+	78,  // 72: emissions.v4.QueryService.GetStakeRemovalsUpUntilBlock:input_type -> emissions.v4.GetStakeRemovalsUpUntilBlockRequest
+	80,  // 73: emissions.v4.QueryService.GetDelegateStakeRemovalsUpUntilBlock:input_type -> emissions.v4.GetDelegateStakeRemovalsUpUntilBlockRequest
+	82,  // 74: emissions.v4.QueryService.GetStakeRemovalInfo:input_type -> emissions.v4.GetStakeRemovalInfoRequest
+	84,  // 75: emissions.v4.QueryService.GetDelegateStakeRemovalInfo:input_type -> emissions.v4.GetDelegateStakeRemovalInfoRequest
+	48,  // 76: emissions.v4.QueryService.GetWorkerNodeInfo:input_type -> emissions.v4.GetWorkerNodeInfoRequest
+	50,  // 77: emissions.v4.QueryService.GetReputerNodeInfo:input_type -> emissions.v4.GetReputerNodeInfoRequest
+	72,  // 78: emissions.v4.QueryService.IsWorkerRegisteredInTopicId:input_type -> emissions.v4.IsWorkerRegisteredInTopicIdRequest
+	74,  // 79: emissions.v4.QueryService.IsReputerRegisteredInTopicId:input_type -> emissions.v4.IsReputerRegisteredInTopicIdRequest
+	52,  // 80: emissions.v4.QueryService.GetNetworkInferencesAtBlock:input_type -> emissions.v4.GetNetworkInferencesAtBlockRequest
+	53,  // 81: emissions.v4.QueryService.GetLatestNetworkInferences:input_type -> emissions.v4.GetLatestNetworkInferencesRequest
+	54,  // 82: emissions.v4.QueryService.GetLatestAvailableNetworkInferences:input_type -> emissions.v4.GetLatestAvailableNetworkInferencesRequest
+	55,  // 83: emissions.v4.QueryService.IsWorkerNonceUnfulfilled:input_type -> emissions.v4.IsWorkerNonceUnfulfilledRequest
+	67,  // 84: emissions.v4.QueryService.IsReputerNonceUnfulfilled:input_type -> emissions.v4.IsReputerNonceUnfulfilledRequest
+	59,  // 85: emissions.v4.QueryService.GetUnfulfilledWorkerNonces:input_type -> emissions.v4.GetUnfulfilledWorkerNoncesRequest
+	57,  // 86: emissions.v4.QueryService.GetUnfulfilledReputerNonces:input_type -> emissions.v4.GetUnfulfilledReputerNoncesRequest
+	61,  // 87: emissions.v4.QueryService.GetInfererNetworkRegret:input_type -> emissions.v4.GetInfererNetworkRegretRequest
+	63,  // 88: emissions.v4.QueryService.GetForecasterNetworkRegret:input_type -> emissions.v4.GetForecasterNetworkRegretRequest
+	65,  // 89: emissions.v4.QueryService.GetOneInForecasterNetworkRegret:input_type -> emissions.v4.GetOneInForecasterNetworkRegretRequest
+	76,  // 90: emissions.v4.QueryService.IsWhitelistAdmin:input_type -> emissions.v4.IsWhitelistAdminRequest
+	86,  // 91: emissions.v4.QueryService.GetTopicLastWorkerCommitInfo:input_type -> emissions.v4.GetTopicLastWorkerCommitInfoRequest
+	88,  // 92: emissions.v4.QueryService.GetTopicLastReputerCommitInfo:input_type -> emissions.v4.GetTopicLastReputerCommitInfoRequest
+	90,  // 93: emissions.v4.QueryService.GetTopicRewardNonce:input_type -> emissions.v4.GetTopicRewardNonceRequest
+	92,  // 94: emissions.v4.QueryService.GetReputerLossBundlesAtBlock:input_type -> emissions.v4.GetReputerLossBundlesAtBlockRequest
+	94,  // 95: emissions.v4.QueryService.GetStakeReputerAuthority:input_type -> emissions.v4.GetStakeReputerAuthorityRequest
+	96,  // 96: emissions.v4.QueryService.GetDelegateStakePlacement:input_type -> emissions.v4.GetDelegateStakePlacementRequest
+	98,  // 97: emissions.v4.QueryService.GetDelegateStakeUponReputer:input_type -> emissions.v4.GetDelegateStakeUponReputerRequest
+	100, // 98: emissions.v4.QueryService.GetDelegateRewardPerShare:input_type -> emissions.v4.GetDelegateRewardPerShareRequest
+	102, // 99: emissions.v4.QueryService.GetStakeRemovalForReputerAndTopicId:input_type -> emissions.v4.GetStakeRemovalForReputerAndTopicIdRequest
+	104, // 100: emissions.v4.QueryService.GetDelegateStakeRemoval:input_type -> emissions.v4.GetDelegateStakeRemovalRequest
+	106, // 101: emissions.v4.QueryService.GetPreviousTopicWeight:input_type -> emissions.v4.GetPreviousTopicWeightRequest
+	108, // 102: emissions.v4.QueryService.TopicExists:input_type -> emissions.v4.TopicExistsRequest
+	110, // 103: emissions.v4.QueryService.IsTopicActive:input_type -> emissions.v4.IsTopicActiveRequest
+	112, // 104: emissions.v4.QueryService.GetTopicFeeRevenue:input_type -> emissions.v4.GetTopicFeeRevenueRequest
+	114, // 105: emissions.v4.QueryService.GetInfererScoreEma:input_type -> emissions.v4.GetInfererScoreEmaRequest
+	116, // 106: emissions.v4.QueryService.GetForecasterScoreEma:input_type -> emissions.v4.GetForecasterScoreEmaRequest
+	118, // 107: emissions.v4.QueryService.GetReputerScoreEma:input_type -> emissions.v4.GetReputerScoreEmaRequest
+	120, // 108: emissions.v4.QueryService.GetInferenceScoresUntilBlock:input_type -> emissions.v4.GetInferenceScoresUntilBlockRequest
+	122, // 109: emissions.v4.QueryService.GetPreviousTopicQuantileForecasterScoreEma:input_type -> emissions.v4.GetPreviousTopicQuantileForecasterScoreEmaRequest
+	124, // 110: emissions.v4.QueryService.GetPreviousTopicQuantileInfererScoreEma:input_type -> emissions.v4.GetPreviousTopicQuantileInfererScoreEmaRequest
+	126, // 111: emissions.v4.QueryService.GetPreviousTopicQuantileReputerScoreEma:input_type -> emissions.v4.GetPreviousTopicQuantileReputerScoreEmaRequest
+	128, // 112: emissions.v4.QueryService.GetWorkerInferenceScoresAtBlock:input_type -> emissions.v4.GetWorkerInferenceScoresAtBlockRequest
+	130, // 113: emissions.v4.QueryService.GetCurrentLowestInfererScore:input_type -> emissions.v4.GetCurrentLowestInfererScoreRequest
+	132, // 114: emissions.v4.QueryService.GetForecastScoresUntilBlock:input_type -> emissions.v4.GetForecastScoresUntilBlockRequest
+	134, // 115: emissions.v4.QueryService.GetWorkerForecastScoresAtBlock:input_type -> emissions.v4.GetWorkerForecastScoresAtBlockRequest
+	136, // 116: emissions.v4.QueryService.GetCurrentLowestForecasterScore:input_type -> emissions.v4.GetCurrentLowestForecasterScoreRequest
+	138, // 117: emissions.v4.QueryService.GetReputersScoresAtBlock:input_type -> emissions.v4.GetReputersScoresAtBlockRequest
+	140, // 118: emissions.v4.QueryService.GetCurrentLowestReputerScore:input_type -> emissions.v4.GetCurrentLowestReputerScoreRequest
+	142, // 119: emissions.v4.QueryService.GetListeningCoefficient:input_type -> emissions.v4.GetListeningCoefficientRequest
+	144, // 120: emissions.v4.QueryService.GetPreviousReputerRewardFraction:input_type -> emissions.v4.GetPreviousReputerRewardFractionRequest
+	146, // 121: emissions.v4.QueryService.GetPreviousInferenceRewardFraction:input_type -> emissions.v4.GetPreviousInferenceRewardFractionRequest
+	148, // 122: emissions.v4.QueryService.GetPreviousForecastRewardFraction:input_type -> emissions.v4.GetPreviousForecastRewardFractionRequest
+	150, // 123: emissions.v4.QueryService.GetPreviousPercentageRewardToStakedReputers:input_type -> emissions.v4.GetPreviousPercentageRewardToStakedReputersRequest
+	152, // 124: emissions.v4.QueryService.GetTotalRewardToDistribute:input_type -> emissions.v4.GetTotalRewardToDistributeRequest
+	4,   // 125: emissions.v4.QueryService.GetNaiveInfererNetworkRegret:input_type -> emissions.v4.GetNaiveInfererNetworkRegretRequest
+	6,   // 126: emissions.v4.QueryService.GetOneOutInfererInfererNetworkRegret:input_type -> emissions.v4.GetOneOutInfererInfererNetworkRegretRequest
+	8,   // 127: emissions.v4.QueryService.GetOneOutInfererForecasterNetworkRegret:input_type -> emissions.v4.GetOneOutInfererForecasterNetworkRegretRequest
+	10,  // 128: emissions.v4.QueryService.GetOneOutForecasterInfererNetworkRegret:input_type -> emissions.v4.GetOneOutForecasterInfererNetworkRegretRequest
+	12,  // 129: emissions.v4.QueryService.GetOneOutForecasterForecasterNetworkRegret:input_type -> emissions.v4.GetOneOutForecasterForecasterNetworkRegretRequest
+	154, // 130: emissions.v4.QueryService.GetActiveTopicsAtBlock:input_type -> emissions.v4.GetActiveTopicsAtBlockRequest
+	156, // 131: emissions.v4.QueryService.GetNextChurningBlockByTopicId:input_type -> emissions.v4.GetNextChurningBlockByTopicIdRequest
+	0,   // 132: emissions.v4.QueryService.GetCountInfererInclusionsInTopic:input_type -> emissions.v4.GetCountInfererInclusionsInTopicRequest
+	2,   // 133: emissions.v4.QueryService.GetCountForecasterInclusionsInTopic:input_type -> emissions.v4.GetCountForecasterInclusionsInTopicRequest
+	15,  // 134: emissions.v4.QueryService.GetParams:output_type -> emissions.v4.GetParamsResponse
+	35,  // 135: emissions.v4.QueryService.GetNextTopicId:output_type -> emissions.v4.GetNextTopicIdResponse
+	37,  // 136: emissions.v4.QueryService.GetTopic:output_type -> emissions.v4.GetTopicResponse
+	47,  // 137: emissions.v4.QueryService.GetWorkerLatestInferenceByTopicId:output_type -> emissions.v4.GetWorkerLatestInferenceByTopicIdResponse
+	41,  // 138: emissions.v4.QueryService.GetInferencesAtBlock:output_type -> emissions.v4.GetInferencesAtBlockResponse
+	43,  // 139: emissions.v4.QueryService.GetLatestTopicInferences:output_type -> emissions.v4.GetLatestTopicInferencesResponse
+	45,  // 140: emissions.v4.QueryService.GetForecastsAtBlock:output_type -> emissions.v4.GetForecastsAtBlockResponse
+	33,  // 141: emissions.v4.QueryService.GetNetworkLossBundleAtBlock:output_type -> emissions.v4.GetNetworkLossBundleAtBlockResponse
+	17,  // 142: emissions.v4.QueryService.GetTotalStake:output_type -> emissions.v4.GetTotalStakeResponse
+	19,  // 143: emissions.v4.QueryService.GetReputerStakeInTopic:output_type -> emissions.v4.GetReputerStakeInTopicResponse
+	21,  // 144: emissions.v4.QueryService.GetMultiReputerStakeInTopic:output_type -> emissions.v4.GetMultiReputerStakeInTopicResponse
+	23,  // 145: emissions.v4.QueryService.GetStakeFromReputerInTopicInSelf:output_type -> emissions.v4.GetStakeFromReputerInTopicInSelfResponse
+	25,  // 146: emissions.v4.QueryService.GetDelegateStakeInTopicInReputer:output_type -> emissions.v4.GetDelegateStakeInTopicInReputerResponse
+	27,  // 147: emissions.v4.QueryService.GetStakeFromDelegatorInTopicInReputer:output_type -> emissions.v4.GetStakeFromDelegatorInTopicInReputerResponse
+	29,  // 148: emissions.v4.QueryService.GetStakeFromDelegatorInTopic:output_type -> emissions.v4.GetStakeFromDelegatorInTopicResponse
+	31,  // 149: emissions.v4.QueryService.GetTopicStake:output_type -> emissions.v4.GetTopicStakeResponse
+	79,  // 150: emissions.v4.QueryService.GetStakeRemovalsUpUntilBlock:output_type -> emissions.v4.GetStakeRemovalsUpUntilBlockResponse
+	81,  // 151: emissions.v4.QueryService.GetDelegateStakeRemovalsUpUntilBlock:output_type -> emissions.v4.GetDelegateStakeRemovalsUpUntilBlockResponse
+	83,  // 152: emissions.v4.QueryService.GetStakeRemovalInfo:output_type -> emissions.v4.GetStakeRemovalInfoResponse
+	85,  // 153: emissions.v4.QueryService.GetDelegateStakeRemovalInfo:output_type -> emissions.v4.GetDelegateStakeRemovalInfoResponse
+	49,  // 154: emissions.v4.QueryService.GetWorkerNodeInfo:output_type -> emissions.v4.GetWorkerNodeInfoResponse
+	51,  // 155: emissions.v4.QueryService.GetReputerNodeInfo:output_type -> emissions.v4.GetReputerNodeInfoResponse
+	73,  // 156: emissions.v4.QueryService.IsWorkerRegisteredInTopicId:output_type -> emissions.v4.IsWorkerRegisteredInTopicIdResponse
+	75,  // 157: emissions.v4.QueryService.IsReputerRegisteredInTopicId:output_type -> emissions.v4.IsReputerRegisteredInTopicIdResponse
+	69,  // 158: emissions.v4.QueryService.GetNetworkInferencesAtBlock:output_type -> emissions.v4.GetNetworkInferencesAtBlockResponse
+	70,  // 159: emissions.v4.QueryService.GetLatestNetworkInferences:output_type -> emissions.v4.GetLatestNetworkInferencesResponse
+	71,  // 160: emissions.v4.QueryService.GetLatestAvailableNetworkInferences:output_type -> emissions.v4.GetLatestAvailableNetworkInferencesResponse
+	56,  // 161: emissions.v4.QueryService.IsWorkerNonceUnfulfilled:output_type -> emissions.v4.IsWorkerNonceUnfulfilledResponse
+	68,  // 162: emissions.v4.QueryService.IsReputerNonceUnfulfilled:output_type -> emissions.v4.IsReputerNonceUnfulfilledResponse
+	60,  // 163: emissions.v4.QueryService.GetUnfulfilledWorkerNonces:output_type -> emissions.v4.GetUnfulfilledWorkerNoncesResponse
+	58,  // 164: emissions.v4.QueryService.GetUnfulfilledReputerNonces:output_type -> emissions.v4.GetUnfulfilledReputerNoncesResponse
+	62,  // 165: emissions.v4.QueryService.GetInfererNetworkRegret:output_type -> emissions.v4.GetInfererNetworkRegretResponse
+	64,  // 166: emissions.v4.QueryService.GetForecasterNetworkRegret:output_type -> emissions.v4.GetForecasterNetworkRegretResponse
+	66,  // 167: emissions.v4.QueryService.GetOneInForecasterNetworkRegret:output_type -> emissions.v4.GetOneInForecasterNetworkRegretResponse
+	77,  // 168: emissions.v4.QueryService.IsWhitelistAdmin:output_type -> emissions.v4.IsWhitelistAdminResponse
+	87,  // 169: emissions.v4.QueryService.GetTopicLastWorkerCommitInfo:output_type -> emissions.v4.GetTopicLastWorkerCommitInfoResponse
+	89,  // 170: emissions.v4.QueryService.GetTopicLastReputerCommitInfo:output_type -> emissions.v4.GetTopicLastReputerCommitInfoResponse
+	91,  // 171: emissions.v4.QueryService.GetTopicRewardNonce:output_type -> emissions.v4.GetTopicRewardNonceResponse
+	93,  // 172: emissions.v4.QueryService.GetReputerLossBundlesAtBlock:output_type -> emissions.v4.GetReputerLossBundlesAtBlockResponse
+	95,  // 173: emissions.v4.QueryService.GetStakeReputerAuthority:output_type -> emissions.v4.GetStakeReputerAuthorityResponse
+	97,  // 174: emissions.v4.QueryService.GetDelegateStakePlacement:output_type -> emissions.v4.GetDelegateStakePlacementResponse
+	99,  // 175: emissions.v4.QueryService.GetDelegateStakeUponReputer:output_type -> emissions.v4.GetDelegateStakeUponReputerResponse
+	101, // 176: emissions.v4.QueryService.GetDelegateRewardPerShare:output_type -> emissions.v4.GetDelegateRewardPerShareResponse
+	103, // 177: emissions.v4.QueryService.GetStakeRemovalForReputerAndTopicId:output_type -> emissions.v4.GetStakeRemovalForReputerAndTopicIdResponse
+	105, // 178: emissions.v4.QueryService.GetDelegateStakeRemoval:output_type -> emissions.v4.GetDelegateStakeRemovalResponse
+	107, // 179: emissions.v4.QueryService.GetPreviousTopicWeight:output_type -> emissions.v4.GetPreviousTopicWeightResponse
+	109, // 180: emissions.v4.QueryService.TopicExists:output_type -> emissions.v4.TopicExistsResponse
+	111, // 181: emissions.v4.QueryService.IsTopicActive:output_type -> emissions.v4.IsTopicActiveResponse
+	113, // 182: emissions.v4.QueryService.GetTopicFeeRevenue:output_type -> emissions.v4.GetTopicFeeRevenueResponse
+	115, // 183: emissions.v4.QueryService.GetInfererScoreEma:output_type -> emissions.v4.GetInfererScoreEmaResponse
+	117, // 184: emissions.v4.QueryService.GetForecasterScoreEma:output_type -> emissions.v4.GetForecasterScoreEmaResponse
+	119, // 185: emissions.v4.QueryService.GetReputerScoreEma:output_type -> emissions.v4.GetReputerScoreEmaResponse
+	121, // 186: emissions.v4.QueryService.GetInferenceScoresUntilBlock:output_type -> emissions.v4.GetInferenceScoresUntilBlockResponse
+	123, // 187: emissions.v4.QueryService.GetPreviousTopicQuantileForecasterScoreEma:output_type -> emissions.v4.GetPreviousTopicQuantileForecasterScoreEmaResponse
+	125, // 188: emissions.v4.QueryService.GetPreviousTopicQuantileInfererScoreEma:output_type -> emissions.v4.GetPreviousTopicQuantileInfererScoreEmaResponse
+	127, // 189: emissions.v4.QueryService.GetPreviousTopicQuantileReputerScoreEma:output_type -> emissions.v4.GetPreviousTopicQuantileReputerScoreEmaResponse
+	129, // 190: emissions.v4.QueryService.GetWorkerInferenceScoresAtBlock:output_type -> emissions.v4.GetWorkerInferenceScoresAtBlockResponse
+	131, // 191: emissions.v4.QueryService.GetCurrentLowestInfererScore:output_type -> emissions.v4.GetCurrentLowestInfererScoreResponse
+	133, // 192: emissions.v4.QueryService.GetForecastScoresUntilBlock:output_type -> emissions.v4.GetForecastScoresUntilBlockResponse
+	135, // 193: emissions.v4.QueryService.GetWorkerForecastScoresAtBlock:output_type -> emissions.v4.GetWorkerForecastScoresAtBlockResponse
+	137, // 194: emissions.v4.QueryService.GetCurrentLowestForecasterScore:output_type -> emissions.v4.GetCurrentLowestForecasterScoreResponse
+	139, // 195: emissions.v4.QueryService.GetReputersScoresAtBlock:output_type -> emissions.v4.GetReputersScoresAtBlockResponse
+	141, // 196: emissions.v4.QueryService.GetCurrentLowestReputerScore:output_type -> emissions.v4.GetCurrentLowestReputerScoreResponse
+	143, // 197: emissions.v4.QueryService.GetListeningCoefficient:output_type -> emissions.v4.GetListeningCoefficientResponse
+	145, // 198: emissions.v4.QueryService.GetPreviousReputerRewardFraction:output_type -> emissions.v4.GetPreviousReputerRewardFractionResponse
+	147, // 199: emissions.v4.QueryService.GetPreviousInferenceRewardFraction:output_type -> emissions.v4.GetPreviousInferenceRewardFractionResponse
+	149, // 200: emissions.v4.QueryService.GetPreviousForecastRewardFraction:output_type -> emissions.v4.GetPreviousForecastRewardFractionResponse
+	151, // 201: emissions.v4.QueryService.GetPreviousPercentageRewardToStakedReputers:output_type -> emissions.v4.GetPreviousPercentageRewardToStakedReputersResponse
+	153, // 202: emissions.v4.QueryService.GetTotalRewardToDistribute:output_type -> emissions.v4.GetTotalRewardToDistributeResponse
+	5,   // 203: emissions.v4.QueryService.GetNaiveInfererNetworkRegret:output_type -> emissions.v4.GetNaiveInfererNetworkRegretResponse
+	7,   // 204: emissions.v4.QueryService.GetOneOutInfererInfererNetworkRegret:output_type -> emissions.v4.GetOneOutInfererInfererNetworkRegretResponse
+	9,   // 205: emissions.v4.QueryService.GetOneOutInfererForecasterNetworkRegret:output_type -> emissions.v4.GetOneOutInfererForecasterNetworkRegretResponse
+	11,  // 206: emissions.v4.QueryService.GetOneOutForecasterInfererNetworkRegret:output_type -> emissions.v4.GetOneOutForecasterInfererNetworkRegretResponse
+	13,  // 207: emissions.v4.QueryService.GetOneOutForecasterForecasterNetworkRegret:output_type -> emissions.v4.GetOneOutForecasterForecasterNetworkRegretResponse
+	155, // 208: emissions.v4.QueryService.GetActiveTopicsAtBlock:output_type -> emissions.v4.GetActiveTopicsAtBlockResponse
+	157, // 209: emissions.v4.QueryService.GetNextChurningBlockByTopicId:output_type -> emissions.v4.GetNextChurningBlockByTopicIdResponse
+	1,   // 210: emissions.v4.QueryService.GetCountInfererInclusionsInTopic:output_type -> emissions.v4.GetCountInfererInclusionsInTopicResponse
+	3,   // 211: emissions.v4.QueryService.GetCountForecasterInclusionsInTopic:output_type -> emissions.v4.GetCountForecasterInclusionsInTopicResponse
+	134, // [134:212] is the sub-list for method output_type
+	56,  // [56:134] is the sub-list for method input_type
 	56,  // [56:56] is the sub-list for extension type_name
 	56,  // [56:56] is the sub-list for extension extendee
 	0,   // [0:56] is the sub-list for field type_name
@@ -78086,7 +80044,7 @@ func file_emissions_v4_query_proto_init() {
 	file_emissions_v4_params_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_emissions_v4_query_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetNaiveInfererNetworkRegretRequest); i {
+			switch v := v.(*GetCountInfererInclusionsInTopicRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78098,7 +80056,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetNaiveInfererNetworkRegretResponse); i {
+			switch v := v.(*GetCountInfererInclusionsInTopicResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78110,7 +80068,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneOutInfererInfererNetworkRegretRequest); i {
+			switch v := v.(*GetCountForecasterInclusionsInTopicRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78122,7 +80080,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneOutInfererInfererNetworkRegretResponse); i {
+			switch v := v.(*GetCountForecasterInclusionsInTopicResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78134,7 +80092,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneOutInfererForecasterNetworkRegretRequest); i {
+			switch v := v.(*GetNaiveInfererNetworkRegretRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78146,7 +80104,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneOutInfererForecasterNetworkRegretResponse); i {
+			switch v := v.(*GetNaiveInfererNetworkRegretResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78158,7 +80116,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneOutForecasterInfererNetworkRegretRequest); i {
+			switch v := v.(*GetOneOutInfererInfererNetworkRegretRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78170,7 +80128,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneOutForecasterInfererNetworkRegretResponse); i {
+			switch v := v.(*GetOneOutInfererInfererNetworkRegretResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78182,7 +80140,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneOutForecasterForecasterNetworkRegretRequest); i {
+			switch v := v.(*GetOneOutInfererForecasterNetworkRegretRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78194,7 +80152,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneOutForecasterForecasterNetworkRegretResponse); i {
+			switch v := v.(*GetOneOutInfererForecasterNetworkRegretResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78206,7 +80164,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetParamsRequest); i {
+			switch v := v.(*GetOneOutForecasterInfererNetworkRegretRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78218,7 +80176,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetParamsResponse); i {
+			switch v := v.(*GetOneOutForecasterInfererNetworkRegretResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78230,7 +80188,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTotalStakeRequest); i {
+			switch v := v.(*GetOneOutForecasterForecasterNetworkRegretRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78242,7 +80200,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTotalStakeResponse); i {
+			switch v := v.(*GetOneOutForecasterForecasterNetworkRegretResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78254,7 +80212,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputerStakeInTopicRequest); i {
+			switch v := v.(*GetParamsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78266,7 +80224,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputerStakeInTopicResponse); i {
+			switch v := v.(*GetParamsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78278,7 +80236,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMultiReputerStakeInTopicRequest); i {
+			switch v := v.(*GetTotalStakeRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78290,7 +80248,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMultiReputerStakeInTopicResponse); i {
+			switch v := v.(*GetTotalStakeResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78302,7 +80260,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeFromReputerInTopicInSelfRequest); i {
+			switch v := v.(*GetReputerStakeInTopicRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78314,7 +80272,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeFromReputerInTopicInSelfResponse); i {
+			switch v := v.(*GetReputerStakeInTopicResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78326,7 +80284,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeInTopicInReputerRequest); i {
+			switch v := v.(*GetMultiReputerStakeInTopicRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78338,7 +80296,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeInTopicInReputerResponse); i {
+			switch v := v.(*GetMultiReputerStakeInTopicResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78350,7 +80308,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeFromDelegatorInTopicInReputerRequest); i {
+			switch v := v.(*GetStakeFromReputerInTopicInSelfRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78362,7 +80320,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeFromDelegatorInTopicInReputerResponse); i {
+			switch v := v.(*GetStakeFromReputerInTopicInSelfResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78374,7 +80332,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeFromDelegatorInTopicRequest); i {
+			switch v := v.(*GetDelegateStakeInTopicInReputerRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78386,7 +80344,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeFromDelegatorInTopicResponse); i {
+			switch v := v.(*GetDelegateStakeInTopicInReputerResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78398,7 +80356,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicStakeRequest); i {
+			switch v := v.(*GetStakeFromDelegatorInTopicInReputerRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78410,7 +80368,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicStakeResponse); i {
+			switch v := v.(*GetStakeFromDelegatorInTopicInReputerResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78422,7 +80380,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetNetworkLossBundleAtBlockRequest); i {
+			switch v := v.(*GetStakeFromDelegatorInTopicRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78434,7 +80392,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetNetworkLossBundleAtBlockResponse); i {
+			switch v := v.(*GetStakeFromDelegatorInTopicResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78446,7 +80404,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetNextTopicIdRequest); i {
+			switch v := v.(*GetTopicStakeRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78458,7 +80416,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetNextTopicIdResponse); i {
+			switch v := v.(*GetTopicStakeResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78470,7 +80428,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicRequest); i {
+			switch v := v.(*GetNetworkLossBundleAtBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78482,7 +80440,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicResponse); i {
+			switch v := v.(*GetNetworkLossBundleAtBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78494,7 +80452,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetActiveTopicsRequest); i {
+			switch v := v.(*GetNextTopicIdRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78506,7 +80464,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetActiveTopicsResponse); i {
+			switch v := v.(*GetNextTopicIdResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78518,7 +80476,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInferencesAtBlockRequest); i {
+			switch v := v.(*GetTopicRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78530,7 +80488,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInferencesAtBlockResponse); i {
+			switch v := v.(*GetTopicResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78542,7 +80500,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetLatestTopicInferencesRequest); i {
+			switch v := v.(*GetActiveTopicsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78554,7 +80512,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetLatestTopicInferencesResponse); i {
+			switch v := v.(*GetActiveTopicsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78566,7 +80524,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetForecastsAtBlockRequest); i {
+			switch v := v.(*GetInferencesAtBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78578,7 +80536,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetForecastsAtBlockResponse); i {
+			switch v := v.(*GetInferencesAtBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78590,7 +80548,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWorkerLatestInferenceByTopicIdRequest); i {
+			switch v := v.(*GetLatestTopicInferencesRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78602,7 +80560,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWorkerLatestInferenceByTopicIdResponse); i {
+			switch v := v.(*GetLatestTopicInferencesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78614,7 +80572,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWorkerNodeInfoRequest); i {
+			switch v := v.(*GetForecastsAtBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78626,7 +80584,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWorkerNodeInfoResponse); i {
+			switch v := v.(*GetForecastsAtBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78638,7 +80596,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputerNodeInfoRequest); i {
+			switch v := v.(*GetWorkerLatestInferenceByTopicIdRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78650,7 +80608,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputerNodeInfoResponse); i {
+			switch v := v.(*GetWorkerLatestInferenceByTopicIdResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78662,7 +80620,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetNetworkInferencesAtBlockRequest); i {
+			switch v := v.(*GetWorkerNodeInfoRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78674,7 +80632,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetLatestNetworkInferencesRequest); i {
+			switch v := v.(*GetWorkerNodeInfoResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78686,7 +80644,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetLatestAvailableNetworkInferencesRequest); i {
+			switch v := v.(*GetReputerNodeInfoRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78698,7 +80656,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsWorkerNonceUnfulfilledRequest); i {
+			switch v := v.(*GetReputerNodeInfoResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78710,7 +80668,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsWorkerNonceUnfulfilledResponse); i {
+			switch v := v.(*GetNetworkInferencesAtBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78722,7 +80680,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetUnfulfilledReputerNoncesRequest); i {
+			switch v := v.(*GetLatestNetworkInferencesRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78734,7 +80692,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetUnfulfilledReputerNoncesResponse); i {
+			switch v := v.(*GetLatestAvailableNetworkInferencesRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78746,7 +80704,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetUnfulfilledWorkerNoncesRequest); i {
+			switch v := v.(*IsWorkerNonceUnfulfilledRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78758,7 +80716,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetUnfulfilledWorkerNoncesResponse); i {
+			switch v := v.(*IsWorkerNonceUnfulfilledResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78770,7 +80728,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInfererNetworkRegretRequest); i {
+			switch v := v.(*GetUnfulfilledReputerNoncesRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78782,7 +80740,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInfererNetworkRegretResponse); i {
+			switch v := v.(*GetUnfulfilledReputerNoncesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78794,7 +80752,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetForecasterNetworkRegretRequest); i {
+			switch v := v.(*GetUnfulfilledWorkerNoncesRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78806,7 +80764,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetForecasterNetworkRegretResponse); i {
+			switch v := v.(*GetUnfulfilledWorkerNoncesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78818,7 +80776,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneInForecasterNetworkRegretRequest); i {
+			switch v := v.(*GetInfererNetworkRegretRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78830,7 +80788,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOneInForecasterNetworkRegretResponse); i {
+			switch v := v.(*GetInfererNetworkRegretResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78842,7 +80800,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[63].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsReputerNonceUnfulfilledRequest); i {
+			switch v := v.(*GetForecasterNetworkRegretRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78854,7 +80812,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[64].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsReputerNonceUnfulfilledResponse); i {
+			switch v := v.(*GetForecasterNetworkRegretResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78866,7 +80824,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[65].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetNetworkInferencesAtBlockResponse); i {
+			switch v := v.(*GetOneInForecasterNetworkRegretRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78878,7 +80836,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[66].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetLatestNetworkInferencesResponse); i {
+			switch v := v.(*GetOneInForecasterNetworkRegretResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78890,7 +80848,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[67].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetLatestAvailableNetworkInferencesResponse); i {
+			switch v := v.(*IsReputerNonceUnfulfilledRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78902,7 +80860,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[68].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsWorkerRegisteredInTopicIdRequest); i {
+			switch v := v.(*IsReputerNonceUnfulfilledResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78914,7 +80872,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[69].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsWorkerRegisteredInTopicIdResponse); i {
+			switch v := v.(*GetNetworkInferencesAtBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78926,7 +80884,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[70].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsReputerRegisteredInTopicIdRequest); i {
+			switch v := v.(*GetLatestNetworkInferencesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78938,7 +80896,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[71].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsReputerRegisteredInTopicIdResponse); i {
+			switch v := v.(*GetLatestAvailableNetworkInferencesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78950,7 +80908,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[72].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsWhitelistAdminRequest); i {
+			switch v := v.(*IsWorkerRegisteredInTopicIdRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78962,7 +80920,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[73].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsWhitelistAdminResponse); i {
+			switch v := v.(*IsWorkerRegisteredInTopicIdResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78974,7 +80932,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[74].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeRemovalsUpUntilBlockRequest); i {
+			switch v := v.(*IsReputerRegisteredInTopicIdRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78986,7 +80944,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[75].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeRemovalsUpUntilBlockResponse); i {
+			switch v := v.(*IsReputerRegisteredInTopicIdResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -78998,7 +80956,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[76].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeRemovalsUpUntilBlockRequest); i {
+			switch v := v.(*IsWhitelistAdminRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79010,7 +80968,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[77].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeRemovalsUpUntilBlockResponse); i {
+			switch v := v.(*IsWhitelistAdminResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79022,7 +80980,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[78].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeRemovalInfoRequest); i {
+			switch v := v.(*GetStakeRemovalsUpUntilBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79034,7 +80992,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeRemovalInfoResponse); i {
+			switch v := v.(*GetStakeRemovalsUpUntilBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79046,7 +81004,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeRemovalInfoRequest); i {
+			switch v := v.(*GetDelegateStakeRemovalsUpUntilBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79058,7 +81016,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[81].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeRemovalInfoResponse); i {
+			switch v := v.(*GetDelegateStakeRemovalsUpUntilBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79070,7 +81028,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[82].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicLastWorkerCommitInfoRequest); i {
+			switch v := v.(*GetStakeRemovalInfoRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79082,7 +81040,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[83].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicLastWorkerCommitInfoResponse); i {
+			switch v := v.(*GetStakeRemovalInfoResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79094,7 +81052,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[84].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicLastReputerCommitInfoRequest); i {
+			switch v := v.(*GetDelegateStakeRemovalInfoRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79106,7 +81064,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[85].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicLastReputerCommitInfoResponse); i {
+			switch v := v.(*GetDelegateStakeRemovalInfoResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79118,7 +81076,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[86].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicRewardNonceRequest); i {
+			switch v := v.(*GetTopicLastWorkerCommitInfoRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79130,7 +81088,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[87].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicRewardNonceResponse); i {
+			switch v := v.(*GetTopicLastWorkerCommitInfoResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79142,7 +81100,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[88].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputerLossBundlesAtBlockRequest); i {
+			switch v := v.(*GetTopicLastReputerCommitInfoRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79154,7 +81112,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[89].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputerLossBundlesAtBlockResponse); i {
+			switch v := v.(*GetTopicLastReputerCommitInfoResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79166,7 +81124,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[90].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeReputerAuthorityRequest); i {
+			switch v := v.(*GetTopicRewardNonceRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79178,7 +81136,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[91].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeReputerAuthorityResponse); i {
+			switch v := v.(*GetTopicRewardNonceResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79190,7 +81148,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[92].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakePlacementRequest); i {
+			switch v := v.(*GetReputerLossBundlesAtBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79202,7 +81160,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[93].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakePlacementResponse); i {
+			switch v := v.(*GetReputerLossBundlesAtBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79214,7 +81172,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[94].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeUponReputerRequest); i {
+			switch v := v.(*GetStakeReputerAuthorityRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79226,7 +81184,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[95].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeUponReputerResponse); i {
+			switch v := v.(*GetStakeReputerAuthorityResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79238,7 +81196,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[96].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateRewardPerShareRequest); i {
+			switch v := v.(*GetDelegateStakePlacementRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79250,7 +81208,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[97].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateRewardPerShareResponse); i {
+			switch v := v.(*GetDelegateStakePlacementResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79262,7 +81220,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[98].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeRemovalForReputerAndTopicIdRequest); i {
+			switch v := v.(*GetDelegateStakeUponReputerRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79274,7 +81232,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[99].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetStakeRemovalForReputerAndTopicIdResponse); i {
+			switch v := v.(*GetDelegateStakeUponReputerResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79286,7 +81244,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[100].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeRemovalRequest); i {
+			switch v := v.(*GetDelegateRewardPerShareRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79298,7 +81256,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[101].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDelegateStakeRemovalResponse); i {
+			switch v := v.(*GetDelegateRewardPerShareResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79310,7 +81268,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[102].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousTopicWeightRequest); i {
+			switch v := v.(*GetStakeRemovalForReputerAndTopicIdRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79322,7 +81280,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[103].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousTopicWeightResponse); i {
+			switch v := v.(*GetStakeRemovalForReputerAndTopicIdResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79334,7 +81292,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[104].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TopicExistsRequest); i {
+			switch v := v.(*GetDelegateStakeRemovalRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79346,7 +81304,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[105].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*TopicExistsResponse); i {
+			switch v := v.(*GetDelegateStakeRemovalResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79358,7 +81316,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[106].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsTopicActiveRequest); i {
+			switch v := v.(*GetPreviousTopicWeightRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79370,7 +81328,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[107].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsTopicActiveResponse); i {
+			switch v := v.(*GetPreviousTopicWeightResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79382,7 +81340,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[108].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicFeeRevenueRequest); i {
+			switch v := v.(*TopicExistsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79394,7 +81352,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[109].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTopicFeeRevenueResponse); i {
+			switch v := v.(*TopicExistsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79406,7 +81364,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[110].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInfererScoreEmaRequest); i {
+			switch v := v.(*IsTopicActiveRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79418,7 +81376,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[111].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInfererScoreEmaResponse); i {
+			switch v := v.(*IsTopicActiveResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79430,7 +81388,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[112].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetForecasterScoreEmaRequest); i {
+			switch v := v.(*GetTopicFeeRevenueRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79442,7 +81400,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[113].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetForecasterScoreEmaResponse); i {
+			switch v := v.(*GetTopicFeeRevenueResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79454,7 +81412,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[114].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputerScoreEmaRequest); i {
+			switch v := v.(*GetInfererScoreEmaRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79466,7 +81424,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[115].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputerScoreEmaResponse); i {
+			switch v := v.(*GetInfererScoreEmaResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79478,7 +81436,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[116].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInferenceScoresUntilBlockRequest); i {
+			switch v := v.(*GetForecasterScoreEmaRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79490,7 +81448,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[117].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetInferenceScoresUntilBlockResponse); i {
+			switch v := v.(*GetForecasterScoreEmaResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79502,7 +81460,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[118].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousTopicQuantileForecasterScoreEmaRequest); i {
+			switch v := v.(*GetReputerScoreEmaRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79514,7 +81472,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[119].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousTopicQuantileForecasterScoreEmaResponse); i {
+			switch v := v.(*GetReputerScoreEmaResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79526,7 +81484,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[120].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousTopicQuantileInfererScoreEmaRequest); i {
+			switch v := v.(*GetInferenceScoresUntilBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79538,7 +81496,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[121].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousTopicQuantileInfererScoreEmaResponse); i {
+			switch v := v.(*GetInferenceScoresUntilBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79550,7 +81508,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[122].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousTopicQuantileReputerScoreEmaRequest); i {
+			switch v := v.(*GetPreviousTopicQuantileForecasterScoreEmaRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79562,7 +81520,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[123].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousTopicQuantileReputerScoreEmaResponse); i {
+			switch v := v.(*GetPreviousTopicQuantileForecasterScoreEmaResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79574,7 +81532,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[124].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWorkerInferenceScoresAtBlockRequest); i {
+			switch v := v.(*GetPreviousTopicQuantileInfererScoreEmaRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79586,7 +81544,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[125].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWorkerInferenceScoresAtBlockResponse); i {
+			switch v := v.(*GetPreviousTopicQuantileInfererScoreEmaResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79598,7 +81556,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[126].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetCurrentLowestInfererScoreRequest); i {
+			switch v := v.(*GetPreviousTopicQuantileReputerScoreEmaRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79610,7 +81568,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[127].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetCurrentLowestInfererScoreResponse); i {
+			switch v := v.(*GetPreviousTopicQuantileReputerScoreEmaResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79622,7 +81580,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[128].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetForecastScoresUntilBlockRequest); i {
+			switch v := v.(*GetWorkerInferenceScoresAtBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79634,7 +81592,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[129].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetForecastScoresUntilBlockResponse); i {
+			switch v := v.(*GetWorkerInferenceScoresAtBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79646,7 +81604,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[130].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWorkerForecastScoresAtBlockRequest); i {
+			switch v := v.(*GetCurrentLowestInfererScoreRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79658,7 +81616,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[131].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetWorkerForecastScoresAtBlockResponse); i {
+			switch v := v.(*GetCurrentLowestInfererScoreResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79670,7 +81628,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[132].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetCurrentLowestForecasterScoreRequest); i {
+			switch v := v.(*GetForecastScoresUntilBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79682,7 +81640,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[133].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetCurrentLowestForecasterScoreResponse); i {
+			switch v := v.(*GetForecastScoresUntilBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79694,7 +81652,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[134].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputersScoresAtBlockRequest); i {
+			switch v := v.(*GetWorkerForecastScoresAtBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79706,7 +81664,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[135].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetReputersScoresAtBlockResponse); i {
+			switch v := v.(*GetWorkerForecastScoresAtBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79718,7 +81676,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[136].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetCurrentLowestReputerScoreRequest); i {
+			switch v := v.(*GetCurrentLowestForecasterScoreRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79730,7 +81688,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[137].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetCurrentLowestReputerScoreResponse); i {
+			switch v := v.(*GetCurrentLowestForecasterScoreResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79742,7 +81700,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[138].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetListeningCoefficientRequest); i {
+			switch v := v.(*GetReputersScoresAtBlockRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79754,7 +81712,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[139].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetListeningCoefficientResponse); i {
+			switch v := v.(*GetReputersScoresAtBlockResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79766,7 +81724,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[140].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousReputerRewardFractionRequest); i {
+			switch v := v.(*GetCurrentLowestReputerScoreRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79778,7 +81736,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[141].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousReputerRewardFractionResponse); i {
+			switch v := v.(*GetCurrentLowestReputerScoreResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79790,7 +81748,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[142].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousInferenceRewardFractionRequest); i {
+			switch v := v.(*GetListeningCoefficientRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79802,7 +81760,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[143].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousInferenceRewardFractionResponse); i {
+			switch v := v.(*GetListeningCoefficientResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79814,7 +81772,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[144].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousForecastRewardFractionRequest); i {
+			switch v := v.(*GetPreviousReputerRewardFractionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79826,7 +81784,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[145].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousForecastRewardFractionResponse); i {
+			switch v := v.(*GetPreviousReputerRewardFractionResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79838,7 +81796,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[146].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousPercentageRewardToStakedReputersRequest); i {
+			switch v := v.(*GetPreviousInferenceRewardFractionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79850,7 +81808,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[147].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPreviousPercentageRewardToStakedReputersResponse); i {
+			switch v := v.(*GetPreviousInferenceRewardFractionResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79862,7 +81820,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[148].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTotalRewardToDistributeRequest); i {
+			switch v := v.(*GetPreviousForecastRewardFractionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79874,7 +81832,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[149].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTotalRewardToDistributeResponse); i {
+			switch v := v.(*GetPreviousForecastRewardFractionResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79886,7 +81844,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[150].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetActiveTopicsAtBlockRequest); i {
+			switch v := v.(*GetPreviousPercentageRewardToStakedReputersRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79898,7 +81856,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[151].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetActiveTopicsAtBlockResponse); i {
+			switch v := v.(*GetPreviousPercentageRewardToStakedReputersResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79910,7 +81868,7 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[152].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetNextChurningBlockByTopicIdRequest); i {
+			switch v := v.(*GetTotalRewardToDistributeRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -79922,6 +81880,54 @@ func file_emissions_v4_query_proto_init() {
 			}
 		}
 		file_emissions_v4_query_proto_msgTypes[153].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetTotalRewardToDistributeResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v4_query_proto_msgTypes[154].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetActiveTopicsAtBlockRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v4_query_proto_msgTypes[155].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetActiveTopicsAtBlockResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v4_query_proto_msgTypes[156].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetNextChurningBlockByTopicIdRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_emissions_v4_query_proto_msgTypes[157].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetNextChurningBlockByTopicIdResponse); i {
 			case 0:
 				return &v.state
@@ -79940,7 +81946,7 @@ func file_emissions_v4_query_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_emissions_v4_query_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   154,
+			NumMessages:   158,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

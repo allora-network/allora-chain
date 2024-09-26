@@ -6,6 +6,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -118,6 +119,27 @@ func GetCalcSetNetworkRegrets(
 		return networkLosses.InfererValues[i].Worker < networkLosses.InfererValues[j].Worker
 	})
 
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrapf(err, "failed to get topic")
+	}
+
+	ShouldAddWorkerRegret := func(worker Worker, newParticipant bool) (bool, error) {
+		numInclusions, err := k.GetCountInfererInclusionsInTopic(ctx, topicId, worker)
+		if err != nil {
+			return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
+		}
+		numInclusionsDec, err := alloraMath.NewDecFromUint64(numInclusions)
+		if err != nil {
+			return false, errorsmod.Wrapf(err, "failed to get num inclusions dec")
+		}
+		oneOverAlpha, err := alloraMath.OneDec().Quo(topic.AlphaRegret)
+		if err != nil {
+			return false, errorsmod.Wrapf(err, "failed to get one over alpha")
+		}
+		return !newParticipant && numInclusionsDec.Gt(oneOverAlpha), nil
+	}
+
 	// R_ij - Inferer Regrets
 	for _, infererLoss := range networkLosses.InfererValues {
 		lastRegret, newParticipant, err := k.GetInfererNetworkRegret(ctx, topicId, infererLoss.Worker)
@@ -138,7 +160,12 @@ func GetCalcSetNetworkRegrets(
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error setting inferer regret")
 		}
-		if !newParticipant {
+
+		shouldAddWorkerRegret, err := ShouldAddWorkerRegret(infererLoss.Worker, newParticipant)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Error checking if should add worker regret")
+		}
+		if shouldAddWorkerRegret {
 			workersRegrets = append(workersRegrets, newInfererRegret.Value)
 		}
 	}
@@ -167,7 +194,12 @@ func GetCalcSetNetworkRegrets(
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error setting forecaster regret")
 		}
-		if !newParticipant {
+
+		shouldAddWorkerRegret, err := ShouldAddWorkerRegret(forecasterLoss.Worker, newParticipant)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Error checking if should add worker regret")
+		}
+		if shouldAddWorkerRegret {
 			workersRegrets = append(workersRegrets, newForecasterRegret.Value)
 		}
 	}
@@ -361,6 +393,12 @@ func GetCalcSetNetworkRegrets(
 	return nil
 }
 
+// Calculate the initial regret for all new workers in the topic
+// denominator = std(regrets[i-1, :]) + epsilon
+// offset = cnorm - 8.25 / pnorm
+// dummy_regret[i] = np.percentile(regrets[i-1, :], 25.) + offset * denominator
+// It is assumed that the regrets are filtered by experience for each actor
+// i.e. if they have not been included in the topic for enough epochs, their regret is ignored.
 func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pNorm alloraMath.Dec, cNorm alloraMath.Dec) (alloraMath.Dec, error) {
 	// Calculate the Denominator
 	stdDevRegrets, err := alloraMath.StdDev(regrets)
@@ -392,14 +430,13 @@ func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pN
 		return alloraMath.ZeroDec(), err
 	}
 
-	minimumRegret := alloraMath.ZeroDec()
-	for i, regret := range regrets {
-		if i == 0 || regret.Lt(minimumRegret) {
-			minimumRegret = regret
-		}
+	// Calculate percentile
+	percentile, err := actorutils.GetQuantileOfDecs(regrets, alloraMath.MustNewDecFromString("0.25"))
+	if err != nil {
+		return alloraMath.ZeroDec(), err
 	}
 
-	initialRegret, err := minimumRegret.Add(offSetTimesDenominator)
+	initialRegret, err := percentile.Add(offSetTimesDenominator)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}

@@ -86,4 +86,6 @@ var (
 	PreviousTopicQuantileInfererScoreEmaKey           = collections.NewPrefix(71)
 	PreviousTopicQuantileForecasterScoreEmaKey        = collections.NewPrefix(72)
 	PreviousTopicQuantileReputerScoreEmaKey           = collections.NewPrefix(73)
+	CountInfererInclusionsInTopicKey                  = collections.NewPrefix(74)
+	CountForecasterInclusionsInTopicKey               = collections.NewPrefix(75)
 )

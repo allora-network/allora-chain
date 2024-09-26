@@ -16,33 +16,35 @@ func GetQuantileOfScores(
 	scores []emissionstypes.Score,
 	quantile alloraMath.Dec,
 ) (alloraMath.Dec, error) {
-	// If there are no scores then the quantile of scores is 0.
+	decScores := make([]alloraMath.Dec, len(scores))
+	for i, score := range scores {
+		decScores[i] = score.Score
+	}
+	return GetQuantileOfDecs(decScores, quantile)
+}
+
+func GetQuantileOfDecs(
+	decs []alloraMath.Dec,
+	quantile alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	// If there are no decs then the quantile of scores is 0.
 	// This better ensures chain continuity without consequence because in this situation
 	// there is no meaningful quantile to calculate.
-	if len(scores) == 0 {
+	if len(decs) == 0 {
 		return alloraMath.ZeroDec(), nil
 	}
 
-	// Sort scores in descending order. Address is used to break ties.
-	slices.SortStableFunc(scores, func(x, y emissionstypes.Score) int {
-		if x.Score.Lt(y.Score) {
+	// Sort decs in descending order. Address is used to break ties.
+	slices.SortStableFunc(decs, func(x, y alloraMath.Dec) int {
+		if x.Lt(y) {
 			return 1
-		} else if x.Score.Gt(y.Score) {
-			return -1
-		} else {
-			if x.Address < y.Address {
-				return 1
-			} else if x.Address > y.Address {
-				return -1
-			} else {
-				return 0
-			}
 		}
+		return -1
 	})
 
 	// n elements, q quantile
 	// position = (1 - q) * (n - 1)
-	nLessOne, err := alloraMath.NewDecFromUint64(uint64(len(scores) - 1))
+	nLessOne, err := alloraMath.NewDecFromUint64(uint64(len(decs) - 1))
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -73,18 +75,18 @@ func GetQuantileOfScores(
 	}
 
 	if lowerIndex == upperIndex {
-		return scores[lowerIndexInt].Score, nil
+		return decs[lowerIndexInt], nil
 	}
 
 	// in cases where the quantile is between two values
 	// return lowerValue + (upperValue-lowerValue)*(position-lowerIndex)
-	lowerScore := scores[lowerIndexInt]
-	upperScore := scores[upperIndexInt]
+	lowerDec := decs[lowerIndexInt]
+	upperDec := decs[upperIndexInt]
 	positionMinusLowerIndex, err := position.Sub(lowerIndex)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	upperMinusLower, err := upperScore.Score.Sub(lowerScore.Score)
+	upperMinusLower, err := upperDec.Sub(lowerDec)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
@@ -92,7 +94,7 @@ func GetQuantileOfScores(
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
-	ret, err := lowerScore.Score.Add(product)
+	ret, err := lowerDec.Add(product)
 	if err != nil {
 		return alloraMath.Dec{}, err
 	}
