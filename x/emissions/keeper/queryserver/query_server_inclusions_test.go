@@ -50,5 +50,4 @@ func (s *QueryServerTestSuite) TestGetCountForecasterInclusionsInTopic() {
 	})
 	s.Require().NoError(err)
 	s.Equal(results.Count, uint64(1))
-
 }
