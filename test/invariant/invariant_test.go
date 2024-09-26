@@ -55,7 +55,7 @@ func TestInvariantTestSuite(t *testing.T) {
 		t,
 		rpcMode,
 		rpcEndpoints,
-		"../devnet/genesis",
+		"../localnet/genesis",
 		seed,
 	)
 
