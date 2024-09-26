@@ -195,6 +195,11 @@ type Keeper struct {
 	// map of (topicId, oneOutForecaster, forecaster) -> regret
 	latestOneOutForecasterForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
 
+	/// INCLUSIONS
+
+	countInfererInclusionsInTopic    collections.Map[collections.Pair[TopicId, ActorId], uint64]
+	countForecasterInclusionsInTopic collections.Map[collections.Pair[TopicId, ActorId], uint64]
+
 	/// WHITELISTS
 
 	whitelistAdmins collections.KeySet[ActorId]
@@ -284,6 +289,8 @@ func NewKeeper(
 		previousTopicQuantileInfererScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileInfererScoreEmaKey, "previous_topic_quantile_inferer_score_ema", collections.Uint64Key, alloraMath.DecValue),
 		previousTopicQuantileForecasterScoreEma: collections.NewMap(sb, types.PreviousTopicQuantileForecasterScoreEmaKey, "previous_topic_quantile_forecaster_score_ema", collections.Uint64Key, alloraMath.DecValue),
 		previousTopicQuantileReputerScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileReputerScoreEmaKey, "previous_topic_quantile_reputer_score_ema", collections.Uint64Key, alloraMath.DecValue),
+		countInfererInclusionsInTopic:           collections.NewMap(sb, types.CountInfererInclusionsInTopicKey, "count_inferer_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
+		countForecasterInclusionsInTopic:        collections.NewMap(sb, types.CountForecasterInclusionsInTopicKey, "count_forecaster_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
 	}
 
 	schema, err := sb.Build()
@@ -571,6 +578,46 @@ func (k *Keeper) DeleteUnfulfilledWorkerNonces(ctx context.Context, topicId Topi
 
 func (k *Keeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) error {
 	return k.unfulfilledReputerNonces.Remove(ctx, topicId)
+}
+
+/// INCLUSIONS
+
+func (k *Keeper) GetCountInfererInclusionsInTopic(ctx context.Context, topicId TopicId, inferer ActorId) (uint64, error) {
+	key := collections.Join(topicId, inferer)
+	count, err := k.countInfererInclusionsInTopic.Get(ctx, key)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (k *Keeper) IncrementCountInfererInclusionsInTopic(ctx context.Context, topicId TopicId, inferer ActorId) error {
+	key := collections.Join(topicId, inferer)
+	count, err := k.GetCountInfererInclusionsInTopic(ctx, topicId, inferer)
+	if err != nil {
+		return err
+	}
+	count++
+	return k.countInfererInclusionsInTopic.Set(ctx, key, count)
+}
+
+func (k *Keeper) GetCountForecasterInclusionsInTopic(ctx context.Context, topicId TopicId, forecaster ActorId) (uint64, error) {
+	key := collections.Join(topicId, forecaster)
+	count, err := k.countForecasterInclusionsInTopic.Get(ctx, key)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (k *Keeper) IncrementCountForecasterInclusionsInTopic(ctx context.Context, topicId TopicId, forecaster ActorId) error {
+	key := collections.Join(topicId, forecaster)
+	count, err := k.GetCountForecasterInclusionsInTopic(ctx, topicId, forecaster)
+	if err != nil {
+		return err
+	}
+	count++
+	return k.countForecasterInclusionsInTopic.Set(ctx, key, count)
 }
 
 /// REGRETS

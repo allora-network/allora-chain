@@ -78,7 +78,7 @@ func EmitRewards(
 			}
 		}(topicId, topicRewardNonce)
 
-		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicRewards, moduleParams)
+		rewardInTopicToReputers, err := payoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicRewards, moduleParams)
 		if err != nil {
 			Logger(ctx).Error(fmt.Sprintf("Failed to process rewards for topic %d: %s", topicId, err.Error()))
 			continue
@@ -119,8 +119,8 @@ func EmitRewards(
 }
 
 // This function distributes and pays out rewards to topic actors based on their participation.
-// It returns the total reward distributed to actors
-func getDistributionAndPayoutRewardsToTopicActors(
+// It returns the total reward distributed to reputers
+func payoutRewardsToTopicActors(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
@@ -508,8 +508,20 @@ func payoutRewards(
 
 			if reward.Type == types.WorkerInferenceRewardType {
 				infererRewards = append(infererRewards, reward)
+
+				err := k.IncrementCountInfererInclusionsInTopic(ctx, reward.TopicId, reward.Address)
+				if err != nil {
+					ret = append(ret, errors.Wrapf(err, "failed to increment count inferer inclusions in topic"))
+					continue
+				}
 			} else if reward.Type == types.WorkerForecastRewardType {
 				forecasterRewards = append(forecasterRewards, reward)
+
+				err := k.IncrementCountForecasterInclusionsInTopic(ctx, reward.TopicId, reward.Address)
+				if err != nil {
+					ret = append(ret, errors.Wrapf(err, "failed to increment count forecaster inclusions in topic"))
+					continue
+				}
 			}
 		}
 	}

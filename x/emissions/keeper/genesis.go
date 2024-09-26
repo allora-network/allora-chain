@@ -785,6 +785,24 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
+	// CountInfererInclusionsInTopic
+	if len(data.CountInfererInclusionsInTopic) != 0 {
+		for _, topicIdInfererCount := range data.CountInfererInclusionsInTopic {
+			if err := k.countInfererInclusionsInTopic.Set(ctx, collections.Join(topicIdInfererCount.TopicId, topicIdInfererCount.ActorId), topicIdInfererCount.Uint64); err != nil {
+				return errors.Wrap(err, "error setting countInfererInclusionsInTopic")
+			}
+		}
+	}
+
+	// CountForecasterInclusionsInTopic
+	if len(data.CountForecasterInclusionsInTopic) != 0 {
+		for _, topicIdForecasterCount := range data.CountForecasterInclusionsInTopic {
+			if err := k.countForecasterInclusionsInTopic.Set(ctx, collections.Join(topicIdForecasterCount.TopicId, topicIdForecasterCount.ActorId), topicIdForecasterCount.Uint64); err != nil {
+				return errors.Wrap(err, "error setting countForecasterInclusionsInTopic")
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -1891,6 +1909,32 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		previousTopicQuantileReputerScoreEma = append(previousTopicQuantileReputerScoreEma, &topicIdAndDec)
 	}
 
+	countInfererInclusionsInTopic := make([]uint64, 0)
+	countInfererInclusionsInTopicIter, err := k.countInfererInclusionsInTopic.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate count inferer inclusions in topic")
+	}
+	for ; countInfererInclusionsInTopicIter.Valid(); countInfererInclusionsInTopicIter.Next() {
+		keyValue, err := countInfererInclusionsInTopicIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: countInfererInclusionsInTopicIter")
+		}
+		countInfererInclusionsInTopic = append(countInfererInclusionsInTopic, keyValue.Value)
+	}
+
+	countForecasterInclusionsInTopic := make([]uint64, 0)
+	countForecasterInclusionsInTopicIter, err := k.countForecasterInclusionsInTopic.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate count forecaster inclusions in topic")
+	}
+	for ; countForecasterInclusionsInTopicIter.Valid(); countForecasterInclusionsInTopicIter.Next() {
+		keyValue, err := countForecasterInclusionsInTopicIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: countForecasterInclusionsInTopicIter")
+		}
+		countForecasterInclusionsInTopic = append(countForecasterInclusionsInTopic, keyValue.Value)
+	}
+
 	return &types.GenesisState{
 		Params:                          moduleParams,
 		NextTopicId:                     nextTopicId,
@@ -1956,6 +2000,8 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		PreviousTopicQuantileInfererScoreEma:           previousTopicQuantileInfererScoreEma,
 		PreviousTopicQuantileForecasterScoreEma:        previousTopicQuantileForecasterScoreEma,
 		PreviousTopicQuantileReputerScoreEma:           previousTopicQuantileReputerScoreEma,
+		CountInfererInclusionsInTopic:                  countInfererInclusionsInTopic,
+		CountForecasterInclusionsInTopic:               countForecasterInclusionsInTopic,
 	}, nil
 }
 

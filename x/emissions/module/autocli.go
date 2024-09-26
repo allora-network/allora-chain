@@ -658,6 +658,25 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				// add inclusion methods
+				{
+					RpcMethod: "GetCountInfererInclusionsInTopic",
+					Use:       "count-inferer-inclusions-in-topic [topic_id] [inferer]",
+					Short:     "Get count of inferer inclusions in topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "inferer"},
+					},
+				},
+				{
+					RpcMethod: "GetCountForecasterInclusionsInTopic",
+					Use:       "count-forecaster-inclusions-in-topic [topic_id] [forecaster]",
+					Short:     "Get count of forecaster inclusions in topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "forecaster"},
+					},
+				},
 			},
 			SubCommands:          nil,
 			EnhanceCustomCommand: false,
