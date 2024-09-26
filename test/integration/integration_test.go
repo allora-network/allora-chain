@@ -21,7 +21,7 @@ func TestExternalTestSuite(t *testing.T) {
 		t,
 		rpcMode,
 		rpcEndpoints,
-		"../devnet/genesis",
+		"../localnet/genesis",
 		seed,
 	)
 
@@ -59,7 +59,7 @@ func TestUpgradeTestSuite(t *testing.T) {
 		t,
 		rpcMode,
 		rpcEndpoints,
-		"../devnet/genesis",
+		"../localnet/genesis",
 		seed,
 	)
 

@@ -27,7 +27,7 @@ func TestStressTestSuite(t *testing.T) {
 		t,
 		rpcMode,
 		rpcEndpoints,
-		"../devnet/genesis",
+		"../localnet/genesis",
 		seed,
 	)
 

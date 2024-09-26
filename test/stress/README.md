@@ -17,5 +17,5 @@ options for RPC Modes include "RandomBasedOnDeterministicSeed" "RoundRobin" and 
 
 Stop the chain
 ```
-docker compose -f devnet/compose_l1.yaml  stop
+docker compose -f localnet/compose_l1.yaml  stop
 ```
