@@ -1909,7 +1909,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		previousTopicQuantileReputerScoreEma = append(previousTopicQuantileReputerScoreEma, &topicIdAndDec)
 	}
 
-	countInfererInclusionsInTopic := make([]uint64, 0)
+	countInfererInclusionsInTopic := make([]*types.TopicIdActorIdUint64, 0)
 	countInfererInclusionsInTopicIter, err := k.countInfererInclusionsInTopic.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate count inferer inclusions in topic")
@@ -1919,10 +1919,15 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get key value: countInfererInclusionsInTopicIter")
 		}
-		countInfererInclusionsInTopic = append(countInfererInclusionsInTopic, keyValue.Value)
+		topicIdAndUint64 := types.TopicIdActorIdUint64{
+			TopicId: keyValue.Key.K1(),
+			ActorId: keyValue.Key.K2(),
+			Uint64:  keyValue.Value,
+		}
+		countInfererInclusionsInTopic = append(countInfererInclusionsInTopic, &topicIdAndUint64)
 	}
 
-	countForecasterInclusionsInTopic := make([]uint64, 0)
+	countForecasterInclusionsInTopic := make([]*types.TopicIdActorIdUint64, 0)
 	countForecasterInclusionsInTopicIter, err := k.countForecasterInclusionsInTopic.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate count forecaster inclusions in topic")
@@ -1932,7 +1937,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get key value: countForecasterInclusionsInTopicIter")
 		}
-		countForecasterInclusionsInTopic = append(countForecasterInclusionsInTopic, keyValue.Value)
+		topicIdAndUint64 := types.TopicIdActorIdUint64{
+			TopicId: keyValue.Key.K1(),
+			ActorId: keyValue.Key.K2(),
+			Uint64:  keyValue.Value,
+		}
+		countForecasterInclusionsInTopic = append(countForecasterInclusionsInTopic, &topicIdAndUint64)
 	}
 
 	return &types.GenesisState{
