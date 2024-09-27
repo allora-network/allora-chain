@@ -2861,6 +2861,25 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
+	worker1InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, workerAddrs[0].String())
+	require.NoError(err)
+	require.Greater(worker1InclusionNum, uint64(0))
+	worker2InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, workerAddrs[1].String())
+	require.NoError(err)
+	require.Greater(worker2InclusionNum, uint64(0))
+	worker3InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, workerAddrs[2].String())
+	require.Greater(worker3InclusionNum, uint64(0))
+	require.NoError(err)
+
+	worker1InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, workerAddrs[0].String())
+	require.NoError(err)
+	require.Greater(worker1InclusionNum, uint64(0))
+	worker2InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, workerAddrs[1].String())
+	require.NoError(err)
+	require.Greater(worker2InclusionNum, uint64(0))
+	worker3InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, workerAddrs[2].String())
+	require.Greater(worker3InclusionNum, uint64(0))
+	require.NoError(err)
 	const topicFundAmount int64 = 1000
 
 	fundTopic := func(topicId uint64, funderAddr sdk.AccAddress, amount int64) {

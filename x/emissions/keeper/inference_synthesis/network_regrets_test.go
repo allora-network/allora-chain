@@ -696,3 +696,163 @@ func (s *InferenceSynthesisTestSuite) TestCalcTopicInitialRegret() {
 	require.NoError(err)
 	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.3354820760526412097325669544281814")
 }
+
+func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
+	require := s.Require()
+	k := s.emissionsKeeper
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epochPrevGet := epochGet[300]
+	epoch301Get := epochGet[301]
+
+	topicId := uint64(1)
+	blockHeight := int64(1003)
+	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+	epsilon := alloraMath.MustNewDecFromString("1e-4")
+
+	initialRegret := alloraMath.MustNewDecFromString("0")
+	// Create new topic
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
+		Id:                     topicId,
+		Creator:                "creator",
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		EpochLastEnded:         0,
+		EpochLength:            100,
+		GroundTruthLag:         10,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.5"),
+		AllowNegative:          false,
+		InitialRegret:          initialRegret,
+	})
+	s.Require().NoError(err)
+
+	inferer0 := s.addrs[0].String()
+	inferer1 := s.addrs[1].String()
+	inferer2 := s.addrs[2].String()
+	inferer3 := s.addrs[3].String()
+	inferer4 := s.addrs[4].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	forecaster0 := s.addrs[5].String()
+	forecaster1 := s.addrs[6].String()
+	forecaster2 := s.addrs[7].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	for _, worker := range infererAddresses {
+		err := k.IncrementCountInfererInclusionsInTopic(s.ctx, topicId, worker)
+		require.NoError(err)
+		err = k.IncrementCountInfererInclusionsInTopic(s.ctx, topicId, worker)
+		require.NoError(err)
+	}
+
+	for _, worker := range forecasterAddresses {
+		err := k.IncrementCountForecasterInclusionsInTopic(s.ctx, topicId, worker)
+		require.NoError(err)
+		err = k.IncrementCountForecasterInclusionsInTopic(s.ctx, topicId, worker)
+		require.NoError(err)
+	}
+
+	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epochPrevGet)
+	require.NoError(err)
+
+	networkLosses, err := testutil.GetNetworkLossFromCsv(
+		topicId,
+		infererAddresses,
+		forecasterAddresses,
+		epoch301Get,
+	)
+	s.Require().NoError(err)
+
+	err = inferencesynthesis.GetCalcSetNetworkRegrets(
+		s.ctx,
+		k,
+		topicId,
+		networkLosses,
+		nonce,
+		alpha,
+		cNorm,
+		pNorm,
+		epsilon,
+	)
+	require.NoError(err)
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	require.NotEqual(topic.InitialRegret, initialRegret)
+}
+
+func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
+	require := s.Require()
+	k := s.emissionsKeeper
+	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epochPrevGet := epochGet[300]
+	epoch301Get := epochGet[301]
+
+	topicId := uint64(1)
+	blockHeight := int64(1003)
+	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
+	alpha := alloraMath.MustNewDecFromString("0.1")
+	pNorm := alloraMath.MustNewDecFromString("3.0")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+	epsilon := alloraMath.MustNewDecFromString("1e-4")
+
+	initialRegret := alloraMath.MustNewDecFromString("0")
+	// Create new topic
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
+		Id:                     topicId,
+		Creator:                "creator",
+		Metadata:               "metadata",
+		LossMethod:             "mse",
+		EpochLastEnded:         0,
+		EpochLength:            100,
+		GroundTruthLag:         10,
+		WorkerSubmissionWindow: 10,
+		PNorm:                  alloraMath.NewDecFromInt64(3),
+		AlphaRegret:            alloraMath.MustNewDecFromString("0.5"),
+		AllowNegative:          false,
+		InitialRegret:          initialRegret,
+	})
+	s.Require().NoError(err)
+
+	inferer0 := s.addrs[0].String()
+	inferer1 := s.addrs[1].String()
+	inferer2 := s.addrs[2].String()
+	inferer3 := s.addrs[3].String()
+	inferer4 := s.addrs[4].String()
+	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
+
+	forecaster0 := s.addrs[5].String()
+	forecaster1 := s.addrs[6].String()
+	forecaster2 := s.addrs[7].String()
+	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epochPrevGet)
+	require.NoError(err)
+
+	networkLosses, err := testutil.GetNetworkLossFromCsv(
+		topicId,
+		infererAddresses,
+		forecasterAddresses,
+		epoch301Get,
+	)
+	s.Require().NoError(err)
+
+	err = inferencesynthesis.GetCalcSetNetworkRegrets(
+		s.ctx,
+		k,
+		topicId,
+		networkLosses,
+		nonce,
+		alpha,
+		cNorm,
+		pNorm,
+		epsilon,
+	)
+	require.NoError(err)
+
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	require.Equal(topic.InitialRegret, initialRegret)
+}
