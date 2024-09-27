@@ -78,7 +78,7 @@ func EmitRewards(
 			}
 		}(topicId, topicRewardNonce)
 
-		rewardInTopicToReputers, err := payoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicRewards, moduleParams)
+		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicRewards, moduleParams)
 		if err != nil {
 			Logger(ctx).Error(fmt.Sprintf("Failed to process rewards for topic %d: %s", topicId, err.Error()))
 			continue
@@ -120,7 +120,7 @@ func EmitRewards(
 
 // This function distributes and pays out rewards to topic actors based on their participation.
 // It returns the total reward distributed to reputers
-func payoutRewardsToTopicActors(
+func getDistributionAndPayoutRewardsToTopicActors(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	topicId uint64,
