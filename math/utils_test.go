@@ -496,20 +496,31 @@ func TestGetSortedElementsByDecWeightDesc(t *testing.T) {
 }
 
 func TestGetQuantileOfDecs(t *testing.T) {
-	dec1 := alloraMath.MustNewDecFromString("0.5")
-	dec2 := alloraMath.MustNewDecFromString("0.2")
-	dec3 := alloraMath.MustNewDecFromString("0.1")
-	dec4 := alloraMath.MustNewDecFromString("0.7")
-	dec5 := alloraMath.MustNewDecFromString("0.4")
 	m := []alloraMath.Dec{
-		dec1,
-		dec2,
-		dec3,
-		dec4,
-		dec5,
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("2"),
+		alloraMath.MustNewDecFromString("3"),
+		alloraMath.MustNewDecFromString("4"),
+		alloraMath.MustNewDecFromString("5"),
+		alloraMath.MustNewDecFromString("6"),
+		alloraMath.MustNewDecFromString("7"),
+		alloraMath.MustNewDecFromString("8"),
+		alloraMath.MustNewDecFromString("9"),
+		alloraMath.MustNewDecFromString("10"),
 	}
 
+	// Calculate the 25th percentile (first quartile)
 	percentile, err := alloraMath.GetQuantileOfDecs(m, alloraMath.MustNewDecFromString("0.25"))
 	require.NoError(t, err)
-	require.Greater(t, percentile, alloraMath.ZeroDec())
+	require.Equal(t, percentile, alloraMath.MustNewDecFromString("3.25"))
+
+	// Calculate the 50th percentile (median)
+	percentile, err = alloraMath.GetQuantileOfDecs(m, alloraMath.MustNewDecFromString("0.5"))
+	require.NoError(t, err)
+	require.Equal(t, percentile, alloraMath.MustNewDecFromString("5.5"))
+
+	// Calculate the 75th percentile (third quartile)
+	percentile, err = alloraMath.GetQuantileOfDecs(m, alloraMath.MustNewDecFromString("0.75"))
+	require.NoError(t, err)
+	require.Equal(t, percentile, alloraMath.MustNewDecFromString("7.75"))
 }
