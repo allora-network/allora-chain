@@ -2336,6 +2336,13 @@ func (k *Keeper) GetTopic(ctx context.Context, topicId TopicId) (types.Topic, er
 
 // Sets a topic config on a topicId
 func (k *Keeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topic) error {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
+	if err := topic.Validate(params); err != nil {
+		return errorsmod.Wrap(err, "set topic validation failure")
+	}
 	return k.topics.Set(ctx, topicId, topic)
 }
 
