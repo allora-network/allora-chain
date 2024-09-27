@@ -54,15 +54,9 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		ActiveForecasterQuantile: msg.ActiveForecasterQuantile,
 		ActiveReputerQuantile:    msg.ActiveReputerQuantile,
 	}
-	_, err = ms.k.IncrementTopicId(ctx)
-	if err != nil {
-		return nil, err
-	}
 	if err := ms.k.SetTopic(ctx, topicId, topic); err != nil {
 		return nil, err
 	}
-	// Rather than set latest weight-adjustment timestamp of a topic to 0
-	// we do nothing, since no value in the map means zero
 
 	err = ms.k.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)
 	return &types.CreateNewTopicResponse{TopicId: topicId}, err

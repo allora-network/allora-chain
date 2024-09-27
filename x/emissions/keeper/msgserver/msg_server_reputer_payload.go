@@ -11,16 +11,15 @@ import (
 
 // A tx function that accepts a individual loss and possibly returns an error
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (*types.InsertReputerPayloadResponse, error) {
-	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockHeight := sdkCtx.BlockHeight()
+	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+		return nil, err
+	}
+	err := checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}
-	err = checkInputLength(ctx, ms, msg)
-	if err != nil {
-		return nil, err
-	}
-
-	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
 
 	if err := msg.ReputerValueBundle.Validate(); err != nil {
 		return nil, errorsmod.Wrapf(err,
@@ -69,7 +68,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is not registered in this topic")
 	}
 
-	params, err := ms.k.GetParams(ctx)
+	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
@@ -79,18 +78,17 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	if err != nil {
 		return nil, err
 	}
-	if stake.LT(params.RequiredMinimumStake) {
+	if stake.LT(moduleParams.RequiredMinimumStake) {
 		return nil, errorsmod.Wrapf(types.ErrInsufficientStake, "reputer does not have sufficient stake in the topic")
 	}
 
 	// Before accepting data, transfer fee amount from sender to ecosystem bucket
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee)
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err = ms.k.AppendReputerLoss(sdkCtx, topic, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
+	err = ms.k.AppendReputerLoss(sdkCtx, topic, moduleParams, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
 	if err != nil {
 		return nil, err
 	}

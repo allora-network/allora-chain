@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/app/params"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,6 +22,24 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (*
 	}
 	if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
+	}
+
+	if msg.IsReputer {
+		isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
+		if err != nil {
+			return nil, err
+		}
+		if isRegistered {
+			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is already registered in this topic")
+		}
+	} else {
+		isRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
+		if err != nil {
+			return nil, err
+		}
+		if isRegistered {
+			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker is already registered in this topic")
+		}
 	}
 
 	params, err := ms.k.GetParams(ctx)
