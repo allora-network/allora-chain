@@ -2863,22 +2863,22 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	worker1InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
-	require.Greater(worker1InclusionNum, uint64(0))
+	require.Positive(worker1InclusionNum)
 	worker2InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, workerAddrs[1].String())
 	require.NoError(err)
-	require.Greater(worker2InclusionNum, uint64(0))
+	require.Positive(worker2InclusionNum)
 	worker3InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, workerAddrs[2].String())
-	require.Greater(worker3InclusionNum, uint64(0))
+	require.Positive(worker3InclusionNum)
 	require.NoError(err)
 
 	worker1InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, workerAddrs[0].String())
 	require.NoError(err)
-	require.Greater(worker1InclusionNum, uint64(0))
+	require.Positive(worker1InclusionNum)
 	worker2InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, workerAddrs[1].String())
 	require.NoError(err)
-	require.Greater(worker2InclusionNum, uint64(0))
+	require.Positive(worker2InclusionNum)
 	worker3InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, workerAddrs[2].String())
-	require.Greater(worker3InclusionNum, uint64(0))
+	require.Positive(worker3InclusionNum)
 	require.NoError(err)
 	const topicFundAmount int64 = 1000
 
