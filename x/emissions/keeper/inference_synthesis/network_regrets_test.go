@@ -760,6 +760,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	require.NoError(err)
 	require.NotEqual(topic.InitialRegret, initialRegret)
 }
 
@@ -833,5 +834,6 @@ func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	require.NoError(err)
 	require.Equal(topic.InitialRegret, initialRegret)
 }
