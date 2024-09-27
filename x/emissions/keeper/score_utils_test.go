@@ -12,9 +12,9 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllInferences() {
 	topicId := uint64(1)
 	blockHeightInferences := int64(10)
 
-	worker1 := "worker1"
-	worker2 := "worker2"
-	worker3 := "worker3"
+	worker1 := s.addrsStr[0]
+	worker2 := s.addrsStr[1]
+	worker3 := s.addrsStr[2]
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
@@ -42,9 +42,9 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllForecasts() {
 	topicId := uint64(1)
 	blockHeightInferences := int64(10)
 
-	worker1 := "worker1"
-	worker2 := "worker2"
-	worker3 := "worker3"
+	worker1 := s.addrsStr[0]
+	worker2 := s.addrsStr[1]
+	worker3 := s.addrsStr[2]
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
@@ -117,9 +117,9 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllLossBundles() {
 		ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
 	}
 
-	reputer1 := "reputer1"
-	reputer2 := "reputer2"
-	reputer3 := "reputer3"
+	reputer1 := s.addrsStr[0]
+	reputer2 := s.addrsStr[1]
+	reputer3 := s.addrsStr[2]
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer2, Score: alloraMath.NewDecFromInt64(90)}

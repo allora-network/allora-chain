@@ -5,7 +5,6 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 /// Topics tests
@@ -14,8 +13,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
-	senderAddr := sdk.AccAddress(PKS[0].Address())
-	sender := senderAddr.String()
+	senderAddr := s.addrs[0]
+	sender := s.addrsStr[0]
 
 	// Create a CreateNewTopicRequest message
 	newTopicMsg := &types.CreateNewTopicRequest{
@@ -57,8 +56,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
-	senderAddr := sdk.AccAddress(PKS[0].Address())
-	sender := senderAddr.String()
+	senderAddr := s.addrs[0]
+	sender := s.addrsStr[0]
 
 	// Create a CreateNewTopicRequest message
 	newTopicMsg := &types.CreateNewTopicRequest{
@@ -88,15 +87,15 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 func (s *MsgServerTestSuite) TestUpdateTopicEpochLastEnded() {
 	ctx := s.ctx
 	require := s.Require()
-	topicId := s.CreateOneTopic()
+	topicPrev := s.CreateOneTopic()
 
 	// Mock setup for topic
 	inferenceTs := int64(20)
 
-	err := s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicId, inferenceTs)
+	err := s.emissionsKeeper.UpdateTopicEpochLastEnded(ctx, topicPrev.Id, inferenceTs)
 	require.NoError(err, "UpdateTopicEpochLastEnded should not return an error")
 
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicPrev.Id)
 	s.Require().NoError(err)
 	s.Require().NotNil(topic)
 	s.Require().Equal(topic.EpochLastEnded, inferenceTs)
@@ -106,8 +105,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicTooLongMetadataFails() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
-	senderAddr := sdk.AccAddress(PKS[0].Address())
-	sender := senderAddr.String()
+	senderAddr := s.addrs[0]
+	sender := s.addrsStr[0]
 
 	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,
@@ -137,8 +136,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicTooLongLossMethodFails() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
-	senderAddr := sdk.AccAddress(PKS[0].Address())
-	sender := senderAddr.String()
+	senderAddr := s.addrs[0]
+	sender := s.addrsStr[0]
 
 	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  sender,

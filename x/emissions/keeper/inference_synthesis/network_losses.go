@@ -60,6 +60,8 @@ func convertMapOfRunningWeightedLossesToWorkerAttributedValue[T emissions.Worker
 
 // Assumes stakes are all positive
 func CalcNetworkLosses(
+	topicId uint64,
+	blockHeight int64,
 	stakesByReputer map[Worker]Stake,
 	reputerReportedLosses emissions.ReputerValueBundles,
 ) (emissions.ValueBundle, error) {
@@ -75,6 +77,22 @@ func CalcNetworkLosses(
 
 	for _, report := range reputerReportedLosses.ReputerValueBundles {
 		if report.ValueBundle != nil {
+			if report.ValueBundle.TopicId != topicId {
+				return emissions.ValueBundle{}, errorsmod.Wrapf(
+					emissions.ErrInvalidTopicId,
+					"all reputer bundles must be for same topic to calculate network losses %d!=%d",
+					topicId,
+					report.ValueBundle.TopicId,
+				)
+			}
+			if report.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight != blockHeight {
+				return emissions.ValueBundle{}, errorsmod.Wrapf(
+					emissions.ErrInvalidValue,
+					"all reputer bundles must be for same nonce to calculate network losses %d!=%d",
+					blockHeight,
+					report.ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+				)
+			}
 			stakeAmount, err := alloraMath.NewDecFromSdkInt(stakesByReputer[report.ValueBundle.Reputer])
 			if err != nil {
 				return emissions.ValueBundle{}, err
@@ -231,6 +249,12 @@ func CalcNetworkLosses(
 	}
 
 	output := emissions.ValueBundle{
+		TopicId:             topicId,
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{ReputerNonce: &emissions.Nonce{BlockHeight: blockHeight}},
+		// we re-use the value bundle for the network loss bundle
+		// this is bad practice and we should refactor: PROTO-2369
+		// for now set the Reputer address to a "zero" address
+		Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
 		CombinedValue:                 combinedValue,
 		InfererValues:                 infererLosses,
 		ForecasterValues:              forecasterLosses,

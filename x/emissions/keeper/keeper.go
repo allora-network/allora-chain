@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"strings"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -46,7 +47,8 @@ type Keeper struct {
 	// the next topic id to be used, equal to the number of topics that have been created
 	nextTopicId collections.Sequence
 	// every topic that has been created indexed by their topicId starting from 1 (0 is reserved for the root network)
-	topics       collections.Map[TopicId, types.Topic]
+	topics collections.Map[TopicId, types.Topic]
+	// which topics are active at the current block height
 	activeTopics collections.KeySet[TopicId]
 	// topic to next possible churning block
 	// if topic not included, then the topic is not active
@@ -316,17 +318,25 @@ func (k *Keeper) GetWorkerWindowTopicIds(ctx sdk.Context, height BlockHeight) ty
 // SetTopicId appends a new TopicId to the list of TopicIds for a given BlockHeight.
 // If no entry exists for the BlockHeight, it creates a new entry with the TopicId.
 func (k *Keeper) AddWorkerWindowTopicId(ctx sdk.Context, height BlockHeight, topicId TopicId) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBlockHeight(height); err != nil {
+		return errorsmod.Wrap(err, "error validating block height")
+	}
 	var topicIds types.TopicIds
 	topicIds, err := k.openWorkerWindows.Get(ctx, height)
 	if err != nil {
-		topicIds = types.TopicIds{}
+		topicIds = types.TopicIds{
+			TopicIds: []types.TopicId{},
+		}
 	}
 	topicIds.TopicIds = append(topicIds.TopicIds, topicId)
 	err = k.openWorkerWindows.Set(ctx, height, topicIds)
-	return err
+	return errorsmod.Wrap(err, "error setting open worker windows")
 }
 
-func (k *Keeper) DeleteWorkerWindowBlockheight(ctx sdk.Context, height BlockHeight) error {
+func (k *Keeper) DeleteWorkerWindowBlockHeight(ctx sdk.Context, height BlockHeight) error {
 	return k.openWorkerWindows.Remove(ctx, height)
 }
 
@@ -334,9 +344,15 @@ func (k *Keeper) DeleteWorkerWindowBlockheight(ctx sdk.Context, height BlockHeig
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
 // If the nonce is not present, then the function returns false.
 func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return false, errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := nonce.Validate(); err != nil {
+		return false, errorsmod.Wrap(err, "error validating nonce")
+	}
 	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	if err != nil {
-		return false, err
+		return false, errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 
 	// Check if the nonce is present in the unfulfilled nonces
@@ -344,9 +360,12 @@ func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce 
 		if n.BlockHeight == nonce.BlockHeight {
 			// Remove the nonce from the unfulfilled nonces
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
+			if err := unfulfilledNonces.Validate(); err != nil {
+				return false, errorsmod.Wrap(err, "error validating unfulfilled nonces")
+			}
 			err := k.unfulfilledWorkerNonces.Set(ctx, topicId, unfulfilledNonces)
 			if err != nil {
-				return false, err
+				return false, errorsmod.Wrap(err, "error setting unfulfilled worker nonces")
 			}
 			return true, nil
 		}
@@ -360,9 +379,15 @@ func (k *Keeper) FulfillWorkerNonce(ctx context.Context, topicId TopicId, nonce 
 // If the nonce is present, then it is removed from the unfulfilled nonces and this function returns true.
 // If the nonce is not present, then the function returns false.
 func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) (bool, error) {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return false, errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := nonce.Validate(); err != nil {
+		return false, errorsmod.Wrap(err, "error validating nonce")
+	}
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
-		return false, err
+		return false, errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
 
 	// Check if the nonce is present in the unfulfilled nonces
@@ -370,9 +395,12 @@ func (k *Keeper) FulfillReputerNonce(ctx context.Context, topicId TopicId, nonce
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
 			// Remove the nonce from the unfulfilled nonces
 			unfulfilledNonces.Nonces = append(unfulfilledNonces.Nonces[:i], unfulfilledNonces.Nonces[i+1:]...)
+			if err := unfulfilledNonces.Validate(); err != nil {
+				return false, errorsmod.Wrap(err, "error validating unfulfilled reputer nonces")
+			}
 			err := k.unfulfilledReputerNonces.Set(ctx, topicId, unfulfilledNonces)
 			if err != nil {
-				return false, err
+				return false, errorsmod.Wrap(err, "error setting unfulfilled reputer nonces")
 			}
 			return true, nil
 		}
@@ -387,7 +415,7 @@ func (k *Keeper) IsWorkerNonceUnfulfilled(ctx context.Context, topicId TopicId, 
 	// Get the latest unfulfilled nonces
 	unfulfilledNonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	if err != nil {
-		return false, err
+		return false, errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 
 	// Check if the nonce is present in the unfulfilled nonces
@@ -408,7 +436,7 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 	// Get the latest unfulfilled nonces
 	unfulfilledNonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
-		return false, err
+		return false, errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
 
 	// Check if the nonce is present in the unfulfilled nonces
@@ -427,9 +455,15 @@ func (k *Keeper) IsReputerNonceUnfulfilled(ctx context.Context, topicId TopicId,
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
 func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := nonce.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating nonce")
+	}
 	nonces, err := k.GetUnfulfilledWorkerNonces(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
@@ -442,7 +476,7 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting module params")
 	}
 	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledWorkerRequests
 
@@ -454,22 +488,31 @@ func (k *Keeper) AddWorkerNonce(ctx context.Context, topicId TopicId, nonce *typ
 		}
 	}
 
+	if err := nonces.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating unfulfilled worker nonces")
+	}
 	return k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces)
 }
 
 // Adds a nonce to the unfulfilled nonces for the topic if it is not yet added (idempotent).
 // If the max number of nonces is reached, then the function removes the oldest nonce and adds the new nonce.
 func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *types.Nonce) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := nonce.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating nonce")
+	}
 	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
 	if nonce == nil {
 		return errors.New("nil reputer's nonce provided")
 	}
 
 	// Check that input nonce is not already contained in the nonces of this topic
-	// nor that the `associatedWorkerNonce` is already associated with a worker requeset
+	// nor that the `associatedWorkerNonce` is already associated with a worker request
 	for _, n := range nonces.Nonces {
 		// Do nothing if nonce is already in the list
 		if n.ReputerNonce.BlockHeight == nonce.BlockHeight {
@@ -483,7 +526,7 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting module params")
 	}
 	maxUnfulfilledRequests := moduleParams.MaxUnfulfilledReputerRequests
 	lenNonces := uint64(len(nonces.Nonces))
@@ -492,6 +535,9 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 		if diff > 0 {
 			nonces.Nonces = nonces.Nonces[:maxUnfulfilledRequests]
 		}
+	}
+	if err := nonces.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating unfulfilled reputer nonces")
 	}
 	return k.unfulfilledReputerNonces.Set(ctx, topicId, nonces)
 }
@@ -502,7 +548,7 @@ func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Nonces{}, nil
 		}
-		return types.Nonces{}, err
+		return types.Nonces{}, errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 	return nonces, nil
 }
@@ -513,22 +559,31 @@ func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicI
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.ReputerRequestNonces{}, nil
 		}
-		return types.ReputerRequestNonces{}, err
+		return types.ReputerRequestNonces{}, errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
 	return nonces, nil
 }
 
 func (k *Keeper) DeleteUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) error {
-	return k.unfulfilledWorkerNonces.Set(ctx, topicId, types.Nonces{})
+	return k.unfulfilledWorkerNonces.Remove(ctx, topicId)
 }
 
 func (k *Keeper) DeleteUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) error {
-	return k.unfulfilledReputerNonces.Set(ctx, topicId, types.ReputerRequestNonces{})
+	return k.unfulfilledReputerNonces.Remove(ctx, topicId)
 }
 
 /// REGRETS
 
 func (k *Keeper) SetInfererNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrap(err, "error validating worker id")
+	}
+	if err := regret.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating regret")
+	}
 	key := collections.Join(topicId, worker)
 	return k.latestInfererNetworkRegrets.Set(ctx, key, regret)
 }
@@ -542,19 +597,33 @@ func (k *Keeper) GetInfererNetworkRegret(ctx context.Context, topicId TopicId, w
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				return types.TimestampedValue{}, false, err
+				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       topic.InitialRegret,
 			}, true, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting inferer network regret")
 	}
 	return regret, false, nil
 }
 
-func (k *Keeper) SetForecasterNetworkRegret(ctx context.Context, topicId TopicId, worker ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetForecasterNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	worker ActorId,
+	regret types.TimestampedValue,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrap(err, "error validating worker id")
+	}
+	if err := regret.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating regret")
+	}
 	key := collections.Join(topicId, worker)
 	return k.latestForecasterNetworkRegrets.Set(ctx, key, regret)
 }
@@ -568,19 +637,37 @@ func (k *Keeper) GetForecasterNetworkRegret(ctx context.Context, topicId TopicId
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				return types.TimestampedValue{}, false, err
+				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       topic.InitialRegret,
 			}, true, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting forecaster network regret")
 	}
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneInForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneInForecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetOneInForecasterNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	oneInForecaster ActorId,
+	inferer ActorId,
+	regret types.TimestampedValue,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBech32(oneInForecaster); err != nil {
+		return errorsmod.Wrap(err, "error validating one in forecaster id")
+	}
+	if err := types.ValidateBech32(inferer); err != nil {
+		return errorsmod.Wrap(err, "error validating inferer id")
+	}
+	if err := regret.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating regret")
+	}
 	key := collections.Join3(topicId, oneInForecaster, inferer)
 	return k.latestOneInForecasterNetworkRegrets.Set(ctx, key, regret)
 }
@@ -594,19 +681,33 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(ctx context.Context, topicId To
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				return types.TimestampedValue{}, false, err
+				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       topic.InitialRegret,
 			}, true, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one in forecaster network regret")
 	}
 	return regret, false, nil
 }
 
-func (k *Keeper) SetNaiveInfererNetworkRegret(ctx context.Context, topicId TopicId, inferer ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetNaiveInfererNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	inferer ActorId,
+	regret types.TimestampedValue,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBech32(inferer); err != nil {
+		return errorsmod.Wrap(err, "error validating inferer id")
+	}
+	if err := regret.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating regret")
+	}
 	key := collections.Join(topicId, inferer)
 	return k.latestNaiveInfererNetworkRegrets.Set(ctx, key, regret)
 }
@@ -618,19 +719,37 @@ func (k *Keeper) GetNaiveInfererNetworkRegret(ctx context.Context, topicId Topic
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				return types.TimestampedValue{}, false, err
+				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       topic.InitialRegret,
 			}, true, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting naive inferer network regret")
 	}
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneOutInfererInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, inferer ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetOneOutInfererInfererNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	oneOutInferer ActorId,
+	inferer ActorId,
+	regret types.TimestampedValue,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBech32(oneOutInferer); err != nil {
+		return errorsmod.Wrap(err, "error validating one out inferer id")
+	}
+	if err := types.ValidateBech32(inferer); err != nil {
+		return errorsmod.Wrap(err, "error validating inferer id")
+	}
+	if err := regret.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating regret")
+	}
 	key := collections.Join3(topicId, oneOutInferer, inferer)
 	return k.latestOneOutInfererInfererNetworkRegrets.Set(ctx, key, regret)
 }
@@ -642,19 +761,37 @@ func (k *Keeper) GetOneOutInfererInfererNetworkRegret(ctx context.Context, topic
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				return types.TimestampedValue{}, false, err
+				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       topic.InitialRegret,
 			}, true, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out inferer inferer network regret")
 	}
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneOutInfererForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutInferer ActorId, forecaster ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetOneOutInfererForecasterNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	oneOutInferer ActorId,
+	forecaster ActorId,
+	regret types.TimestampedValue,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBech32(oneOutInferer); err != nil {
+		return errorsmod.Wrap(err, "error validating one out inferer id")
+	}
+	if err := types.ValidateBech32(forecaster); err != nil {
+		return errorsmod.Wrap(err, "error validating forecaster id")
+	}
+	if err := regret.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating regret")
+	}
 	key := collections.Join3(topicId, oneOutInferer, forecaster)
 	return k.latestOneOutInfererForecasterNetworkRegrets.Set(ctx, key, regret)
 }
@@ -666,19 +803,37 @@ func (k *Keeper) GetOneOutInfererForecasterNetworkRegret(ctx context.Context, to
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				return types.TimestampedValue{}, false, err
+				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       topic.InitialRegret,
 			}, true, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out inferer forecaster network regret")
 	}
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneOutForecasterInfererNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, inferer ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetOneOutForecasterInfererNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	oneOutForecaster ActorId,
+	inferer ActorId,
+	regret types.TimestampedValue,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBech32(oneOutForecaster); err != nil {
+		return errorsmod.Wrap(err, "error validating one out forecaster id")
+	}
+	if err := types.ValidateBech32(inferer); err != nil {
+		return errorsmod.Wrap(err, "error validating inferer id")
+	}
+	if err := regret.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating regret")
+	}
 	key := collections.Join3(topicId, oneOutForecaster, inferer)
 	return k.latestOneOutForecasterInfererNetworkRegrets.Set(ctx, key, regret)
 }
@@ -690,19 +845,37 @@ func (k *Keeper) GetOneOutForecasterInfererNetworkRegret(ctx context.Context, to
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				return types.TimestampedValue{}, false, err
+				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       topic.InitialRegret,
 			}, true, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out forecaster inferer network regret")
 	}
 	return regret, false, nil
 }
 
-func (k *Keeper) SetOneOutForecasterForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, forecaster ActorId, regret types.TimestampedValue) error {
+func (k *Keeper) SetOneOutForecasterForecasterNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	oneOutForecaster ActorId,
+	forecaster ActorId,
+	regret types.TimestampedValue,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBech32(oneOutForecaster); err != nil {
+		return errorsmod.Wrap(err, "error validating one out forecaster id")
+	}
+	if err := types.ValidateBech32(forecaster); err != nil {
+		return errorsmod.Wrap(err, "error validating forecaster id")
+	}
+	if err := regret.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating regret")
+	}
 	key := collections.Join3(topicId, oneOutForecaster, forecaster)
 	return k.latestOneOutForecasterForecasterNetworkRegrets.Set(ctx, key, regret)
 }
@@ -714,14 +887,14 @@ func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context,
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
 			if err != nil {
-				return types.TimestampedValue{}, false, err
+				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 			}
 			return types.TimestampedValue{
 				BlockHeight: 0,
 				Value:       topic.InitialRegret,
 			}, true, nil
 		}
-		return types.TimestampedValue{}, false, err
+		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out forecaster forecaster network regret")
 	}
 	return regret, false, nil
 }
@@ -729,6 +902,9 @@ func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context,
 /// PARAMETERS
 
 func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
+	if err := params.Validate(); err != nil {
+		return errorsmod.Wrap(err, "failed to set params")
+	}
 	return k.params.Set(ctx, params)
 }
 
@@ -738,7 +914,7 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.DefaultParams(), nil
 		}
-		return types.Params{}, err
+		return types.Params{}, errorsmod.Wrap(err, "error getting params")
 	}
 	return ret, nil
 }
@@ -752,7 +928,7 @@ func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, bloc
 		if errors.Is(err, collections.ErrNotFound) {
 			return &types.Inferences{}, nil
 		}
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting inferences at block")
 	}
 	return &inferences, nil
 }
@@ -763,14 +939,14 @@ func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId) 
 
 	iter, err := k.allInferences.Iterate(ctx, rng)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, errorsmod.Wrap(err, "error iterating over inferences")
 	}
 	defer iter.Close()
 
 	if iter.Valid() {
 		keyValue, err := iter.KeyValue()
 		if err != nil {
-			return nil, 0, err
+			return nil, 0, errorsmod.Wrap(err, "error getting key value")
 		}
 		return &keyValue.Value, keyValue.Key.K2(), nil
 	}
@@ -787,7 +963,7 @@ func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block
 		if errors.Is(err, collections.ErrNotFound) {
 			return &types.Forecasts{}, nil
 		}
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting forecasts at block")
 	}
 	return &forecasts, nil
 }
@@ -804,7 +980,7 @@ func (k *Keeper) AppendInference(
 	}
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting module params")
 	}
 	ptr, err := k.GetInferencesAtBlock(ctx, topic.Id, nonceBlockHeight)
 	if err != nil {
@@ -837,7 +1013,7 @@ func (k *Keeper) AppendInference(
 	// get score of current inference and check with lowest score
 	lowScore, lowScoreIndex, err := GetLowScoreFromAllInferences(ctx, k, topic.Id, inferences)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting low score from all inferences")
 	}
 	// Update EMA score for the lowest score inferer
 	// This conditional decides who that lowest score inferer is
@@ -850,7 +1026,7 @@ func (k *Keeper) AppendInference(
 			inferences.Inferences[lowScoreIndex].Inferer,
 		)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
 		}
 		// Remove the lowest score inferer from the list
 		inferences.Inferences = append(inferences.Inferences[:lowScoreIndex], inferences.Inferences[lowScoreIndex+1:]...)
@@ -861,7 +1037,7 @@ func (k *Keeper) AppendInference(
 		// Update EMA score for the current inferer, who is the lowest score inferer
 		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, inference.Inferer)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
 		}
 	}
 	return nil
@@ -875,13 +1051,17 @@ func (k *Keeper) InsertInferences(
 	inferences types.Inferences,
 ) error {
 	for _, inference := range inferences.Inferences {
+		if err := inference.Validate(); err != nil {
+			return errorsmod.Wrap(err, "inference in list is invalid")
+		}
 		// Update latests inferences for each worker
 		key := collections.Join(topicId, inference.Inferer)
 		if err := k.inferences.Set(ctx, key, *inference); err != nil {
-			return err
+			return errorsmod.Wrap(err, "error setting inferences")
 		}
 	}
 	key := collections.Join(topicId, nonceBlockHeight)
+	// inference validation is done in the loop above
 	return k.allInferences.Set(ctx, key, inferences)
 }
 
@@ -900,7 +1080,7 @@ func (k *Keeper) AppendForecast(
 	}
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting module params")
 	}
 	ptr, err := k.GetForecastsAtBlock(ctx, topic.Id, nonceBlockHeight)
 	if err != nil {
@@ -933,7 +1113,7 @@ func (k *Keeper) AppendForecast(
 	// get score of current forecast and check with lowest score
 	lowScore, lowScoreIndex, err := GetLowScoreFromAllForecasts(ctx, k, topic.Id, forecasts)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting low score from all forecasts")
 	}
 	// Update EMA score for the lowest score forecaster
 	// This conditional decides who that lowest score forecaster is
@@ -946,7 +1126,7 @@ func (k *Keeper) AppendForecast(
 			forecasts.Forecasts[lowScoreIndex].Forecaster,
 		)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
 		}
 		// Remove the lowest score forecaster from the list
 		forecasts.Forecasts = append(forecasts.Forecasts[:lowScoreIndex], forecasts.Forecasts[lowScoreIndex+1:]...)
@@ -957,7 +1137,7 @@ func (k *Keeper) AppendForecast(
 		// Update EMA score for the current forecaster, who is the lowest score forecaster
 		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, forecast.Forecaster)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
 		}
 	}
 	return nil
@@ -966,13 +1146,17 @@ func (k *Keeper) AppendForecast(
 // Insert a complete set of inferences for a topic/block. Overwrites previous ones.
 func (k *Keeper) InsertForecasts(ctx context.Context, topicId TopicId, nonceBlockHeight BlockHeight, forecasts types.Forecasts) error {
 	for _, forecast := range forecasts.Forecasts {
+		if err := forecast.Validate(); err != nil {
+			return errorsmod.Wrap(err, "forecast in list is invalid")
+		}
 		// Update latests forecasts for each worker
 		key := collections.Join(topicId, forecast.Forecaster)
 		if err := k.forecasts.Set(ctx, key, *forecast); err != nil {
-			return err
+			return errorsmod.Wrap(err, "error setting forecasts")
 		}
 	}
 	key := collections.Join(topicId, nonceBlockHeight)
+	// forecast validation is done in the loop above
 	return k.allForecasts.Set(ctx, key, forecasts)
 }
 
@@ -994,13 +1178,19 @@ func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (Bloc
 		if errors.Is(err, collections.ErrNotFound) {
 			return 0, nil // Return 0 if not found
 		}
-		return 0, err
+		return 0, errorsmod.Wrap(err, "error getting topic reward nonce")
 	}
 	return nonce, nil
 }
 
 // SetTopicRewardNonce sets the reward nonce for a given topic ID.
 func (k *Keeper) SetTopicRewardNonce(ctx context.Context, topicId TopicId, nonce BlockHeight) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(nonce); err != nil {
+		return errorsmod.Wrap(err, "nonce validation failed")
+	}
 	return k.topicRewardNonce.Set(ctx, topicId, nonce)
 }
 
@@ -1029,7 +1219,7 @@ func (k *Keeper) AppendReputerLoss(
 	}
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting module params")
 	}
 	ptr, err := k.GetReputerLossBundlesAtBlock(ctx, topic.Id, nonceBlockHeight)
 	if err != nil {
@@ -1046,7 +1236,7 @@ func (k *Keeper) AppendReputerLoss(
 
 	previousEmaScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrapf(err, "Error getting reputer score ema")
 	}
 	// Only calc and save if there's a new update
 	if previousEmaScore.BlockHeight >= nonceBlockHeight {
@@ -1062,7 +1252,7 @@ func (k *Keeper) AppendReputerLoss(
 	// get score of current inference and check with
 	lowScore, lowScoreIndex, err := GetLowScoreFromAllLossBundles(ctx, k, topic.Id, reputerLossBundles)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting low score from all loss bundles")
 	}
 	// Update EMA score for the lowest score reputer
 	// This conditional decides who that lowest score reputer is
@@ -1075,7 +1265,7 @@ func (k *Keeper) AppendReputerLoss(
 			reputerLossBundles.ReputerValueBundles[lowScoreIndex].ValueBundle.Reputer,
 		)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
 		}
 		// Remove the lowest score reputer from the list
 		reputerLossBundles.ReputerValueBundles = append(reputerLossBundles.ReputerValueBundles[:lowScoreIndex],
@@ -1087,7 +1277,7 @@ func (k *Keeper) AppendReputerLoss(
 		// Update EMA score for the current reputer, who is the lowest score reputer
 		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
 		}
 	}
 	return nil
@@ -1095,6 +1285,42 @@ func (k *Keeper) AppendReputerLoss(
 
 // Insert a loss bundle for a topic and timestamp. Overwrites previous ones stored at that composite index.
 func (k *Keeper) InsertReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, reputerLossBundles types.ReputerValueBundles) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(block); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
+	if err := reputerLossBundles.Validate(); err != nil {
+		return errorsmod.Wrap(err, "reputer loss bundles validation failed")
+	}
+	key := collections.Join(topicId, block)
+	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
+}
+
+// Insert a loss bundle for a topic and timestamp but do it in the CloseReputerNonce, so reputer loss bundles are known to be validated
+// and not validated again (this is due to poor data type design choices, see PROTO-2369)
+func (k *Keeper) InsertKnownGoodReputerLossBundlesAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+	reputerLossBundles types.ReputerValueBundles,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(block); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
+	if err := reputerLossBundles.Validate(); err != nil {
+		// in the singular case of a bundle that has been filtered, we allow
+		// the signature validation to fail. This is secure because we already do
+		// bundle validation in CloseReputerNonce before calling this function
+		// however this should be well and truly fixed by PROTO-2369
+		if !strings.Contains(err.Error(), "signature verification failed") {
+			return errorsmod.Wrap(err, "reputer loss bundles validation failed")
+		}
+	}
 	key := collections.Join(topicId, block)
 	return k.allLossBundles.Set(ctx, key, reputerLossBundles)
 }
@@ -1107,13 +1333,27 @@ func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId Topic
 		if errors.Is(err, collections.ErrNotFound) {
 			return &types.ReputerValueBundles{}, nil
 		}
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting reputer loss bundles at block")
 	}
 	return &reputerLossBundles, nil
 }
 
 // Insert a network loss bundle for a topic and block.
-func (k *Keeper) InsertNetworkLossBundleAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, lossBundle types.ValueBundle) error {
+func (k *Keeper) InsertNetworkLossBundleAtBlock(
+	ctx context.Context,
+	topicId TopicId,
+	block BlockHeight,
+	lossBundle types.ValueBundle,
+) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(block); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
+	if err := lossBundle.Validate(); err != nil {
+		return errorsmod.Wrap(err, "loss bundle validation failed")
+	}
 	key := collections.Join(topicId, block)
 	return k.networkLossBundles.Set(ctx, key, lossBundle)
 }
@@ -1126,7 +1366,7 @@ func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicI
 		if errors.Is(err, collections.ErrNotFound) {
 			return &types.ValueBundle{}, nil
 		}
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting network loss bundle at block")
 	}
 	return &lossBundle, nil
 }
@@ -1136,14 +1376,14 @@ func (k *Keeper) GetLatestNetworkLossBundle(ctx context.Context, topicId TopicId
 	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
 	iter, err := k.networkLossBundles.Iterate(ctx, rng)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error iterating over network loss bundles")
 	}
 	defer iter.Close()
 
 	if iter.Valid() {
 		keyValue, err := iter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errorsmod.Wrap(err, "error getting key value")
 		}
 		return &keyValue.Value, nil
 	}
@@ -1168,23 +1408,23 @@ func (k *Keeper) AddReputerStake(
 	// GET CURRENT VALUES
 	reputerAuthority, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting reputer authority")
 	}
 	reputerAuthorityNew := reputerAuthority.Add(stakeToAdd)
 	topicStake, err := k.GetTopicStake(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting topic stake")
 	}
 	topicStakeNew := topicStake.Add(stakeToAdd)
 	totalStake, err := k.GetTotalStake(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting total stake")
 	}
 	totalStakeNew := totalStake.Add(stakeToAdd)
 
 	// SET NEW VALUES
 	if err := k.SetStakeReputerAuthority(ctx, topicId, reputer, reputerAuthorityNew); err != nil {
-		return err
+		return errorsmod.Wrap(err, "error setting reputer authority")
 	}
 	if err := k.SetTopicStake(ctx, topicId, topicStakeNew); err != nil {
 		return errorsmod.Wrapf(err, "Setting topic stake failed -- rolling back reputer stake")
@@ -1214,46 +1454,46 @@ func (k *Keeper) AddDelegateStake(
 	// GET CURRENT VALUES
 	totalStake, err := k.GetTotalStake(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting total stake")
 	}
 	totalStakeNew := totalStake.Add(stakeToAdd)
 	topicStake, err := k.GetTopicStake(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting topic stake")
 	}
 	topicStakeNew := topicStake.Add(stakeToAdd)
 	stakeReputerAuthority, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting reputer authority")
 	}
 	stakeReputerAuthorityNew := stakeReputerAuthority.Add(stakeToAdd)
 	stakeSumFromDelegator, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegator)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting stake from delegator in topic")
 	}
 	stakeSumFromDelegatorNew := stakeSumFromDelegator.Add(stakeToAdd)
 	delegateStakePlacement, err := k.GetDelegateStakePlacement(ctx, topicId, delegator, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting delegate stake placement")
 	}
 	share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting delegate reward per share")
 	}
 	if delegateStakePlacement.Amount.Gt(alloraMath.NewDecFromInt64(0)) {
 		// Calculate pending reward and send to delegator
 		pendingReward, err := delegateStakePlacement.Amount.Mul(share)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error calculating pending reward")
 		}
 		pendingReward, err = pendingReward.Sub(delegateStakePlacement.RewardDebt)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error subtracting reward debt from pending reward")
 		}
 		if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
 			pendingRewardInt, err := pendingReward.SdkIntTrim()
 			if err != nil {
-				return err
+				return errorsmod.Wrap(err, "error trimming pending reward")
 			}
 			err = k.SendCoinsFromModuleToAccount(
 				ctx,
@@ -1262,21 +1502,21 @@ func (k *Keeper) AddDelegateStake(
 				sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, pendingRewardInt)),
 			)
 			if err != nil {
-				return err
+				return errorsmod.Wrap(err, "error sending pending reward to delegator")
 			}
 		}
 	}
 	stakeToAddDec, err := alloraMath.NewDecFromSdkInt(stakeToAdd)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error creating new amount from stake to add")
 	}
 	newAmount, err := delegateStakePlacement.Amount.Add(stakeToAddDec)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error adding stake to add to delegate stake placement amount")
 	}
 	newDebt, err := newAmount.Mul(share)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error multiplying new amount by share")
 	}
 	stakePlacementNew := types.DelegatorInfo{
 		Amount:     newAmount,
@@ -1284,7 +1524,7 @@ func (k *Keeper) AddDelegateStake(
 	}
 	stakeUponReputer, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting delegate stake upon reputer")
 	}
 	stakeUponReputerNew := stakeUponReputer.Add(stakeToAdd)
 
@@ -1325,11 +1565,11 @@ func (k *Keeper) RemoveReputerStake(
 	// Check reputerAuthority >= stake
 	reputerAuthority, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting reputer authority")
 	}
 	delegateStakeUponReputerInTopic, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting delegate stake upon reputer in topic")
 	}
 	reputerStakeInTopicWithoutDelegateStake := reputerAuthority.Sub(delegateStakeUponReputerInTopic)
 	if stakeToRemove.GT(reputerStakeInTopicWithoutDelegateStake) {
@@ -1340,7 +1580,7 @@ func (k *Keeper) RemoveReputerStake(
 	// Check topicStake >= stake
 	topicStake, err := k.GetTopicStake(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting topic stake")
 	}
 	if stakeToRemove.GT(topicStake) {
 		return types.ErrIntegerUnderflowTopicStake
@@ -1350,7 +1590,7 @@ func (k *Keeper) RemoveReputerStake(
 	// Check totalStake >= stake
 	totalStake, err := k.GetTotalStake(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting total stake")
 	}
 	if stakeToRemove.GT(totalStake) {
 		return types.ErrIntegerUnderflowTotalStake
@@ -1401,7 +1641,7 @@ func (k *Keeper) RemoveDelegateStake(
 	// stakeSumFromDelegator >= stake
 	stakeSumFromDelegator, err := k.GetStakeFromDelegatorInTopic(ctx, topicId, delegator)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting stake from delegator in topic")
 	}
 	if stakeToRemove.GT(stakeSumFromDelegator) {
 		return types.ErrIntegerUnderflowStakeFromDelegator
@@ -1411,11 +1651,11 @@ func (k *Keeper) RemoveDelegateStake(
 	// delegatedStakePlacement >= stake
 	delegatedStakePlacement, err := k.GetDelegateStakePlacement(ctx, topicId, delegator, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting delegate stake placement")
 	}
 	unStakeDec, err := alloraMath.NewDecFromSdkInt(stakeToRemove)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error creating new amount from stake to remove")
 	}
 	if delegatedStakePlacement.Amount.Lt(unStakeDec) {
 		return types.ErrIntegerUnderflowDelegateStakePlacement
@@ -1424,22 +1664,22 @@ func (k *Keeper) RemoveDelegateStake(
 	// Get share for this topicId and reputer
 	share, err := k.GetDelegateRewardPerShare(ctx, topicId, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting delegate reward per share")
 	}
 
 	// Calculate pending reward and send to delegator
 	pendingReward, err := delegatedStakePlacement.Amount.Mul(share)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error multiplying delegated stake placement amount by share")
 	}
 	pendingReward, err = pendingReward.Sub(delegatedStakePlacement.RewardDebt)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error subtracting reward debt from pending reward")
 	}
 	if pendingReward.Gt(alloraMath.NewDecFromInt64(0)) {
 		pendingRewardInt, err := pendingReward.SdkIntTrim()
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error trimming pending reward")
 		}
 		err = k.SendCoinsFromModuleToAccount(
 			ctx,
@@ -1454,11 +1694,11 @@ func (k *Keeper) RemoveDelegateStake(
 
 	newAmount, err := delegatedStakePlacement.Amount.Sub(unStakeDec)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error subtracting stake to remove from delegated stake placement amount")
 	}
 	newRewardDebt, err := newAmount.Mul(share)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error multiplying new amount by share")
 	}
 	stakePlacementNew := types.DelegatorInfo{
 		Amount:     newAmount,
@@ -1468,7 +1708,7 @@ func (k *Keeper) RemoveDelegateStake(
 	// stakeUponReputer >= stake
 	stakeUponReputer, err := k.GetDelegateStakeUponReputer(ctx, topicId, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting delegate stake upon reputer")
 	}
 	if stakeToRemove.GT(stakeUponReputer) {
 		return types.ErrIntegerUnderflowDelegateStakeUponReputer
@@ -1478,7 +1718,7 @@ func (k *Keeper) RemoveDelegateStake(
 	// stakeReputerAuthority >= stake
 	stakeReputerAuthority, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting reputer authority")
 	}
 	if stakeToRemove.GT(stakeReputerAuthority) {
 		return types.ErrIntegerUnderflowReputerStakeAuthority
@@ -1488,7 +1728,7 @@ func (k *Keeper) RemoveDelegateStake(
 	// topicStake >= stake
 	topicStake, err := k.GetTopicStake(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting topic stake")
 	}
 	if stakeToRemove.GT(topicStake) {
 		return types.ErrIntegerUnderflowTopicStake
@@ -1498,7 +1738,7 @@ func (k *Keeper) RemoveDelegateStake(
 	// totalStake >= stake
 	totalStake, err := k.GetTotalStake(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting total stake")
 	}
 	if stakeToRemove.GT(totalStake) {
 		return types.ErrIntegerUnderflowTotalStake
@@ -1538,13 +1778,17 @@ func (k Keeper) GetTotalStake(ctx context.Context) (cosmosMath.Int, error) {
 		if errors.Is(err, collections.ErrNotFound) {
 			return cosmosMath.NewInt(0), nil
 		}
-		return cosmosMath.Int{}, err
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting total stake")
 	}
 	return ret, nil
 }
 
 // Sets the total sum of all stake in the network across all topics
 func (k *Keeper) SetTotalStake(ctx context.Context, totalStake cosmosMath.Int) error {
+	// big int pointer inside the cosmos int must be non nil
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(totalStake); err != nil {
+		return errorsmod.Wrap(err, "totalStake cosmos Int is not valid")
+	}
 	// total stake does not have a zero guard because totalStake is allowed to be zero
 	// it is initialized to zero at genesis anyways.
 	return k.totalStake.Set(ctx, totalStake)
@@ -1557,13 +1801,19 @@ func (k *Keeper) GetTopicStake(ctx context.Context, topicId TopicId) (cosmosMath
 		if errors.Is(err, collections.ErrNotFound) {
 			return cosmosMath.NewInt(0), nil
 		}
-		return cosmosMath.Int{}, err
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting topic stake")
 	}
 	return ret, nil
 }
 
 // sets the cumulative amount of stake in a topic
 func (k *Keeper) SetTopicStake(ctx context.Context, topicId TopicId, stake cosmosMath.Int) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topicId is not valid")
+	}
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(stake); err != nil {
+		return errorsmod.Wrap(err, "stake cosmos Int is not valid")
+	}
 	if stake.IsZero() {
 		return k.topicStake.Remove(ctx, topicId)
 	}
@@ -1579,7 +1829,7 @@ func (k *Keeper) GetStakeReputerAuthority(ctx context.Context, topicId TopicId, 
 		if errors.Is(err, collections.ErrNotFound) {
 			return cosmosMath.NewInt(0), nil
 		}
-		return cosmosMath.Int{}, err
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting stake reputer authority")
 	}
 	return stake, nil
 }
@@ -1587,6 +1837,15 @@ func (k *Keeper) GetStakeReputerAuthority(ctx context.Context, topicId TopicId, 
 // Sets the amount of stake placed upon a reputer in addition to their personal stake on a specific topic
 // Includes the stake placed by delegators on the reputer in that topic.
 func (k *Keeper) SetStakeReputerAuthority(ctx context.Context, topicId TopicId, reputer ActorId, amount cosmosMath.Int) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topicId is not valid")
+	}
+	if err := types.ValidateBech32(reputer); err != nil {
+		return errorsmod.Wrap(err, "reputer is not valid")
+	}
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(amount); err != nil {
+		return errorsmod.Wrap(err, "amount is not valid")
+	}
 	key := collections.Join(topicId, reputer)
 	if amount.IsNil() || amount.IsZero() {
 		return k.stakeReputerAuthority.Remove(ctx, key)
@@ -1602,13 +1861,22 @@ func (k *Keeper) GetStakeFromDelegatorInTopic(ctx context.Context, topicId Topic
 		if errors.Is(err, collections.ErrNotFound) {
 			return cosmosMath.NewInt(0), nil
 		}
-		return cosmosMath.Int{}, err
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting stake from delegator in topic")
 	}
 	return stake, nil
 }
 
 // Sets the amount of stake placed by a specific delegator.
 func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, delegator ActorId, stake cosmosMath.Int) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topicId is not valid")
+	}
+	if err := types.ValidateBech32(delegator); err != nil {
+		return errorsmod.Wrap(err, "delegator is not valid")
+	}
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(stake); err != nil {
+		return errorsmod.Wrap(err, "stake is not valid")
+	}
 	key := collections.Join(topicId, delegator)
 	if stake.IsZero() {
 		return k.stakeSumFromDelegator.Remove(ctx, key)
@@ -1624,13 +1892,25 @@ func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId,
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.DelegatorInfo{Amount: alloraMath.NewDecFromInt64(0), RewardDebt: alloraMath.NewDecFromInt64(0)}, nil
 		}
-		return types.DelegatorInfo{}, err
+		return types.DelegatorInfo{}, errorsmod.Wrap(err, "error getting delegate stake placement")
 	}
 	return stake, nil
 }
 
 // Sets the amount of stake placed by a specific delegator on a specific target.
 func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator ActorId, target ActorId, stake types.DelegatorInfo) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topicId is not valid")
+	}
+	if err := types.ValidateBech32(delegator); err != nil {
+		return errorsmod.Wrap(err, "delegator is not valid")
+	}
+	if err := types.ValidateBech32(target); err != nil {
+		return errorsmod.Wrap(err, "target is not valid")
+	}
+	if err := stake.Validate(); err != nil {
+		return errorsmod.Wrap(err, "stake information is not valid")
+	}
 	key := collections.Join3(topicId, delegator, target)
 	if stake.Amount.IsZero() {
 		return k.delegatedStakes.Remove(ctx, key)
@@ -1646,13 +1926,22 @@ func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId,
 		if errors.Is(err, collections.ErrNotFound) {
 			return alloraMath.NewDecFromInt64(0), nil
 		}
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting delegate reward per share")
 	}
 	return share, nil
 }
 
 // Set the share on specific reputer and topicId
 func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer ActorId, share alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topicId is not valid")
+	}
+	if err := types.ValidateBech32(reputer); err != nil {
+		return errorsmod.Wrap(err, "reputer is not valid")
+	}
+	if err := types.ValidateDec(share); err != nil {
+		return errorsmod.Wrap(err, "share is not valid")
+	}
 	key := collections.Join(topicId, reputer)
 	if err := types.ValidateDec(share); err != nil { // Added error check
 		return errorsmod.Wrapf(err, "SetDelegateRewardPerShare: invalid share")
@@ -1668,13 +1957,22 @@ func (k *Keeper) GetDelegateStakeUponReputer(ctx context.Context, topicId TopicI
 		if errors.Is(err, collections.ErrNotFound) {
 			return cosmosMath.NewInt(0), nil
 		}
-		return cosmosMath.Int{}, err
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting delegate stake upon reputer")
 	}
 	return stake, nil
 }
 
 // Sets the amount of stake placed on a specific target.
 func (k *Keeper) SetDelegateStakeUponReputer(ctx context.Context, topicId TopicId, target ActorId, stake cosmosMath.Int) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topicId is not valid")
+	}
+	if err := types.ValidateBech32(target); err != nil {
+		return errorsmod.Wrap(err, "target is not valid")
+	}
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(stake); err != nil {
+		return errorsmod.Wrap(err, "stake is not valid")
+	}
 	key := collections.Join(topicId, target)
 	if stake.IsZero() {
 		return k.stakeFromDelegatorsUponReputer.Remove(ctx, key)
@@ -1686,10 +1984,13 @@ func (k *Keeper) SetDelegateStakeUponReputer(ctx context.Context, topicId TopicI
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
 func (k *Keeper) SetStakeRemoval(ctx context.Context, removalInfo types.StakeRemovalInfo) error {
+	if err := removalInfo.Validate(); err != nil {
+		return errorsmod.Wrap(err, "removalInfo is not valid")
+	}
 	byBlockKey := collections.Join3(removalInfo.BlockRemovalCompleted, removalInfo.TopicId, removalInfo.Reputer)
 	err := k.stakeRemovalsByBlock.Set(ctx, byBlockKey, removalInfo)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error setting stake removal by block")
 	}
 	byActorKey := collections.Join3(removalInfo.Reputer, removalInfo.TopicId, removalInfo.BlockRemovalCompleted)
 	return k.stakeRemovalsByActor.Set(ctx, byActorKey)
@@ -1705,14 +2006,14 @@ func (k *Keeper) DeleteStakeRemoval(
 	byBlockKey := collections.Join3(blockHeight, topicId, address)
 	has, err := k.stakeRemovalsByBlock.Has(ctx, byBlockKey)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error checking if stake removal by block exists")
 	}
 	if !has {
 		return types.ErrStakeRemovalNotFound
 	}
 	err = k.stakeRemovalsByBlock.Remove(ctx, byBlockKey)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error removing stake removal by block")
 	}
 	byActorKey := collections.Join3(address, topicId, blockHeight)
 	return k.stakeRemovalsByActor.Remove(ctx, byActorKey)
@@ -1746,7 +2047,7 @@ func (k *Keeper) GetStakeRemovalsUpUntilBlock(
 
 	iter, err := k.stakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
-		return ret, false, err
+		return ret, false, errorsmod.Wrap(err, "error iterating over stake removals by block")
 	}
 	defer iter.Close()
 	count := uint64(0)
@@ -1756,7 +2057,7 @@ func (k *Keeper) GetStakeRemovalsUpUntilBlock(
 		}
 		val, err := iter.Value()
 		if err != nil {
-			return ret, true, err
+			return ret, true, errorsmod.Wrap(err, "error getting stake removal by block")
 		}
 		ret = append(ret, val)
 		count += 1
@@ -1773,11 +2074,11 @@ func (k *Keeper) GetStakeRemovalForReputerAndTopicId(
 	rng := collections.NewSuperPrefixedTripleRange[ActorId, TopicId, BlockHeight](reputer, topicId)
 	iter, err := k.stakeRemovalsByActor.Iterate(ctx, rng)
 	if err != nil {
-		return types.StakeRemovalInfo{}, false, err
+		return types.StakeRemovalInfo{}, false, errorsmod.Wrap(err, "error iterating over stake removals by actor")
 	}
 	keys, err := iter.Keys()
 	if err != nil {
-		return types.StakeRemovalInfo{}, false, err
+		return types.StakeRemovalInfo{}, false, errorsmod.Wrap(err, "error getting keys")
 	}
 	keysLen := len(keys)
 	if keysLen == 0 {
@@ -1790,7 +2091,7 @@ func (k *Keeper) GetStakeRemovalForReputerAndTopicId(
 	byBlockKey := collections.Join3(key.K3(), topicId, reputer)
 	ret, err := k.stakeRemovalsByBlock.Get(ctx, byBlockKey)
 	if err != nil {
-		return types.StakeRemovalInfo{}, false, err
+		return types.StakeRemovalInfo{}, false, errorsmod.Wrap(err, "error getting stake removal by block")
 	}
 	if keysLen > 1 {
 		ctx.Logger().Warn("Invariant failure! More than one stake removal found for reputer and topicId")
@@ -1803,10 +2104,13 @@ func (k *Keeper) GetStakeRemovalForReputerAndTopicId(
 // The topic used will be the topic set in the `removalInfo`
 // This completely overrides the existing stake removal
 func (k *Keeper) SetDelegateStakeRemoval(ctx context.Context, removalInfo types.DelegateStakeRemovalInfo) error {
+	if err := removalInfo.Validate(); err != nil {
+		return errorsmod.Wrap(err, "removalInfo is not valid")
+	}
 	byBlockKey := Join4(removalInfo.BlockRemovalCompleted, removalInfo.TopicId, removalInfo.Delegator, removalInfo.Reputer)
 	err := k.delegateStakeRemovalsByBlock.Set(ctx, byBlockKey, removalInfo)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error setting delegate stake removal by block")
 	}
 	byActorKey := Join4(removalInfo.Delegator, removalInfo.Reputer, removalInfo.TopicId, removalInfo.BlockRemovalCompleted)
 	return k.delegateStakeRemovalsByActor.Set(ctx, byActorKey)
@@ -1823,14 +2127,14 @@ func (k *Keeper) DeleteDelegateStakeRemoval(
 	byBlockKey := Join4(blockHeight, topicId, delegator, reputer)
 	has, err := k.delegateStakeRemovalsByBlock.Has(ctx, byBlockKey)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error checking if delegate stake removal by block exists")
 	}
 	if !has {
 		return types.ErrStakeRemovalNotFound
 	}
 	err = k.delegateStakeRemovalsByBlock.Remove(ctx, byBlockKey)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error removing delegate stake removal by block")
 	}
 	byActorKey := Join4(delegator, reputer, topicId, blockHeight)
 	return k.delegateStakeRemovalsByActor.Remove(ctx, byActorKey)
@@ -1865,7 +2169,7 @@ func (k *Keeper) GetDelegateStakeRemovalsUpUntilBlock(
 
 	iter, err := k.delegateStakeRemovalsByBlock.Iterate(ctx, rng)
 	if err != nil {
-		return ret, false, err
+		return ret, false, errorsmod.Wrap(err, "error iterating over delegate stake removals by block")
 	}
 	defer iter.Close()
 	count := uint64(0)
@@ -1875,7 +2179,7 @@ func (k *Keeper) GetDelegateStakeRemovalsUpUntilBlock(
 		}
 		val, err := iter.Value()
 		if err != nil {
-			return ret, true, err
+			return ret, true, errorsmod.Wrap(err, "error getting delegate stake removal by block")
 		}
 		ret = append(ret, val)
 		count += 1
@@ -1893,11 +2197,11 @@ func (k *Keeper) GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 	rng := NewTriplePrefixedQuadrupleRange[ActorId, ActorId, TopicId, BlockHeight](delegator, reputer, topicId)
 	iter, err := k.delegateStakeRemovalsByActor.Iterate(ctx, rng)
 	if err != nil {
-		return types.DelegateStakeRemovalInfo{}, false, err
+		return types.DelegateStakeRemovalInfo{}, false, errorsmod.Wrap(err, "error iterating over delegate stake removals by actor")
 	}
 	keys, err := iter.Keys()
 	if err != nil {
-		return types.DelegateStakeRemovalInfo{}, false, err
+		return types.DelegateStakeRemovalInfo{}, false, errorsmod.Wrap(err, "error getting keys")
 	}
 	keysLen := len(keys)
 	if keysLen == 0 {
@@ -1910,7 +2214,7 @@ func (k *Keeper) GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 	byBlockKey := Join4(key.K4(), topicId, delegator, reputer)
 	ret, err := k.delegateStakeRemovalsByBlock.Get(ctx, byBlockKey)
 	if err != nil {
-		return types.DelegateStakeRemovalInfo{}, false, err
+		return types.DelegateStakeRemovalInfo{}, false, errorsmod.Wrap(err, "error getting delegate stake removal by block")
 	}
 	if keysLen > 1 {
 		ctx.Logger().Warn("Invariant failure! More than one delegate stake removal found for delegator, reputer and topicId")
@@ -1923,14 +2227,23 @@ func (k *Keeper) GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 
 // Adds a new reputer to the reputer tracking data structures, reputers and topicReputers
 func (k *Keeper) InsertReputer(ctx context.Context, topicId TopicId, reputer ActorId, reputerInfo types.OffchainNode) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBech32(reputer); err != nil {
+		return errorsmod.Wrap(err, "reputer validation failed")
+	}
+	if err := reputerInfo.Validate(); err != nil {
+		return errorsmod.Wrap(err, "reputer info validation failed")
+	}
 	topicKey := collections.Join(topicId, reputer)
 	err := k.topicReputers.Set(ctx, topicKey)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error setting topic reputer")
 	}
 	err = k.reputers.Set(ctx, reputer, reputerInfo)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error setting reputer")
 	}
 	return nil
 }
@@ -1940,7 +2253,7 @@ func (k *Keeper) RemoveReputer(ctx context.Context, topicId TopicId, reputer Act
 	topicKey := collections.Join(topicId, reputer)
 	err := k.topicReputers.Remove(ctx, topicKey)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error removing topic reputer")
 	}
 	return nil
 }
@@ -1953,14 +2266,23 @@ func (k *Keeper) GetReputerInfo(ctx sdk.Context, reputerKey ActorId) (types.Offc
 
 // Adds a new worker to the worker tracking data structures, workers and topicWorkers
 func (k *Keeper) InsertWorker(ctx context.Context, topicId TopicId, worker ActorId, workerInfo types.OffchainNode) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrap(err, "worker validation failed")
+	}
+	if err := workerInfo.Validate(); err != nil {
+		return errorsmod.Wrap(err, "worker info validation failed")
+	}
 	topicKey := collections.Join(topicId, worker)
 	err := k.topicWorkers.Set(ctx, topicKey)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error setting topic worker")
 	}
 	err = k.workers.Set(ctx, worker, workerInfo)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error setting worker")
 	}
 	return nil
 }
@@ -1970,7 +2292,7 @@ func (k *Keeper) RemoveWorker(ctx context.Context, topicId TopicId, worker Actor
 	topicKey := collections.Join(topicId, worker)
 	err := k.topicWorkers.Remove(ctx, topicKey)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error removing topic worker")
 	}
 	return nil
 }
@@ -1989,13 +2311,19 @@ func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (a
 		if errors.Is(err, collections.ErrNotFound) {
 			return alloraMath.ZeroDec(), true, nil
 		}
-		return alloraMath.ZeroDec(), false, err
+		return alloraMath.ZeroDec(), false, errorsmod.Wrap(err, "error getting previous topic weight")
 	}
-	return topicWeight, false, err
+	return topicWeight, false, nil
 }
 
 // Set the previous weight during rewards calculation for a topic
 func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, weight alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateDec(weight); err != nil {
+		return errorsmod.Wrap(err, "weight validation failed")
+	}
 	return k.previousTopicWeight.Set(ctx, topicId, weight)
 }
 
@@ -2011,6 +2339,13 @@ func (k *Keeper) GetTopic(ctx context.Context, topicId TopicId) (types.Topic, er
 
 // Sets a topic config on a topicId
 func (k *Keeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topic) error {
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting params")
+	}
+	if err := topic.Validate(params); err != nil {
+		return errorsmod.Wrap(err, "set topic validation failure")
+	}
 	return k.topics.Set(ctx, topicId, topic)
 }
 
@@ -2028,7 +2363,7 @@ func (k *Keeper) GetNextTopicId(ctx context.Context) (TopicId, error) {
 func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, error) {
 	_, active, err := k.GetNextPossibleChurningBlockByTopicId(ctx, topicId)
 	if err != nil {
-		return false, err
+		return false, errorsmod.Wrap(err, "error getting next possible churning block by topic id")
 	}
 
 	return active, nil
@@ -2038,20 +2373,20 @@ func (k *Keeper) IsTopicActive(ctx context.Context, topicId TopicId) (bool, erro
 func (k *Keeper) UpdateTopicInitialRegret(ctx context.Context, topicId TopicId, initialRegret alloraMath.Dec) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting topic")
 	}
 	topic.InitialRegret = initialRegret
-	return k.topics.Set(ctx, topicId, topic)
+	return k.SetTopic(ctx, topicId, topic)
 }
 
 // UpdateTopicInferenceLastRan updates the InferenceLastRan timestamp for a given topic.
 func (k *Keeper) UpdateTopicEpochLastEnded(ctx context.Context, topicId TopicId, epochLastEnded BlockHeight) error {
 	topic, err := k.topics.Get(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting topic")
 	}
 	topic.EpochLastEnded = epochLastEnded
-	return k.topics.Set(ctx, topicId, topic)
+	return k.SetTopic(ctx, topicId, topic)
 }
 
 // True if worker is registered in topic, else False
@@ -2066,6 +2401,56 @@ func (k *Keeper) IsReputerRegisteredInTopic(ctx context.Context, topicId TopicId
 	return k.topicReputers.Has(ctx, topicKey)
 }
 
+// wrapper for set operation around activeTopics
+func (k *Keeper) SetActiveTopics(ctx context.Context, topicId TopicId) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	return k.activeTopics.Set(ctx, topicId)
+}
+
+// wrapper for set operation around blockToActiveTopics
+func (k *Keeper) SetBlockToActiveTopics(ctx context.Context, block BlockHeight, topicIds types.TopicIds) error {
+	if err := types.ValidateBlockHeight(block); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
+	for _, topicId := range topicIds.TopicIds {
+		if err := types.ValidateTopicId(topicId); err != nil {
+			return errorsmod.Wrap(err, "topic id validation failed")
+		}
+	}
+	return k.blockToActiveTopics.Set(ctx, block, topicIds)
+}
+
+// wrapper for set operation around topicToNextPossibleChurningBlock
+func (k *Keeper) SetTopicToNextPossibleChurningBlock(ctx context.Context, topicId TopicId, block BlockHeight) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(block); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
+	return k.topicToNextPossibleChurningBlock.Set(ctx, topicId, block)
+}
+
+// wrapper for set operation around blockToLowestActiveTopicWeight
+func (k *Keeper) SetBlockToLowestActiveTopicWeight(
+	ctx context.Context,
+	block BlockHeight,
+	weightPair types.TopicIdWeightPair,
+) error {
+	if err := types.ValidateBlockHeight(block); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
+	if err := types.ValidateTopicId(weightPair.TopicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateDec(weightPair.Weight); err != nil {
+		return errorsmod.Wrap(err, "weight validation failed")
+	}
+	return k.blockToLowestActiveTopicWeight.Set(ctx, block, weightPair)
+}
+
 /// TOPIC FEE REVENUE
 
 // Get the amount of fee revenue collected by a topic
@@ -2075,16 +2460,22 @@ func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (cosmo
 		if errors.Is(err, collections.ErrNotFound) {
 			return cosmosMath.ZeroInt(), nil
 		}
-		return cosmosMath.ZeroInt(), err
+		return cosmosMath.ZeroInt(), errorsmod.Wrap(err, "error getting topic fee revenue")
 	}
 	return feeRev, nil
 }
 
 // Add to the fee revenue collected by a topic
 func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount cosmosMath.Int) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(amount); err != nil {
+		return errorsmod.Wrap(err, "amount validation failed")
+	}
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting topic fee revenue")
 	}
 	topicFeeRevenue = topicFeeRevenue.Add(amount)
 	return k.topicFeeRevenue.Set(ctx, topicId, topicFeeRevenue)
@@ -2095,20 +2486,20 @@ func (k *Keeper) AddTopicFeeRevenue(ctx context.Context, topicId TopicId, amount
 func calculateBlocksPerWeek(ctx sdk.Context, k Keeper) (alloraMath.Dec, error) {
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting params")
 	}
 	blocksPerMonth, err := alloraMath.NewDecFromUint64(moduleParams.BlocksPerMonth)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error creating blocks per month")
 	}
 	// 4.345 weeks per month on average
 	weeksPerMonth, err := alloraMath.NewDecFromString("4.345")
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error creating weeks per month")
 	}
 	blocksPerWeek, err := blocksPerMonth.Quo(weeksPerMonth)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error calculating blocks per week")
 	}
 	return blocksPerWeek, nil
 }
@@ -2120,13 +2511,19 @@ func (k *Keeper) GetLastDripBlock(ctx context.Context, topicId TopicId) (BlockHe
 		if errors.Is(err, collections.ErrNotFound) {
 			return 0, nil
 		}
-		return 0, err
+		return 0, errorsmod.Wrap(err, "error getting last drip block")
 	}
 	return bh, nil
 }
 
 // set the last time we dripped the fee revenue for a topic
 func (k *Keeper) SetLastDripBlock(ctx context.Context, topicId TopicId, block BlockHeight) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(block); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
 	return k.lastDripBlock.Set(ctx, topicId, block)
 }
 
@@ -2137,17 +2534,23 @@ func (k *Keeper) SetLastDripBlock(ctx context.Context, topicId TopicId, block Bl
 // and N_{epochs,w} is the number of epochs per week
 // and this decay or drip happens each epoch
 func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block BlockHeight) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBlockHeight(block); err != nil {
+		return errorsmod.Wrap(err, "block height validation failed")
+	}
 	topicFeeRevenue, err := k.GetTopicFeeRevenue(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting topic fee revenue")
 	}
 	topicFeeRevenueDec, err := alloraMath.NewDecFromSdkInt(topicFeeRevenue)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error creating decimal from sdk int")
 	}
 	topic, err := k.GetTopic(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting topic")
 	}
 	blocksPerEpoch := alloraMath.NewDecFromInt64(topic.EpochLength)
 	if blocksPerEpoch.IsZero() {
@@ -2156,11 +2559,11 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	}
 	blocksPerWeek, err := calculateBlocksPerWeek(ctx, *k)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error calculating blocks per week")
 	}
 	epochsPerWeek, err := blocksPerWeek.Quo(blocksPerEpoch)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error calculating epochs per week")
 	}
 	if epochsPerWeek.IsZero() {
 		// Log a warning
@@ -2170,18 +2573,18 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 	// this delta is the drip per epoch
 	dripPerEpoch, err := topicFeeRevenueDec.Quo(epochsPerWeek)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error calculating drip per epoch")
 	}
 	lastDripBlock, err := k.GetLastDripBlock(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting last drip block")
 	}
 	// if we have not yet decayed this epoch, decay and set to decayed
 	// if we have decayed this epoch already, do nothing and continue
 	if lastDripBlock <= topic.EpochLastEnded {
 		newTopicFeeRevenueDec, err := topicFeeRevenueDec.Sub(dripPerEpoch)
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error subtracting drip per epoch")
 		}
 		if newTopicFeeRevenueDec.IsNegative() {
 			newTopicFeeRevenueDec = alloraMath.ZeroDec()
@@ -2189,17 +2592,20 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 
 		newTopicFeeRevenue, err := newTopicFeeRevenueDec.SdkIntTrim()
 		if err != nil {
-			return err
+			return errorsmod.Wrap(err, "error converting decimal to sdk int")
 		}
 
 		if err = k.SetLastDripBlock(ctx, topicId, topic.EpochLastEnded); err != nil {
-			return err
+			return errorsmod.Wrap(err, "error setting last drip block")
 		}
 		ctx.Logger().Debug("Dripping topic fee revenue",
 			"block", ctx.BlockHeight(),
 			"topicId", topicId,
 			"oldRevenue", topicFeeRevenue,
 			"newRevenue", newTopicFeeRevenue)
+		if err = types.ValidateSdkIntRepresentingMonetaryValue(newTopicFeeRevenue); err != nil {
+			return errorsmod.Wrap(err, "error validating new topic fee revenue")
+		}
 		return k.topicFeeRevenue.Set(ctx, topicId, newTopicFeeRevenue)
 	}
 	return nil
@@ -2209,6 +2615,15 @@ func (k *Keeper) DripTopicFeeRevenue(ctx sdk.Context, topicId TopicId, block Blo
 
 // If the new score is older than the current score, don't update
 func (k *Keeper) SetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetInfererScoreEma: Error validating topic id")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrapf(err, "SetInfererScoreEma: Error validating worker")
+	}
+	if err := score.Validate(); err != nil {
+		return errorsmod.Wrapf(err, "SetInfererScoreEma: Error validating inferer score")
+	}
 	key := collections.Join(topicId, worker)
 	return k.infererScoreEmas.Set(ctx, key, score)
 }
@@ -2225,12 +2640,21 @@ func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker
 				Score:       alloraMath.ZeroDec(),
 			}, nil
 		}
-		return types.Score{}, err
+		return types.Score{}, errorsmod.Wrap(err, "error getting inferer score ema")
 	}
 	return score, nil
 }
 
 func (k *Keeper) SetForecasterScoreEma(ctx context.Context, topicId TopicId, worker ActorId, score types.Score) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetForecasterScoreEma: Error validating topic id")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrapf(err, "SetForecasterScoreEma: Error validating worker")
+	}
+	if err := score.Validate(); err != nil {
+		return errorsmod.Wrapf(err, "SetForecasterScoreEma: Error validating forecaster score")
+	}
 	key := collections.Join(topicId, worker)
 	return k.forecasterScoreEmas.Set(ctx, key, score)
 }
@@ -2247,13 +2671,22 @@ func (k *Keeper) GetForecasterScoreEma(ctx context.Context, topicId TopicId, wor
 				Score:       alloraMath.ZeroDec(),
 			}, nil
 		}
-		return types.Score{}, err
+		return types.Score{}, errorsmod.Wrap(err, "error getting forecaster score ema")
 	}
 	return score, nil
 }
 
 // If the new score is older than the current score, don't update
 func (k *Keeper) SetReputerScoreEma(ctx context.Context, topicId TopicId, reputer ActorId, score types.Score) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetReputerScoreEma: Error validating topic id")
+	}
+	if err := types.ValidateBech32(reputer); err != nil {
+		return errorsmod.Wrapf(err, "SetReputerScoreEma: Error validating reputer")
+	}
+	if err := score.Validate(); err != nil {
+		return errorsmod.Wrapf(err, "SetReputerScoreEma: Error validating reputer score")
+	}
 	key := collections.Join(topicId, reputer)
 	return k.reputerScoreEmas.Set(ctx, key, score)
 }
@@ -2270,12 +2703,18 @@ func (k *Keeper) GetReputerScoreEma(ctx context.Context, topicId TopicId, repute
 				Score:       alloraMath.ZeroDec(),
 			}, nil
 		}
-		return types.Score{}, err
+		return types.Score{}, errorsmod.Wrap(err, "error getting reputer score ema")
 	}
 	return score, nil
 }
 
 func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId, blockHeight BlockHeight, score types.Score) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "InsertWorkerInferenceScore: Error validating topic id")
+	}
+	if err := types.ValidateBlockHeight(blockHeight); err != nil {
+		return errorsmod.Wrapf(err, "InsertWorkerInferenceScore: Error validating block height")
+	}
 	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting worker inference scores at block")
@@ -2295,6 +2734,9 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 	}
 
 	key := collections.Join(topicId, blockHeight)
+	if err := scores.Validate(); err != nil {
+		return errorsmod.Wrapf(err, "InsertWorkerInferenceScore: Error validating worker inference scores")
+	}
 	return k.infererScoresByBlock.Set(ctx, key, scores)
 }
 
@@ -2306,13 +2748,13 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 
 	iter, err := k.infererScoresByBlock.Iterate(ctx, rng)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error iterating inferer scores by block")
 	}
 	defer iter.Close()
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting params")
 	}
 	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
@@ -2321,7 +2763,7 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 	for iter.Valid() {
 		existingScores, err := iter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errorsmod.Wrap(err, "error getting key value")
 		}
 
 		for _, score := range existingScores.Value.Scores {
@@ -2347,21 +2789,27 @@ func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId To
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Scores{}, nil
 		}
-		return types.Scores{}, err
+		return types.Scores{}, errorsmod.Wrap(err, "error getting worker inference scores at block")
 	}
 	return scores, nil
 }
 
 func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId, blockHeight BlockHeight, score types.Score) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "InsertWorkerForecastScore: Error validating topic id")
+	}
+	if err := types.ValidateBlockHeight(blockHeight); err != nil {
+		return errorsmod.Wrapf(err, "InsertWorkerForecastScore: Error validating block height")
+	}
 	scores, err := k.GetWorkerForecastScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting worker forecast scores at block")
 	}
 	scores.Scores = append(scores.Scores, &score)
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting params")
 	}
 	maxNumScores := moduleParams.MaxSamplesToScaleScores
 
@@ -2372,6 +2820,9 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 	}
 
 	key := collections.Join(topicId, blockHeight)
+	if err := scores.Validate(); err != nil {
+		return errorsmod.Wrapf(err, "InsertWorkerForecastScore: Error validating worker forecast scores")
+	}
 	return k.forecasterScoresByBlock.Set(ctx, key, scores)
 }
 
@@ -2383,13 +2834,13 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 
 	iter, err := k.forecasterScoresByBlock.Iterate(ctx, rng)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error iterating forecaster scores by block")
 	}
 	defer iter.Close()
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting params")
 	}
 	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
@@ -2398,7 +2849,7 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 	for iter.Valid() {
 		existingScores, err := iter.KeyValue()
 		if err != nil {
-			return nil, err
+			return nil, errorsmod.Wrap(err, "error getting key value")
 		}
 
 		for _, score := range existingScores.Value.Scores {
@@ -2424,21 +2875,27 @@ func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId Top
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Scores{}, nil
 		}
-		return types.Scores{}, err
+		return types.Scores{}, errorsmod.Wrap(err, "error getting worker forecast scores at block")
 	}
 	return scores, nil
 }
 
 func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockHeight BlockHeight, score types.Score) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "InsertReputerScore: Error validating topic id")
+	}
+	if err := types.ValidateBlockHeight(blockHeight); err != nil {
+		return errorsmod.Wrapf(err, "InsertReputerScore: Error validating block height")
+	}
 	scores, err := k.GetReputersScoresAtBlock(ctx, topicId, blockHeight)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting reputers scores at block")
 	}
 	scores.Scores = append(scores.Scores, &score)
 
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting params")
 	}
 	maxNumScores := moduleParams.MaxSamplesToScaleScores
 	lenScores := uint64(len(scores.Scores))
@@ -2449,6 +2906,9 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockH
 		}
 	}
 	key := collections.Join(topicId, blockHeight)
+	if err := scores.Validate(); err != nil {
+		return errorsmod.Wrapf(err, "InsertReputerScore: Error validating reputer scores")
+	}
 	return k.reputerScoresByBlock.Set(ctx, key, scores)
 }
 
@@ -2459,14 +2919,20 @@ func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, 
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Scores{}, nil
 		}
-		return types.Scores{}, err
+		return types.Scores{}, errorsmod.Wrap(err, "error getting reputers scores at block")
 	}
 	return scores, nil
 }
 
 func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TopicId, reputer ActorId, coefficient types.ListeningCoefficient) error {
-	if err := types.ValidateDec(coefficient.Coefficient); err != nil { // Added error check
-		return errorsmod.Wrapf(err, "SetListeningCoefficient: invalid coefficient")
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetListeningCoefficient: Error validating topic id")
+	}
+	if err := types.ValidateBech32(reputer); err != nil {
+		return errorsmod.Wrapf(err, "SetListeningCoefficient: Error validating reputer")
+	}
+	if err := coefficient.Validate(); err != nil {
+		return errorsmod.Wrapf(err, "SetListeningCoefficient: Error validating listening coefficient")
 	}
 	key := collections.Join(topicId, reputer)
 	return k.reputerListeningCoefficient.Set(ctx, key, coefficient)
@@ -2480,12 +2946,18 @@ func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, r
 			// Return a default value
 			return types.ListeningCoefficient{Coefficient: alloraMath.NewDecFromInt64(1)}, nil
 		}
-		return types.ListeningCoefficient{}, err
+		return types.ListeningCoefficient{}, errorsmod.Wrap(err, "error getting listening coefficient")
 	}
 	return coef, nil
 }
 
 func (k *Keeper) SetPreviousTopicQuantileInfererScoreEma(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousTopicQuantileInfererScoreEma: Error validating topic id")
+	}
+	if err := types.ValidateDec(score); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousTopicQuantileInfererScoreEma: Error validating score")
+	}
 	return k.previousTopicQuantileInfererScoreEma.Set(ctx, topicId, score)
 }
 
@@ -2497,12 +2969,18 @@ func (k *Keeper) GetPreviousTopicQuantileInfererScoreEma(ctx context.Context, to
 		if errors.Is(err, collections.ErrNotFound) {
 			return alloraMath.ZeroDec(), nil
 		}
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting previous topic quantile inferer score ema")
 	}
 	return score, nil
 }
 
 func (k *Keeper) SetPreviousTopicQuantileForecasterScoreEma(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousTopicQuantileForecasterScoreEma: Error validating topic id")
+	}
+	if err := types.ValidateDec(score); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousTopicQuantileForecasterScoreEma: Error validating score")
+	}
 	return k.previousTopicQuantileForecasterScoreEma.Set(ctx, topicId, score)
 }
 
@@ -2514,12 +2992,18 @@ func (k *Keeper) GetPreviousTopicQuantileForecasterScoreEma(ctx context.Context,
 		if errors.Is(err, collections.ErrNotFound) {
 			return alloraMath.ZeroDec(), nil
 		}
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting previous topic quantile forecaster score ema")
 	}
 	return score, nil
 }
 
 func (k *Keeper) SetPreviousTopicQuantileReputerScoreEma(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousTopicQuantileReputerScoreEma: Error validating topic id")
+	}
+	if err := types.ValidateDec(score); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousTopicQuantileReputerScoreEma: Error validating score")
+	}
 	return k.previousTopicQuantileReputerScoreEma.Set(ctx, topicId, score)
 }
 
@@ -2531,7 +3015,7 @@ func (k *Keeper) GetPreviousTopicQuantileReputerScoreEma(ctx context.Context, to
 		if errors.Is(err, collections.ErrNotFound) {
 			return alloraMath.ZeroDec(), nil
 		}
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting previous topic quantile reputer score ema")
 	}
 	return score, nil
 }
@@ -2547,13 +3031,22 @@ func (k *Keeper) GetPreviousReputerRewardFraction(ctx context.Context, topicId T
 		if errors.Is(err, collections.ErrNotFound) {
 			return alloraMath.ZeroDec(), true, nil
 		}
-		return alloraMath.Dec{}, false, err
+		return alloraMath.Dec{}, false, errorsmod.Wrap(err, "error getting previous reputer reward fraction")
 	}
 	return reward, false, nil
 }
 
 // Sets the previous W_{i-1,m}
 func (k *Keeper) SetPreviousReputerRewardFraction(ctx context.Context, topicId TopicId, reputer ActorId, reward alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousReputerRewardFraction: Error validating topic id")
+	}
+	if err := types.ValidateBech32(reputer); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousReputerRewardFraction: Error validating reputer")
+	}
+	if err := types.ValidateDec(reward); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousReputerRewardFraction: Error validating reward")
+	}
 	key := collections.Join(topicId, reputer)
 	return k.previousReputerRewardFraction.Set(ctx, key, reward)
 }
@@ -2567,13 +3060,22 @@ func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId
 		if errors.Is(err, collections.ErrNotFound) {
 			return alloraMath.ZeroDec(), true, nil
 		}
-		return alloraMath.Dec{}, false, err
+		return alloraMath.Dec{}, false, errorsmod.Wrap(err, "error getting previous inference reward fraction")
 	}
 	return reward, false, nil
 }
 
 // Sets the previous U_{i-1,m}
 func (k *Keeper) SetPreviousInferenceRewardFraction(ctx context.Context, topicId TopicId, worker ActorId, reward alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousInferenceRewardFraction: Error validating topic id")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousInferenceRewardFraction: Error validating worker")
+	}
+	if err := types.ValidateDec(reward); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousInferenceRewardFraction: Error validating reward")
+	}
 	key := collections.Join(topicId, worker)
 	return k.previousInferenceRewardFraction.Set(ctx, key, reward)
 }
@@ -2587,18 +3089,33 @@ func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId 
 		if errors.Is(err, collections.ErrNotFound) {
 			return alloraMath.ZeroDec(), true, nil
 		}
-		return alloraMath.Dec{}, false, err
+		return alloraMath.Dec{}, false, errorsmod.Wrap(err, "error getting previous forecast reward fraction")
 	}
 	return reward, false, nil
 }
 
 // Sets the previous V_{i-1,m}
 func (k *Keeper) SetPreviousForecastRewardFraction(ctx context.Context, topicId TopicId, worker ActorId, reward alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousForecastRewardFraction: Error validating topic id")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousForecastRewardFraction: Error validating worker")
+	}
+	if err := types.ValidateDec(reward); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousForecastRewardFraction: Error validating reward")
+	}
 	key := collections.Join(topicId, worker)
 	return k.previousForecastRewardFraction.Set(ctx, key, reward)
 }
 
-func (k *Keeper) SetPreviousPercentageRewardToStakedReputers(ctx context.Context, percentageRewardToStakedReputers alloraMath.Dec) error {
+func (k *Keeper) SetPreviousPercentageRewardToStakedReputers(
+	ctx context.Context,
+	percentageRewardToStakedReputers alloraMath.Dec,
+) error {
+	if err := types.ValidateDec(percentageRewardToStakedReputers); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousPercentageRewardToStakedReputers: Error validating percentage reward to staked reputers")
+	}
 	return k.previousPercentageRewardToStakedReputers.Set(ctx, percentageRewardToStakedReputers)
 }
 
@@ -2613,6 +3130,9 @@ func (k Keeper) IsWhitelistAdmin(ctx context.Context, admin ActorId) (bool, erro
 }
 
 func (k *Keeper) AddWhitelistAdmin(ctx context.Context, admin ActorId) error {
+	if err := types.ValidateBech32(admin); err != nil {
+		return errorsmod.Wrap(err, "error validating admin id")
+	}
 	return k.whitelistAdmins.Set(ctx, admin)
 }
 
@@ -2626,7 +3146,7 @@ func (k *Keeper) RemoveWhitelistAdmin(ctx context.Context, admin ActorId) error 
 func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipient ActorId, amt sdk.Coins) error {
 	recipientAddr, err := sdk.AccAddressFromBech32(recipient)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting recipient address")
 	}
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, senderModule, recipientAddr, amt)
 }
@@ -2635,7 +3155,7 @@ func (k *Keeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule 
 func (k *Keeper) SendCoinsFromAccountToModule(ctx context.Context, sender ActorId, recipientModule string, amt sdk.Coins) error {
 	senderAddr, err := sdk.AccAddressFromBech32(sender)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting sender address")
 	}
 	return k.bankKeeper.SendCoinsFromAccountToModule(ctx, senderAddr, recipientModule, amt)
 }
@@ -2661,7 +3181,7 @@ func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec
 		params.DefaultBondDenom).Amount
 	totalRewardDec, err := alloraMath.NewDecFromSdkInt(totalReward)
 	if err != nil {
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting total reward to distribute")
 	}
 	return totalRewardDec, nil
 }
@@ -2673,7 +3193,7 @@ func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec
 func (k Keeper) CalcAppropriatePaginationForUint64Cursor(ctx context.Context, pagination *types.SimpleCursorPaginationRequest) (uint64, uint64, error) {
 	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		return uint64(0), uint64(0), err
+		return uint64(0), uint64(0), errorsmod.Wrap(err, "error getting params")
 	}
 	limit := moduleParams.DefaultPageLimit
 	cursor := uint64(0)
@@ -2704,19 +3224,19 @@ func (k *Keeper) PruneRecordsAfterRewards(ctx context.Context, topicId TopicId, 
 
 	err := k.pruneInferences(ctx, blockRange)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error pruning inferences")
 	}
 	err = k.pruneForecasts(ctx, blockRange)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error pruning forecasts")
 	}
 	err = k.pruneLossBundles(ctx, blockRange)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error pruning loss bundles")
 	}
 	err = k.pruneNetworkLosses(ctx, blockRange)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error pruning network losses")
 	}
 
 	return nil
@@ -2739,9 +3259,15 @@ func (k *Keeper) pruneNetworkLosses(ctx context.Context, blockRange *collections
 }
 
 func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
 	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
 	if err != nil {
-		return err
+		if errors.Is(err, collections.ErrNotFound) {
+			return errorsmod.Wrapf(err, "no nonces found to prune for topic %d", topicId)
+		}
+		return errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 
 	// Filter Nonces based on block_height
@@ -2754,17 +3280,23 @@ func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHei
 
 	// Update nonces in the map
 	nonces.Nonces = filteredNonces
+	if err := nonces.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating unfulfilled worker nonces")
+	}
 	if err := k.unfulfilledWorkerNonces.Set(ctx, topicId, nonces); err != nil {
-		return err
+		return errorsmod.Wrap(err, "error setting unfulfilled worker nonces")
 	}
 
 	return nil
 }
 
 func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHeightThreshold int64) error {
-	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	nonces, err := k.GetUnfulfilledReputerNonces(ctx, topicId)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
 
 	// Filter Nonces based on block_height
@@ -2775,10 +3307,17 @@ func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHe
 		}
 	}
 
+	if len(filteredNonces) == 0 {
+		return k.unfulfilledReputerNonces.Remove(ctx, topicId)
+	}
+
 	// Update nonces in the map
 	nonces.Nonces = filteredNonces
+	if err := nonces.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating unfulfilled reputer nonces")
+	}
 	if err := k.unfulfilledReputerNonces.Set(ctx, topicId, nonces); err != nil {
-		return err
+		return errorsmod.Wrap(err, "error setting unfulfilled reputer nonces")
 	}
 
 	return nil
@@ -2798,19 +3337,47 @@ func (k *Keeper) BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, no
 func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
 	_, err := sdk.AccAddressFromBech32(actor)
 	if err != nil {
-		return err
+		return errorsmod.Wrap(err, "error validating actor id")
 	}
 	return nil
 }
 
-func (k *Keeper) SetWorkerTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
+func (k *Keeper) SetWorkerTopicLastCommit(
+	ctx context.Context,
+	topic types.TopicId,
+	blockHeight int64,
+	nonce *types.Nonce,
+) error {
+	if err := types.ValidateTopicId(topic); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBlockHeight(blockHeight); err != nil {
+		return errorsmod.Wrap(err, "error validating block height")
+	}
+	if err := nonce.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating nonce")
+	}
 	return k.topicLastWorkerCommit.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
 		Nonce:       nonce,
 	})
 }
 
-func (k *Keeper) SetReputerTopicLastCommit(ctx context.Context, topic types.TopicId, blockHeight int64, nonce *types.Nonce) error {
+func (k *Keeper) SetReputerTopicLastCommit(
+	ctx context.Context,
+	topic types.TopicId,
+	blockHeight int64,
+	nonce *types.Nonce,
+) error {
+	if err := types.ValidateTopicId(topic); err != nil {
+		return errorsmod.Wrap(err, "error validating topic id")
+	}
+	if err := types.ValidateBlockHeight(blockHeight); err != nil {
+		return errorsmod.Wrap(err, "error validating block height")
+	}
+	if err := nonce.Validate(); err != nil {
+		return errorsmod.Wrap(err, "error validating nonce")
+	}
 	return k.topicLastReputerCommit.Set(ctx, topic, types.TimestampedActorNonce{
 		BlockHeight: blockHeight,
 		Nonce:       nonce,
@@ -2826,6 +3393,12 @@ func (k *Keeper) GetReputerTopicLastCommit(ctx context.Context, topic TopicId) (
 }
 
 func (k *Keeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId, forecasterScoreRatio alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousForecasterScoreRatio: Error validating topic id")
+	}
+	if err := types.ValidateDec(forecasterScoreRatio); err != nil {
+		return errorsmod.Wrapf(err, "SetPreviousForecasterScoreRatio: Error validating forecaster score ratio")
+	}
 	return k.previousForecasterScoreRatio.Set(ctx, topicId, forecasterScoreRatio)
 }
 
@@ -2835,7 +3408,7 @@ func (k *Keeper) GetPreviousForecasterScoreRatio(ctx context.Context, topicId To
 		if errors.Is(err, collections.ErrNotFound) {
 			return alloraMath.ZeroDec(), nil
 		}
-		return alloraMath.Dec{}, err
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting previous forecaster score ratio")
 	}
 	return forecastTau, nil
 }

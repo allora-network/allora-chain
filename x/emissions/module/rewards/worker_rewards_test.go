@@ -212,16 +212,16 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
 	epoch4Get := epochGet[finalEpoch]
 
-	inferer0 := "inferer0"
-	inferer1 := "inferer1"
-	inferer2 := "inferer2"
-	inferer3 := "inferer3"
-	inferer4 := "inferer4"
+	inferer0 := s.addrsStr[0]
+	inferer1 := s.addrsStr[1]
+	inferer2 := s.addrsStr[2]
+	inferer3 := s.addrsStr[3]
+	inferer4 := s.addrsStr[4]
 	infererAddresses := []string{inferer0, inferer1, inferer2, inferer3, inferer4}
 
-	forecaster0 := "forecaster0"
-	forecaster1 := "forecaster1"
-	forecaster2 := "forecaster2"
+	forecaster0 := s.addrsStr[5]
+	forecaster1 := s.addrsStr[6]
+	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
 	// Add scores from previous epochs
@@ -629,12 +629,18 @@ func mockNetworkLosses(s *RewardsTestSuite, topicId uint64, block int64) (types.
 	}
 
 	networkLosses := types.ValueBundle{
-		TopicId:                topicId,
-		CombinedValue:          alloraMath.MustNewDecFromString("0.013481256018186383"),
-		NaiveValue:             alloraMath.MustNewDecFromString("0.01344474872292"),
-		OneOutInfererValues:    oneOutInfererLosses,
-		OneOutForecasterValues: oneOutForecasterLosses,
-		OneInForecasterValues:  oneInNaiveLosses,
+		TopicId:                       topicId,
+		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+		Reputer:                       s.addrsStr[9],
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.MustNewDecFromString("0.013481256018186383"),
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.01344474872292"),
+		OneOutInfererValues:           oneOutInfererLosses,
+		OneOutForecasterValues:        oneOutForecasterLosses,
+		OneInForecasterValues:         oneInNaiveLosses,
+		OneOutInfererForecasterValues: nil,
 	}
 
 	// Persist network losses
@@ -683,12 +689,18 @@ func mockSimpleNetworkLosses(
 	}
 
 	networkLosses := types.ValueBundle{
-		TopicId:                topicId,
-		CombinedValue:          alloraMath.MustNewDecFromString("0.05"),
-		NaiveValue:             alloraMath.MustNewDecFromString("0.05"),
-		OneOutInfererValues:    genericLossesWithheld,
-		OneOutForecasterValues: genericLossesWithheld,
-		OneInForecasterValues:  genericLosses,
+		TopicId:                       topicId,
+		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+		Reputer:                       s.addrsStr[9],
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.MustNewDecFromString("0.05"),
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.05"),
+		OneOutInfererValues:           genericLossesWithheld,
+		OneOutForecasterValues:        genericLossesWithheld,
+		OneInForecasterValues:         genericLosses,
+		OneOutInfererForecasterValues: nil,
 	}
 
 	err := s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)

@@ -11,10 +11,10 @@ func (s *QueryServerTestSuite) TestGetWorkerNodeInfo() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
-	worker := "sampleWorkerAddress"
+	worker := s.addrsStr[0]
 
 	expectedNode := types.OffchainNode{
-		Owner:       "worker-owner-sample",
+		Owner:       s.addrsStr[1],
 		NodeAddress: worker,
 	}
 
@@ -45,9 +45,9 @@ func (s *QueryServerTestSuite) TestGetReputerNodeInfo() {
 	keeper := s.emissionsKeeper
 	queryServer := s.queryServer
 
-	reputer := "sampleReputerAddress"
+	reputer := s.addrsStr[1]
 	expectedReputer := types.OffchainNode{
-		NodeAddress: "cosmosNodeAddress",
+		NodeAddress: s.addrsStr[0],
 		Owner:       reputer,
 	}
 
@@ -96,11 +96,10 @@ func (s *QueryServerTestSuite) TestRegisteredWorkerIsRegisteredInTopicId() {
 	require := s.Require()
 
 	// Mock setup for addresses
-	workerAddr := sdk.AccAddress(PKS[0].Address())
+	workerAddr := s.addrs[1]
 	workerAddrString := workerAddr.String()
-	creatorAddress := sdk.AccAddress(PKS[1].Address()).String()
 	topicId := uint64(1)
-	topic1 := types.Topic{Id: topicId, Creator: creatorAddress}
+	topic1 := s.mockTopic()
 
 	// Topic register
 	err := s.emissionsKeeper.SetTopic(ctx, topicId, topic1)
@@ -149,10 +148,9 @@ func (s *QueryServerTestSuite) TestRegisteredReputerIsRegisteredInTopicId() {
 	require := s.Require()
 
 	// Mock setup for addresses
-	reputerAddr := sdk.AccAddress(PKS[0].Address())
-	creatorAddress := sdk.AccAddress(PKS[1].Address())
+	reputerAddr := s.addrs[2]
 	topicId := uint64(1)
-	topic1 := types.Topic{Id: topicId, Creator: creatorAddress.String()}
+	topic1 := s.mockTopic()
 
 	// Topic register
 	err := s.emissionsKeeper.SetTopic(ctx, topicId, topic1)

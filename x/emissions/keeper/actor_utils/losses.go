@@ -144,22 +144,18 @@ func CloseReputerNonce(
 	bundles := types.ReputerValueBundles{
 		ReputerValueBundles: lossBundlesByReputer,
 	}
-	err = k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, bundles)
+	err = k.InsertKnownGoodReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, bundles)
 	if err != nil {
 		return err
 	}
 
-	networkLossBundle, err := synth.CalcNetworkLosses(stakesByReputer, bundles)
+	networkLossBundle, err := synth.CalcNetworkLosses(topicId, nonce.BlockHeight, stakesByReputer, bundles)
 	if err != nil {
 		return err
 	}
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", &nonce.BlockHeight, networkLossBundle))
-
-	networkLossBundle.ReputerRequestNonce = &types.ReputerRequestNonce{
-		ReputerNonce: &nonce,
-	}
 
 	err = k.InsertNetworkLossBundleAtBlock(ctx, topicId, nonce.BlockHeight, networkLossBundle)
 	if err != nil {
@@ -324,6 +320,7 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 	}
 
 	acceptedReputerValueBundle := &types.ReputerValueBundle{
+		Pubkey: reputerValueBundle.Pubkey,
 		ValueBundle: &types.ValueBundle{
 			TopicId:                       reputerValueBundle.ValueBundle.TopicId,
 			ReputerRequestNonce:           reputerValueBundle.ValueBundle.ReputerRequestNonce,

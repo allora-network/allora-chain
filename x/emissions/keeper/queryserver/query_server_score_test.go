@@ -1,18 +1,15 @@
 package queryserver_test
 
 import (
-	"strconv"
-
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func (s *QueryServerTestSuite) TestGetInfererScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := "worker1"
+	worker := s.addrsStr[0]
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set an initial score for inferer and attempt to update with an older score
@@ -37,8 +34,8 @@ func (s *QueryServerTestSuite) TestGetForecasterScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := "worker1"
-	forecaster := "forecaster1"
+	worker := s.addrsStr[0]
+	forecaster := s.addrsStr[2]
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set a new score for forecaster
@@ -59,8 +56,8 @@ func (s *QueryServerTestSuite) TestGetReputerScoreEma() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	worker := "worker1"
-	reputer := "reputer1"
+	worker := s.addrsStr[0]
+	reputer := s.addrsStr[2]
 	newScore := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker, Score: alloraMath.NewDecFromInt64(95)}
 
 	// Set a new score for reputer
@@ -81,7 +78,7 @@ func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	workerAddress := sdk.AccAddress("allo16jmt7f7r4e6j9k4ds7jgac2t4k4cz0wthv4u88")
+	workerAddress := s.addrs[0]
 	blockHeight := int64(105)
 
 	// Insert scores for different workers and blocks
@@ -90,7 +87,7 @@ func (s *QueryServerTestSuite) TestGetInferenceScoresUntilBlock() {
 		scoreForWorker := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     workerAddress.String(),
+			Address:     s.addrsStr[0],
 			Score:       alloraMath.NewDecFromInt64(blockHeight),
 		}
 		_ = keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, scoreForWorker)
@@ -126,13 +123,14 @@ func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	score := types.Score{
 		TopicId:     topicId,
 		BlockHeight: blockHeight,
-		Address:     "worker1",
+		Address:     s.addrsStr[0],
 		Score:       alloraMath.NewDecFromInt64(95),
 	}
 
 	// Set the maximum number of scores using system parameters
 	maxNumScores := 5
-	params := types.Params{MaxSamplesToScaleScores: uint64(maxNumScores)}
+	params := types.DefaultParams()
+	params.MaxSamplesToScaleScores = uint64(maxNumScores)
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
@@ -165,9 +163,11 @@ func (s *QueryServerTestSuite) TestGetForecastScoresUntilBlock() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: i,
+			Address:     s.addrsStr[i-100],
 			Score:       alloraMath.NewDecFromInt64(i),
 		}
-		_ = keeper.InsertWorkerForecastScore(ctx, topicId, i, score)
+		err := keeper.InsertWorkerForecastScore(ctx, topicId, i, score)
+		s.Require().NoError(err, "Inserting worker forecast score should not fail")
 	}
 
 	req := &types.GetForecastScoresUntilBlockRequest{
@@ -191,7 +191,7 @@ func (s *QueryServerTestSuite) TestGetWorkerForecastScoresAtBlock() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     "worker" + strconv.Itoa(i+1),
+			Address:     s.addrsStr[i],
 			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
 		}
 		_ = keeper.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
@@ -220,7 +220,7 @@ func (s *QueryServerTestSuite) TestGetReputersScoresAtBlock() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     "reputer" + strconv.Itoa(i+1),
+			Address:     s.addrsStr[i],
 			Score:       alloraMath.NewDecFromInt64(int64(100 + i)),
 		}
 		_ = keeper.InsertReputerScore(ctx, topicId, blockHeight, score)
@@ -243,7 +243,7 @@ func (s *QueryServerTestSuite) TestGetListeningCoefficient() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
 	topicId := uint64(1)
-	reputer := "sampleReputerAddress"
+	reputer := s.addrsStr[1]
 
 	// Attempt to fetch a coefficient before setting it
 	req := &types.GetListeningCoefficientRequest{
@@ -295,7 +295,7 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 			Value:       alloraMath.ZeroDec(),
 			ExtraData:   []byte{},
 			Proof:       "",
-			Inferer:     "worker" + strconv.Itoa(i),
+			Inferer:     s.addrsStr[i],
 		}
 		inferences.Inferences = append(inferences.Inferences, &inference)
 	}
@@ -305,12 +305,12 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestInfererScore() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     "worker" + strconv.Itoa(i),
+			Address:     s.addrsStr[i],
 			Score:       alloraMath.NewDecFromInt64(int64(95 + i)),
 		}
 		err := keeper.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
 		require.NoError(err, "Inserting worker inference score should not fail")
-		err = keeper.SetInfererScoreEma(ctx, topicId, "worker"+strconv.Itoa(i), score)
+		err = keeper.SetInfererScoreEma(ctx, topicId, s.addrsStr[i], score)
 		require.NoError(err, "Setting inferer score ema should not fail")
 	}
 	// call the query function
@@ -347,11 +347,16 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 	}
 	for i := 0; i < 3; i++ {
 		forecast := types.Forecast{
-			TopicId:          topicId,
-			BlockHeight:      blockHeight,
-			ExtraData:        []byte{},
-			Forecaster:       "forecaster" + strconv.Itoa(i),
-			ForecastElements: []*types.ForecastElement{},
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			ExtraData:   []byte{},
+			Forecaster:  s.addrsStr[i],
+			ForecastElements: []*types.ForecastElement{
+				{
+					Inferer: s.addrsStr[i+3],
+					Value:   alloraMath.NewDecFromInt64(int64(95 + i)),
+				},
+			},
 		}
 		forecasts.Forecasts = append(forecasts.Forecasts, &forecast)
 	}
@@ -362,12 +367,12 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestForecasterScore() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     "forecaster" + strconv.Itoa(i),
+			Address:     s.addrsStr[i],
 			Score:       alloraMath.NewDecFromInt64(int64(95 + i)),
 		}
 		err := keeper.InsertWorkerForecastScore(ctx, topicId, blockHeight, score)
 		require.NoError(err, "Inserting worker forecast score should not fail")
-		err = keeper.SetForecasterScoreEma(ctx, topicId, "forecaster"+strconv.Itoa(i), score)
+		err = keeper.SetForecasterScoreEma(ctx, topicId, s.addrsStr[i], score)
 		require.NoError(err, "Setting forecaster score ema should not fail")
 	}
 
@@ -403,27 +408,29 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 		ReputerValueBundles: []*types.ReputerValueBundle{},
 	}
 	for i := 0; i < 3; i++ {
-		lossBundle := types.ReputerValueBundle{
-			ValueBundle: &types.ValueBundle{
-				TopicId: topicId,
-				ReputerRequestNonce: &types.ReputerRequestNonce{
-					ReputerNonce: &types.Nonce{
-						BlockHeight: blockHeight,
-					},
+		valueBundle := types.ValueBundle{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: blockHeight,
 				},
-				Reputer:                       "reputer" + strconv.Itoa(i),
-				ExtraData:                     []byte{},
-				CombinedValue:                 alloraMath.ZeroDec(),
-				InfererValues:                 []*types.WorkerAttributedValue{},
-				ForecasterValues:              []*types.WorkerAttributedValue{},
-				NaiveValue:                    alloraMath.ZeroDec(),
-				OneOutInfererValues:           []*types.WithheldWorkerAttributedValue{},
-				OneOutForecasterValues:        []*types.WithheldWorkerAttributedValue{},
-				OneInForecasterValues:         []*types.WorkerAttributedValue{},
-				OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{},
 			},
-			Signature: []byte{},
-			Pubkey:    "",
+			Reputer:                       s.addrsStr[i],
+			ExtraData:                     []byte{},
+			CombinedValue:                 alloraMath.ZeroDec(),
+			InfererValues:                 []*types.WorkerAttributedValue{},
+			ForecasterValues:              []*types.WorkerAttributedValue{},
+			NaiveValue:                    alloraMath.ZeroDec(),
+			OneOutInfererValues:           []*types.WithheldWorkerAttributedValue{},
+			OneOutForecasterValues:        []*types.WithheldWorkerAttributedValue{},
+			OneInForecasterValues:         []*types.WorkerAttributedValue{},
+			OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{},
+		}
+		signature := s.signValueBundle(&valueBundle, s.privKeys[i])
+		lossBundle := types.ReputerValueBundle{
+			ValueBundle: &valueBundle,
+			Signature:   signature,
+			Pubkey:      s.pubKeyHexStr[i],
 		}
 		lossBundles.ReputerValueBundles = append(lossBundles.ReputerValueBundles, &lossBundle)
 	}
@@ -434,12 +441,12 @@ func (s *QueryServerTestSuite) TestGetCurrentLowestReputerScore() {
 		score := types.Score{
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
-			Address:     "reputer" + strconv.Itoa(i),
+			Address:     s.addrsStr[i],
 			Score:       alloraMath.NewDecFromInt64(int64(95 + i)),
 		}
 		err := keeper.InsertReputerScore(ctx, topicId, blockHeight, score)
 		require.NoError(err, "Inserting reputer score should not fail")
-		err = keeper.SetReputerScoreEma(ctx, topicId, "reputer"+strconv.Itoa(i), score)
+		err = keeper.SetReputerScoreEma(ctx, topicId, s.addrsStr[i], score)
 		require.NoError(err, "Setting reputer score ema should not fail")
 	}
 

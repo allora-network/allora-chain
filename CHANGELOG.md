@@ -43,6 +43,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.TBD
+
+### Summary
+
+Summary TBD
+
+### Security
+
+* [#603](https://github.com/allora-network/allora-chain/pull/603) Validate all Values for Correctness Prior to Storing them in the Keeper
+
+## [Released]
+
 ## v0.5.0
 
 ### Summary

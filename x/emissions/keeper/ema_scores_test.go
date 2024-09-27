@@ -14,7 +14,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaIfNewUpdate() {
 		WorkerSubmissionWindow: 10,
 		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.2"),
 	}
-	worker := "worker1"
+	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
 	block := types.BlockHeight(100)
 
 	// Test case 1: New update
@@ -54,7 +54,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
 		WorkerSubmissionWindow: 10,
 		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.2"),
 	}
-	worker := "worker1"
+	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
 	block := types.BlockHeight(100)
 
 	// Test case 1: New update
@@ -94,7 +94,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
 		EpochLength:         20,
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.2"),
 	}
-	reputer := "reputer1"
+	reputer := "allo12vgd3fhvghc94e6kmnv02yw2jar3a5zu3jgfh2"
 	block := types.BlockHeight(100)
 
 	// Test case 1: New update
@@ -133,7 +133,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaWithLastSavedTopicQuanti
 		Id:                  uint64(1),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.2"),
 	}
-	worker := "worker1"
+	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
 	block := types.BlockHeight(100)
 
 	// Set up a previous topic quantile score
@@ -159,7 +159,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaWithLastSavedTopicQua
 		Id:                  uint64(1),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.2"),
 	}
-	worker := "worker1"
+	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
 	block := types.BlockHeight(100)
 
 	// Set up a previous topic quantile score
@@ -185,7 +185,7 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaWithLastSavedTopicQuanti
 		Id:                  uint64(1),
 		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.2"),
 	}
-	reputer := "reputer1"
+	reputer := "allo12vgd3fhvghc94e6kmnv02yw2jar3a5zu3jgfh2"
 	block := types.BlockHeight(100)
 
 	// Set up a previous topic quantile score

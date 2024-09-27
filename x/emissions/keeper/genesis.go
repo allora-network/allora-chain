@@ -43,7 +43,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.Topics) != 0 {
 		for _, topic := range data.Topics {
 			if topic != nil {
-				if err := k.topics.Set(ctx, topic.TopicId, *topic.Topic); err != nil {
+				if err := k.SetTopic(ctx, topic.TopicId, *topic.Topic); err != nil {
 					return errors.Wrap(err, "error setting topic")
 				}
 			}
@@ -52,6 +52,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//ActiveTopics []uint64
 	if len(data.ActiveTopics) != 0 {
 		for _, topicId := range data.ActiveTopics {
+			if err := types.ValidateTopicId(topicId); err != nil {
+				return errors.Wrapf(err, "error setting activeTopics %v", data.ActiveTopics)
+			}
 			if err := k.activeTopics.Set(ctx, topicId); err != nil {
 				return errors.Wrap(err, "error setting activeTopics")
 			}
@@ -69,6 +72,12 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.TopicWorkers) != 0 {
 		for _, topicAndActorId := range data.TopicWorkers {
 			if topicAndActorId != nil {
+				if err := types.ValidateTopicId(topicAndActorId.TopicId); err != nil {
+					return errors.Wrap(err, "error setting topicWorkers")
+				}
+				if err := types.ValidateBech32(topicAndActorId.ActorId); err != nil {
+					return errors.Wrap(err, "error setting topicWorkers")
+				}
 				if err := k.topicWorkers.Set(ctx, collections.Join(topicAndActorId.TopicId, topicAndActorId.ActorId)); err != nil {
 					return errors.Wrap(err, "error setting topicWorkers")
 				}
@@ -79,6 +88,12 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.TopicReputers) != 0 {
 		for _, topicAndActorId := range data.TopicReputers {
 			if topicAndActorId != nil {
+				if err := types.ValidateTopicId(topicAndActorId.TopicId); err != nil {
+					return errors.Wrap(err, "error setting topicReputers")
+				}
+				if err := types.ValidateBech32(topicAndActorId.ActorId); err != nil {
+					return errors.Wrap(err, "error setting topicReputers")
+				}
 				if err := k.topicReputers.Set(ctx, collections.Join(topicAndActorId.TopicId, topicAndActorId.ActorId)); err != nil {
 					return errors.Wrap(err, "error setting topicReputers")
 				}
@@ -89,7 +104,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.TopicRewardNonce) != 0 {
 		for _, topicIdAndBlockHeight := range data.TopicRewardNonce {
 			if topicIdAndBlockHeight != nil {
-				if err := k.topicRewardNonce.Set(ctx, topicIdAndBlockHeight.TopicId, topicIdAndBlockHeight.BlockHeight); err != nil {
+				if err := k.SetTopicRewardNonce(ctx, topicIdAndBlockHeight.TopicId, topicIdAndBlockHeight.BlockHeight); err != nil {
 					return errors.Wrap(err, "error setting topicRewardNonce")
 				}
 			}
@@ -99,6 +114,15 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.InfererScoresByBlock) != 0 {
 		for _, topicIdBlockHeightScores := range data.InfererScoresByBlock {
 			if topicIdBlockHeightScores != nil {
+				if err := types.ValidateTopicId(topicIdBlockHeightScores.TopicId); err != nil {
+					return errors.Wrap(err, "error setting infererScoresByBlock")
+				}
+				if err := types.ValidateBlockHeight(topicIdBlockHeightScores.BlockHeight); err != nil {
+					return errors.Wrap(err, "error setting infererScoresByBlock")
+				}
+				if err := topicIdBlockHeightScores.Scores.Validate(); err != nil {
+					return errors.Wrap(err, "error setting infererScoresByBlock")
+				}
 				if err := k.infererScoresByBlock.Set(ctx,
 					collections.Join(topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight),
 					*topicIdBlockHeightScores.Scores); err != nil {
@@ -111,6 +135,15 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.ForecasterScoresByBlock) != 0 {
 		for _, topicIdBlockHeightScores := range data.ForecasterScoresByBlock {
 			if topicIdBlockHeightScores != nil {
+				if err := types.ValidateTopicId(topicIdBlockHeightScores.TopicId); err != nil {
+					return errors.Wrap(err, "error setting forecasterScoresByBlock")
+				}
+				if err := types.ValidateBlockHeight(topicIdBlockHeightScores.BlockHeight); err != nil {
+					return errors.Wrap(err, "error setting forecasterScoresByBlock")
+				}
+				if err := topicIdBlockHeightScores.Scores.Validate(); err != nil {
+					return errors.Wrap(err, "error setting forecasterScoresByBlock")
+				}
 				if err := k.forecasterScoresByBlock.Set(
 					ctx,
 					collections.Join(topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight),
@@ -124,6 +157,15 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.ReputerScoresByBlock) != 0 {
 		for _, topicIdBlockHeightScores := range data.ReputerScoresByBlock {
 			if topicIdBlockHeightScores != nil {
+				if err := types.ValidateTopicId(topicIdBlockHeightScores.TopicId); err != nil {
+					return errors.Wrap(err, "error setting reputerScoresByBlock")
+				}
+				if err := types.ValidateBlockHeight(topicIdBlockHeightScores.BlockHeight); err != nil {
+					return errors.Wrap(err, "error setting reputerScoresByBlock")
+				}
+				if err := topicIdBlockHeightScores.Scores.Validate(); err != nil {
+					return errors.Wrap(err, "error setting reputerScoresByBlock")
+				}
 				if err := k.reputerScoresByBlock.Set(
 					ctx,
 					collections.Join(topicIdBlockHeightScores.TopicId, topicIdBlockHeightScores.BlockHeight),
@@ -137,8 +179,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.InfererScoreEmas) != 0 {
 		for _, topicIdActorIdScore := range data.InfererScoreEmas {
 			if topicIdActorIdScore != nil {
-				if err := k.infererScoreEmas.Set(ctx,
-					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
+				if err := k.SetInfererScoreEma(ctx,
+					topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId,
 					*topicIdActorIdScore.Score); err != nil {
 					return errors.Wrap(err, "error setting latestInfererScoresByWorker")
 				}
@@ -149,8 +191,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.ForecasterScoreEmas) != 0 {
 		for _, topicIdActorIdScore := range data.ForecasterScoreEmas {
 			if topicIdActorIdScore != nil {
-				if err := k.forecasterScoreEmas.Set(ctx,
-					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
+				if err := k.SetForecasterScoreEma(ctx,
+					topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId,
 					*topicIdActorIdScore.Score); err != nil {
 					return errors.Wrap(err, "error setting latestForecasterScoresByWorker")
 				}
@@ -161,8 +203,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.ReputerScoreEmas) != 0 {
 		for _, topicIdActorIdScore := range data.ReputerScoreEmas {
 			if topicIdActorIdScore != nil {
-				if err := k.reputerScoreEmas.Set(ctx,
-					collections.Join(topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId),
+				if err := k.SetReputerScoreEma(ctx,
+					topicIdActorIdScore.TopicId, topicIdActorIdScore.ActorId,
 					*topicIdActorIdScore.Score); err != nil {
 					return errors.Wrap(err, "error setting latestReputerScoresByReputer")
 				}
@@ -173,8 +215,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.ReputerListeningCoefficient) != 0 {
 		for _, topicIdActorIdListeningCoefficient := range data.ReputerListeningCoefficient {
 			if topicIdActorIdListeningCoefficient != nil {
-				if err := k.reputerListeningCoefficient.Set(ctx,
-					collections.Join(topicIdActorIdListeningCoefficient.TopicId, topicIdActorIdListeningCoefficient.ActorId),
+				if err := k.SetListeningCoefficient(ctx,
+					topicIdActorIdListeningCoefficient.TopicId, topicIdActorIdListeningCoefficient.ActorId,
 					*topicIdActorIdListeningCoefficient.ListeningCoefficient); err != nil {
 					return errors.Wrap(err, "error setting reputerListeningCoefficient")
 				}
@@ -185,8 +227,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.PreviousReputerRewardFraction) != 0 {
 		for _, topicIdActorIdDec := range data.PreviousReputerRewardFraction {
 			if topicIdActorIdDec != nil {
-				if err := k.previousReputerRewardFraction.Set(ctx,
-					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
+				if err := k.SetPreviousReputerRewardFraction(ctx,
+					topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId,
 					topicIdActorIdDec.Dec); err != nil {
 					return errors.Wrap(err, "error setting previousReputerRewardFraction")
 				}
@@ -197,8 +239,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.PreviousInferenceRewardFraction) != 0 {
 		for _, topicIdActorIdDec := range data.PreviousInferenceRewardFraction {
 			if topicIdActorIdDec != nil {
-				if err := k.previousInferenceRewardFraction.Set(ctx,
-					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
+				if err := k.SetPreviousInferenceRewardFraction(ctx,
+					topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId,
 					topicIdActorIdDec.Dec); err != nil {
 					return errors.Wrap(err, "error setting previousInferenceRewardFraction")
 				}
@@ -209,8 +251,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.PreviousForecastRewardFraction) != 0 {
 		for _, topicIdActorIdDec := range data.PreviousForecastRewardFraction {
 			if topicIdActorIdDec != nil {
-				if err := k.previousForecastRewardFraction.Set(ctx,
-					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
+				if err := k.SetPreviousForecastRewardFraction(ctx,
+					topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId,
 					topicIdActorIdDec.Dec); err != nil {
 					return errors.Wrap(err, "error setting previousForecastRewardFraction")
 				}
@@ -219,11 +261,11 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	}
 	// TotalStake cosmossdk_io_math.Int
 	if data.TotalStake.GT(cosmosMath.ZeroInt()) {
-		if err := k.totalStake.Set(ctx, data.TotalStake); err != nil {
+		if err := k.SetTotalStake(ctx, data.TotalStake); err != nil {
 			return errors.Wrap(err, "error setting totalStake")
 		}
 	} else {
-		if err := k.totalStake.Set(ctx, cosmosMath.ZeroInt()); err != nil {
+		if err := k.SetTotalStake(ctx, cosmosMath.ZeroInt()); err != nil {
 			return errors.Wrap(err, "error setting totalStake to zero int")
 		}
 	}
@@ -231,7 +273,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.TopicStake) != 0 {
 		for _, topicIdAndInt := range data.TopicStake {
 			if topicIdAndInt != nil {
-				if err := k.topicStake.Set(ctx, topicIdAndInt.TopicId, topicIdAndInt.Int); err != nil {
+				if err := k.SetTopicStake(ctx, topicIdAndInt.TopicId, topicIdAndInt.Int); err != nil {
 					return errors.Wrap(err, "error setting topicStake")
 				}
 			}
@@ -241,8 +283,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.StakeReputerAuthority) != 0 {
 		for _, topicIdActorIdInt := range data.StakeReputerAuthority {
 			if topicIdActorIdInt != nil {
-				if err := k.stakeReputerAuthority.Set(ctx,
-					collections.Join(topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId),
+				if err := k.SetStakeReputerAuthority(ctx,
+					topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId,
 					topicIdActorIdInt.Int); err != nil {
 					return errors.Wrap(err, "error setting stakeReputerAuthority")
 				}
@@ -253,8 +295,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.StakeSumFromDelegator) != 0 {
 		for _, topicIdActorIdInt := range data.StakeSumFromDelegator {
 			if topicIdActorIdInt != nil {
-				if err := k.stakeSumFromDelegator.Set(ctx,
-					collections.Join(topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId),
+				if err := k.SetStakeFromDelegator(ctx,
+					topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId,
 					topicIdActorIdInt.Int); err != nil {
 					return errors.Wrap(err, "error setting stakeSumFromDelegator")
 				}
@@ -265,12 +307,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.DelegatedStakes) != 0 {
 		for _, topicIdDelegatorReputerDelegatorInfo := range data.DelegatedStakes {
 			if topicIdDelegatorReputerDelegatorInfo != nil {
-				if err := k.delegatedStakes.Set(ctx,
-					collections.Join3(
-						topicIdDelegatorReputerDelegatorInfo.TopicId,
-						topicIdDelegatorReputerDelegatorInfo.Delegator,
-						topicIdDelegatorReputerDelegatorInfo.Reputer,
-					),
+				if err := k.SetDelegateStakePlacement(ctx,
+					topicIdDelegatorReputerDelegatorInfo.TopicId,
+					topicIdDelegatorReputerDelegatorInfo.Delegator,
+					topicIdDelegatorReputerDelegatorInfo.Reputer,
 					*topicIdDelegatorReputerDelegatorInfo.DelegatorInfo); err != nil {
 					return errors.Wrap(err, "error setting delegatedStakes")
 				}
@@ -281,8 +321,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.StakeFromDelegatorsUponReputer) != 0 {
 		for _, topicIdActorIdInt := range data.StakeFromDelegatorsUponReputer {
 			if topicIdActorIdInt != nil {
-				if err := k.stakeFromDelegatorsUponReputer.Set(ctx,
-					collections.Join(topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId),
+				if err := k.SetDelegateStakeUponReputer(ctx,
+					topicIdActorIdInt.TopicId, topicIdActorIdInt.ActorId,
 					topicIdActorIdInt.Int); err != nil {
 					return errors.Wrap(err, "error setting stakeFromDelegatorsUponReputer")
 				}
@@ -293,8 +333,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.DelegateRewardPerShare) != 0 {
 		for _, topicIdActorIdDec := range data.DelegateRewardPerShare {
 			if topicIdActorIdDec != nil {
-				if err := k.delegateRewardPerShare.Set(ctx,
-					collections.Join(topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId),
+				if err := k.SetDelegateRewardPerShare(ctx,
+					topicIdActorIdDec.TopicId, topicIdActorIdDec.ActorId,
 					topicIdActorIdDec.Dec); err != nil {
 					return errors.Wrap(err, "error setting delegateRewardPerShare")
 				}
@@ -302,62 +342,27 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 	//StakeRemovalsByBlock []*BlockHeightTopicIdReputerStakeRemovalInfo
+	//StakeRemovalsByActor []*ActorIdTopicIdBlockHeight
 	if len(data.StakeRemovalsByBlock) != 0 {
 		for _, blockHeightTopicIdReputerStakeRemovalInfo := range data.StakeRemovalsByBlock {
 			if blockHeightTopicIdReputerStakeRemovalInfo != nil {
-				if err := k.stakeRemovalsByBlock.Set(ctx,
-					collections.Join3(
-						blockHeightTopicIdReputerStakeRemovalInfo.BlockHeight,
-						blockHeightTopicIdReputerStakeRemovalInfo.TopicId,
-						blockHeightTopicIdReputerStakeRemovalInfo.Reputer),
+				if err := k.SetStakeRemoval(ctx,
 					*blockHeightTopicIdReputerStakeRemovalInfo.StakeRemovalInfo); err != nil {
-					return errors.Wrap(err, "error setting stakeRemovalsByBlock")
-				}
-			}
-		}
-	}
-	//StakeRemovalsByActor []*ActorIdTopicIdBlockHeight
-	if len(data.StakeRemovalsByActor) != 0 {
-		for _, actorIdTopicIdBlockHeight := range data.StakeRemovalsByActor {
-			if actorIdTopicIdBlockHeight != nil {
-				if err := k.stakeRemovalsByActor.Set(ctx,
-					collections.Join3(
-						actorIdTopicIdBlockHeight.ActorId,
-						actorIdTopicIdBlockHeight.TopicId,
-						actorIdTopicIdBlockHeight.BlockHeight)); err != nil {
-					return errors.Wrap(err, "error setting stakeRemovalsByActor")
+					return errors.Wrapf(err, "error setting stakeRemovalsByBlock %v",
+						*blockHeightTopicIdReputerStakeRemovalInfo.StakeRemovalInfo,
+					)
 				}
 			}
 		}
 	}
 	//DelegateStakeRemovalsByBlock []*BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo
+	//DelegateStakeRemovalsByActor []*DelegatorReputerTopicIdBlockHeight
 	if len(data.DelegateStakeRemovalsByBlock) != 0 {
 		for _, blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo := range data.DelegateStakeRemovalsByBlock {
 			if blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo != nil {
-				if err := k.delegateStakeRemovalsByBlock.Set(ctx,
-					Join4(
-						blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.BlockHeight,
-						blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.TopicId,
-						blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.Delegator,
-						blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.Reputer,
-					),
+				if err := k.SetDelegateStakeRemoval(ctx,
 					*blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.DelegateStakeRemovalInfo); err != nil {
 					return errors.Wrap(err, "error setting delegateStakeRemovalsByBlock")
-				}
-			}
-		}
-	}
-	//DelegateStakeRemovalsByActor []*DelegatorReputerTopicIdBlockHeight
-	if len(data.DelegateStakeRemovalsByActor) != 0 {
-		for _, delegatorReputerTopicIdBlockHeight := range data.DelegateStakeRemovalsByActor {
-			if delegatorReputerTopicIdBlockHeight != nil {
-				if err := k.delegateStakeRemovalsByActor.Set(ctx,
-					Join4(
-						delegatorReputerTopicIdBlockHeight.Delegator,
-						delegatorReputerTopicIdBlockHeight.Reputer,
-						delegatorReputerTopicIdBlockHeight.TopicId,
-						delegatorReputerTopicIdBlockHeight.BlockHeight)); err != nil {
-					return errors.Wrap(err, "error setting delegateStakeRemovalsByActor")
 				}
 			}
 		}
@@ -366,6 +371,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.Inferences) != 0 {
 		for _, topicIdActorIdInference := range data.Inferences {
 			if topicIdActorIdInference != nil {
+				if err := topicIdActorIdInference.Inference.Validate(); err != nil {
+					return errors.Wrap(err, "inference in list is invalid")
+				}
 				if err := k.inferences.Set(ctx,
 					collections.Join(
 						topicIdActorIdInference.TopicId,
@@ -381,6 +389,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.Forecasts) != 0 {
 		for _, topicIdActorIdForecast := range data.Forecasts {
 			if topicIdActorIdForecast != nil {
+				if err := topicIdActorIdForecast.Forecast.Validate(); err != nil {
+					return errors.Wrap(err, "forecast in list is invalid")
+				}
 				if err := k.forecasts.Set(ctx,
 					collections.Join(
 						topicIdActorIdForecast.TopicId,
@@ -396,6 +407,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.Workers) != 0 {
 		for _, libP2PKeyAndOffchainNode := range data.Workers {
 			if libP2PKeyAndOffchainNode != nil {
+				if err := libP2PKeyAndOffchainNode.OffchainNode.Validate(); err != nil {
+					return errors.Wrap(err, "worker info validation failed")
+				}
 				if err := k.workers.Set(
 					ctx,
 					libP2PKeyAndOffchainNode.LibP2PKey,
@@ -410,6 +424,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.Reputers) != 0 {
 		for _, libP2PKeyAndOffchainNode := range data.Reputers {
 			if libP2PKeyAndOffchainNode != nil {
+				if err := libP2PKeyAndOffchainNode.OffchainNode.Validate(); err != nil {
+					return errors.Wrap(err, "reputer info validation failed")
+				}
 				if err := k.reputers.Set(
 					ctx,
 					libP2PKeyAndOffchainNode.LibP2PKey,
@@ -424,6 +441,12 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.TopicFeeRevenue) != 0 {
 		for _, topicIdAndInt := range data.TopicFeeRevenue {
 			if topicIdAndInt != nil {
+				if err := types.ValidateTopicId(topicIdAndInt.TopicId); err != nil {
+					return errors.Wrap(err, "topic id validation failed")
+				}
+				if err := types.ValidateSdkIntRepresentingMonetaryValue(topicIdAndInt.Int); err != nil {
+					return errors.Wrap(err, "topic fee revenue validation failed")
+				}
 				if err := k.topicFeeRevenue.Set(ctx, topicIdAndInt.TopicId, topicIdAndInt.Int); err != nil {
 					return errors.Wrap(err, "error setting topicFeeRevenue")
 				}
@@ -434,7 +457,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	if len(data.PreviousTopicWeight) != 0 {
 		for _, topicIdAndDec := range data.PreviousTopicWeight {
 			if topicIdAndDec != nil {
-				if err := k.previousTopicWeight.Set(
+				if err := k.SetPreviousTopicWeight(
 					ctx,
 					topicIdAndDec.TopicId,
 					topicIdAndDec.Dec); err != nil {
@@ -447,6 +470,11 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//AllInferences []*TopicIdBlockHeightInferences
 	if len(data.AllInferences) != 0 {
 		for _, topicIdBlockHeightInferences := range data.AllInferences {
+			for _, inference := range topicIdBlockHeightInferences.Inferences.Inferences {
+				if err := inference.Validate(); err != nil {
+					return errors.Wrap(err, "inference validation failed")
+				}
+			}
 			if err := k.allInferences.Set(ctx,
 				collections.Join(topicIdBlockHeightInferences.TopicId, topicIdBlockHeightInferences.BlockHeight),
 				*topicIdBlockHeightInferences.Inferences); err != nil {
@@ -457,6 +485,11 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//AllForecasts []*TopicIdBlockHeightForecasts
 	if len(data.AllForecasts) != 0 {
 		for _, topicIdBlockHeightForecasts := range data.AllForecasts {
+			for _, forecast := range topicIdBlockHeightForecasts.Forecasts.Forecasts {
+				if err := forecast.Validate(); err != nil {
+					return errors.Wrap(err, "forecast validation failed")
+				}
+			}
 			if err := k.allForecasts.Set(ctx,
 				collections.Join(topicIdBlockHeightForecasts.TopicId, topicIdBlockHeightForecasts.BlockHeight),
 				*topicIdBlockHeightForecasts.Forecasts); err != nil {
@@ -467,6 +500,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//AllLossBundles []*TopicIdBlockHeightReputerValueBundles
 	if len(data.AllLossBundles) != 0 {
 		for _, topicIdBlockHeightReputerValueBundles := range data.AllLossBundles {
+			if err := topicIdBlockHeightReputerValueBundles.ReputerValueBundles.Validate(); err != nil {
+				return errors.Wrap(err, "reputer value bundles validation failed")
+			}
 			if err := k.allLossBundles.Set(ctx,
 				collections.Join(topicIdBlockHeightReputerValueBundles.TopicId, topicIdBlockHeightReputerValueBundles.BlockHeight),
 				*topicIdBlockHeightReputerValueBundles.ReputerValueBundles); err != nil {
@@ -477,6 +513,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//NetworkLossBundles []*TopicIdBlockHeightValueBundles
 	if len(data.NetworkLossBundles) != 0 {
 		for _, topicIdBlockHeightValueBundles := range data.NetworkLossBundles {
+			if err := topicIdBlockHeightValueBundles.ValueBundle.Validate(); err != nil {
+				return errors.Wrap(err, "value bundle validation failed")
+			}
 			if err := k.networkLossBundles.Set(ctx,
 				collections.Join(topicIdBlockHeightValueBundles.TopicId, topicIdBlockHeightValueBundles.BlockHeight),
 				*topicIdBlockHeightValueBundles.ValueBundle); err != nil {
@@ -501,6 +540,14 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		for _, blockHeightAndListOfTopicIds := range data.OpenWorkerWindows {
 			topicIds := types.TopicIds{}
 			topicIds.TopicIds = blockHeightAndListOfTopicIds.TopicIds
+			for _, topicId := range topicIds.TopicIds {
+				if err := types.ValidateTopicId(topicId); err != nil {
+					return errors.Wrap(err, "error validating topic id")
+				}
+			}
+			if err := types.ValidateBlockHeight(blockHeightAndListOfTopicIds.BlockHeight); err != nil {
+				return errors.Wrap(err, "error validating block height")
+			}
 			if err := k.openWorkerWindows.Set(
 				ctx,
 				blockHeightAndListOfTopicIds.BlockHeight,
@@ -513,6 +560,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//UnfulfilledWorkerNonces []*TopicIdAndNonces
 	if len(data.UnfulfilledWorkerNonces) != 0 {
 		for _, topicIdAndNonces := range data.UnfulfilledWorkerNonces {
+			if err := topicIdAndNonces.Nonces.Validate(); err != nil {
+				return errors.Wrap(err, "error validating unfulfilled worker nonces")
+			}
 			if err := k.unfulfilledWorkerNonces.Set(ctx, topicIdAndNonces.TopicId, *topicIdAndNonces.Nonces); err != nil {
 				return errors.Wrap(err, "error setting unfulfilledWorkerNonces")
 			}
@@ -521,6 +571,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//UnfulfilledReputerNonces []*TopicIdAndReputerRequestNonces
 	if len(data.UnfulfilledReputerNonces) != 0 {
 		for _, topicIdAndReputerRequestNonces := range data.UnfulfilledReputerNonces {
+			if err := topicIdAndReputerRequestNonces.ReputerRequestNonces.Validate(); err != nil {
+				return errors.Wrap(err, "error validating unfulfilled reputer nonces")
+			}
 			if err := k.unfulfilledReputerNonces.Set(ctx, topicIdAndReputerRequestNonces.TopicId, *topicIdAndReputerRequestNonces.ReputerRequestNonces); err != nil {
 				return errors.Wrap(err, "error setting unfulfilledReputerNonces")
 			}
@@ -529,7 +582,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//lastDripBlock []*TopicIdAndBlockHeight
 	if len(data.LastDripBlock) != 0 {
 		for _, topicIdAndBlockHeight := range data.LastDripBlock {
-			if err := k.lastDripBlock.Set(ctx, topicIdAndBlockHeight.TopicId, topicIdAndBlockHeight.BlockHeight); err != nil {
+			if err := k.SetLastDripBlock(ctx, topicIdAndBlockHeight.TopicId, topicIdAndBlockHeight.BlockHeight); err != nil {
 				return errors.Wrap(err, "error setting lastDripBlock")
 			}
 		}
@@ -537,8 +590,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//LatestInfererNetworkRegrets []*TopicIdActorIdTimeStampedValue
 	if len(data.LatestInfererNetworkRegrets) != 0 {
 		for _, topicIdActorIdTimeStampedValue := range data.LatestInfererNetworkRegrets {
-			if err := k.latestInfererNetworkRegrets.Set(ctx,
-				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
+			if err := k.SetInfererNetworkRegret(ctx,
+				topicIdActorIdTimeStampedValue.TopicId,
+				topicIdActorIdTimeStampedValue.ActorId,
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
 				return errors.Wrap(err, "error setting latestInfererNetworkRegrets")
 			}
@@ -547,8 +601,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// LatestNaiveInfererNetworkRegrets
 	if len(data.LatestNaiveInfererNetworkRegrets) != 0 {
 		for _, topicIdActorIdTimeStampedValue := range data.LatestNaiveInfererNetworkRegrets {
-			if err := k.latestNaiveInfererNetworkRegrets.Set(ctx,
-				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
+			if err := k.SetNaiveInfererNetworkRegret(ctx,
+				topicIdActorIdTimeStampedValue.TopicId,
+				topicIdActorIdTimeStampedValue.ActorId,
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
 				return errors.Wrap(err, "error setting latestNaiveInfererNetworkRegrets")
 			}
@@ -557,8 +612,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//LatestForecasterNetworkRegrets []*TopicIdActorIdTimeStampedValue
 	if len(data.LatestForecasterNetworkRegrets) != 0 {
 		for _, topicIdActorIdTimeStampedValue := range data.LatestForecasterNetworkRegrets {
-			if err := k.latestForecasterNetworkRegrets.Set(ctx,
-				collections.Join(topicIdActorIdTimeStampedValue.TopicId, topicIdActorIdTimeStampedValue.ActorId),
+			if err := k.SetForecasterNetworkRegret(ctx,
+				topicIdActorIdTimeStampedValue.TopicId,
+				topicIdActorIdTimeStampedValue.ActorId,
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
 				return errors.Wrap(err, "error setting latestForecasterNetworkRegrets")
 			}
@@ -567,12 +623,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// LatestOneOutInfererInfererNetworkRegrets
 	if len(data.LatestOneOutInfererInfererNetworkRegrets) != 0 {
 		for _, topicIdActorIdTimeStampedValue := range data.LatestOneOutInfererInfererNetworkRegrets {
-			if err := k.latestOneOutInfererInfererNetworkRegrets.Set(ctx,
-				collections.Join3(
-					topicIdActorIdTimeStampedValue.TopicId,
-					topicIdActorIdTimeStampedValue.ActorId1,
-					topicIdActorIdTimeStampedValue.ActorId2,
-				),
+			if err := k.SetOneOutInfererInfererNetworkRegret(ctx,
+				topicIdActorIdTimeStampedValue.TopicId,
+				topicIdActorIdTimeStampedValue.ActorId1,
+				topicIdActorIdTimeStampedValue.ActorId2,
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
 				return errors.Wrap(err, "error setting latestOneOutInfererInfererNetworkRegrets")
 			}
@@ -595,12 +649,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// LatestOneOutForecasterInfererNetworkRegrets
 	if len(data.LatestOneOutForecasterInfererNetworkRegrets) != 0 {
 		for _, topicIdActorIdTimeStampedValue := range data.LatestOneOutForecasterInfererNetworkRegrets {
-			if err := k.latestOneOutForecasterInfererNetworkRegrets.Set(ctx,
-				collections.Join3(
-					topicIdActorIdTimeStampedValue.TopicId,
-					topicIdActorIdTimeStampedValue.ActorId1,
-					topicIdActorIdTimeStampedValue.ActorId2,
-				),
+			if err := k.SetOneOutForecasterInfererNetworkRegret(ctx,
+				topicIdActorIdTimeStampedValue.TopicId,
+				topicIdActorIdTimeStampedValue.ActorId1,
+				topicIdActorIdTimeStampedValue.ActorId2,
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
 				return errors.Wrap(err, "error setting latestOneOutForecasterInfererNetworkRegrets")
 			}
@@ -609,12 +661,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// LatestOneOutForecasterForecasterNetworkRegrets
 	if len(data.LatestOneOutForecasterForecasterNetworkRegrets) != 0 {
 		for _, topicIdActorIdTimeStampedValue := range data.LatestOneOutForecasterForecasterNetworkRegrets {
-			if err := k.latestOneOutForecasterForecasterNetworkRegrets.Set(ctx,
-				collections.Join3(
-					topicIdActorIdTimeStampedValue.TopicId,
-					topicIdActorIdTimeStampedValue.ActorId1,
-					topicIdActorIdTimeStampedValue.ActorId2,
-				),
+			if err := k.SetOneOutForecasterForecasterNetworkRegret(ctx,
+				topicIdActorIdTimeStampedValue.TopicId,
+				topicIdActorIdTimeStampedValue.ActorId1,
+				topicIdActorIdTimeStampedValue.ActorId2,
 				*topicIdActorIdTimeStampedValue.TimestampedValue); err != nil {
 				return errors.Wrap(err, "error setting latestOneOutForecasterForecasterNetworkRegrets")
 			}
@@ -623,11 +673,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//LatestOneInForecasterNetworkRegrets []*TopicIdActorIdActorIdTimeStampedValue
 	if len(data.LatestOneInForecasterNetworkRegrets) != 0 {
 		for _, topicIdActorIdActorIdTimeStampedValue := range data.LatestOneInForecasterNetworkRegrets {
-			if err := k.latestOneInForecasterNetworkRegrets.Set(ctx,
-				collections.Join3(
-					topicIdActorIdActorIdTimeStampedValue.TopicId,
-					topicIdActorIdActorIdTimeStampedValue.ActorId1,
-					topicIdActorIdActorIdTimeStampedValue.ActorId2),
+			if err := k.SetOneInForecasterNetworkRegret(ctx,
+				topicIdActorIdActorIdTimeStampedValue.TopicId,
+				topicIdActorIdActorIdTimeStampedValue.ActorId1,
+				topicIdActorIdActorIdTimeStampedValue.ActorId2,
 				*topicIdActorIdActorIdTimeStampedValue.TimestampedValue); err != nil {
 				return errors.Wrap(err, "error setting latestOneInForecasterNetworkRegrets")
 			}
@@ -636,7 +685,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// PreviousForecasterScoreRatio
 	if len(data.PreviousForecasterScoreRatio) != 0 {
 		for _, topicIdDec := range data.PreviousForecasterScoreRatio {
-			if err := k.previousForecasterScoreRatio.Set(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
+			if err := k.SetPreviousForecasterScoreRatio(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
 				return errors.Wrap(err, "error setting previousForecasterScoreRatio")
 			}
 		}
@@ -657,9 +706,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//TopicLastWorkerCommit   []*TopicIdTimestampedActorNonce
 	if len(data.TopicLastWorkerCommit) != 0 {
 		for _, topicIdTimestampedActorNonce := range data.TopicLastWorkerCommit {
-			if err := k.topicLastWorkerCommit.Set(ctx,
+			if err := k.SetWorkerTopicLastCommit(ctx,
 				topicIdTimestampedActorNonce.TopicId,
-				*topicIdTimestampedActorNonce.TimestampedActorNonce); err != nil {
+				topicIdTimestampedActorNonce.TimestampedActorNonce.BlockHeight,
+				topicIdTimestampedActorNonce.TimestampedActorNonce.Nonce); err != nil {
 				return errors.Wrap(err, "error setting topicLastWorkerCommit")
 			}
 		}
@@ -667,9 +717,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//TopicLastReputerCommit  []*TopicIdTimestampedActorNonce
 	if len(data.TopicLastReputerCommit) != 0 {
 		for _, topicIdTimestampedActorNonce := range data.TopicLastReputerCommit {
-			if err := k.topicLastReputerCommit.Set(ctx,
+			if err := k.SetReputerTopicLastCommit(ctx,
 				topicIdTimestampedActorNonce.TopicId,
-				*topicIdTimestampedActorNonce.TimestampedActorNonce); err != nil {
+				topicIdTimestampedActorNonce.TimestampedActorNonce.BlockHeight,
+				topicIdTimestampedActorNonce.TimestampedActorNonce.Nonce); err != nil {
 				return errors.Wrap(err, "error setting topicLastReputerCommit")
 			}
 		}
@@ -678,10 +729,10 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//TopicToNextPossibleChurningBlock []*topicBlock
 	if len(data.TopicToNextPossibleChurningBlock) != 0 {
 		for _, topicBlock := range data.TopicToNextPossibleChurningBlock {
-			if err := k.topicToNextPossibleChurningBlock.Set(ctx,
+			if err := k.SetTopicToNextPossibleChurningBlock(ctx,
 				topicBlock.TopicId,
 				topicBlock.BlockHeight); err != nil {
-				return errors.Wrap(err, "error setting topicToNextPossibleChurningBlock")
+				return errors.Wrapf(err, "error setting topicToNextPossibleChurningBlock %v", topicBlock)
 			}
 		}
 	}
@@ -711,7 +762,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// PreviousTopicQuantileInfererScoreEma
 	if len(data.PreviousTopicQuantileInfererScoreEma) != 0 {
 		for _, topicIdDec := range data.PreviousTopicQuantileInfererScoreEma {
-			if err := k.previousTopicQuantileInfererScoreEma.Set(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
+			if err := k.SetPreviousTopicQuantileInfererScoreEma(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
 				return errors.Wrap(err, "error setting previousTopicQuantileInfererScoreEma")
 			}
 		}
@@ -720,7 +771,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// PreviousTopicQuantileForecasterScoreEma
 	if len(data.PreviousTopicQuantileForecasterScoreEma) != 0 {
 		for _, topicIdDec := range data.PreviousTopicQuantileForecasterScoreEma {
-			if err := k.previousTopicQuantileForecasterScoreEma.Set(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
+			if err := k.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
 				return errors.Wrap(err, "error setting previousTopicQuantileForecasterScoreEma")
 			}
 		}
@@ -729,7 +780,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	// PreviousTopicQuantileReputerScoreEma
 	if len(data.PreviousTopicQuantileReputerScoreEma) != 0 {
 		for _, topicIdDec := range data.PreviousTopicQuantileReputerScoreEma {
-			if err := k.previousTopicQuantileReputerScoreEma.Set(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
+			if err := k.SetPreviousTopicQuantileReputerScoreEma(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
 				return errors.Wrap(err, "error setting previousTopicQuantileReputerScoreEma")
 			}
 		}
@@ -1085,6 +1136,25 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		}
 		previousForecastRewardFraction = append(previousForecastRewardFraction, &topicIdActorIdDec)
 	}
+
+	/* bug in genesis export, previousForecasterScoreRatio is not correct type in genesis.proto
+	previousForecasterScoreRatio := make([]*types.TopicIdAndDec, 0)
+	previousForecasterScoreRatioIter, err := k.previousForecasterScoreRatio.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate previous forecaster score ratio")
+	}
+	for ; previousForecasterScoreRatioIter.Valid(); previousForecasterScoreRatioIter.Next() {
+		keyValue, err := previousForecasterScoreRatioIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: previousForecasterScoreRatioIter")
+		}
+		topicIdAndDec := types.TopicIdAndDec{
+			TopicId: keyValue.Key,
+			Dec:     keyValue.Value,
+		}
+		previousForecasterScoreRatio = append(previousForecasterScoreRatio, &topicIdAndDec)
+	}
+	*/
 
 	totalStake, err := k.totalStake.Get(ctx)
 	if err != nil {
@@ -1804,60 +1874,62 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	}
 
 	return &types.GenesisState{
-		Params:                                      moduleParams,
-		NextTopicId:                                 nextTopicId,
-		Topics:                                      topics,
-		ActiveTopics:                                activeTopics,
-		RewardableTopics:                            rewardableTopics,
-		TopicWorkers:                                topicWorkers,
-		TopicReputers:                               topicReputers,
-		TopicRewardNonce:                            topicRewardNonce,
-		InfererScoresByBlock:                        infererScoresByBlock,
-		ForecasterScoresByBlock:                     forecasterScoresByBlock,
-		ReputerScoresByBlock:                        reputerScoresByBlock,
-		InfererScoreEmas:                            innfererScoreEmas,
-		ForecasterScoreEmas:                         forecasterScoreEmas,
-		ReputerScoreEmas:                            reputerScoreEmas,
-		ReputerListeningCoefficient:                 reputerListeningCoefficient,
-		PreviousReputerRewardFraction:               previousReputerRewardFraction,
-		PreviousInferenceRewardFraction:             previousInferenceRewardFraction,
-		PreviousForecastRewardFraction:              previousForecastRewardFraction,
-		TotalStake:                                  totalStake,
-		TopicStake:                                  topicStake,
-		StakeReputerAuthority:                       stakeReputerAuthority,
-		StakeSumFromDelegator:                       stakeSumFromDelegator,
-		DelegatedStakes:                             delegatedStakes,
-		StakeFromDelegatorsUponReputer:              stakeFromDelegatorsUponReputer,
-		DelegateRewardPerShare:                      delegateRewardPerShare,
-		StakeRemovalsByBlock:                        stakeRemovalsByBlock,
-		StakeRemovalsByActor:                        stakeRemovalsByActor,
-		DelegateStakeRemovalsByBlock:                delegateStakeRemovalsByBlock,
-		DelegateStakeRemovalsByActor:                delegateStakeRemovalsByActor,
-		Inferences:                                  inferences,
-		Forecasts:                                   forecasts,
-		Workers:                                     workers,
-		Reputers:                                    reputers,
-		TopicFeeRevenue:                             topicFeeRevenue,
-		PreviousTopicWeight:                         previousTopicWeight,
-		AllInferences:                               allInferences,
-		AllForecasts:                                allForecasts,
-		AllLossBundles:                              allLossBundles,
-		NetworkLossBundles:                          networkLossBundles,
-		PreviousPercentageRewardToStakedReputers:    previousPercentageRewardToStakedReputers,
-		OpenWorkerWindows:                           openWorkerWindows,
-		UnfulfilledWorkerNonces:                     unfulfilledWorkerNonces,
-		UnfulfilledReputerNonces:                    unfulfilledReputerNonces,
-		LastDripBlock:                               lastDripBlock,
-		LatestInfererNetworkRegrets:                 latestInfererNetworkRegrets,
-		LatestForecasterNetworkRegrets:              latestForecasterNetworkRegrets,
-		LatestOneInForecasterNetworkRegrets:         latestOneInForecasterNetworkRegrets,
-		CoreTeamAddresses:                           coreTeamAddresses,
-		TopicLastWorkerCommit:                       topicLastWorkerCommit,
-		TopicLastReputerCommit:                      topicLastReputerCommit,
-		LatestNaiveInfererNetworkRegrets:            latestNaiveInfererNetworkRegrets,
-		LatestOneOutInfererInfererNetworkRegrets:    latestOneOutInfererInfererNetworkRegrets,
-		LatestOneOutForecasterInfererNetworkRegrets: latestOneOutForecasterInfererNetworkRegrets,
-		LatestOneOutInfererForecasterNetworkRegrets: latestOneOutInfererForecasterNetworkRegrets,
+		Params:                          moduleParams,
+		NextTopicId:                     nextTopicId,
+		Topics:                          topics,
+		ActiveTopics:                    activeTopics,
+		RewardableTopics:                rewardableTopics,
+		TopicWorkers:                    topicWorkers,
+		TopicReputers:                   topicReputers,
+		TopicRewardNonce:                topicRewardNonce,
+		InfererScoresByBlock:            infererScoresByBlock,
+		ForecasterScoresByBlock:         forecasterScoresByBlock,
+		ReputerScoresByBlock:            reputerScoresByBlock,
+		InfererScoreEmas:                innfererScoreEmas,
+		ForecasterScoreEmas:             forecasterScoreEmas,
+		ReputerScoreEmas:                reputerScoreEmas,
+		ReputerListeningCoefficient:     reputerListeningCoefficient,
+		PreviousReputerRewardFraction:   previousReputerRewardFraction,
+		PreviousInferenceRewardFraction: previousInferenceRewardFraction,
+		PreviousForecastRewardFraction:  previousForecastRewardFraction,
+		// to be fixed in exhaustruct work
+		//PreviousForecasterScoreRatio:                previousForecasterScoreRatio,
+		TotalStake:                                     totalStake,
+		TopicStake:                                     topicStake,
+		StakeReputerAuthority:                          stakeReputerAuthority,
+		StakeSumFromDelegator:                          stakeSumFromDelegator,
+		DelegatedStakes:                                delegatedStakes,
+		StakeFromDelegatorsUponReputer:                 stakeFromDelegatorsUponReputer,
+		DelegateRewardPerShare:                         delegateRewardPerShare,
+		StakeRemovalsByBlock:                           stakeRemovalsByBlock,
+		StakeRemovalsByActor:                           stakeRemovalsByActor,
+		DelegateStakeRemovalsByBlock:                   delegateStakeRemovalsByBlock,
+		DelegateStakeRemovalsByActor:                   delegateStakeRemovalsByActor,
+		Inferences:                                     inferences,
+		Forecasts:                                      forecasts,
+		Workers:                                        workers,
+		Reputers:                                       reputers,
+		TopicFeeRevenue:                                topicFeeRevenue,
+		PreviousTopicWeight:                            previousTopicWeight,
+		AllInferences:                                  allInferences,
+		AllForecasts:                                   allForecasts,
+		AllLossBundles:                                 allLossBundles,
+		NetworkLossBundles:                             networkLossBundles,
+		PreviousPercentageRewardToStakedReputers:       previousPercentageRewardToStakedReputers,
+		OpenWorkerWindows:                              openWorkerWindows,
+		UnfulfilledWorkerNonces:                        unfulfilledWorkerNonces,
+		UnfulfilledReputerNonces:                       unfulfilledReputerNonces,
+		LastDripBlock:                                  lastDripBlock,
+		LatestInfererNetworkRegrets:                    latestInfererNetworkRegrets,
+		LatestForecasterNetworkRegrets:                 latestForecasterNetworkRegrets,
+		LatestOneInForecasterNetworkRegrets:            latestOneInForecasterNetworkRegrets,
+		CoreTeamAddresses:                              coreTeamAddresses,
+		TopicLastWorkerCommit:                          topicLastWorkerCommit,
+		TopicLastReputerCommit:                         topicLastReputerCommit,
+		LatestNaiveInfererNetworkRegrets:               latestNaiveInfererNetworkRegrets,
+		LatestOneOutInfererInfererNetworkRegrets:       latestOneOutInfererInfererNetworkRegrets,
+		LatestOneOutForecasterInfererNetworkRegrets:    latestOneOutForecasterInfererNetworkRegrets,
+		LatestOneOutInfererForecasterNetworkRegrets:    latestOneOutInfererForecasterNetworkRegrets,
 		LatestOneOutForecasterForecasterNetworkRegrets: latestOneOutForecasterForecasterNetworkRegrets,
 		TopicToNextPossibleChurningBlock:               topicToNextPossibleChurningBlock,
 		BlockToActiveTopics:                            blockHeightTopicIds,

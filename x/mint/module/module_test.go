@@ -22,9 +22,8 @@ import (
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/module"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	secp256k1 "github.com/cometbft/cometbft/crypto/secp256k1"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
@@ -54,13 +53,23 @@ type MintModuleTestSuite struct {
 	appModule       mint.AppModule
 	emissionsKeeper emissionskeeper.Keeper
 	mintKeeper      keeper.Keeper
-	PKS             []cryptotypes.PubKey
+	addrs           []sdk.AccAddress
+	addrsStr        []string
 }
 
 // SetupTest setups a new test, to be run before each test case
 func (s *MintModuleTestSuite) SetupTest() {
 	sdk.DefaultBondDenom = params.DefaultBondDenom
-	s.PKS = simtestutil.CreateTestPubKeys(4)
+	countAddrs := 3
+	var addrs = make([]sdk.AccAddress, countAddrs)
+	var addrsStr = make([]string, countAddrs)
+	for i := 0; i < countAddrs; i++ {
+		privKey := secp256k1.GenPrivKey()
+		addrs[i] = sdk.AccAddress(privKey.PubKey().Address())
+		addrsStr[i] = addrs[i].String()
+	}
+	s.addrs = addrs
+	s.addrsStr = addrsStr
 	key := storetypes.NewKVStoreKey(types.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, staking.AppModuleBasic{}, bank.AppModuleBasic{}, mint.AppModuleBasic{})
@@ -159,6 +168,7 @@ func TestMintModuleTestSuite(t *testing.T) {
 }
 
 func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown() {
+	topicId := uint64(1)
 	params, err := s.mintKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 	ecosystemMintSupplyRemaining, err := s.mintKeeper.GetEcosystemMintSupplyRemaining(s.ctx, params)
@@ -168,8 +178,8 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	s.Require().True(ok)
 	err = s.emissionsKeeper.AddReputerStake(
 		s.ctx,
-		0,
-		sdk.AccAddress(s.PKS[0].Address()).String(),
+		topicId,
+		s.addrsStr[0],
 		stake,
 	)
 	s.Require().NoError(err)
@@ -210,8 +220,8 @@ func (s *MintModuleTestSuite) TestTotalStakeGoUpTargetEmissionPerUnitStakeGoDown
 	// ok now add some stake
 	err = s.emissionsKeeper.AddReputerStake(
 		s.ctx,
-		0,
-		sdk.AccAddress(s.PKS[0].Address()).String(),
+		topicId,
+		s.addrsStr[0],
 		stake,
 	)
 	s.Require().NoError(err)
@@ -274,6 +284,7 @@ func (s *MintModuleTestSuite) TestEcosystemMintableRemainingGoDownTargetEmission
 }
 
 func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughToCoverInflation() {
+	topicId := uint64(1)
 	feeCollectorAddress := s.accountKeeper.GetModuleAddress("fee_collector")
 	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissionstypes.AlloraRewardsAccountName)
 	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
@@ -285,8 +296,8 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 	s.Require().True(ok)
 	err := s.emissionsKeeper.AddReputerStake(
 		s.ctx,
-		0,
-		sdk.AccAddress(s.PKS[0].Address()).String(),
+		topicId,
+		s.addrsStr[0],
 		stake,
 	)
 	s.Require().NoError(err)
@@ -349,6 +360,7 @@ func (s *MintModuleTestSuite) TestNoNewMintedTokensIfInferenceRequestFeesEnoughT
 }
 
 func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnoughToCoverInflation() {
+	topicId := uint64(1)
 	feeCollectorAddress := s.accountKeeper.GetModuleAddress("fee_collector")
 	alloraRewardsAddress := s.accountKeeper.GetModuleAddress(emissionstypes.AlloraRewardsAccountName)
 	ecosystemAddress := s.accountKeeper.GetModuleAddress(types.EcosystemModuleName)
@@ -363,8 +375,8 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 	s.Require().True(ok)
 	err = s.emissionsKeeper.AddReputerStake(
 		s.ctx,
-		0,
-		sdk.AccAddress(s.PKS[0].Address()).String(),
+		topicId,
+		s.addrsStr[0],
 		stake,
 	)
 	s.Require().NoError(err)
@@ -442,13 +454,14 @@ func (s *MintModuleTestSuite) TestTokensAreMintedIfInferenceRequestFeesNotEnough
 func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	s.ctx = s.ctx.WithBlockHeight(1)
 
+	topicId := uint64(1)
 	// stake enough tokens so that the networkStaked is non zero
 	changeInAmountStakedBefore, ok := cosmosMath.NewIntFromString("300000000000000000000000000")
 	s.Require().True(ok)
 	err := s.emissionsKeeper.AddReputerStake(
 		s.ctx,
-		0,
-		sdk.AccAddress(s.PKS[0].Address()).String(),
+		topicId,
+		s.addrsStr[0],
 		changeInAmountStakedBefore,
 	)
 	s.Require().NoError(err)
@@ -471,7 +484,7 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(
 		s.ctx,
 		"mint",
-		sdk.AccAddress(s.PKS[2].Address()),
+		s.addrs[2],
 		spareCoins,
 	)
 	s.Require().NoError(err)
@@ -499,8 +512,8 @@ func (s *MintModuleTestSuite) TestInflationRateAsMorePeopleStakeGoesUp() {
 	s.Require().True(ok)
 	err = s.emissionsKeeper.AddReputerStake(
 		s.ctx,
-		0,
-		sdk.AccAddress(s.PKS[1].Address()).String(),
+		topicId,
+		s.addrsStr[1],
 		changeInAmounStakedAfter,
 	)
 	s.Require().NoError(err)
