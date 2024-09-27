@@ -31,7 +31,7 @@ import (
 	cosmostestutil "github.com/cosmos/cosmos-sdk/testutil"
 )
 
-type EmissionsV4MigrationTestSuite struct {
+type EmissionsV5MigrationTestSuite struct {
 	suite.Suite
 	ctrl *gomock.Controller
 
@@ -40,11 +40,11 @@ type EmissionsV4MigrationTestSuite struct {
 	emissionsKeeper *keeper.Keeper
 }
 
-func TestEmissionsV4MigrationTestSuite(t *testing.T) {
-	suite.Run(t, new(EmissionsV4MigrationTestSuite))
+func TestEmissionsV5MigrationTestSuite(t *testing.T) {
+	suite.Run(t, new(EmissionsV5MigrationTestSuite))
 }
 
-func (s *EmissionsV4MigrationTestSuite) SetupTest() {
+func (s *EmissionsV5MigrationTestSuite) SetupTest() {
 	encCfg := moduletestutil.MakeTestEncodingConfig(emissions.AppModule{})
 	key := storetypes.NewKVStoreKey(emissionstypes.StoreKey)
 	storeService := runtime.NewKVStoreService(key)
@@ -70,7 +70,7 @@ func (s *EmissionsV4MigrationTestSuite) SetupTest() {
 // in this test, we check that an already migrated topic, that has all the new fields
 // for merit sortition, but has a NaN for initial regret, will have its initial regret
 // set to 0 but everything else will remain the same
-func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() {
+func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
@@ -141,243 +141,60 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().Equal(newMsg, topic)
 }
 
-// test for deletes on maps that have score as the value of the map
-func testScoreMapDeletion(
-	s *EmissionsV4MigrationTestSuite,
-	store storetypes.KVStore,
-	cdc codec.BinaryCodec,
-	key collections.Prefix,
-) {
-	score := emissionstypes.Score{
-		TopicId:     uint64(1),
-		BlockHeight: int64(1),
-		Address:     "address",
-		Score:       alloraMath.NewDecFromInt64(10),
-	}
-
-	bz, err := proto.Marshal(&score)
-	s.Require().NoError(err)
-
-	mapStore := prefix.NewStore(store, key)
-	mapStore.Set([]byte("testKey"), bz)
-
-	// Sanity check
-	iterator := mapStore.Iterator(nil, nil)
-	s.Require().True(iterator.Valid())
-	err = proto.Unmarshal(iterator.Value(), &score)
-	s.Require().NoError(err)
-	defer iterator.Close()
-
-	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
-
-	// Verify the store has been updated correctly
-	iterator = mapStore.Iterator(nil, nil)
-	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
-}
-
-// test for deletes on maps that have scores as the value of the map
-func testScoresMapDeletion(
-	s *EmissionsV4MigrationTestSuite,
-	store storetypes.KVStore,
-	cdc codec.BinaryCodec,
-	key collections.Prefix,
-) {
-	score := emissionstypes.Score{
-		TopicId:     uint64(1),
-		BlockHeight: int64(1),
-		Address:     "address",
-		Score:       alloraMath.NewDecFromInt64(10),
-	}
-	scores := emissionstypes.Scores{Scores: []*emissionstypes.Score{&score}}
-
-	bz, err := proto.Marshal(&scores)
-	s.Require().NoError(err)
-
-	mapStore := prefix.NewStore(store, key)
-	mapStore.Set([]byte("testKey"), bz)
-
-	// Sanity check
-	iterator := mapStore.Iterator(nil, nil)
-	s.Require().True(iterator.Valid())
-	err = proto.Unmarshal(iterator.Value(), &scores)
-	s.Require().NoError(err)
-	defer iterator.Close()
-	s.Require().Len(scores.Scores, 1)
-
-	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
-
-	// Verify the store has been updated correctly
-	iterator = mapStore.Iterator(nil, nil)
-	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
-}
-
 // check that the specified maps are reset correctly
-func (s *EmissionsV4MigrationTestSuite) TestResetMapsWithNonNumericValues() {
+func (s *EmissionsV5MigrationTestSuite) TestResetMapsWithNonNumericValues() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
-	testScoresMapDeletion(s, store, cdc, emissionstypes.InferenceScoresKey)
-	testScoresMapDeletion(s, store, cdc, emissionstypes.ForecastScoresKey)
-	testScoresMapDeletion(s, store, cdc, emissionstypes.ReputerScoresKey)
-	testScoreMapDeletion(s, store, cdc, emissionstypes.InfererScoreEmasKey)
-	testScoreMapDeletion(s, store, cdc, emissionstypes.ForecasterScoreEmasKey)
-	testScoreMapDeletion(s, store, cdc, emissionstypes.ReputerScoreEmasKey)
-	testReputerValueBundleMapDeletion(s, store, cdc, emissionstypes.AllLossBundlesKey)
-	testValueBundleMapDeletion(s, store, cdc, emissionstypes.NetworkLossBundlesKey)
-	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.InfererNetworkRegretsKey)
-	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.ForecasterNetworkRegretsKey)
-	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.OneInForecasterNetworkRegretsKey)
-	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestNaiveInfererNetworkRegretsKey)
-	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestOneOutInfererInfererNetworkRegretsKey)
-	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestOneOutInfererForecasterNetworkRegretsKey)
-	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestOneOutForecasterInfererNetworkRegretsKey)
-	testTimeStampedValueMapDeletion(s, store, cdc, emissionstypes.LatestOneOutForecasterForecasterNetworkRegretsKey)
+	testPreviousQuantileMapDeletion(s, store, cdc, emissionstypes.PreviousTopicQuantileInfererScoreEmaKey)
 }
 
 /// HELPER FUNCTIONS
 
-// example value bundle for testing
-func getBundle() emissionstypes.ValueBundle {
-	return emissionstypes.ValueBundle{
-		TopicId:             1,
-		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{ReputerNonce: &emissionstypes.Nonce{BlockHeight: 1}},
-		Reputer:             "reputer",
-		ExtraData:           []byte("extraData"),
-		CombinedValue:       alloraMath.NewDecFromInt64(10),
-		InfererValues: []*emissionstypes.WorkerAttributedValue{
-			{
-				Worker: "inferer",
-				Value:  alloraMath.NewDecFromInt64(10),
-			},
-		},
-		ForecasterValues: []*emissionstypes.WorkerAttributedValue{
-			{
-				Worker: "forecaster",
-				Value:  alloraMath.NewDecFromInt64(10),
-			},
-		},
-		NaiveValue: alloraMath.NewDecFromInt64(10),
-		OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
-			{
-				Worker: "oneOutInferer",
-				Value:  alloraMath.NewDecFromInt64(10),
-			},
-		},
-		OneOutForecasterValues: []*emissionstypes.WithheldWorkerAttributedValue{
-			{
-				Worker: "oneOutForecaster",
-				Value:  alloraMath.NewDecFromInt64(10),
-			},
-		},
-		OneOutInfererForecasterValues: []*emissionstypes.OneOutInfererForecasterValues{
-			{
-				Forecaster: "oneOutInfererForecaster",
-				OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
-					{
-						Worker: "oneOutInferer",
-						Value:  alloraMath.NewDecFromInt64(10),
-					},
-				},
-			},
-		},
-	}
-}
-
-// test for deletes on maps that have ValueBundles as the value of the map
-func testValueBundleMapDeletion(
-	s *EmissionsV4MigrationTestSuite,
+// test for deletes on maps that have previous quantile as the value of the map
+func testPreviousQuantileMapDeletion(
+	s *EmissionsV5MigrationTestSuite,
 	store storetypes.KVStore,
 	cdc codec.BinaryCodec,
 	key collections.Prefix,
 ) {
-	bundle := getBundle()
-	bz, err := proto.Marshal(&bundle)
+	infererQuantile, err := alloraMath.NewDecFromString("0.1")
+	forecasterQuantile, err := alloraMath.NewDecFromString("0.2")
+	reputerQuantile, err := alloraMath.NewDecFromString("0.3")
+
+	bz, err := infererQuantile.Marshal()
 	s.Require().NoError(err)
+	mapInfererStore := prefix.NewStore(store, key)
+	mapInfererStore.Set([]byte("testKey1"), bz)
 
-	mapStore := prefix.NewStore(store, key)
-	mapStore.Set([]byte("testKey"), bz)
+	bz, err = forecasterQuantile.Marshal()
+	s.Require().NoError(err)
+	mapForecasterStore := prefix.NewStore(store, key)
+	mapForecasterStore.Set([]byte("testKey2"), bz)
 
+	bz, err = reputerQuantile.Marshal()
+	s.Require().NoError(err)
+	mapReputerStore := prefix.NewStore(store, key)
+	mapReputerStore.Set([]byte("testKey3"), bz)
 	// Sanity check
-	iterator := mapStore.Iterator(nil, nil)
+	iterator := mapInfererStore.Iterator(nil, nil)
 	s.Require().True(iterator.Valid())
-	err = proto.Unmarshal(iterator.Value(), &bundle)
-	s.Require().NoError(err)
-	iterator.Close()
-	s.Require().Equal(bundle, getBundle())
-
-	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
-
-	// Verify the store has been updated correctly
-	iterator = mapStore.Iterator(nil, nil)
-	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
-	iterator.Close()
-}
-
-// test for deletes on maps that have ReputerValueBundles as the value of the map
-func testReputerValueBundleMapDeletion(
-	s *EmissionsV4MigrationTestSuite,
-	store storetypes.KVStore,
-	cdc codec.BinaryCodec,
-	key collections.Prefix,
-) {
-	bundle := getBundle()
-	reputerValueBundles := emissionstypes.ReputerValueBundles{
-		ReputerValueBundles: []*emissionstypes.ReputerValueBundle{
-			{
-				ValueBundle: &bundle,
-				Pubkey:      "something",
-				Signature:   []byte("signature"),
-			},
-		},
-	}
-	bz, err := proto.Marshal(&reputerValueBundles)
-	s.Require().NoError(err)
-
-	mapStore := prefix.NewStore(store, key)
-	mapStore.Set([]byte("testKey"), bz)
-
-	// Sanity check
-	iterator := mapStore.Iterator(nil, nil)
+	iterator = mapForecasterStore.Iterator(nil, nil)
 	s.Require().True(iterator.Valid())
-	err = proto.Unmarshal(iterator.Value(), &reputerValueBundles)
-	s.Require().NoError(err)
-	defer iterator.Close()
-	s.Require().Len(reputerValueBundles.ReputerValueBundles, 1)
-
-	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
-
-	// Verify the store has been updated correctly
-	iterator = mapStore.Iterator(nil, nil)
-	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
-}
-
-// test for deletes on maps that have TimeStampedValues as the value of the map
-func testTimeStampedValueMapDeletion(
-	s *EmissionsV4MigrationTestSuite,
-	store storetypes.KVStore,
-	cdc codec.BinaryCodec,
-	key collections.Prefix,
-) {
-	timeStampedValue := emissionstypes.TimestampedValue{
-		Value:       alloraMath.NewDecFromInt64(10),
-		BlockHeight: 1,
-	}
-
-	bz, err := proto.Marshal(&timeStampedValue)
-	s.Require().NoError(err)
-
-	mapStore := prefix.NewStore(store, key)
-	mapStore.Set([]byte("testKey"), bz)
-
-	// Sanity check
-	iterator := mapStore.Iterator(nil, nil)
+	iterator = mapReputerStore.Iterator(nil, nil)
 	s.Require().True(iterator.Valid())
-	err = proto.Unmarshal(iterator.Value(), &timeStampedValue)
-	s.Require().NoError(err)
 	defer iterator.Close()
 
 	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
 
-	// Verify the store has been updated correctly
-	iterator = mapStore.Iterator(nil, nil)
+	// Verify the inferer store has been updated correctly
+	iterator = mapInfererStore.Iterator(nil, nil)
+	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
+
+	// Verify the forecaster store has been updated correctly
+	iterator = mapForecasterStore.Iterator(nil, nil)
+	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
+
+	// Verify the reputer store has been updated correctly
+	iterator = mapReputerStore.Iterator(nil, nil)
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 }
