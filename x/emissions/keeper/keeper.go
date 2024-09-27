@@ -1205,6 +1205,7 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 func (k *Keeper) AppendReputerLoss(
 	ctx sdk.Context,
 	topic types.Topic,
+	moduleParams types.Params,
 	nonceBlockHeight BlockHeight,
 	reputerLoss *types.ReputerValueBundle,
 ) error {
@@ -1216,10 +1217,6 @@ func (k *Keeper) AppendReputerLoss(
 	}
 	if reputerLoss.ValueBundle.Reputer == "" {
 		return errors.New("invalid reputerLoss bundle: reputer is empty")
-	}
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting module params")
 	}
 	ptr, err := k.GetReputerLossBundlesAtBlock(ctx, topic.Id, nonceBlockHeight)
 	if err != nil {
@@ -2339,12 +2336,9 @@ func (k *Keeper) GetTopic(ctx context.Context, topicId TopicId) (types.Topic, er
 
 // Sets a topic config on a topicId
 func (k *Keeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topic) error {
-	params, err := k.GetParams(ctx)
+	_, err := k.IncrementTopicId(ctx)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting params")
-	}
-	if err := topic.Validate(params); err != nil {
-		return errorsmod.Wrap(err, "set topic validation failure")
+		return err
 	}
 	return k.topics.Set(ctx, topicId, topic)
 }

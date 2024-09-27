@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	errorsmod "cosmossdk.io/errors"
-	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -68,6 +67,14 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 		return nil, err
 	}
 
+	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !topicExists {
+		return nil, types.ErrTopicDoesNotExist
+	}
+
 	// Check the sender has enough stake already placed on the topic to remove the stake
 	stakePlaced, err := ms.k.GetStakeReputerAuthority(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
@@ -121,6 +128,15 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemo
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
+
+	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !topicExists {
+		return nil, types.ErrTopicDoesNotExist
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := ms.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, msg.Sender, msg.TopicId)
 	// if the specific error is that we somehow got into a buggy invariant state
@@ -147,9 +163,16 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeR
 	if msg.Amount.IsZero() {
 		return nil, types.ErrReceivedZeroAmount
 	}
-
 	if msg.Reputer == msg.Sender {
 		return nil, types.ErrCantSelfDelegate
+	}
+
+	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !topicExists {
+		return nil, types.ErrTopicDoesNotExist
 	}
 
 	// Check the target reputer exists and is registered
@@ -187,8 +210,16 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
-	if msg.Amount.LTE(cosmosMath.ZeroInt()) {
-		return nil, types.ErrInvalidValue
+	if msg.Amount.IsZero() {
+		return nil, types.ErrReceivedZeroAmount
+	}
+
+	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !topicExists {
+		return nil, types.ErrTopicDoesNotExist
 	}
 
 	// Check the delegator has enough stake already placed on the topic to remove the stake
@@ -289,6 +320,15 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
+
+	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	}
+	if !topicExists {
+		return nil, types.ErrTopicDoesNotExist
+	}
+	
 	// Check the target reputer exists and is registered
 	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {

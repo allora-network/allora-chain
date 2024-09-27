@@ -17,11 +17,10 @@ import (
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (*types.InsertWorkerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
-	_, err := sdk.AccAddressFromBech32(msg.Sender)
-	if err != nil {
+	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
 		return nil, err
 	}
-	err = checkInputLength(ctx, ms, msg)
+	err := checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}

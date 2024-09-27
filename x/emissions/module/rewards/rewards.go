@@ -16,11 +16,21 @@ import (
 func EmitRewards(
 	ctx sdk.Context,
 	k keeper.Keeper,
+	moduleParams types.Params,
 	blockHeight BlockHeight,
 	weights map[uint64]*alloraMath.Dec,
 	sumWeight alloraMath.Dec,
 	totalRevenue cosmosMath.Int,
 ) error {
+	// Sorted, active topics by weight descending. Still need skim top N to truly be the rewardable topics
+	sortedRewardableTopics := alloraMath.GetSortedElementsByDecWeightDesc(weights)
+	Logger(ctx).Debug(fmt.Sprintf("Rewardable topics: %v", sortedRewardableTopics))
+
+	// Top `N=MaxTopicsPerBlock` active topics of this block => the *actually* rewardable topics
+	if uint64(len(sortedRewardableTopics)) > moduleParams.MaxActiveTopicsPerBlock {
+		sortedRewardableTopics = sortedRewardableTopics[:moduleParams.MaxActiveTopicsPerBlock]
+	}
+
 	totalReward, err := k.GetTotalRewardToDistribute(ctx)
 	Logger(ctx).Debug(fmt.Sprintf("Reward to distribute this epoch: %s", totalReward.String()))
 	if err != nil {
@@ -29,25 +39,6 @@ func EmitRewards(
 	if totalReward.IsZero() {
 		Logger(ctx).Warn("The total scheduled rewards to distribute this epoch are zero!")
 		return nil
-	}
-
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get module params")
-	}
-
-	// Sorted, active topics by weight descending. Still need skim top N to truly be the rewardable topics
-	sortedRewardableTopics := alloraMath.GetSortedElementsByDecWeightDesc(weights)
-	Logger(ctx).Debug(fmt.Sprintf("Rewardable topics: %v", sortedRewardableTopics))
-
-	if len(sortedRewardableTopics) == 0 {
-		Logger(ctx).Warn("No rewardable topics found")
-		return nil
-	}
-
-	// Top `N=MaxTopicsPerBlock` active topics of this block => the *actually* rewardable topics
-	if uint64(len(sortedRewardableTopics)) > moduleParams.MaxActiveTopicsPerBlock {
-		sortedRewardableTopics = sortedRewardableTopics[:moduleParams.MaxActiveTopicsPerBlock]
 	}
 
 	// Get total weight of rewardable topics
@@ -83,7 +74,17 @@ func EmitRewards(
 			}
 		}(topicId, topicRewardNonce)
 
-		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicRewards, moduleParams)
+		Logger(ctx).Debug(fmt.Sprintf("Distributing rewards for topic %d", topicId))
+
+		topicReward := topicRewards[topicId]
+		if topicReward == nil {
+			Logger(ctx).Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
+			continue
+		}
+	
+		Logger(ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", topicId, topicRewardNonce, topicReward))
+
+		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicReward, moduleParams)
 		if err != nil {
 			Logger(ctx).Error(fmt.Sprintf("Failed to process rewards for topic %d: %s", topicId, err.Error()))
 			continue
@@ -130,18 +131,9 @@ func getDistributionAndPayoutRewardsToTopicActors(
 	k keeper.Keeper,
 	topicId uint64,
 	topicRewardNonce int64,
-	topicRewards map[uint64]*alloraMath.Dec,
+	topicReward *alloraMath.Dec,
 	moduleParams types.Params,
 ) (alloraMath.Dec, error) {
-	Logger(ctx).Debug(fmt.Sprintf("Distributing rewards for topic %d", topicId))
-
-	topicReward := topicRewards[topicId]
-	if topicReward == nil {
-		Logger(ctx).Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
-		return alloraMath.ZeroDec(), nil
-	}
-
-	Logger(ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", topicId, topicRewardNonce, topicReward))
 
 	// Get the distribution of rewards across actor types and participants in this topic
 	totalRewardsDistribution, rewardInTopicToActors, err := GenerateRewardsDistributionByTopicParticipant(ctx, k, topicId, topicReward, topicRewardNonce, moduleParams)

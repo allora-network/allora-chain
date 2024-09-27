@@ -40,7 +40,11 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	weights, sumWeight, totalRevenue, err := rewards.GetAndUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
+	} else if len(weights) == 0 {
+		sdkCtx.Logger().Warn("No rewardable topics found")
+		return nil
 	}
+
 	sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
 	err = rewards.UpdateNoncesOfActiveTopics(
@@ -55,7 +59,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 
 	// REWARDS (will internally filter any non-RewardReady topics)
-	err = rewards.EmitRewards(sdkCtx, am.keeper, blockHeight, weights, sumWeight, totalRevenue)
+	err = rewards.EmitRewards(sdkCtx, am.keeper, moduleParams, blockHeight, weights, sumWeight, totalRevenue)
 	if err != nil {
 		sdkCtx.Logger().Error("Error calculating global emission per topic: ", err)
 		return errors.Wrapf(err, "Rewards error")
