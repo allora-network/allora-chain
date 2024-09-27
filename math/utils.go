@@ -486,7 +486,7 @@ func SumDecSlice(x []Dec) (Dec, error) {
 	return sum, nil
 }
 
-// Get the quantile of decs array
+// Compute the nth percentile of the decs array
 func GetQuantileOfDecs(
 	decs []Dec,
 	quantile Dec,

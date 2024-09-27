@@ -158,8 +158,11 @@ func testPreviousQuantileMapDeletion(
 	key collections.Prefix,
 ) {
 	infererQuantile, err := alloraMath.NewDecFromString("0.1")
+	s.Require().NoError(err)
 	forecasterQuantile, err := alloraMath.NewDecFromString("0.2")
+	s.Require().NoError(err)
 	reputerQuantile, err := alloraMath.NewDecFromString("0.3")
+	s.Require().NoError(err)
 
 	bz, err := infererQuantile.Marshal()
 	s.Require().NoError(err)
