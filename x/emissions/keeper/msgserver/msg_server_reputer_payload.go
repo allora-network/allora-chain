@@ -42,7 +42,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 	// Returns an error if unfulfilled worker nonce exists
 	if workerNonceUnfulfilled {
-		return nil, types.ErrNonceStillUnfulfilled
+		return nil, errorsmod.Wrapf(types.ErrNonceStillUnfulfilled, "worker nonce")
 	}
 
 	// Check if the reputer nonce is unfulfilled
@@ -52,7 +52,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 	// If the reputer nonce is already fulfilled, return an error
 	if !reputerNonceUnfulfilled {
-		return nil, types.ErrUnfulfilledNonceNotFound
+		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
 	}
 
 	// Check if the ground truth lag has passed: if blockheight > nonce.BlockHeight + topic.GroundTruthLag
