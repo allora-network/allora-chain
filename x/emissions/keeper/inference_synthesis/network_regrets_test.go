@@ -89,7 +89,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require := s.Require()
 	k := s.emissionsKeeper
 
-	topicId := uint64(2)
+	topicId := uint64(1)
 	// Create new topic
 	topic := s.mockTopic()
 	topic.InitialRegret = alloraMath.ZeroDec()
@@ -186,6 +186,8 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
 	require.True(worker3NoPriorRegret)
 
+	numInclusions, err := k.GetCountInfererInclusionsInTopic(s.ctx, topicId, worker1)
+	require.Equal(uint64(2), numInclusions)
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
 		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 			Ctx:           s.ctx,
@@ -713,21 +715,10 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 
 	initialRegret := alloraMath.MustNewDecFromString("0")
+	topic := s.mockTopic()
+	topic.AlphaRegret = alloraMath.MustNewDecFromString("0.5")
 	// Create new topic
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.5"),
-		AllowNegative:          false,
-		InitialRegret:          initialRegret,
-	})
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	s.Require().NoError(err)
 
 	inferer0 := s.addrs[0].String()
@@ -784,7 +775,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	)
 	require.NoError(err)
 
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	topic, err = s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	require.NoError(err)
 	require.NotEqual(topic.InitialRegret, initialRegret)
 }
@@ -806,20 +797,9 @@ func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
 
 	initialRegret := alloraMath.MustNewDecFromString("0")
 	// Create new topic
-	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, emissionstypes.Topic{
-		Id:                     topicId,
-		Creator:                "creator",
-		Metadata:               "metadata",
-		LossMethod:             "mse",
-		EpochLastEnded:         0,
-		EpochLength:            100,
-		GroundTruthLag:         10,
-		WorkerSubmissionWindow: 10,
-		PNorm:                  alloraMath.NewDecFromInt64(3),
-		AlphaRegret:            alloraMath.MustNewDecFromString("0.5"),
-		AllowNegative:          false,
-		InitialRegret:          initialRegret,
-	})
+	topic := s.mockTopic()
+	topic.InitialRegret = initialRegret
+	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	s.Require().NoError(err)
 
 	inferer0 := s.addrs[0].String()
@@ -862,7 +842,7 @@ func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
 	)
 	require.NoError(err)
 
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	topic, err = s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	require.NoError(err)
 	require.Equal(topic.InitialRegret, initialRegret)
 }
