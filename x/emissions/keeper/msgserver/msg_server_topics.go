@@ -54,6 +54,10 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 		ActiveForecasterQuantile: msg.ActiveForecasterQuantile,
 		ActiveReputerQuantile:    msg.ActiveReputerQuantile,
 	}
+	_, err = ms.k.IncrementTopicId(ctx)
+	if err != nil {
+		return nil, err
+	}
 	if err := ms.k.SetTopic(ctx, topicId, topic); err != nil {
 		return nil, err
 	}

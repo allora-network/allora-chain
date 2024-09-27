@@ -328,7 +328,7 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 	if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
 	}
-	
+
 	// Check the target reputer exists and is registered
 	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {

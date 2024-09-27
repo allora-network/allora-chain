@@ -81,7 +81,7 @@ func EmitRewards(
 			Logger(ctx).Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
 			continue
 		}
-	
+
 		Logger(ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", topicId, topicRewardNonce, topicReward))
 
 		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicReward, moduleParams)

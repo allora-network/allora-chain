@@ -2336,10 +2336,6 @@ func (k *Keeper) GetTopic(ctx context.Context, topicId TopicId) (types.Topic, er
 
 // Sets a topic config on a topicId
 func (k *Keeper) SetTopic(ctx context.Context, topicId TopicId, topic types.Topic) error {
-	_, err := k.IncrementTopicId(ctx)
-	if err != nil {
-		return err
-	}
 	return k.topics.Set(ctx, topicId, topic)
 }
 
