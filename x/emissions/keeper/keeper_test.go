@@ -4026,14 +4026,14 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		Signature:   signature,
 		Pubkey:      s.pubKeyHexStr[3],
 	}
-	topic, err := k.GetTopic(ctx, topicId)
-	s.Require().NoError(err)
-	params := types.Params{
-		MaxTopReputersToReward: 4,
-	}
+	params := types.DefaultParams()
+	params.MaxTopReputersToReward = 4
 	err = k.SetParams(ctx, params)
 	s.Require().NoError(err)
-	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, &newReputerLoss)
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, &reputerValueBundle4)
 	s.Require().NoError(err)
 	newAllReputerLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
@@ -4045,7 +4045,13 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		ReputerRequestNonce: reputerRequestNonce,
 		TopicId:             topicId,
 	}
-	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, &newReputerLoss2)
+	signature = s.signValueBundle(&valueBundleReputer5, s.privKeys[4])
+	reputerValueBundle5 := types.ReputerValueBundle{
+		ValueBundle: &valueBundleReputer5,
+		Signature:   signature,
+		Pubkey:      s.pubKeyHexStr[4],
+	}
+	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, &reputerValueBundle5)
 	s.Require().NoError(err)
 	newAllReputerLosses, err = k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
 	s.Require().NoError(err)
