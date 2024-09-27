@@ -18,10 +18,6 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (*
 		return nil, err
 	}
 
-	if msg.Amount.IsZero() {
-		return nil, types.ErrReceivedZeroAmount
-	}
-
 	// Check the topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
@@ -160,12 +156,6 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeR
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
-	if msg.Amount.IsZero() {
-		return nil, types.ErrReceivedZeroAmount
-	}
-	if msg.Reputer == msg.Sender {
-		return nil, types.ErrCantSelfDelegate
-	}
 
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
@@ -209,9 +199,6 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeR
 func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDelegateStakeRequest) (*types.RemoveDelegateStakeResponse, error) {
 	if err := msg.Validate(); err != nil {
 		return nil, err
-	}
-	if msg.Amount.IsZero() {
-		return nil, types.ErrReceivedZeroAmount
 	}
 
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)

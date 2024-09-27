@@ -663,14 +663,14 @@ func (msg *RemoveRegistrationRequest) Validate() error {
 }
 
 // helper for stake validation functions
-func stakeValidateHelper(addr []string, amount cosmosMath.Int) error {
+func stakeValidateHelper(addr []string, amount cosmosMath.Int, allowZeroAmount bool) error {
 	for _, ad := range addr {
 		_, err := sdk.AccAddressFromBech32(ad)
 		if err != nil {
 			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid address (%s)", ad)
 		}
 	}
-	if amount.LT(cosmosMath.ZeroInt()) {
+	if amount.IsNegative() || (!allowZeroAmount && amount.IsZero()) {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "invalid amount (%s)", amount.String())
 	}
 	return nil
@@ -678,37 +678,41 @@ func stakeValidateHelper(addr []string, amount cosmosMath.Int) error {
 
 // validate that an add stake request follows the expected format
 func (msg *AddStakeRequest) Validate() error {
-	return stakeValidateHelper([]string{msg.Sender}, msg.Amount)
+	return stakeValidateHelper([]string{msg.Sender}, msg.Amount, false)
 }
 
 // validate that a remove stake request follows the expected format
 func (msg *RemoveStakeRequest) Validate() error {
-	return stakeValidateHelper([]string{msg.Sender}, msg.Amount)
+	return stakeValidateHelper([]string{msg.Sender}, msg.Amount, false)
 }
 
 // validate that a delegate stake request follows the expected format
 func (msg *DelegateStakeRequest) Validate() error {
-	return stakeValidateHelper([]string{msg.Sender, msg.Reputer}, msg.Amount)
+	if msg.Reputer == msg.Sender {
+		return errors.Wrap(sdkerrors.ErrInvalidRequest, "cannot self delegate")
+	}
+
+	return stakeValidateHelper([]string{msg.Sender, msg.Reputer}, msg.Amount, false)
 }
 
 // validate that a remove delegate stake request follows the expected format
 func (msg *RemoveDelegateStakeRequest) Validate() error {
-	return stakeValidateHelper([]string{msg.Sender, msg.Reputer}, msg.Amount)
+	return stakeValidateHelper([]string{msg.Sender, msg.Reputer}, msg.Amount, false)
 }
 
 // validate that a cancel remove delegate stake request follows the expected format
 func (msg *CancelRemoveDelegateStakeRequest) Validate() error {
-	return stakeValidateHelper([]string{msg.Sender}, cosmosMath.ZeroInt())
+	return stakeValidateHelper([]string{msg.Sender}, cosmosMath.ZeroInt(), true)
 }
 
 // validate that a reward delegate stake request follows the expected format
 func (msg *RewardDelegateStakeRequest) Validate() error {
-	return stakeValidateHelper([]string{msg.Sender, msg.Reputer}, cosmosMath.ZeroInt())
+	return stakeValidateHelper([]string{msg.Sender, msg.Reputer}, cosmosMath.ZeroInt(), true)
 }
 
 // validate that a cancel remove stake request follows the expected format
 func (msg *CancelRemoveStakeRequest) Validate() error {
-	return stakeValidateHelper([]string{msg.Sender}, cosmosMath.ZeroInt())
+	return stakeValidateHelper([]string{msg.Sender}, cosmosMath.ZeroInt(), true)
 }
 
 // Validate checks if the given CreateNewTopicRequest is valid
