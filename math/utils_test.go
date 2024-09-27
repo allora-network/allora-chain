@@ -494,3 +494,22 @@ func TestGetSortedElementsByDecWeightDesc(t *testing.T) {
 	keys := alloraMath.GetSortedElementsByDecWeightDesc(m)
 	require.Equal(t, expected, keys)
 }
+
+func TestGetQuantileOfDecs(t *testing.T) {
+	dec1 := alloraMath.MustNewDecFromString("0.5")
+	dec2 := alloraMath.MustNewDecFromString("0.2")
+	dec3 := alloraMath.MustNewDecFromString("0.1")
+	dec4 := alloraMath.MustNewDecFromString("0.7")
+	dec5 := alloraMath.MustNewDecFromString("0.4")
+	m := []alloraMath.Dec{
+		dec1,
+		dec2,
+		dec3,
+		dec4,
+		dec5,
+	}
+
+	percentile, err := alloraMath.GetQuantileOfDecs(m, alloraMath.MustNewDecFromString("0.25"))
+	require.NoError(t, err)
+	require.Greater(t, percentile, alloraMath.ZeroDec())
+}

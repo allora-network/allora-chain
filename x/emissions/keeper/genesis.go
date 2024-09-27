@@ -785,20 +785,20 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
-	// CountInfererInclusionsInTopic
-	if len(data.CountInfererInclusionsInTopic) != 0 {
-		for _, topicIdInfererCount := range data.CountInfererInclusionsInTopic {
-			if err := k.countInfererInclusionsInTopic.Set(ctx, collections.Join(topicIdInfererCount.TopicId, topicIdInfererCount.ActorId), topicIdInfererCount.Uint64); err != nil {
-				return errors.Wrap(err, "error setting countInfererInclusionsInTopic")
+	// CountInfererInclusionsInTopicActiveSet
+	if len(data.CountInfererInclusionsInTopicActiveSet) != 0 {
+		for _, topicIdInfererCount := range data.CountInfererInclusionsInTopicActiveSet {
+			if err := k.countInfererInclusionsInTopicActiveSet.Set(ctx, collections.Join(topicIdInfererCount.TopicId, topicIdInfererCount.ActorId), topicIdInfererCount.Uint64); err != nil {
+				return errors.Wrap(err, "error setting countInfererInclusionsInTopicActiveSet")
 			}
 		}
 	}
 
-	// CountForecasterInclusionsInTopic
-	if len(data.CountForecasterInclusionsInTopic) != 0 {
-		for _, topicIdForecasterCount := range data.CountForecasterInclusionsInTopic {
-			if err := k.countForecasterInclusionsInTopic.Set(ctx, collections.Join(topicIdForecasterCount.TopicId, topicIdForecasterCount.ActorId), topicIdForecasterCount.Uint64); err != nil {
-				return errors.Wrap(err, "error setting countForecasterInclusionsInTopic")
+	// CountForecasterInclusionsInTopicActiveSet
+	if len(data.CountForecasterInclusionsInTopicActiveSet) != 0 {
+		for _, topicIdForecasterCount := range data.CountForecasterInclusionsInTopicActiveSet {
+			if err := k.countForecasterInclusionsInTopicActiveSet.Set(ctx, collections.Join(topicIdForecasterCount.TopicId, topicIdForecasterCount.ActorId), topicIdForecasterCount.Uint64); err != nil {
+				return errors.Wrap(err, "error setting countForecasterInclusionsInTopicActiveSet")
 			}
 		}
 	}
@@ -1909,8 +1909,8 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		previousTopicQuantileReputerScoreEma = append(previousTopicQuantileReputerScoreEma, &topicIdAndDec)
 	}
 
-	countInfererInclusionsInTopic := make([]*types.TopicIdActorIdUint64, 0)
-	countInfererInclusionsInTopicIter, err := k.countInfererInclusionsInTopic.Iterate(ctx, nil)
+	countInfererInclusionsInTopicActiveSet := make([]*types.TopicIdActorIdUint64, 0)
+	countInfererInclusionsInTopicIter, err := k.countInfererInclusionsInTopicActiveSet.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate count inferer inclusions in topic")
 	}
@@ -1924,11 +1924,11 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			ActorId: keyValue.Key.K2(),
 			Uint64:  keyValue.Value,
 		}
-		countInfererInclusionsInTopic = append(countInfererInclusionsInTopic, &topicIdAndUint64)
+		countInfererInclusionsInTopicActiveSet = append(countInfererInclusionsInTopicActiveSet, &topicIdAndUint64)
 	}
 
-	countForecasterInclusionsInTopic := make([]*types.TopicIdActorIdUint64, 0)
-	countForecasterInclusionsInTopicIter, err := k.countForecasterInclusionsInTopic.Iterate(ctx, nil)
+	countForecasterInclusionsInTopicActiveSet := make([]*types.TopicIdActorIdUint64, 0)
+	countForecasterInclusionsInTopicIter, err := k.countForecasterInclusionsInTopicActiveSet.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate count forecaster inclusions in topic")
 	}
@@ -1942,7 +1942,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 			ActorId: keyValue.Key.K2(),
 			Uint64:  keyValue.Value,
 		}
-		countForecasterInclusionsInTopic = append(countForecasterInclusionsInTopic, &topicIdAndUint64)
+		countForecasterInclusionsInTopicActiveSet = append(countForecasterInclusionsInTopicActiveSet, &topicIdAndUint64)
 	}
 
 	return &types.GenesisState{
@@ -2010,8 +2010,8 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		PreviousTopicQuantileInfererScoreEma:           previousTopicQuantileInfererScoreEma,
 		PreviousTopicQuantileForecasterScoreEma:        previousTopicQuantileForecasterScoreEma,
 		PreviousTopicQuantileReputerScoreEma:           previousTopicQuantileReputerScoreEma,
-		CountInfererInclusionsInTopic:                  countInfererInclusionsInTopic,
-		CountForecasterInclusionsInTopic:               countForecasterInclusionsInTopic,
+		CountInfererInclusionsInTopicActiveSet:         countInfererInclusionsInTopicActiveSet,
+		CountForecasterInclusionsInTopicActiveSet:      countForecasterInclusionsInTopicActiveSet,
 	}, nil
 }
 

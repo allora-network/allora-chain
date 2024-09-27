@@ -1,6 +1,8 @@
 package inferencesynthesis
 
 import (
+	"context"
+
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -121,30 +123,6 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		return errorsmod.Wrapf(err, "failed to get topic")
 	}
 
-	ShouldAddWorkerRegret := func(worker Worker, newParticipant bool, workerType emissions.ActorType) (bool, error) {
-		numInclusions := uint64(0)
-		if workerType == emissions.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED {
-			numInclusions, err = args.K.GetCountInfererInclusionsInTopic(args.Ctx, args.TopicId, worker)
-			if err != nil {
-				return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
-			}
-		} else if workerType == emissions.ActorType_ACTOR_TYPE_FORECASTER {
-			numInclusions, err = args.K.GetCountForecasterInclusionsInTopic(args.Ctx, args.TopicId, worker)
-			if err != nil {
-				return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
-			}
-		}
-		numInclusionsDec, err := alloraMath.NewDecFromUint64(numInclusions)
-		if err != nil {
-			return false, errorsmod.Wrapf(err, "failed to get num inclusions dec")
-		}
-		oneOverAlpha, err := alloraMath.OneDec().Quo(topic.AlphaRegret)
-		if err != nil {
-			return false, errorsmod.Wrapf(err, "failed to get one over alpha")
-		}
-		return !newParticipant && numInclusionsDec.Gte(oneOverAlpha), nil
-	}
-
 	// R_ij - Inferer Regrets
 	for _, infererLoss := range args.NetworkLosses.InfererValues {
 		lastRegret, newParticipant, err := args.K.GetInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker)
@@ -166,7 +144,10 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 			return errorsmod.Wrapf(err, "Error setting inferer regret")
 		}
 
-		shouldAddWorkerRegret, err := ShouldAddWorkerRegret(
+		shouldAddWorkerRegret, err := isExperiencedWorker(
+			args.Ctx,
+			args.K,
+			topic,
 			infererLoss.Worker,
 			newParticipant,
 			emissions.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED,
@@ -200,7 +181,10 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 			return errorsmod.Wrapf(err, "Error setting forecaster regret")
 		}
 
-		shouldAddWorkerRegret, err := ShouldAddWorkerRegret(
+		shouldAddWorkerRegret, err := isExperiencedWorker(
+			args.Ctx,
+			args.K,
+			topic,
 			forecasterLoss.Worker,
 			newParticipant,
 			emissions.ActorType_ACTOR_TYPE_FORECASTER,
@@ -444,4 +428,38 @@ func CalcTopicInitialRegret(
 	}
 
 	return initialRegret, nil
+}
+
+// Determine if a worker is an experienced worker by checking
+// the inclusions count is greater than 1/alpha_regret
+func isExperiencedWorker(
+	ctx context.Context,
+	k keeper.Keeper,
+	topic emissions.Topic,
+	worker Worker,
+	newParticipant bool,
+	workerType emissions.ActorType,
+) (bool, error) {
+	numInclusions := uint64(0)
+	var err error // Declare err before using it
+	if workerType == emissions.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED {
+		numInclusions, err = k.GetCountInfererInclusionsInTopic(ctx, topic.Id, worker)
+		if err != nil {
+			return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
+		}
+	} else if workerType == emissions.ActorType_ACTOR_TYPE_FORECASTER {
+		numInclusions, err = k.GetCountForecasterInclusionsInTopic(ctx, topic.Id, worker)
+		if err != nil {
+			return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
+		}
+	}
+	numInclusionsDec, err := alloraMath.NewDecFromUint64(numInclusions)
+	if err != nil {
+		return false, errorsmod.Wrapf(err, "failed to get num inclusions dec")
+	}
+	oneOverAlpha, err := alloraMath.OneDec().Quo(topic.AlphaRegret)
+	if err != nil {
+		return false, errorsmod.Wrapf(err, "failed to get one over alpha")
+	}
+	return !newParticipant && numInclusionsDec.Gte(oneOverAlpha), nil
 }

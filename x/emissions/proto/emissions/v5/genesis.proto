@@ -1,5 +1,5 @@
 syntax = "proto3";
-package emissions.v3;
+package emissions.v5;
 
 import "amino/amino.proto";
 import "cosmos_proto/cosmos.proto";
@@ -22,7 +22,7 @@ message GenesisState {
   reserved "latestInfererScoresByWorker", "latestForecasterScoresByWorker", "latestReputerScoresByReputer";
 
   // params defines all the parameters of the module.
-  Params params = 1 [(gogoproto.nullable) = false];
+  emissions.v3.Params params = 1 [(gogoproto.nullable) = false];
 
   /// TOPIC
   // the next topic id to be used, equal to the number of topics that have been
@@ -63,8 +63,8 @@ message GenesisState {
   repeated TopicIdActorIdDec previousInferenceRewardFraction = 18;
   // map of (topic, worker) -> previous reward for forecast (used for EMA)
   repeated TopicIdActorIdDec previousForecastRewardFraction = 19;
-  // map of (topic) -> ratio of forecaster score
-  repeated TopicIdAndDec previousForecasterScoreRatio = 20;
+  // map of (topic, forecaster) -> ratio of forecaster score
+  repeated TopicIdActorIdDec previousForecasterScoreRatio = 20;
 
   /// STAKING
 
@@ -185,11 +185,15 @@ message GenesisState {
   repeated TopicIdAndDec previousTopicQuantileInfererScoreEma = 63;
   repeated TopicIdAndDec previousTopicQuantileForecasterScoreEma = 64;
   repeated TopicIdAndDec previousTopicQuantileReputerScoreEma = 65;
+
+  // INCLUSIONS
+  repeated TopicIdActorIdUint64 countInfererInclusionsInTopicActiveSet = 66;
+  repeated TopicIdActorIdUint64 countForecasterInclusionsInTopicActiveSet = 67;
 }
 
 message TopicIdAndTopic {
   uint64 TopicId = 1;
-  Topic Topic = 2;
+  emissions.v3.Topic Topic = 2;
 }
 
 message TopicAndActorId {
@@ -210,13 +214,13 @@ message BlockHeightAndTopicIds {
 message TopicIdBlockHeightScores {
   uint64 TopicId = 1;
   int64 BlockHeight = 2;
-  Scores Scores = 3;
+  emissions.v3.Scores Scores = 3;
 }
 
 message TopicIdActorIdScore {
   uint64 TopicId = 1;
   string ActorId = 2;
-  Score Score = 3;
+  emissions.v3.Score Score = 3;
 }
 
 message TopicIdActorIdUint64 {
@@ -228,7 +232,7 @@ message TopicIdActorIdUint64 {
 message TopicIdActorIdListeningCoefficient {
   uint64 TopicId = 1;
   string ActorId = 2;
-  ListeningCoefficient ListeningCoefficient = 3;
+  emissions.v3.ListeningCoefficient ListeningCoefficient = 3;
 }
 
 message TopicIdActorIdDec {
@@ -265,14 +269,14 @@ message TopicIdDelegatorReputerDelegatorInfo {
   uint64 TopicId = 1;
   string Delegator = 2;
   string Reputer = 3;
-  DelegatorInfo DelegatorInfo = 4;
+  emissions.v3.DelegatorInfo DelegatorInfo = 4;
 }
 
 message BlockHeightTopicIdReputerStakeRemovalInfo {
   int64 BlockHeight = 1;
   uint64 TopicId = 2;
   string Reputer = 3;
-  StakeRemovalInfo StakeRemovalInfo = 4;
+  emissions.v3.StakeRemovalInfo StakeRemovalInfo = 4;
 }
 
 message ActorIdTopicIdBlockHeight {
@@ -286,7 +290,7 @@ message BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo {
   uint64 TopicId = 2;
   string Delegator = 3;
   string Reputer = 4;
-  DelegateStakeRemovalInfo DelegateStakeRemovalInfo = 5;
+  emissions.v3.DelegateStakeRemovalInfo DelegateStakeRemovalInfo = 5;
 }
 
 message DelegatorReputerTopicIdBlockHeight {
@@ -299,18 +303,18 @@ message DelegatorReputerTopicIdBlockHeight {
 message TopicIdActorIdInference {
   uint64 TopicId = 1;
   string ActorId = 2;
-  Inference Inference = 3;
+  emissions.v3.Inference Inference = 3;
 }
 
 message TopicIdActorIdForecast {
   uint64 TopicId = 1;
   string ActorId = 2;
-  Forecast Forecast = 3;
+  emissions.v3.Forecast Forecast = 3;
 }
 
 message LibP2pKeyAndOffchainNode {
   string LibP2pKey = 1;
-  OffchainNode OffchainNode = 2;
+  emissions.v3.OffchainNode OffchainNode = 2;
 }
 
 message TopicIdAndDec {
@@ -324,61 +328,61 @@ message TopicIdAndDec {
 message TopicIdBlockHeightInferences {
   uint64 TopicId = 1;
   int64 BlockHeight = 2;
-  Inferences Inferences = 3;
+  emissions.v3.Inferences Inferences = 3;
 }
 
 message TopicIdBlockHeightForecasts {
   uint64 TopicId = 1;
   int64 BlockHeight = 2;
-  Forecasts Forecasts = 3;
+  emissions.v3.Forecasts Forecasts = 3;
 }
 
 message TopicIdBlockHeightReputerValueBundles {
   uint64 TopicId = 1;
   int64 BlockHeight = 2;
-  ReputerValueBundles ReputerValueBundles = 3;
+  emissions.v3.ReputerValueBundles ReputerValueBundles = 3;
 }
 
 message TopicIdBlockHeightValueBundles {
   uint64 TopicId = 1;
   int64 BlockHeight = 2;
-  ValueBundle ValueBundle = 3;
+  emissions.v3.ValueBundle ValueBundle = 3;
 }
 
 message TopicIdAndNonces {
   uint64 TopicId = 1;
-  Nonces Nonces = 2;
+  emissions.v3.Nonces Nonces = 2;
 }
 
 message TopicIdAndReputerRequestNonces {
   uint64 TopicId = 1;
-  ReputerRequestNonces ReputerRequestNonces = 2;
+  emissions.v3.ReputerRequestNonces ReputerRequestNonces = 2;
 }
 
 message TopicIdActorIdTimeStampedValue {
   uint64 TopicId = 1;
   string ActorId = 2;
-  TimestampedValue TimestampedValue = 3;
+  emissions.v3.TimestampedValue TimestampedValue = 3;
 }
 
 message TopicIdActorIdActorIdTimeStampedValue {
   uint64 TopicId = 1;
   string ActorId1 = 2;
   string ActorId2 = 3;
-  TimestampedValue TimestampedValue = 4;
+  emissions.v3.TimestampedValue TimestampedValue = 4;
 }
 
 message TopicIdTimestampedActorNonce {
   uint64 TopicId = 1;
-  TimestampedActorNonce TimestampedActorNonce = 2;
+  emissions.v3.TimestampedActorNonce TimestampedActorNonce = 2;
 }
 
 message BlockHeightTopicIds {
   int64 BlockHeight = 1;
-  TopicIds TopicIds = 2;
+  emissions.v3.TopicIds TopicIds = 2;
 }
 
 message BlockHeightTopicIdWeightPair {
   int64 BlockHeight = 1;
-  TopicIdWeightPair TopicWeight = 2;
+  emissions.v3.TopicIdWeightPair TopicWeight = 2;
 }

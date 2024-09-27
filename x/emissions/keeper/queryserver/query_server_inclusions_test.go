@@ -9,7 +9,7 @@ func (s *QueryServerTestSuite) TestGetCountInfererInclusionsInTopic() {
 	ctx := s.ctx
 	queryserver := s.queryServer
 	topicId := uint64(1)
-	inferer := "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve"
+	inferer := s.addrsStr[0]
 
 	results, err := queryserver.GetCountInfererInclusionsInTopic(ctx, &types.GetCountInfererInclusionsInTopicRequest{
 		TopicId: topicId,
@@ -33,7 +33,7 @@ func (s *QueryServerTestSuite) TestGetCountForecasterInclusionsInTopic() {
 	ctx := s.ctx
 	queryserver := s.queryServer
 	topicId := uint64(1)
-	forecaster := "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh"
+	forecaster := s.addrsStr[0]
 
 	results, err := queryserver.GetCountForecasterInclusionsInTopic(ctx, &types.GetCountForecasterInclusionsInTopicRequest{
 		TopicId:    topicId,
