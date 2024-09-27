@@ -94,6 +94,7 @@ func (p SynthPalette) Clone() SynthPalette {
 		K:                                p.K,
 		Logger:                           p.Logger,
 		TopicId:                          p.TopicId,
+		AllInferersAreNew:                p.AllInferersAreNew,
 		Inferers:                         append([]Worker(nil), p.Inferers...),
 		InferenceByWorker:                inferenceByWorker,
 		InfererRegrets:                   infererRegrets,
@@ -107,4 +108,40 @@ func (p SynthPalette) Clone() SynthPalette {
 		PNorm:                            p.PNorm,
 		CNorm:                            p.CNorm,
 	}
+}
+
+// String returns a human readable string representation of a Synth Palette
+func (p SynthPalette) String() string {
+	return fmt.Sprintf(
+		`SynthPalette{
+    TopicId: %v,
+    AllInferersAreNew: %v,
+    Inferers: %v,
+    InferenceByWorker: %v,
+    InfererRegrets: %v,
+    Forecasters: %v,
+    ForecastByWorker: %v,
+    ForecastImpliedInferenceByWorker: %v,
+    ForecasterRegrets: %v,
+    NetworkCombinedLoss: %v,
+    EpsilonTopic: %v,
+    EpsilonSafeDiv: %v,
+    PNorm: %v,
+    CNorm: %v,
+}`,
+		p.TopicId,
+		p.AllInferersAreNew,
+		p.Inferers,
+		p.InferenceByWorker,
+		p.InfererRegrets,
+		p.Forecasters,
+		p.ForecastByWorker,
+		p.ForecastImpliedInferenceByWorker,
+		p.ForecasterRegrets,
+		p.NetworkCombinedLoss,
+		p.EpsilonTopic,
+		p.EpsilonSafeDiv,
+		p.PNorm,
+		p.CNorm,
+	)
 }

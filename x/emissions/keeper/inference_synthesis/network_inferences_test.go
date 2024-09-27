@@ -86,7 +86,6 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeight}
 
 	topic := s.mockTopic()
-	topic.InitialRegret = alloraMath.ZeroDec()
 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	s.Require().NoError(err)
 
@@ -615,7 +614,6 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	simpleNonce := emissionstypes.Nonce{BlockHeight: blockHeightInferences}
 
 	topic := s.mockTopic()
-	topic.InitialRegret = alloraMath.ZeroDec()
 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	require.NoError(err)
 

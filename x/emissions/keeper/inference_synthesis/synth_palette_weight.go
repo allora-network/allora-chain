@@ -3,6 +3,8 @@ package inferencesynthesis
 import (
 	"fmt"
 
+	"cosmossdk.io/log"
+
 	errorsmod "cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -11,10 +13,19 @@ import (
 
 // Given the current set of inferers and forecasters in the palette, calculate their
 // weights using the current regrets
-func calcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
+func calcWeightsGivenWorkers(
+	logger log.Logger,
+	inferers []Worker,
+	forecasters []Worker,
+	infererToRegret map[Worker]*alloraMath.Dec,
+	forecasterToRegret map[Worker]*alloraMath.Dec,
+	epsilonTopic alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
+) (RegretInformedWeights, error) {
 	var regrets []alloraMath.Dec
-	infererRegrets := getInfererRegretsSlice(p)
-	forecasterRegrets := getForecasterRegretsSlice(p)
+	infererRegrets := getInfererRegretsSlice(logger, inferers, infererToRegret)
+	forecasterRegrets := getForecasterRegretsSlice(logger, forecasters, forecasterToRegret)
 
 	if len(infererRegrets) > 0 {
 		regrets = append(regrets, infererRegrets...)
@@ -37,7 +48,7 @@ func calcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating absolute value of standard deviation")
 	}
-	stdDevRegretsPlusEpsilon, err := absStdDevRegrets.Add(p.EpsilonTopic)
+	stdDevRegretsPlusEpsilon, err := absStdDevRegrets.Add(epsilonTopic)
 	if err != nil {
 		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation")
 	}
@@ -46,10 +57,10 @@ func calcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
 	normalizedInfererRegrets := make(map[Worker]Regret)
 	maxRegret := alloraMath.ZeroDec()
 	maxRegretInitialized := false
-	for _, worker := range p.Inferers {
-		regret, ok := p.InfererRegrets[worker]
+	for _, worker := range inferers {
+		regret, ok := infererToRegret[worker]
 		if !ok {
-			p.Logger.Debug(fmt.Sprintf("Cannot find worker in InfererRegrets in CalcWeightsGivenWorkers %v", worker))
+			logger.Debug(fmt.Sprintf("Cannot find worker in InfererRegrets in CalcWeightsGivenWorkers %v", worker))
 			continue
 		}
 		regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
@@ -66,11 +77,11 @@ func calcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
 	}
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
-	if len(p.ForecasterRegrets) > 0 {
-		for _, worker := range p.Forecasters {
-			regret, ok := p.ForecasterRegrets[worker]
+	if len(forecasterRegrets) > 0 {
+		for _, worker := range forecasters {
+			regret, ok := forecasterToRegret[worker]
 			if !ok {
-				p.Logger.Debug(fmt.Sprintf("Cannot find worker in ForecasterRegrets in CalcWeightsGivenWorkers %v", worker))
+				logger.Debug(fmt.Sprintf("Cannot find worker in ForecasterRegrets in CalcWeightsGivenWorkers %v", worker))
 				continue
 			}
 			regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
@@ -91,9 +102,9 @@ func calcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
 	forecasterWeights := make(map[Worker]Weight)
 
 	// Calculate the weights from the normalized regrets
-	for _, worker := range p.Inferers {
+	for _, worker := range inferers {
 		// If there is more than one not-new inferer, calculate the weight for the ones that are not new
-		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, p.PNorm, p.CNorm)
+		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, pNorm, cNorm)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
 		}
@@ -101,9 +112,9 @@ func calcWeightsGivenWorkers(p SynthPalette) (RegretInformedWeights, error) {
 		infererWeights[worker] = infererWeight
 	}
 
-	if len(p.ForecasterRegrets) > 0 {
-		for _, worker := range p.Forecasters {
-			forecasterWeight, err := CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, p.PNorm, p.CNorm)
+	if len(forecasterRegrets) > 0 {
+		for _, worker := range forecasters {
+			forecasterWeight, err := CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, pNorm, cNorm)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
 			}
@@ -205,16 +216,20 @@ func calcWeightedInference(p SynthPalette, weights RegretInformedWeights) (Infer
 	return ret, nil
 }
 
-func getInfererRegretsSlice(p SynthPalette) []alloraMath.Dec {
+func getInfererRegretsSlice(
+	logger log.Logger,
+	inferers []Worker,
+	infererToRegret map[Worker]*alloraMath.Dec,
+) []alloraMath.Dec {
 	var regrets []alloraMath.Dec
-	if len(p.InfererRegrets) == 0 {
+	if len(infererToRegret) == 0 {
 		return regrets
 	}
-	regrets = make([]alloraMath.Dec, 0, len(p.InfererRegrets))
-	for _, inferer := range p.Inferers {
-		regret, ok := p.InfererRegrets[inferer]
+	regrets = make([]alloraMath.Dec, 0, len(inferers))
+	for _, inferer := range inferers {
+		regret, ok := infererToRegret[inferer]
 		if !ok {
-			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in InfererRegrets in GetInfererRegretsSlice %v", inferer))
+			logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in GetInfererRegretsSlice %v", inferer))
 			continue
 		}
 		regrets = append(regrets, *regret)
@@ -222,16 +237,20 @@ func getInfererRegretsSlice(p SynthPalette) []alloraMath.Dec {
 	return regrets
 }
 
-func getForecasterRegretsSlice(p SynthPalette) []alloraMath.Dec {
+func getForecasterRegretsSlice(
+	logger log.Logger,
+	forecasters []Worker,
+	forecasterToRegret map[Worker]*alloraMath.Dec,
+) []alloraMath.Dec {
 	var regrets []alloraMath.Dec
-	if len(p.ForecasterRegrets) == 0 {
+	if len(forecasterToRegret) == 0 {
 		return regrets
 	}
-	regrets = make([]alloraMath.Dec, 0, len(p.ForecasterRegrets))
-	for _, forecaster := range p.Forecasters {
-		regret, ok := p.ForecasterRegrets[forecaster]
+	regrets = make([]alloraMath.Dec, 0, len(forecasters))
+	for _, forecaster := range forecasters {
+		regret, ok := forecasterToRegret[forecaster]
 		if !ok {
-			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in GetForecasterRegretsSlice %v", forecaster))
+			logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in GetForecasterRegretsSlice %v", forecaster))
 			continue
 		}
 		regrets = append(regrets, *regret)
@@ -292,6 +311,8 @@ func (p *SynthPalette) UpdateForecastersInfo(newForecasters []Worker) error {
 	return nil
 }
 
+// sum up all of the inference values into running network combined inference
+// and sum up all of the weights of all of the inferers
 func accumulateWeights(
 	inference emissionstypes.Inference,
 	weight alloraMath.Dec,

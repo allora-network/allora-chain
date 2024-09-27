@@ -90,7 +90,16 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 					p.InfererRegrets = R_ik
 					p.ForecasterRegrets = make(map[string]*alloraMath.Dec, 0)
 
-					weights, err := calcWeightsGivenWorkers(*p)
+					weights, err := calcWeightsGivenWorkers(
+						p.Logger,
+						p.Inferers,
+						p.Forecasters,
+						p.InfererRegrets,
+						p.ForecasterRegrets,
+						p.EpsilonTopic,
+						p.PNorm,
+						p.CNorm,
+					)
 					if err != nil {
 						return nil, errorsmod.Wrapf(err, "error calculating normalized forecasted regrets")
 					}
