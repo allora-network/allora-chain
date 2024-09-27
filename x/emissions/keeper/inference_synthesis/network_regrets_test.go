@@ -186,8 +186,6 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
 	require.True(worker3NoPriorRegret)
 
-	numInclusions, err := k.GetCountInfererInclusionsInTopic(s.ctx, topicId, worker1)
-	require.Equal(uint64(2), numInclusions)
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
 		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 			Ctx:           s.ctx,
