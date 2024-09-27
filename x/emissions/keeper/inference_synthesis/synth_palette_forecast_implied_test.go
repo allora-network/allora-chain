@@ -96,6 +96,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 	pNorm := alloraMath.MustNewDecFromString("2.0")
 	cNorm := alloraMath.MustNewDecFromString("0.75")
+	topicId := uint64(1)
 
 	forecasts := &emissionstypes.Forecasts{
 		Forecasts: []*emissionstypes.Forecast{
@@ -116,18 +117,36 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
 		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("2")},
 	}
-	palette := inferencesynthesis.SynthPalette{
-		Logger:              inferencesynthesis.Logger(s.ctx),
-		InferenceByWorker:   inferenceByWorker,
-		ForecastByWorker:    map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]},
-		Forecasters:         []string{"forecaster0"},
-		Inferers:            []string{"worker0", s.addrsStr[1]},
-		NetworkCombinedLoss: networkCombinedLoss,
-		EpsilonTopic:        epsilon,
-		PNorm:               pNorm,
-		CNorm:               cNorm,
+
+	allInferersAreNew := false
+	inferers := []string{"worker0", s.addrsStr[1]}
+	forecasters := []string{"forecaster0"}
+	forecastByWorker := map[string]*emissionstypes.Forecast{"forecaster0": forecasts.Forecasts[0]}
+	zero := alloraMath.ZeroDec()
+	infererRegrets := map[string]*alloraMath.Dec{
+		"worker0":     &zero,
+		s.addrsStr[1]: &zero,
 	}
-	result, err := palette.CalcForecastImpliedInferences()
+	forecasterRegrets := map[string]*alloraMath.Dec{
+
+		"forecaster0": &zero,
+	}
+
+	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+		s.ctx.Logger(),
+		topicId,
+		allInferersAreNew,
+		inferers,
+		inferenceByWorker,
+		infererRegrets,
+		forecasters,
+		forecastByWorker,
+		forecasterRegrets,
+		networkCombinedLoss,
+		epsilon,
+		pNorm,
+		cNorm,
+	)
 	s.Require().NoError(err)
 
 	for key, expectedValue := range expected {
@@ -172,18 +191,36 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 		"worker0":     {Value: alloraMath.MustNewDecFromString("1")},
 		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("2")},
 	}
-	palette := inferencesynthesis.SynthPalette{
-		Logger:              inferencesynthesis.Logger(s.ctx),
-		InferenceByWorker:   inferenceByWorker,
-		ForecastByWorker:    map[string]*emissionstypes.Forecast{"worker0": forecasts.Forecasts[0]},
-		Forecasters:         []string{"worker0"},
-		Inferers:            []string{"worker0", s.addrsStr[1]},
-		NetworkCombinedLoss: networkCombinedLoss,
-		EpsilonTopic:        epsilon,
-		PNorm:               pNorm,
-		CNorm:               cNorm,
+
+	topicId := uint64(1)
+	allInferersAreNew := false
+	inferers := []string{"worker0", s.addrsStr[1]}
+	forecasters := []string{"worker0"}
+	forecastByWorker := map[string]*emissionstypes.Forecast{"worker0": forecasts.Forecasts[0]}
+	zero := alloraMath.ZeroDec()
+	infererRegrets := map[string]*alloraMath.Dec{
+		"worker0":     &zero,
+		s.addrsStr[1]: &zero,
 	}
-	result, err := palette.CalcForecastImpliedInferences()
+	forecasterRegrets := map[string]*alloraMath.Dec{
+		"worker0": &zero,
+	}
+
+	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+		s.ctx.Logger(),
+		topicId,
+		allInferersAreNew,
+		inferers,
+		inferenceByWorker,
+		infererRegrets,
+		forecasters,
+		forecastByWorker,
+		forecasterRegrets,
+		networkCombinedLoss,
+		epsilon,
+		pNorm,
+		cNorm,
+	)
 	s.Require().NoError(err)
 
 	for key, expectedValue := range expected {
@@ -241,22 +278,41 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 		s.addrsStr[1]: {Value: alloraMath.MustNewDecFromString("2")},
 		s.addrsStr[2]: {Value: alloraMath.MustNewDecFromString("3")},
 	}
-	palette := inferencesynthesis.SynthPalette{
-		Logger:            inferencesynthesis.Logger(s.ctx),
-		InferenceByWorker: inferenceByWorker,
-		ForecastByWorker: map[string]*emissionstypes.Forecast{
-			"worker0":     forecasts.Forecasts[0],
-			s.addrsStr[1]: forecasts.Forecasts[1],
-			// s.addrsStr[2]: forecasts.Forecasts[2],
-		},
-		Forecasters:         []string{"worker0", s.addrsStr[1], s.addrsStr[2]},
-		Inferers:            []string{"worker0", s.addrsStr[1], s.addrsStr[2]},
-		NetworkCombinedLoss: networkCombinedLoss,
-		EpsilonTopic:        epsilon,
-		PNorm:               pNorm,
-		CNorm:               cNorm,
+
+	topicId := uint64(1)
+	allInferersAreNew := false
+	inferers := []string{"worker0", s.addrsStr[1], s.addrsStr[2]}
+	forecasters := []string{"worker0", s.addrsStr[1]}
+	forecastByWorker := map[string]*emissionstypes.Forecast{
+		"worker0":     forecasts.Forecasts[0],
+		s.addrsStr[1]: forecasts.Forecasts[1],
 	}
-	result, err := palette.CalcForecastImpliedInferences()
+	zero := alloraMath.ZeroDec()
+	infererRegrets := map[string]*alloraMath.Dec{
+		"worker0":     &zero,
+		s.addrsStr[1]: &zero,
+		s.addrsStr[2]: &zero,
+	}
+	forecasterRegrets := map[string]*alloraMath.Dec{
+		"worker0":     &zero,
+		s.addrsStr[1]: &zero,
+	}
+
+	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+		s.ctx.Logger(),
+		topicId,
+		allInferersAreNew,
+		inferers,
+		inferenceByWorker,
+		infererRegrets,
+		forecasters,
+		forecastByWorker,
+		forecasterRegrets,
+		networkCombinedLoss,
+		epsilon,
+		pNorm,
+		cNorm,
+	)
 	s.Require().NoError(err)
 
 	for key, expectedValue := range expected {
@@ -322,17 +378,39 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 		worker3: {Value: epoch2Get("inference_3")},
 		worker4: {Value: epoch2Get("inference_4")},
 	}
-	palette := inferencesynthesis.SynthPalette{
-		InferenceByWorker:   inferenceByWorker,
-		ForecastByWorker:    map[string]*emissionstypes.Forecast{forecaster0: forecasts.Forecasts[0]},
-		Forecasters:         []string{forecaster0},
-		Inferers:            []string{worker0, worker1, worker2, worker3, worker4},
-		NetworkCombinedLoss: networkCombinedLoss,
-		EpsilonTopic:        epsilon,
-		PNorm:               pNorm,
-		CNorm:               cNorm,
+
+	topicId := uint64(1)
+	allInferersAreNew := false
+	inferers := []string{worker0, worker1, worker2, worker3, worker4}
+	forecasters := []string{forecaster0}
+	forecastByWorker := map[string]*emissionstypes.Forecast{forecaster0: forecasts.Forecasts[0]}
+	zero := alloraMath.ZeroDec()
+	infererRegrets := map[string]*alloraMath.Dec{
+		worker0: &zero,
+		worker1: &zero,
+		worker2: &zero,
+		worker3: &zero,
+		worker4: &zero,
 	}
-	result, err := palette.CalcForecastImpliedInferences()
+	forecasterRegrets := map[string]*alloraMath.Dec{
+		forecaster0: &zero,
+	}
+
+	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+		s.ctx.Logger(),
+		topicId,
+		allInferersAreNew,
+		inferers,
+		inferenceByWorker,
+		infererRegrets,
+		forecasters,
+		forecastByWorker,
+		forecasterRegrets,
+		networkCombinedLoss,
+		epsilon,
+		pNorm,
+		cNorm,
+	)
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
@@ -392,18 +470,38 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 		worker3: {Value: epoch3Get("inference_3")},
 		worker4: {Value: epoch3Get("inference_4")},
 	}
-	palette := inferencesynthesis.SynthPalette{
-		Logger:              inferencesynthesis.Logger(s.ctx),
-		InferenceByWorker:   inferenceByWorker,
-		ForecastByWorker:    map[string]*emissionstypes.Forecast{forecaster0: forecasts.Forecasts[0]},
-		Forecasters:         []string{forecaster0},
-		Inferers:            []string{worker0, worker1, worker2, worker3, worker4},
-		NetworkCombinedLoss: networkCombinedLoss,
-		EpsilonTopic:        epsilon,
-		PNorm:               pNorm,
-		CNorm:               cNorm,
+	topicId := uint64(1)
+	allInferersAreNew := false
+	inferers := []string{worker0, worker1, worker2, worker3, worker4}
+	forecasters := []string{forecaster0}
+	forecastByWorker := map[string]*emissionstypes.Forecast{forecaster0: forecasts.Forecasts[0]}
+	zero := alloraMath.ZeroDec()
+	infererRegrets := map[string]*alloraMath.Dec{
+		worker0: &zero,
+		worker1: &zero,
+		worker2: &zero,
+		worker3: &zero,
+		worker4: &zero,
 	}
-	result, err := palette.CalcForecastImpliedInferences()
+	forecasterRegrets := map[string]*alloraMath.Dec{
+		forecaster0: &zero,
+	}
+
+	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
+		s.ctx.Logger(),
+		topicId,
+		allInferersAreNew,
+		inferers,
+		inferenceByWorker,
+		infererRegrets,
+		forecasters,
+		forecastByWorker,
+		forecasterRegrets,
+		networkCombinedLoss,
+		epsilon,
+		pNorm,
+		cNorm,
+	)
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]

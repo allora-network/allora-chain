@@ -133,15 +133,26 @@ func calcWeightsGivenWorkers(
 // w_il = φ'_p(\hatR_i-1,l)
 // \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
 // given inferences, forecast-implied inferences, and network regrets
-func calcWeightedInference(p SynthPalette, weights RegretInformedWeights) (InferenceValue, error) {
+func calcWeightedInference(
+	logger log.Logger,
+	allInferersAreNew bool,
+	inferers []Worker,
+	workerToInference map[Worker]*emissionstypes.Inference,
+	infererToRegret map[Worker]*alloraMath.Dec,
+	forecasters []Worker,
+	forecasterToRegret map[Worker]*alloraMath.Dec,
+	forecasterToForecastImpliedInference map[Worker]*emissionstypes.Inference,
+	weights RegretInformedWeights,
+	epsilonSafeDiv alloraMath.Dec,
+) (InferenceValue, error) {
 	runningUnnormalizedI_i := alloraMath.ZeroDec() //nolint:revive // var-naming: don't use underscores in Go names
 	sumWeights := alloraMath.ZeroDec()
 	err := error(nil)
 
 	// If all inferers are new, then the weight is 1 for all inferers
-	if p.AllInferersAreNew {
-		for _, inferer := range p.Inferers {
-			runningUnnormalizedI_i, err = runningUnnormalizedI_i.Add(p.InferenceByWorker[inferer].Value)
+	if allInferersAreNew {
+		for _, inferer := range inferers {
+			runningUnnormalizedI_i, err = runningUnnormalizedI_i.Add(workerToInference[inferer].Value)
 			if err != nil {
 				return InferenceValue{}, errorsmod.Wrapf(err, "Error adding weight by worker value")
 			}
@@ -151,25 +162,25 @@ func calcWeightedInference(p SynthPalette, weights RegretInformedWeights) (Infer
 			}
 		}
 	} else {
-		for _, inferer := range p.Inferers {
-			inferenceByWorker, exists := p.InferenceByWorker[inferer]
+		for _, inferer := range inferers {
+			inferenceByWorker, exists := workerToInference[inferer]
 			if !exists {
-				p.Logger.Debug(fmt.Sprintf("Cannot find inferer in InferenceByWorker in CalcWeightedInference %v", inferer))
+				logger.Debug(fmt.Sprintf("Cannot find inferer in InferenceByWorker in CalcWeightedInference %v", inferer))
 				continue
 			}
 			infererWeight, exists := weights.inferers[inferer]
 			if !exists {
-				p.Logger.Debug(fmt.Sprintf("Cannot find inferer in weights.inferers in CalcWeightedInference %v", inferer))
+				logger.Debug(fmt.Sprintf("Cannot find inferer in weights.inferers in CalcWeightedInference %v", inferer))
 				continue
 			}
-			if _, exists := p.InfererRegrets[inferer]; !exists {
-				p.Logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in CalcWeightedInference %v", inferer))
+			if _, exists := infererToRegret[inferer]; !exists {
+				logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in CalcWeightedInference %v", inferer))
 				continue
 			}
 			runningUnnormalizedI_i, sumWeights, err = accumulateWeights(
 				*inferenceByWorker,
 				infererWeight,
-				p.AllInferersAreNew,
+				allInferersAreNew,
 				runningUnnormalizedI_i,
 				sumWeights,
 			)
@@ -177,19 +188,19 @@ func calcWeightedInference(p SynthPalette, weights RegretInformedWeights) (Infer
 				return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of inferer")
 			}
 		}
-		for _, forecaster := range p.Forecasters {
-			workerForecastImpliedInference, exists := p.ForecastImpliedInferenceByWorker[forecaster]
+		for _, forecaster := range forecasters {
+			workerForecastImpliedInference, exists := forecasterToForecastImpliedInference[forecaster]
 			if !exists {
-				p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in CalcWeightedInference %v", forecaster))
+				logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in CalcWeightedInference %v", forecaster))
 				continue
 			}
 			forecasterWeight, exists := weights.forecasters[forecaster]
 			if !exists {
-				p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in weights.forecasters in CalcWeightedInference %v", forecaster))
+				logger.Debug(fmt.Sprintf("Cannot find forecaster in weights.forecasters in CalcWeightedInference %v", forecaster))
 				continue
 			}
-			if _, exists := p.ForecasterRegrets[forecaster]; !exists {
-				p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in CalcWeightedInference %v", forecaster))
+			if _, exists := forecasterToRegret[forecaster]; !exists {
+				logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in CalcWeightedInference %v", forecaster))
 				continue
 			}
 			runningUnnormalizedI_i, sumWeights, err = accumulateWeights(
@@ -206,8 +217,8 @@ func calcWeightedInference(p SynthPalette, weights RegretInformedWeights) (Infer
 	}
 
 	// Normalize the running unnormalized network inference to yield output
-	if sumWeights.Lt(p.EpsilonSafeDiv) {
-		sumWeights = p.EpsilonSafeDiv
+	if sumWeights.Lt(epsilonSafeDiv) {
+		sumWeights = epsilonSafeDiv
 	}
 	ret, err := runningUnnormalizedI_i.Quo(sumWeights)
 	if err != nil {
@@ -256,59 +267,6 @@ func getForecasterRegretsSlice(
 		regrets = append(regrets, *regret)
 	}
 	return regrets
-}
-
-func (p *SynthPalette) UpdateInferersInfo(newInferers []Worker) error {
-	p.Inferers = newInferers
-	inferenceByWorker := make(map[Worker]*emissionstypes.Inference)
-	infererRegrets := make(map[Worker]*alloraMath.Dec)
-
-	for _, inferer := range p.Inferers {
-		regret, ok := p.InfererRegrets[inferer]
-		if !ok {
-			p.Logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in UpdateInferersInfo %v", inferer))
-			continue
-		}
-		infererRegrets[inferer] = regret
-		inference, ok := p.InferenceByWorker[inferer]
-		if !ok {
-			p.Logger.Debug(fmt.Sprintf("Cannot find inferer in InferenceByWorker in UpdateInferersInfo %v", inferer))
-			continue
-		}
-		inferenceByWorker[inferer] = inference
-	}
-	p.InferenceByWorker = inferenceByWorker
-	p.InfererRegrets = infererRegrets
-
-	return nil
-}
-
-// UpdateForecasters updates the forecasters and their related fields in the SynthPalette.
-func (p *SynthPalette) UpdateForecastersInfo(newForecasters []Worker) error {
-	p.Forecasters = newForecasters
-	forecastByWorker := make(map[Worker]*emissionstypes.Forecast)
-	forecasterRegrets := make(map[Worker]*alloraMath.Dec)
-
-	for _, forecaster := range p.Forecasters {
-		regretInfo, ok := p.ForecasterRegrets[forecaster]
-		if !ok {
-			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in UpdateForecastersInfo %v", forecaster))
-			continue
-		}
-		forecasterRegrets[forecaster] = regretInfo
-
-		forecast, ok := p.ForecastByWorker[forecaster]
-		if !ok {
-			p.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastByWorker in UpdateForecastersInfo %v", forecaster))
-			continue
-		}
-		forecastByWorker[forecaster] = forecast
-	}
-
-	p.ForecastByWorker = forecastByWorker
-	p.ForecasterRegrets = forecasterRegrets
-
-	return nil
 }
 
 // sum up all of the inference values into running network combined inference
