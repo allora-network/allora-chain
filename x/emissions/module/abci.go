@@ -40,9 +40,6 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	weights, sumWeight, totalRevenue, err := rewards.GetAndUpdateActiveTopicWeights(sdkCtx, am.keeper, blockHeight)
 	if err != nil {
 		return errors.Wrapf(err, "Weights error")
-	} else if len(weights) == 0 {
-		sdkCtx.Logger().Warn("No rewardable topics found")
-		return nil
 	}
 
 	sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
