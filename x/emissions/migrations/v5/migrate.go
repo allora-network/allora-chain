@@ -19,7 +19,7 @@ const maxPageSize = uint64(10000)
 // MigrateStore migrates the store from version 4 to version 5
 // it does the following:
 // - migrates topics
-// - Deletes the contents of several maps that had NaN values in them
+// - Deletes the contents of previous quantile score maps
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 4 TO VERSION 5")
 	ctx.Logger().Info("MIGRATING STORE FROM VERSION 4 TO VERSION 5")
