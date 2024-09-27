@@ -107,33 +107,33 @@ func GenerateReputerScores(
 			return []types.Score{}, errors.Wrapf(err, "Error setting listening coefficient")
 		}
 
-		newScore := types.Score{
+		instantScore := types.Score{
 			TopicId:     topicId,
 			BlockHeight: block,
 			Address:     reputer,
 			Score:       scores[i],
 		}
-		err = keeper.InsertReputerScore(ctx, topicId, block, newScore)
+		err = keeper.InsertReputerScore(ctx, topicId, block, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
 
-		emaScore, err := keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, block, reputer, newScore)
+		emaScore, err := keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, block, reputer, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving reputer score ema")
 		}
 
 		activeArr[reputer] = true
-		newScores = append(newScores, newScore)
+		newScores = append(newScores, instantScore)
 		emaScores = append(emaScores, emaScore)
 	}
 
 	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveReputerQuantile)
+	topicInstantScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveReputerQuantile)
 	if err != nil {
 		return nil, err
 	}
-	err = keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	err = keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicInstantScoreQuantile)
 	if err != nil {
 		return nil, err
 	}
@@ -182,32 +182,32 @@ func GenerateInferenceScores(
 			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
 
-		newScore := types.Score{
+		instantScore := types.Score{
 			TopicId:     topicId,
 			BlockHeight: block,
 			Address:     oneOutLoss.Worker,
 			Score:       workerNewScore,
 		}
-		err = keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
+		err = keeper.InsertWorkerInferenceScore(ctx, topicId, block, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 
-		emaScore, err := keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, block, oneOutLoss.Worker, newScore)
+		emaScore, err := keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, block, oneOutLoss.Worker, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving inferer score ema")
 		}
 		activeArr[oneOutLoss.Worker] = true
-		newScores = append(newScores, newScore)
+		newScores = append(newScores, instantScore)
 		emaScores = append(emaScores, emaScore)
 	}
 
 	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveInfererQuantile)
+	topicInstantScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveInfererQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error getting quantile of scores")
 	}
-	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicInstantScoreQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error setting previous topic quantile inferer score ema")
 	}
@@ -281,33 +281,33 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error getting final worker score forecast task")
 		}
 
-		newScore := types.Score{
+		instantScore := types.Score{
 			TopicId:     topicId,
 			BlockHeight: block,
 			Address:     oneInNaiveLoss.Worker,
 			Score:       workerPerformanceScore,
 		}
-		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
+		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
 		}
 
-		emaScore, err := keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, block, oneInNaiveLoss.Worker, newScore)
+		emaScore, err := keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, block, oneInNaiveLoss.Worker, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving forecaster score ema")
 		}
 
 		activeArr[oneInNaiveLoss.Worker] = true
-		newScores = append(newScores, newScore)
+		newScores = append(newScores, instantScore)
 		emaScores = append(emaScores, emaScore)
 	}
 
 	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveForecasterQuantile)
+	topicInstantScoreQuantile, err := actorutils.GetQuantileOfScores(newScores, topic.ActiveForecasterQuantile)
 	if err != nil {
 		return nil, err
 	}
-	err = keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	err = keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicInstantScoreQuantile)
 	if err != nil {
 		return nil, err
 	}

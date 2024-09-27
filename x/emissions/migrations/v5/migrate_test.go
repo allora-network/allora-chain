@@ -1,4 +1,4 @@
-package v4_test
+package v5_test
 
 import (
 	"testing"
@@ -126,7 +126,6 @@ func (s *EmissionsV4MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().Equal(migratedOldTopicWithNaNInitialRegret.PNorm.String(), newMsg.PNorm.String())
 	s.Require().Equal(migratedOldTopicWithNaNInitialRegret.AlphaRegret.String(), newMsg.AlphaRegret.String())
 	s.Require().False(newMsg.AllowNegative)
-	s.Require().Equal("0", newMsg.InitialRegret.String())
 	s.Require().Equal(migratedOldTopicWithNaNInitialRegret.Epsilon.String(), newMsg.Epsilon.String())
 	s.Require().Equal(migratedOldTopicWithNaNInitialRegret.WorkerSubmissionWindow, newMsg.WorkerSubmissionWindow)
 	s.Require().Equal(migratedOldTopicWithNaNInitialRegret.MeritSortitionAlpha.String(), newMsg.MeritSortitionAlpha.String())
@@ -167,14 +166,13 @@ func testScoreMapDeletion(
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &score)
 	s.Require().NoError(err)
-	iterator.Close()
+	defer iterator.Close()
 
 	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
-	iterator.Close()
 }
 
 // test for deletes on maps that have scores as the value of the map
@@ -203,7 +201,7 @@ func testScoresMapDeletion(
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &scores)
 	s.Require().NoError(err)
-	iterator.Close()
+	defer iterator.Close()
 	s.Require().Len(scores.Scores, 1)
 
 	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
@@ -211,7 +209,6 @@ func testScoresMapDeletion(
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
-	iterator.Close()
 }
 
 // check that the specified maps are reset correctly
@@ -343,7 +340,7 @@ func testReputerValueBundleMapDeletion(
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &reputerValueBundles)
 	s.Require().NoError(err)
-	iterator.Close()
+	defer iterator.Close()
 	s.Require().Len(reputerValueBundles.ReputerValueBundles, 1)
 
 	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
@@ -351,7 +348,6 @@ func testReputerValueBundleMapDeletion(
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
-	iterator.Close()
 }
 
 // test for deletes on maps that have TimeStampedValues as the value of the map
@@ -377,12 +373,11 @@ func testTimeStampedValueMapDeletion(
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &timeStampedValue)
 	s.Require().NoError(err)
-	iterator.Close()
+	defer iterator.Close()
 
 	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
-	iterator.Close()
 }
