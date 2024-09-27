@@ -742,6 +742,8 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	forecaster2 := s.addrs[7].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
+	reputer0 := s.addrs[8].String()
+
 	for _, worker := range infererAddresses {
 		err := k.IncrementCountInfererInclusionsInTopic(s.ctx, topicId, worker)
 		require.NoError(err)
@@ -761,8 +763,10 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 
 	networkLosses, err := testutil.GetNetworkLossFromCsv(
 		topicId,
+		blockHeight,
 		infererAddresses,
 		forecasterAddresses,
+		reputer0,
 		epoch301Get,
 	)
 	s.Require().NoError(err)
@@ -830,13 +834,17 @@ func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
 	forecaster2 := s.addrs[7].String()
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
 
+	reputer0 := s.addrs[8].String()
+
 	err = testutil.SetRegretsFromPreviousEpoch(s.ctx, s.emissionsKeeper, topicId, blockHeight, infererAddresses, forecasterAddresses, epochPrevGet)
 	require.NoError(err)
 
 	networkLosses, err := testutil.GetNetworkLossFromCsv(
 		topicId,
+		blockHeight,
 		infererAddresses,
 		forecasterAddresses,
+		reputer0,
 		epoch301Get,
 	)
 	s.Require().NoError(err)
