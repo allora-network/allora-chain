@@ -30,7 +30,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (*
 			return nil, err
 		}
 		if isRegistered {
-			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is already registered in this topic")
+			return nil, errorsmod.Wrapf(types.ErrAddressAlreadyRegisteredInATopic, "reputer is already registered in this topic")
 		}
 	} else {
 		isRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
@@ -38,7 +38,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (*
 			return nil, err
 		}
 		if isRegistered {
-			return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker is already registered in this topic")
+			return nil, errorsmod.Wrapf(types.ErrAddressAlreadyRegisteredInATopic, "worker is already registered in this topic")
 		}
 	}
 

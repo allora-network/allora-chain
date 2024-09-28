@@ -670,9 +670,14 @@ func stakeValidateHelper(addr []string, amount cosmosMath.Int, allowZeroAmount b
 			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid address (%s)", ad)
 		}
 	}
-	if amount.IsNegative() || (!allowZeroAmount && amount.IsZero()) {
-		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "invalid amount (%s)", amount.String())
+	if amount.IsNegative() {
+		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "amount must be non-negative: %s", amount.String())
 	}
+
+	if !allowZeroAmount && amount.IsZero() {
+		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "amount must be positive: %s", amount.String())
+	}
+
 	return nil
 }
 
