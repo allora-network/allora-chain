@@ -542,6 +542,9 @@ func GetQuantileOfDecs(
 		return decs[lowerIndexInt], nil
 	}
 
+	if lowerIndexInt < 0 || upperIndexInt >= int64(len(decs)) {
+		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot calculate quantile")
+	}
 	// in cases where the quantile is between two values
 	// return lowerValue + (upperValue-lowerValue)*(position-lowerIndex)
 	lowerDec := decs[lowerIndexInt]

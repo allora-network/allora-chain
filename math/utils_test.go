@@ -524,3 +524,93 @@ func TestGetQuantileOfDecs(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, percentile, alloraMath.MustNewDecFromString("7.75"))
 }
+
+func TestGetQuantileOfDecsWithCases(t *testing.T) {
+	tests := []struct {
+		name        string
+		data        []alloraMath.Dec
+		quantile    alloraMath.Dec
+		expected    alloraMath.Dec
+		expectedErr error
+	}{
+		{
+			data:     []alloraMath.Dec{},
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.ZeroDec(),
+		},
+		{
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("42"),
+			},
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.MustNewDecFromString("42"),
+		},
+		{
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("-5"),
+				alloraMath.MustNewDecFromString("-3"),
+				alloraMath.MustNewDecFromString("-1"),
+				alloraMath.MustNewDecFromString("-4"),
+				alloraMath.MustNewDecFromString("-2"),
+			},
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.MustNewDecFromString("-3"),
+		},
+		{
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("-5"),
+				alloraMath.MustNewDecFromString("-3"),
+				alloraMath.MustNewDecFromString("0"),
+				alloraMath.MustNewDecFromString("-4"),
+				alloraMath.MustNewDecFromString("2"),
+			},
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.MustNewDecFromString("-3"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := alloraMath.GetQuantileOfDecs(tt.data, tt.quantile)
+
+			if tt.expectedErr != nil {
+				require.ErrorIs(t, err, tt.expectedErr)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestGetQuantileOfDecsWithNaN(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.NewNaN(),
+		alloraMath.NewNaN(),
+		alloraMath.MustNewDecFromString("3"),
+	}
+	quantile := alloraMath.MustNewDecFromString("0.5")
+
+	result, err := alloraMath.GetQuantileOfDecs(data, quantile)
+	require.NoError(t, err)
+	require.Equal(t, result, alloraMath.NewNaN())
+}
+
+func TestGetQuantileOfDecsWithInvalidQuantile(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("2"),
+		alloraMath.MustNewDecFromString("3"),
+	}
+
+	invalidQuantiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1.1"),
+		alloraMath.MustNewDecFromString("-0.1"),
+		alloraMath.NewNaN(),
+	}
+
+	for _, quantile := range invalidQuantiles {
+		_, err := alloraMath.GetQuantileOfDecs(data, quantile)
+		require.Error(t, err)
+	}
+}
