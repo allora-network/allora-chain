@@ -44,3 +44,7 @@ bin/
 tokenomics_output.csv
 
 dist/
+
+.omega.json
+*.sublime-project
+*.sublime-workspace
