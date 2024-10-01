@@ -496,6 +496,7 @@ func testScoreMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &score)
 	s.Require().NoError(err)
@@ -505,6 +506,7 @@ func testScoreMapDeletion(
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }
@@ -532,6 +534,7 @@ func testScoresMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &scores)
 	s.Require().NoError(err)
@@ -542,6 +545,7 @@ func testScoresMapDeletion(
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }
@@ -633,6 +637,7 @@ func testValueBundleMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &bundle)
 	s.Require().NoError(err)
@@ -643,6 +648,7 @@ func testValueBundleMapDeletion(
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }
@@ -672,6 +678,7 @@ func testReputerValueBundleMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &reputerValueBundles)
 	s.Require().NoError(err)
@@ -682,6 +689,7 @@ func testReputerValueBundleMapDeletion(
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }
@@ -706,6 +714,7 @@ func testTimeStampedValueMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &timeStampedValue)
 	s.Require().NoError(err)
@@ -715,6 +724,7 @@ func testTimeStampedValueMapDeletion(
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }

@@ -64,6 +64,7 @@ func MigrateParams(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	topicStore := prefix.NewStore(store, types.TopicsKey)
 	iterator := topicStore.Iterator(nil, nil)
+	defer iterator.Close()
 
 	valueToAdd := make(map[string]types.Topic, 0)
 	for ; iterator.Valid(); iterator.Next() {
@@ -111,6 +112,8 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 
 func MigrateOffchainStore(workerStore storetypes.KVStore, cdc codec.BinaryCodec) error {
 	iterator := workerStore.Iterator(nil, nil)
+	defer iterator.Close()
+
 	keysToDelete := make([][]byte, 0)
 	for ; iterator.Valid(); iterator.Next() {
 		keysToDelete = append(keysToDelete, iterator.Key())
@@ -152,6 +155,7 @@ func MigrateOffchainNode(store storetypes.KVStore, cdc codec.BinaryCodec) error 
 func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	networkLossBundlesStore := prefix.NewStore(store, types.NetworkLossBundlesKey)
 	iterator := networkLossBundlesStore.Iterator(nil, nil)
+	defer iterator.Close()
 
 	valueToAdd := make(map[string]types.ValueBundle, 0)
 	for ; iterator.Valid(); iterator.Next() {
@@ -231,6 +235,7 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 func MigrateAllLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	allLossBundlesStore := prefix.NewStore(store, types.AllLossBundlesKey)
 	iterator := allLossBundlesStore.Iterator(nil, nil)
+	defer iterator.Close()
 
 	valuesToAdd := make(map[string]types.ReputerValueBundles, 0)
 	for ; iterator.Valid(); iterator.Next() {
@@ -292,6 +297,7 @@ func MigrateAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec) er
 func restoreAllRecordCommits(store storetypes.KVStore, cdc codec.BinaryCodec, commitKey collections.Prefix) error {
 	topicLastWorkerCommitStore := prefix.NewStore(store, commitKey)
 	iterator := topicLastWorkerCommitStore.Iterator(nil, nil)
+	defer iterator.Close()
 
 	valuesToAdd := make(map[string]types.TimestampedActorNonce, 0)
 	for ; iterator.Valid(); iterator.Next() {
