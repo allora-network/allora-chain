@@ -27,6 +27,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Short:     "Get a bunch of debugging info about the inflation rate",
 				},
 			},
+			SubCommands:          nil,
+			EnhanceCustomCommand: false,
+			Short:                "Querying commands for the mint module",
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
 			Service: mintv2.MsgService_ServiceDesc.ServiceName,
@@ -49,6 +52,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 			},
+			SubCommands:          nil,
+			EnhanceCustomCommand: false,
+			Short:                "Transaction commands for the mint module",
 		},
 	}
 }
