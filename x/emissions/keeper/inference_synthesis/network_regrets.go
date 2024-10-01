@@ -431,49 +431,47 @@ func CalcTopicInitialRegret(
 // Determine if a inferer is an experienced worker by checking
 // the inclusions count is greater than 1/alpha_regret
 func isExperiencedInferer(
-	ctx context.Context,
-	k keeper.Keeper,
-	topic emissions.Topic,
-	inferer Worker,
-	newParticipant bool,
+    ctx context.Context,
+    k keeper.Keeper,
+    topic emissions.Topic,
+    inferer Worker,
+    newParticipant bool,
 ) (bool, error) {
-	numInclusions := uint64(0)
-	numInclusions, err := k.GetCountInfererInclusionsInTopic(ctx, topic.Id, inferer)
-	if err != nil {
-		return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
-	}
-	numInclusionsDec, err := alloraMath.NewDecFromUint64(numInclusions)
-	if err != nil {
-		return false, errorsmod.Wrapf(err, "failed to get num inclusions dec")
-	}
-	oneOverAlpha, err := alloraMath.OneDec().Quo(topic.AlphaRegret)
-	if err != nil {
-		return false, errorsmod.Wrapf(err, "failed to get one over alpha")
-	}
-	return !newParticipant && numInclusionsDec.Gte(oneOverAlpha), nil
+    numInclusions := uint64(0)
+    numInclusions, err := k.GetCountInfererInclusionsInTopic(ctx, topic.Id, inferer)
+    if err != nil {
+        return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
+    }
+    return isExperiencedActor(numInclusions)
 }
 
 // Determine if a forecaster is an experienced worker by checking
 // the inclusions count is greater than 1/alpha_regret
 func isExperiencedForecaster(
-	ctx context.Context,
-	k keeper.Keeper,
-	topic emissions.Topic,
-	forecaster Worker,
-	newParticipant bool,
-) (bool, error) {
-	numInclusions := uint64(0)
-	numInclusions, err := k.GetCountForecasterInclusionsInTopic(ctx, topic.Id, forecaster)
-	if err != nil {
-		return false, errorsmod.Wrapf(err, "failed to get forecaster inclusions")
-	}
-	numInclusionsDec, err := alloraMath.NewDecFromUint64(numInclusions)
-	if err != nil {
-		return false, errorsmod.Wrapf(err, "failed to get num inclusions dec")
-	}
-	oneOverAlpha, err := alloraMath.OneDec().Quo(topic.AlphaRegret)
-	if err != nil {
-		return false, errorsmod.Wrapf(err, "failed to get one over alpha")
-	}
-	return !newParticipant && numInclusionsDec.Gte(oneOverAlpha), nil
+    ctx context.Context,
+    k keeper.Keeper,
+    topic emissions.Topic,
+    forecaster Worker,
+    newParticipant bool,
+) (bool, error) { 
+    numInclusions := uint64(0)
+    numInclusions, err := k.GetCountForecasterInclusionsInTopic(ctx, topic.Id, forecaster)
+    if err != nil {
+        return false, errorsmod.Wrapf(err, "failed to get forecaster inclusions")
+    }
+    return isExperiencedActor(numInclusions)
+}
+
+// helper function for isExperiencedForecaster and isExperiencedInferer
+// check if inclusions count is greater than 1/alpha_regret
+func isExperiencedActor(numInclusions uint64) {
+    numInclusionsDec, err := alloraMath.NewDecFromUint64(numInclusions)
+    if err != nil {
+        return false, errorsmod.Wrapf(err, "failed to get num inclusions dec")
+    }
+    oneOverAlpha, err := alloraMath.OneDec().Quo(topic.AlphaRegret)
+    if err != nil {
+        return false, errorsmod.Wrapf(err, "failed to get one over alpha")
+    }
+    return !newParticipant && numInclusionsDec.Gte(oneOverAlpha), nil
 }
