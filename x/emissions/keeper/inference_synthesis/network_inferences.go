@@ -45,10 +45,22 @@ func GetNetworkInferences(
 		}
 	}
 
+	// ATTN: PROTO-2464
 	networkInferences = &emissions.ValueBundle{
-		TopicId:          topicId,
-		InfererValues:    make([]*emissions.WorkerAttributedValue, 0),
-		ForecasterValues: make([]*emissions.WorkerAttributedValue, 0),
+		TopicId: topicId,
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{BlockHeight: ctx.BlockHeight()},
+		},
+		Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.ZeroDec(),
+		InfererValues:                 make([]*emissions.WorkerAttributedValue, 0),
+		ForecasterValues:              make([]*emissions.WorkerAttributedValue, 0),
+		NaiveValue:                    alloraMath.ZeroDec(),
+		OneOutInfererValues:           make([]*emissions.WithheldWorkerAttributedValue, 0),
+		OneOutForecasterValues:        make([]*emissions.WithheldWorkerAttributedValue, 0),
+		OneInForecasterValues:         make([]*emissions.WorkerAttributedValue, 0),
+		OneOutInfererForecasterValues: make([]*emissions.OneOutInfererForecasterValues, 0),
 	}
 
 	forecasterToForecastImpliedInference = make(map[string]*emissions.Inference, 0)
@@ -158,7 +170,14 @@ func GetNetworkInferences(
 		singleInference := inferences.Inferences[0]
 
 		networkInferences = &emissions.ValueBundle{
-			TopicId:       topicId,
+			TopicId: topicId,
+			Reputer: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+			ReputerRequestNonce: &emissions.ReputerRequestNonce{
+				ReputerNonce: &emissions.Nonce{
+					BlockHeight: ctx.BlockHeight(),
+				},
+			},
+			ExtraData:     nil,
 			CombinedValue: singleInference.Value,
 			InfererValues: []*emissions.WorkerAttributedValue{
 				{
@@ -166,11 +185,12 @@ func GetNetworkInferences(
 					Value:  singleInference.Value,
 				},
 			},
-			ForecasterValues:       []*emissions.WorkerAttributedValue{},
-			NaiveValue:             singleInference.Value,
-			OneOutInfererValues:    []*emissions.WithheldWorkerAttributedValue{},
-			OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{},
-			OneInForecasterValues:  []*emissions.WorkerAttributedValue{},
+			ForecasterValues:              []*emissions.WorkerAttributedValue{},
+			NaiveValue:                    singleInference.Value,
+			OneOutInfererValues:           []*emissions.WithheldWorkerAttributedValue{},
+			OneOutForecasterValues:        []*emissions.WithheldWorkerAttributedValue{},
+			OneInForecasterValues:         []*emissions.WorkerAttributedValue{},
+			OneOutInfererForecasterValues: []*emissions.OneOutInfererForecasterValues{},
 		}
 	}
 

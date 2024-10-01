@@ -252,9 +252,10 @@ func CalcNetworkLosses(
 		TopicId:             topicId,
 		ReputerRequestNonce: &emissions.ReputerRequestNonce{ReputerNonce: &emissions.Nonce{BlockHeight: blockHeight}},
 		// we re-use the value bundle for the network loss bundle
-		// this is bad practice and we should refactor: PROTO-2369
+		// this is bad practice and we should refactor: PROTO-2369, PROTO-2464
 		// for now set the Reputer address to a "zero" address
 		Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		ExtraData:                     nil,
 		CombinedValue:                 combinedValue,
 		InfererValues:                 infererLosses,
 		ForecasterValues:              forecasterLosses,
