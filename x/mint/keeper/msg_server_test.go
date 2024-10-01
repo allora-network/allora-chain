@@ -40,8 +40,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidSigner() {
 
 	params := types.DefaultParams()
 	request := &types.UpdateParamsRequest{
-		Sender: nonAdminAddr,
-		Params: params,
+		Sender:                    nonAdminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, nonAdminAddr).Return(false, nil)
@@ -58,8 +60,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsNonAddressSigner() {
 
 	notAnAddress := "not an address lol"
 	request := &types.UpdateParamsRequest{
-		Sender: notAnAddress,
-		Params: defaultParams,
+		Sender:                    notAnAddress,
+		Params:                    defaultParams,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, notAnAddress).Return(false, fmt.Errorf("error key encode:"))
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -71,8 +75,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMintDenom() {
 	params := types.DefaultParams()
 	params.MintDenom = ""
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -84,8 +90,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMaxSupply() {
 	params := types.DefaultParams()
 	params.MaxSupply = sdkmath.NewIntFromUint64(0)
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -97,8 +105,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsFEmission() {
 	params := types.DefaultParams()
 	params.FEmission = sdkmath.LegacyNewDec(205)
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -110,8 +120,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsOneMonthSmoothingDegr
 	params := types.DefaultParams()
 	params.OneMonthSmoothingDegree = sdkmath.LegacyNewDec(15)
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -123,8 +135,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsEcosystemTreasuryPerc
 	params := types.DefaultParams()
 	params.EcosystemTreasuryPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -136,8 +150,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsFoundationTreasuryPer
 	params := types.DefaultParams()
 	params.FoundationTreasuryPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -149,8 +165,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsParticipantsPercentOf
 	params := types.DefaultParams()
 	params.ParticipantsPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -162,8 +180,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsInvestorsPercentOfTot
 	params := types.DefaultParams()
 	params.ParticipantsPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -174,8 +194,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsTeamPercentOfTotalSup
 	params := types.DefaultParams()
 	params.TeamPercentOfTotalSupply = sdkmath.LegacyNewDec(101)
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		BlocksPerMonth:            525590,
+		RecalculateTargetEmission: false,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)
@@ -186,8 +208,10 @@ func (s *MintKeeperTestSuite) TestUpdateParamsInvalidParamsMaximumMonthlyPercent
 	params := types.DefaultParams()
 	params.MaximumMonthlyPercentageYield = sdkmath.LegacyNewDec(101)
 	request := &types.UpdateParamsRequest{
-		Sender: s.adminAddr,
-		Params: params,
+		Sender:                    s.adminAddr,
+		Params:                    params,
+		RecalculateTargetEmission: false,
+		BlocksPerMonth:            1337,
 	}
 	s.emissionsKeeper.EXPECT().IsWhitelistAdmin(s.ctx, s.adminAddr).Return(true, nil)
 	resp, err := s.msgServer.UpdateParams(s.ctx, request)

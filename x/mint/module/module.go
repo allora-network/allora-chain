@@ -24,12 +24,12 @@ import (
 const ConsensusVersion = 2
 
 var (
-	_ module.AppModuleBasic = AppModule{}
-	_ module.HasGenesis     = AppModule{}
-	_ module.HasServices    = AppModule{}
+	_ module.AppModuleBasic = AppModule{} //nolint:exhaustruct
+	_ module.HasGenesis     = AppModule{} //nolint:exhaustruct
+	_ module.HasServices    = AppModule{} //nolint:exhaustruct
 
-	_ appmodule.AppModule       = AppModule{}
-	_ appmodule.HasBeginBlocker = AppModule{}
+	_ appmodule.AppModule       = AppModule{} //nolint:exhaustruct
+	_ appmodule.HasBeginBlocker = AppModule{} //nolint:exhaustruct
 )
 
 // AppModuleBasic defines the basic application module used by the mint module.
@@ -143,7 +143,7 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 //
 
 func init() {
-	appmodule.Register(&modulev1.Module{},
+	appmodule.Register(&modulev1.Module{FeeCollectorName: authtypes.FeeCollectorName},
 		appmodule.Provide(ProvideModule),
 	)
 }
@@ -188,5 +188,5 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	// when no inflation calculation function is provided it will use the default types.DefaultInflationCalculationFn
 	m := NewAppModule(in.Cdc, k, in.AccountKeeper)
 
-	return ModuleOutputs{MintKeeper: k, Module: m}
+	return ModuleOutputs{MintKeeper: k, Module: m, Out: depinject.Out{}}
 }
