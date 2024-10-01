@@ -30,7 +30,7 @@ VALIDATORS_API_PORT_START=1317
 HEADS_IP_START=20
 CHAIN_ID="${CHAIN_ID:-localnet}"
 LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
-UPGRADE_VERSION="v0.5.0"
+UPGRADE_VERSION="v0.6.0"
 
 ACCOUNTS_TOKENS=1000000
 
@@ -237,7 +237,7 @@ if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "  - 'allorad --home $LOCALNET_DATADIR/genesis status'"
 else
     echo "Chain is not producing blocks"
-    echo "If run localy you can check the logs with: docker logs allorad_validator_0"
+    echo "If run locally you can check the logs with: docker logs allorad_validator_0"
     echo "and connect to the validators ..."
     exit 1
 fi
