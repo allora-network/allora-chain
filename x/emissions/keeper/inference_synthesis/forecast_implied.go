@@ -64,17 +64,21 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 			weightSum := alloraMath.ZeroDec()                 // denominator in calculation of forecast-implied inferences
 			weightInferenceDotProduct := alloraMath.ZeroDec() // numerator in calculation of forecast-implied inferences
 
+			blockHeight := int64(0)
+
 			// Calculate the forecast-implied inferences I_ik
 			if args.AllInferersAreNew {
 				// If all inferers are new, calculate the median of the inferences
 				// This means that forecasters won't be able to influence the network inference when all inferers are new
 				// However, this seeds losses for forecasters for future rounds
-
 				inferenceValues := make([]alloraMath.Dec, 0, len(sortedInferersInForecast))
 				for _, inferer := range sortedInferersInForecast {
 					inference, ok := args.InfererToInference[inferer]
 					if ok {
 						inferenceValues = append(inferenceValues, inference.Value)
+						if blockHeight == 0 {
+							blockHeight = inference.BlockHeight
+						}
 					}
 				}
 
@@ -84,8 +88,12 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 				}
 
 				forecastImpliedInference := emissionstypes.Inference{
-					Inferer: forecaster,
-					Value:   medianValue,
+					TopicId:     args.TopicId,
+					BlockHeight: blockHeight,
+					Inferer:     forecaster,
+					Value:       medianValue,
+					ExtraData:   nil,
+					Proof:       "",
 				}
 				forecasterToForecastImpliedInference[forecaster] = &forecastImpliedInference
 			} else {
@@ -147,7 +155,10 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					// this is w_ijk in the paper
 					weightIJK := infererWeightsForThisForecaster[infererInForecast]
 
-					_, ok := args.InfererToInference[infererInForecast]
+					inference, ok := args.InfererToInference[infererInForecast]
+					if ok && blockHeight == 0 {
+						blockHeight = inference.BlockHeight
+					}
 					if ok && !(weightIJK.Equal(alloraMath.ZeroDec())) {
 						thisDotProduct, err := weightIJK.Mul(args.InfererToInference[infererInForecast].Value)
 						if err != nil {
@@ -173,8 +184,12 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 						return nil, nil, nil, errorsmod.Wrapf(err, "error calculating forecast value")
 					}
 					forecastImpliedInference := emissionstypes.Inference{
-						Inferer: forecaster,
-						Value:   forecastValue,
+						TopicId:     args.TopicId,
+						BlockHeight: blockHeight,
+						Inferer:     forecaster,
+						Value:       forecastValue,
+						ExtraData:   nil,
+						Proof:       "",
 					}
 					forecasterToForecastImpliedInference[forecaster] = &forecastImpliedInference
 				}

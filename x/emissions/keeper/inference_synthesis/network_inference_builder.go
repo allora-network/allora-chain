@@ -854,14 +854,21 @@ func CalcNetworkInferences(
 	}
 
 	// Build value bundle to return all the calculated inferences
+	// ATTN: PROTO-2464
 	return &emissions.ValueBundle{
-		TopicId:                args.TopicId,
-		CombinedValue:          combinedInference,
-		InfererValues:          inferences,
-		ForecasterValues:       forecastImpliedInferences,
-		NaiveValue:             naiveInference,
-		OneOutInfererValues:    oneOutInfererInferences,
-		OneOutForecasterValues: oneOutForecasterInferences,
-		OneInForecasterValues:  oneInForecasterInferences,
+		TopicId: args.TopicId,
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{BlockHeight: args.Ctx.BlockHeight()},
+		},
+		Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		ExtraData:                     nil,
+		CombinedValue:                 combinedInference,
+		InfererValues:                 inferences,
+		ForecasterValues:              forecastImpliedInferences,
+		NaiveValue:                    naiveInference,
+		OneOutInfererValues:           oneOutInfererInferences,
+		OneOutForecasterValues:        oneOutForecasterInferences,
+		OneInForecasterValues:         oneInForecasterInferences,
+		OneOutInfererForecasterValues: nil,
 	}, weights, err
 }
