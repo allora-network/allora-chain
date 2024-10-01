@@ -8,7 +8,6 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,7 +16,7 @@ import (
 
 func GetNetworkInferences(
 	ctx sdk.Context,
-	k keeper.Keeper,
+	k emissionskeeper.Keeper,
 	topicId TopicId,
 	inferencesNonce *BlockHeight,
 ) (
@@ -29,7 +28,6 @@ func GetNetworkInferences(
 	lossBlockHeight int64,
 	err error,
 ) {
-
 	// Decide whether to use the latest inferences or inferences at a specific block height
 	var inferences *emissions.Inferences
 	if inferencesNonce == nil {
@@ -171,6 +169,10 @@ func GetNetworkInferences(
 				topic.PNorm,
 				moduleParams.CNorm,
 			)
+			if err != nil {
+				Logger(ctx).Warn(fmt.Sprintf("Error calculating forecast implied inferences: %s", err.Error()))
+				return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
+			}
 		}
 	} else {
 		// Single valid inference case

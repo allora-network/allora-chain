@@ -9,7 +9,6 @@ import (
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 
 	"cosmossdk.io/core/header"
-	clog "cosmossdk.io/log"
 	cosmosMath "cosmossdk.io/math"
 
 	storetypes "cosmossdk.io/store/types"
@@ -93,7 +92,7 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 		accountKeeper,
 		map[string]bool{},
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-		clog.NewNopLogger(),
+		log.NewNopLogger(),
 	)
 
 	s.ctx = ctx
@@ -545,7 +544,6 @@ func (s *InferenceSynthesisTestSuite) getEpochValueBundleByEpoch(epochNumber int
 }
 
 func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
-	topicId uint64,
 	blockHeight int64,
 	inferences *emissionstypes.Inferences,
 	forecasts *emissionstypes.Forecasts,
@@ -564,6 +562,7 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 	forecasterRegrets map[string]*alloraMath.Dec,
 	forecastImpliedInferenceByWorker map[string]*emissionstypes.Inference,
 ) {
+	topicId := uint64(1)
 	topic := s.mockTopic()
 	topic.Id = topicId
 	topic.Epsilon = epsilonTopic
@@ -889,7 +888,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 	inferers, inferenceByWorker, infererRegrets,
 		allInferersAreNew, forecasters, forecastByWorker,
 		forecasterRegrets, forecastImpliedInferenceByWorker := s.getNetworkCalcArgs(
-		topicId, blockHeightInferences, inferences, forecasts,
+		blockHeightInferences, inferences, forecasts,
 		networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm)
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(
@@ -997,7 +996,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 	inferers, inferenceByWorker, infererRegrets,
 		allInferersAreNew, forecasters, forecastByWorker,
 		forecasterRegrets, forecastImpliedInferenceByWorker := s.getNetworkCalcArgs(
-		topicId, blockHeight, inferences, forecasts,
+		blockHeight, inferences, forecasts,
 		networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm)
 
 	s.Require().NoError(err)
@@ -1139,7 +1138,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 	inferers, inferenceByWorker, infererRegrets,
 		allInferersAreNew, forecasters, forecastByWorker,
 		forecasterRegrets, forecastImpliedInferenceByWorker := s.getNetworkCalcArgs(
-		topicId, blockHeight, inferences, forecasts,
+		blockHeight, inferences, forecasts,
 		networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm)
 
 	s.Require().NoError(err)
@@ -1237,7 +1236,7 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 	inferers, inferenceByWorker, infererRegrets,
 		allInferersAreNew, forecasters, forecastByWorker,
 		forecasterRegrets, forecastImpliedInferenceByWorker := s.getNetworkCalcArgs(
-		topicId, blockHeight, inferences, forecasts,
+		blockHeight, inferences, forecasts,
 		networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm)
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(
