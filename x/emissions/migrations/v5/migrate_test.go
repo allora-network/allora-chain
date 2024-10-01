@@ -73,6 +73,8 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
+	_, err := s.emissionsKeeper.IncrementTopicId(s.ctx)
+	s.Require().NoError(err)
 	migratedOldTopicWithNaNInitialRegret := emissionstypes.Topic{
 		Id:                       1,
 		Creator:                  "creator",
@@ -93,6 +95,8 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.1337"),
 	}
 
+	_, err = s.emissionsKeeper.IncrementTopicId(s.ctx)
+	s.Require().NoError(err)
 	bz, err := proto.Marshal(&migratedOldTopicWithNaNInitialRegret)
 	s.Require().NoError(err)
 
