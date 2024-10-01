@@ -57,13 +57,12 @@ func MigrateTopics(
 	if err != nil {
 		return err
 	}
-	ctx.Logger().Info(fmt.Sprintf("MIGRATION V5: Next topic nextId %d", nextTopicId))
 	// iterate all topics to migrate using collections.go api
 	topicsToChange := make(map[string]emissionstypes.Topic, 0)
 	for id := uint64(1); id < nextTopicId; id++ {
 		idByte := make([]byte, 8)
 		binary.BigEndian.PutUint64(idByte, id)
-		ctx.Logger().Info("MIGRATION V5: Updating topic", idByte)
+		ctx.Logger().Info(fmt.Sprintf("MIGRATION V5: Updating topic:%d", id))
 		topic, err := emissionsKeeper.GetTopic(ctx, id)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get topic")
