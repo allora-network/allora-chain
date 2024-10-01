@@ -42,3 +42,5 @@ build/
 bin/
 
 tokenomics_output.csv
+
+dist/
