@@ -67,8 +67,7 @@ func (s *EmissionsV5MigrationTestSuite) SetupTest() {
 	s.emissionsKeeper = &emissionsKeeper
 }
 
-// in this test, we check that an already migrated topic, that has all the new fields
-// for merit sortition, but has a NaN for initial regret, will have its initial regret
+// in this test, we check that an already migrated topic, that only initialRegret
 // set to 0 but everything else will remain the same
 func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
