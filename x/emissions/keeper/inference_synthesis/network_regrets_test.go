@@ -93,6 +93,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	// Create new topic
 	topic := s.mockTopic()
 	topic.InitialRegret = alloraMath.ZeroDec()
+	topic.AlphaRegret = alloraMath.MustNewDecFromString("0.5")
 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	require.NoError(err)
 

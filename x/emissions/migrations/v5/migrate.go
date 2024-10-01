@@ -1,24 +1,25 @@
 package v5
 
 import (
+	"encoding/binary"
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	oldV2Types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/gogo/protobuf/proto"
 )
 
 const maxPageSize = uint64(10000)
 
 // MigrateStore migrates the store from version 4 to version 5
 // it does the following:
-// - migrates topics
+// - migrates topics to set initial regret
 // - Deletes the contents of previous quantile score maps
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 4 TO VERSION 5")
@@ -51,23 +52,19 @@ func MigrateTopics(
 	emissionsKeeper keeper.Keeper,
 ) error {
 	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
-	iterator := topicStore.Iterator(nil, nil)
 
-	// iterate over the topic store by manually checking prefixes
-	// to make sure we absolutely do not miss any topics
-	// (as opposed to using collections.go API)
+	nextTopicId, err := emissionsKeeper.GetNextTopicId(ctx)
+	if err != nil {
+		return err
+	}
+	ctx.Logger().Info(fmt.Sprintf("MIGRATION V5: Next topic nextId %d", nextTopicId))
+	// iterate all topics to migrate using collections.go api
 	topicsToChange := make(map[string]emissionstypes.Topic, 0)
-	for ; iterator.Valid(); iterator.Next() {
-		ctx.Logger().Info("MIGRATION V5: Updating topic", iterator.Key())
-		iterator.Key()
-		var oldMsg oldV2Types.Topic
-		err := proto.Unmarshal(iterator.Value(), &oldMsg)
-		if err != nil {
-			return errorsmod.Wrapf(err, "failed to unmarshal old topic")
-		}
-		// now get the topic from the collections.go
-		// API, to check if the fields in the topic exist
-		topic, err := emissionsKeeper.GetTopic(ctx, oldMsg.Id)
+	for id := uint64(1); id < nextTopicId; id++ {
+		idByte := make([]byte, 8)
+		binary.BigEndian.PutUint64(idByte, id)
+		ctx.Logger().Info("MIGRATION V5: Updating topic", idByte)
+		topic, err := emissionsKeeper.GetTopic(ctx, id)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get topic")
 		}
@@ -76,9 +73,8 @@ func MigrateTopics(
 		newTopic.InitialRegret = alloraMath.MustNewDecFromString("0")
 		// was wrongly set to true for existing topics
 		newTopic.AllowNegative = false
-		topicsToChange[string(iterator.Key())] = newTopic
+		topicsToChange[string(idByte)] = newTopic
 	}
-	defer iterator.Close()
 	for key, value := range topicsToChange {
 		topicStore.Set([]byte(key), cdc.MustMarshal(&value))
 	}
