@@ -144,7 +144,7 @@ message Params {
   uint64 max_elements_per_forecast = 45; // max number of top forecasters by score to reward
   uint64 max_active_topics_per_block = 46; // max number of active topics per block
   uint64 max_string_length = 47; // max permittible length of strings uploaded to the chain
-  string regret_percentile = 48 [ // percentile value for getting regret
+  string initial_regret_quantile = 48 [ // quantile value for getting initial regret during network regret calculation
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
