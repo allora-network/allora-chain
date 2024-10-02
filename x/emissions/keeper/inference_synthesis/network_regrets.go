@@ -363,7 +363,14 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		if err != nil {
 			return errorsmod.Wrapf(err, "GetCalcSetNetworkRegrets error getting params")
 		}
-		updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, args.EpsilonTopic, args.PNorm, args.CNorm, params.RegretPercentile, params.PnormSafeDiv)
+		updatedTopicInitialRegret, err := CalcTopicInitialRegret(
+			workersRegrets,
+			args.EpsilonTopic,
+			args.PNorm,
+			args.CNorm,
+			params.InitialRegretQuantile,
+			params.PnormSafeDiv,
+		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error calculating topic initial regret")
 		}

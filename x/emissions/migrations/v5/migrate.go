@@ -50,7 +50,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 }
 
 // migrate params for this new version
-// the changes are the addition of RegretPercentile,PnormSafeDiv
+// the changes are the addition of InitialRegretQuantile,PnormSafeDiv
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	oldParams := oldV4Types.Params{}
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
@@ -66,7 +66,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
-	//      RegretPercentile, PnormSafeDiv
+	//      InitialRegretQuantile, PnormSafeDiv
 	newParams := emissionstypes.Params{
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
@@ -110,8 +110,8 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		MaxActiveTopicsPerBlock:             oldParams.MaxActiveTopicsPerBlock,
 		MaxStringLength:                     oldParams.MaxStringLength,
 		// NEW PARAMS
-		RegretPercentile: defaultParams.RegretPercentile,
-		PnormSafeDiv:     defaultParams.PnormSafeDiv,
+		InitialRegretQuantile: defaultParams.InitialRegretQuantile,
+		PnormSafeDiv:          defaultParams.PnormSafeDiv,
 	}
 
 	store.Delete(emissionstypes.ParamsKey)

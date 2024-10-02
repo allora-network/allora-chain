@@ -150,8 +150,8 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.MaxStringLength) == 1 {
 		existingParams.MaxStringLength = newParams.MaxStringLength[0]
 	}
-	if len(newParams.RegretPercentile) == 1 {
-		existingParams.RegretPercentile = newParams.RegretPercentile[0]
+	if len(newParams.InitialRegretQuantile) == 1 {
+		existingParams.InitialRegretQuantile = newParams.InitialRegretQuantile[0]
 	}
 	if len(newParams.PnormSafeDiv) == 1 {
 		existingParams.PnormSafeDiv = newParams.PnormSafeDiv[0]

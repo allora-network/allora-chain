@@ -51,7 +51,7 @@ func TestDefaultParams(t *testing.T) {
 		MaxElementsPerForecast:              uint64(12),
 		MaxActiveTopicsPerBlock:             uint64(1),
 		MaxStringLength:                     uint64(255),
-		RegretPercentile:                    alloraMath.MustNewDecFromString("0.25"),
+		InitialRegretQuantile:               alloraMath.MustNewDecFromString("0.25"),
 		PnormSafeDiv:                        alloraMath.MustNewDecFromString("8.25"),
 	}
 
