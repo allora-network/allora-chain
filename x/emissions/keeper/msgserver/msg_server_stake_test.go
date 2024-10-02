@@ -2001,8 +2001,13 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStake() {
 	// Set up test data
 	delegator := s.addrsStr[0]
 	reputer := s.addrsStr[1]
-	topicId := s.CreateOneTopic().Id
+	reputerAddr := s.addrs[1]
+	worker := s.addrsStr[2]
+	workerAddr := s.addrs[2]
+	registrationInitialBalance := cosmosMath.NewInt(10000)
 	amount := cosmosMath.NewInt(50)
+
+	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
 
 	// Add a delegate stake removal
 	stakeToRemove := types.DelegateStakeRemovalInfo{
@@ -2038,12 +2043,18 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStakeNotExist() {
 	// Set up test data
 	delegator := s.addrsStr[0]
 	reputer := s.addrsStr[1]
-	topicID := s.CreateOneTopic().Id
+	reputerAddr := s.addrs[1]
+	worker := s.addrsStr[2]
+	workerAddr := s.addrs[2]
+	registrationInitialBalance := cosmosMath.NewInt(10000)
+
+	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+
 	// Call CancelRemoveDelegateStake
 	msg := &types.CancelRemoveDelegateStakeRequest{
 		Sender:  delegator,
 		Reputer: reputer,
-		TopicId: topicID,
+		TopicId: topicId,
 	}
 	_, err := s.msgServer.CancelRemoveDelegateStake(ctx, msg)
 	require.Error(err)
