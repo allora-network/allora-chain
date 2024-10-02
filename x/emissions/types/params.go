@@ -53,6 +53,8 @@ func DefaultParams() Params {
 		MaxElementsPerForecast:              uint64(12),                                   // top forecast elements by score
 		MaxActiveTopicsPerBlock:             uint64(1),                                    // maximum number of active topics per block
 		MaxStringLength:                     uint64(255),                                  // maximum length of strings uploaded to the chain
+		RegretPercentile:                    alloraMath.MustNewDecFromString("0.25"),      // percentile value for getting regret
+		PnormSafeDiv:                        alloraMath.MustNewDecFromString("8.25"),      // pnorm divide value to calculate offset with cnorm
 	}
 }
 
@@ -180,6 +182,12 @@ func (p Params) Validate() error {
 	}
 	if err := validateMaxStringLength(p.MaxStringLength); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: max string length")
+	}
+	if err := validateRegretPercentile(p.RegretPercentile); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: regret percentile")
+	}
+	if err := validatePnormSafeDiv(p.PnormSafeDiv); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: pnorm safe div")
 	}
 	return nil
 }
@@ -565,6 +573,23 @@ func validateHalfMaxProcessStakeRemovalsEndBlock(i uint64) error {
 // the maximum length of the metadata string when creating a new topic
 // should be non-negative, enforced by uint type
 func validateMaxStringLength(_ uint64) error {
+	return nil
+}
+
+func validateRegretPercentile(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
+	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
+}
+
+func validatePnormSafeDiv(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	return nil
 }
 

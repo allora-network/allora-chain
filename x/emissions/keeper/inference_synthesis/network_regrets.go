@@ -359,7 +359,11 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 
 	// Recalculate topic initial regret
 	if len(workersRegrets) > 0 {
-		updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, args.EpsilonTopic, args.PNorm, args.CNorm)
+		params, err := args.K.GetParams(args.Ctx)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Error getting params")
+		}
+		updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, args.EpsilonTopic, args.PNorm, args.CNorm, params.RegretPercentile, params.PnormSafeDiv)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error calculating topic initial regret")
 		}
@@ -383,6 +387,8 @@ func CalcTopicInitialRegret(
 	epsilon alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
+	percentileRegret alloraMath.Dec,
+	pNormDiv alloraMath.Dec,
 ) (initialRegret alloraMath.Dec, err error) {
 	// Calculate the Denominator
 	stdDevRegrets, err := alloraMath.StdDev(regrets)
@@ -396,9 +402,7 @@ func CalcTopicInitialRegret(
 	}
 
 	// calculate the offset
-	eightPointTwoFive := alloraMath.MustNewDecFromString("8.25")
-
-	eightPointTwoFiveDividedByPnorm, err := eightPointTwoFive.Quo(pNorm)
+	eightPointTwoFiveDividedByPnorm, err := pNormDiv.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
@@ -415,7 +419,7 @@ func CalcTopicInitialRegret(
 	}
 
 	// Calculate percentile
-	percentile, err := alloraMath.GetQuantileOfDecs(regrets, alloraMath.MustNewDecFromString("0.25"))
+	percentile, err := alloraMath.GetQuantileOfDecs(regrets, percentileRegret)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}

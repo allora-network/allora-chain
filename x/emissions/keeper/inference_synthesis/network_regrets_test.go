@@ -692,8 +692,16 @@ func (s *InferenceSynthesisTestSuite) TestCalcTopicInitialRegret() {
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	pNorm := alloraMath.MustNewDecFromString("3.0")
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
-
-	calculatedInitialRegret, err := inferencesynthesis.CalcTopicInitialRegret(regrets, epsilon, pNorm, cNorm)
+	percentileRegert := alloraMath.MustNewDecFromString("0.25")
+	pnormDiv := alloraMath.MustNewDecFromString("8.25")
+	calculatedInitialRegret, err := inferencesynthesis.CalcTopicInitialRegret(
+		regrets,
+		epsilon,
+		pNorm,
+		cNorm,
+		percentileRegert,
+		pnormDiv,
+	)
 	require.NoError(err)
 	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.3354820760526412097325669544281814")
 }
