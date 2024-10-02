@@ -662,22 +662,23 @@ func (msg *RemoveRegistrationRequest) Validate() error {
 	return nil
 }
 
-// helper for stake validation functions
+// stakeValidateHelper validates the provided addresses and amount.
+// The `allowZeroAmount` parameter determines whether zero amounts are acceptable.
+// In some cases, such as cancel or reward operations, zero amounts are valid, as they indicate no specific stake or value transfer is expected.
+// In other cases, such as adding or removing stakes, the amount must be positive because a zero value doesn't make sense in the context of increasing or decreasing a stake.
 func stakeValidateHelper(addr []string, amount cosmosMath.Int, allowZeroAmount bool) error {
+	if amount.IsNegative() {
+		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "amount must be non-negative: %s", amount.String())
+	}
+	if !allowZeroAmount && amount.IsZero() {
+		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "amount must be positive: %s", amount.String())
+	}
 	for _, ad := range addr {
 		_, err := sdk.AccAddressFromBech32(ad)
 		if err != nil {
 			return errors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid address (%s)", ad)
 		}
 	}
-	if amount.IsNegative() {
-		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "amount must be non-negative: %s", amount.String())
-	}
-
-	if !allowZeroAmount && amount.IsZero() {
-		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "amount must be positive: %s", amount.String())
-	}
-
 	return nil
 }
 

@@ -9,7 +9,8 @@ import (
 )
 
 func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) (*types.FundTopicResponse, error) {
-	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+	err := ms.k.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
 		return nil, err
 	}
 

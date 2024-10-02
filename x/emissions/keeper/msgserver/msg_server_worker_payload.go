@@ -17,15 +17,17 @@ import (
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (*types.InsertWorkerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
-	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+	err := ms.k.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
 		return nil, err
 	}
-	err := checkInputLength(ctx, ms, msg)
+	err = checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := msg.WorkerDataBundle.Validate(); err != nil {
+	err = msg.WorkerDataBundle.Validate()
+	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Worker invalid data for block: %d", blockHeight)
 	}

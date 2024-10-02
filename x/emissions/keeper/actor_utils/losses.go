@@ -79,7 +79,8 @@ func CloseReputerNonce(
 	lossBundlesByReputer := make([]*types.ReputerValueBundle, 0)
 	stakesByReputer := make(map[string]cosmosMath.Int)
 	for _, bundle := range reputerLossBundles.ReputerValueBundles {
-		if err := bundle.Validate(); err != nil {
+		err := bundle.Validate()
+		if err != nil {
 			continue
 		}
 

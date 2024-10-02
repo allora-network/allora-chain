@@ -22,8 +22,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (*
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
-	}
-	if !topicExists {
+	} else if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
 	}
 
@@ -31,8 +30,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (*
 	isReputerRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Sender)
 	if err != nil {
 		return nil, err
-	}
-	if !isReputerRegistered {
+	} else if !isReputerRegistered {
 		return nil, types.ErrAddressIsNotRegisteredInThisTopic
 	}
 
@@ -66,8 +64,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
-	}
-	if !topicExists {
+	} else if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
 	}
 
@@ -128,8 +125,7 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemo
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
-	}
-	if !topicExists {
+	} else if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
 	}
 
@@ -160,18 +156,15 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeR
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
-	}
-	if !topicExists {
+	} else if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	// Check the target reputer exists and is registered
 	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
-	}
-	if !isRegistered {
-		return nil, types.ErrAddressIsNotRegisteredInThisTopic
+	} else if !isRegistered {
+		return nil, errorsmod.Wrap(types.ErrAddressIsNotRegisteredInThisTopic, "reputer address")
 	}
 
 	// Check the sender has enough funds to delegate the stake
@@ -204,9 +197,15 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
-	}
-	if !topicExists {
+	} else if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
+	}
+
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
+	if err != nil {
+		return nil, err
+	} else if !isRegistered {
+		return nil, errorsmod.Wrap(types.ErrAddressIsNotRegisteredInThisTopic, "reputer address")
 	}
 
 	// Check the delegator has enough stake already placed on the topic to remove the stake
@@ -277,6 +276,21 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ca
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
+
+	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
+	if err != nil {
+		return nil, err
+	} else if !topicExists {
+		return nil, types.ErrTopicDoesNotExist
+	}
+
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
+	if err != nil {
+		return nil, err
+	} else if !isRegistered {
+		return nil, errorsmod.Wrap(types.ErrAddressIsNotRegisteredInThisTopic, "reputer address")
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	removal, found, err := ms.k.GetDelegateStakeRemovalForDelegatorReputerAndTopicId(
 		sdkCtx, msg.Sender, msg.Reputer, msg.TopicId,
@@ -311,18 +325,15 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {
 		return nil, err
-	}
-	if !topicExists {
+	} else if !topicExists {
 		return nil, types.ErrTopicDoesNotExist
 	}
 
-	// Check the target reputer exists and is registered
 	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, msg.TopicId, msg.Reputer)
 	if err != nil {
 		return nil, err
-	}
-	if !isRegistered {
-		return nil, types.ErrAddressIsNotRegisteredInThisTopic
+	} else if !isRegistered {
+		return nil, errorsmod.Wrap(types.ErrAddressIsNotRegisteredInThisTopic, "reputer address")
 	}
 
 	delegateInfo, err := ms.k.GetDelegateStakePlacement(ctx, msg.TopicId, msg.Sender, msg.Reputer)

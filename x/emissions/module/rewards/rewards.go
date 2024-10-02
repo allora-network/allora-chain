@@ -37,7 +37,6 @@ func EmitRewards(
 	Logger(ctx).Debug(fmt.Sprintf("Rewardable topics: %v", sortedRewardableTopics))
 
 	if len(sortedRewardableTopics) == 0 {
-		fmt.Println("No rewardable topics found")
 		Logger(ctx).Warn("No rewardable topics found")
 		return nil
 	}

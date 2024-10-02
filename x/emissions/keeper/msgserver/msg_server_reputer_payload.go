@@ -13,15 +13,17 @@ import (
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (*types.InsertReputerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
-	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+	err := ms.k.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
 		return nil, err
 	}
-	err := checkInputLength(ctx, ms, msg)
+	err = checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := msg.ReputerValueBundle.Validate(); err != nil {
+	err = msg.ReputerValueBundle.Validate()
+	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Error validating reputer value bundle at block height: %d", blockHeight)
 	}
