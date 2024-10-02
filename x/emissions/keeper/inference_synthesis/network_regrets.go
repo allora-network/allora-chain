@@ -376,7 +376,11 @@ func GetCalcSetNetworkRegrets(
 
 	// Recalculate topic initial regret
 	if len(workersRegrets) > 0 {
-		updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, epsilon, pNorm, cNorm)
+		params, err := k.GetParams(ctx)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Error getting params")
+		}
+		updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, epsilon, pNorm, cNorm, params.RegretPercentile, params.PnormSafeDiv)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error calculating topic initial regret")
 		}
@@ -395,7 +399,14 @@ func GetCalcSetNetworkRegrets(
 // dummy_regret[i] = np.percentile(regrets[i-1, :], 25.) + offset * denominator
 // It is assumed that the regrets are filtered by experience for each actor
 // i.e. if they have not been included in the topic for enough epochs, their regret is ignored.
-func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pNorm alloraMath.Dec, cNorm alloraMath.Dec) (alloraMath.Dec, error) {
+func CalcTopicInitialRegret(
+	regrets []alloraMath.Dec,
+	epsilon alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
+	percentileRegret alloraMath.Dec,
+	pNormDiv alloraMath.Dec,
+) (alloraMath.Dec, error) {
 	// Calculate the Denominator
 	stdDevRegrets, err := alloraMath.StdDev(regrets)
 	if err != nil {
@@ -408,9 +419,7 @@ func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pN
 	}
 
 	// calculate the offset
-	eightPointTwoFive := alloraMath.MustNewDecFromString("8.25")
-
-	eightPointTwoFiveDividedByPnorm, err := eightPointTwoFive.Quo(pNorm)
+	eightPointTwoFiveDividedByPnorm, err := pNormDiv.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
@@ -427,7 +436,7 @@ func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pN
 	}
 
 	// Calculate percentile
-	percentile, err := alloraMath.GetQuantileOfDecs(regrets, alloraMath.MustNewDecFromString("0.25"))
+	percentile, err := alloraMath.GetQuantileOfDecs(regrets, percentileRegret)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}

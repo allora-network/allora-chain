@@ -9,10 +9,12 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
+	oldV4Types "github.com/allora-network/allora-chain/x/emissions/migrations/v5/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/gogo/protobuf/proto"
 )
 
 const maxPageSize = uint64(10000)
@@ -28,6 +30,12 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	store := runtime.KVStoreAdapter(storageService.OpenKVStore(ctx))
 	cdc := emissionsKeeper.GetBinaryCodec()
 
+	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 4 TO VERSION 5")
+	if err := MigrateParams(store, cdc); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 4 TO VERSION 5")
+		return err
+	}
+
 	ctx.Logger().Info("MIGRATING TOPICS FROM VERSION 4 TO VERSION 5")
 	if err := MigrateTopics(ctx, store, cdc, emissionsKeeper); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateTopics() FROM VERSION 4 TO VERSION 5")
@@ -38,6 +46,76 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ResetMapsWithNonNumericValues(ctx, store, cdc)
 
 	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 4 TO VERSION 5 COMPLETE")
+	return nil
+}
+
+// migrate params for this new version
+// the changes are the addition of RegretPercentile,PnormSafeDiv
+func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+	oldParams := oldV4Types.Params{}
+	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
+	if oldParamsBytes == nil {
+		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
+	}
+	err := proto.Unmarshal(oldParamsBytes, &oldParams)
+	if err != nil {
+		return errorsmod.Wrapf(err, "failed to unmarshal old parameters")
+	}
+
+	defaultParams := emissionstypes.DefaultParams()
+
+	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
+	// ADDED:
+	//      RegretPercentile, PnormSafeDiv
+	newParams := emissionstypes.Params{
+		Version:                             oldParams.Version,
+		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
+		MinTopicWeight:                      oldParams.MinTopicWeight,
+		RequiredMinimumStake:                oldParams.RequiredMinimumStake,
+		RemoveStakeDelayWindow:              oldParams.RemoveStakeDelayWindow,
+		MinEpochLength:                      oldParams.MinEpochLength,
+		BetaEntropy:                         oldParams.BetaEntropy,
+		LearningRate:                        oldParams.LearningRate,
+		MaxGradientThreshold:                oldParams.MaxGradientThreshold,
+		MinStakeFraction:                    oldParams.MinStakeFraction,
+		MaxUnfulfilledWorkerRequests:        oldParams.MaxUnfulfilledWorkerRequests,
+		MaxUnfulfilledReputerRequests:       oldParams.MaxUnfulfilledReputerRequests,
+		TopicRewardStakeImportance:          oldParams.TopicRewardStakeImportance,
+		TopicRewardFeeRevenueImportance:     oldParams.TopicRewardFeeRevenueImportance,
+		TopicRewardAlpha:                    oldParams.TopicRewardAlpha,
+		TaskRewardAlpha:                     oldParams.TaskRewardAlpha,
+		ValidatorsVsAlloraPercentReward:     oldParams.ValidatorsVsAlloraPercentReward,
+		MaxSamplesToScaleScores:             oldParams.MaxSamplesToScaleScores,
+		MaxTopInferersToReward:              oldParams.MaxTopInferersToReward,
+		MaxTopForecastersToReward:           oldParams.MaxTopForecastersToReward,
+		MaxTopReputersToReward:              oldParams.MaxTopReputersToReward,
+		CreateTopicFee:                      oldParams.CreateTopicFee,
+		GradientDescentMaxIters:             oldParams.GradientDescentMaxIters,
+		RegistrationFee:                     oldParams.RegistrationFee,
+		DefaultPageLimit:                    oldParams.DefaultPageLimit,
+		MaxPageLimit:                        oldParams.MaxPageLimit,
+		MinEpochLengthRecordLimit:           oldParams.MinEpochLengthRecordLimit,
+		BlocksPerMonth:                      oldParams.BlocksPerMonth,
+		PRewardInference:                    oldParams.PRewardInference,
+		PRewardForecast:                     oldParams.PRewardForecast,
+		PRewardReputer:                      oldParams.PRewardReputer,
+		CRewardInference:                    oldParams.CRewardInference,
+		CRewardForecast:                     oldParams.CRewardForecast,
+		CNorm:                               oldParams.CNorm,
+		EpsilonReputer:                      oldParams.EpsilonReputer,
+		HalfMaxProcessStakeRemovalsEndBlock: oldParams.HalfMaxProcessStakeRemovalsEndBlock,
+		EpsilonSafeDiv:                      oldParams.EpsilonSafeDiv,
+		DataSendingFee:                      oldParams.DataSendingFee,
+		MaxElementsPerForecast:              oldParams.MaxElementsPerForecast,
+		MaxActiveTopicsPerBlock:             oldParams.MaxActiveTopicsPerBlock,
+		MaxStringLength:                     oldParams.MaxStringLength,
+		// NEW PARAMS
+		RegretPercentile: defaultParams.RegretPercentile,
+		PnormSafeDiv:     defaultParams.PnormSafeDiv,
+	}
+
+	store.Delete(emissionstypes.ParamsKey)
+	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&newParams))
 	return nil
 }
 
