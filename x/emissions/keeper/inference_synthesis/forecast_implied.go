@@ -91,11 +91,11 @@ func CalcForecastImpliedInferences(
 				// Approximate forecast regrets of the network inference
 				// Map inferer -> regret
 				// this is R_ik in the paper
-				infererRegretsRIK := make(map[Inferer]*Regret, len(forecastElementsByInferer))
+				infererRegretsForThisForecaster := make(map[Inferer]*Regret, len(forecastElementsByInferer))
 				// Forecast-regret-informed weights dot product with inferences to yield forecast-implied inferences
 				// Map inferer -> weight
 				// this is w_ik in the paper
-				infererWeightsWIK := make(map[Inferer]Weight, len(forecastElementsByInferer))
+				infererWeightsForThisForecaster := make(map[Inferer]Weight, len(forecastElementsByInferer))
 
 				// Define variable to store maximum regret for forecast k
 				// infererInForecast corresponds to
@@ -103,17 +103,17 @@ func CalcForecastImpliedInferences(
 				for _, infererInForecast := range sortedInferersInForecast {
 					// Calculate the approximate forecast regret of the network inference
 					// this is R_ijk in the paper
-					forecastRegretOfNetworkInferenceRIJK, err :=
+					forecastRegretOfNetworkInference, err :=
 						networkCombinedLoss.Sub(forecastElementsByInferer[infererInForecast].Value)
 					if err != nil {
 						return nil, nil, nil, errorsmod.Wrapf(err,
 							"error calculating forecast-implied inferences: error calculating network loss per value")
 					}
-					infererRegretsRIK[infererInForecast] = &forecastRegretOfNetworkInferenceRIJK
+					infererRegretsForThisForecaster[infererInForecast] = &forecastRegretOfNetworkInference
 				}
 
 				if len(sortedInferersInForecast) > 1 {
-					infererToRegretOut = infererRegretsRIK
+					infererToRegretOut = infererRegretsForThisForecaster
 					forecasterToRegretOut = make(map[Forecaster]*alloraMath.Dec, 0)
 
 					weights, err := calcWeightsGivenWorkers(
@@ -130,17 +130,17 @@ func CalcForecastImpliedInferences(
 						return nil, nil, nil, errorsmod.Wrapf(err,
 							"error calculating forecast-implied inferences:error calculating normalized forecasted regrets")
 					}
-					infererWeightsWIK = weights.inferers
+					infererWeightsForThisForecaster = weights.inferers
 				} else if len(sortedInferersInForecast) == 1 {
 					weights := make(map[Worker]Weight, 1)
 					weights[sortedInferersInForecast[0]] = alloraMath.OneDec()
-					infererWeightsWIK = weights
+					infererWeightsForThisForecaster = weights
 				}
 
 				// Calculate the forecast-implied inferences I_ik
 				for _, infererInForecast := range sortedInferersInForecast {
 					// this is w_ijk in the paper
-					weightIJK := infererWeightsWIK[infererInForecast]
+					weightIJK := infererWeightsForThisForecaster[infererInForecast]
 
 					_, ok := infererToInference[infererInForecast]
 					if ok && !(weightIJK.Equal(alloraMath.ZeroDec())) {
