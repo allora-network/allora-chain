@@ -20,7 +20,7 @@ func (app *AlloraApp) ExportAppStateAndValidators(
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
 	// as if they could withdraw from the start of the next block
-	ctx := app.NewContextLegacy(true, tmproto.Header{Height: app.LastBlockHeight()})
+	ctx := app.NewContextLegacy(true, tmproto.Header{Height: app.LastBlockHeight()}) //nolint:exhaustruct
 
 	// We export at last height + 1, because that's the height at which
 	// CometBFT will start InitChain.
