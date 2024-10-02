@@ -54,7 +54,7 @@ func (app *AlloraApp) registerIBCModules() {
 
 	// register the key tables for legacy param subspaces
 	keyTable := ibcclienttypes.ParamKeyTable()
-	keyTable.RegisterParamSet(&ibcconnectiontypes.Params{})
+	keyTable.RegisterParamSet(&ibcconnectiontypes.Params{MaxExpectedTimePerBlock: 25000000000})
 	app.ParamsKeeper.Subspace(ibcexported.ModuleName).WithKeyTable(keyTable)
 	app.ParamsKeeper.Subspace(ibctransfertypes.ModuleName).WithKeyTable(ibctransfertypes.ParamKeyTable())
 	app.ParamsKeeper.Subspace(icacontrollertypes.SubModuleName).WithKeyTable(icacontrollertypes.ParamKeyTable())
@@ -177,7 +177,7 @@ func (app *AlloraApp) registerIBCModules() {
 		ibcfee.NewAppModule(app.IBCFeeKeeper),
 		icamodule.NewAppModule(&app.ICAControllerKeeper, &app.ICAHostKeeper),
 		capability.NewAppModule(app.appCodec, *app.CapabilityKeeper, false),
-		ibctm.AppModule{},
+		ibctm.AppModule{AppModuleBasic: ibctm.AppModuleBasic{}},
 	); err != nil {
 		panic(err)
 	}
@@ -188,12 +188,12 @@ func (app *AlloraApp) registerIBCModules() {
 // This needs to be removed after IBC supports App Wiring.
 func RegisterIBC(registry cdctypes.InterfaceRegistry) map[string]appmodule.AppModule {
 	modules := map[string]appmodule.AppModule{
-		ibcexported.ModuleName:      ibc.AppModule{},
-		ibctransfertypes.ModuleName: ibctransfer.AppModule{},
-		ibcfeetypes.ModuleName:      ibcfee.AppModule{},
-		icatypes.ModuleName:         icamodule.AppModule{},
-		capabilitytypes.ModuleName:  capability.AppModule{},
-		ibctm.ModuleName:            ibctm.AppModule{},
+		ibcexported.ModuleName:      ibc.AppModule{AppModuleBasic: ibc.AppModuleBasic{}},
+		ibctransfertypes.ModuleName: ibctransfer.AppModule{AppModuleBasic: ibctransfer.AppModuleBasic{}},
+		ibcfeetypes.ModuleName:      ibcfee.AppModule{AppModuleBasic: ibcfee.AppModuleBasic{}},
+		icatypes.ModuleName:         icamodule.AppModule{AppModuleBasic: icamodule.AppModuleBasic{}},
+		capabilitytypes.ModuleName:  capability.AppModule{AppModuleBasic: capability.AppModuleBasic{}},
+		ibctm.ModuleName:            ibctm.AppModule{AppModuleBasic: ibctm.AppModuleBasic{}},
 	}
 
 	sortedModuleKeys := alloraMath.GetSortedKeys(modules)
