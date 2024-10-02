@@ -18,7 +18,9 @@ import (
 // get the amount of coins required to deposit for a proposal
 func getDepositRequired(m testCommon.TestConfig) sdktypes.Coin {
 	ctx := context.Background()
-	queryGovParamsResponse, err := m.Client.QueryGov().Params(ctx, &govtypesv1.QueryParamsRequest{})
+	queryGovParamsResponse, err := m.Client.QueryGov().Params(ctx, &govtypesv1.QueryParamsRequest{
+		ParamsType: "",
+	})
 	require.NoError(m.T, err)
 	return queryGovParamsResponse.Params.ExpeditedMinDeposit[0]
 }
@@ -39,6 +41,7 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 			ProposalId: proposalId,
 			Voter:      validator.addr,
 			Option:     govtypesv1.OptionYes,
+			Metadata:   "",
 		}
 		txResp, err := m.Client.BroadcastTx(ctx, validator.acc, msgVote)
 		require.NoError(m.T, err)
@@ -64,9 +67,11 @@ func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight 
 	msgSoftwareUpgrade := &upgradetypes.MsgSoftwareUpgrade{
 		Authority: authtypes.NewModuleAddress("gov").String(),
 		Plan: upgradetypes.Plan{
-			Name:   name,
-			Height: proposalHeight,
-			Info:   "{}",
+			Name:                name,
+			Height:              proposalHeight,
+			Info:                "{}",
+			Time:                time.Time{},
+			UpgradedClientState: nil,
 		},
 	}
 	msgSubmitProposal := &govtypesv1.MsgSubmitProposal{
@@ -80,6 +85,7 @@ func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight 
 		InitialDeposit: sdktypes.NewCoins(
 			getDepositRequired(m),
 		),
+		Messages: nil,
 	}
 	err = msgSubmitProposal.SetMsgs([]sdktypes.Msg{msgSoftwareUpgrade})
 	require.NoError(m.T, err)
@@ -87,7 +93,7 @@ func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight 
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	submitProposalMsgResponse := &govtypesv1.MsgSubmitProposalResponse{}
+	submitProposalMsgResponse := &govtypesv1.MsgSubmitProposalResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(submitProposalMsgResponse)
 	require.NoError(m.T, err)
 	require.NotNil(m.T, submitProposalMsgResponse.ProposalId)

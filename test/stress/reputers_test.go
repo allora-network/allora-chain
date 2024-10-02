@@ -197,17 +197,20 @@ func generateValueBundle(
 	reputerNonce *emissionstypes.Nonce,
 ) emissionstypes.ValueBundle {
 	return emissionstypes.ValueBundle{
-		TopicId:                topicId,
-		CombinedValue:          alloraMath.NewDecFromInt64(100),
-		InfererValues:          generateWorkerAttributedValueLosses(workerAddresses, 3000, 3500),
-		ForecasterValues:       generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
-		NaiveValue:             alloraMath.NewDecFromInt64(100),
-		OneOutInfererValues:    generateWithheldWorkerAttributedValueLosses(workerAddresses, 50, 50),
-		OneOutForecasterValues: generateWithheldWorkerAttributedValueLosses(workerAddresses, 50, 50),
-		OneInForecasterValues:  generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
+		TopicId: topicId,
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
 		},
+		Reputer:                       "",
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.NewDecFromInt64(100),
+		InfererValues:                 generateWorkerAttributedValueLosses(workerAddresses, 3000, 3500),
+		ForecasterValues:              generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
+		NaiveValue:                    alloraMath.NewDecFromInt64(100),
+		OneOutInfererValues:           generateWithheldWorkerAttributedValueLosses(workerAddresses, 50, 50),
+		OneOutForecasterValues:        generateWithheldWorkerAttributedValueLosses(workerAddresses, 50, 50),
+		OneInForecasterValues:         generateWorkerAttributedValueLosses(workerAddresses, 50, 50),
+		OneOutInfererForecasterValues: nil,
 	}
 }
 

@@ -87,8 +87,15 @@ func getAccountBalance(
 	address string,
 ) (*sdktypes.Coin, error) {
 	req := &banktypes.QueryAllBalancesRequest{
-		Address:    address,
-		Pagination: &query.PageRequest{Limit: 1},
+		Address: address,
+		Pagination: &query.PageRequest{
+			Limit:      1,
+			Key:        nil,
+			Offset:     0,
+			CountTotal: false,
+			Reverse:    false,
+		},
+		ResolveDenom: false,
 	}
 
 	res, err := queryClient.AllBalances(ctx, req)

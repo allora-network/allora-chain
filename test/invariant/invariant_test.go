@@ -120,9 +120,24 @@ func simulateSetUp(
 		m.T.Fatal(err)
 	}
 	data := SimulationData{
-		epochLength:        int64(epochLength),
-		actors:             actorsList,
-		counts:             StateTransitionCounts{},
+		epochLength: int64(epochLength),
+		actors:      actorsList,
+		counts: StateTransitionCounts{
+			createTopic:                0,
+			fundTopic:                  0,
+			registerWorker:             0,
+			registerReputer:            0,
+			unregisterWorker:           0,
+			unregisterReputer:          0,
+			stakeAsReputer:             0,
+			delegateStake:              0,
+			unstakeAsReputer:           0,
+			undelegateStake:            0,
+			cancelStakeRemoval:         0,
+			cancelDelegateStakeRemoval: 0,
+			collectDelegatorRewards:    0,
+			doInferenceAndReputation:   0,
+		},
 		registeredWorkers:  testcommon.NewRandomKeyMap[Registration, struct{}](m.Client.Rand),
 		registeredReputers: testcommon.NewRandomKeyMap[Registration, struct{}](m.Client.Rand),
 		reputerStakes: testcommon.NewRandomKeyMap[Registration, cosmossdk_io_math.Int](
@@ -172,26 +187,26 @@ func simulateManual(
 	amount := cosmossdk_io_math.NewInt(1e10)
 
 	// create topic
-	createTopic(m, faucet, Actor{}, nil, 0, data, 0)
+	createTopic(m, faucet, UnusedActor, nil, 0, data, 0)
 	// register reputer
-	registerReputer(m, reputer, Actor{}, nil, 1, data, 1)
+	registerReputer(m, reputer, UnusedActor, nil, 1, data, 1)
 	// delegate from delegator on reputer
 	delegateStake(m, delegator, reputer, &amount, 1, data, 2)
 	// fund the topic from delegator
-	fundTopic(m, delegator, Actor{}, &amount, 1, data, 5)
+	fundTopic(m, delegator, UnusedActor, &amount, 1, data, 5)
 	// register worker
-	registerWorker(m, worker, Actor{}, nil, 1, data, 6)
+	registerWorker(m, worker, UnusedActor, nil, 1, data, 6)
 	// now nobody has stake, is the topic active?
 	// make sure an ABCI endblock has passed
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 7)
-	doInferenceAndReputation(m, Actor{}, Actor{}, nil, 1, data, 8)
+	doInferenceAndReputation(m, UnusedActor, UnusedActor, nil, 1, data, 8)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 9)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 10)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 11)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 12)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 13)
 	collectDelegatorRewards(m, delegator, reputer, nil, 1, data, 14)
-	doInferenceAndReputation(m, Actor{}, Actor{}, nil, 1, data, 15)
+	doInferenceAndReputation(m, UnusedActor, UnusedActor, nil, 1, data, 15)
 	amount2 := amount.QuoRaw(2)
 	undelegateStake(m, delegator, reputer, &amount2, 1, data, 16)
 	m.T.Log("Done.")
@@ -239,19 +254,19 @@ func pickAutoSetupTopicId(i int) uint64 {
 // all with some stake, then fund the two topics
 // and run inferences on both.
 func simulateAutomaticInitialState(m *testcommon.TestConfig, faucet Actor, data *SimulationData) {
-	createTopic(m, faucet, Actor{}, nil, 0, data, 0)
-	createTopic(m, faucet, Actor{}, nil, 0, data, 1)
+	createTopic(m, faucet, UnusedActor, nil, 0, data, 0)
+	createTopic(m, faucet, UnusedActor, nil, 0, data, 1)
 	startReputers, startWorkers, startDelegators := pickAutoSetupActors(m, data)
 	for i, reputer := range startReputers {
 		topicId := pickAutoSetupTopicId(i)
-		registerReputer(m, reputer, Actor{}, nil, topicId, data, i*2+2)
+		registerReputer(m, reputer, UnusedActor, nil, topicId, data, i*2+2)
 		bal, err := pickRandomBalanceLessThanHalf(m, reputer)
 		requireNoError(m.T, true, err)
-		stakeAsReputer(m, reputer, Actor{}, &bal, topicId, data, (i*2+1)+2)
+		stakeAsReputer(m, reputer, UnusedActor, &bal, topicId, data, (i*2+1)+2)
 	}
 	for i, worker := range startWorkers {
 		topicId := pickAutoSetupTopicId(i)
-		registerWorker(m, worker, Actor{}, nil, topicId, data, 10+i)
+		registerWorker(m, worker, UnusedActor, nil, topicId, data, 10+i)
 	}
 	for i, delegator := range startDelegators {
 		topicId := pickAutoSetupTopicId(i)
@@ -261,12 +276,12 @@ func simulateAutomaticInitialState(m *testcommon.TestConfig, faucet Actor, data 
 	}
 	fundAmount, err := pickRandomBalanceLessThanHalf(m, faucet)
 	requireNoError(m.T, true, err)
-	fundTopic(m, faucet, Actor{}, &fundAmount, 1, data, 16)
+	fundTopic(m, faucet, UnusedActor, &fundAmount, 1, data, 16)
 	fundAmount, err = pickRandomBalanceLessThanHalf(m, faucet)
 	requireNoError(m.T, true, err)
-	fundTopic(m, faucet, Actor{}, &fundAmount, 2, data, 17)
-	doInferenceAndReputation(m, Actor{}, Actor{}, nil, 1, data, 18)
-	doInferenceAndReputation(m, Actor{}, Actor{}, nil, 2, data, 19)
+	fundTopic(m, faucet, UnusedActor, &fundAmount, 2, data, 17)
+	doInferenceAndReputation(m, UnusedActor, UnusedActor, nil, 1, data, 18)
+	doInferenceAndReputation(m, UnusedActor, UnusedActor, nil, 2, data, 19)
 }
 
 // this is the body of the "normal" simulation mode

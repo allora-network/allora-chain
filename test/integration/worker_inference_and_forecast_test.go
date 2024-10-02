@@ -47,6 +47,8 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 					BlockHeight: blockHeight,
 					Inferer:     InfererAddress1,
 					Value:       alloraMath.NewDecFromInt64(100),
+					ExtraData:   nil,
+					Proof:       "",
 				},
 				Forecast: &types.Forecast{
 					TopicId:     topicId,
@@ -58,8 +60,11 @@ func InsertSingleWorkerPayload(m testCommon.TestConfig, topic *types.Topic, bloc
 							Value:   alloraMath.NewDecFromInt64(100),
 						},
 					},
+					ExtraData: nil,
 				},
 			},
+			InferencesForecastsBundleSignature: nil,
+			Pubkey:                             "",
 		},
 	}
 	// Sign
@@ -130,8 +135,12 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 	}
 
 	reputerValueBundle := &types.ValueBundle{
-		TopicId:       topicId,
-		Reputer:       reputerAddr,
+		TopicId: topicId,
+		Reputer: reputerAddr,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: reputerNonce,
+		},
+		ExtraData:     nil,
 		CombinedValue: alloraMath.NewDecFromInt64(100),
 		InfererValues: []*types.WorkerAttributedValue{
 			{
@@ -168,9 +177,7 @@ func InsertReputerBundle(m testCommon.TestConfig, topic *types.Topic, BlockHeigh
 				Value:  alloraMath.NewDecFromInt64(100),
 			},
 		},
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: reputerNonce,
-		},
+		OneOutInfererForecasterValues: nil,
 	}
 
 	// Sign
