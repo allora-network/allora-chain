@@ -84,9 +84,7 @@ func SumFn[S ~[]InType, InType any, OutType ordered](in S, fn func(InType) OutTy
 func Flatten[S ~[]T, T any](in [][]T) []T {
 	var out []T
 	for _, xs := range in {
-		for _, x := range xs {
-			out = append(out, x)
-		}
+		out = append(out, xs...)
 	}
 	return out
 }

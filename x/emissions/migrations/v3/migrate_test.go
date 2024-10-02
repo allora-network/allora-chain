@@ -517,7 +517,8 @@ func (s *EmissionsV3MigrationTestSuite) TestResetMapsWithNonNumericValues() {
 	iterator.Close()
 	s.Require().Len(scores.Scores, 1)
 
-	v3.ResetMapsWithNonNumericValues(store, cdc)
+	err = v3.ResetMapsWithNonNumericValues(store, cdc)
+	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator = infererScoresByBlock.Iterator(nil, nil)
