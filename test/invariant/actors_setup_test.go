@@ -23,12 +23,12 @@ func createNewActor(m *testcommon.TestConfig, numActors int) Actor {
 			actorAccount, err := m.Client.AccountRegistryGetByName(actorName)
 			if err != nil {
 				m.T.Log("Error getting actor account: ", actorName, " - ", err)
-				return Actor{}
+				return UnusedActor
 			}
 			actorAddress, err := actorAccount.Address(params.HumanCoinUnit)
 			if err != nil {
 				m.T.Log("Error creating actor address: ", actorName, " - ", err)
-				return Actor{}
+				return UnusedActor
 			}
 			return Actor{
 				name: actorName,
@@ -37,13 +37,13 @@ func createNewActor(m *testcommon.TestConfig, numActors int) Actor {
 			}
 		} else {
 			m.T.Log("Error creating actor address: ", actorName, " - ", err)
-			return Actor{}
+			return UnusedActor
 		}
 	}
 	actorAddress, err := actorAccount.Address(params.HumanCoinUnit)
 	if err != nil {
 		m.T.Log("Error creating actor address: ", actorName, " - ", err)
-		return Actor{}
+		return UnusedActor
 	}
 	return Actor{
 		name: actorName,

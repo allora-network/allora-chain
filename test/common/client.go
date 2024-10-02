@@ -58,25 +58,21 @@ func NewClient(
 	seed int64,
 ) Client {
 	t.Helper()
-	client := Client{}
 	ctx := context.Background()
-	client.RpcConnectionType = rpcConnectionType
-	client.Clients = make([]cosmosclient.Client, len(nodeRpcAddresses))
-	client.QueryAuths = make([]authtypes.QueryClient, len(nodeRpcAddresses))
-	client.QueryBanks = make([]banktypes.QueryClient, len(nodeRpcAddresses))
-	client.QueryDistributions = make([]distributiontypes.QueryClient, len(nodeRpcAddresses))
-	client.QueryEmissionses = make([]emissionstypes.QueryServiceClient, len(nodeRpcAddresses))
-	client.QueryMints = make([]minttypes.QueryClient, len(nodeRpcAddresses))
-	client.QueryGovs = make([]govtypesv1.QueryClient, len(nodeRpcAddresses))
-	client.QueryUpgrades = make([]upgradetypes.QueryClient, len(nodeRpcAddresses))
-	client.RpcCounterMutex = &sync.Mutex{}
-	client.accountRegistryMutex = &sync.Mutex{}
-	client.RpcCounterSeed = 0
-	if rpcConnectionType == RandomBasedOnDeterministicSeed {
-		client.RpcCounterSeed = seed
-	}
-	client.Rand = rand.New(rand.NewSource(seed)) //nolint:gosec // G404: Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand)
 
+	clients := make([]cosmosclient.Client, len(nodeRpcAddresses))
+	queryAuths := make([]authtypes.QueryClient, len(nodeRpcAddresses))
+	queryBanks := make([]banktypes.QueryClient, len(nodeRpcAddresses))
+	queryDistributions := make([]distributiontypes.QueryClient, len(nodeRpcAddresses))
+	queryEmissionses := make([]emissionstypes.QueryServiceClient, len(nodeRpcAddresses))
+	queryMints := make([]minttypes.QueryClient, len(nodeRpcAddresses))
+	queryGovs := make([]govtypesv1.QueryClient, len(nodeRpcAddresses))
+	queryUpgrades := make([]upgradetypes.QueryClient, len(nodeRpcAddresses))
+
+	rpcCounterSeed := int64(0)
+	if rpcConnectionType == RandomBasedOnDeterministicSeed {
+		rpcCounterSeed = seed
+	}
 	for i, rpcAddress := range nodeRpcAddresses {
 		cosmosClient, err := cosmosclient.New(
 			ctx,
@@ -89,27 +85,42 @@ func NewClient(
 		require.NoError(t, err)
 		ccCtx := cosmosClient.Context()
 
-		client.Clients[i] = cosmosClient
-		client.QueryAuths[i] = authtypes.NewQueryClient(ccCtx)
-		client.QueryBanks[i] = banktypes.NewQueryClient(ccCtx)
-		client.QueryDistributions[i] = distributiontypes.NewQueryClient(ccCtx)
-		client.QueryEmissionses[i] = emissionstypes.NewQueryServiceClient(ccCtx)
-		client.QueryMints[i] = minttypes.NewQueryClient(ccCtx)
-		client.QueryGovs[i] = govtypesv1.NewQueryClient(ccCtx)
-		client.QueryUpgrades[i] = upgradetypes.NewQueryClient(ccCtx)
+		clients[i] = cosmosClient
+		queryAuths[i] = authtypes.NewQueryClient(ccCtx)
+		queryBanks[i] = banktypes.NewQueryClient(ccCtx)
+		queryDistributions[i] = distributiontypes.NewQueryClient(ccCtx)
+		queryEmissionses[i] = emissionstypes.NewQueryServiceClient(ccCtx)
+		queryMints[i] = minttypes.NewQueryClient(ccCtx)
+		queryGovs[i] = govtypesv1.NewQueryClient(ccCtx)
+		queryUpgrades[i] = upgradetypes.NewQueryClient(ccCtx)
 
 		// this is terrible, no isConnected as part of this code path
 		require.NotEqual(t, "", ccCtx.ChainID)
 	}
 
-	var err error
-	client.accountRegistry, err = cosmosaccount.New(
+	accountRegistry, err := cosmosaccount.New(
 		cosmosaccount.WithKeyringServiceName(sdktypes.KeyringServiceName()),
 		cosmosaccount.WithKeyringBackend(cosmosaccount.KeyringTest),
 		cosmosaccount.WithHome(alloraHomeDir),
 	)
 	require.NoError(t, err)
-	return client
+
+	return Client{
+		RpcConnectionType:    rpcConnectionType,
+		Clients:              clients,
+		QueryAuths:           queryAuths,
+		QueryBanks:           queryBanks,
+		QueryDistributions:   queryDistributions,
+		QueryEmissionses:     queryEmissionses,
+		QueryMints:           queryMints,
+		QueryGovs:            queryGovs,
+		QueryUpgrades:        queryUpgrades,
+		RpcCounterMutex:      &sync.Mutex{},
+		RpcCounterSeed:       rpcCounterSeed,
+		accountRegistry:      accountRegistry,
+		accountRegistryMutex: &sync.Mutex{},
+		Rand:                 rand.New(rand.NewSource(seed)), //nolint:gosec // G404: Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand)
+	}
 }
 
 func (c *Client) getNextClientNumber() int64 {

@@ -21,7 +21,7 @@ func RegisterAliceAsReputerTopic1(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	registerAliceResponse := &emissionstypes.RegisterResponse{}
+	registerAliceResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerAliceResponse)
 	require.NoError(m.T, err)
 	require.True(m.T, registerAliceResponse.Success)
@@ -63,7 +63,7 @@ func RegisterBobAsWorkerTopic1(m testCommon.TestConfig) {
 	require.NoError(m.T, err)
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
-	registerBobResponse := &emissionstypes.RegisterResponse{}
+	registerBobResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerBobResponse)
 	require.NoError(m.T, err)
 	require.True(m.T, registerBobResponse.Success)
