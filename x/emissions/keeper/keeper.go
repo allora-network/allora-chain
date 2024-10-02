@@ -2073,6 +2073,7 @@ func (k *Keeper) GetStakeRemovalForReputerAndTopicId(
 	if err != nil {
 		return types.StakeRemovalInfo{}, false, errorsmod.Wrap(err, "error iterating over stake removals by actor")
 	}
+	defer iter.Close()
 	keys, err := iter.Keys()
 	if err != nil {
 		return types.StakeRemovalInfo{}, false, errorsmod.Wrap(err, "error getting keys")
