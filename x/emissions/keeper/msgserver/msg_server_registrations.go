@@ -3,15 +3,22 @@ package msgserver
 import (
 	"context"
 	"fmt"
+	"time"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/app/params"
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Registers a new network participant to the network for the first time for worker or reputer
-func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (*types.RegisterResponse, error) {
+func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest,
+) (
+	_ *types.RegisterResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("Register", "rpc", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -75,7 +82,12 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (*
 }
 
 // Remove registration from a topic for worker or reputer
-func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveRegistrationRequest) (*types.RemoveRegistrationResponse, error) {
+func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveRegistrationRequest,
+) (
+	_ *types.RemoveRegistrationResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("RemoveRegistration", "rpc", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -128,7 +140,13 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 	}, nil
 }
 
-func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address string) (bool, sdk.Coin, error) {
+func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address string,
+) (
+	_ bool,
+	_ sdk.Coin,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("CheckBalanceForRegistration", "rpc", time.Now(), returnErr == nil)
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err
