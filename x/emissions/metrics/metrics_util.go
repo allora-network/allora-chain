@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	metrics "github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
+	metrics "github.com/hashicorp/go-metrics"
 )
 
 // Measures the time taken to execute a sudo msg
