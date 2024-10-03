@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	cosmosMath "cosmossdk.io/math"
@@ -201,6 +202,7 @@ func GetAndUpdateActiveTopicWeights(
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to add weight to sum")
 		}
+		metrics.SetEpochNew(uint64(block))
 	}
 
 	return weights, sumWeight, totalRevenue, nil

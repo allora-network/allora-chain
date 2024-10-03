@@ -1,39 +1,12 @@
 package metrics
 
 import (
-	"math/big"
 	"strconv"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	metrics "github.com/hashicorp/go-metrics"
 )
-
-// Measures the time taken to execute a sudo msg
-// Metric Names:
-//
-//	allora_sudo_duration_miliseconds
-//	allora_sudo_duration_miliseconds_count
-//	allora_sudo_duration_miliseconds_sum
-func MeasureSudoExecutionDuration(start time.Time, msgType string) {
-	metrics.MeasureSinceWithLabels(
-		[]string{"allora", "sudo", "duration", "milliseconds"},
-		start.UTC(),
-		[]metrics.Label{telemetry.NewLabel("type", msgType)},
-	)
-}
-
-// Measures failed sudo execution count
-// Metric Name:
-//
-//	allora_sudo_error_count
-func IncrementSudoFailCount(msgType string) {
-	telemetry.IncrCounterWithLabels(
-		[]string{"allora", "sudo", "error", "count"},
-		1,
-		[]metrics.Label{telemetry.NewLabel("type", msgType)},
-	)
-}
 
 // Gauge metric with allorad version and git commit as labels
 // Metric Name:
@@ -82,32 +55,6 @@ func IncrDagBuildErrorCounter(reason string) {
 	)
 }
 
-// Counts the number of concurrent transactions that failed
-// Metric Names:
-//
-//	allora_tx_concurrent_delivertx_error
-func IncrFailedConcurrentDeliverTxCounter() {
-	metrics.IncrCounterWithLabels(
-		[]string{"allora", "tx", "concurrent", "delievertx", "error"},
-		1,
-		[]metrics.Label{},
-	)
-}
-
-// Counts the number of operations that failed due to operation timeout
-// Metric Names:
-//
-//	allora_log_not_done_after_counter
-func IncrLogIfNotDoneAfter(label string) {
-	metrics.IncrCounterWithLabels(
-		[]string{"allora", "log", "not", "done", "after"},
-		1,
-		[]metrics.Label{
-			telemetry.NewLabel("label", label),
-		},
-	)
-}
-
 // Measures the time taken to execute a sudo msg
 // Metric Names:
 //
@@ -139,17 +86,6 @@ func SetEpochNew(epochNum uint64) {
 	metrics.SetGauge(
 		[]string{"allora", "epoch", "new"},
 		float32(epochNum),
-	)
-}
-
-// Measures throughput
-// Metric Name:
-//
-//	allora_throughput_<metric_name>
-func SetThroughputMetric(metricName string, value float32) {
-	telemetry.SetGauge(
-		value,
-		"allora", "throughput", metricName,
 	)
 }
 
@@ -213,18 +149,6 @@ func IncrGasCounter(gasType string, value int64) {
 	)
 }
 
-// Measures the number of times optimistic processing runs
-// Metric Name:
-//
-//	allora_optimistic_processing_counter
-func IncrementOptimisticProcessingCounter(enabled bool) {
-	telemetry.IncrCounterWithLabels(
-		[]string{"allora", "optimistic", "processing", "counter"},
-		float32(1),
-		[]metrics.Label{telemetry.NewLabel("enabled", strconv.FormatBool(enabled))},
-	)
-}
-
 // Measures RPC endpoint request throughput
 // Metric Name:
 //
@@ -266,21 +190,6 @@ func IncrProducerEventCount(msgType string) {
 		[]string{"allora", "loadtest", "produce", "count"},
 		1,
 		[]metrics.Label{telemetry.NewLabel("msg_type", msgType)},
-	)
-}
-
-func AddHistogramMetric(key []string, value float32) {
-	metrics.AddSample(key, value)
-}
-
-// Gauge for gas price paid for transactions
-// Metric Name:
-//
-// allora_evm_effective_gas_price
-func HistogramEvmEffectiveGasPrice(gasPrice *big.Int) {
-	AddHistogramMetric(
-		[]string{"allora", "evm", "effective", "gas", "price"},
-		float32(gasPrice.Uint64()),
 	)
 }
 
