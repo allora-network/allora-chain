@@ -52,6 +52,7 @@ Summary TBD
 ### Security
 
 * [#603](https://github.com/allora-network/allora-chain/pull/603) Validate all Values for Correctness Prior to Storing them in the Keeper
+* [#620](https://github.com/allora-network/allora-chain/pull/620) Add a static analyzer to detect non-deferred `.Close()` calls, improve migration error handling
 
 ## [Released]
 
