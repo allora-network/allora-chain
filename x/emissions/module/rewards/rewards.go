@@ -16,6 +16,7 @@ import (
 func EmitRewards(
 	ctx sdk.Context,
 	k keeper.Keeper,
+	moduleParams types.Params,
 	blockHeight BlockHeight,
 	weights map[uint64]*alloraMath.Dec,
 	sumWeight alloraMath.Dec,
@@ -31,11 +32,6 @@ func EmitRewards(
 		return nil
 	}
 
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to get module params")
-	}
-
 	// Sorted, active topics by weight descending. Still need skim top N to truly be the rewardable topics
 	sortedRewardableTopics := alloraMath.GetSortedElementsByDecWeightDesc(weights)
 	Logger(ctx).Debug(fmt.Sprintf("Rewardable topics: %v", sortedRewardableTopics))
@@ -49,7 +45,6 @@ func EmitRewards(
 	if uint64(len(sortedRewardableTopics)) > moduleParams.MaxActiveTopicsPerBlock {
 		sortedRewardableTopics = sortedRewardableTopics[:moduleParams.MaxActiveTopicsPerBlock]
 	}
-
 	// Get total weight of rewardable topics
 	sumWeightOfRewardableTopics := alloraMath.ZeroDec()
 	for _, topicId := range sortedRewardableTopics {

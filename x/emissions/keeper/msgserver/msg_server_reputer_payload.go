@@ -11,7 +11,9 @@ import (
 
 // A tx function that accepts a individual loss and possibly returns an error
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (*types.InsertReputerPayloadResponse, error) {
-	_, err := sdk.AccAddressFromBech32(msg.Sender)
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	blockHeight := sdkCtx.BlockHeight()
+	err := ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -20,9 +22,8 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	blockHeight := sdk.UnwrapSDKContext(ctx).BlockHeight()
-
-	if err := msg.ReputerValueBundle.Validate(); err != nil {
+	err = msg.ReputerValueBundle.Validate()
+	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Error validating reputer value bundle at block height: %d", blockHeight)
 	}
@@ -43,7 +44,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 	// Returns an error if unfulfilled worker nonce exists
 	if workerNonceUnfulfilled {
-		return nil, types.ErrNonceStillUnfulfilled
+		return nil, errorsmod.Wrapf(types.ErrNonceStillUnfulfilled, "worker nonce")
 	}
 
 	// Check if the reputer nonce is unfulfilled
@@ -53,7 +54,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	}
 	// If the reputer nonce is already fulfilled, return an error
 	if !reputerNonceUnfulfilled {
-		return nil, types.ErrUnfulfilledNonceNotFound
+		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
 	}
 
 	// Check if the ground truth lag has passed: if blockheight > nonce.BlockHeight + topic.GroundTruthLag
@@ -69,7 +70,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is not registered in this topic")
 	}
 
-	params, err := ms.k.GetParams(ctx)
+	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
@@ -79,18 +80,17 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	if err != nil {
 		return nil, err
 	}
-	if stake.LT(params.RequiredMinimumStake) {
+	if stake.LT(moduleParams.RequiredMinimumStake) {
 		return nil, errorsmod.Wrapf(types.ErrInsufficientStake, "reputer does not have sufficient stake in the topic")
 	}
 
 	// Before accepting data, transfer fee amount from sender to ecosystem bucket
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee)
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
 
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err = ms.k.AppendReputerLoss(sdkCtx, topic, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
+	err = ms.k.AppendReputerLoss(sdkCtx, topic, moduleParams, nonce.ReputerNonce.BlockHeight, msg.ReputerValueBundle)
 	if err != nil {
 		return nil, err
 	}
