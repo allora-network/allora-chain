@@ -1260,6 +1260,7 @@ func (k *Keeper) DeleteTopicRewardNonce(ctx context.Context, topicId TopicId) er
 func (k *Keeper) AppendReputerLoss(
 	ctx sdk.Context,
 	topic types.Topic,
+	moduleParams types.Params,
 	nonceBlockHeight BlockHeight,
 	reputerLoss *types.ReputerValueBundle,
 ) error {
@@ -1271,10 +1272,6 @@ func (k *Keeper) AppendReputerLoss(
 	}
 	if reputerLoss.ValueBundle.Reputer == "" {
 		return errors.New("invalid reputerLoss bundle: reputer is empty")
-	}
-	moduleParams, err := k.GetParams(ctx)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting module params")
 	}
 	ptr, err := k.GetReputerLossBundlesAtBlock(ctx, topic.Id, nonceBlockHeight)
 	if err != nil {
@@ -2131,6 +2128,7 @@ func (k *Keeper) GetStakeRemovalForReputerAndTopicId(
 	if err != nil {
 		return types.StakeRemovalInfo{}, false, errorsmod.Wrap(err, "error iterating over stake removals by actor")
 	}
+	defer iter.Close()
 	keys, err := iter.Keys()
 	if err != nil {
 		return types.StakeRemovalInfo{}, false, errorsmod.Wrap(err, "error getting keys")

@@ -7,14 +7,14 @@ import (
 )
 
 func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (*types.UpdateParamsResponse, error) {
-	if err := ms.k.ValidateStringIsBech32(msg.Sender); err != nil {
+	err := ms.k.ValidateStringIsBech32(msg.Sender)
+	if err != nil {
 		return nil, err
 	}
 	isAdmin, err := ms.k.IsWhitelistAdmin(ctx, msg.Sender)
 	if err != nil {
 		return nil, err
-	}
-	if !isAdmin {
+	} else if !isAdmin {
 		return nil, types.ErrNotWhitelistAdmin
 	}
 	existingParams, err := ms.k.GetParams(ctx)
