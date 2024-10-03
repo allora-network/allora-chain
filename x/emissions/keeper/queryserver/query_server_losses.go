@@ -2,14 +2,21 @@ package queryserver
 
 import (
 	"context"
+	"time"
 
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *types.GetNetworkLossBundleAtBlockRequest) (*types.GetNetworkLossBundleAtBlockResponse, error) {
+func (qs queryServer) GetNetworkLossBundleAtBlock(ctx context.Context, req *types.GetNetworkLossBundleAtBlockRequest,
+) (
+	_ *types.GetNetworkLossBundleAtBlockResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetNetworkLossBundleAtBlock", "rpc", time.Now(), returnErr == nil)
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -29,9 +36,10 @@ func (qs queryServer) IsReputerNonceUnfulfilled(
 	ctx context.Context,
 	req *types.IsReputerNonceUnfulfilledRequest,
 ) (
-	*types.IsReputerNonceUnfulfilledResponse,
-	error,
+	_ *types.IsReputerNonceUnfulfilledResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("IsReputerNonceUnfulfilled", "rpc", time.Now(), returnErr == nil)
 	isReputerNonceUnfulfilled, err :=
 		qs.k.IsReputerNonceUnfulfilled(ctx, req.TopicId, &types.Nonce{BlockHeight: req.BlockHeight})
 
@@ -42,9 +50,10 @@ func (qs queryServer) GetUnfulfilledReputerNonces(
 	ctx context.Context,
 	req *types.GetUnfulfilledReputerNoncesRequest,
 ) (
-	*types.GetUnfulfilledReputerNoncesResponse,
-	error,
+	_ *types.GetUnfulfilledReputerNoncesResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetUnfulfilledReputerNonces", "rpc", time.Now(), returnErr == nil)
 	unfulfilledNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -57,9 +66,10 @@ func (qs queryServer) GetReputerLossBundlesAtBlock(
 	ctx context.Context,
 	req *types.GetReputerLossBundlesAtBlockRequest,
 ) (
-	*types.GetReputerLossBundlesAtBlockResponse,
-	error,
+	_ *types.GetReputerLossBundlesAtBlockResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetReputerLossBundlesAtBlock", "rpc", time.Now(), returnErr == nil)
 	reputerLossBundles, err := qs.k.GetReputerLossBundlesAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err

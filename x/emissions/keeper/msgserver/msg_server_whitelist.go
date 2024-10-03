@@ -2,11 +2,18 @@ package msgserver
 
 import (
 	"context"
+	"time"
 
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhitelistAdminRequest) (*types.AddToWhitelistAdminResponse, error) {
+func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhitelistAdminRequest,
+) (
+	_ *types.AddToWhitelistAdminResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("AddToWhitelistAdmin", "rpc", time.Now(), returnErr == nil)
 	// Validate the sender address
 	err := ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
@@ -31,7 +38,12 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhi
 	return &types.AddToWhitelistAdminResponse{}, nil
 }
 
-func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.RemoveFromWhitelistAdminRequest) (*types.RemoveFromWhitelistAdminResponse, error) {
+func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.RemoveFromWhitelistAdminRequest,
+) (
+	_ *types.RemoveFromWhitelistAdminResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("RemoveFromWhitelistAdmin", "rpc", time.Now(), returnErr == nil)
 	// Validate the sender address
 	err := ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {

@@ -2,7 +2,9 @@ package queryserver
 
 import (
 	"context"
+	"time"
 
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -14,11 +16,14 @@ import (
 )
 
 // GetWorkerLatestInferenceByTopicId handles the query for the latest inference by a specific worker for a given topic.
-func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *emissionstypes.GetWorkerLatestInferenceByTopicIdRequest) (*emissionstypes.GetWorkerLatestInferenceByTopicIdResponse, error) {
+func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req *emissionstypes.GetWorkerLatestInferenceByTopicIdRequest) (
+	_ *emissionstypes.GetWorkerLatestInferenceByTopicIdResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetWorkerLatestInferenceByTopicId", "rpc", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.WorkerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
-
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -34,7 +39,11 @@ func (qs queryServer) GetWorkerLatestInferenceByTopicId(ctx context.Context, req
 	return &emissionstypes.GetWorkerLatestInferenceByTopicIdResponse{LatestInference: &inference}, nil
 }
 
-func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.GetInferencesAtBlockRequest) (*emissionstypes.GetInferencesAtBlockResponse, error) {
+func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionstypes.GetInferencesAtBlockRequest) (
+	_ *emissionstypes.GetInferencesAtBlockResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetInferencesAtBlock", "rpc", time.Now(), returnErr == nil)
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -54,7 +63,11 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionsty
 func (qs queryServer) GetNetworkInferencesAtBlock(
 	ctx context.Context,
 	req *emissionstypes.GetNetworkInferencesAtBlockRequest,
-) (*emissionstypes.GetNetworkInferencesAtBlockResponse, error) {
+) (
+	_ *emissionstypes.GetNetworkInferencesAtBlockResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetNetworkInferencesAtBlock", "rpc", time.Now(), returnErr == nil)
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -81,9 +94,10 @@ func (qs queryServer) GetLatestNetworkInferences(
 	ctx context.Context,
 	req *emissionstypes.GetLatestNetworkInferencesRequest,
 ) (
-	*emissionstypes.GetLatestNetworkInferencesResponse,
-	error,
+	_ *emissionstypes.GetLatestNetworkInferencesResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetLatestNetworkInferences", "rpc", time.Now(), returnErr == nil)
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -139,9 +153,10 @@ func (qs queryServer) GetLatestAvailableNetworkInferences(
 	ctx context.Context,
 	req *emissionstypes.GetLatestAvailableNetworkInferencesRequest,
 ) (
-	*emissionstypes.GetLatestAvailableNetworkInferencesResponse,
-	error,
+	_ *emissionstypes.GetLatestAvailableNetworkInferencesResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetLatestAvailableNetworkInferences", "rpc", time.Now(), returnErr == nil)
 	lastWorkerCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -202,7 +217,8 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 	forecastImpliedInferenceByWorker map[string]*emissionstypes.Inference,
 	infererWeights map[string]alloraMath.Dec,
 	forecasterWeights map[string]alloraMath.Dec,
-) ([]alloraMath.Dec, []alloraMath.Dec, error) {
+) (_ []alloraMath.Dec, _ []alloraMath.Dec, returnErr error) {
+	defer metrics.RecordMetrics("GetConfidenceIntervalsForInferenceData", "rpc", time.Now(), returnErr == nil)
 	var inferences []alloraMath.Dec // from inferers + forecast-implied inferences
 	var weights []alloraMath.Dec    // weights of all workers
 
@@ -249,9 +265,10 @@ func (qs queryServer) GetLatestTopicInferences(
 	ctx context.Context,
 	req *emissionstypes.GetLatestTopicInferencesRequest,
 ) (
-	*emissionstypes.GetLatestTopicInferencesResponse,
-	error,
+	_ *emissionstypes.GetLatestTopicInferencesResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetLatestTopicInferences", "rpc", time.Now(), returnErr == nil)
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -271,9 +288,10 @@ func (qs queryServer) IsWorkerNonceUnfulfilled(
 	ctx context.Context,
 	req *emissionstypes.IsWorkerNonceUnfulfilledRequest,
 ) (
-	*emissionstypes.IsWorkerNonceUnfulfilledResponse,
-	error,
+	_ *emissionstypes.IsWorkerNonceUnfulfilledResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("IsWorkerNonceUnfulfilled", "rpc", time.Now(), returnErr == nil)
 	isWorkerNonceUnfulfilled, err :=
 		qs.k.IsWorkerNonceUnfulfilled(ctx, req.TopicId, &emissionstypes.Nonce{BlockHeight: req.BlockHeight})
 
@@ -284,9 +302,10 @@ func (qs queryServer) GetUnfulfilledWorkerNonces(
 	ctx context.Context,
 	req *emissionstypes.GetUnfulfilledWorkerNoncesRequest,
 ) (
-	*emissionstypes.GetUnfulfilledWorkerNoncesResponse,
-	error,
+	_ *emissionstypes.GetUnfulfilledWorkerNoncesResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetUnfulfilledWorkerNonces", "rpc", time.Now(), returnErr == nil)
 	unfulfilledNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -299,9 +318,10 @@ func (qs queryServer) GetInfererNetworkRegret(
 	ctx context.Context,
 	req *emissionstypes.GetInfererNetworkRegretRequest,
 ) (
-	*emissionstypes.GetInfererNetworkRegretResponse,
-	error,
+	_ *emissionstypes.GetInfererNetworkRegretResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetInfererNetworkRegret", "rpc", time.Now(), returnErr == nil)
 	infererNetworkRegret, _, err := qs.k.GetInfererNetworkRegret(ctx, req.TopicId, req.ActorId)
 	if err != nil {
 		return nil, err
@@ -314,9 +334,10 @@ func (qs queryServer) GetForecasterNetworkRegret(
 	ctx context.Context,
 	req *emissionstypes.GetForecasterNetworkRegretRequest,
 ) (
-	*emissionstypes.GetForecasterNetworkRegretResponse,
-	error,
+	_ *emissionstypes.GetForecasterNetworkRegretResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetForecasterNetworkRegret", "rpc", time.Now(), returnErr == nil)
 	forecasterNetworkRegret, _, err := qs.k.GetForecasterNetworkRegret(ctx, req.TopicId, req.Worker)
 	if err != nil {
 		return nil, err
@@ -329,9 +350,10 @@ func (qs queryServer) GetOneInForecasterNetworkRegret(
 	ctx context.Context,
 	req *emissionstypes.GetOneInForecasterNetworkRegretRequest,
 ) (
-	*emissionstypes.GetOneInForecasterNetworkRegretResponse,
-	error,
+	_ *emissionstypes.GetOneInForecasterNetworkRegretResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetOneInForecasterNetworkRegret", "rpc", time.Now(), returnErr == nil)
 	oneInForecasterNetworkRegret, _, err := qs.k.GetOneInForecasterNetworkRegret(ctx, req.TopicId, req.Forecaster, req.Inferer)
 	if err != nil {
 		return nil, err
@@ -344,9 +366,10 @@ func (qs queryServer) GetNaiveInfererNetworkRegret(
 	ctx context.Context,
 	req *emissionstypes.GetNaiveInfererNetworkRegretRequest,
 ) (
-	*emissionstypes.GetNaiveInfererNetworkRegretResponse,
-	error,
+	_ *emissionstypes.GetNaiveInfererNetworkRegretResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetNaiveInfererNetworkRegret", "rpc", time.Now(), returnErr == nil)
 	regret, _, err := qs.k.GetNaiveInfererNetworkRegret(ctx, req.TopicId, req.Inferer)
 	if err != nil {
 		return nil, err
@@ -359,9 +382,10 @@ func (qs queryServer) GetOneOutInfererInfererNetworkRegret(
 	ctx context.Context,
 	req *emissionstypes.GetOneOutInfererInfererNetworkRegretRequest,
 ) (
-	*emissionstypes.GetOneOutInfererInfererNetworkRegretResponse,
-	error,
+	_ *emissionstypes.GetOneOutInfererInfererNetworkRegretResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetOneOutInfererInfererNetworkRegret", "rpc", time.Now(), returnErr == nil)
 	regret, _, err := qs.k.GetOneOutInfererInfererNetworkRegret(ctx, req.TopicId, req.OneOutInferer, req.Inferer)
 	if err != nil {
 		return nil, err
@@ -374,9 +398,10 @@ func (qs queryServer) GetOneOutInfererForecasterNetworkRegret(
 	ctx context.Context,
 	req *emissionstypes.GetOneOutInfererForecasterNetworkRegretRequest,
 ) (
-	*emissionstypes.GetOneOutInfererForecasterNetworkRegretResponse,
-	error,
+	_ *emissionstypes.GetOneOutInfererForecasterNetworkRegretResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetOneOutInfererForecasterNetworkRegret", "rpc", time.Now(), returnErr == nil)
 	regret, _, err := qs.k.GetOneOutInfererForecasterNetworkRegret(ctx, req.TopicId, req.OneOutInferer, req.Forecaster)
 	if err != nil {
 		return nil, err
@@ -389,9 +414,10 @@ func (qs queryServer) GetOneOutForecasterInfererNetworkRegret(
 	ctx context.Context,
 	req *emissionstypes.GetOneOutForecasterInfererNetworkRegretRequest,
 ) (
-	*emissionstypes.GetOneOutForecasterInfererNetworkRegretResponse,
-	error,
+	_ *emissionstypes.GetOneOutForecasterInfererNetworkRegretResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetOneOutForecasterInfererNetworkRegret", "rpc", time.Now(), returnErr == nil)
 	regret, _, err := qs.k.GetOneOutForecasterInfererNetworkRegret(ctx, req.TopicId, req.OneOutForecaster, req.Inferer)
 	if err != nil {
 		return nil, err
@@ -404,9 +430,10 @@ func (qs queryServer) GetOneOutForecasterForecasterNetworkRegret(
 	ctx context.Context,
 	req *emissionstypes.GetOneOutForecasterForecasterNetworkRegretRequest,
 ) (
-	*emissionstypes.GetOneOutForecasterForecasterNetworkRegretResponse,
-	error,
+	_ *emissionstypes.GetOneOutForecasterForecasterNetworkRegretResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetOneOutForecasterForecasterNetworkRegret", "rpc", time.Now(), returnErr == nil)
 	regret, _, err := qs.k.GetOneOutForecasterForecasterNetworkRegret(ctx, req.TopicId, req.OneOutForecaster, req.Forecaster)
 	if err != nil {
 		return nil, err

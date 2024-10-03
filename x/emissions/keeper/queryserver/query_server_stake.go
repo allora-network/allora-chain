@@ -3,9 +3,11 @@ package queryserver
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -15,7 +17,12 @@ import (
 )
 
 // TotalStake defines the handler for the Get/TotalStake RPC method.
-func (qs queryServer) GetTotalStake(ctx context.Context, req *types.GetTotalStakeRequest) (*types.GetTotalStakeResponse, error) {
+func (qs queryServer) GetTotalStake(ctx context.Context, req *types.GetTotalStakeRequest,
+) (
+	_ *types.GetTotalStakeResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetTotalStake", "rpc", time.Now(), returnErr == nil)
 	totalStake, err := qs.k.GetTotalStake(ctx)
 	if err != nil {
 		return nil, err
@@ -26,7 +33,12 @@ func (qs queryServer) GetTotalStake(ctx context.Context, req *types.GetTotalStak
 // Retrieves all stake in a topic for a given reputer address,
 // including reputer's stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
-func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.GetReputerStakeInTopicRequest) (*types.GetReputerStakeInTopicResponse, error) {
+func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.GetReputerStakeInTopicRequest,
+) (
+	_ *types.GetReputerStakeInTopicResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetReputerStakeInTopic", "rpc", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -48,7 +60,12 @@ func (qs queryServer) GetReputerStakeInTopic(ctx context.Context, req *types.Get
 // Retrieves all stake in a topic for a given set of reputer addresses,
 // including their stake in themselves and stake delegated to them.
 // Also includes stake that is queued for removal.
-func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *types.GetMultiReputerStakeInTopicRequest) (*types.GetMultiReputerStakeInTopicResponse, error) {
+func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *types.GetMultiReputerStakeInTopicRequest,
+) (
+	_ *types.GetMultiReputerStakeInTopicResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetMultiReputerStakeInTopic", "rpc", time.Now(), returnErr == nil)
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -85,7 +102,12 @@ func (qs queryServer) GetMultiReputerStakeInTopic(ctx context.Context, req *type
 // this is computed from the differences in the delegated stake data structure
 // and the total stake data structure. Which means if invariants are ever violated
 // in the data structures for staking, this function will return an incorrect value.
-func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req *types.GetStakeFromReputerInTopicInSelfRequest) (*types.GetStakeFromReputerInTopicInSelfResponse, error) {
+func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req *types.GetStakeFromReputerInTopicInSelfRequest,
+) (
+	_ *types.GetStakeFromReputerInTopicInSelfResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetStakeFromReputerInTopicInSelf", "rpc", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -113,7 +135,12 @@ func (qs queryServer) GetStakeFromReputerInTopicInSelf(ctx context.Context, req 
 }
 
 // Retrieves total delegate stake on a given reputer address in a given topic
-func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.GetDelegateStakeInTopicInReputerRequest) (*types.GetDelegateStakeInTopicInReputerResponse, error) {
+func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req *types.GetDelegateStakeInTopicInReputerRequest,
+) (
+	_ *types.GetDelegateStakeInTopicInReputerResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetDelegateStakeInTopicInReputer", "rpc", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -133,7 +160,12 @@ func (qs queryServer) GetDelegateStakeInTopicInReputer(ctx context.Context, req 
 	return &types.GetDelegateStakeInTopicInReputerResponse{Amount: stake}, nil
 }
 
-func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.GetStakeFromDelegatorInTopicInReputerRequest) (*types.GetStakeFromDelegatorInTopicInReputerResponse, error) {
+func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context, req *types.GetStakeFromDelegatorInTopicInReputerRequest,
+) (
+	_ *types.GetStakeFromDelegatorInTopicInReputerResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetStakeFromDelegatorInTopicInReputer", "rpc", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.ReputerAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid reputer address: %s", err)
 	}
@@ -160,7 +192,12 @@ func (qs queryServer) GetStakeFromDelegatorInTopicInReputer(ctx context.Context,
 	return &types.GetStakeFromDelegatorInTopicInReputerResponse{Amount: stakeInt}, nil
 }
 
-func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.GetStakeFromDelegatorInTopicRequest) (*types.GetStakeFromDelegatorInTopicResponse, error) {
+func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *types.GetStakeFromDelegatorInTopicRequest,
+) (
+	_ *types.GetStakeFromDelegatorInTopicResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetStakeFromDelegatorInTopic", "rpc", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.DelegatorAddress); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -181,7 +218,12 @@ func (qs queryServer) GetStakeFromDelegatorInTopic(ctx context.Context, req *typ
 }
 
 // Retrieves total stake in a given topic
-func (qs queryServer) GetTopicStake(ctx context.Context, req *types.GetTopicStakeRequest) (*types.GetTopicStakeResponse, error) {
+func (qs queryServer) GetTopicStake(ctx context.Context, req *types.GetTopicStakeRequest,
+) (
+	_ *types.GetTopicStakeResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("GetTopicStake", "rpc", time.Now(), returnErr == nil)
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -200,7 +242,8 @@ func (qs queryServer) GetTopicStake(ctx context.Context, req *types.GetTopicStak
 func (qs queryServer) GetStakeRemovalsUpUntilBlock(
 	ctx context.Context,
 	req *types.GetStakeRemovalsUpUntilBlockRequest,
-) (*types.GetStakeRemovalsUpUntilBlockResponse, error) {
+) (_ *types.GetStakeRemovalsUpUntilBlockResponse, returnErr error) {
+	defer metrics.RecordMetrics("GetStakeRemovalsUpUntilBlock", "rpc", time.Now(), returnErr == nil)
 	moduleParams, err := qs.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -224,7 +267,8 @@ func (qs queryServer) GetStakeRemovalsUpUntilBlock(
 func (qs queryServer) GetDelegateStakeRemovalsUpUntilBlock(
 	ctx context.Context,
 	req *types.GetDelegateStakeRemovalsUpUntilBlockRequest,
-) (*types.GetDelegateStakeRemovalsUpUntilBlockResponse, error) {
+) (_ *types.GetDelegateStakeRemovalsUpUntilBlockResponse, returnErr error) {
+	defer metrics.RecordMetrics("GetDelegateStakeRemovalsUpUntilBlock", "rpc", time.Now(), returnErr == nil)
 	moduleParams, err := qs.k.GetParams(ctx)
 	if err != nil {
 		return nil, err
@@ -248,7 +292,8 @@ func (qs queryServer) GetDelegateStakeRemovalsUpUntilBlock(
 func (qs queryServer) GetStakeRemovalInfo(
 	ctx context.Context,
 	req *types.GetStakeRemovalInfoRequest,
-) (*types.GetStakeRemovalInfoResponse, error) {
+) (_ *types.GetStakeRemovalInfoResponse, returnErr error) {
+	defer metrics.RecordMetrics("GetStakeRemovalInfo", "rpc", time.Now(), returnErr == nil)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	if err := qs.k.ValidateStringIsBech32(req.Reputer); err != nil {
@@ -275,7 +320,8 @@ func (qs queryServer) GetStakeRemovalInfo(
 func (qs queryServer) GetDelegateStakeRemovalInfo(
 	ctx context.Context,
 	req *types.GetDelegateStakeRemovalInfoRequest,
-) (*types.GetDelegateStakeRemovalInfoResponse, error) {
+) (_ *types.GetDelegateStakeRemovalInfoResponse, returnErr error) {
+	defer metrics.RecordMetrics("GetDelegateStakeRemovalInfo", "rpc", time.Now(), returnErr == nil)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	if err := qs.k.ValidateStringIsBech32(req.Reputer); err != nil {
@@ -307,9 +353,10 @@ func (qs queryServer) GetStakeReputerAuthority(
 	ctx context.Context,
 	req *types.GetStakeReputerAuthorityRequest,
 ) (
-	*types.GetStakeReputerAuthorityResponse,
-	error,
+	_ *types.GetStakeReputerAuthorityResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetStakeReputerAuthority", "rpc", time.Now(), returnErr == nil)
 	stakeReputerAuthority, err := qs.k.GetStakeReputerAuthority(ctx, req.TopicId, req.Reputer)
 	if err != nil {
 		return nil, err
@@ -322,9 +369,10 @@ func (qs queryServer) GetDelegateStakePlacement(
 	ctx context.Context,
 	req *types.GetDelegateStakePlacementRequest,
 ) (
-	*types.GetDelegateStakePlacementResponse,
-	error,
+	_ *types.GetDelegateStakePlacementResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetDelegateStakePlacement", "rpc", time.Now(), returnErr == nil)
 	delegateStakePlacement, err := qs.k.GetDelegateStakePlacement(ctx, req.TopicId, req.Delegator, req.Target)
 	if err != nil {
 		return nil, err
@@ -337,9 +385,10 @@ func (qs queryServer) GetDelegateStakeUponReputer(
 	ctx context.Context,
 	req *types.GetDelegateStakeUponReputerRequest,
 ) (
-	*types.GetDelegateStakeUponReputerResponse,
-	error,
+	_ *types.GetDelegateStakeUponReputerResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetDelegateStakeUponReputer", "rpc", time.Now(), returnErr == nil)
 	delegateStakeUponReputer, err := qs.k.GetDelegateStakeUponReputer(ctx, req.TopicId, req.Target)
 	if err != nil {
 		return nil, err
@@ -352,9 +401,10 @@ func (qs queryServer) GetDelegateRewardPerShare(
 	ctx context.Context,
 	req *types.GetDelegateRewardPerShareRequest,
 ) (
-	*types.GetDelegateRewardPerShareResponse,
-	error,
+	_ *types.GetDelegateRewardPerShareResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetDelegateRewardPerShare", "rpc", time.Now(), returnErr == nil)
 	delegateRewardPerShare, err := qs.k.GetDelegateRewardPerShare(ctx, req.TopicId, req.Reputer)
 	if err != nil {
 		return nil, err
@@ -367,9 +417,10 @@ func (qs queryServer) GetStakeRemovalForReputerAndTopicId(
 	ctx context.Context,
 	req *types.GetStakeRemovalForReputerAndTopicIdRequest,
 ) (
-	*types.GetStakeRemovalForReputerAndTopicIdResponse,
-	error,
+	_ *types.GetStakeRemovalForReputerAndTopicIdResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetStakeRemovalForReputerAndTopicId", "rpc", time.Now(), returnErr == nil)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	stakeRemovalInfo, found, err := qs.k.GetStakeRemovalForReputerAndTopicId(sdkCtx, req.Reputer, req.TopicId)
 	if err != nil {
@@ -386,9 +437,10 @@ func (qs queryServer) GetDelegateStakeRemoval(
 	ctx context.Context,
 	req *types.GetDelegateStakeRemovalRequest,
 ) (
-	*types.GetDelegateStakeRemovalResponse,
-	error,
+	_ *types.GetDelegateStakeRemovalResponse,
+	returnErr error,
 ) {
+	defer metrics.RecordMetrics("GetDelegateStakeRemoval", "rpc", time.Now(), returnErr == nil)
 	delegateStakeRemoval, err := qs.k.GetDelegateStakeRemoval(ctx, req.BlockHeight, req.TopicId, req.Delegator, req.Reputer)
 	if err != nil {
 		return nil, err

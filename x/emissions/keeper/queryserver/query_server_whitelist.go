@@ -2,7 +2,9 @@ package queryserver
 
 import (
 	"context"
+	"time"
 
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -11,7 +13,12 @@ import (
 )
 
 // Params defines the handler for the Query/Params RPC method.
-func (qs queryServer) IsWhitelistAdmin(ctx context.Context, req *types.IsWhitelistAdminRequest) (*types.IsWhitelistAdminResponse, error) {
+func (qs queryServer) IsWhitelistAdmin(ctx context.Context, req *types.IsWhitelistAdminRequest,
+) (
+	_ *types.IsWhitelistAdminResponse,
+	returnErr error,
+) {
+	defer metrics.RecordMetrics("IsWhitelistAdmin", "rpc", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
