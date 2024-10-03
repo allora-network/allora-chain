@@ -263,6 +263,7 @@ func CalcNetworkLosses(
 		OneOutInfererValues:           oneOutInfererLosses,
 		OneOutForecasterValues:        oneOutForecasterLosses,
 		OneInForecasterValues:         oneInForecasterLosses,
+		ExtraData:                     make([]byte, 0),
 	}
 
 	return output, nil

@@ -61,8 +61,12 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 				}
 
 				forecastImpliedInference := emissionstypes.Inference{
-					Inferer: forecaster,
-					Value:   medianValue,
+					Inferer:     forecaster,
+					Value:       medianValue,
+					TopicId:     p.TopicId,
+					BlockHeight: p.Nonce.BlockHeight,
+					ExtraData:   make([]byte, 0),
+					Proof:       "",
 				}
 				I_i[forecaster] = &forecastImpliedInference
 			} else {
@@ -127,8 +131,12 @@ func (p *SynthPalette) CalcForecastImpliedInferences() (map[Worker]*emissionstyp
 						return nil, errorsmod.Wrapf(err, "error calculating forecast value")
 					}
 					forecastImpliedInference := emissionstypes.Inference{
-						Inferer: forecaster,
-						Value:   forecastValue,
+						Inferer:     forecaster,
+						Value:       forecastValue,
+						TopicId:     p.TopicId,
+						BlockHeight: p.Nonce.BlockHeight,
+						ExtraData:   make([]byte, 0),
+						Proof:       "",
 					}
 					I_i[forecaster] = &forecastImpliedInference
 				}

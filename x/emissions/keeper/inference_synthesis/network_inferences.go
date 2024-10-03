@@ -51,11 +51,9 @@ func GetNetworkInferences(
 		}
 	}
 
-	networkInferences := &emissions.ValueBundle{
-		TopicId:          topicId,
-		InfererValues:    make([]*emissions.WorkerAttributedValue, 0),
-		ForecasterValues: make([]*emissions.WorkerAttributedValue, 0),
-	}
+	val := GenerateEmptyValueBundle()
+	networkInferences := &val
+	networkInferences.TopicId = topicId
 
 	forecastImpliedInferencesByWorker := make(map[string]*emissions.Inference, 0)
 	var infererWeights map[string]alloraMath.Dec
@@ -120,6 +118,7 @@ func GetNetworkInferences(
 					Ctx:                 ctx,
 					K:                   k,
 					TopicId:             topicId,
+					Nonce:               &emissions.Nonce{BlockHeight: inferenceBlockHeight},
 					Inferences:          inferences,
 					Forecasts:           forecasts,
 					NetworkCombinedLoss: networkLosses.CombinedValue,
@@ -141,23 +140,36 @@ func GetNetworkInferences(
 	} else {
 		// Single valid inference case
 		singleInference := inferences.Inferences[0]
-
-		networkInferences = &emissions.ValueBundle{
-			TopicId:       topicId,
-			CombinedValue: singleInference.Value,
-			InfererValues: []*emissions.WorkerAttributedValue{
-				{
-					Worker: singleInference.Inferer,
-					Value:  singleInference.Value,
-				},
+		networkInferencesVal := GenerateEmptyValueBundle()
+		networkInferencesVal.TopicId = topicId
+		networkInferencesVal.ReputerRequestNonce = networkInferences.ReputerRequestNonce
+		networkInferencesVal.CombinedValue = singleInference.Value
+		networkInferencesVal.NaiveValue = singleInference.Value
+		networkInferencesVal.InfererValues = []*emissions.WorkerAttributedValue{
+			{
+				Worker: singleInference.Inferer,
+				Value:  singleInference.Value,
 			},
-			ForecasterValues:       []*emissions.WorkerAttributedValue{},
-			NaiveValue:             singleInference.Value,
-			OneOutInfererValues:    []*emissions.WithheldWorkerAttributedValue{},
-			OneOutForecasterValues: []*emissions.WithheldWorkerAttributedValue{},
-			OneInForecasterValues:  []*emissions.WorkerAttributedValue{},
 		}
+		networkInferences = &networkInferencesVal
 	}
 
 	return networkInferences, forecastImpliedInferencesByWorker, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, nil
+}
+
+func GenerateEmptyValueBundle() emissions.ValueBundle {
+	return emissions.ValueBundle{
+		TopicId:                       0,
+		ReputerRequestNonce:           &emissions.ReputerRequestNonce{ReputerNonce: nil},
+		Reputer:                       "",
+		CombinedValue:                 alloraMath.ZeroDec(),
+		InfererValues:                 []*emissions.WorkerAttributedValue{},
+		ForecasterValues:              []*emissions.WorkerAttributedValue{},
+		NaiveValue:                    alloraMath.ZeroDec(),
+		OneOutInfererValues:           []*emissions.WithheldWorkerAttributedValue{},
+		OneOutForecasterValues:        []*emissions.WithheldWorkerAttributedValue{},
+		OneInForecasterValues:         []*emissions.WorkerAttributedValue{},
+		OneOutInfererForecasterValues: []*emissions.OneOutInfererForecasterValues{},
+		ExtraData:                     make([]byte, 0),
+	}
 }

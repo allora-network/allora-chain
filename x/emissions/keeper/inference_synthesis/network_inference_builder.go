@@ -15,6 +15,7 @@ type NetworkInferenceBuilder struct {
 	logger  log.Logger
 	palette SynthPalette
 	// Network Inferences Properties
+	nonce                      *emissions.Nonce
 	inferences                 []*emissions.WorkerAttributedValue
 	forecastImpliedInferences  []*emissions.WorkerAttributedValue
 	weights                    RegretInformedWeights
@@ -34,9 +35,18 @@ func NewNetworkInferenceBuilderFromSynthRequest(
 		return nil, errorsmod.Wrapf(err, "Error building palette from request")
 	}
 	return &NetworkInferenceBuilder{
-		ctx:     req.Ctx,
-		logger:  Logger(req.Ctx),
-		palette: palette,
+		ctx:                        req.Ctx,
+		logger:                     Logger(req.Ctx),
+		palette:                    palette,
+		nonce:                      req.Nonce,
+		inferences:                 []*emissions.WorkerAttributedValue{},
+		forecastImpliedInferences:  []*emissions.WorkerAttributedValue{},
+		weights:                    RegretInformedWeights{inferers: nil, forecasters: nil},
+		combinedInference:          InferenceValue{},
+		naiveInference:             InferenceValue{},
+		oneOutInfererInferences:    []*emissions.WithheldWorkerAttributedValue{},
+		oneOutForecasterInferences: []*emissions.WithheldWorkerAttributedValue{},
+		oneInInferences:            []*emissions.WorkerAttributedValue{},
 	}, nil
 }
 
@@ -394,13 +404,17 @@ func (b *NetworkInferenceBuilder) CalcAndSetNetworkInferences() *NetworkInferenc
 func (b *NetworkInferenceBuilder) Build() *emissions.ValueBundle {
 	// Build value bundle to return all the calculated inferences
 	return &emissions.ValueBundle{
-		TopicId:                b.palette.TopicId,
-		CombinedValue:          b.combinedInference,
-		InfererValues:          b.inferences,
-		ForecasterValues:       b.forecastImpliedInferences,
-		NaiveValue:             b.naiveInference,
-		OneOutInfererValues:    b.oneOutInfererInferences,
-		OneOutForecasterValues: b.oneOutForecasterInferences,
-		OneInForecasterValues:  b.oneInInferences,
+		TopicId:                       b.palette.TopicId,
+		Reputer:                       "",
+		ReputerRequestNonce:           &emissions.ReputerRequestNonce{ReputerNonce: b.nonce},
+		CombinedValue:                 b.combinedInference,
+		InfererValues:                 b.inferences,
+		ForecasterValues:              b.forecastImpliedInferences,
+		NaiveValue:                    b.naiveInference,
+		OneOutInfererValues:           b.oneOutInfererInferences,
+		OneOutForecasterValues:        b.oneOutForecasterInferences,
+		OneInForecasterValues:         b.oneInInferences,
+		OneOutInfererForecasterValues: []*emissions.OneOutInfererForecasterValues{},
+		ExtraData:                     make([]byte, 0),
 	}
 }

@@ -22,6 +22,7 @@ func (f *SynthPaletteFactory) BuildPaletteFromRequest(req SynthRequest) (SynthPa
 		K:                                req.K,
 		Logger:                           Logger(req.Ctx),
 		TopicId:                          req.TopicId,
+		Nonce:                            *req.Nonce,
 		AllInferersAreNew:                topic.InitialRegret.Equal(alloraMath.ZeroDec()), // If initial regret is 0, all inferers are new
 		Inferers:                         sortedInferers,
 		InferenceByWorker:                inferenceByWorker,

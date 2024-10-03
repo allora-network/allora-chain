@@ -29,6 +29,7 @@ type SynthRequest struct {
 	Ctx                 sdk.Context
 	K                   keeper.Keeper
 	TopicId             TopicId
+	Nonce               *emissions.Nonce
 	Inferences          *emissions.Inferences
 	Forecasts           *emissions.Forecasts
 	NetworkCombinedLoss Loss
@@ -44,6 +45,7 @@ type SynthPalette struct {
 	Ctx               sdk.Context
 	K                 keeper.Keeper
 	Logger            log.Logger
+	Nonce             emissions.Nonce
 	TopicId           TopicId
 	AllInferersAreNew bool
 	// Should use this as a source of truth regarding for which inferers to have data calculated

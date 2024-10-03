@@ -93,6 +93,7 @@ func (p SynthPalette) Clone() SynthPalette {
 		Ctx:                              p.Ctx,
 		K:                                p.K,
 		Logger:                           p.Logger,
+		Nonce:                            p.Nonce,
 		TopicId:                          p.TopicId,
 		Inferers:                         append([]Worker(nil), p.Inferers...),
 		InferenceByWorker:                inferenceByWorker,
@@ -106,5 +107,6 @@ func (p SynthPalette) Clone() SynthPalette {
 		EpsilonSafeDiv:                   p.EpsilonSafeDiv,
 		PNorm:                            p.PNorm,
 		CNorm:                            p.CNorm,
+		AllInferersAreNew:                p.AllInferersAreNew,
 	}
 }
