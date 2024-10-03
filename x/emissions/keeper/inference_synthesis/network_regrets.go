@@ -394,7 +394,7 @@ func CalcTopicInitialRegret(
 	epsilon alloraMath.Dec,
 	pNorm alloraMath.Dec,
 	cNorm alloraMath.Dec,
-	percentileRegret alloraMath.Dec,
+	quantileRegret alloraMath.Dec,
 	pNormDiv alloraMath.Dec,
 ) (initialRegret alloraMath.Dec, err error) {
 	// Calculate the Denominator
@@ -425,13 +425,13 @@ func CalcTopicInitialRegret(
 		return alloraMath.ZeroDec(), err
 	}
 
-	// Calculate percentile
-	percentile, err := alloraMath.GetQuantileOfDecs(regrets, percentileRegret)
+	// Calculate quantile
+	quantile, err := alloraMath.GetQuantileOfDecs(regrets, quantileRegret)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
 
-	initialRegret, err = percentile.Add(offSetTimesDenominator)
+	initialRegret, err = quantile.Add(offSetTimesDenominator)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
