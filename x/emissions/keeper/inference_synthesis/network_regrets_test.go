@@ -93,6 +93,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	// Create new topic
 	topic := s.mockTopic()
 	topic.InitialRegret = alloraMath.ZeroDec()
+	// Need to use "0.5" to set limit inclusions count as 2=(1/0.5)
 	topic.AlphaRegret = alloraMath.MustNewDecFromString("0.5")
 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
 	require.NoError(err)
@@ -141,6 +142,8 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 		Value:       alloraMath.NewDecFromInt64(200),
 	}
 
+	// Need to more than 2 experienced actor
+	// For this need to call SetInfererNetwork, SetForecasterNetworkRegret for worker1, worker2
 	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker1, regretVal)
 	require.NoError(err)
 	err = k.SetInfererNetworkRegret(s.ctx, topicId, worker2, regretVal)
@@ -721,8 +724,10 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 
+	// Set initial Regret to check if this value is updated or not
 	initialRegret := alloraMath.MustNewDecFromString("0")
 	topic := s.mockTopic()
+	// Need to use "0.5" to set limit inclusions count as 2=(1/0.5)
 	topic.AlphaRegret = alloraMath.MustNewDecFromString("0.5")
 	// Create new topic
 	err := s.emissionsKeeper.SetTopic(s.ctx, topicId, topic)
@@ -742,6 +747,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 
 	reputer0 := s.addrs[8].String()
 
+	// Need to add experienced inferers for this topic
 	for _, worker := range infererAddresses {
 		err := k.IncrementCountInfererInclusionsInTopic(s.ctx, topicId, worker)
 		require.NoError(err)
@@ -749,6 +755,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 		require.NoError(err)
 	}
 
+	// Need to add experienced forecasters for this topic
 	for _, worker := range forecasterAddresses {
 		err := k.IncrementCountForecasterInclusionsInTopic(s.ctx, topicId, worker)
 		require.NoError(err)
@@ -782,6 +789,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	)
 	require.NoError(err)
 
+	// Assert that initial regret is updated
 	topic, err = s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	require.NoError(err)
 	require.NotEqual(topic.InitialRegret, initialRegret)
@@ -802,6 +810,7 @@ func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
 	cNorm := alloraMath.MustNewDecFromString("0.75")
 	epsilon := alloraMath.MustNewDecFromString("1e-4")
 
+	// Set initial Regret to check if this value is updated or not
 	initialRegret := alloraMath.MustNewDecFromString("0")
 	// Create new topic
 	topic := s.mockTopic()
@@ -849,6 +858,7 @@ func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
 	)
 	require.NoError(err)
 
+	// Initial Regret will not be updated because this topic has no experienced actors
 	topic, err = s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	require.NoError(err)
 	require.Equal(topic.InitialRegret, initialRegret)

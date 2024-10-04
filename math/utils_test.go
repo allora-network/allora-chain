@@ -508,24 +508,21 @@ func TestGetQuantileOfDecs(t *testing.T) {
 		alloraMath.MustNewDecFromString("9"),
 		alloraMath.MustNewDecFromString("10"),
 	}
+	negativeData := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("-5"),
+		alloraMath.MustNewDecFromString("-3"),
+		alloraMath.MustNewDecFromString("-1"),
+		alloraMath.MustNewDecFromString("-4"),
+		alloraMath.MustNewDecFromString("-2"),
+	}
+	mixedData := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("-5"),
+		alloraMath.MustNewDecFromString("-3"),
+		alloraMath.MustNewDecFromString("0"),
+		alloraMath.MustNewDecFromString("-4"),
+		alloraMath.MustNewDecFromString("2"),
+	}
 
-	// Calculate the 25th percentile (first quartile)
-	percentile, err := alloraMath.GetQuantileOfDecs(m, alloraMath.MustNewDecFromString("0.25"))
-	require.NoError(t, err)
-	require.Equal(t, percentile, alloraMath.MustNewDecFromString("3.25"))
-
-	// Calculate the 50th percentile (median)
-	percentile, err = alloraMath.GetQuantileOfDecs(m, alloraMath.MustNewDecFromString("0.5"))
-	require.NoError(t, err)
-	require.Equal(t, percentile, alloraMath.MustNewDecFromString("5.5"))
-
-	// Calculate the 75th percentile (third quartile)
-	percentile, err = alloraMath.GetQuantileOfDecs(m, alloraMath.MustNewDecFromString("0.75"))
-	require.NoError(t, err)
-	require.Equal(t, percentile, alloraMath.MustNewDecFromString("7.75"))
-}
-
-func TestGetQuantileOfDecsWithCases(t *testing.T) {
 	tests := []struct {
 		name        string
 		data        []alloraMath.Dec
@@ -533,6 +530,21 @@ func TestGetQuantileOfDecsWithCases(t *testing.T) {
 		expected    alloraMath.Dec
 		expectedErr error
 	}{
+		{
+			data:     m,
+			quantile: alloraMath.MustNewDecFromString("0.25"),
+			expected: alloraMath.MustNewDecFromString("3.25"),
+		},
+		{
+			data:     m,
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.MustNewDecFromString("5.5"),
+		},
+		{
+			data:     m,
+			quantile: alloraMath.MustNewDecFromString("0.75"),
+			expected: alloraMath.MustNewDecFromString("7.75"),
+		},
 		{
 			data:     []alloraMath.Dec{},
 			quantile: alloraMath.MustNewDecFromString("0.5"),
@@ -546,26 +558,23 @@ func TestGetQuantileOfDecsWithCases(t *testing.T) {
 			expected: alloraMath.MustNewDecFromString("42"),
 		},
 		{
-			data: []alloraMath.Dec{
-				alloraMath.MustNewDecFromString("-5"),
-				alloraMath.MustNewDecFromString("-3"),
-				alloraMath.MustNewDecFromString("-1"),
-				alloraMath.MustNewDecFromString("-4"),
-				alloraMath.MustNewDecFromString("-2"),
-			},
+			data:     negativeData,
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.MustNewDecFromString("-3"),
+		},
+		{
+			data:     mixedData,
 			quantile: alloraMath.MustNewDecFromString("0.5"),
 			expected: alloraMath.MustNewDecFromString("-3"),
 		},
 		{
 			data: []alloraMath.Dec{
-				alloraMath.MustNewDecFromString("-5"),
-				alloraMath.MustNewDecFromString("-3"),
-				alloraMath.MustNewDecFromString("0"),
-				alloraMath.MustNewDecFromString("-4"),
-				alloraMath.MustNewDecFromString("2"),
+				alloraMath.NewNaN(),
+				alloraMath.NewNaN(),
+				alloraMath.MustNewDecFromString("3"),
 			},
 			quantile: alloraMath.MustNewDecFromString("0.5"),
-			expected: alloraMath.MustNewDecFromString("-3"),
+			expected: alloraMath.NewNaN(),
 		},
 	}
 
@@ -581,19 +590,6 @@ func TestGetQuantileOfDecsWithCases(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestGetQuantileOfDecsWithNaN(t *testing.T) {
-	data := []alloraMath.Dec{
-		alloraMath.NewNaN(),
-		alloraMath.NewNaN(),
-		alloraMath.MustNewDecFromString("3"),
-	}
-	quantile := alloraMath.MustNewDecFromString("0.5")
-
-	result, err := alloraMath.GetQuantileOfDecs(data, quantile)
-	require.NoError(t, err)
-	require.Equal(t, result, alloraMath.NewNaN())
 }
 
 func TestGetQuantileOfDecsWithInvalidQuantile(t *testing.T) {
