@@ -31,29 +31,49 @@ func GetLowScoreFromAllLossBundles(
 	return lowScore, lowScoreIndex, nil
 }
 
-// Return low score and index among all inferences
-func GetLowScoreFromAllInferences(
+// Update lowest score from new inferer addresses set
+func UpdateLowestScoreFromInfererAddresses(
 	ctx context.Context,
 	k *Keeper,
 	topicId TopicId,
-	inferences types.Inferences,
-) (lowScore types.Score, lowScoreIndex int, err error) {
-	lowScoreIndex = 0
-	lowScore, err = k.GetInfererScoreEma(ctx, topicId, inferences.Inferences[0].Inferer)
-	if err != nil {
-		return types.Score{}, lowScoreIndex, err
-	}
-	for index, extInference := range inferences.Inferences {
-		extScore, err := k.GetInfererScoreEma(ctx, topicId, extInference.Inferer)
+	infererAddresses []string,
+	addedInferer string,
+	removedInfererAddress string,
+) error {
+	infererAddresses = append(infererAddresses, addedInferer)
+	lowScore := types.Score{}
+	for i, address := range infererAddresses {
+		if address == removedInfererAddress {
+			continue
+		}
+		score, err := k.GetInfererScoreEma(ctx, topicId, address)
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Gt(extScore.Score) {
-			lowScore = extScore
-			lowScoreIndex = index
+		if lowScore.Score.Gt(score.Score) || i == 0 {
+			lowScore = score
 		}
 	}
-	return lowScore, lowScoreIndex, nil
+	return k.SetLowestInfererScoreEma(ctx, topicId, lowScore)
+}
+
+// Get lowest score from all inferers
+func GetLowestScoreFromAllInferers(
+	ctx context.Context,
+	k *Keeper,
+	topicId TopicId,
+	infererAddresses []string,
+) (lowScore types.Score, err error) {
+	for i, address := range infererAddresses {
+		score, err := k.GetInfererScoreEma(ctx, topicId, address)
+		if err != nil {
+			continue
+		}
+		if lowScore.Score.Gt(score.Score) || i == 0 {
+			lowScore = score
+		}
+	}
+	return lowScore, nil
 }
 
 // Return low score and index among all forecasts

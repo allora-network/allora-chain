@@ -19,41 +19,40 @@ import (
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (_ *types.InsertWorkerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertWorkerPayload", time.Now(), &err)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	blockHeight := sdkCtx.BlockHeight()
-	err = ms.k.ValidateStringIsBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
-	err = checkInputLength(ctx, ms, msg)
+	err := ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
+	blockHeight := sdkCtx.BlockHeight()
 	err = msg.WorkerDataBundle.Validate()
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Worker invalid data for block: %d", blockHeight)
 	}
 
+	moduleParams, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+	}
+	err = checkInputLength(ctx, moduleParams.MaxSerializedMsgLength, msg)
+	if err != nil {
+		return nil, err
+	}
+
 	nonce := msg.WorkerDataBundle.Nonce
 	topicId := msg.WorkerDataBundle.TopicId
 
-	// Check if the topic exists. Will throw if topic does not exist
 	topic, err := ms.k.GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
-	// Check if the nonce is unfulfilled
 	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce)
 	if err != nil {
 		return nil, err
-	}
-	// If the nonce is already fulfilled, return an error
-	if !nonceUnfulfilled {
+	} else if !nonceUnfulfilled {
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
-
-	// Check if the window time is open
 	if !ms.k.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
 		return nil, errorsmod.Wrapf(
 			types.ErrWorkerNonceWindowNotAvailable,
@@ -65,17 +64,11 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, msg.WorkerDataBundle.Worker)
 	if err != nil {
 		return nil, err
-	}
-	if !isInfererRegistered {
+	} else if !isInfererRegistered {
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker is not registered in this topic")
 	}
 
-	// Before accepting data, transfer fee amount from sender to ecosystem bucket
-	params, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
-	}
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee)
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
@@ -117,10 +110,6 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 			latestScoresForForecastedInferers = append(latestScoresForForecastedInferers, score)
 		}
 
-		moduleParams, err := ms.k.GetParams(ctx)
-		if err != nil {
-			return nil, err
-		}
 		_, _, topNInferer := actorutils.FindTopNByScoreDesc(
 			sdkCtx,
 			moduleParams.MaxElementsPerForecast,
