@@ -58,7 +58,7 @@ func NewRootCmd() *cobra.Command {
 		panic(err)
 	}
 
-	rootCmd := &cobra.Command{
+	rootCmd := &cobra.Command{ // nolint: exhaustruct // dependency code don't want to change the way it works
 		Use:   "allorad",
 		Short: "allorad - the Allora chain",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
@@ -136,15 +136,15 @@ func ProvideClientContext(
 	txConfig client.TxConfig,
 	legacyAmino *codec.LegacyAmino,
 ) client.Context {
-	clientCtx := client.Context{}.
-		WithCodec(appCodec).
-		WithInterfaceRegistry(interfaceRegistry).
-		WithTxConfig(txConfig).
-		WithLegacyAmino(legacyAmino).
-		WithInput(os.Stdin).
-		WithAccountRetriever(types.AccountRetriever{}).
-		WithHomeDir(app.DefaultNodeHome).
-		WithViper("ALLORA") // env variable prefix
+	clientCtx := client.Context{}. // nolint: exhaustruct // dependency code don't want to change the way it works
+					WithCodec(appCodec).
+					WithInterfaceRegistry(interfaceRegistry).
+					WithTxConfig(txConfig).
+					WithLegacyAmino(legacyAmino).
+					WithInput(os.Stdin).
+					WithAccountRetriever(types.AccountRetriever{}).
+					WithHomeDir(app.DefaultNodeHome).
+					WithViper("ALLORA") // env variable prefix
 
 	// Read the config again to overwrite the default values with the values from the config file
 	clientCtx, _ = config.ReadFromClientConfig(clientCtx)

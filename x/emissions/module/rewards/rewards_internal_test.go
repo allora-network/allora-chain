@@ -5,18 +5,25 @@ import (
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
-	"github.com/allora-network/allora-chain/test/testutil"
+	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
 type RewardsMathTestSuite struct {
 	suite.Suite
+	privKeys     []secp256k1.PrivKey
+	addrs        []sdk.AccAddress
+	addrsStr     []string
+	pubKeyHexStr []string
 }
 
 func (s *RewardsMathTestSuite) SetupTest() {
+	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = alloratestutil.GenerateTestAccounts(8)
 }
 
 func TestRewardsMathTestSuite(t *testing.T) {
@@ -132,9 +139,11 @@ func (s *RewardsMathTestSuite) TestInferenceRewardsSimple() {
 	// U_i = ((1 - 0.5) * 2 * 2 * 2 ) / (2 + 2 + 4)
 	// U_i = 0.5 * 8 / 8
 	// U_i = 0.5
+	topicId := uint64(1)
+	blockHeight := int64(300)
 	infererScores := []emissionstypes.Score{
-		{Score: alloraMath.MustNewDecFromString("0.5")},
-		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[0], Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[1], Score: alloraMath.MustNewDecFromString("0.5")},
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
@@ -175,9 +184,11 @@ func (s *RewardsMathTestSuite) TestInferenceRewardsSimple() {
 
 func (s *RewardsMathTestSuite) TestInferenceRewardsZero() {
 	totalReward := alloraMath.ZeroDec()
+	topicId := uint64(1)
+	blockHeight := int64(300)
 	infererScores := []emissionstypes.Score{
-		{Score: alloraMath.MustNewDecFromString("0.5")},
-		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[0], Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[1], Score: alloraMath.MustNewDecFromString("0.5")},
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
@@ -210,9 +221,11 @@ func (s *RewardsMathTestSuite) TestForecastRewardsSimple() {
 	// V_i = (0.5 * 2 * 2 * 2 ) / (2 + 2 + 4)
 	// V_i = 0.5 * 8 / 8
 	// V_i = 0.5
+	topicId := uint64(1)
+	blockHeight := int64(300)
 	infererScores := []emissionstypes.Score{
-		{Score: alloraMath.MustNewDecFromString("0.5")},
-		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[0], Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[1], Score: alloraMath.MustNewDecFromString("0.5")},
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
@@ -258,9 +271,11 @@ func (s *RewardsMathTestSuite) TestU_iOverV_i() {
 	// χ = 0.5 for values of T_i >= 1
 	// U_i / V_i = ((1 - 0.5) * 2 ) / (0.5  * 2)
 	// U_i / V_i = 1
+	topicId := uint64(1)
+	blockHeight := int64(300)
 	infererScores := []emissionstypes.Score{
-		{Score: alloraMath.MustNewDecFromString("0.5")},
-		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[0], Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[1], Score: alloraMath.MustNewDecFromString("0.5")},
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
@@ -314,9 +329,11 @@ func (s *RewardsMathTestSuite) TestU_iOverV_i() {
 
 func (s *RewardsMathTestSuite) TestForecastRewardsZero() {
 	totalReward := alloraMath.ZeroDec()
+	topicId := uint64(1)
+	blockHeight := int64(300)
 	infererScores := []emissionstypes.Score{
-		{Score: alloraMath.MustNewDecFromString("0.5")},
-		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[0], Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[1], Score: alloraMath.MustNewDecFromString("0.5")},
 	}
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	alpha := alloraMath.OneDec()
@@ -371,9 +388,9 @@ func (s *RewardsMathTestSuite) TestReputerRewardZero() {
 }
 
 func (s *RewardsMathTestSuite) TestReputerRewardFromCsv() {
-	epochGet := testutil.GetSimulatedValuesGetterForEpochs()
+	epochGet := alloratestutil.GetSimulatedValuesGetterForEpochs()
 	epoch3Get := epochGet[300]
-	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
+	totalReward, err := alloratestutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	result, err := rewards.GetRewardForReputerTaskInTopic(
 		epoch3Get("inferers_entropy"),
@@ -382,9 +399,9 @@ func (s *RewardsMathTestSuite) TestReputerRewardFromCsv() {
 		&totalReward,
 	)
 	s.Require().NoError(err)
-	expectedTotalReputerReward, err := testutil.GetTotalReputerRewardForTopicInEpoch(epoch3Get)
+	expectedTotalReputerReward, err := alloratestutil.GetTotalReputerRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
-	testutil.InEpsilon5(s.T(), result, expectedTotalReputerReward.String())
+	alloratestutil.InEpsilon5(s.T(), result, expectedTotalReputerReward.String())
 }
 
 func (s *RewardsMathTestSuite) TestForecastingPerformanceScoreSimple() {
@@ -407,9 +424,11 @@ func (s *RewardsMathTestSuite) TestForecastingUtilitySimple() {
 	previousForecasterScoreRatio := alloraMath.ZeroDec()
 	// Test case where score < 0
 	negativeScore := alloraMath.MustNewDecFromString("-0.1")
+	topicId := uint64(1)
+	blockHeight := int64(300)
 	infererScores := []emissionstypes.Score{
-		{Score: alloraMath.MustNewDecFromString("0.5")},
-		{Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[0], Score: alloraMath.MustNewDecFromString("0.5")},
+		{TopicId: topicId, BlockHeight: blockHeight, Address: s.addrsStr[1], Score: alloraMath.MustNewDecFromString("0.5")},
 	}
 	ret, _, err := rewards.ForecastingUtility(negativeScore, infererScores, previousForecasterScoreRatio, alpha)
 	s.Require().NoError(err)

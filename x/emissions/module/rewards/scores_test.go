@@ -631,6 +631,14 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 			{
 				Pubkey: "allo12vgd3fhvghc94e6kmnv02yw2jar3a5zu3jgfh2",
 				ValueBundle: &types.ValueBundle{
+					TopicId:   1,
+					ExtraData: nil,
+					ReputerRequestNonce: &types.ReputerRequestNonce{
+						ReputerNonce: &types.Nonce{BlockHeight: 100},
+					},
+					Reputer:       "allo12vgd3fhvghc94e6kmnv02yw2jar3a5zu3jgfh2",
+					CombinedValue: alloraMath.NewDecFromInt64(100),
+					NaiveValue:    alloraMath.NewDecFromInt64(100),
 					InfererValues: []*types.WorkerAttributedValue{
 						{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(100)},
 						{Worker: s.addrsStr[2], Value: alloraMath.NewDecFromInt64(200)},
@@ -661,9 +669,18 @@ func (s *RewardsTestSuite) TestEnsureWorkerPresenceConsistency() {
 			{
 				Pubkey: "reputer2",
 				ValueBundle: &types.ValueBundle{
+					TopicId:   1,
+					ExtraData: nil,
+					ReputerRequestNonce: &types.ReputerRequestNonce{
+						ReputerNonce: &types.Nonce{BlockHeight: 100},
+					},
+					Reputer:       "reputer2",
+					CombinedValue: alloraMath.NewDecFromInt64(100),
+					NaiveValue:    alloraMath.NewDecFromInt64(100),
 					InfererValues: []*types.WorkerAttributedValue{
 						{Worker: "worker5", Value: alloraMath.NewDecFromInt64(100)},
 					},
+					ForecasterValues: nil,
 					OneOutInfererValues: []*types.WithheldWorkerAttributedValue{
 						{Worker: s.addrsStr[1], Value: alloraMath.NewDecFromInt64(100)},
 						{Worker: s.addrsStr[2], Value: alloraMath.NewDecFromInt64(200)},
@@ -970,14 +987,16 @@ func generateLossBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64,
 					BlockHeight: blockHeight,
 				},
 			},
-			Reputer:                s.addrsStr[reputerIndex],
-			CombinedValue:          reputersLosses[i],
-			NaiveValue:             reputersNaiveLosses[i],
-			InfererValues:          make([]*types.WorkerAttributedValue, len(workers)),
-			ForecasterValues:       make([]*types.WorkerAttributedValue, len(workers)),
-			OneOutInfererValues:    make([]*types.WithheldWorkerAttributedValue, len(workers)),
-			OneOutForecasterValues: make([]*types.WithheldWorkerAttributedValue, len(workers)),
-			OneInForecasterValues:  make([]*types.WorkerAttributedValue, len(workers)),
+			Reputer:                       s.addrsStr[reputerIndex],
+			ExtraData:                     nil,
+			CombinedValue:                 reputersLosses[i],
+			NaiveValue:                    reputersNaiveLosses[i],
+			InfererValues:                 make([]*types.WorkerAttributedValue, len(workers)),
+			ForecasterValues:              make([]*types.WorkerAttributedValue, len(workers)),
+			OneOutInfererValues:           make([]*types.WithheldWorkerAttributedValue, len(workers)),
+			OneOutForecasterValues:        make([]*types.WithheldWorkerAttributedValue, len(workers)),
+			OneInForecasterValues:         make([]*types.WorkerAttributedValue, len(workers)),
+			OneOutInfererForecasterValues: nil,
 		}
 
 		for j, worker := range workers {
@@ -1028,14 +1047,16 @@ func generateHugeLossBundles(
 					BlockHeight: blockHeight,
 				},
 			},
-			Reputer:                s.addrsStr[reputerIndex],
-			CombinedValue:          reputersLosses[i],
-			NaiveValue:             reputersNaiveLosses[i],
-			InfererValues:          make([]*types.WorkerAttributedValue, len(workerIndexes)),
-			ForecasterValues:       make([]*types.WorkerAttributedValue, len(workerIndexes)),
-			OneOutInfererValues:    make([]*types.WithheldWorkerAttributedValue, len(workerIndexes)),
-			OneOutForecasterValues: make([]*types.WithheldWorkerAttributedValue, len(workerIndexes)),
-			OneInForecasterValues:  make([]*types.WorkerAttributedValue, len(workerIndexes)),
+			ExtraData:                     nil,
+			Reputer:                       s.addrsStr[reputerIndex],
+			CombinedValue:                 reputersLosses[i],
+			NaiveValue:                    reputersNaiveLosses[i],
+			InfererValues:                 make([]*types.WorkerAttributedValue, len(workerIndexes)),
+			ForecasterValues:              make([]*types.WorkerAttributedValue, len(workerIndexes)),
+			OneOutInfererValues:           make([]*types.WithheldWorkerAttributedValue, len(workerIndexes)),
+			OneOutForecasterValues:        make([]*types.WithheldWorkerAttributedValue, len(workerIndexes)),
+			OneInForecasterValues:         make([]*types.WorkerAttributedValue, len(workerIndexes)),
+			OneOutInfererForecasterValues: nil,
 		}
 
 		for j, workerIndex := range workerIndexes {
@@ -1074,6 +1095,8 @@ func generateHugeWorkerDataBundles(
 				BlockHeight: blockHeight,
 				Inferer:     s.addrsStr[workerIndex],
 				Value:       alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10)),
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			Forecast: &types.Forecast{
 				TopicId:     topicId,
@@ -1089,6 +1112,7 @@ func generateHugeWorkerDataBundles(
 						Value:   alloraMath.MustNewDecFromString(strconv.FormatInt(int64(rand.Intn(1000)+1), 10)),
 					},
 				},
+				ExtraData: nil,
 			},
 		}
 		workerSig, err := signInferenceForecastBundle(workerInferenceForecastBundle, s.privKeys[workerIndex])
@@ -1154,6 +1178,8 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker1],
 			Value:       alloraMath.MustNewDecFromString("0.01127"),
+			ExtraData:   nil,
+			Proof:       "",
 		},
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
@@ -1169,6 +1195,7 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 					Value:   alloraMath.MustNewDecFromString("0.01127"),
 				},
 			},
+			ExtraData: nil,
 		},
 	}
 	worker1Sig, err := signInferenceForecastBundle(worker1InferenceForecastBundle, s.privKeys[worker1])
@@ -1189,6 +1216,8 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker2],
 			Value:       alloraMath.MustNewDecFromString("0.01791"),
+			ExtraData:   nil,
+			Proof:       "",
 		},
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
@@ -1204,6 +1233,7 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 					Value:   alloraMath.MustNewDecFromString("0.01791"),
 				},
 			},
+			ExtraData: nil,
 		},
 	}
 	worker2Sig, err := signInferenceForecastBundle(worker2InferenceForecastBundle, s.privKeys[worker2])
@@ -1224,6 +1254,8 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker3],
 			Value:       alloraMath.MustNewDecFromString("0.01404"),
+			ExtraData:   nil,
+			Proof:       "",
 		},
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
@@ -1239,6 +1271,7 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 					Value:   alloraMath.MustNewDecFromString("0.01404"),
 				},
 			},
+			ExtraData: nil,
 		},
 	}
 	worker3Sig, err := signInferenceForecastBundle(worker3InferenceForecastBundle, s.privKeys[worker3])
@@ -1259,6 +1292,8 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker4],
 			Value:       alloraMath.MustNewDecFromString("0.02318"),
+			ExtraData:   nil,
+			Proof:       "",
 		},
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
@@ -1274,6 +1309,7 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 					Value:   alloraMath.MustNewDecFromString("0.02318"),
 				},
 			},
+			ExtraData: nil,
 		},
 	}
 	worker4Sig, err := signInferenceForecastBundle(worker4InferenceForecastBundle, s.privKeys[worker4])
@@ -1294,6 +1330,8 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker5],
 			Value:       alloraMath.MustNewDecFromString("0.01251"),
+			ExtraData:   nil,
+			Proof:       "",
 		},
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
@@ -1309,6 +1347,7 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 					Value:   alloraMath.MustNewDecFromString("0.01251"),
 				},
 			},
+			ExtraData: nil,
 		},
 	}
 	worker5Sig, err := signInferenceForecastBundle(worker5InferenceForecastBundle, s.privKeys[worker5])
@@ -1337,6 +1376,8 @@ func generateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker1],
 			Value:       alloraMath.MustNewDecFromString("0.01251"),
+			ExtraData:   nil,
+			Proof:       "",
 		},
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
@@ -1352,6 +1393,7 @@ func generateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 					Value:   alloraMath.MustNewDecFromString("0.01251"),
 				},
 			},
+			ExtraData: nil,
 		},
 	}
 	worker1Sig, err := signInferenceForecastBundle(worker1InferenceForecastBundle, s.privKeys[worker1])
@@ -1372,6 +1414,8 @@ func generateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker2],
 			Value:       alloraMath.MustNewDecFromString("0.01251"),
+			ExtraData:   nil,
+			Proof:       "",
 		},
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
@@ -1387,6 +1431,7 @@ func generateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 					Value:   alloraMath.MustNewDecFromString("0.01251"),
 				},
 			},
+			ExtraData: nil,
 		},
 	}
 	worker2Sig, err := signInferenceForecastBundle(worker2InferenceForecastBundle, s.privKeys[worker2])
@@ -1415,6 +1460,8 @@ func generateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker1],
 			Value:       alloraMath.MustNewDecFromString("0.01251"),
+			ExtraData:   nil,
+			Proof:       "",
 		},
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
@@ -1430,6 +1477,7 @@ func generateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 					Value:   alloraMath.MustNewDecFromString("0.01251"),
 				},
 			},
+			ExtraData: nil,
 		},
 	}
 	worker1Sig, err := signInferenceForecastBundle(worker1InferenceForecastBundle, s.privKeys[worker1])
@@ -1450,6 +1498,8 @@ func generateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker2],
 			Value:       alloraMath.MustNewDecFromString("0.01251"),
+			ExtraData:   nil,
+			Proof:       "",
 		},
 		Forecast: &types.Forecast{
 			TopicId:     topicId,
@@ -1465,6 +1515,7 @@ func generateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 					Value:   alloraMath.MustNewDecFromString("0.01251"),
 				},
 			},
+			ExtraData: nil,
 		},
 	}
 	worker2Sig, err := signInferenceForecastBundle(worker2InferenceForecastBundle, s.privKeys[worker2])
@@ -1523,6 +1574,8 @@ func generateSimpleWorkerDataBundles(
 				BlockHeight: blockHeight,
 				Inferer:     s.addrsStr[workerValue.Index],
 				Value:       alloraMath.MustNewDecFromString(workerValue.Value),
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			Forecast: &types.Forecast{
 				TopicId:     topicId,
@@ -1538,6 +1591,7 @@ func generateSimpleWorkerDataBundles(
 						Value:   alloraMath.MustNewDecFromString(workerValue.Value),
 					},
 				},
+				ExtraData: nil,
 			},
 		}
 		workerSig, err := signInferenceForecastBundle(newWorkerInferenceForecastBundle, s.privKeys[workerValue.Index])
@@ -1582,14 +1636,16 @@ func generateSimpleLossBundles(
 					BlockHeight: nonce,
 				},
 			},
-			Reputer:                s.addrsStr[reputer.Index],
-			CombinedValue:          alloraMath.MustNewDecFromString(reputer.Value),
-			NaiveValue:             alloraMath.MustNewDecFromString(reputer.Value),
-			InfererValues:          make([]*types.WorkerAttributedValue, countValues),
-			ForecasterValues:       make([]*types.WorkerAttributedValue, countValues),
-			OneOutInfererValues:    make([]*types.WithheldWorkerAttributedValue, countValues),
-			OneOutForecasterValues: make([]*types.WithheldWorkerAttributedValue, countValues),
-			OneInForecasterValues:  make([]*types.WorkerAttributedValue, countValues),
+			Reputer:                       s.addrsStr[reputer.Index],
+			ExtraData:                     nil,
+			CombinedValue:                 alloraMath.MustNewDecFromString(reputer.Value),
+			NaiveValue:                    alloraMath.MustNewDecFromString(reputer.Value),
+			InfererValues:                 make([]*types.WorkerAttributedValue, countValues),
+			ForecasterValues:              make([]*types.WorkerAttributedValue, countValues),
+			OneOutInfererValues:           make([]*types.WithheldWorkerAttributedValue, countValues),
+			OneOutForecasterValues:        make([]*types.WithheldWorkerAttributedValue, countValues),
+			OneInForecasterValues:         make([]*types.WorkerAttributedValue, countValues),
+			OneOutInfererForecasterValues: nil,
 		}
 
 		for j, worker := range workerValues {

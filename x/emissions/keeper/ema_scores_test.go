@@ -10,11 +10,25 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaIfNewUpdate() {
 	keeper := s.emissionsKeeper
 
 	topic := types.Topic{
-		Id:                     uint64(1),
-		WorkerSubmissionWindow: 10,
-		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.2"),
+		Id:                       uint64(1),
+		WorkerSubmissionWindow:   10,
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
+		Creator:                  s.addrsStr[0],
+		Metadata:                 "",
+		LossMethod:               "",
+		EpochLastEnded:           0,
+		EpochLength:              10,
+		GroundTruthLag:           10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.ZeroDec(),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.ZeroDec(),
+		InitialRegret:            alloraMath.ZeroDec(),
+		ActiveInfererQuantile:    alloraMath.ZeroDec(),
+		ActiveForecasterQuantile: alloraMath.ZeroDec(),
+		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
+	worker := s.addrsStr[1]
 	block := types.BlockHeight(100)
 
 	// Test case 1: New update
@@ -50,11 +64,25 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaIfNewUpdate() {
 	keeper := s.emissionsKeeper
 
 	topic := types.Topic{
-		Id:                     uint64(1),
-		WorkerSubmissionWindow: 10,
-		MeritSortitionAlpha:    alloraMath.MustNewDecFromString("0.2"),
+		Id:                       uint64(1),
+		WorkerSubmissionWindow:   10,
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
+		Creator:                  s.addrsStr[0],
+		Metadata:                 "",
+		LossMethod:               "",
+		EpochLastEnded:           0,
+		EpochLength:              10,
+		GroundTruthLag:           10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.ZeroDec(),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.ZeroDec(),
+		InitialRegret:            alloraMath.ZeroDec(),
+		ActiveInfererQuantile:    alloraMath.ZeroDec(),
+		ActiveForecasterQuantile: alloraMath.ZeroDec(),
+		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
+	worker := s.addrsStr[1]
 	block := types.BlockHeight(100)
 
 	// Test case 1: New update
@@ -90,11 +118,25 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaIfNewUpdate() {
 	keeper := s.emissionsKeeper
 
 	topic := types.Topic{
-		Id:                  uint64(1),
-		EpochLength:         20,
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.2"),
+		Creator:                  s.addrsStr[0],
+		Id:                       uint64(1),
+		EpochLength:              20,
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
+		Metadata:                 "",
+		LossMethod:               "",
+		EpochLastEnded:           0,
+		GroundTruthLag:           20,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.ZeroDec(),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.ZeroDec(),
+		InitialRegret:            alloraMath.ZeroDec(),
+		WorkerSubmissionWindow:   20,
+		ActiveInfererQuantile:    alloraMath.ZeroDec(),
+		ActiveForecasterQuantile: alloraMath.ZeroDec(),
+		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	reputer := "allo12vgd3fhvghc94e6kmnv02yw2jar3a5zu3jgfh2"
+	reputer := s.addrsStr[2]
 	block := types.BlockHeight(100)
 
 	// Test case 1: New update
@@ -130,10 +172,25 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaWithLastSavedTopicQuanti
 	keeper := s.emissionsKeeper
 
 	topic := types.Topic{
-		Id:                  uint64(1),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.2"),
+		Id:                       uint64(1),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
+		Creator:                  s.addrsStr[0],
+		Metadata:                 "",
+		LossMethod:               "",
+		EpochLastEnded:           0,
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.ZeroDec(),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.ZeroDec(),
+		InitialRegret:            alloraMath.ZeroDec(),
+		WorkerSubmissionWindow:   100,
+		ActiveInfererQuantile:    alloraMath.ZeroDec(),
+		ActiveForecasterQuantile: alloraMath.ZeroDec(),
+		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
+	worker := s.addrsStr[1]
 	block := types.BlockHeight(100)
 
 	// Set up a previous topic quantile score
@@ -156,10 +213,25 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaWithLastSavedTopicQua
 	keeper := s.emissionsKeeper
 
 	topic := types.Topic{
-		Id:                  uint64(1),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.2"),
+		Id:                       uint64(1),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
+		Creator:                  s.addrsStr[0],
+		Metadata:                 "",
+		LossMethod:               "",
+		EpochLastEnded:           0,
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.ZeroDec(),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.ZeroDec(),
+		InitialRegret:            alloraMath.ZeroDec(),
+		WorkerSubmissionWindow:   100,
+		ActiveInfererQuantile:    alloraMath.ZeroDec(),
+		ActiveForecasterQuantile: alloraMath.ZeroDec(),
+		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	worker := "allo15lvs3m3urm4kts4tp2um5u3aeuz3whqrhz47r5"
+	worker := s.addrsStr[1]
 	block := types.BlockHeight(100)
 
 	// Set up a previous topic quantile score
@@ -182,10 +254,25 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaWithLastSavedTopicQuanti
 	keeper := s.emissionsKeeper
 
 	topic := types.Topic{
-		Id:                  uint64(1),
-		MeritSortitionAlpha: alloraMath.MustNewDecFromString("0.2"),
+		Id:                       uint64(1),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.2"),
+		Creator:                  s.addrsStr[0],
+		Metadata:                 "",
+		LossMethod:               "",
+		EpochLastEnded:           0,
+		EpochLength:              100,
+		GroundTruthLag:           100,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.ZeroDec(),
+		AllowNegative:            false,
+		Epsilon:                  alloraMath.ZeroDec(),
+		InitialRegret:            alloraMath.ZeroDec(),
+		WorkerSubmissionWindow:   100,
+		ActiveInfererQuantile:    alloraMath.ZeroDec(),
+		ActiveForecasterQuantile: alloraMath.ZeroDec(),
+		ActiveReputerQuantile:    alloraMath.ZeroDec(),
 	}
-	reputer := "allo12vgd3fhvghc94e6kmnv02yw2jar3a5zu3jgfh2"
+	reputer := s.addrsStr[2]
 	block := types.BlockHeight(100)
 
 	// Set up a previous topic quantile score

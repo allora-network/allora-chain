@@ -67,7 +67,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	storeService := runtime.NewKVStoreService(key)
 	s.storeService = storeService
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
+	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}) // nolint: exhaustruct
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 	s.codec = encCfg.Codec
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
@@ -194,6 +194,7 @@ func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
 		EpochLength:              epochLen,
 		GroundTruthLag:           epochLen,
 		WorkerSubmissionWindow:   epochLen,
+		AllowNegative:            false,
 		AlphaRegret:              alloraMath.NewDecFromInt64(1),
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
@@ -1312,7 +1313,7 @@ func (s *KeeperTestSuite) TestGetReputerLossBundlesAtBlock() {
 	// Test getting data before any insert, should return error or nil
 	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
 	require.NoError(err)
-	require.Nil(result.ReputerValueBundles, "Result should be nil for non-existent data")
+	require.Empty(result.ReputerValueBundles, "Result should be empty for non-existent data")
 }
 
 func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
@@ -1347,6 +1348,7 @@ func (s *KeeperTestSuite) TestInsertNetworkLossBundleAtBlock() {
 	require.Equal(&lossBundle, result, "Retrieved data should match inserted data")
 }
 
+// this unit test needs to be completely rewritten, PROTO-2575
 func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 	ctx := s.ctx
 	require := s.Require()
@@ -1355,9 +1357,9 @@ func (s *KeeperTestSuite) TestGetNetworkLossBundleAtBlock() {
 
 	// Attempt to retrieve before insertion
 	result, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(ctx, topicId, block)
-	require.NoError(err, "Should return error for non-existent data")
+	require.NoError(err, "Should not return error for empty loss bundle")
 	require.NotNil(result)
-	require.Equal(uint64(0), result.TopicId, "Result should be nil for non-existent data")
+	require.Equal(topicId, result.TopicId, "Result should be not be nil for non-existent data")
 }
 
 func (s *KeeperTestSuite) TestGetLatestNetworkLossBundle() {
@@ -3232,10 +3234,18 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 		ReputerNonce: &types.Nonce{BlockHeight: block},
 	}
 	networkLosses := types.ValueBundle{
-		Reputer:             s.addrsStr[4],
-		CombinedValue:       alloraMath.MustNewDecFromString(".0000117005278862668"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
+		Reputer:                       s.addrsStr[4],
+		CombinedValue:                 alloraMath.MustNewDecFromString(".0000117005278862668"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 	}
 	err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, networkLosses)
 	s.Require().NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
@@ -3267,8 +3277,15 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().Empty(lossbundles.ReputerValueBundles, "Must be pruned")
 	networkBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting network loss bundle should not fail but be empty")
-	s.Require().Equal(uint64(0), networkBundles.TopicId, "Must be pruned as evidenced by nil topic id")
-	s.Require().Equal("0", networkBundles.CombinedValue.String(), "Must be pruned as evidenced by nil combined value")
+	s.Require().Equal(topicId, networkBundles.TopicId, "topic id returned")
+	s.Require().Empty(networkBundles.InfererValues, "inferer values is empty")
+	s.Require().Empty(networkBundles.ForecasterValues, "forecaster values is empty")
+	s.Require().Empty(networkBundles.OneOutInfererValues, "one out inferer values is empty")
+	s.Require().Empty(networkBundles.OneOutForecasterValues, "one out forecaster values is empty")
+	s.Require().Empty(networkBundles.OneInForecasterValues, "one in forecaster values is empty")
+	s.Require().Empty(networkBundles.OneOutInfererForecasterValues, "one out inferer forecaster values is empty")
+	s.Require().Equal("0", networkBundles.CombinedValue.String(), "Must be pruned as evidenced by empty combined value")
+	s.Require().Equal("0", networkBundles.NaiveValue.String(), "Must be pruned as evidenced by empty naive value")
 }
 
 func (s *KeeperTestSuite) TestPruneWorkerNoncesLogicNoNonces() {
@@ -3514,7 +3531,7 @@ func (s *KeeperTestSuite) TestDeleteUnfulfilledWorkerNonces() {
 	// Check that the nonces were removed
 	nonces, err := s.emissionsKeeper.GetUnfulfilledWorkerNonces(s.ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Nil(nonces.Nonces)
+	s.Require().Empty(nonces.Nonces)
 }
 
 func (s *KeeperTestSuite) TestDeleteUnfulfilledreputerNonces() {
@@ -3533,7 +3550,7 @@ func (s *KeeperTestSuite) TestDeleteUnfulfilledreputerNonces() {
 	// Check that the nonces were removed
 	nonces, err := s.emissionsKeeper.GetUnfulfilledReputerNonces(s.ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Nil(nonces.Nonces)
+	s.Require().Empty(nonces.Nonces)
 }
 
 func (s *KeeperTestSuite) TestGetFirstStakeRemovalForReputerAndTopicId() {
@@ -3683,7 +3700,12 @@ func (s *KeeperTestSuite) TestAppendInference() {
 
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	newInference := types.Inference{
-		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.52"),
+		TopicId:     topicId,
+		BlockHeight: blockHeightInferences,
+		Inferer:     worker4,
+		Value:       alloraMath.MustNewDecFromString("0.52"),
+		ExtraData:   nil,
+		Proof:       "",
 	}
 	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference)
 	s.Require().NoError(err)
@@ -3699,7 +3721,12 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().NoError(err)
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	newInference2 := types.Inference{
-		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.52"),
+		TopicId:     topicId,
+		BlockHeight: blockHeightInferences,
+		Inferer:     worker5,
+		Value:       alloraMath.MustNewDecFromString("0.52"),
+		ExtraData:   nil,
+		Proof:       "",
 	}
 	worker5OgScore, err := k.GetInfererScoreEma(ctx, topicId, worker5)
 	s.Require().NoError(err)
@@ -3744,7 +3771,12 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	// Ensure passive set participant can't update their score within the same epoch
 	blockHeightInferences = blockHeightInferences + 1 // within the same epoch => no update
 	newInference2 = types.Inference{
-		TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.52"),
+		TopicId:     topicId,
+		BlockHeight: blockHeightInferences,
+		Inferer:     worker2,
+		Value:       alloraMath.MustNewDecFromString("0.52"),
+		ExtraData:   nil,
+		Proof:       "",
 	}
 	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2)
 	s.Require().Error(err, types.ErrCantUpdateEmaMoreThanOncePerWindow.Error())
@@ -3901,6 +3933,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 				Value:   alloraMath.MustNewDecFromString("0.52"),
 			},
 		},
+		ExtraData: nil,
 	}
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -3928,6 +3961,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 				Value:   alloraMath.MustNewDecFromString("0.52"),
 			},
 		},
+		ExtraData: nil,
 	}
 	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newInference2)
 	s.Require().NoError(err)
@@ -3970,10 +4004,18 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().NoError(err)
 
 	valueBundleReputer1 := types.ValueBundle{
-		Reputer:             reputer1,
-		CombinedValue:       alloraMath.MustNewDecFromString(".0000117005278862668"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
+		Reputer:                       reputer1,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".0000117005278862668"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 	}
 	signature := s.signValueBundle(&valueBundleReputer1, s.privKeys[0])
 	reputerValueBundle1 := types.ReputerValueBundle{
@@ -3982,10 +4024,18 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		Pubkey:      s.pubKeyHexStr[0],
 	}
 	valueBundleReputer2 := types.ValueBundle{
-		Reputer:             reputer2,
-		CombinedValue:       alloraMath.MustNewDecFromString(".00000962701954026944"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
+		Reputer:                       reputer2,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".00000962701954026944"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 	}
 	signature = s.signValueBundle(&valueBundleReputer2, s.privKeys[1])
 	reputerValueBundle2 := types.ReputerValueBundle{
@@ -3994,10 +4044,18 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		Pubkey:      s.pubKeyHexStr[1],
 	}
 	valueBundleReputer3 := types.ValueBundle{
-		Reputer:             reputer3,
-		CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
+		Reputer:                       reputer3,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 	}
 	signature = s.signValueBundle(&valueBundleReputer3, s.privKeys[2])
 	reputerValueBundle3 := types.ReputerValueBundle{
@@ -4017,10 +4075,18 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().NoError(err)
 
 	valueBundleReputer4 := types.ValueBundle{
-		Reputer:             reputer4,
-		CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
+		Reputer:                       reputer4,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 	}
 	signature = s.signValueBundle(&valueBundleReputer4, s.privKeys[3])
 	reputerValueBundle4 := types.ReputerValueBundle{
@@ -4042,10 +4108,18 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().Equal(len(newAllReputerLosses.ReputerValueBundles), len(allReputerLosses.ReputerValueBundles)+1)
 
 	valueBundleReputer5 := types.ValueBundle{
-		Reputer:             reputer5,
-		CombinedValue:       alloraMath.MustNewDecFromString(".0000256948644008351"),
-		ReputerRequestNonce: reputerRequestNonce,
-		TopicId:             topicId,
+		Reputer:                       reputer5,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 	}
 	signature = s.signValueBundle(&valueBundleReputer5, s.privKeys[4])
 	reputerValueBundle5 := types.ReputerValueBundle{

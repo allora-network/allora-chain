@@ -538,8 +538,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//openWorkerWindows []*BlockHeightAndListOfTopicIds
 	if len(data.OpenWorkerWindows) != 0 {
 		for _, blockHeightAndListOfTopicIds := range data.OpenWorkerWindows {
-			topicIds := types.TopicIds{}
-			topicIds.TopicIds = blockHeightAndListOfTopicIds.TopicIds
+			topicIds := types.TopicIds{TopicIds: blockHeightAndListOfTopicIds.TopicIds}
 			for _, topicId := range topicIds.TopicIds {
 				if err := types.ValidateTopicId(topicId); err != nil {
 					return errors.Wrap(err, "error validating topic id")

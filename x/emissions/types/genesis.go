@@ -62,6 +62,14 @@ func NewGenesisState() *GenesisState {
 		CoreTeamAddresses:                              DefaultCoreTeamAddresses(),
 		TopicLastWorkerCommit:                          []*TopicIdTimestampedActorNonce{},
 		TopicLastReputerCommit:                         []*TopicIdTimestampedActorNonce{},
+		OpenWorkerWindows:                              []*BlockHeightAndTopicIds{},
+		LastDripBlock:                                  []*TopicIdAndBlockHeight{},
+		TopicToNextPossibleChurningBlock:               []*TopicIdAndBlockHeight{},
+		BlockToActiveTopics:                            []*BlockHeightTopicIds{},
+		BlockToLowestActiveTopicWeight:                 []*BlockHeightTopicIdWeightPair{},
+		PreviousTopicQuantileInfererScoreEma:           []*TopicIdAndDec{},
+		PreviousTopicQuantileForecasterScoreEma:        []*TopicIdAndDec{},
+		PreviousTopicQuantileReputerScoreEma:           []*TopicIdAndDec{},
 	}
 }
 

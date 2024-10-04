@@ -86,6 +86,8 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		BlockHeight: blockHeight,
 		Inferer:     workerAddress,
 		Value:       alloraMath.MustNewDecFromString("123.456"),
+		ExtraData:   nil,
+		Proof:       "",
 	}
 	inferences := types.Inferences{
 		Inferences: []*types.Inference{&inference},
@@ -925,6 +927,7 @@ func (s *QueryServerTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMis
 		ForecasterValues:              nil,
 		OneOutInfererValues:           nil,
 		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
 		OneOutInfererForecasterValues: nil,
 	}
 	err = keeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, lossBlockHeight, lossBundle)

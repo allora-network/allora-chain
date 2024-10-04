@@ -24,6 +24,7 @@ func createNewTopic(s *RewardsTestSuite) uint64 {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		AllowNegative:            false,
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -489,11 +490,11 @@ func (s *RewardsTestSuite) TestInferenceRewardsFromCsv() {
 	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	infererScores := []types.Score{
-		{Score: epoch3Get("inferer_score_0")},
-		{Score: epoch3Get("inferer_score_1")},
-		{Score: epoch3Get("inferer_score_2")},
-		{Score: epoch3Get("inferer_score_3")},
-		{Score: epoch3Get("inferer_score_4")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[0], Score: epoch3Get("inferer_score_0")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[1], Score: epoch3Get("inferer_score_1")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[2], Score: epoch3Get("inferer_score_2")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[3], Score: epoch3Get("inferer_score_3")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[4], Score: epoch3Get("inferer_score_4")},
 	}
 	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
@@ -527,11 +528,11 @@ func (s *RewardsTestSuite) TestForecastRewardsFromCsv() {
 	totalReward, err := testutil.GetTotalRewardForTopicInEpoch(epoch3Get)
 	s.Require().NoError(err)
 	infererScores := []types.Score{
-		{Score: epoch3Get("inferer_score_0")},
-		{Score: epoch3Get("inferer_score_1")},
-		{Score: epoch3Get("inferer_score_2")},
-		{Score: epoch3Get("inferer_score_3")},
-		{Score: epoch3Get("inferer_score_4")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[0], Score: epoch3Get("inferer_score_0")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[1], Score: epoch3Get("inferer_score_1")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[2], Score: epoch3Get("inferer_score_2")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[3], Score: epoch3Get("inferer_score_3")},
+		{TopicId: 1, BlockHeight: 300, Address: s.addrsStr[4], Score: epoch3Get("inferer_score_4")},
 	}
 	chi, gamma, _, _, err := rewards.GetChiAndGamma(
 		epoch3Get("network_naive_loss"),
