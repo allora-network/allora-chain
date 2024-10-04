@@ -58,7 +58,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // migrate params for this new version
 // the only change is the addition of MaxStringLength
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV3Types.Params{}
+	oldParams := oldV3Types.Params{} //nolint: exhaustruct // populated in unmarshal below
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")

@@ -657,6 +657,7 @@ func CreateTopic(ctx context.Context, msgServer types.MsgServiceServer, creator 
 		LossMethod:               "mse",
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
+		AllowNegative:            false,
 		WorkerSubmissionWindow:   10,
 		AlphaRegret:              alloraMath.NewDecFromInt64(1),
 		PNorm:                    alloraMath.NewDecFromInt64(3),

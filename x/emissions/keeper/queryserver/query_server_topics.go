@@ -162,7 +162,7 @@ func (qs queryServer) GetActiveTopicsAtBlock(
 		topics = append(topics, &topic)
 	}
 
-	return &types.GetActiveTopicsAtBlockResponse{Topics: topics}, nil
+	return &types.GetActiveTopicsAtBlockResponse{Topics: topics, Pagination: nil}, nil
 }
 
 func (qs queryServer) GetNextChurningBlockByTopicId(

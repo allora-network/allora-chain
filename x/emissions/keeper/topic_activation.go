@@ -41,15 +41,21 @@ func (k *Keeper) GetActiveTopicIdsAtBlock(ctx context.Context, block BlockHeight
 }
 
 // Boolean is true if the block is not found (true if no prior value), else false
-func (k *Keeper) GetLowestActiveTopicWeightAtBlock(ctx context.Context, block BlockHeight) (types.TopicIdWeightPair, bool, error) {
-	weight, err := k.blockToLowestActiveTopicWeight.Get(ctx, block)
+func (k *Keeper) GetLowestActiveTopicWeightAtBlock(
+	ctx context.Context,
+	block BlockHeight,
+) (topicIdAndWeight types.TopicIdWeightPair, noPrior bool, err error) {
+	topicIdAndWeight, err = k.blockToLowestActiveTopicWeight.Get(ctx, block)
 	if err != nil {
 		if errors.IsOf(err, collections.ErrNotFound) {
-			return types.TopicIdWeightPair{}, true, nil
+			return types.TopicIdWeightPair{
+				TopicId: 0,
+				Weight:  alloraMath.NewDecFromInt64(0),
+			}, true, nil
 		}
 		return types.TopicIdWeightPair{}, false, err
 	}
-	return weight, false, nil
+	return topicIdAndWeight, false, nil
 }
 
 // Removes data for a block if it exists in the maps:

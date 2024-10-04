@@ -25,6 +25,8 @@ func (s *QueryServerTestSuite) TestGetNetworkLossBundleAtBlock() {
 		},
 		ExtraData:                     []byte("sample_extra_data"),
 		InfererValues:                 nil,
+		CombinedValue:                 alloraMath.ZeroDec(),
+		NaiveValue:                    alloraMath.ZeroDec(),
 		ForecasterValues:              nil,
 		OneOutInfererValues:           nil,
 		OneOutForecasterValues:        nil,
@@ -140,18 +142,18 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 	}
 	response, err := s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
 	require.NoError(err)
-	require.Nil(response.LossBundles.ReputerValueBundles)
+	require.Empty(response.LossBundles.ReputerValueBundles)
 
 	// Test inserting data
 	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
 	require.NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
 
 	response, err = s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
-	require.NotNil(response)
+	require.NotEmpty(response)
 	require.NoError(err)
 
 	result := response.LossBundles
-	require.NotNil(result)
+	require.NotEmpty(result)
 	require.Equal(&reputerLossBundles, result, "Retrieved data should match inserted data")
 }
 

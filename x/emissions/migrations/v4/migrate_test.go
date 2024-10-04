@@ -609,6 +609,7 @@ func getBundle() emissionstypes.ValueBundle {
 				Value:  alloraMath.NewDecFromInt64(10),
 			},
 		},
+		OneInForecasterValues: nil,
 		OneOutInfererForecasterValues: []*emissionstypes.OneOutInfererForecasterValues{
 			{
 				Forecaster: "oneOutInfererForecaster",

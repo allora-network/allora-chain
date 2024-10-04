@@ -52,7 +52,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 }
 
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldtypes.Params{}
+	oldParams := oldtypes.Params{} //nolint: exhaustruct // populated in unmarshal below
 	oldParamsBytes := store.Get(types.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(types.ErrNotFound, "old parameters not found")
@@ -74,7 +74,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	//      MaxRetriesToFulfilNoncesWorker
 	//      MaxRetriesToFulfilNoncesReputer
 	//      MaxTopicsPerBlock
-	newParams := types.Params{
+	newParams := types.Params{ //nolint: exhaustruct // not sure if safe to fix, also this upgrade has already happened.
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,

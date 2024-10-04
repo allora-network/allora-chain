@@ -13,7 +13,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
-var _ appmodule.AppModule = AppModule{}
+var _ appmodule.AppModule = AppModule{} // nolint: exhaustruct
 
 // IsOnePerModuleType implements the depinject.OnePerModuleType interface.
 func (am AppModule) IsOnePerModuleType() {}
@@ -23,7 +23,9 @@ func (am AppModule) IsAppModule() {}
 
 func init() {
 	appmodule.Register(
-		&modulev1.Module{},
+		&modulev1.Module{
+			FeeCollectorName: authtypes.FeeCollectorName,
+		},
 		appmodule.Provide(ProvideModule),
 	)
 }
@@ -63,5 +65,5 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	)
 	m := NewAppModule(in.Cdc, k)
 
-	return ModuleOutputs{Module: m, Keeper: k}
+	return ModuleOutputs{Module: m, Keeper: k, Out: depinject.Out{}}
 }

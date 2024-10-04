@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"go/ast"
 	"go/types"
 
@@ -12,9 +13,15 @@ var AnalyzerPlugin = map[string]*analysis.Analyzer{
 }
 
 var Analyzer = &analysis.Analyzer{
-	Name: "maprange",
-	Doc:  "check for range loops over maps",
-	Run:  run,
+	Name:             "maprange",
+	Doc:              "check for range loops over maps",
+	Run:              run,
+	URL:              "",
+	Flags:            flag.FlagSet{Usage: nil},
+	RunDespiteErrors: false,
+	Requires:         nil,
+	ResultType:       nil,
+	FactTypes:        nil,
 }
 
 func New(conf any) ([]*analysis.Analyzer, error) {
