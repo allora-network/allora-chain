@@ -18,7 +18,7 @@ func (qs queryServer) IsWhitelistAdmin(ctx context.Context, req *types.IsWhiteli
 	_ *types.IsWhitelistAdminResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("IsWhitelistAdmin", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("IsWhitelistAdmin", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}

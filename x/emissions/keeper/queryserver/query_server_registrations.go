@@ -18,7 +18,7 @@ func (qs queryServer) GetWorkerNodeInfo(ctx context.Context, req *types.GetWorke
 	_ *types.GetWorkerNodeInfoResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("GetWorkerNodeInfo", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetWorkerNodeInfo", time.Now(), returnErr == nil)
 	node, err := qs.k.GetWorkerInfo(sdk.UnwrapSDKContext(ctx), req.Address)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (qs queryServer) GetReputerNodeInfo(ctx context.Context, req *types.GetRepu
 	_ *types.GetReputerNodeInfoResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("GetReputerNodeInfo", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetReputerNodeInfo", time.Now(), returnErr == nil)
 	node, err := qs.k.GetReputerInfo(sdk.UnwrapSDKContext(ctx), req.Address)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *type
 	_ *types.IsWorkerRegisteredInTopicIdResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("IsWorkerRegisteredInTopicId", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("IsWorkerRegisteredInTopicId", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}
@@ -71,7 +71,7 @@ func (qs queryServer) IsReputerRegisteredInTopicId(ctx context.Context, req *typ
 	_ *types.IsReputerRegisteredInTopicIdResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("IsReputerRegisteredInTopicId", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("IsReputerRegisteredInTopicId", time.Now(), returnErr == nil)
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err
 	}

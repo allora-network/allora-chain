@@ -18,7 +18,7 @@ func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.GetNextTopi
 	_ *types.GetNextTopicIdResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("GetNextTopicId", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetNextTopicId", time.Now(), returnErr == nil)
 	nextTopicId, err := qs.k.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest,
 	_ *types.GetTopicResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("GetTopic", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetTopic", time.Now(), returnErr == nil)
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting topic")
@@ -68,7 +68,7 @@ func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *typ
 	_ *types.GetTopicLastWorkerCommitInfoResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("GetTopicLastWorkerCommitInfo", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetTopicLastWorkerCommitInfo", time.Now(), returnErr == nil)
 	lastCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -83,7 +83,7 @@ func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *ty
 	_ *types.GetTopicLastReputerCommitInfoResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("GetTopicLastReputerCommitInfo", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetTopicLastReputerCommitInfo", time.Now(), returnErr == nil)
 	lastCommit, err := qs.k.GetReputerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -99,7 +99,7 @@ func (qs queryServer) GetTopicRewardNonce(
 	_ *types.GetTopicRewardNonceResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("GetTopicRewardNonce", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetTopicRewardNonce", time.Now(), returnErr == nil)
 	nonce, err := qs.k.GetTopicRewardNonce(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -115,7 +115,7 @@ func (qs queryServer) GetPreviousTopicWeight(
 	_ *types.GetPreviousTopicWeightResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("GetPreviousTopicWeight", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetPreviousTopicWeight", time.Now(), returnErr == nil)
 	previousTopicWeight, notFound, err := qs.k.GetPreviousTopicWeight(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (qs queryServer) TopicExists(
 	_ *types.TopicExistsResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("TopicExists", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("TopicExists", time.Now(), returnErr == nil)
 	exists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -147,7 +147,7 @@ func (qs queryServer) IsTopicActive(
 	_ *types.IsTopicActiveResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("IsTopicActive", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("IsTopicActive", time.Now(), returnErr == nil)
 	isActive, err := qs.k.IsTopicActive(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -163,7 +163,7 @@ func (qs queryServer) GetTopicFeeRevenue(
 	_ *types.GetTopicFeeRevenueResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("GetTopicFeeRevenue", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetTopicFeeRevenue", time.Now(), returnErr == nil)
 	feeRevenue, err := qs.k.GetTopicFeeRevenue(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -176,7 +176,7 @@ func (qs queryServer) GetActiveTopicsAtBlock(
 	ctx context.Context,
 	req *types.GetActiveTopicsAtBlockRequest,
 ) (_ *types.GetActiveTopicsAtBlockResponse, returnErr error) {
-	defer metrics.RecordMetrics("GetActiveTopicsAtBlock", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetActiveTopicsAtBlock", time.Now(), returnErr == nil)
 	activeTopicIds, err := qs.k.GetActiveTopicIdsAtBlock(ctx, req.BlockHeight)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -197,7 +197,7 @@ func (qs queryServer) GetNextChurningBlockByTopicId(
 	ctx context.Context,
 	req *types.GetNextChurningBlockByTopicIdRequest,
 ) (_ *types.GetNextChurningBlockByTopicIdResponse, returnErr error) {
-	defer metrics.RecordMetrics("GetNextChurningBlockByTopicId", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("GetNextChurningBlockByTopicId", time.Now(), returnErr == nil)
 	blockHeight, _, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
 	if err != nil {
 		return &types.GetNextChurningBlockByTopicIdResponse{BlockHeight: 0}, err

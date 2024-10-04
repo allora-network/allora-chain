@@ -1,14 +1,6 @@
 package metrics
 
 const (
-	CONCURRENT     = "concurrent"
-	SYNCHRONOUS    = "synchronous"
-	OCC_CONCURRENT = "optimistic_concurrency"
-	GovMsgInBlock  = "gov-msg-in-block"
-	FailedToBuild  = "failed-to-build"
-)
-
-const (
 	INFERER_SCORE_EVENT       = "inferer_score_event"
 	FORECASTER_SCORE_EVENT    = "forecaster_score_event"
 	REPUTER_SOCRE_EVENT       = "reputer_score_event"

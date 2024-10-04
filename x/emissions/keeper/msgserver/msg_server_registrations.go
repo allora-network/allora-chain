@@ -18,7 +18,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest,
 	_ *types.RegisterResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("Register", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("Register", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 	_ *types.RemoveRegistrationResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("RemoveRegistration", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("RemoveRegistration", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address str
 	_ sdk.Coin,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("CheckBalanceForRegistration", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("CheckBalanceForRegistration", time.Now(), returnErr == nil)
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err

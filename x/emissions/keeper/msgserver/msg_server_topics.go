@@ -15,7 +15,7 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	_ *types.CreateNewTopicResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("CreateNewTopic", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), returnErr == nil)
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
