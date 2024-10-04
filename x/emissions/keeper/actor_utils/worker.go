@@ -45,20 +45,20 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	}
 
 	// Get all inferences from this topic, nonce
-	inferences, err := k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
+	infererAddresses, err := k.GetQualifiedInferersForTopic(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	if len(inferences.Inferences) == 0 {
-		return types.ErrNoValidInferences
+	if len(infererAddresses) == 0 {
+		return types.ErrNoQualifiedInferers
 	}
 
-	acceptedInferers, err := insertInferencesFromTopInferers(
+	acceptedInferers, err := getAndSetQualifiedInferences(
 		ctx,
 		k,
 		topicId,
 		nonce,
-		inferences.Inferences,
+		infererAddresses,
 	)
 	if err != nil {
 		return err
@@ -103,43 +103,27 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	return nil
 }
 
-// It is assumed `inferences` come from unique, registered, top inferers by EMA score descending
-// It is also assumed that the inferences are for the correct topic and nonce
-func insertInferencesFromTopInferers(
+func getAndSetQualifiedInferences(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
 	nonce types.Nonce,
-	inferences []*types.Inference,
+	qualifiedInfererAddresses []string,
 ) (acceptedInferers map[string]bool, err error) {
-	acceptedInferers = make(map[string]bool, 0)
-	if len(inferences) == 0 {
-		ctx.Logger().Warn(fmt.Sprintf("No inferences to process for topic: %d, nonce: %v", topicId, nonce))
-		return nil, types.ErrNoInferencesToInsert
-	}
-	for _, inference := range inferences {
-		// Check that the forecast exist, is for the correct topic, and is for the correct nonce
-		if inference.TopicId != topicId {
-			ctx.Logger().Warn("Inference does not match topic: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
-			continue
+	qualifiedInferences := make([]*types.Inference, 0)
+	for _, address := range qualifiedInfererAddresses {
+		inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
+		if err != nil {
+			return nil, err
 		}
-		if inference.BlockHeight != nonce.BlockHeight {
-			ctx.Logger().Warn("Inference does not match blockHeight: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
-			continue
-		}
-		acceptedInferers[inference.Inferer] = true
+		qualifiedInferences = append(qualifiedInferences, &inference)
 	}
-
-	// Ensure deterministic ordering of inferences
-	sort.Slice(inferences, func(i, j int) bool {
-		return inferences[i].Inferer < inferences[j].Inferer
-	})
 
 	// Store the final list of inferences
 	inferencesToInsert := types.Inferences{
-		Inferences: inferences,
+		Inferences: qualifiedInferences,
 	}
-	err = k.InsertInferences(ctx, topicId, nonce.BlockHeight, inferencesToInsert)
+	err = k.InsertQualifiedInferences(ctx, topicId, nonce.BlockHeight, inferencesToInsert)
 	if err != nil {
 		return nil, err
 	}
