@@ -133,19 +133,21 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
-		s.ctx.Logger(),
-		topicId,
-		allInferersAreNew,
-		inferers,
-		inferenceByWorker,
-		infererRegrets,
-		forecasters,
-		forecastByWorker,
-		forecasterRegrets,
-		networkCombinedLoss,
-		epsilon,
-		pNorm,
-		cNorm,
+		inferencesynthesis.CalcForecastImpliedInferencesArgs{
+			Logger:               s.ctx.Logger(),
+			TopicId:              topicId,
+			AllInferersAreNew:    allInferersAreNew,
+			Inferers:             inferers,
+			InfererToInference:   inferenceByWorker,
+			InfererToRegret:      infererRegrets,
+			Forecasters:          forecasters,
+			ForecasterToForecast: forecastByWorker,
+			ForecasterToRegret:   forecasterRegrets,
+			NetworkCombinedLoss:  networkCombinedLoss,
+			EpsilonTopic:         epsilon,
+			PNorm:                pNorm,
+			CNorm:                cNorm,
+		},
 	)
 	s.Require().NoError(err)
 
@@ -207,19 +209,21 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 	}
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
-		s.ctx.Logger(),
-		topicId,
-		allInferersAreNew,
-		inferers,
-		inferenceByWorker,
-		infererRegrets,
-		forecasters,
-		forecastByWorker,
-		forecasterRegrets,
-		networkCombinedLoss,
-		epsilon,
-		pNorm,
-		cNorm,
+		inferencesynthesis.CalcForecastImpliedInferencesArgs{
+			Logger:               s.ctx.Logger(),
+			TopicId:              topicId,
+			AllInferersAreNew:    allInferersAreNew,
+			Inferers:             inferers,
+			InfererToInference:   inferenceByWorker,
+			InfererToRegret:      infererRegrets,
+			Forecasters:          forecasters,
+			ForecasterToForecast: forecastByWorker,
+			ForecasterToRegret:   forecasterRegrets,
+			NetworkCombinedLoss:  networkCombinedLoss,
+			EpsilonTopic:         epsilon,
+			PNorm:                pNorm,
+			CNorm:                cNorm,
+		},
 	)
 	s.Require().NoError(err)
 
@@ -299,19 +303,21 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 	}
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
-		s.ctx.Logger(),
-		topicId,
-		allInferersAreNew,
-		inferers,
-		inferenceByWorker,
-		infererRegrets,
-		forecasters,
-		forecastByWorker,
-		forecasterRegrets,
-		networkCombinedLoss,
-		epsilon,
-		pNorm,
-		cNorm,
+		inferencesynthesis.CalcForecastImpliedInferencesArgs{
+			Logger:               s.ctx.Logger(),
+			TopicId:              topicId,
+			AllInferersAreNew:    allInferersAreNew,
+			Inferers:             inferers,
+			InfererToInference:   inferenceByWorker,
+			InfererToRegret:      infererRegrets,
+			Forecasters:          forecasters,
+			ForecasterToForecast: forecastByWorker,
+			ForecasterToRegret:   forecasterRegrets,
+			NetworkCombinedLoss:  networkCombinedLoss,
+			EpsilonTopic:         epsilon,
+			PNorm:                pNorm,
+			CNorm:                cNorm,
+		},
 	)
 	s.Require().NoError(err)
 
@@ -397,20 +403,21 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 	}
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
-		s.ctx.Logger(),
-		topicId,
-		allInferersAreNew,
-		inferers,
-		inferenceByWorker,
-		infererRegrets,
-		forecasters,
-		forecastByWorker,
-		forecasterRegrets,
-		networkCombinedLoss,
-		epsilon,
-		pNorm,
-		cNorm,
-	)
+		inferencesynthesis.CalcForecastImpliedInferencesArgs{
+			Logger:               s.ctx.Logger(),
+			TopicId:              topicId,
+			AllInferersAreNew:    allInferersAreNew,
+			Inferers:             inferers,
+			InfererToInference:   inferenceByWorker,
+			InfererToRegret:      infererRegrets,
+			Forecasters:          forecasters,
+			ForecasterToForecast: forecastByWorker,
+			ForecasterToRegret:   forecasterRegrets,
+			NetworkCombinedLoss:  networkCombinedLoss,
+			EpsilonTopic:         epsilon,
+			PNorm:                pNorm,
+			CNorm:                cNorm,
+		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
@@ -488,20 +495,21 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 	}
 
 	result, _, _, err := inferencesynthesis.CalcForecastImpliedInferences(
-		s.ctx.Logger(),
-		topicId,
-		allInferersAreNew,
-		inferers,
-		inferenceByWorker,
-		infererRegrets,
-		forecasters,
-		forecastByWorker,
-		forecasterRegrets,
-		networkCombinedLoss,
-		epsilon,
-		pNorm,
-		cNorm,
-	)
+		inferencesynthesis.CalcForecastImpliedInferencesArgs{
+			Logger:               s.ctx.Logger(),
+			TopicId:              topicId,
+			AllInferersAreNew:    allInferersAreNew,
+			Inferers:             inferers,
+			InfererToInference:   inferenceByWorker,
+			InfererToRegret:      infererRegrets,
+			Forecasters:          forecasters,
+			ForecasterToForecast: forecastByWorker,
+			ForecasterToRegret:   forecasterRegrets,
+			NetworkCombinedLoss:  networkCombinedLoss,
+			EpsilonTopic:         epsilon,
+			PNorm:                pNorm,
+			CNorm:                cNorm,
+		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
 		actualValue, exists := result[key]
