@@ -15,7 +15,7 @@ func (qs queryServer) GetForecastsAtBlock(ctx context.Context, req *types.GetFor
 	_ *types.GetForecastsAtBlockResponse,
 	resultErr error,
 ) {
-	defer metrics.RecordMetrics("GetForecastsAtBlock", "rpc", time.Now(), resultErr == nil)
+	defer metrics.RecordMetrics("GetForecastsAtBlock", time.Now(), resultErr == nil)
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)

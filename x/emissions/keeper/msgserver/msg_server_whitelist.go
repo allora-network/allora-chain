@@ -13,7 +13,7 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhi
 	_ *types.AddToWhitelistAdminResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("AddToWhitelistAdmin", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("AddToWhitelistAdmin", time.Now(), returnErr == nil)
 	// Validate the sender address
 	err := ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
@@ -43,7 +43,7 @@ func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.Rem
 	_ *types.RemoveFromWhitelistAdminResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("RemoveFromWhitelistAdmin", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("RemoveFromWhitelistAdmin", time.Now(), returnErr == nil)
 	// Validate the sender address
 	err := ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {

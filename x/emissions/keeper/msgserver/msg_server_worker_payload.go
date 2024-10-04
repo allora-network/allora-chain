@@ -21,7 +21,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	_ *types.InsertWorkerPayloadResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("InsertWorkerPayload", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("InsertWorkerPayload", time.Now(), returnErr == nil)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	err := ms.k.ValidateStringIsBech32(msg.Sender)

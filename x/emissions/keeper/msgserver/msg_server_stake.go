@@ -20,7 +20,7 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest,
 	_ *types.AddStakeResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("AddStake", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("AddStake", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 	_ *types.RemoveStakeResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("RemoveStake", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("RemoveStake", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemo
 	_ *types.CancelRemoveStakeResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("CancelRemoveStake", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("CancelRemoveStake", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeR
 	_ *types.DelegateStakeResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("DelegateStake", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("DelegateStake", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 	_ *types.RemoveDelegateStakeResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("RemoveDelegateStake", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("RemoveDelegateStake", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -304,7 +304,7 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ca
 	_ *types.CancelRemoveDelegateStakeResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("CancelRemoveDelegateStake", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("CancelRemoveDelegateStake", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
@@ -354,7 +354,7 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 	_ *types.RewardDelegateStakeResponse,
 	returnErr error,
 ) {
-	defer metrics.RecordMetrics("RewardDelegateStake", "rpc", time.Now(), returnErr == nil)
+	defer metrics.RecordMetrics("RewardDelegateStake", time.Now(), returnErr == nil)
 	if err := msg.Validate(); err != nil {
 		return nil, err
 	}
