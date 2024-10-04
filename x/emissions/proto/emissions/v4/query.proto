@@ -399,34 +399,6 @@ service QueryService {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v4/next_churning_block_by_topic_id/{topic_id}";
   }
-
-  rpc GetCountInfererInclusionsInTopic(GetCountInfererInclusionsInTopicRequest) returns (GetCountInfererInclusionsInTopicResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v4/count_inferer_inclusions_in_topic/{topic_id}/{inferer}";
-  }
-
-  rpc GetCountForecasterInclusionsInTopic(GetCountForecasterInclusionsInTopicRequest) returns (GetCountForecasterInclusionsInTopicResponse) {
-    option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v4/count_forecaster_inclusions_in_topic/{topic_id}/{forecaster}";
-  }
-}
-
-message GetCountInfererInclusionsInTopicRequest {
-  uint64 topic_id = 1;
-  string inferer = 2;
-}
-
-message GetCountInfererInclusionsInTopicResponse {
-  uint64 count = 1;
-}
-
-message GetCountForecasterInclusionsInTopicRequest {
-  uint64 topic_id = 1;
-  string forecaster = 2;
-}
-
-message GetCountForecasterInclusionsInTopicResponse {
-  uint64 count = 1;
 }
 
 message GetNaiveInfererNetworkRegretRequest {
