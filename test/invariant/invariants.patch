@@ -1,5 +1,5 @@
 diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
-index d775365..69b81e1 100644
+index 65270d4a..2e68ab82 100644
 --- a/x/emissions/module/abci.go
 +++ b/x/emissions/module/abci.go
 @@ -6,6 +6,7 @@ import (
@@ -22,10 +22,10 @@ index d775365..69b81e1 100644
  	sdkCtx.Logger().Debug(
  		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
 diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
-index 35906b64..16d5dee4 100644
+index bbe013e2..1e63e08c 100644
 --- a/x/emissions/module/module.go
 +++ b/x/emissions/module/module.go
-@@ -19,6 +19,15 @@ import (
+@@ -21,6 +21,15 @@ import (
  	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
  )
  
@@ -39,5 +39,5 @@ index 35906b64..16d5dee4 100644
 +}
 +
  var (
- 	_ module.AppModuleBasic   = AppModule{}
- 	_ module.HasGenesis       = AppModule{}
+ 	_ module.AppModuleBasic   = AppModule{} // nolint: exhaustruct
+ 	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
