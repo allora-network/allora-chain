@@ -19,19 +19,14 @@ func NewMsgServerImpl(keeper keeper.Keeper) types.MsgServiceServer {
 	return &msgServer{k: keeper}
 }
 
-func checkInputLength(ctx context.Context, ms msgServer, msg proto.Message) error {
-	params, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return err
-	}
-
+func checkInputLength(ctx context.Context, maxSerializedMsgLength int64, msg proto.Message) error {
 	serializedMsg, err := proto.Marshal(msg)
 	if err != nil {
 		return types.ErrFailedToSerializePayload
 	}
 
 	// Check the length of the serialized message
-	if int64(len(serializedMsg)) > params.MaxSerializedMsgLength {
+	if int64(len(serializedMsg)) > maxSerializedMsgLength {
 		return types.ErrQueryTooLarge
 	}
 
