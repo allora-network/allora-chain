@@ -8,8 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/allora-network/allora-chain/x/utils/fn"
 )
 
 type ASTNode struct {
@@ -38,7 +36,10 @@ func main() {
 			errs := processFile(path)
 			if errs != nil {
 				hasErrors = true
-				errStrs := fn.Map(errs, func(err error) string { return err.Error() })
+				var errStrs []string
+				for _, err := range errs {
+					errStrs = append(errStrs, err.Error())
+				}
 				fmt.Printf("Errors processing %s:\n", path)
 				fmt.Println("  - " + strings.Join(errStrs, "\n  - "))
 			}

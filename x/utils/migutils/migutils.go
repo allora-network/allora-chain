@@ -48,8 +48,7 @@ func SafelyClearWholeMap(store storetypes.KVStore, keyPrefix []byte, maxPageSize
 		more, err := clearPage()
 		if err != nil {
 			return err
-		}
-		if !more {
+		} else if !more {
 			break
 		}
 	}
