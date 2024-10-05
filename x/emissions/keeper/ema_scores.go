@@ -157,28 +157,24 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 	return nil
 }
 
-// Calculates and saves the EMA scores for a given worker and topic.
+// Calculates and saves the EMA scores for a given forecaster and topic.
 // Uses the last saved topic quantile score to calculate the EMA.
-// This is useful for updating EMAs of workers in the passive set.
+// This is useful for updating EMAs of forecasters in the passive set.
 func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,
-	worker ActorId,
+	previousForecasterScore types.Score,
 ) error {
-	previousScore, err := k.GetForecasterScoreEma(ctx, topic.Id, worker)
-	if err != nil {
-		return errors.Wrapf(err, "Error getting forecaster score ema")
-	}
 	previousTopicQuantileForecasterScoreEma, err := k.GetPreviousTopicQuantileForecasterScoreEma(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
-	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
+	firstTime := previousForecasterScore.BlockHeight == 0 && previousForecasterScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
 		topic.MeritSortitionAlpha,
 		previousTopicQuantileForecasterScoreEma,
-		previousScore.Score,
+		previousForecasterScore.Score,
 		firstTime,
 	)
 	if err != nil {
@@ -187,16 +183,16 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 	emaScore := types.Score{
 		TopicId:     topic.Id,
 		BlockHeight: block,
-		Address:     worker,
+		Address:     previousForecasterScore.Address,
 		Score:       emaScoreDec,
 	}
-	err = k.SetForecasterScoreEma(ctx, topic.Id, worker, emaScore)
+	err = k.SetForecasterScoreEma(ctx, topic.Id, previousForecasterScore.Address, emaScore)
 	if err != nil {
 		return errors.Wrapf(err, "error setting latest forecaster score")
 	}
 
 	emaScores := []types.Score{emaScore}
-	activeArr := map[string]bool{worker: false}
+	activeArr := map[string]bool{previousForecasterScore.Address: false}
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)
 	return nil
 }
