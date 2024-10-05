@@ -65,14 +65,14 @@ type Keeper struct {
 	topicReputers collections.KeySet[collections.Pair[TopicId, ActorId]]
 	// map of (topic) -> nonce/block height
 	topicRewardNonce collections.Map[TopicId, BlockHeight]
-	// qualified inferers for a topic
-	qualifiedInferers collections.KeySet[collections.Pair[TopicId, ActorId]]
-	// qualified forecasters for a topic
-	qualifiedForecasters collections.KeySet[collections.Pair[TopicId, ActorId]]
-	// lowest inferer score ema for a topic
-	lowestInfererScoreEmas collections.Map[TopicId, types.LowestInfererScoreEma]
-	// lowest forecaster score ema for a topic
-	lowestForecasterScoreEmas collections.Map[TopicId, types.LowestForecasterScoreEma]
+	// active topic inferers for a topic
+	activeInferers collections.KeySet[collections.Pair[TopicId, ActorId]]
+	// active topic forecasters for a topic
+	activeForecasters collections.KeySet[collections.Pair[TopicId, ActorId]]
+	// lowest topic inferer score ema for a topic
+	lowestInfererScoreEma collections.Map[TopicId, types.Score]
+	// lowest topic forecaster score ema for a topic
+	lowestForecasterScoreEma collections.Map[TopicId, types.Score]
 
 	/// SCORES
 
@@ -303,6 +303,32 @@ func NewKeeper(
 		qualifiedForecasters:                    collections.NewKeySet(sb, types.QualifiedForecastersKey, "qualified_forecasters", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		lowestInfererScoreEmas:                  collections.NewMap(sb, types.LowestInfererScoreEmasKey, "lowest_inferer_score_emas", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 		lowestForecasterScoreEmas:               collections.NewMap(sb, types.LowestForecasterScoreEmasKey, "lowest_forecaster_score_emas", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
+		whitelistAdmins:                         collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
+		infererScoresByBlock:                    collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		forecasterScoresByBlock:                 collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		infererScoreEmas:                        collections.NewMap(sb, types.InfererScoreEmasKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		forecasterScoreEmas:                     collections.NewMap(sb, types.ForecasterScoreEmasKey, "latest_forecaster_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		reputerScoreEmas:                        collections.NewMap(sb, types.ReputerScoreEmasKey, "latest_reputer_scores_by_reputer", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
+		previousReputerRewardFraction:           collections.NewMap(sb, types.PreviousReputerRewardFractionKey, "previous_reputer_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousInferenceRewardFraction:         collections.NewMap(sb, types.PreviousInferenceRewardFractionKey, "previous_inference_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousForecastRewardFraction:          collections.NewMap(sb, types.PreviousForecastRewardFractionKey, "previous_forecast_reward_fraction", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		previousForecasterScoreRatio:            collections.NewMap(sb, types.PreviousForecasterScoreRatioKey, "previous_forecaster_score_ratio", collections.Uint64Key, alloraMath.DecValue),
+		reputerScoresByBlock:                    collections.NewMap(sb, types.ReputerScoresKey, "reputer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
+		reputerListeningCoefficient:             collections.NewMap(sb, types.ReputerListeningCoefficientKey, "reputer_listening_coefficient", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ListeningCoefficient](cdc)),
+		unfulfilledWorkerNonces:                 collections.NewMap(sb, types.UnfulfilledWorkerNoncesKey, "unfulfilled_worker_nonces", collections.Uint64Key, codec.CollValue[types.Nonces](cdc)),
+		unfulfilledReputerNonces:                collections.NewMap(sb, types.UnfulfilledReputerNoncesKey, "unfulfilled_reputer_nonces", collections.Uint64Key, codec.CollValue[types.ReputerRequestNonces](cdc)),
+		lastDripBlock:                           collections.NewMap(sb, types.LastDripBlockKey, "last_drip_block", collections.Uint64Key, collections.Int64Value),
+		topicRewardNonce:                        collections.NewMap(sb, types.TopicRewardNonceKey, "topic_reward_nonce", collections.Uint64Key, collections.Int64Value),
+		topicLastWorkerCommit:                   collections.NewMap(sb, types.TopicLastWorkerCommitKey, "topic_last_worker_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		topicLastReputerCommit:                  collections.NewMap(sb, types.TopicLastReputerCommitKey, "topic_last_reputer_commit", collections.Uint64Key, codec.CollValue[types.TimestampedActorNonce](cdc)),
+		openWorkerWindows:                       collections.NewMap(sb, types.OpenWorkerWindowsKey, "open_worker_windows", collections.Int64Key, codec.CollValue[types.TopicIds](cdc)),
+		previousTopicQuantileInfererScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileInfererScoreEmaKey, "previous_topic_quantile_inferer_score_ema", collections.Uint64Key, alloraMath.DecValue),
+		previousTopicQuantileForecasterScoreEma: collections.NewMap(sb, types.PreviousTopicQuantileForecasterScoreEmaKey, "previous_topic_quantile_forecaster_score_ema", collections.Uint64Key, alloraMath.DecValue),
+		previousTopicQuantileReputerScoreEma:    collections.NewMap(sb, types.PreviousTopicQuantileReputerScoreEmaKey, "previous_topic_quantile_reputer_score_ema", collections.Uint64Key, alloraMath.DecValue),
+		activeInferers:                          collections.NewKeySet(sb, types.ActiveInferersKey, "active_inferers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		activeForecasters:                       collections.NewKeySet(sb, types.ActiveForecastersKey, "active_forecasters", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		lowestInfererScoreEma:                   collections.NewMap(sb, types.LowestInfererScoreEmaKey, "lowest_inferer_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
+		lowestForecasterScoreEma:                collections.NewMap(sb, types.LowestForecasterScoreEmaKey, "lowest_forecaster_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -1075,24 +1101,24 @@ func (k *Keeper) AppendInference(
 	maxTopInferersToReward uint64,
 ) error {
 	// Check if the inferers already submited the inference
-	isQualified, err := k.IsQualifiedInferer(ctx, topic.Id, inference.Inferer)
+	isQualified, err := k.IsActiveInferer(ctx, topic.Id, inference.Inferer)
 	if err != nil {
 		return errorsmod.Wrap(err, "error checking if worker already submitted inference")
 	} else if isQualified {
 		return errors.New("inference already submitted")
 	}
 
-	workerAddresses, err := k.GetQualifiedInferersForTopic(ctx, topic.Id)
+	workerAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting qualified inferers for topic")
+		return errorsmod.Wrap(err, "error getting active inferers for topic")
 	}
 	// If there are less than maxTopInferersToReward, add the current inferer
 	if uint64(len(workerAddresses)) < maxTopInferersToReward {
-		err := k.AddQualifiedInferer(ctx, topic.Id, inference.Inferer)
+		err := k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
 		if err != nil {
-			return errorsmod.Wrap(err, "error adding qualified inferer")
+			return errorsmod.Wrap(err, "error adding active inferer")
 		}
-		return k.InsertInference(ctx, topic.Id, nonceBlockHeight, *inference)
+		return k.InsertInference(ctx, topic.Id, *inference)
 	}
 
 	previousEmaScore, err := k.GetInfererScoreEma(ctx, topic.Id, inference.Inferer)
@@ -1118,7 +1144,7 @@ func (k *Keeper) AppendInference(
 		}
 	}
 
-	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {	
+	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
 		// Update EMA score for the lowest score inferer, who is not the current inferer
 		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 			ctx,
@@ -1130,21 +1156,21 @@ func (k *Keeper) AppendInference(
 			return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
 		}
 		// Remove inferer with lowest score
-		err = k.RemoveQualifiedInferer(ctx, topic.Id, lowestEmaScore.Address)
+		err = k.RemoveActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
-			return errorsmod.Wrap(err, "error removing qualified inferer")
+			return errorsmod.Wrap(err, "error removing active inferer")
 		}
-		// Add new qualified inferer
-		err = k.AddQualifiedInferer(ctx, topic.Id, inference.Inferer)
+		// Add new active inferer
+		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
 		if err != nil {
-			return errorsmod.Wrap(err, "error adding qualified inferer")
+			return errorsmod.Wrap(err, "error adding active inferer")
 		}
 		// Calculate new lowest score with updated infererAddresses
 		err = UpdateLowestScoreFromInfererAddresses(ctx, k, topic.Id, workerAddresses, inference.Inferer, lowestEmaScore.Address)
 		if err != nil {
 			return errorsmod.Wrap(err, "error getting low score from all inferences")
 		}
-		return k.InsertInference(ctx, topic.Id, nonceBlockHeight, *inference)
+		return k.InsertInference(ctx, topic.Id, *inference)
 	} else {
 		// Update EMA score for the current inferer, who is the lowest score inferer
 		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
@@ -1155,11 +1181,10 @@ func (k *Keeper) AppendInference(
 	return nil
 }
 
-// Insert a complete set of inferences for a topic/block. Overwrites previous ones.
+// Insert an inference for a specific topic
 func (k *Keeper) InsertInference(
 	ctx context.Context,
 	topicId TopicId,
-	nonceBlockHeight BlockHeight,
 	inference types.Inference,
 ) error {
 	err := inference.Validate()
@@ -1170,7 +1195,8 @@ func (k *Keeper) InsertInference(
 	return k.inferences.Set(ctx, key, inference)
 }
 
-func (k *Keeper) InsertQualifiedInferences(
+// Insert a complete set of inferences for a topic/block.
+func (k *Keeper) InsertActiveInferences(
 	ctx context.Context,
 	topicId TopicId,
 	nonceBlockHeight BlockHeight,
@@ -3567,8 +3593,8 @@ func (k *Keeper) GetPreviousForecasterScoreRatio(ctx context.Context, topicId To
 	return forecastTau, nil
 }
 
-// AddQualifiedInferer adds an inferer to the qualified inferers set for a topic
-func (k *Keeper) AddQualifiedInferer(ctx context.Context, topicId TopicId, inferer ActorId) error {
+// AddActiveInferer adds an inferer to the active inferers set for a topic
+func (k *Keeper) AddActiveInferer(ctx context.Context, topicId TopicId, inferer ActorId) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "invalid topic id")
 	}
@@ -3576,37 +3602,37 @@ func (k *Keeper) AddQualifiedInferer(ctx context.Context, topicId TopicId, infer
 		return errorsmod.Wrap(err, "invalid inferer address")
 	}
 	key := collections.Join(topicId, inferer)
-	return k.qualifiedInferers.Set(ctx, key)
+	return k.activeInferers.Set(ctx, key)
 }
 
-// IsQualifiedInferer checks if an inferer is in the qualified inferers set for a topic
-func (k *Keeper) IsQualifiedInferer(ctx context.Context, topicId TopicId, inferer ActorId) (bool, error) {
+// IsActiveInferer checks if an inferer is in the active inferers set for a topic
+func (k *Keeper) IsActiveInferer(ctx context.Context, topicId TopicId, inferer ActorId) (bool, error) {
 	key := collections.Join(topicId, inferer)
-	return k.qualifiedInferers.Has(ctx, key)
+	return k.activeInferers.Has(ctx, key)
 }
 
-// RemoveQualifiedInferer removes an inferer from the qualified inferers set for a topic
-func (k *Keeper) RemoveQualifiedInferer(ctx context.Context, topicId TopicId, inferer ActorId) error {
+// RemoveActiveInferer removes an inferer from the active inferers set for a topic
+func (k *Keeper) RemoveActiveInferer(ctx context.Context, topicId TopicId, inferer ActorId) error {
 	key := collections.Join(topicId, inferer)
-	return k.qualifiedInferers.Remove(ctx, key)
+	return k.activeInferers.Remove(ctx, key)
 }
 
-// GetQualifiedInferersForTopic returns all qualified inferers for a specific topic
-func (k *Keeper) GetQualifiedInferersForTopic(ctx context.Context, topicId TopicId) ([]ActorId, error) {
+// GetActiveInferersForTopic returns all active inferers for a specific topic
+func (k *Keeper) GetActiveInferersForTopic(ctx context.Context, topicId TopicId) ([]ActorId, error) {
 	var inferers []ActorId
 	rng := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
-	err := k.qualifiedInferers.Walk(ctx, rng, func(key collections.Pair[TopicId, ActorId]) (bool, error) {
+	err := k.activeInferers.Walk(ctx, rng, func(key collections.Pair[TopicId, ActorId]) (bool, error) {
 		inferers = append(inferers, key.K2())
 		return false, nil
 	})
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error walking qualified inferers")
+		return nil, errorsmod.Wrap(err, "error walking active inferers")
 	}
 	return inferers, nil
 }
 
-// AddQualifiedForecaster adds a forecaster to the qualified forecasters set for a topic
-func (k *Keeper) AddQualifiedForecaster(ctx context.Context, topicId TopicId, forecaster ActorId) error {
+// AddActiveForecaster adds a forecaster to the active forecasters set for a topic
+func (k *Keeper) AddActiveForecaster(ctx context.Context, topicId TopicId, forecaster ActorId) error {
 	if err := types.ValidateTopicId(topicId); err != nil {
 		return errorsmod.Wrap(err, "invalid topic id")
 	}
@@ -3614,31 +3640,31 @@ func (k *Keeper) AddQualifiedForecaster(ctx context.Context, topicId TopicId, fo
 		return errorsmod.Wrap(err, "invalid forecaster address")
 	}
 	key := collections.Join(topicId, forecaster)
-	return k.qualifiedForecasters.Set(ctx, key)
+	return k.activeForecasters.Set(ctx, key)
 }
 
-// IsQualifiedForecaster checks if a forecaster is in the qualified forecasters set for a topic
-func (k *Keeper) IsQualifiedForecaster(ctx context.Context, topicId TopicId, forecaster ActorId) (bool, error) {
+// IsActiveForecaster checks if a forecaster is in the active forecasters set for a topic
+func (k *Keeper) IsActiveForecaster(ctx context.Context, topicId TopicId, forecaster ActorId) (bool, error) {
 	key := collections.Join(topicId, forecaster)
-	return k.qualifiedForecasters.Has(ctx, key)
+	return k.activeForecasters.Has(ctx, key)
 }
 
-// RemoveQualifiedForecaster removes a forecaster from the qualified forecasters set for a topic
-func (k *Keeper) RemoveQualifiedForecaster(ctx context.Context, topicId TopicId, forecaster ActorId) error {
+// RemoveActiveForecaster removes a forecaster from the active forecasters set for a topic
+func (k *Keeper) RemoveActiveForecaster(ctx context.Context, topicId TopicId, forecaster ActorId) error {
 	key := collections.Join(topicId, forecaster)
-	return k.qualifiedForecasters.Remove(ctx, key)
+	return k.activeForecasters.Remove(ctx, key)
 }
 
-// GetQualifiedForecastersForTopic returns all qualified forecasters for a specific topic
-func (k *Keeper) GetQualifiedForecastersForTopic(ctx context.Context, topicId TopicId) ([]ActorId, error) {
+// GetActiveForecastersForTopic returns all active forecasters for a specific topic
+func (k *Keeper) GetActiveForecastersForTopic(ctx context.Context, topicId TopicId) ([]ActorId, error) {
 	var forecasters []ActorId
 	rng := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
-	err := k.qualifiedForecasters.Walk(ctx, rng, func(key collections.Pair[TopicId, ActorId]) (bool, error) {
+	err := k.activeForecasters.Walk(ctx, rng, func(key collections.Pair[TopicId, ActorId]) (bool, error) {
 		forecasters = append(forecasters, key.K2())
 		return false, nil
 	})
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "error walking qualified forecasters")
+		return nil, errorsmod.Wrap(err, "error walking active forecasters")
 	}
 	return forecasters, nil
 }
@@ -3651,12 +3677,12 @@ func (k *Keeper) SetLowestInfererScoreEma(ctx context.Context, topicId TopicId, 
 	if err := types.ValidateBech32(lowestScore.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid address")
 	}
-	return k.lowestInfererScoreEmas.Set(ctx, topicId, lowestScore)
+	return k.lowestInfererScoreEma.Set(ctx, topicId, lowestScore)
 }
 
 // GetLowestInfererScoreEma gets the lowest inferer score EMA for a topic
 func (k *Keeper) GetLowestInfererScoreEma(ctx context.Context, topicId TopicId) (types.Score, bool, error) {
-	lowestScore, err := k.lowestInfererScoreEmas.Get(ctx, topicId)
+	lowestScore, err := k.lowestInfererScoreEma.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Score{}, false, nil
@@ -3674,12 +3700,12 @@ func (k *Keeper) SetLowestForecasterScoreEma(ctx context.Context, topicId TopicI
 	if err := types.ValidateBech32(lowestScore.Address); err != nil {
 		return errorsmod.Wrap(err, "invalid address")
 	}
-	return k.lowestForecasterScoreEmas.Set(ctx, topicId, lowestScore)
+	return k.lowestForecasterScoreEma.Set(ctx, topicId, lowestScore)
 }
 
 // GetLowestForecasterScoreEma gets the lowest forecaster score EMA for a topic
 func (k *Keeper) GetLowestForecasterScoreEma(ctx context.Context, topicId TopicId) (types.Score, error) {
-	lowestScore, err := k.lowestForecasterScoreEmas.Get(ctx, topicId)
+	lowestScore, err := k.lowestForecasterScoreEma.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return types.Score{}, nil

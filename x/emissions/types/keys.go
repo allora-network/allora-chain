@@ -92,4 +92,8 @@ var (
 	LowestForecasterScoreEmasKey                      = collections.NewPrefix(77)
 	CountInfererInclusionsInTopicKey                  = collections.NewPrefix(78)
 	CountForecasterInclusionsInTopicKey               = collections.NewPrefix(79)
+	ActiveInferersKey                                 = collections.NewPrefix(74)
+	ActiveForecastersKey                              = collections.NewPrefix(75)
+	LowestInfererScoreEmaKey                         = collections.NewPrefix(76)
+	LowestForecasterScoreEmaKey                      = collections.NewPrefix(77)
 )
