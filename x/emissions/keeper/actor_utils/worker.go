@@ -44,21 +44,23 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
 
-	// Get all inferences from this topic, nonce
-	infererAddresses, err := k.GetQualifiedInferersForTopic(ctx, topicId)
+	// Get all active inferers for this topic
+	activeInfererAddresses, err := k.GetActiveInferersForTopic(ctx, topicId)
 	if err != nil {
 		return err
 	}
-	if len(infererAddresses) == 0 {
+	if len(activeInfererAddresses) == 0 {
 		return types.ErrNoQualifiedInferers
 	}
 
-	acceptedInferers, err := getAndSetQualifiedInferences(
+	// Insert set of active inferences for this topic/block and return a map
+	// of the inferers with active inferers to be used in the forecasts processing
+	activeInfererAddressesMap, err := closeActiveInferencesSet(
 		ctx,
 		k,
 		topicId,
 		nonce,
-		infererAddresses,
+		activeInfererAddresses,
 	)
 	if err != nil {
 		return err
@@ -76,7 +78,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		topicId,
 		nonce,
 		forecasts.Forecasts,
-		acceptedInferers,
+		activeInfererAddressesMap,
 	)
 	if err != nil {
 		return err
@@ -103,32 +105,32 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	return nil
 }
 
-func getAndSetQualifiedInferences(
+func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
 	nonce types.Nonce,
-	qualifiedInfererAddresses []string,
-) (acceptedInferers map[string]bool, err error) {
-	qualifiedInferences := make([]*types.Inference, 0)
-	for _, address := range qualifiedInfererAddresses {
+	activeInfererAddresses []string,
+) (map[string]bool, error) {
+	activeInferences := make([]*types.Inference, 0)
+	activeInfererAddressesMap := make(map[string]bool, 0)
+	for _, address := range activeInfererAddresses {
 		inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
 		if err != nil {
 			return nil, err
 		}
-		qualifiedInferences = append(qualifiedInferences, &inference)
+		activeInferences = append(activeInferences, &inference)
+		activeInfererAddressesMap[inference.Inferer] = true
 	}
 
-	// Store the final list of inferences
-	inferencesToInsert := types.Inferences{
-		Inferences: qualifiedInferences,
-	}
-	err = k.InsertQualifiedInferences(ctx, topicId, nonce.BlockHeight, inferencesToInsert)
+	err := k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, types.Inferences{
+		Inferences: activeInferences,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return acceptedInferers, nil
+	return activeInfererAddressesMap, nil
 }
 
 // insert forecasts from top forecasters
