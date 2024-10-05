@@ -66,18 +66,20 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return err
 	}
 
-	// Get all forecasts from this topicId, nonce
-	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
+	// Get all active forecasters for this topic
+	activeForecastAddresses, err := k.GetActiveForecastersForTopic(ctx, topicId)
 	if err != nil {
 		return err
 	}
 
-	err = insertForecastsFromTopForecasters(
+	// Insert set of active forecasts for this topic/block and return a map
+	// of the forecasters with active forecasts to be used in the forecasts processing
+	err = closeActiveForecastsSet(
 		ctx,
 		k,
 		topicId,
 		nonce,
-		forecasts.Forecasts,
+		activeForecastAddresses,
 		activeInfererAddressesMap,
 	)
 	if err != nil {
@@ -123,6 +125,11 @@ func closeActiveInferencesSet(
 		activeInfererAddressesMap[inference.Inferer] = true
 	}
 
+	// Ensure deterministic ordering
+	sort.Slice(activeInferences, func(i, j int) bool {
+		return activeInferences[i].Inferer < activeInferences[j].Inferer
+	})
+
 	err := k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, types.Inferences{
 		Inferences: activeInferences,
 	})
@@ -136,19 +143,20 @@ func closeActiveInferencesSet(
 // insert forecasts from top forecasters
 // check forecast elements to ensure they are forecasts made about
 // the active list of inferers.
-func insertForecastsFromTopForecasters(
+func closeActiveForecastsSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
 	nonce types.Nonce,
-	forecasts []*types.Forecast,
+	activeForecastAddresses []string,
 	acceptedInferersOfBatch map[string]bool,
 ) error {
 	forecastsByForecaster := make(map[string]*types.Forecast)
-	latestForecaster := make([]*types.Forecast, 0)
-	for _, forecast := range forecasts {
-		if forecast == nil {
-			continue
+	activeForecasts := make([]*types.Forecast, 0)
+	for _, address := range activeForecastAddresses {
+		forecast, err := k.GetWorkerLatestForecastByTopicId(ctx, topicId, address)
+		if err != nil {
+			return err
 		}
 
 		// Examine forecast elements to verify that they're for inferers in the current set.
@@ -189,27 +197,17 @@ func insertForecastsFromTopForecasters(
 		/// Now do filters on each forecaster
 		// Ensure that we only have one forecast per forecaster. If not, we just take the first one
 		if _, ok := forecastsByForecaster[forecast.Forecaster]; !ok {
-			latestForecaster = append(latestForecaster, forecast)
-			forecastsByForecaster[forecast.Forecaster] = forecast
+			activeForecasts = append(activeForecasts, &forecast)
+			forecastsByForecaster[forecast.Forecaster] = &forecast
 		}
 	}
 
-	// Though less than ideal because it produces less-accurate network inferences,
-	// it is fine if no forecasts are accepted
-	// => no need to check len(forecastsFromTopForecasters) == 0
-
 	// Ensure deterministic ordering
-	sort.Slice(latestForecaster, func(i, j int) bool {
-		return latestForecaster[i].Forecaster < latestForecaster[j].Forecaster
+	sort.Slice(activeForecasts, func(i, j int) bool {
+		return activeForecasts[i].Forecaster < activeForecasts[j].Forecaster
 	})
-	// Store the final list of forecasts
-	forecastsToInsert := types.Forecasts{
-		Forecasts: latestForecaster,
-	}
-	err := k.InsertForecasts(ctx, topicId, nonce.BlockHeight, forecastsToInsert)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, types.Forecasts{
+		Forecasts: activeForecasts,
+	})
 }
