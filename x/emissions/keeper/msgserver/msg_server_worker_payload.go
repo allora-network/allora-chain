@@ -53,18 +53,19 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	} else if !nonceUnfulfilled {
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
+
 	if !ms.k.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
 		return nil, errorsmod.Wrapf(
 			types.ErrWorkerNonceWindowNotAvailable,
-			"Worker window not open for topic: %d, current block %d , nonce block height: %d , start window: %d, end window: %d",
-			topicId, blockHeight, nonce.BlockHeight, nonce.BlockHeight+topic.WorkerSubmissionWindow, nonce.BlockHeight+topic.GroundTruthLag,
+			"Worker window not open for topic: %d, current block %d, start window: %d, end window: %d",
+			topicId, blockHeight, nonce.BlockHeight, nonce.BlockHeight+topic.WorkerSubmissionWindow,
 		)
 	}
 
-	isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, msg.WorkerDataBundle.Worker)
+	isWorkerRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, msg.WorkerDataBundle.Worker)
 	if err != nil {
 		return nil, err
-	} else if !isInfererRegistered {
+	} else if !isWorkerRegistered {
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker is not registered in this topic")
 	}
 
@@ -84,7 +85,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 				"inferer not using the same topic as bundle")
 		}
 
-		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference)
+		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference, moduleParams.MaxTopInferersToReward)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
@@ -141,7 +142,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 
 		if len(acceptedForecastElements) > 0 {
 			forecast.ForecastElements = acceptedForecastElements
-			err = ms.k.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast)
+			err = ms.k.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast, moduleParams.MaxTopForecastersToReward)
 			if err != nil {
 				return nil, errorsmod.Wrapf(err,
 					"Error appending forecast")

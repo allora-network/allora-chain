@@ -76,27 +76,47 @@ func GetLowestScoreFromAllInferers(
 	return lowScore, nil
 }
 
-// Return low score and index among all forecasts
-func GetLowScoreFromAllForecasts(
+// Update lowest score from new forecaster addresses set
+func UpdateLowestScoreFromForecasterAddresses(
 	ctx context.Context,
 	k *Keeper,
 	topicId TopicId,
-	forecasts types.Forecasts,
-) (lowScore types.Score, lowScoreIndex int, err error) {
-	lowScoreIndex = 0
-	lowScore, err = k.GetForecasterScoreEma(ctx, topicId, forecasts.Forecasts[0].Forecaster)
-	if err != nil {
-		return types.Score{}, lowScoreIndex, err
-	}
-	for index, extForecast := range forecasts.Forecasts {
-		extScore, err := k.GetForecasterScoreEma(ctx, topicId, extForecast.Forecaster)
+	forecasterAddresses []string,
+	addedForecaster string,
+	removedForecasterAddress string,
+) error {
+	forecasterAddresses = append(forecasterAddresses, addedForecaster)
+	lowScore := types.Score{}
+	for i, address := range forecasterAddresses {
+		if address == removedForecasterAddress {
+			continue
+		}
+		score, err := k.GetForecasterScoreEma(ctx, topicId, address)
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Gt(extScore.Score) {
-			lowScore = extScore
-			lowScoreIndex = index
+		if lowScore.Score.Gt(score.Score) || i == 0 {
+			lowScore = score
 		}
 	}
-	return lowScore, lowScoreIndex, nil
+	return k.SetLowestForecasterScoreEma(ctx, topicId, lowScore)
+}
+
+// Get lowest score from all forecasters
+func GetLowestScoreFromAllForecasters(
+	ctx context.Context,
+	k *Keeper,
+	topicId TopicId,
+	forecasterAddresses []string,
+) (lowScore types.Score, err error) {
+	for i, address := range forecasterAddresses {
+		score, err := k.GetForecasterScoreEma(ctx, topicId, address)
+		if err != nil {
+			continue
+		}
+		if lowScore.Score.Gt(score.Score) || i == 0 {
+			lowScore = score
+		}
+	}
+	return lowScore, nil
 }
