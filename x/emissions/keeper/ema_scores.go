@@ -201,43 +201,38 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 // Uses the last saved topic quantile score to calculate the EMA.
 // This is useful for updating EMAs of reputers in the passive set.
 func (k *Keeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
-	ctx sdk.Context,
-	topic types.Topic,
-	block types.BlockHeight,
-	reputer ActorId,
+    ctx sdk.Context,
+    topic types.Topic,
+    block types.BlockHeight,
+    previousReputerScore types.Score,
 ) error {
-	previousScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputer)
-	if err != nil {
-		return errors.Wrapf(err, "Error getting reputer score ema")
-	}
-	// Only calc and save if there's a new update
-	previousTopicQuantileReputerScoreEma, err := k.GetPreviousTopicQuantileReputerScoreEma(ctx, topic.Id)
-	if err != nil {
-		return err
-	}
-	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
-	emaScoreDec, err := alloraMath.CalcEma(
-		topic.MeritSortitionAlpha,
-		previousTopicQuantileReputerScoreEma,
-		previousScore.Score,
-		firstTime,
-	)
-	if err != nil {
-		return errors.Wrapf(err, "Error calculating ema")
-	}
-	emaScore := types.Score{
-		TopicId:     topic.Id,
-		BlockHeight: block,
-		Address:     reputer,
-		Score:       emaScoreDec,
-	}
-	err = k.SetReputerScoreEma(ctx, topic.Id, reputer, emaScore)
-	if err != nil {
-		return errors.Wrapf(err, "error setting latest reputer score")
-	}
+    previousTopicQuantileReputerScoreEma, err := k.GetPreviousTopicQuantileReputerScoreEma(ctx, topic.Id)
+    if err != nil {
+        return err
+    }
+    firstTime := previousReputerScore.BlockHeight == 0 && previousReputerScore.Score.IsZero()
+    emaScoreDec, err := alloraMath.CalcEma(
+        topic.MeritSortitionAlpha,
+        previousTopicQuantileReputerScoreEma,
+        previousReputerScore.Score,
+        firstTime,
+    )
+    if err != nil {
+        return errors.Wrapf(err, "Error calculating ema")
+    }
+    emaScore := types.Score{
+        TopicId:     topic.Id,
+        BlockHeight: block,
+        Address:     previousReputerScore.Address,
+        Score:       emaScoreDec,
+    }
+    err = k.SetReputerScoreEma(ctx, topic.Id, previousReputerScore.Address, emaScore)
+    if err != nil {
+        return errors.Wrapf(err, "error setting latest reputer score")
+    }
 
-	emaScores := []types.Score{emaScore}
-	activeArr := map[string]bool{reputer: false}
-	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
-	return nil
+    emaScores := []types.Score{emaScore}
+    activeArr := map[string]bool{previousReputerScore.Address: false}
+    types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
+    return nil
 }
