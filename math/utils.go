@@ -2,6 +2,7 @@ package math
 
 import (
 	"cmp"
+	"slices"
 	"sort"
 
 	errorsmod "cosmossdk.io/errors"
@@ -483,4 +484,86 @@ func SumDecSlice(x []Dec) (Dec, error) {
 		}
 	}
 	return sum, nil
+}
+
+// Compute the nth percentile of the decs array
+func GetQuantileOfDecs(
+	decs []Dec,
+	quantile Dec,
+) (Dec, error) {
+	// If there are no decs then the quantile of scores is 0.
+	// This better ensures chain continuity without consequence because in this situation
+	// there is no meaningful quantile to calculate.
+	if len(decs) == 0 {
+		return ZeroDec(), nil
+	}
+
+	// Sort decs in descending order. Address is used to break ties.
+	slices.SortStableFunc(decs, func(x, y Dec) int {
+		if x.Lt(y) {
+			return 1
+		}
+		return -1
+	})
+
+	// n elements, q quantile
+	// position = (1 - q) * (n - 1)
+	nLessOne, err := NewDecFromUint64(uint64(len(decs) - 1))
+	if err != nil {
+		return Dec{}, err
+	}
+	oneLessQ, err := OneDec().Sub(quantile)
+	if err != nil {
+		return Dec{}, err
+	}
+	position, err := oneLessQ.Mul(nLessOne)
+	if err != nil {
+		return Dec{}, err
+	}
+
+	lowerIndex, err := position.Floor()
+	if err != nil {
+		return Dec{}, err
+	}
+	lowerIndexInt, err := lowerIndex.Int64()
+	if err != nil {
+		return Dec{}, err
+	}
+	upperIndex, err := position.Ceil()
+	if err != nil {
+		return Dec{}, err
+	}
+	upperIndexInt, err := upperIndex.Int64()
+	if err != nil {
+		return Dec{}, err
+	}
+
+	if lowerIndex == upperIndex {
+		return decs[lowerIndexInt], nil
+	}
+
+	if lowerIndexInt < 0 || upperIndexInt >= int64(len(decs)) {
+		return Dec{}, errorsmod.Wrapf(ErrNaN, "cannot calculate quantile")
+	}
+	// in cases where the quantile is between two values
+	// return lowerValue + (upperValue-lowerValue)*(position-lowerIndex)
+	lowerDec := decs[lowerIndexInt]
+	upperDec := decs[upperIndexInt]
+	positionMinusLowerIndex, err := position.Sub(lowerIndex)
+	if err != nil {
+		return Dec{}, err
+	}
+	upperMinusLower, err := upperDec.Sub(lowerDec)
+	if err != nil {
+		return Dec{}, err
+	}
+	product, err := positionMinusLowerIndex.Mul(upperMinusLower)
+	if err != nil {
+		return Dec{}, err
+	}
+	ret, err := lowerDec.Add(product)
+	if err != nil {
+		return Dec{}, err
+	}
+	return ret, nil
 }

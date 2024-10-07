@@ -119,7 +119,7 @@ func EmitRewards(
 }
 
 // This function distributes and pays out rewards to topic actors based on their participation.
-// It returns the total reward distributed to actors
+// It returns the total reward distributed to reputers
 func getDistributionAndPayoutRewardsToTopicActors(
 	ctx sdk.Context,
 	k keeper.Keeper,
@@ -508,8 +508,20 @@ func payoutRewards(
 
 			if reward.Type == types.WorkerInferenceRewardType {
 				infererRewards = append(infererRewards, reward)
+
+				err := k.IncrementCountInfererInclusionsInTopic(ctx, reward.TopicId, reward.Address)
+				if err != nil {
+					ret = append(ret, errors.Wrapf(err, "failed to increment count inferer inclusions in topic"))
+					continue
+				}
 			} else if reward.Type == types.WorkerForecastRewardType {
 				forecasterRewards = append(forecasterRewards, reward)
+
+				err := k.IncrementCountForecasterInclusionsInTopic(ctx, reward.TopicId, reward.Address)
+				if err != nil {
+					ret = append(ret, errors.Wrapf(err, "failed to increment count forecaster inclusions in topic"))
+					continue
+				}
 			}
 		}
 	}

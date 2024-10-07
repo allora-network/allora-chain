@@ -494,3 +494,119 @@ func TestGetSortedElementsByDecWeightDesc(t *testing.T) {
 	keys := alloraMath.GetSortedElementsByDecWeightDesc(m)
 	require.Equal(t, expected, keys)
 }
+
+func TestGetQuantileOfDecs(t *testing.T) {
+	m := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("2"),
+		alloraMath.MustNewDecFromString("3"),
+		alloraMath.MustNewDecFromString("4"),
+		alloraMath.MustNewDecFromString("5"),
+		alloraMath.MustNewDecFromString("6"),
+		alloraMath.MustNewDecFromString("7"),
+		alloraMath.MustNewDecFromString("8"),
+		alloraMath.MustNewDecFromString("9"),
+		alloraMath.MustNewDecFromString("10"),
+	}
+	negativeData := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("-5"),
+		alloraMath.MustNewDecFromString("-3"),
+		alloraMath.MustNewDecFromString("-1"),
+		alloraMath.MustNewDecFromString("-4"),
+		alloraMath.MustNewDecFromString("-2"),
+	}
+	mixedData := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("-5"),
+		alloraMath.MustNewDecFromString("-3"),
+		alloraMath.MustNewDecFromString("0"),
+		alloraMath.MustNewDecFromString("-4"),
+		alloraMath.MustNewDecFromString("2"),
+	}
+
+	tests := []struct {
+		name        string
+		data        []alloraMath.Dec
+		quantile    alloraMath.Dec
+		expected    alloraMath.Dec
+		expectedErr error
+	}{
+		{
+			data:     m,
+			quantile: alloraMath.MustNewDecFromString("0.25"),
+			expected: alloraMath.MustNewDecFromString("3.25"),
+		},
+		{
+			data:     m,
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.MustNewDecFromString("5.5"),
+		},
+		{
+			data:     m,
+			quantile: alloraMath.MustNewDecFromString("0.75"),
+			expected: alloraMath.MustNewDecFromString("7.75"),
+		},
+		{
+			data:     []alloraMath.Dec{},
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.ZeroDec(),
+		},
+		{
+			data: []alloraMath.Dec{
+				alloraMath.MustNewDecFromString("42"),
+			},
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.MustNewDecFromString("42"),
+		},
+		{
+			data:     negativeData,
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.MustNewDecFromString("-3"),
+		},
+		{
+			data:     mixedData,
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.MustNewDecFromString("-3"),
+		},
+		{
+			data: []alloraMath.Dec{
+				alloraMath.NewNaN(),
+				alloraMath.NewNaN(),
+				alloraMath.MustNewDecFromString("3"),
+			},
+			quantile: alloraMath.MustNewDecFromString("0.5"),
+			expected: alloraMath.NewNaN(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := alloraMath.GetQuantileOfDecs(tt.data, tt.quantile)
+
+			if tt.expectedErr != nil {
+				require.ErrorIs(t, err, tt.expectedErr)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tt.expected, result)
+			}
+		})
+	}
+}
+
+func TestGetQuantileOfDecsWithInvalidQuantile(t *testing.T) {
+	data := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1"),
+		alloraMath.MustNewDecFromString("2"),
+		alloraMath.MustNewDecFromString("3"),
+	}
+
+	invalidQuantiles := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1.1"),
+		alloraMath.MustNewDecFromString("-0.1"),
+		alloraMath.NewNaN(),
+	}
+
+	for _, quantile := range invalidQuantiles {
+		_, err := alloraMath.GetQuantileOfDecs(data, quantile)
+		require.Error(t, err)
+	}
+}

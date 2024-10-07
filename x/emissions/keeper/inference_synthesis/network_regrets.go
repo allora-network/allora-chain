@@ -1,6 +1,7 @@
 package inferencesynthesis
 
 import (
+	"context"
 	"sort"
 
 	errorsmod "cosmossdk.io/errors"
@@ -118,6 +119,11 @@ func GetCalcSetNetworkRegrets(
 		return networkLosses.InfererValues[i].Worker < networkLosses.InfererValues[j].Worker
 	})
 
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrapf(err, "failed to get topic")
+	}
+
 	// R_ij - Inferer Regrets
 	for _, infererLoss := range networkLosses.InfererValues {
 		lastRegret, newParticipant, err := k.GetInfererNetworkRegret(ctx, topicId, infererLoss.Worker)
@@ -138,7 +144,18 @@ func GetCalcSetNetworkRegrets(
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error setting inferer regret")
 		}
-		if !newParticipant {
+
+		shouldAddWorkerRegret, err := isExperiencedInferer(
+			ctx,
+			k,
+			topic,
+			infererLoss.Worker,
+			newParticipant,
+		)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Error checking if should add worker regret")
+		}
+		if shouldAddWorkerRegret {
 			workersRegrets = append(workersRegrets, newInfererRegret.Value)
 		}
 	}
@@ -167,7 +184,18 @@ func GetCalcSetNetworkRegrets(
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error setting forecaster regret")
 		}
-		if !newParticipant {
+
+		shouldAddWorkerRegret, err := isExperiencedForecaster(
+			ctx,
+			k,
+			topic,
+			forecasterLoss.Worker,
+			newParticipant,
+		)
+		if err != nil {
+			return errorsmod.Wrapf(err, "Error checking if should add worker regret")
+		}
+		if shouldAddWorkerRegret {
 			workersRegrets = append(workersRegrets, newForecasterRegret.Value)
 		}
 	}
@@ -348,7 +376,11 @@ func GetCalcSetNetworkRegrets(
 
 	// Recalculate topic initial regret
 	if len(workersRegrets) > 0 {
-		updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, epsilon, pNorm, cNorm)
+		params, err := k.GetParams(ctx)
+		if err != nil {
+			return errorsmod.Wrapf(err, "GetCalcSetNetworkRegrets error getting params")
+		}
+		updatedTopicInitialRegret, err := CalcTopicInitialRegret(workersRegrets, epsilon, pNorm, cNorm, params.InitialRegretQuantile, params.PnormSafeDiv)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error calculating topic initial regret")
 		}
@@ -361,7 +393,20 @@ func GetCalcSetNetworkRegrets(
 	return nil
 }
 
-func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pNorm alloraMath.Dec, cNorm alloraMath.Dec) (alloraMath.Dec, error) {
+// Calculate the initial regret for all new workers in the topic
+// denominator = std(regrets[i-1, :]) + epsilon
+// offset = cnorm - 8.25 / pnorm
+// dummy_regret[i] = np.percentile(regrets[i-1, :], 25.) + offset * denominator
+// It is assumed that the regrets are filtered by experience for each actor
+// i.e. if they have not been included in the topic for enough epochs, their regret is ignored.
+func CalcTopicInitialRegret(
+	regrets []alloraMath.Dec,
+	epsilon alloraMath.Dec,
+	pNorm alloraMath.Dec,
+	cNorm alloraMath.Dec,
+	quantileRegret alloraMath.Dec,
+	pNormDiv alloraMath.Dec,
+) (alloraMath.Dec, error) {
 	// Calculate the Denominator
 	stdDevRegrets, err := alloraMath.StdDev(regrets)
 	if err != nil {
@@ -374,9 +419,7 @@ func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pN
 	}
 
 	// calculate the offset
-	eightPointTwoFive := alloraMath.MustNewDecFromString("8.25")
-
-	eightPointTwoFiveDividedByPnorm, err := eightPointTwoFive.Quo(pNorm)
+	eightPointTwoFiveDividedByPnorm, err := pNormDiv.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
@@ -392,17 +435,64 @@ func CalcTopicInitialRegret(regrets []alloraMath.Dec, epsilon alloraMath.Dec, pN
 		return alloraMath.ZeroDec(), err
 	}
 
-	minimumRegret := alloraMath.ZeroDec()
-	for i, regret := range regrets {
-		if i == 0 || regret.Lt(minimumRegret) {
-			minimumRegret = regret
-		}
+	// Calculate quantile
+	quantile, err := alloraMath.GetQuantileOfDecs(regrets, quantileRegret)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
 	}
 
-	initialRegret, err := minimumRegret.Add(offSetTimesDenominator)
+	initialRegret, err := quantile.Add(offSetTimesDenominator)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
 
 	return initialRegret, nil
+}
+
+// Determine if a inferer is an experienced worker by checking
+// the inclusions count is greater than 1/alpha_regret
+func isExperiencedInferer(
+	ctx context.Context,
+	k keeper.Keeper,
+	topic emissions.Topic,
+	inferer Worker,
+	newParticipant bool,
+) (bool, error) {
+	numInclusions := uint64(0)
+	numInclusions, err := k.GetCountInfererInclusionsInTopic(ctx, topic.Id, inferer)
+	if err != nil {
+		return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
+	}
+	return isExperiencedActor(newParticipant, numInclusions, topic.AlphaRegret)
+}
+
+// Determine if a forecaster is an experienced worker by checking
+// the inclusions count is greater than 1/alpha_regret
+func isExperiencedForecaster(
+	ctx context.Context,
+	k keeper.Keeper,
+	topic emissions.Topic,
+	forecaster Worker,
+	newParticipant bool,
+) (bool, error) {
+	numInclusions := uint64(0)
+	numInclusions, err := k.GetCountForecasterInclusionsInTopic(ctx, topic.Id, forecaster)
+	if err != nil {
+		return false, errorsmod.Wrapf(err, "failed to get forecaster inclusions")
+	}
+	return isExperiencedActor(newParticipant, numInclusions, topic.AlphaRegret)
+}
+
+// helper function for isExperiencedForecaster and isExperiencedInferer
+// check if inclusions count is greater than 1/alpha_regret
+func isExperiencedActor(newParticipant bool, numInclusions uint64, alpha alloraMath.Dec) (bool, error) {
+	numInclusionsDec, err := alloraMath.NewDecFromUint64(numInclusions)
+	if err != nil {
+		return false, errorsmod.Wrapf(err, "failed to get num inclusions dec")
+	}
+	oneOverAlpha, err := alloraMath.OneDec().Quo(alpha)
+	if err != nil {
+		return false, errorsmod.Wrapf(err, "failed to get one over alpha")
+	}
+	return !newParticipant && numInclusionsDec.Gte(oneOverAlpha), nil
 }

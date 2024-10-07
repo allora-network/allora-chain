@@ -20,7 +20,7 @@ To privately report a security vulnerability, please choose one of the following
 
 ### 1. Email
 
-Send your detailed vulnerability report to `security@alloralabs.xyz`.
+Send your detailed vulnerability report to `security@allora.network`.
 
 ### 2. GitHub Private Vulnerability Reporting
 
@@ -69,4 +69,4 @@ Though we don't have an official bug bounty program, we generally offer rewards 
 
 ## Feedback on this Policy
 
-For recommendations on how to improve this policy, either submit a pull request or send an email to `security@alloralabs.xyz`.
+For recommendations on how to improve this policy, either submit a pull request or send an email to `security@allora.network`.

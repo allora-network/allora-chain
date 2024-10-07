@@ -43,18 +43,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## v0.TBD
+## v0.6.0
 
-### Summary
+### Fixed
 
-Summary TBD
+* [#615](https://github.com/allora-network/allora-chain/pull/615) Improvement to merit-based sortition to enable more cycling through the crowd
+* [#615](https://github.com/allora-network/allora-chain/pull/615) Fixed runaway regret calculation where large influx of workers would cause the regret to grow negatively without bound
 
 ### Security
 
 * [#603](https://github.com/allora-network/allora-chain/pull/603) Validate all Values for Correctness Prior to Storing them in the Keeper
 * [#620](https://github.com/allora-network/allora-chain/pull/620) Add a static analyzer to detect non-deferred `.Close()` calls, improve migration error handling
-
-## [Released]
 
 ## v0.5.0
 

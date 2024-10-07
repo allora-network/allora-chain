@@ -93,7 +93,7 @@ func GenerateReputerScores(
 	}
 
 	// Insert new coeffients and scores
-	var newScores []types.Score
+	var instantScores []types.Score
 	var emaScores []types.Score
 	activeArr := make(map[string]bool)
 	for i, reputer := range reputers {
@@ -107,40 +107,40 @@ func GenerateReputerScores(
 			return []types.Score{}, errors.Wrapf(err, "Error setting listening coefficient")
 		}
 
-		newScore := types.Score{
+		instantScore := types.Score{
 			TopicId:     topicId,
 			BlockHeight: block,
 			Address:     reputer,
 			Score:       scores[i],
 		}
-		err = keeper.InsertReputerScore(ctx, topicId, block, newScore)
+		err = keeper.InsertReputerScore(ctx, topicId, block, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting reputer score")
 		}
 
-		emaScore, err := keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, block, reputer, newScore)
+		emaScore, err := keeper.CalcAndSaveReputerScoreEmaForActiveSet(ctx, topic, block, reputer, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving reputer score ema")
 		}
 
 		activeArr[reputer] = true
-		newScores = append(newScores, newScore)
+		instantScores = append(instantScores, instantScore)
 		emaScores = append(emaScores, emaScore)
 	}
 
-	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveReputerQuantile)
+	// Update topic quantile of instant score
+	topicInstantScoreQuantile, err := actorutils.GetQuantileOfScores(instantScores, topic.ActiveReputerQuantile)
 	if err != nil {
 		return nil, err
 	}
-	err = keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	err = keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicInstantScoreQuantile)
 	if err != nil {
 		return nil, err
 	}
 
-	types.EmitNewReputerScoresSetEvent(ctx, newScores)
+	types.EmitNewReputerScoresSetEvent(ctx, instantScores)
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
-	return newScores, nil
+	return instantScores, nil
 }
 
 // GenerateInferenceScores calculates and persists scores for workers based on their inference task performance.
@@ -151,7 +151,7 @@ func GenerateInferenceScores(
 	block int64,
 	networkLosses types.ValueBundle,
 ) ([]types.Score, error) {
-	var newScores []types.Score
+	var instantScores []types.Score
 	var emaScores []types.Score
 	activeArr := make(map[string]bool)
 	// If there is only one inferer, set score to 0
@@ -167,9 +167,9 @@ func GenerateInferenceScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
-		newScores = append(newScores, newScore)
-		types.EmitNewInfererScoresSetEvent(ctx, newScores)
-		return newScores, nil
+		instantScores = append(instantScores, newScore)
+		types.EmitNewInfererScoresSetEvent(ctx, instantScores)
+		return instantScores, nil
 	}
 	topic, err := keeper.GetTopic(ctx, topicId)
 	if err != nil {
@@ -182,39 +182,39 @@ func GenerateInferenceScores(
 			return []types.Score{}, errors.Wrapf(err, "Error getting worker score")
 		}
 
-		newScore := types.Score{
+		instantScore := types.Score{
 			TopicId:     topicId,
 			BlockHeight: block,
 			Address:     oneOutLoss.Worker,
 			Score:       workerNewScore,
 		}
-		err = keeper.InsertWorkerInferenceScore(ctx, topicId, block, newScore)
+		err = keeper.InsertWorkerInferenceScore(ctx, topicId, block, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
 
-		emaScore, err := keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, block, oneOutLoss.Worker, newScore)
+		emaScore, err := keeper.CalcAndSaveInfererScoreEmaForActiveSet(ctx, topic, block, oneOutLoss.Worker, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving inferer score ema")
 		}
 		activeArr[oneOutLoss.Worker] = true
-		newScores = append(newScores, newScore)
+		instantScores = append(instantScores, instantScore)
 		emaScores = append(emaScores, emaScore)
 	}
 
-	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveInfererQuantile)
+	// Update topic quantile of instant score
+	topicInstantScoreQuantile, err := actorutils.GetQuantileOfScores(instantScores, topic.ActiveInfererQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error getting quantile of scores")
 	}
-	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicInstantScoreQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error setting previous topic quantile inferer score ema")
 	}
 
-	types.EmitNewInfererScoresSetEvent(ctx, newScores)
+	types.EmitNewInfererScoresSetEvent(ctx, instantScores)
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr)
-	return newScores, nil
+	return instantScores, nil
 }
 
 // GenerateForecastScores calculates and persists scores for workers based on their forecast task performance.
@@ -225,7 +225,7 @@ func GenerateForecastScores(
 	block int64,
 	networkLosses types.ValueBundle,
 ) ([]types.Score, error) {
-	var newScores []types.Score
+	var instantScores []types.Score
 	var emaScores []types.Score
 	activeArr := make(map[string]bool)
 	topic, err := keeper.GetTopic(ctx, topicId)
@@ -246,9 +246,9 @@ func GenerateForecastScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker inference score")
 		}
-		newScores = append(newScores, newScore)
-		types.EmitNewForecasterScoresSetEvent(ctx, newScores)
-		return newScores, nil
+		instantScores = append(instantScores, newScore)
+		types.EmitNewForecasterScoresSetEvent(ctx, instantScores)
+		return instantScores, nil
 	}
 
 	// Get worker scores for one out loss
@@ -281,41 +281,41 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error getting final worker score forecast task")
 		}
 
-		newScore := types.Score{
+		instantScore := types.Score{
 			TopicId:     topicId,
 			BlockHeight: block,
 			Address:     oneInNaiveLoss.Worker,
 			Score:       workerPerformanceScore,
 		}
-		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, newScore)
+		err = keeper.InsertWorkerForecastScore(ctx, topicId, block, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error inserting worker forecast score")
 		}
 
-		emaScore, err := keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, block, oneInNaiveLoss.Worker, newScore)
+		emaScore, err := keeper.CalcAndSaveForecasterScoreEmaForActiveSet(ctx, topic, block, oneInNaiveLoss.Worker, instantScore)
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving forecaster score ema")
 		}
 
 		activeArr[oneInNaiveLoss.Worker] = true
-		newScores = append(newScores, newScore)
+		instantScores = append(instantScores, instantScore)
 		emaScores = append(emaScores, emaScore)
 	}
 
-	// Update topic quantile of EMA score
-	topicEmaScoreQuantile, err := actorutils.GetQuantileOfScores(emaScores, topic.ActiveForecasterQuantile)
+	// Update topic quantile of instant score
+	topicInstantScoreQuantile, err := actorutils.GetQuantileOfScores(instantScores, topic.ActiveForecasterQuantile)
 	if err != nil {
 		return nil, err
 	}
-	err = keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicEmaScoreQuantile)
+	err = keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicInstantScoreQuantile)
 	if err != nil {
 		return nil, err
 	}
 
 	// Emit forecaster performance scores
-	types.EmitNewForecasterScoresSetEvent(ctx, newScores)
+	types.EmitNewForecasterScoresSetEvent(ctx, instantScores)
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)
-	return newScores, nil
+	return instantScores, nil
 }
 
 // Check if all workers are present in the reported losses and add NaN values for missing workers
