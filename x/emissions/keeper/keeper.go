@@ -1393,6 +1393,16 @@ func (k *Keeper) AppendReputerLoss(
 	return nil
 }
 
+// GetReputerLatestLossByTopicId
+func (k *Keeper) GetReputerLatestLossByTopicId(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+) (types.ReputerValueBundle, error) {
+	key := collections.Join(topicId, reputer)
+	return k.reputerLosses.Get(ctx, key)
+}
+
 // InsertReputerLoss inserts a reputer loss for a specific topic
 func (k *Keeper) InsertReputerLoss(
 	ctx context.Context,
@@ -1414,15 +1424,6 @@ func (k *Keeper) InsertActiveReputerLosses(
 	nonceBlockHeight BlockHeight,
 	reputerLosses types.ReputerValueBundles,
 ) error {
-	if err := types.ValidateTopicId(topicId); err != nil {
-		return errorsmod.Wrap(err, "invalid topic id")
-	}
-	if err := types.ValidateBlockHeight(nonceBlockHeight); err != nil {
-		return errorsmod.Wrap(err, "invalid block height")
-	}
-	if err := reputerLosses.Validate(); err != nil {
-		return errorsmod.Wrap(err, "reputer loss bundles validation failed")
-	}
 	key := collections.Join(topicId, nonceBlockHeight)
 	return k.allLossBundles.Set(ctx, key, reputerLosses)
 }
@@ -3742,6 +3743,29 @@ func (k *Keeper) GetActiveReputersForTopic(ctx context.Context, topicId TopicId)
 		return nil, errorsmod.Wrap(err, "error walking active reputers")
 	}
 	return reputers, nil
+}
+
+// ResetActiveActorsForTopic resets the active actors for a topic
+func (k *Keeper) ResetActiveActorsForTopic(ctx context.Context, topicId TopicId) error {
+    // Clear active inferers for the topic
+    infererRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+    if err := k.activeInferers.Clear(ctx, infererRange); err != nil {
+        return errorsmod.Wrap(err, "error clearing active inferers")
+    }
+
+    // Clear active forecasters for the topic
+    forecasterRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+    if err := k.activeForecasters.Clear(ctx, forecasterRange); err != nil {
+        return errorsmod.Wrap(err, "error clearing active forecasters")
+    }
+
+    // Clear active reputers for the topic
+    reputerRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+    if err := k.activeReputers.Clear(ctx, reputerRange); err != nil {
+        return errorsmod.Wrap(err, "error clearing active reputers")
+    }
+
+    return nil
 }
 
 // SetLowestReputerScoreEma sets the lowest reputer score EMA for a topic
