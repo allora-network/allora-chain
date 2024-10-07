@@ -69,17 +69,20 @@ func CloseReputerNonce(
 		return err
 	}
 
-	reputerLossBundles, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
+	activeReputerAddresses, err := k.GetActiveReputersForTopic(ctx, topicId)
 	if err != nil {
-		return types.ErrNoValidBundles
+		return err
 	}
 
-	// Iterate through the array to ensure each reputer is in the whitelist
-	// and get get score for each reputer => later we can skim only the top few by score descending
 	lossBundlesByReputer := make([]*types.ReputerValueBundle, 0)
 	stakesByReputer := make(map[string]cosmosMath.Int)
-	for _, bundle := range reputerLossBundles.ReputerValueBundles {
-		err := bundle.Validate()
+	for _, address := range activeReputerAddresses {
+		bundle, err := k.GetReputerLatestLossByTopicId(ctx, topicId, address)
+		if err != nil {
+			return types.ErrNoValidBundles
+		}
+
+		err = bundle.Validate()
 		if err != nil {
 			continue
 		}
@@ -119,7 +122,7 @@ func CloseReputerNonce(
 		// We keep what we can, ignoring the reputer and their contribution (losses) entirely
 		// if they're left with no valid losses.
 
-		filteredBundle, err := FilterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, bundle)
+		filteredBundle, err := FilterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, &bundle)
 		if err != nil {
 			continue
 		}
@@ -196,6 +199,12 @@ func CloseReputerNonce(
 	}
 
 	err = k.SetReputerTopicLastCommit(ctx, topic.Id, blockHeight, &nonce)
+	if err != nil {
+		return err
+	}
+
+	// Reset active actors for topic - inferers, reputers, forecasters
+	err = k.ResetActiveActorsForTopic(ctx, topicId)
 	if err != nil {
 		return err
 	}
