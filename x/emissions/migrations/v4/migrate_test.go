@@ -496,15 +496,18 @@ func testScoreMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &score)
 	s.Require().NoError(err)
 	iterator.Close()
 
-	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }
@@ -532,16 +535,19 @@ func testScoresMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &scores)
 	s.Require().NoError(err)
 	iterator.Close()
 	s.Require().Len(scores.Scores, 1)
 
-	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }
@@ -633,16 +639,19 @@ func testValueBundleMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &bundle)
 	s.Require().NoError(err)
 	iterator.Close()
 	s.Require().Equal(bundle, getBundle())
 
-	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }
@@ -672,16 +681,19 @@ func testReputerValueBundleMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &reputerValueBundles)
 	s.Require().NoError(err)
 	iterator.Close()
 	s.Require().Len(reputerValueBundles.ReputerValueBundles, 1)
 
-	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }
@@ -706,15 +718,18 @@ func testTimeStampedValueMapDeletion(
 
 	// Sanity check
 	iterator := mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &timeStampedValue)
 	s.Require().NoError(err)
 	iterator.Close()
 
-	v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v4.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator = mapStore.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }

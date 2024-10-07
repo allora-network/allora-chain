@@ -510,16 +510,19 @@ func (s *EmissionsV3MigrationTestSuite) TestResetMapsWithNonNumericValues() {
 
 	// Sanity check
 	iterator := infererScoresByBlock.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().True(iterator.Valid())
 	err = proto.Unmarshal(iterator.Value(), &scores)
 	s.Require().NoError(err)
 	iterator.Close()
 	s.Require().Len(scores.Scores, 1)
 
-	v3.ResetMapsWithNonNumericValues(store, cdc)
+	err = v3.ResetMapsWithNonNumericValues(store, cdc)
+	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
 	iterator = infererScoresByBlock.Iterator(nil, nil)
+	defer iterator.Close()
 	s.Require().False(iterator.Valid(), "iterator should be invalid because the store should be empty")
 	iterator.Close()
 }
