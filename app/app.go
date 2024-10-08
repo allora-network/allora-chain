@@ -84,6 +84,8 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/params"                // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/slashing"              // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"               // import for side-effects
+
+	"github.com/allora-network/allora-chain/health"
 )
 
 // DefaultNodeHome default home directories for the application daemon
@@ -138,6 +140,9 @@ type AlloraApp struct {
 
 	// simulation manager
 	sm *module.SimulationManager
+
+	// Nurse
+	nurse *health.Nurse
 }
 
 func init() {
@@ -181,6 +186,19 @@ func NewAlloraApp(
 		app        = &AlloraApp{} //nolint:exhaustruct
 		appBuilder *runtime.AppBuilder
 	)
+
+	// Initialize nurse if provided with a config TOML path
+	nurseCfgPath := os.Getenv("NURSE_TOML_PATH")
+	if nurseCfgPath != "" {
+		nurseCfg := health.MustReadConfigTOML(nurseCfgPath)
+		nurseCfg.Logger = logger
+		app.nurse = health.NewNurse(nurseCfg)
+
+		err := app.nurse.Start()
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	if err := depinject.Inject(
 		depinject.Configs(

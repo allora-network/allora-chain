@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/allora-network/allora-chain/test/testutil"
-	"github.com/allora-network/allora-chain/x/utils/migutils"
+	"github.com/allora-network/allora-chain/utils/migutils"
 )
 
 func TestSafelyClearWholeMap(t *testing.T) {
