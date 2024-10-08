@@ -1313,6 +1313,8 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		})
 		s.Require().NoError(err)
 	}
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	s.Require().NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
@@ -1333,9 +1335,12 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 			ReputerValueBundle: payload,
 		})
 		s.Require().NoError(err)
-		err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, *payload.ValueBundle)
-		s.Require().NoError(err)
 	}
+	err = actorutils.CloseReputerNonce(
+		&s.emissionsKeeper, s.ctx, topicId,
+		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce,
+	)
+	s.Require().NoError(err)
 
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -1463,6 +1468,8 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		})
 		s.Require().NoError(err)
 	}
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	s.Require().NoError(err)
 
 	newBlockheight += topic.GroundTruthLag - 1
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
@@ -1480,9 +1487,12 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 			ReputerValueBundle: payload,
 		})
 		s.Require().NoError(err)
-		err = s.emissionsKeeper.InsertNetworkLossBundleAtBlock(s.ctx, topicId, block, *payload.ValueBundle)
-		s.Require().NoError(err)
 	}
+	err = actorutils.CloseReputerNonce(
+		&s.emissionsKeeper, s.ctx, topicId,
+		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce,
+	)
+	s.Require().NoError(err)
 
 	secondRewardsDistribution, secondTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
 	s.Require().NoError(err)

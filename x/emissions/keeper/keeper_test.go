@@ -1098,9 +1098,9 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 		},
 	}
 
-	// Assume InsertInferences correctly sets up inferences
+	// Assume InsertActiveInferences correctly sets up inferences
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
-	err := keeper.InsertInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
+	err := keeper.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err)
 
 	// Retrieve inferences
@@ -1135,7 +1135,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference1},
 	}
 	nonce1 := types.Nonce{BlockHeight: blockHeight1}
-	err = keeper.InsertInferences(ctx, topicId, nonce1.BlockHeight, inferences1)
+	err = keeper.InsertActiveInferences(ctx, topicId, nonce1.BlockHeight, inferences1)
 	s.Require().NoError(err, "Inserting first set of inferences should not fail")
 
 	// Insert second set of inferences
@@ -1152,7 +1152,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference2},
 	}
 	nonce2 := types.Nonce{BlockHeight: blockHeight2}
-	err = keeper.InsertInferences(ctx, topicId, nonce2.BlockHeight, inferences2)
+	err = keeper.InsertActiveInferences(ctx, topicId, nonce2.BlockHeight, inferences2)
 	s.Require().NoError(err, "Inserting second set of inferences should not fail")
 
 	// Retrieve the latest inferences
@@ -1181,11 +1181,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
-	inferences1 := types.Inferences{
-		Inferences: []*types.Inference{&newInference1},
-	}
-	nonce := types.Nonce{BlockHeight: blockHeight1}
-	err = keeper.InsertInferences(ctx, topicId, nonce.BlockHeight, inferences1)
+	err = keeper.InsertInference(ctx, topicId, newInference1)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	blockHeight2 := int64(12346)
@@ -1197,11 +1193,7 @@ func (s *KeeperTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		ExtraData:   []byte("data"),
 		Proof:       "proof123",
 	}
-	inferences2 := types.Inferences{
-		Inferences: []*types.Inference{&newInference2},
-	}
-	nonce2 := types.Nonce{BlockHeight: blockHeight2}
-	err = keeper.InsertInferences(ctx, topicId, nonce2.BlockHeight, inferences2)
+	err = keeper.InsertInference(ctx, topicId, newInference2)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	retrievedInference, err := keeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerAccStr)
@@ -1249,9 +1241,9 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 		},
 	}
 
-	// Assume InsertForecasts correctly sets up forecasts
+	// Assume InsertActiveForecasts correctly sets up forecasts
 	nonce := types.Nonce{BlockHeight: block}
-	err := keeper.InsertForecasts(ctx, topicId, nonce.BlockHeight, expectedForecasts)
+	err := keeper.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, expectedForecasts)
 	s.Require().NoError(err)
 
 	// Retrieve forecasts
@@ -1260,7 +1252,7 @@ func (s *KeeperTestSuite) TestGetForecastsAtBlock() {
 	s.Require().Equal(&expectedForecasts, actualForecasts)
 }
 
-func (s *KeeperTestSuite) TestInsertReputerLossBundlesAtBlock() {
+func (s *KeeperTestSuite) TestInsertActiveReputerLosses() {
 	ctx := s.ctx
 	require := s.Require()
 	topicId := uint64(1)
@@ -1294,8 +1286,8 @@ func (s *KeeperTestSuite) TestInsertReputerLossBundlesAtBlock() {
 	}
 
 	// Test inserting data
-	err := s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
-	require.NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
+	err := s.emissionsKeeper.InsertActiveReputerLosses(ctx, topicId, block, reputerLossBundles)
+	require.NoError(err, "InsertActiveReputerLosses should not return an error")
 
 	// Retrieve data to verify insertion
 	result, err := s.emissionsKeeper.GetReputerLossBundlesAtBlock(ctx, topicId, block)
@@ -3184,7 +3176,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 		},
 	}
 	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
-	err := s.emissionsKeeper.InsertInferences(s.ctx, topicId, nonce.BlockHeight, expectedInferences)
+	err := s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err, "Inserting inferences should not fail")
 
 	expectedForecasts := types.Forecasts{
@@ -3221,14 +3213,14 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 			},
 		},
 	}
-	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, nonce.BlockHeight, expectedForecasts)
+	err = s.emissionsKeeper.InsertActiveForecasts(s.ctx, topicId, nonce.BlockHeight, expectedForecasts)
 	s.Require().NoError(err)
 
 	reputerLossBundles := types.ReputerValueBundles{
 		ReputerValueBundles: []*types.ReputerValueBundle{},
 	}
-	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerLossBundles)
-	s.Require().NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
+	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, block, reputerLossBundles)
+	s.Require().NoError(err, "InsertActiveReputerLosses should not return an error")
 
 	reputerRequestNonce := &types.ReputerRequestNonce{
 		ReputerNonce: &types.Nonce{BlockHeight: block},
@@ -3688,6 +3680,13 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	err = k.SetInfererScoreEma(ctx, topicId, worker5, score5)
 	s.Require().NoError(err)
 
+	// Ensure that the number of top inferers is capped at the max top inferers to reward
+	// New high-score entrant should replace earlier low-score entrant
+	params := types.DefaultParams()
+	params.MaxTopInferersToReward = 4
+	err = k.SetParams(ctx, params)
+	s.Require().NoError(err)
+
 	allInferences := types.Inferences{
 		Inferences: []*types.Inference{
 			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.52")},
@@ -3695,8 +3694,10 @@ func (s *KeeperTestSuite) TestAppendInference() {
 			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.71")},
 		},
 	}
-	err = k.InsertInferences(ctx, topicId, nonce.BlockHeight, allInferences)
-	s.Require().NoError(err)
+	for _, inference := range allInferences.Inferences {
+		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		s.Require().NoError(err)
+	}
 
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	newInference := types.Inference{
@@ -3707,18 +3708,12 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference, params.MaxTopInferersToReward)
 	s.Require().NoError(err)
-	newAllInferences, err := k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
+	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(len(newAllInferences.Inferences), len(allInferences.Inferences)+1)
+	s.Require().Equal(int(params.MaxTopInferersToReward), len(activeInferers))
 
-	// Ensure that the number of top inferers is capped at the max top inferers to reward
-	// New high-score entrant should replace earlier low-score entrant
-	params := types.DefaultParams()
-	params.MaxTopInferersToReward = 4
-	err = k.SetParams(ctx, params)
-	s.Require().NoError(err)
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	newInference2 := types.Inference{
 		TopicId:     topicId,
@@ -3728,17 +3723,19 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
+
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
+	s.Require().NoError(err)
+	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(int(params.MaxTopInferersToReward), len(activeInferers))
+
+	// New high-score entrant should replace earlier low-score entrant
 	worker5OgScore, err := k.GetInfererScoreEma(ctx, topicId, worker5)
 	s.Require().NoError(err)
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2)
-	s.Require().NoError(err)
-	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
-	s.Require().NoError(err)
-	s.Require().Equal(uint64(len(newAllInferences.Inferences)), params.MaxTopInferersToReward)
-	// New high-score entrant should replace earlier low-score entrant
 	worker5Found := false
-	for _, inference := range newAllInferences.Inferences {
-		if inference.Inferer == worker5 {
+	for _, address := range activeInferers {
+		if address == worker5 {
 			worker5Found = true
 		}
 	}
@@ -3778,12 +3775,9 @@ func (s *KeeperTestSuite) TestAppendInference() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2)
+	err = k.AppendInference(ctx, topic, nonce.BlockHeight, &newInference2, params.MaxTopInferersToReward)
 	s.Require().Error(err, types.ErrCantUpdateEmaMoreThanOncePerWindow.Error())
 	// Confirm no change in EMA score
-	newAllInferences, err = k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
-	s.Require().NoError(err)
-	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(newAllInferences.Inferences)))
 	updateAttemptForWorker2, err := k.GetInfererScoreEma(ctx, topicId, worker2)
 	s.Require().NoError(err)
 	updateAttemptForWorker2Val, err := updateAttemptForWorker2.Score.Int64()
@@ -3867,6 +3861,11 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	err = k.SetForecasterScoreEma(ctx, topicId, worker5, score5)
 	s.Require().NoError(err)
 
+	params := mockUninitializedParams()
+	params.MaxTopForecastersToReward = 4
+	err = k.SetParams(ctx, params)
+	s.Require().NoError(err)
+
 	allForecasts := types.Forecasts{
 		Forecasts: []*types.Forecast{
 			{
@@ -3914,40 +3913,38 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 					},
 				},
 			},
-		},
-	}
-	err = k.InsertForecasts(ctx, topicId, nonce.BlockHeight, allForecasts)
-	s.Require().NoError(err)
-
-	newForecast := types.Forecast{
-		TopicId:     topicId,
-		BlockHeight: blockHeightInferences,
-		Forecaster:  worker4,
-		ForecastElements: []*types.ForecastElement{
 			{
-				Inferer: worker1,
-				Value:   alloraMath.MustNewDecFromString("0.52"),
-			},
-			{
-				Inferer: worker2,
-				Value:   alloraMath.MustNewDecFromString("0.52"),
+				TopicId:     topicId,
+				BlockHeight: blockHeightInferences,
+				Forecaster:  worker4,
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: worker1,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+					{
+						Inferer: worker2,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+				},
 			},
 		},
 		ExtraData: nil,
 	}
+
 	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
+	for _, forecast := range allForecasts.Forecasts {
+		err = k.AppendForecast(ctx, topic, nonce.BlockHeight, forecast, params.MaxTopForecastersToReward)
+		s.Require().NoError(err)
+	}
+
+	activeForecasters, err := k.GetActiveForecastersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(int(params.MaxTopForecastersToReward), len(activeForecasters))
+
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
-	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newForecast)
-	s.Require().NoError(err)
-	newAllForecasts, err := k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
-	s.Require().NoError(err)
-	s.Require().Equal(len(newAllForecasts.Forecasts), len(allForecasts.Forecasts)+1)
-	params := mockUninitializedParams()
-	params.MaxTopInferersToReward = 4
-	err = k.SetParams(ctx, params)
-	s.Require().NoError(err)
-	newInference2 := types.Forecast{
+	newForecast2 := types.Forecast{
 		TopicId:     topicId,
 		BlockHeight: blockHeightInferences,
 		Forecaster:  worker5,
@@ -3963,12 +3960,13 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 		},
 		ExtraData: nil,
 	}
-	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newInference2)
+	// MaxTopInferersToReward is 4, so this should not be added
+	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newForecast2, params.MaxTopForecastersToReward)
 	s.Require().NoError(err)
-	newAllForecasts, err = k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
+
+	activeForecasters, err = k.GetActiveForecastersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(newAllForecasts.Forecasts)))
-	s.Require().Equal(newAllForecasts.Forecasts[1].Forecaster, worker3)
+	s.Require().Equal(int(params.MaxTopForecastersToReward), len(activeForecasters))
 }
 
 func (s *KeeperTestSuite) TestAppendReputerLoss() {
@@ -4001,6 +3999,11 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	err = k.SetReputerScoreEma(ctx, topicId, reputer4, score4)
 	s.Require().NoError(err)
 	err = k.SetReputerScoreEma(ctx, topicId, reputer5, score5)
+	s.Require().NoError(err)
+
+	params := types.DefaultParams()
+	params.MaxTopReputersToReward = 4
+	err = k.SetParams(ctx, params)
 	s.Require().NoError(err)
 
 	valueBundleReputer1 := types.ValueBundle{
@@ -4071,8 +4074,13 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 			&reputerValueBundle3,
 		},
 	}
-	err = k.InsertReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, allReputerLosses)
+
+	topic, err := k.GetTopic(ctx, topicId)
 	s.Require().NoError(err)
+	for _, reputerValueBundle := range allReputerLosses.ReputerValueBundles {
+		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
+		s.Require().NoError(err)
+	}
 
 	valueBundleReputer4 := types.ValueBundle{
 		Reputer:                       reputer4,
@@ -4094,18 +4102,12 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 		Signature:   signature,
 		Pubkey:      s.pubKeyHexStr[3],
 	}
-	params := types.DefaultParams()
-	params.MaxTopReputersToReward = 4
-	err = k.SetParams(ctx, params)
-	s.Require().NoError(err)
 
-	topic, err := k.GetTopic(ctx, topicId)
-	s.Require().NoError(err)
 	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, &reputerValueBundle4)
 	s.Require().NoError(err)
-	newAllReputerLosses, err := k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
+	activeReputers, err := k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(len(newAllReputerLosses.ReputerValueBundles), len(allReputerLosses.ReputerValueBundles)+1)
+	s.Require().Equal(int(params.MaxTopReputersToReward), len(activeReputers))
 
 	valueBundleReputer5 := types.ValueBundle{
 		Reputer:                       reputer5,
@@ -4129,10 +4131,9 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	}
 	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, &reputerValueBundle5)
 	s.Require().NoError(err)
-	newAllReputerLosses, err = k.GetReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight)
+	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(uint64(len(newAllReputerLosses.ReputerValueBundles)), params.MaxTopReputersToReward)
-	s.Require().Equal(newAllReputerLosses.ReputerValueBundles[1].ValueBundle.Reputer, reputer3)
+	s.Require().Equal(int(params.MaxTopReputersToReward), len(activeReputers))
 }
 
 func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {

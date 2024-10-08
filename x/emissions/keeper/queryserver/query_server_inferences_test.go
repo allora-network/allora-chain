@@ -32,7 +32,7 @@ func (s *QueryServerTestSuite) TestGetInferencesAtBlock() {
 	}
 
 	nonce := types.Nonce{BlockHeight: blockHeight}
-	err := keeper.InsertInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
+	err := keeper.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
 	s.Require().NoError(err)
 
 	results, err := queryServer.GetInferencesAtBlock(
@@ -89,11 +89,7 @@ func (s *QueryServerTestSuite) TestGetWorkerLatestInferenceByTopicId() {
 		ExtraData:   nil,
 		Proof:       "",
 	}
-	inferences := types.Inferences{
-		Inferences: []*types.Inference{&inference},
-	}
-	nonce := types.Nonce{BlockHeight: blockHeight}
-	err = keeper.InsertInferences(ctx, topicId, nonce.BlockHeight, inferences)
+	err = keeper.InsertInference(ctx, topicId, inference)
 	s.Require().NoError(err, "Inserting inferences should succeed")
 
 	// Testing successful retrieval
@@ -217,7 +213,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		},
 	}
 
-	err := keeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, blockHeight, reputerLossBundles)
+	err := keeper.InsertActiveReputerLosses(s.ctx, topicId, blockHeight, reputerLossBundles)
 	require.NoError(err)
 
 	// Set Stake
@@ -279,7 +275,7 @@ func (s *QueryServerTestSuite) TestGetNetworkInferencesAtBlock() {
 		},
 	}
 
-	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
+	err = keeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	// Set actual block
@@ -411,7 +407,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		},
 	}
 
-	err = keeper.InsertInferences(s.ctx, topicId, inferenceNonce.BlockHeight, inferences)
+	err = keeper.InsertActiveInferences(s.ctx, topicId, inferenceNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	// Set Forecasts
@@ -456,7 +452,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 		},
 	}
 
-	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce.BlockHeight, forecasts)
+	err = keeper.InsertActiveForecasts(s.ctx, topicId, inferenceNonce.BlockHeight, forecasts)
 	require.NoError(err)
 
 	// Update epoch topic epoch last ended
@@ -655,7 +651,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference1},
 	}
 	nonce1 := types.Nonce{BlockHeight: blockHeight1}
-	err = keeper.InsertInferences(ctx, topicId, nonce1.BlockHeight, inferences1)
+	err = keeper.InsertActiveInferences(ctx, topicId, nonce1.BlockHeight, inferences1)
 	s.Require().NoError(err, "Inserting first set of inferences should not fail")
 
 	// Insert second set of inferences
@@ -672,7 +668,7 @@ func (s *QueryServerTestSuite) TestGetLatestTopicInferences() {
 		Inferences: []*types.Inference{&newInference2},
 	}
 	nonce2 := types.Nonce{BlockHeight: blockHeight2}
-	err = keeper.InsertInferences(ctx, topicId, nonce2.BlockHeight, inferences2)
+	err = keeper.InsertActiveInferences(ctx, topicId, nonce2.BlockHeight, inferences2)
 	s.Require().NoError(err, "Inserting second set of inferences should not fail")
 
 	// Retrieve the latest inferences
@@ -849,20 +845,20 @@ func (s *QueryServerTestSuite) TestGetLatestAvailableNetworkInference() {
 	}
 
 	// insert inferences and forecasts 1
-	err = keeper.InsertInferences(s.ctx, topicId, inferenceNonce.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight))
+	err = keeper.InsertActiveInferences(s.ctx, topicId, inferenceNonce.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight))
 	s.Require().NoError(err)
 
-	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight))
+	err = keeper.InsertActiveForecasts(s.ctx, topicId, inferenceNonce.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight))
 	require.NoError(err)
 
 	err = keeper.SetWorkerTopicLastCommit(s.ctx, topicId, inferenceBlockHeight, &inferenceNonce)
 	s.Require().NoError(err)
 
 	// insert inferences and forecasts 2
-	err = keeper.InsertInferences(s.ctx, topicId, inferenceNonce2.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight2))
+	err = keeper.InsertActiveInferences(s.ctx, topicId, inferenceNonce2.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight2))
 	s.Require().NoError(err)
 
-	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce2.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight2))
+	err = keeper.InsertActiveForecasts(s.ctx, topicId, inferenceNonce2.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight2))
 	require.NoError(err)
 
 	err = keeper.SetWorkerTopicLastCommit(s.ctx, topicId, inferenceBlockHeight2, &inferenceNonce2)
@@ -1053,10 +1049,10 @@ func (s *QueryServerTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMis
 
 	// dont insert inferences at the blockheight that matches with the losses
 
-	err = keeper.InsertInferences(s.ctx, topicId, inferenceNonce2.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight2))
+	err = keeper.InsertActiveInferences(s.ctx, topicId, inferenceNonce2.BlockHeight, getInferencesForBlockHeight(inferenceBlockHeight2))
 	s.Require().NoError(err)
 
-	err = keeper.InsertForecasts(s.ctx, topicId, inferenceNonce2.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight2))
+	err = keeper.InsertActiveForecasts(s.ctx, topicId, inferenceNonce2.BlockHeight, getForecastsForBlockHeight(inferenceBlockHeight2))
 	require.NoError(err)
 
 	// Update epoch topic epoch last ended
