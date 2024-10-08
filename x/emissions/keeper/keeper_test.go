@@ -367,7 +367,7 @@ func (s *KeeperTestSuite) TestWorkerNonceLimitEnforcement() {
 	// Initially add nonces to exceed the maxUnfulfilledRequests
 	nonceValues := []int64{10, 20, 30, 40, 50}
 	for _, val := range nonceValues {
-		err := keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
+		err = keeper.AddWorkerNonce(ctx, topicId, &types.Nonce{BlockHeight: val})
 		s.Require().NoError(err, "Failed to add worker nonce")
 	}
 
@@ -3712,7 +3712,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().NoError(err)
 	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(params.MaxTopInferersToReward, int(len(activeInferers)))
+	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
 
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	newInference2 := types.Inference{
@@ -3728,7 +3728,7 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().NoError(err)
 	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(params.MaxTopInferersToReward, int(len(activeInferers)))
+	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
 
 	// New high-score entrant should replace earlier low-score entrant
 	worker5OgScore, err := k.GetInfererScoreEma(ctx, topicId, worker5)
@@ -3943,7 +3943,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 
 	activeForecasters, err := k.GetActiveForecastersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(int(params.MaxTopForecastersToReward), len(activeForecasters))
+	s.Require().Equal(params.MaxTopForecastersToReward, uint64(len(activeForecasters)))
 
 	blockHeightInferences = blockHeightInferences + topic.EpochLength
 	newForecast2 := types.Forecast{
@@ -4109,7 +4109,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().NoError(err)
 	activeReputers, err := k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(int(params.MaxTopReputersToReward), activeReputers)
+	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
 
 	valueBundleReputer5 := types.ValueBundle{
 		Reputer:                       reputer5,
@@ -4135,7 +4135,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().NoError(err)
 	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(int(params.MaxTopReputersToReward), len(activeReputers))
+	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
 }
 
 func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
