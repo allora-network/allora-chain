@@ -3968,7 +3968,7 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 
 	activeForecasters, err = k.GetActiveForecastersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(int(params.MaxTopForecastersToReward), len(activeForecasters))
+	s.Require().Equal(params.MaxTopForecastersToReward, uint64(len(activeForecasters)))
 }
 
 func (s *KeeperTestSuite) TestAppendReputerLoss() {
