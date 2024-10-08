@@ -11,11 +11,11 @@ import (
 	"github.com/gogo/protobuf/proto"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils/migutils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldV2Types "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	oldV3Types "github.com/allora-network/allora-chain/x/emissions/migrations/v4/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/allora-network/allora-chain/x/utils/migutils"
 )
 
 const maxPageSize = uint64(10000)
