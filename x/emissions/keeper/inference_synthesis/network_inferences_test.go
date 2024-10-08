@@ -109,7 +109,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch3Get)
 	s.Require().NoError(err)
 
-	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
+	err = keeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(
@@ -121,7 +121,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	)
 	s.Require().NoError(err)
 
-	err = keeper.InsertForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
+	err = keeper.InsertActiveForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
@@ -240,7 +240,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithNoPrevi
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
+	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	valueBundle, _, _, _, _, _, err :=
@@ -284,7 +284,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOneOldI
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
+	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
@@ -357,13 +357,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
+	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
+	err = s.emissionsKeeper.InsertActiveForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
@@ -501,13 +501,13 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlockWithOldInfe
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeight, infererAddresses, epoch2Get)
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
+	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(topicId, blockHeight, infererAddresses, forecasterAddresses, epoch2Get)
 	s.Require().NoError(err)
 
-	err = s.emissionsKeeper.InsertForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
+	err = s.emissionsKeeper.InsertActiveForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
 	s.Require().NoError(err)
 
 	// Set regrets from the previous epoch
@@ -637,14 +637,14 @@ func (s *InferenceSynthesisTestSuite) TestGetLatestNetworkInferenceFromCsv() {
 	inferences, err := testutil.GetInferencesFromCsv(topicId, blockHeightInferences, infererAddresses, epoch3Get)
 	require.NoError(err)
 
-	err = keeper.InsertInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
+	err = keeper.InsertActiveInferences(s.ctx, topicId, simpleNonce.BlockHeight, inferences)
 	require.NoError(err)
 
 	forecasts, err := testutil.GetForecastsFromCsv(
 		topicId, blockHeightInferences, infererAddresses, forecasterAddresses, epoch3Get)
 	require.NoError(err)
 
-	err = keeper.InsertForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
+	err = keeper.InsertActiveForecasts(s.ctx, topicId, simpleNonce.BlockHeight, forecasts)
 	require.NoError(err)
 
 	// Set regrets from the previous epoch
@@ -771,7 +771,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesWithMedianCalculat
 	}
 
 	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
-	err := keeper.InsertInferences(s.ctx, topicId, nonce.BlockHeight, inferences)
+	err := keeper.InsertActiveInferences(s.ctx, topicId, nonce.BlockHeight, inferences)
 	s.Require().NoError(err)
 
 	valueBundle, _, _, _, _, _, err := inferencesynthesis.GetNetworkInferences(s.ctx, keeper, topicId, &blockHeight)

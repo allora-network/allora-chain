@@ -170,10 +170,10 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputer, reputerAddr, worker, workerAddr)
 
-	err := keeper.InsertForecasts(ctx, topicId, block, expectedForecasts)
+	err := keeper.InsertActiveForecasts(ctx, topicId, block, expectedForecasts)
 	require.NoError(err)
 
-	err = keeper.InsertInferences(ctx, topicId, block, expectedInferences)
+	err = keeper.InsertActiveInferences(ctx, topicId, block, expectedInferences)
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
@@ -213,10 +213,10 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadReputerNotMatchSignature
 
 	reputerValueBundle, expectedInferences, expectedForecasts, topicId := s.setUpMsgReputerPayload(reputer, reputerAddr, worker, workerAddr)
 
-	err := keeper.InsertForecasts(ctx, topicId, block, expectedForecasts)
+	err := keeper.InsertActiveForecasts(ctx, topicId, block, expectedForecasts)
 	require.NoError(err)
 
-	err = keeper.InsertInferences(ctx, topicId, block, expectedInferences)
+	err = keeper.InsertActiveInferences(ctx, topicId, block, expectedInferences)
 	require.NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)

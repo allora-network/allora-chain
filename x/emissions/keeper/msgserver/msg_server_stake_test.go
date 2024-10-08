@@ -1401,6 +1401,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	s.Require().NoError(err)
 
 	reputerValueBundle := &types.ReputerValueBundle{
+		Pubkey: s.pubKeyHexStr[1],
 		ValueBundle: &types.ValueBundle{
 			TopicId:                       topicId,
 			ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
@@ -1419,7 +1420,8 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 		Pubkey:    "",
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
+	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, block, reputerValueBundles)
+	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
 	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
@@ -1485,7 +1487,8 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 		Pubkey:    "",
 	}
 	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
-	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, newBlock, newReputerValueBundles)
+	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, newBlock, newReputerValueBundles)
+	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
 	scores, err = rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
@@ -1573,7 +1576,7 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 		Pubkey:      reputerPubKeyHex,
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	err = keeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
+	err = keeper.InsertActiveReputerLosses(s.ctx, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores

@@ -100,32 +100,9 @@ func (qs queryServer) GetCurrentLowestInfererScore(ctx context.Context, req *typ
 	defer metrics.RecordMetrics("GetCurrentLowestInfererScore", time.Now(), &err)
 	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
 	if err != nil {
-		return nil, err
-	}
-	if len(unfulfilledWorkerNonces.Nonces) == 0 {
-		return nil,
-			errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable,
-				"no unfulfilled nonces right now, is the topic active?")
-	}
-	highestNonce := unfulfilledWorkerNonces.Nonces[0]
-	for _, nonce := range unfulfilledWorkerNonces.Nonces {
-		if nonce.BlockHeight > highestNonce.BlockHeight {
-			highestNonce = nonce
-		}
-	}
-
-	inferences, err := qs.k.GetInferencesAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-	lowestInfererScore, _, err := emissionskeeper.GetLowScoreFromAllInferences(
-		ctx,
-		&qs.k,
-		req.TopicId,
-		*inferences,
-	)
-	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting lowest inferer score EMA")
+	} else if !found {
+		return nil, errorsmod.Wrap(err, "no lowest inferer score found for this topic")
 	}
 
 	return &types.GetCurrentLowestInfererScoreResponse{Score: &lowestInfererScore}, nil
@@ -155,35 +132,9 @@ func (qs queryServer) GetCurrentLowestForecasterScore(ctx context.Context, req *
 	defer metrics.RecordMetrics("GetCurrentLowestForecasterScore", time.Now(), &err)
 	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
 	if err != nil {
-		return nil, err
-	}
-	if len(unfulfilledWorkerNonces.Nonces) == 0 {
-		return nil,
-			errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable,
-				"no unfulfilled nonces right now, is the topic active?")
-	}
-	highestNonce := unfulfilledWorkerNonces.Nonces[0]
-	for _, nonce := range unfulfilledWorkerNonces.Nonces {
-		if nonce.BlockHeight > highestNonce.BlockHeight {
-			highestNonce = nonce
-		}
-	}
-	forecasts, err := qs.k.GetForecastsAtBlock(ctx, req.TopicId, highestNonce.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-	if len(forecasts.Forecasts) == 0 {
-		return nil, errorsmod.Wrap(types.ErrInvalidLengthScore, "no scores found for this epoch")
-	}
-
-	lowestForecasterScore, _, err := emissionskeeper.GetLowScoreFromAllForecasts(
-		ctx,
-		&qs.k,
-		req.TopicId,
-		*forecasts,
-	)
-	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting lowest forecaster score EMA")
+	} else if !found {
+		return nil, errorsmod.Wrap(err, "no lowest forecaster score found for this topic")
 	}
 
 	return &types.GetCurrentLowestForecasterScoreResponse{Score: &lowestForecasterScore}, nil
@@ -203,31 +154,9 @@ func (qs queryServer) GetCurrentLowestReputerScore(ctx context.Context, req *typ
 	defer metrics.RecordMetrics("GetCurrentLowestReputerScore", time.Now(), &err)
 	unfulfilledReputerNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
 	if err != nil {
-		return nil, err
-	}
-	if len(unfulfilledReputerNonces.Nonces) == 0 {
-		return nil,
-			errorsmod.Wrap(types.ErrWorkerNonceWindowNotAvailable,
-				"no unfulfilled nonces right now, is the topic active?")
-	}
-	highestNonce := unfulfilledReputerNonces.Nonces[0]
-	for _, nonce := range unfulfilledReputerNonces.Nonces {
-		if nonce.ReputerNonce.BlockHeight > highestNonce.ReputerNonce.BlockHeight {
-			highestNonce = nonce
-		}
-	}
-	lossBundles, err := qs.k.GetReputerLossBundlesAtBlock(ctx, req.TopicId, highestNonce.ReputerNonce.BlockHeight)
-	if err != nil {
-		return nil, err
-	}
-	lowestReputerScore, _, err := emissionskeeper.GetLowScoreFromAllLossBundles(
-		ctx,
-		&qs.k,
-		req.TopicId,
-		*lossBundles,
-	)
-	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrap(err, "error getting lowest reputer score EMA")
+	} else if !found {
+		return nil, errorsmod.Wrap(err, "no lowest reputer score found for this topic")
 	}
 
 	return &types.GetCurrentLowestReputerScoreResponse{Score: &lowestReputerScore}, nil

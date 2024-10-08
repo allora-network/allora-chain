@@ -145,8 +145,8 @@ func (s *QueryServerTestSuite) TestGetReputerLossBundlesAtBlock() {
 	require.Empty(response.LossBundles.ReputerValueBundles)
 
 	// Test inserting data
-	err = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(ctx, topicId, block, reputerLossBundles)
-	require.NoError(err, "InsertReputerLossBundlesAtBlock should not return an error")
+	err = s.emissionsKeeper.InsertActiveReputerLosses(ctx, topicId, block, reputerLossBundles)
+	require.NoError(err, "InsertActiveReputerLosses should not return an error")
 
 	response, err = s.queryServer.GetReputerLossBundlesAtBlock(ctx, req)
 	require.NotEmpty(response)

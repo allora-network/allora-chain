@@ -8,47 +8,47 @@ import (
 
 // Get lowest score from all reputers
 func GetLowestScoreFromAllReputers(
-    ctx context.Context,
-    k *Keeper,
-    topicId TopicId,
-    reputerAddresses []string,
+	ctx context.Context,
+	k *Keeper,
+	topicId TopicId,
+	reputerAddresses []string,
 ) (lowScore types.Score, err error) {
-    for i, address := range reputerAddresses {
-        score, err := k.GetReputerScoreEma(ctx, topicId, address)
-        if err != nil {
-            continue
-        }
-        if lowScore.Score.Gt(score.Score) || i == 0 {
-            lowScore = score
-        }
-    }
-    return lowScore, nil
+	for i, address := range reputerAddresses {
+		score, err := k.GetReputerScoreEma(ctx, topicId, address)
+		if err != nil {
+			continue
+		}
+		if lowScore.Score.Gt(score.Score) || i == 0 {
+			lowScore = score
+		}
+	}
+	return lowScore, nil
 }
 
 // Update lowest score from new reputer addresses set
 func UpdateLowestScoreFromReputerAddresses(
-    ctx context.Context,
-    k *Keeper,
-    topicId TopicId,
-    reputerAddresses []string,
-    addedReputer string,
-    removedReputerAddress string,
+	ctx context.Context,
+	k *Keeper,
+	topicId TopicId,
+	reputerAddresses []string,
+	addedReputer string,
+	removedReputerAddress string,
 ) error {
-    reputerAddresses = append(reputerAddresses, addedReputer)
-    lowScore := types.Score{}
-    for i, address := range reputerAddresses {
-        if address == removedReputerAddress {
-            continue
-        }
-        score, err := k.GetReputerScoreEma(ctx, topicId, address)
-        if err != nil {
-            continue
-        }
-        if lowScore.Score.Gt(score.Score) || i == 0 {
-            lowScore = score
-        }
-    }
-    return k.SetLowestReputerScoreEma(ctx, topicId, lowScore)
+	reputerAddresses = append(reputerAddresses, addedReputer)
+	lowScore := types.Score{}
+	for i, address := range reputerAddresses {
+		if address == removedReputerAddress {
+			continue
+		}
+		score, err := k.GetReputerScoreEma(ctx, topicId, address)
+		if err != nil {
+			continue
+		}
+		if lowScore.Score.Gt(score.Score) || i == 0 {
+			lowScore = score
+		}
+	}
+	return k.SetLowestReputerScoreEma(ctx, topicId, lowScore)
 }
 
 // Update lowest score from new inferer addresses set

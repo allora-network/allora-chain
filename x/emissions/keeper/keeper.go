@@ -3828,25 +3828,25 @@ func (k *Keeper) GetActiveReputersForTopic(ctx context.Context, topicId TopicId)
 
 // ResetActiveActorsForTopic resets the active actors for a topic
 func (k *Keeper) ResetActiveActorsForTopic(ctx context.Context, topicId TopicId) error {
-    // Clear active inferers for the topic
-    infererRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
-    if err := k.activeInferers.Clear(ctx, infererRange); err != nil {
-        return errorsmod.Wrap(err, "error clearing active inferers")
-    }
+	// Clear active inferers for the topic
+	infererRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+	if err := k.activeInferers.Clear(ctx, infererRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing active inferers")
+	}
 
-    // Clear active forecasters for the topic
-    forecasterRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
-    if err := k.activeForecasters.Clear(ctx, forecasterRange); err != nil {
-        return errorsmod.Wrap(err, "error clearing active forecasters")
-    }
+	// Clear active forecasters for the topic
+	forecasterRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+	if err := k.activeForecasters.Clear(ctx, forecasterRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing active forecasters")
+	}
 
-    // Clear active reputers for the topic
-    reputerRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
-    if err := k.activeReputers.Clear(ctx, reputerRange); err != nil {
-        return errorsmod.Wrap(err, "error clearing active reputers")
-    }
+	// Clear active reputers for the topic
+	reputerRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+	if err := k.activeReputers.Clear(ctx, reputerRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing active reputers")
+	}
 
-    return nil
+	return nil
 }
 
 // SetLowestReputerScoreEma sets the lowest reputer score EMA for a topic
