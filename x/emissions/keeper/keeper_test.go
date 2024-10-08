@@ -4057,7 +4057,7 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	s.Require().NoError(err)
 	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
-	s.Require().Equal(int(params.MaxTopReputersToReward),len(activeReputers))
+	s.Require().Equal(int(params.MaxTopReputersToReward), len(activeReputers))
 }
 
 func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
