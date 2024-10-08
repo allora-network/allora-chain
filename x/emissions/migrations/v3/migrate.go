@@ -15,10 +15,10 @@ import (
 	"github.com/gogo/protobuf/proto"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils/migutils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldtypes "github.com/allora-network/allora-chain/x/emissions/migrations/v3/oldtypes"
 	types "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/allora-network/allora-chain/x/utils/migutils"
 )
 
 const maxPageSize = uint64(10000)
