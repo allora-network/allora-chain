@@ -1,8 +1,6 @@
 package msgserver
 
 import (
-	"context"
-
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/gogo/protobuf/proto"
@@ -19,7 +17,7 @@ func NewMsgServerImpl(keeper keeper.Keeper) types.MsgServiceServer {
 	return &msgServer{k: keeper}
 }
 
-func checkInputLength(ctx context.Context, maxSerializedMsgLength int64, msg proto.Message) error {
+func checkInputLength(maxSerializedMsgLength int64, msg proto.Message) error {
 	serializedMsg, err := proto.Marshal(msg)
 	if err != nil {
 		return types.ErrFailedToSerializePayload
