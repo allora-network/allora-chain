@@ -996,7 +996,7 @@ func (s *KeeperTestSuite) TestGetParamsMaxTopInferersToReward() {
 	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MaxTopInferersToReward
-	s.Require().Equal(int(expectedValue), len(activeInferers))
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopInferersToReward should match the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetParamsMaxTopForecastersToReward() {
@@ -1015,7 +1015,7 @@ func (s *KeeperTestSuite) TestGetParamsMaxTopForecastersToReward() {
 	moduleParams, err := keeper.GetParams(ctx)
 	s.Require().NoError(err)
 	actualValue := moduleParams.MaxTopForecastersToReward
-	s.Require().Equal(int(expectedValue), len(activeForecasters))
+	s.Require().Equal(expectedValue, actualValue, "The retrieved MaxTopForecastersToReward should match the expected value")
 }
 
 func (s *KeeperTestSuite) TestGetParamsMaxTopForecasterElementToSubmit() {
