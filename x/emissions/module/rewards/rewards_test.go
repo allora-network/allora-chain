@@ -1314,10 +1314,11 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		})
 		s.Require().NoError(err)
 	}
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
-	s.Require().NoError(err)
 
 	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	newBlockheight := block + topic.GroundTruthLag
@@ -1469,7 +1470,11 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		})
 		s.Require().NoError(err)
 	}
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+
+	topic, err = s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	newBlockheight += topic.GroundTruthLag - 1
@@ -1643,10 +1648,10 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		s.Require().NoError(err)
 	}
 
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	newBlockheight := block + topic.GroundTruthLag
@@ -2257,10 +2262,10 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		s.Require().NoError(err)
 	}
 
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	newBlockheight := block + topic.GroundTruthLag
@@ -2413,10 +2418,10 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.Require().NoError(err)
 	}
 
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
 	s.Require().NoError(err)
 
-	topic, err := s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	// Insert loss bundle from reputers
@@ -2601,7 +2606,11 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	}
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+
+	topic, err = s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	lossBundles = generateHugeLossBundles(s, block, topicId, reputerIndexes, newSecondWorkersIndexes)
@@ -2752,7 +2761,10 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.Require().NoError(err)
 	}
 
-	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topicId, *inferenceBundles[0].Nonce)
+	topic, err = s.emissionsKeeper.GetTopic(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	err = actorutils.CloseWorkerNonce(&s.emissionsKeeper, s.ctx, topic, *inferenceBundles[0].Nonce)
 	s.Require().NoError(err)
 
 	lossBundles = generateHugeLossBundles(s, block, topicId, reputerIndexes, newThirdWorkersIndexes)
