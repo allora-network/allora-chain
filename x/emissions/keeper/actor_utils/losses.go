@@ -22,17 +22,11 @@ import (
 func CloseReputerNonce(
 	k *keeper.Keeper,
 	ctx sdk.Context,
-	topicId keeper.TopicId,
+	topic types.Topic,
 	nonce types.Nonce) error {
-	// Check if the topic exists
-	topic, err := k.GetTopic(ctx, topicId)
-	if err != nil {
-		return sdkerrors.ErrNotFound
-	}
-
 	/// All filters should be done in order of increasing computational complexity
 	// Check if the worker nonce is unfulfilled
-	workerNonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topicId, &nonce)
+	workerNonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
@@ -46,7 +40,7 @@ func CloseReputerNonce(
 	}
 
 	// Check if the reputer nonce is unfulfilled
-	reputerNonceUnfulfilled, err := k.IsReputerNonceUnfulfilled(ctx, topicId, &nonce)
+	reputerNonceUnfulfilled, err := k.IsReputerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
@@ -69,7 +63,8 @@ func CloseReputerNonce(
 		return err
 	}
 
-	activeReputerAddresses, err := k.GetActiveReputersForTopic(ctx, topicId)
+	// Get active reputers for the topic
+	activeReputerAddresses, err := k.GetActiveReputersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
@@ -77,7 +72,7 @@ func CloseReputerNonce(
 	lossBundlesByReputer := make([]*types.ReputerValueBundle, 0)
 	stakesByReputer := make(map[string]cosmosMath.Int)
 	for _, address := range activeReputerAddresses {
-		bundle, err := k.GetReputerLatestLossByTopicId(ctx, topicId, address)
+		bundle, err := k.GetReputerLatestLossByTopicId(ctx, topic.Id, address)
 		if err != nil {
 			return types.ErrNoValidBundles
 		}
@@ -90,7 +85,7 @@ func CloseReputerNonce(
 		reputer := bundle.ValueBundle.Reputer
 
 		// Check that the reputer's value bundle is for a topic matching the given topic
-		if bundle.ValueBundle.TopicId != topicId {
+		if bundle.ValueBundle.TopicId != topic.Id {
 			continue
 		}
 		// Check that the reputer's value bundle is for a nonce matching the given nonce
@@ -109,7 +104,7 @@ func CloseReputerNonce(
 		}
 
 		// Check that the reputer enough stake in the topic
-		stake, err := k.GetStakeReputerAuthority(ctx, topicId, reputer)
+		stake, err := k.GetStakeReputerAuthority(ctx, topic.Id, reputer)
 		if err != nil {
 			continue
 		}
@@ -122,7 +117,7 @@ func CloseReputerNonce(
 		// We keep what we can, ignoring the reputer and their contribution (losses) entirely
 		// if they're left with no valid losses.
 
-		filteredBundle, err := FilterUnacceptedWorkersFromReputerValueBundle(k, ctx, topicId, *bundle.ValueBundle.ReputerRequestNonce, &bundle)
+		filteredBundle, err := FilterUnacceptedWorkersFromReputerValueBundle(k, ctx, topic.Id, *bundle.ValueBundle.ReputerRequestNonce, &bundle)
 		if err != nil {
 			continue
 		}
@@ -133,7 +128,7 @@ func CloseReputerNonce(
 
 		lossBundlesByReputer = append(lossBundlesByReputer, filteredBundle)
 
-		stake, err = k.GetStakeReputerAuthority(ctx, topicId, reputer)
+		stake, err = k.GetStakeReputerAuthority(ctx, topic.Id, reputer)
 		if err != nil {
 			continue
 		}
@@ -148,12 +143,12 @@ func CloseReputerNonce(
 	bundles := types.ReputerValueBundles{
 		ReputerValueBundles: lossBundlesByReputer,
 	}
-	err = k.InsertKnownGoodReputerLossBundlesAtBlock(ctx, topicId, nonce.BlockHeight, bundles)
+	err = k.InsertActiveReputerLosses(ctx, topic.Id, nonce.BlockHeight, bundles)
 	if err != nil {
 		return err
 	}
 
-	networkLossBundle, err := synth.CalcNetworkLosses(topicId, nonce.BlockHeight, stakesByReputer, bundles)
+	networkLossBundle, err := synth.CalcNetworkLosses(topic.Id, nonce.BlockHeight, stakesByReputer, bundles)
 	if err != nil {
 		return err
 	}
@@ -161,12 +156,12 @@ func CloseReputerNonce(
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.Logger().Debug(fmt.Sprintf("Reputer Nonce %d Network Loss Bundle %v", &nonce.BlockHeight, networkLossBundle))
 
-	err = k.InsertNetworkLossBundleAtBlock(ctx, topicId, nonce.BlockHeight, networkLossBundle)
+	err = k.InsertNetworkLossBundleAtBlock(ctx, topic.Id, nonce.BlockHeight, networkLossBundle)
 	if err != nil {
 		return err
 	}
 
-	types.EmitNewNetworkLossSetEvent(sdkCtx, topicId, nonce.BlockHeight, networkLossBundle)
+	types.EmitNewNetworkLossSetEvent(sdkCtx, topic.Id, nonce.BlockHeight, networkLossBundle)
 
 	err = synth.GetCalcSetNetworkRegrets(
 		synth.GetCalcSetNetworkRegretsArgs{
@@ -187,13 +182,13 @@ func CloseReputerNonce(
 	}
 
 	// Update the unfulfilled nonces
-	_, err = k.FulfillReputerNonce(ctx, topicId, &nonce)
+	_, err = k.FulfillReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
 
 	// Update topic reward nonce
-	err = k.SetTopicRewardNonce(ctx, topicId, nonce.BlockHeight)
+	err = k.SetTopicRewardNonce(ctx, topic.Id, nonce.BlockHeight)
 	if err != nil {
 		return err
 	}
@@ -204,13 +199,13 @@ func CloseReputerNonce(
 	}
 
 	// Reset active actors for topic - inferers, reputers, forecasters
-	err = k.ResetActiveActorsForTopic(ctx, topicId)
+	err = k.ResetActiveActorsForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
 
 	types.EmitNewReputerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
-	sdkCtx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topicId, nonce))
+	sdkCtx.Logger().Info(fmt.Sprintf("Closed reputer nonce for topic: %d, nonce: %v", topic.Id, nonce))
 	return nil
 }
 
@@ -297,7 +292,6 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 		}
 	}
 
-	// Filter out unaccepted forecasters and their workers in OneOutInfererForecasterValues
 	acceptedOneOutInfererForecasterValues := make([]*types.OneOutInfererForecasterValues, 0)
 	for _, forecasterVal := range reputerValueBundle.ValueBundle.OneOutInfererForecasterValues {
 		if _, ok := acceptedForecastersOfBatch[forecasterVal.Forecaster]; ok {
