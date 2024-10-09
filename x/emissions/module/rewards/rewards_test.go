@@ -772,7 +772,7 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 		require.NoError(err)
 	}
 	err = actorutils.CloseReputerNonce(
-		&s.emissionsKeeper, s.ctx, topicId,
+		&s.emissionsKeeper, s.ctx, topic,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce,
 	)
 	s.Require().NoError(err)
@@ -1337,7 +1337,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.Require().NoError(err)
 	}
 	err = actorutils.CloseReputerNonce(
-		&s.emissionsKeeper, s.ctx, topicId,
+		&s.emissionsKeeper, s.ctx, topic,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce,
 	)
 	s.Require().NoError(err)
@@ -1489,7 +1489,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		s.Require().NoError(err)
 	}
 	err = actorutils.CloseReputerNonce(
-		&s.emissionsKeeper, s.ctx, topicId,
+		&s.emissionsKeeper, s.ctx, topic,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce,
 	)
 	s.Require().NoError(err)
@@ -1665,7 +1665,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		s.Require().NoError(err)
 	}
 
-	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topic, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
 	// mint some rewards to give out
@@ -2272,7 +2272,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		})
 		s.Require().NoError(err)
 	}
-	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topic, *lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
@@ -2434,7 +2434,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		s.Require().NoError(err)
 	}
 
-	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topic,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
@@ -2614,7 +2614,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		})
 		s.Require().NoError(err)
 	}
-	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topic,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
@@ -2764,7 +2764,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		})
 		s.Require().NoError(err)
 	}
-	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topicId,
+	err = actorutils.CloseReputerNonce(&s.emissionsKeeper, s.ctx, topic,
 		*lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce)
 	s.Require().NoError(err)
 
