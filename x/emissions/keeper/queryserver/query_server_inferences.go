@@ -55,6 +55,22 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionsty
 	return &emissionstypes.GetInferencesAtBlockResponse{Inferences: inferences}, nil
 }
 
+func (qs queryServer) GetActiveInferersForTopic(ctx context.Context, req *emissionstypes.GetActiveInferersForTopicRequest) (*emissionstypes.GetActiveInferersForTopicResponse, error) {
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
+	inferers, err := qs.k.GetActiveInferersForTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &emissionstypes.GetActiveInferersForTopicResponse{Inferers: inferers}, nil
+}
+
 // Return full set of inferences in I_i from the chain
 func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emissionstypes.GetNetworkInferencesAtBlockRequest) (_ *emissionstypes.GetNetworkInferencesAtBlockResponse, err error) {
 	defer metrics.RecordMetrics("GetNetworkInferencesAtBlock", time.Now(), &err)

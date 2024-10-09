@@ -658,6 +658,30 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "GetActiveForecastersForTopic",
+					Use:       "active-forecasters [topic_id]",
+					Short:     "Get active forecasters for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetActiveInferersForTopic",
+					Use:       "active-inferers [topic_id]",
+					Short:     "Get active inferers for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
+					RpcMethod: "GetActiveReputersForTopic",
+					Use:       "active-reputers [topic_id]",
+					Short:     "Get active reputers for a topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
 			},
 			SubCommands:          nil,
 			EnhanceCustomCommand: false,

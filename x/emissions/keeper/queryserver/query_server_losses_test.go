@@ -199,3 +199,63 @@ func (s *QueryServerTestSuite) TestGetDeleteDelegateStake() {
 	s.Require().Equal(removalInfo.Delegator, retrievedInfo.Delegator)
 	s.Require().Equal(removalInfo.Amount, retrievedInfo.Amount)
 }
+
+func (s *QueryServerTestSuite) TestGetActiveReputersForTopic() {
+	s.CreateOneTopic()
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	queryServer := s.queryServer
+	topicId := uint64(1)
+
+	// Add some active reputers
+	activeReputers := []string{
+		s.addrsStr[0],
+		s.addrsStr[1],
+		s.addrsStr[2],
+	}
+
+	for _, reputer := range activeReputers {
+		err := keeper.AddActiveReputer(ctx, topicId, reputer)
+		s.Require().NoError(err)
+	}
+
+	// Query for active reputers
+	response, err := queryServer.GetActiveReputersForTopic(
+		ctx,
+		&types.GetActiveReputersForTopicRequest{
+			TopicId: topicId,
+		},
+	)
+
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().Equal(len(activeReputers), len(response.Reputers))
+
+	// Check if all added reputers are in the response
+	for _, reputer := range activeReputers {
+		s.Require().Contains(response.Reputers, reputer)
+	}
+
+	// Test with non-existent topic
+	nonExistentTopicId := uint64(999)
+	_, err = queryServer.GetActiveReputersForTopic(
+		ctx,
+		&types.GetActiveReputersForTopicRequest{
+			TopicId: nonExistentTopicId,
+		},
+	)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "not found")
+
+	// Test with no active reputers
+	emptyTopicId := s.CreateOneTopic()
+	emptyResponse, err := queryServer.GetActiveReputersForTopic(
+		ctx,
+		&types.GetActiveReputersForTopicRequest{
+			TopicId: emptyTopicId,
+		},
+	)
+	s.Require().NoError(err)
+	s.Require().NotNil(emptyResponse)
+	s.Require().Empty(emptyResponse.Reputers)
+}

@@ -1066,3 +1066,63 @@ func (s *QueryServerTestSuite) TestTestGetLatestAvailableNetworkInferenceWithMis
 	_, err = queryServer.GetLatestAvailableNetworkInferences(s.ctx, req)
 	require.Error(err)
 }
+
+func (s *QueryServerTestSuite) TestGetActiveInferersForTopic() {
+	s.CreateOneTopic()
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	queryServer := s.queryServer
+	topicId := uint64(1)
+
+	// Add some active inferers
+	activeInferers := []string{
+		s.addrsStr[0],
+		s.addrsStr[1],
+		s.addrsStr[2],
+	}
+
+	for _, inferer := range activeInferers {
+		err := keeper.AddActiveInferer(ctx, topicId, inferer)
+		s.Require().NoError(err)
+	}
+
+	// Query for active inferers
+	response, err := queryServer.GetActiveInferersForTopic(
+		ctx,
+		&types.GetActiveInferersForTopicRequest{
+			TopicId: topicId,
+		},
+	)
+
+	s.Require().NoError(err)
+	s.Require().NotNil(response)
+	s.Require().Equal(len(activeInferers), len(response.Inferers))
+
+	// Check if all added inferers are in the response
+	for _, inferer := range activeInferers {
+		s.Require().Contains(response.Inferers, inferer)
+	}
+
+	// Test with non-existent topic
+	nonExistentTopicId := uint64(999)
+	_, err = queryServer.GetActiveInferersForTopic(
+		ctx,
+		&types.GetActiveInferersForTopicRequest{
+			TopicId: nonExistentTopicId,
+		},
+	)
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "not found")
+
+	// Test with no active inferers
+	emptyTopicId := s.CreateOneTopic()
+	emptyResponse, err := queryServer.GetActiveInferersForTopic(
+		ctx,
+		&types.GetActiveInferersForTopicRequest{
+			TopicId: emptyTopicId,
+		},
+	)
+	s.Require().NoError(err)
+	s.Require().NotNil(emptyResponse)
+	s.Require().Empty(emptyResponse.Inferers)
+}

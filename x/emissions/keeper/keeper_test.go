@@ -4185,3 +4185,164 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	require.Equal(expectedRevenue.String(), updatedTopicFeeRevenue.String(),
 		"The topic fee revenue should match the expected value after dripping")
 }
+
+func (s *KeeperTestSuite) TestActiveInfererFunctions() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+	inferer := s.addrsStr[0]
+
+	err := k.AddActiveInferer(ctx, topicId, inferer)
+	s.Require().NoError(err)
+
+	isActive, err := k.IsActiveInferer(ctx, topicId, inferer)
+	s.Require().NoError(err)
+	s.Require().True(isActive)
+
+	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Len(activeInferers, 1)
+	s.Require().Equal(inferer, activeInferers[0])
+}
+
+func (s *KeeperTestSuite) TestActiveForecasterFunctions() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+	forecaster := s.addrsStr[1]
+
+	err := k.AddActiveForecaster(ctx, topicId, forecaster)
+	s.Require().NoError(err)
+
+	isActive, err := k.IsActiveForecaster(ctx, topicId, forecaster)
+	s.Require().NoError(err)
+	s.Require().True(isActive)
+
+	activeForecasters, err := k.GetActiveForecastersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Len(activeForecasters, 1)
+	s.Require().Equal(forecaster, activeForecasters[0])
+
+	err = k.RemoveActiveForecaster(ctx, topicId, forecaster)
+	s.Require().NoError(err)
+
+	isActive, err = k.IsActiveForecaster(ctx, topicId, forecaster)
+	s.Require().NoError(err)
+	s.Require().False(isActive)
+}
+
+func (s *KeeperTestSuite) TestLowestScoreEmaFunctions() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+	address := s.addrsStr[2]
+
+	lowestInfererScore := types.Score{
+		TopicId:     topicId,
+		BlockHeight: 100,
+		Address:     address,
+		Score:       alloraMath.NewDecFromInt64(50),
+	}
+	err := k.SetLowestInfererScoreEma(ctx, topicId, lowestInfererScore)
+	s.Require().NoError(err)
+
+	retrievedScore, found, err := k.GetLowestInfererScoreEma(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lowestInfererScore, retrievedScore)
+
+	lowestForecasterScore := types.Score{
+		TopicId:     topicId,
+		BlockHeight: 200,
+		Address:     address,
+		Score:       alloraMath.NewDecFromInt64(75),
+	}
+	err = k.SetLowestForecasterScoreEma(ctx, topicId, lowestForecasterScore)
+	s.Require().NoError(err)
+
+	retrievedScore, found, err = k.GetLowestForecasterScoreEma(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lowestForecasterScore, retrievedScore)
+}
+
+func (s *KeeperTestSuite) TestActiveReputerFunctions() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+	reputer := s.addrsStr[3]
+
+	err := k.AddActiveReputer(ctx, topicId, reputer)
+	s.Require().NoError(err)
+
+	isActive, err := k.IsActiveReputer(ctx, topicId, reputer)
+	s.Require().NoError(err)
+	s.Require().True(isActive)
+
+	activeReputers, err := k.GetActiveReputersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Len(activeReputers, 1)
+	s.Require().Equal(reputer, activeReputers[0])
+
+	err = k.RemoveActiveReputer(ctx, topicId, reputer)
+	s.Require().NoError(err)
+
+	isActive, err = k.IsActiveReputer(ctx, topicId, reputer)
+	s.Require().NoError(err)
+	s.Require().False(isActive)
+}
+
+func (s *KeeperTestSuite) TestResetFunctions() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+
+	err := k.AddActiveReputer(ctx, topicId, s.addrsStr[0])
+	s.Require().NoError(err)
+	err = k.AddActiveInferer(ctx, topicId, s.addrsStr[1])
+	s.Require().NoError(err)
+	err = k.AddActiveForecaster(ctx, topicId, s.addrsStr[2])
+	s.Require().NoError(err)
+
+	err = k.ResetActiveReputersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	activeReputers, err := k.GetActiveReputersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(activeReputers)
+
+	err = k.ResetActiveWorkersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(activeInferers)
+	activeForecasters, err := k.GetActiveForecastersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(activeForecasters)
+
+	err = k.ResetReputersIndividualSubmissionsForTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	err = k.ResetWorkersIndividualSubmissionsForTopic(ctx, topicId)
+	s.Require().NoError(err)
+}
+
+func (s *KeeperTestSuite) TestLowestReputerScoreEmaFunctions() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+	address := s.addrsStr[4]
+
+	lowestReputerScore := types.Score{
+		TopicId:     topicId,
+		BlockHeight: 300,
+		Address:     address,
+		Score:       alloraMath.NewDecFromInt64(60),
+	}
+	err := k.SetLowestReputerScoreEma(ctx, topicId, lowestReputerScore)
+	s.Require().NoError(err)
+
+	retrievedScore, found, err := k.GetLowestReputerScoreEma(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lowestReputerScore, retrievedScore)
+}
