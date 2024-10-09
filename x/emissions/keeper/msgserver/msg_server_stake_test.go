@@ -1463,11 +1463,17 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 
 	newReputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
-			TopicId:       topicId,
-			Reputer:       reputer,
+			TopicId: topicId,
+			Reputer: reputer,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: newBlock,
+				},
+			},
 			CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
 			NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
 		},
+		Pubkey: s.pubKeyHexStr[1],
 	}
 	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
 	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, newBlock, newReputerValueBundles)

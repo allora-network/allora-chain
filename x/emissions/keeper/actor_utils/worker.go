@@ -12,29 +12,15 @@ import (
 // WORKER NONCES CLOSING
 
 // Closes an open worker nonce.
-func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId, nonce types.Nonce) error {
-	// Check if the topic exists
-	topicExists, err := k.TopicExists(ctx, topicId)
-	if err != nil {
-		return err
-	}
-	if !topicExists {
-		return types.ErrInvalidTopicId
-	}
-
+func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonce types.Nonce) error {
 	// Check if the nonce is unfulfilled
-	nonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topicId, &nonce)
+	nonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
 	// If the nonce is already fulfilled, return an error
 	if !nonceUnfulfilled {
 		return types.ErrUnfulfilledNonceNotFound
-	}
-
-	topic, err := k.GetTopic(ctx, topicId)
-	if err != nil {
-		return types.ErrInvalidTopicId
 	}
 
 	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
@@ -45,7 +31,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	}
 
 	// Get all active inferers for this topic
-	activeInfererAddresses, err := k.GetActiveInferersForTopic(ctx, topicId)
+	activeInfererAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
@@ -58,7 +44,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	activeInfererAddressesMap, err := closeActiveInferencesSet(
 		ctx,
 		k,
-		topicId,
+		topic.Id,
 		nonce,
 		activeInfererAddresses,
 	)
@@ -67,7 +53,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	}
 
 	// Get all active forecasters for this topic
-	activeForecastAddresses, err := k.GetActiveForecastersForTopic(ctx, topicId)
+	activeForecastAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
@@ -77,7 +63,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	err = closeActiveForecastsSet(
 		ctx,
 		k,
-		topicId,
+		topic.Id,
 		nonce,
 		activeForecastAddresses,
 		activeInfererAddressesMap,
@@ -86,7 +72,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return err
 	}
 	// Update the unfulfilled worker nonce
-	_, err = k.FulfillWorkerNonce(ctx, topicId, &nonce)
+	_, err = k.FulfillWorkerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
@@ -102,7 +88,7 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 	}
 
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
-	ctx.Logger().Info(fmt.Sprintf("Closed worker nonce for topic: %d, nonce: %v", topicId, nonce))
+	ctx.Logger().Info(fmt.Sprintf("Closed worker nonce for topic: %d, nonce: %v", topic.Id, nonce))
 	// Return an empty response as the operation was successful
 	return nil
 }
