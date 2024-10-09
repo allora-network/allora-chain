@@ -1063,6 +1063,7 @@ func (k *Keeper) AppendInference(
 	lowestEmaScore, found, err := k.GetLowestInfererScoreEma(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting lowest inferer score ema")
+		// If there are no lowest inferer score ema, calculate it
 	} else if !found {
 		lowestEmaScore, err = GetLowestScoreFromAllInferers(ctx, k, topic.Id, workerAddresses)
 		if err != nil {
@@ -1117,9 +1118,12 @@ func (k *Keeper) InsertInference(
 	topicId TopicId,
 	inference types.Inference,
 ) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
 	err := inference.Validate()
 	if err != nil {
-		return errorsmod.Wrap(err, "inference in list is invalid")
+		return errorsmod.Wrap(err, "inference is invalid")
 	}
 	key := collections.Join(topicId, inference.Inferer)
 	return k.inferences.Set(ctx, key, inference)
@@ -1231,6 +1235,9 @@ func (k *Keeper) InsertForecast(
 	topicId TopicId,
 	forecast types.Forecast,
 ) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
 	err := forecast.Validate()
 	if err != nil {
 		return errorsmod.Wrap(err, "forecast is invalid")
@@ -1409,6 +1416,9 @@ func (k *Keeper) InsertReputerLoss(
 	topicId TopicId,
 	reputerLoss types.ReputerValueBundle,
 ) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
 	err := reputerLoss.Validate()
 	if err != nil {
 		return errorsmod.Wrap(err, "reputer loss is invalid")
@@ -1417,20 +1427,9 @@ func (k *Keeper) InsertReputerLoss(
 	return k.reputerLosses.Set(ctx, key, reputerLoss)
 }
 
-// InsertActiveReputerLosses inserts a complete set of reputer losses for a topic/block
-func (k *Keeper) InsertActiveReputerLosses(
-	ctx context.Context,
-	topicId TopicId,
-	nonceBlockHeight BlockHeight,
-	reputerLosses types.ReputerValueBundles,
-) error {
-	key := collections.Join(topicId, nonceBlockHeight)
-	return k.allLossBundles.Set(ctx, key, reputerLosses)
-}
-
 // Insert a loss bundle for a topic and timestamp but do it in the CloseReputerNonce, so reputer loss bundles are known to be validated
 // and not validated again (this is due to poor data type design choices, see PROTO-2369)
-func (k *Keeper) InsertKnownGoodReputerLossBundlesAtBlock(
+func (k *Keeper) InsertActiveReputerLosses(
 	ctx context.Context,
 	topicId TopicId,
 	block BlockHeight,
