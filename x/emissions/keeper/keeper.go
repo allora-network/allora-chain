@@ -3837,13 +3837,13 @@ func (k *Keeper) ResetActiveReputersForTopic(ctx context.Context, topicId TopicI
 
 // ResetActiveWorkersForTopic resets the active workers for a topic
 func (k *Keeper) ResetActiveWorkersForTopic(ctx context.Context, topicId TopicId) error {
+	infererRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+	if err := k.activeInferers.Clear(ctx, infererRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing active inferers")
+	}
 	forecasterRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
 	if err := k.activeForecasters.Clear(ctx, forecasterRange); err != nil {
 		return errorsmod.Wrap(err, "error clearing active forecasters")
-	}
-	reputerRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
-	if err := k.activeReputers.Clear(ctx, reputerRange); err != nil {
-		return errorsmod.Wrap(err, "error clearing active reputers")
 	}
 
 	return nil
