@@ -3744,24 +3744,48 @@ func (k *Keeper) GetActiveReputersForTopic(ctx context.Context, topicId TopicId)
 	return reputers, nil
 }
 
-// ResetActiveActorsForTopic resets the active actors for a topic
-func (k *Keeper) ResetActiveActorsForTopic(ctx context.Context, topicId TopicId) error {
-	// Clear active inferers for the topic
-	infererRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
-	if err := k.activeInferers.Clear(ctx, infererRange); err != nil {
-		return errorsmod.Wrap(err, "error clearing active inferers")
+// ResetActiveReputersForTopic resets the active reputers for a topic
+func (k *Keeper) ResetActiveReputersForTopic(ctx context.Context, topicId TopicId) error {
+	reputerRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+	if err := k.activeReputers.Clear(ctx, reputerRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing active reputers")
 	}
 
-	// Clear active forecasters for the topic
+	return nil
+}
+
+// ResetActiveWorkersForTopic resets the active workers for a topic
+func (k *Keeper) ResetActiveWorkersForTopic(ctx context.Context, topicId TopicId) error {
 	forecasterRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
 	if err := k.activeForecasters.Clear(ctx, forecasterRange); err != nil {
 		return errorsmod.Wrap(err, "error clearing active forecasters")
 	}
-
-	// Clear active reputers for the topic
 	reputerRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
 	if err := k.activeReputers.Clear(ctx, reputerRange); err != nil {
 		return errorsmod.Wrap(err, "error clearing active reputers")
+	}
+
+	return nil
+}
+
+// ResetReputersIndividualSubmissionsForTopic resets the reputer individual submissions for a topic
+func (k *Keeper) ResetReputersIndividualSubmissionsForTopic(ctx context.Context, topicId TopicId) error {
+	reputerRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+	if err := k.reputerLosses.Clear(ctx, reputerRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing reputer losses")
+	}
+	return nil
+}
+
+// ResetWorkersIndividualSubmissionsForTopic resets the inferer individual submissions for a topic
+func (k *Keeper) ResetWorkersIndividualSubmissionsForTopic(ctx context.Context, topicId TopicId) error {
+	infererRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+	if err := k.inferences.Clear(ctx, infererRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing inferences")
+	}
+	forecasterRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
+	if err := k.forecasts.Clear(ctx, forecasterRange); err != nil {
+		return errorsmod.Wrap(err, "error clearing forecasts")
 	}
 
 	return nil

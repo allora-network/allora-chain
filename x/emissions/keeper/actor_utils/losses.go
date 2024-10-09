@@ -196,8 +196,12 @@ func CloseReputerNonce(
 		return err
 	}
 
-	// Reset active actors for topic - inferers, reputers, forecasters
-	err = k.ResetActiveActorsForTopic(ctx, topic.Id)
+	err = k.ResetActiveReputersForTopic(ctx, topic.Id)
+	if err != nil {
+		return err
+	}
+
+	err = k.ResetReputersIndividualSubmissionsForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
