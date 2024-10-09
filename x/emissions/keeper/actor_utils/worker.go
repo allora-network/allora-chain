@@ -87,6 +87,16 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return err
 	}
 
+	err = k.ResetActiveWorkersForTopic(ctx, topic.Id)
+	if err != nil {
+		return err
+	}
+
+	err = k.ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
+	if err != nil {
+		return err
+	}
+
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
 	ctx.Logger().Info(fmt.Sprintf("Closed worker nonce for topic: %d, nonce: %v", topic.Id, nonce))
 	// Return an empty response as the operation was successful
