@@ -71,7 +71,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, err
 	}
 
-	// Inferences
+	// Process Inferences
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
 		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
 		if inference == nil {
@@ -88,7 +88,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		}
 	}
 
-	// Forecasts
+	// Process Forecasts
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Forecast != nil {
 		forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
 		if len(forecast.ForecastElements) == 0 {
