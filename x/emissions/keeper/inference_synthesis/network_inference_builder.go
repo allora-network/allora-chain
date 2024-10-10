@@ -35,14 +35,16 @@ func GetCombinedInference(args GetCombinedInferenceArgs) (
 	args.Logger.Debug(fmt.Sprintf("Calculating combined inference for topic %v", args.TopicId))
 
 	weights, err = calcWeightsGivenWorkers(
-		args.Logger,
-		args.Inferers,
-		args.Forecasters,
-		args.InfererToRegret,
-		args.ForecasterToRegret,
-		args.EpsilonTopic,
-		args.PNorm,
-		args.CNorm,
+		calcWeightsGivenWorkersArgs{
+			logger:             args.Logger,
+			inferers:           args.Inferers,
+			forecasters:        args.Forecasters,
+			infererToRegret:    args.InfererToRegret,
+			forecasterToRegret: args.ForecasterToRegret,
+			epsilonTopic:       args.EpsilonTopic,
+			pNorm:              args.PNorm,
+			cNorm:              args.CNorm,
+		},
 	)
 	if err != nil {
 		return RegretInformedWeights{}, InferenceValue{}, errorsmod.Wrap(err, "GetCombinedInference() error calculating weights for combined inference")
@@ -136,14 +138,16 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (naiveInference alloraMath.De
 	}
 
 	weights, err := calcWeightsGivenWorkers(
-		args.Logger,
-		args.Inferers,
-		args.Forecasters,
-		infererToRegret,
-		make(map[Worker]*alloraMath.Dec, 0),
-		args.EpsilonTopic,
-		args.PNorm,
-		args.CNorm,
+		calcWeightsGivenWorkersArgs{
+			logger:             args.Logger,
+			inferers:           args.Inferers,
+			forecasters:        args.Forecasters,
+			infererToRegret:    infererToRegret,
+			forecasterToRegret: make(map[Worker]*alloraMath.Dec, 0),
+			epsilonTopic:       args.EpsilonTopic,
+			pNorm:              args.PNorm,
+			cNorm:              args.CNorm,
+		},
 	)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "GetNaiveInference() error calculating weights for naive inference")
@@ -256,14 +260,16 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 	}
 
 	weights, err := calcWeightsGivenWorkers(
-		args.Logger,
-		remainingInferers,
-		args.Forecasters,
-		remainingInfererRegrets,
-		remainingForecasterRegrets,
-		args.EpsilonTopic,
-		args.PNorm,
-		args.CNorm,
+		calcWeightsGivenWorkersArgs{
+			logger:             args.Logger,
+			inferers:           remainingInferers,
+			forecasters:        args.Forecasters,
+			infererToRegret:    remainingInfererRegrets,
+			forecasterToRegret: remainingForecasterRegrets,
+			epsilonTopic:       args.EpsilonTopic,
+			pNorm:              args.PNorm,
+			cNorm:              args.CNorm,
+		},
 	)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutInfererInference() error calculating one-out inference for forecaster")
@@ -420,14 +426,16 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 	}
 
 	weights, err := calcWeightsGivenWorkers(
-		args.Logger,
-		args.Inferers,
-		remainingForecasters,
-		remainingInfererRegrets,
-		remainingForecasterRegrets,
-		args.EpsilonTopic,
-		args.PNorm,
-		args.CNorm,
+		calcWeightsGivenWorkersArgs{
+			logger:             args.Logger,
+			inferers:           args.Inferers,
+			forecasters:        remainingForecasters,
+			infererToRegret:    remainingInfererRegrets,
+			forecasterToRegret: remainingForecasterRegrets,
+			epsilonTopic:       args.EpsilonTopic,
+			pNorm:              args.PNorm,
+			cNorm:              args.CNorm,
+		},
 	)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutForecasterInference() error calculating one-out inference for forecaster")
@@ -581,14 +589,16 @@ func calcOneInValue(args calcOneInValueArgs) (
 	}
 
 	weights, err := calcWeightsGivenWorkers(
-		args.Logger,
-		args.Inferers,
-		singleForecaster,
-		infererToRegretForSingleForecaster,
-		singleForecasterRegret,
-		args.EpsilonTopic,
-		args.PNorm,
-		args.CNorm,
+		calcWeightsGivenWorkersArgs{
+			logger:             args.Logger,
+			inferers:           args.Inferers,
+			forecasters:        singleForecaster,
+			infererToRegret:    infererToRegretForSingleForecaster,
+			forecasterToRegret: singleForecasterRegret,
+			epsilonTopic:       args.EpsilonTopic,
+			pNorm:              args.PNorm,
+			cNorm:              args.CNorm,
+		},
 	)
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "CalcOneInValue() error calculating weights for one-in inferences")

@@ -120,14 +120,16 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 					forecasterToRegretOut = make(map[Forecaster]*alloraMath.Dec, 0)
 
 					weights, err := calcWeightsGivenWorkers(
-						args.Logger,
-						args.Inferers,
-						args.Forecasters,
-						infererToRegretOut,
-						forecasterToRegretOut,
-						args.EpsilonTopic,
-						args.PNorm,
-						args.CNorm,
+						calcWeightsGivenWorkersArgs{
+							logger:             args.Logger,
+							inferers:           args.Inferers,
+							forecasters:        args.Forecasters,
+							infererToRegret:    infererToRegretOut,
+							forecasterToRegret: forecasterToRegretOut,
+							epsilonTopic:       args.EpsilonTopic,
+							pNorm:              args.PNorm,
+							cNorm:              args.CNorm,
+						},
 					)
 					if err != nil {
 						return nil, nil, nil, errorsmod.Wrapf(err,

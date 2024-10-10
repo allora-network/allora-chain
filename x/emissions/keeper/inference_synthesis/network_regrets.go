@@ -1,8 +1,6 @@
 package inferencesynthesis
 
 import (
-	"sort"
-
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -109,7 +107,8 @@ type GetCalcSetNetworkRegretsArgs struct {
 
 // Calculate the new network regrets by taking EMAs between the previous network regrets
 // and the new regrets admitted by the inputted network losses
-// It is assumed the workers are uniquely represented in the network losses
+// NOTE: It is assumed the workers are uniquely represented in the network losses
+// NOTE: It is assumed network losses are sorted (done in synth.CalcNetworkLosses())
 func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 	// Convert the network losses to a networkLossesByWorker
 	networkLossesByWorker := ConvertValueBundleToNetworkLossesByWorker(args.NetworkLosses)
@@ -117,13 +116,8 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 
 	workersRegrets := make([]alloraMath.Dec, 0)
 
-	sortedInfererValues := args.NetworkLosses.InfererValues
-	sort.Slice(sortedInfererValues, func(i, j int) bool {
-		return sortedInfererValues[i].Worker < sortedInfererValues[j].Worker
-	})
-
 	// R_ij - Inferer Regrets
-	for _, infererLoss := range sortedInfererValues {
+	for _, infererLoss := range args.NetworkLosses.InfererValues {
 		lastRegret, newParticipant, err := args.K.GetInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get inferer regret")
@@ -147,13 +141,8 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		}
 	}
 
-	sortedForecasterValues := args.NetworkLosses.ForecasterValues
-	sort.Slice(sortedForecasterValues, func(i, j int) bool {
-		return sortedForecasterValues[i].Worker < sortedForecasterValues[j].Worker
-	})
-
 	// R_ik - Forecaster Regrets
-	for _, forecasterLoss := range sortedForecasterValues {
+	for _, forecasterLoss := range args.NetworkLosses.ForecasterValues {
 		lastRegret, newParticipant, err := args.K.GetForecasterNetworkRegret(args.Ctx, args.TopicId, forecasterLoss.Worker)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error getting forecaster regret")
@@ -178,7 +167,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 	}
 
 	// R^-_ij - Naive Regrets
-	for _, infererLoss := range sortedInfererValues {
+	for _, infererLoss := range args.NetworkLosses.InfererValues {
 		lastRegret, _, err := args.K.GetNaiveInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker)
 		if err != nil {
 			return errorsmod.Wrapf(err, "failed to get inferer regret")
@@ -199,14 +188,9 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		}
 	}
 
-	sortedOneOutInfererValues := args.NetworkLosses.OneOutInfererValues
-	sort.Slice(sortedOneOutInfererValues, func(i, j int) bool {
-		return sortedOneOutInfererValues[i].Worker < sortedOneOutInfererValues[j].Worker
-	})
-
 	// R^-j′ij - One-out inferer inferer regrets
-	for _, oneOutInfererLoss := range sortedOneOutInfererValues {
-		for _, infererLoss := range sortedInfererValues {
+	for _, oneOutInfererLoss := range args.NetworkLosses.OneOutInfererValues {
+		for _, infererLoss := range args.NetworkLosses.InfererValues {
 			lastRegret, _, err := args.K.GetOneOutInfererInfererNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, infererLoss.Worker)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-out inferer inferer regret")
@@ -228,14 +212,9 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		}
 	}
 
-	sortedOneOutInfererForecasterValues := args.NetworkLosses.OneOutInfererForecasterValues
-	sort.Slice(sortedOneOutInfererForecasterValues, func(i, j int) bool {
-		return sortedOneOutInfererForecasterValues[i].Forecaster < sortedOneOutInfererForecasterValues[j].Forecaster
-	})
-
 	// R^-j′ik - One-out inferer forecaster regrets
-	for _, oneOutInfererLoss := range sortedOneOutInfererValues {
-		for _, oneOutInfererForecasterLoss := range sortedOneOutInfererForecasterValues {
+	for _, oneOutInfererLoss := range args.NetworkLosses.OneOutInfererValues {
+		for _, oneOutInfererForecasterLoss := range args.NetworkLosses.OneOutInfererForecasterValues {
 			lastRegret, _, err := args.K.GetOneOutInfererForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutInfererLoss.Worker, oneOutInfererForecasterLoss.Forecaster)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-out inferer forecaster regret")
@@ -257,14 +236,9 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		}
 	}
 
-	sortedOneOutForecasterValues := args.NetworkLosses.OneOutForecasterValues
-	sort.Slice(sortedOneOutForecasterValues, func(i, j int) bool {
-		return sortedOneOutForecasterValues[i].Worker < sortedOneOutForecasterValues[j].Worker
-	})
-
 	// R^-k′ij - One-out forecaster inferer regrets
-	for _, oneOutForecasterLoss := range sortedOneOutForecasterValues {
-		for _, infererloss := range sortedInfererValues {
+	for _, oneOutForecasterLoss := range args.NetworkLosses.OneOutForecasterValues {
+		for _, infererloss := range args.NetworkLosses.InfererValues {
 			lastRegret, _, err := args.K.GetOneOutForecasterInfererNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, infererloss.Worker)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-out forecaster inferer regret")
@@ -286,14 +260,9 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		}
 	}
 
-	sortedOneOutForecasterForecasterValues := args.NetworkLosses.OneOutInfererForecasterValues
-	sort.Slice(sortedOneOutForecasterForecasterValues, func(i, j int) bool {
-		return sortedOneOutForecasterForecasterValues[i].Forecaster < sortedOneOutForecasterForecasterValues[j].Forecaster
-	})
-
 	// R^-k′ik - One-out forecaster forecaster regrets
-	for _, oneOutForecasterLoss := range sortedOneOutForecasterValues {
-		for _, forecasterLoss := range sortedForecasterValues {
+	for _, oneOutForecasterLoss := range args.NetworkLosses.OneOutForecasterValues {
+		for _, forecasterLoss := range args.NetworkLosses.ForecasterValues {
 			lastRegret, _, err := args.K.GetOneOutForecasterForecasterNetworkRegret(args.Ctx, args.TopicId, oneOutForecasterLoss.Worker, forecasterLoss.Worker)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-out forecaster forecaster regret")
@@ -315,15 +284,10 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		}
 	}
 
-	sortedOneInForecasterValues := args.NetworkLosses.OneInForecasterValues
-	sort.Slice(sortedOneInForecasterValues, func(i, j int) bool {
-		return sortedOneInForecasterValues[i].Worker < sortedOneInForecasterValues[j].Worker
-	})
-
 	// R^+_k'ij - One-in forecaster regrets
-	for _, oneInForecasterLoss := range sortedOneInForecasterValues {
+	for _, oneInForecasterLoss := range args.NetworkLosses.OneInForecasterValues {
 		// Loop over the inferer losses so that their losses may be compared against the one-in forecaster's loss, for each forecaster
-		for _, infererLoss := range sortedInfererValues {
+		for _, infererLoss := range args.NetworkLosses.InfererValues {
 			lastRegret, _, err := args.K.GetOneInForecasterNetworkRegret(args.Ctx, args.TopicId, oneInForecasterLoss.Worker, infererLoss.Worker)
 			if err != nil {
 				return errorsmod.Wrapf(err, "Error getting one-in forecaster regret")
