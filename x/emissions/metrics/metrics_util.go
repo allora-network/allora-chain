@@ -52,7 +52,7 @@ func IncrProducerEventCount(msgType string) {
 	)
 }
 
-func RecordMetrics(apiMethod string, startTime time.Time, success bool) {
-	IncrementRpcRequestCounter(apiMethod, success)
+func RecordMetrics(apiMethod string, startTime time.Time, success func() bool) {
+	IncrementRpcRequestCounter(apiMethod, success())
 	MeasureRpcRequestLatency(apiMethod, startTime)
 }

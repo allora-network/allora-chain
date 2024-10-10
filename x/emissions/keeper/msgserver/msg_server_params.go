@@ -8,8 +8,10 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (*types.UpdateParamsResponse, error) {
-	err := ms.k.ValidateStringIsBech32(msg.Sender)
+func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsRequest) (_ *types.UpdateParamsResponse, err error) {
+	defer metrics.RecordMetrics("UpdateParams", time.Now(), func() bool { return err == nil })
+
+	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
