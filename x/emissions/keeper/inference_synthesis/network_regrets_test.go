@@ -178,16 +178,17 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require.True(worker3NoPriorRegret)
 
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		s.emissionsKeeper,
-		topicId,
-		valueBundle,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: valueBundle,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	bothAccs := []string{worker1, worker2}
@@ -315,16 +316,17 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	require.NoError(err)
 
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		s.emissionsKeeper,
-		topicId,
-		valueBundle,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: valueBundle,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	allWorkerAccs := []string{worker1, worker2, worker3}
@@ -388,16 +390,17 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 	s.Require().NoError(err)
 
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		k,
-		topicId,
-		networkLosses,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: networkLosses,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	checkRegret := func(worker string, expected alloraMath.Dec, getter func(context.Context, uint64, string) (emissionstypes.TimestampedValue, bool, error)) {
@@ -570,16 +573,17 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	resetRegrets()
 
 	err := inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		k,
-		topicId,
-		networkLossesValueBundle0,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: networkLossesValueBundle0,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	// Record resulting regrets
@@ -609,16 +613,17 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	resetRegrets()
 
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		k,
-		topicId,
-		networkLossesValueBundle1,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: networkLossesValueBundle1,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	// Record resulting regrets

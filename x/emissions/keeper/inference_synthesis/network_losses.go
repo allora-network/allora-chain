@@ -259,10 +259,10 @@ func CalcNetworkLosses(
 		InfererValues:                 infererLosses,
 		ForecasterValues:              forecasterLosses,
 		NaiveValue:                    naiveValue,
-		OneOutInfererForecasterValues: oneOutInfererForecasterLosses,
 		OneOutInfererValues:           oneOutInfererLosses,
 		OneOutForecasterValues:        oneOutForecasterLosses,
 		OneInForecasterValues:         oneInForecasterLosses,
+		OneOutInfererForecasterValues: oneOutInfererForecasterLosses,
 	}
 
 	return output, nil

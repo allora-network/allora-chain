@@ -880,9 +880,14 @@ func (k *Keeper) SetOneOutForecasterForecasterNetworkRegret(
 	return k.latestOneOutForecasterForecasterNetworkRegrets.Set(ctx, key, regret)
 }
 
-func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, topicId TopicId, oneOutForecaster ActorId, forecaster ActorId) (types.TimestampedValue, bool, error) {
+func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(
+	ctx context.Context,
+	topicId TopicId,
+	oneOutForecaster ActorId,
+	forecaster ActorId,
+) (regret types.TimestampedValue, isNotPresent bool, err error) {
 	key := collections.Join3(topicId, oneOutForecaster, forecaster)
-	regret, err := k.latestOneOutForecasterForecasterNetworkRegrets.Get(ctx, key)
+	regret, err = k.latestOneOutForecasterForecasterNetworkRegrets.Get(ctx, key)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			topic, err := k.GetTopic(ctx, topicId)
