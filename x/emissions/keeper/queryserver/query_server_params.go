@@ -13,7 +13,7 @@ import (
 
 // GetParams defines the handler for the Query/Params RPC method.
 func (qs queryServer) GetParams(ctx context.Context, req *types.GetParamsRequest) (_ *types.GetParamsResponse, err error) {
-	defer metrics.RecordMetrics("GetParams", time.Now(), &err == nil)
+	defer metrics.RecordMetrics("GetParams", time.Now(), func() bool { return err == nil })
 
 	params, err := qs.k.GetParams(ctx)
 	if err != nil {

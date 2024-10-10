@@ -17,7 +17,7 @@ import (
 // registered worker and none from any unregistered actor.
 // Signatures, anti-sybil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (_ *types.InsertWorkerPayloadResponse, err error) {
-	defer metrics.RecordMetrics("InsertWorkerPayload", time.Now(), &err == nil)
+	defer metrics.RecordMetrics("InsertWorkerPayload", time.Now(), func() bool { return err == nil })
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
 	err = ms.k.ValidateStringIsBech32(msg.Sender)

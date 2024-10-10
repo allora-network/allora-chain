@@ -14,7 +14,7 @@ import (
 
 // Params defines the handler for the Query/Params RPC method.
 func (qs queryServer) IsWhitelistAdmin(ctx context.Context, req *types.IsWhitelistAdminRequest) (_ *types.IsWhitelistAdminResponse, err error) {
-	defer metrics.RecordMetrics("IsWhitelistAdmin", time.Now(), &err == nil)
+	defer metrics.RecordMetrics("IsWhitelistAdmin", time.Now(), func() bool { return err == nil })
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
 	}

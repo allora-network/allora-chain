@@ -12,7 +12,7 @@ import (
 )
 
 func (qs queryServer) GetForecastsAtBlock(ctx context.Context, req *types.GetForecastsAtBlockRequest) (_ *types.GetForecastsAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetForecastsAtBlock", time.Now(), &err == nil)
+	defer metrics.RecordMetrics("GetForecastsAtBlock", time.Now(), func() bool { return err == nil })
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
