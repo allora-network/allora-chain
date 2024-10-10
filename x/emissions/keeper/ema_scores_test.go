@@ -141,7 +141,13 @@ func (s *KeeperTestSuite) TestCalcAndSaveInfererScoreEmaWithLastSavedTopicQuanti
 	err := keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topic.Id, previousQuantileScore)
 	s.Require().NoError(err)
 
-	err = keeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, worker)
+	score := types.Score{
+		TopicId:     topic.Id,
+		BlockHeight: block,
+		Address:     worker,
+		Score:       previousQuantileScore,
+	}
+	err = keeper.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, score)
 	s.Require().NoError(err)
 
 	// Verify the EMA score was calculated and saved
@@ -167,7 +173,13 @@ func (s *KeeperTestSuite) TestCalcAndSaveForecasterScoreEmaWithLastSavedTopicQua
 	err := keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topic.Id, previousQuantileScore)
 	s.Require().NoError(err)
 
-	err = keeper.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, worker)
+	score := types.Score{
+		TopicId:     topic.Id,
+		BlockHeight: block,
+		Address:     worker,
+		Score:       previousQuantileScore,
+	}
+	err = keeper.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, score)
 	s.Require().NoError(err)
 
 	// Verify the EMA score was calculated and saved
@@ -193,7 +205,13 @@ func (s *KeeperTestSuite) TestCalcAndSaveReputerScoreEmaWithLastSavedTopicQuanti
 	err := keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topic.Id, previousQuantileScore)
 	s.Require().NoError(err)
 
-	err = keeper.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, reputer)
+	score := types.Score{
+		TopicId:     topic.Id,
+		BlockHeight: block,
+		Address:     reputer,
+		Score:       previousQuantileScore,
+	}
+	err = keeper.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, block, score)
 	s.Require().NoError(err)
 
 	// Verify the EMA score was calculated and saved

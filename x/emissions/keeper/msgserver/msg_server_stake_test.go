@@ -1399,15 +1399,22 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 	s.Require().NoError(err)
 
 	reputerValueBundle := &types.ReputerValueBundle{
+		Pubkey: s.pubKeyHexStr[1],
 		ValueBundle: &types.ValueBundle{
-			TopicId:       topicId,
-			Reputer:       reputer,
+			TopicId: topicId,
+			Reputer: reputer,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: block,
+				},
+			},
 			CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
 			NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
 		},
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
+	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, block, reputerValueBundles)
+	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
 	scores, err := rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
@@ -1456,14 +1463,21 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 
 	newReputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
-			TopicId:       topicId,
-			Reputer:       reputer,
+			TopicId: topicId,
+			Reputer: reputer,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: newBlock,
+				},
+			},
 			CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
 			NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
 		},
+		Pubkey: s.pubKeyHexStr[1],
 	}
 	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
-	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, newBlock, newReputerValueBundles)
+	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, newBlock, newReputerValueBundles)
+	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores
 	scores, err = rewards.GenerateReputerScores(s.ctx, s.emissionsKeeper, topicId, block, reputerValueBundles)
@@ -1551,7 +1565,7 @@ func (s *MsgServerTestSuite) insertValueBundlesAndGetRewards(
 		Pubkey:      reputerPubKeyHex,
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
-	err = keeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
+	err = keeper.InsertActiveReputerLosses(s.ctx, topicId, block, reputerValueBundles)
 	s.Require().NoError(err)
 
 	// Calculate and Set the reputer scores

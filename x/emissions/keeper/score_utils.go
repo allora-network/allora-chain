@@ -6,77 +6,161 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-// Return low score and index among all inferences
-func GetLowScoreFromAllLossBundles(
+// Get lowest score from all reputers
+func GetLowestScoreFromAllReputers(
 	ctx context.Context,
 	k *Keeper,
 	topicId TopicId,
-	lossBundles types.ReputerValueBundles,
-) (lowScore types.Score, lowScoreIndex int, err error) {
-	lowScoreIndex = 0
-	lowScore, err = k.GetReputerScoreEma(ctx, topicId, lossBundles.ReputerValueBundles[0].ValueBundle.Reputer)
-	if err != nil {
-		return types.Score{}, lowScoreIndex, err
-	}
-	for index, extLossBundle := range lossBundles.ReputerValueBundles {
-		extScore, err := k.GetReputerScoreEma(ctx, topicId, extLossBundle.ValueBundle.Reputer)
+	reputerAddresses []string,
+) (lowScore types.Score, err error) {
+	for i, address := range reputerAddresses {
+		score, err := k.GetReputerScoreEma(ctx, topicId, address)
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Gt(extScore.Score) {
-			lowScore = extScore
-			lowScoreIndex = index
+		if lowScore.Score.Gt(score.Score) || i == 0 {
+			lowScore = score
 		}
 	}
-	return lowScore, lowScoreIndex, nil
+	return lowScore, nil
 }
 
-// Return low score and index among all inferences
-func GetLowScoreFromAllInferences(
+// Update lowest score from new reputer addresses set
+func UpdateLowestScoreFromReputerAddresses(
 	ctx context.Context,
 	k *Keeper,
 	topicId TopicId,
-	inferences types.Inferences,
-) (lowScore types.Score, lowScoreIndex int, err error) {
-	lowScoreIndex = 0
-	lowScore, err = k.GetInfererScoreEma(ctx, topicId, inferences.Inferences[0].Inferer)
+	reputerAddresses []string,
+	addedReputer string,
+	removedReputerAddress string,
+) error {
+	// remove reputer from the list
+	for i, address := range reputerAddresses {
+		if address == removedReputerAddress {
+			reputerAddresses = append(reputerAddresses[:i], reputerAddresses[i+1:]...)
+			break
+		}
+	}
+	// add new reputer to the list
+	reputerAddresses = append(reputerAddresses, addedReputer)
+	lowScore, err := k.GetReputerScoreEma(ctx, topicId, reputerAddresses[0])
 	if err != nil {
-		return types.Score{}, lowScoreIndex, err
+		return err
 	}
-	for index, extInference := range inferences.Inferences {
-		extScore, err := k.GetInfererScoreEma(ctx, topicId, extInference.Inferer)
+	for _, address := range reputerAddresses {
+		score, err := k.GetReputerScoreEma(ctx, topicId, address)
 		if err != nil {
-			continue
+			return err
 		}
-		if lowScore.Score.Gt(extScore.Score) {
-			lowScore = extScore
-			lowScoreIndex = index
+		if lowScore.Score.Gt(score.Score) {
+			lowScore = score
 		}
 	}
-	return lowScore, lowScoreIndex, nil
+	return k.SetLowestReputerScoreEma(ctx, topicId, lowScore)
 }
 
-// Return low score and index among all forecasts
-func GetLowScoreFromAllForecasts(
+// Update lowest score from new inferer addresses set
+func UpdateLowestScoreFromInfererAddresses(
 	ctx context.Context,
 	k *Keeper,
 	topicId TopicId,
-	forecasts types.Forecasts,
-) (lowScore types.Score, lowScoreIndex int, err error) {
-	lowScoreIndex = 0
-	lowScore, err = k.GetForecasterScoreEma(ctx, topicId, forecasts.Forecasts[0].Forecaster)
-	if err != nil {
-		return types.Score{}, lowScoreIndex, err
+	infererAddresses []string,
+	addedInferer string,
+	removedInfererAddress string,
+) error {
+	// remove inferer from the list
+	for i, address := range infererAddresses {
+		if address == removedInfererAddress {
+			infererAddresses = append(infererAddresses[:i], infererAddresses[i+1:]...)
+			break
+		}
 	}
-	for index, extForecast := range forecasts.Forecasts {
-		extScore, err := k.GetForecasterScoreEma(ctx, topicId, extForecast.Forecaster)
+	// add new inferer to the list
+	infererAddresses = append(infererAddresses, addedInferer)
+	lowScore, err := k.GetInfererScoreEma(ctx, topicId, infererAddresses[0])
+	if err != nil {
+		return err
+	}
+	for _, address := range infererAddresses {
+		score, err := k.GetInfererScoreEma(ctx, topicId, address)
+		if err != nil {
+			return err
+		}
+		if lowScore.Score.Gt(score.Score) {
+			lowScore = score
+		}
+	}
+	return k.SetLowestInfererScoreEma(ctx, topicId, lowScore)
+}
+
+// Get lowest score from all inferers
+func GetLowestScoreFromAllInferers(
+	ctx context.Context,
+	k *Keeper,
+	topicId TopicId,
+	infererAddresses []string,
+) (lowScore types.Score, err error) {
+	for i, address := range infererAddresses {
+		score, err := k.GetInfererScoreEma(ctx, topicId, address)
 		if err != nil {
 			continue
 		}
-		if lowScore.Score.Gt(extScore.Score) {
-			lowScore = extScore
-			lowScoreIndex = index
+		if lowScore.Score.Gt(score.Score) || i == 0 {
+			lowScore = score
 		}
 	}
-	return lowScore, lowScoreIndex, nil
+	return lowScore, nil
+}
+
+// Update lowest score from new forecaster addresses set
+func UpdateLowestScoreFromForecasterAddresses(
+	ctx context.Context,
+	k *Keeper,
+	topicId TopicId,
+	forecasterAddresses []string,
+	addedForecaster string,
+	removedForecasterAddress string,
+) error {
+	// remove forecaster from the list
+	for i, address := range forecasterAddresses {
+		if address == removedForecasterAddress {
+			forecasterAddresses = append(forecasterAddresses[:i], forecasterAddresses[i+1:]...)
+			break
+		}
+	}
+	// add new forecaster to the list
+	forecasterAddresses = append(forecasterAddresses, addedForecaster)
+	lowScore, err := k.GetForecasterScoreEma(ctx, topicId, forecasterAddresses[0])
+	if err != nil {
+		return err
+	}
+	for _, address := range forecasterAddresses {
+		score, err := k.GetForecasterScoreEma(ctx, topicId, address)
+		if err != nil {
+			return err
+		}
+		if lowScore.Score.Gt(score.Score) {
+			lowScore = score
+		}
+	}
+	return k.SetLowestForecasterScoreEma(ctx, topicId, lowScore)
+}
+
+// Get lowest score from all forecasters
+func GetLowestScoreFromAllForecasters(
+	ctx context.Context,
+	k *Keeper,
+	topicId TopicId,
+	forecasterAddresses []string,
+) (lowScore types.Score, err error) {
+	for i, address := range forecasterAddresses {
+		score, err := k.GetForecasterScoreEma(ctx, topicId, address)
+		if err != nil {
+			continue
+		}
+		if lowScore.Score.Gt(score.Score) || i == 0 {
+			lowScore = score
+		}
+	}
+	return lowScore, nil
 }

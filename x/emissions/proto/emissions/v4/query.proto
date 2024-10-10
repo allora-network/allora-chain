@@ -399,6 +399,21 @@ service QueryService {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v4/next_churning_block_by_topic_id/{topic_id}";
   }
+
+  rpc GetActiveReputersForTopic(GetActiveReputersForTopicRequest) returns (GetActiveReputersForTopicResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v4/active_reputers/{topic_id}";
+  }
+
+  rpc GetActiveForecastersForTopic(GetActiveForecastersForTopicRequest) returns (GetActiveForecastersForTopicResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v4/active_forecasters/{topic_id}";
+  }
+
+  rpc GetActiveInferersForTopic(GetActiveInferersForTopicRequest) returns (GetActiveInferersForTopicResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v4/active_inferers/{topic_id}";
+  }
 }
 
 message GetNaiveInfererNetworkRegretRequest {
@@ -1210,4 +1225,28 @@ message GetNextChurningBlockByTopicIdRequest {
 
 message GetNextChurningBlockByTopicIdResponse {
   int64 block_height = 1;
+}
+
+message GetActiveReputersForTopicRequest {
+  uint64 topic_id = 1;
+}
+
+message GetActiveReputersForTopicResponse {
+  repeated string reputers = 1;
+}
+
+message GetActiveForecastersForTopicRequest {
+  uint64 topic_id = 1;
+}
+
+message GetActiveForecastersForTopicResponse {
+  repeated string forecasters = 1;
+}
+
+message GetActiveInferersForTopicRequest {
+  uint64 topic_id = 1;
+}
+
+message GetActiveInferersForTopicResponse {
+  repeated string inferers = 1;
 }
