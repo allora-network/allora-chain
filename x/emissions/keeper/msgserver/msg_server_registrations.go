@@ -13,13 +13,11 @@ import (
 )
 
 // Registers a new network participant to the network for the first time for worker or reputer
-func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest,
-) (
-	_ *types.RegisterResponse,
-	returnErr error,
-) {
-	defer metrics.RecordMetrics("Register", time.Now(), returnErr == nil)
-	if err := msg.Validate(); err != nil {
+func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_ *types.RegisterResponse, err error) {
+	defer metrics.RecordMetrics("Register", time.Now(), &err == nil)
+
+	err = msg.Validate()
+	if err != nil {
 		return nil, err
 	}
 
@@ -82,13 +80,11 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest,
 }
 
 // Remove registration from a topic for worker or reputer
-func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveRegistrationRequest,
-) (
-	_ *types.RemoveRegistrationResponse,
-	returnErr error,
-) {
-	defer metrics.RecordMetrics("RemoveRegistration", time.Now(), returnErr == nil)
-	if err := msg.Validate(); err != nil {
+func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveRegistrationRequest) (_ *types.RemoveRegistrationResponse, err error) {
+	defer metrics.RecordMetrics("RemoveRegistration", time.Now(), &err == nil)
+
+	err = msg.Validate()
+	if err != nil {
 		return nil, err
 	}
 	// Check if topic exists
@@ -140,22 +136,19 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 	}, nil
 }
 
-func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address string,
-) (
-	_ bool,
-	_ sdk.Coin,
-	returnErr error,
-) {
-	defer metrics.RecordMetrics("CheckBalanceForRegistration", time.Now(), returnErr == nil)
+func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address string) (success bool, fee sdk.Coin, err error) {
+	defer metrics.RecordMetrics("CheckBalanceForRegistration", time.Now(), &err == nil)
+
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return false, sdk.Coin{}, err
 	}
-	fee := sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee)
+	fee = sdk.NewCoin(params.DefaultBondDenom, moduleParams.RegistrationFee)
 	accAddress, err := sdk.AccAddressFromBech32(address)
 	if err != nil {
 		return false, fee, err
 	}
 	balance := ms.k.GetBankBalance(ctx, accAddress, fee.Denom)
-	return balance.IsGTE(fee), fee, nil
+	success = balance.IsGTE(fee)
+	return success, fee, err
 }

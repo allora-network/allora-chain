@@ -15,10 +15,12 @@ import (
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (*types.InsertReputerPayloadResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
-	err := ms.k.ValidateStringIsBech32(msg.Sender)
+
+	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
+
 	err = checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
@@ -97,5 +99,5 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	return &types.InsertReputerPayloadResponse{}, nil
+	return &types.InsertReputerPayloadResponse{}, err
 }
