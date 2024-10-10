@@ -131,31 +131,33 @@ func calcWeightsGivenWorkers(args calcWeightsGivenWorkersArgs) (RegretInformedWe
 	}, nil
 }
 
+type calcWeightedInferenceArgs struct {
+	logger                               log.Logger
+	allInferersAreNew                    bool
+	inferers                             []Worker
+	workerToInference                    map[Worker]*emissionstypes.Inference
+	infererToRegret                      map[Worker]*alloraMath.Dec
+	forecasters                          []Worker
+	forecasterToRegret                   map[Worker]*alloraMath.Dec
+	forecasterToForecastImpliedInference map[Worker]*emissionstypes.Inference
+	weights                              RegretInformedWeights
+	epsilonSafeDiv                       alloraMath.Dec
+}
+
 // Calculates network combined inference I_i, network per worker regret R_i-1,l, and weights w_il from the litepaper:
 // I_i = Σ_l w_il I_il / Σ_l w_il
 // w_il = φ'_p(\hatR_i-1,l)
 // \hatR_i-1,l = R_i-1,l / |max_{l'}(R_i-1,l')|
 // given inferences, forecast-implied inferences, and network regrets
-func calcWeightedInference(
-	logger log.Logger,
-	allInferersAreNew bool,
-	inferers []Worker,
-	workerToInference map[Worker]*emissionstypes.Inference,
-	infererToRegret map[Worker]*alloraMath.Dec,
-	forecasters []Worker,
-	forecasterToRegret map[Worker]*alloraMath.Dec,
-	forecasterToForecastImpliedInference map[Worker]*emissionstypes.Inference,
-	weights RegretInformedWeights,
-	epsilonSafeDiv alloraMath.Dec,
-) (InferenceValue, error) {
+func calcWeightedInference(args calcWeightedInferenceArgs) (InferenceValue, error) {
 	runningUnnormalizedI_i := alloraMath.ZeroDec() //nolint:revive // var-naming: don't use underscores in Go names
 	sumWeights := alloraMath.ZeroDec()
 	err := error(nil)
 
 	// If all inferers are new, then the weight is 1 for all inferers
-	if allInferersAreNew {
-		for _, inferer := range inferers {
-			runningUnnormalizedI_i, err = runningUnnormalizedI_i.Add(workerToInference[inferer].Value)
+	if args.allInferersAreNew {
+		for _, inferer := range args.inferers {
+			runningUnnormalizedI_i, err = runningUnnormalizedI_i.Add(args.workerToInference[inferer].Value)
 			if err != nil {
 				return InferenceValue{}, errorsmod.Wrapf(err, "Error adding weight by worker value")
 			}
@@ -165,26 +167,26 @@ func calcWeightedInference(
 			}
 		}
 	} else {
-		for _, inferer := range inferers {
-			inferenceByWorker, exists := workerToInference[inferer]
+		for _, inferer := range args.inferers {
+			inferenceByWorker, exists := args.workerToInference[inferer]
 			if !exists {
-				logger.Debug(fmt.Sprintf("Cannot find inferer in InferenceByWorker in CalcWeightedInference %v", inferer))
+				args.logger.Debug(fmt.Sprintf("Cannot find inferer in InferenceByWorker in CalcWeightedInference %v", inferer))
 				continue
 			}
-			infererWeight, exists := weights.inferers[inferer]
+			infererWeight, exists := args.weights.inferers[inferer]
 			if !exists {
-				logger.Debug(fmt.Sprintf("Cannot find inferer in weights.inferers in CalcWeightedInference %v", inferer))
+				args.logger.Debug(fmt.Sprintf("Cannot find inferer in weights.inferers in CalcWeightedInference %v", inferer))
 				continue
 			}
-			_, exists = infererToRegret[inferer]
+			_, exists = args.infererToRegret[inferer]
 			if !exists {
-				logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in CalcWeightedInference %v", inferer))
+				args.logger.Debug(fmt.Sprintf("Cannot find inferer in InfererRegrets in CalcWeightedInference %v", inferer))
 				continue
 			}
 			runningUnnormalizedI_i, sumWeights, err = accumulateWeights(
 				*inferenceByWorker,
 				infererWeight,
-				allInferersAreNew,
+				args.allInferersAreNew,
 				runningUnnormalizedI_i,
 				sumWeights,
 			)
@@ -192,20 +194,20 @@ func calcWeightedInference(
 				return InferenceValue{}, errorsmod.Wrapf(err, "Error accumulating weight of inferer")
 			}
 		}
-		for _, forecaster := range forecasters {
-			workerForecastImpliedInference, exists := forecasterToForecastImpliedInference[forecaster]
+		for _, forecaster := range args.forecasters {
+			workerForecastImpliedInference, exists := args.forecasterToForecastImpliedInference[forecaster]
 			if !exists {
-				logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in CalcWeightedInference %v", forecaster))
+				args.logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in CalcWeightedInference %v", forecaster))
 				continue
 			}
-			forecasterWeight, exists := weights.forecasters[forecaster]
+			forecasterWeight, exists := args.weights.forecasters[forecaster]
 			if !exists {
-				logger.Debug(fmt.Sprintf("Cannot find forecaster in weights.forecasters in CalcWeightedInference %v", forecaster))
+				args.logger.Debug(fmt.Sprintf("Cannot find forecaster in weights.forecasters in CalcWeightedInference %v", forecaster))
 				continue
 			}
-			_, exists = forecasterToRegret[forecaster]
+			_, exists = args.forecasterToRegret[forecaster]
 			if !exists {
-				logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in CalcWeightedInference %v", forecaster))
+				args.logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in CalcWeightedInference %v", forecaster))
 				continue
 			}
 			runningUnnormalizedI_i, sumWeights, err = accumulateWeights(
@@ -222,8 +224,8 @@ func calcWeightedInference(
 	}
 
 	// Normalize the running unnormalized network inference to yield output
-	if sumWeights.Lt(epsilonSafeDiv) {
-		sumWeights = epsilonSafeDiv
+	if sumWeights.Lt(args.epsilonSafeDiv) {
+		sumWeights = args.epsilonSafeDiv
 	}
 	ret, err := runningUnnormalizedI_i.Quo(sumWeights)
 	if err != nil {

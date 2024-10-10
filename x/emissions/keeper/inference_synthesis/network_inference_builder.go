@@ -50,18 +50,18 @@ func GetCombinedInference(args GetCombinedInferenceArgs) (
 		return RegretInformedWeights{}, InferenceValue{}, errorsmod.Wrap(err, "GetCombinedInference() error calculating weights for combined inference")
 	}
 
-	combinedInference, err = calcWeightedInference(
-		args.Logger,
-		args.AllInferersAreNew,
-		args.Inferers,
-		args.InfererToInference,
-		args.InfererToRegret,
-		args.Forecasters,
-		args.ForecasterToRegret,
-		args.ForecasterToForecastImpliedInference,
-		weights,
-		args.EpsilonSafeDiv,
-	)
+	combinedInference, err = calcWeightedInference(calcWeightedInferenceArgs{
+		logger:                               args.Logger,
+		allInferersAreNew:                    args.AllInferersAreNew,
+		inferers:                             args.Inferers,
+		workerToInference:                    args.InfererToInference,
+		infererToRegret:                      args.InfererToRegret,
+		forecasters:                          args.Forecasters,
+		forecasterToRegret:                   args.ForecasterToRegret,
+		forecasterToForecastImpliedInference: args.ForecasterToForecastImpliedInference,
+		weights:                              weights,
+		epsilonSafeDiv:                       args.EpsilonSafeDiv,
+	})
 	if err != nil {
 		return RegretInformedWeights{}, InferenceValue{}, errorsmod.Wrap(err, "GetCombinedInference() error calculating combined inference")
 	}
@@ -153,18 +153,18 @@ func GetNaiveInference(args GetNaiveInferenceArgs) (naiveInference alloraMath.De
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "GetNaiveInference() error calculating weights for naive inference")
 	}
 
-	naiveInference, err = calcWeightedInference(
-		args.Logger,
-		args.AllInferersAreNew,
-		args.Inferers,
-		args.InfererToInference,
-		infererToRegret,
-		args.Forecasters,
-		args.ForecasterToRegret,
-		args.ForecasterToForecastImpliedInference,
-		weights,
-		args.EpsilonSafeDiv,
-	)
+	naiveInference, err = calcWeightedInference(calcWeightedInferenceArgs{
+		logger:                               args.Logger,
+		allInferersAreNew:                    args.AllInferersAreNew,
+		inferers:                             args.Inferers,
+		workerToInference:                    args.InfererToInference,
+		infererToRegret:                      infererToRegret,
+		forecasters:                          args.Forecasters,
+		forecasterToRegret:                   args.ForecasterToRegret,
+		forecasterToForecastImpliedInference: args.ForecasterToForecastImpliedInference,
+		weights:                              weights,
+		epsilonSafeDiv:                       args.EpsilonSafeDiv,
+	})
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "GetNaiveInference() error calculating naive inference")
 	}
@@ -212,7 +212,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 			remainingInferers = append(remainingInferers, inferer)
 			inference, ok := args.InfererToInference[inferer]
 			if !ok {
-				args.Logger.Debug(fmt.Sprintf("calcOneOutInfererInference() cannot find inferer in InferenceByWorker in UpdateInferersInfo %v", inferer))
+				args.Logger.Debug(fmt.Sprintf("calcOneOutInfererInference() cannot find inferer in InferenceByWorker in args.InfererToInference %v", inferer))
 				continue
 			}
 			remainingInfererToInference[inferer] = inference
@@ -275,18 +275,18 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutInfererInference() error calculating one-out inference for forecaster")
 	}
 
-	oneOutNetworkInferenceWithoutInferer, err = calcWeightedInference(
-		args.Logger,
-		args.AllInferersAreNew,
-		remainingInferers,
-		remainingInfererToInference,
-		remainingInfererRegrets,
-		args.Forecasters,
-		remainingForecasterRegrets,
-		forecasterToForecastImpliedInference,
-		weights,
-		args.EpsilonSafeDiv,
-	)
+	oneOutNetworkInferenceWithoutInferer, err = calcWeightedInference(calcWeightedInferenceArgs{
+		logger:                               args.Logger,
+		allInferersAreNew:                    args.AllInferersAreNew,
+		inferers:                             remainingInferers,
+		workerToInference:                    remainingInfererToInference,
+		infererToRegret:                      remainingInfererRegrets,
+		forecasters:                          args.Forecasters,
+		forecasterToRegret:                   remainingForecasterRegrets,
+		forecasterToForecastImpliedInference: forecasterToForecastImpliedInference,
+		weights:                              weights,
+		epsilonSafeDiv:                       args.EpsilonSafeDiv,
+	})
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutInfererInference() error calculating one-out inference for inferer")
 	}
@@ -441,18 +441,18 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutForecasterInference() error calculating one-out inference for forecaster")
 	}
 
-	oneOutNetworkInferenceWithoutInferer, err = calcWeightedInference(
-		args.Logger,
-		args.AllInferersAreNew,
-		args.Inferers,
-		args.InfererToInference,
-		args.InfererToRegret,
-		remainingForecasters,
-		remainingForecasterRegrets,
-		args.ForecasterToForecastImpliedInference,
-		weights,
-		args.EpsilonSafeDiv,
-	)
+	oneOutNetworkInferenceWithoutInferer, err = calcWeightedInference(calcWeightedInferenceArgs{
+		logger:                               args.Logger,
+		allInferersAreNew:                    args.AllInferersAreNew,
+		inferers:                             args.Inferers,
+		workerToInference:                    args.InfererToInference,
+		infererToRegret:                      args.InfererToRegret,
+		forecasters:                          remainingForecasters,
+		forecasterToRegret:                   remainingForecasterRegrets,
+		forecasterToForecastImpliedInference: args.ForecasterToForecastImpliedInference,
+		weights:                              weights,
+		epsilonSafeDiv:                       args.EpsilonSafeDiv,
+	})
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "calcOneOutForecasterInference() error calculating one-out inference for inferer")
 	}
@@ -604,17 +604,18 @@ func calcOneInValue(args calcOneInValueArgs) (
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "CalcOneInValue() error calculating weights for one-in inferences")
 	}
 	// Calculate the network inference with just this forecaster's forecast-implied inference
-	oneInInference, err = calcWeightedInference(
-		args.Logger,
-		args.AllInferersAreNew,
-		args.Inferers,
-		infererToInferenceForSingleForecaster,
-		infererToRegretForSingleForecaster,
-		singleForecaster,
-		singleForecasterRegret,
-		args.ForecasterToForecastImpliedInference,
-		weights,
-		args.EpsilonSafeDiv)
+	oneInInference, err = calcWeightedInference(calcWeightedInferenceArgs{
+		logger:                               args.Logger,
+		allInferersAreNew:                    args.AllInferersAreNew,
+		inferers:                             args.Inferers,
+		workerToInference:                    infererToInferenceForSingleForecaster,
+		infererToRegret:                      infererToRegretForSingleForecaster,
+		forecasters:                          singleForecaster,
+		forecasterToRegret:                   singleForecasterRegret,
+		forecasterToForecastImpliedInference: args.ForecasterToForecastImpliedInference,
+		weights:                              weights,
+		epsilonSafeDiv:                       args.EpsilonSafeDiv,
+	})
 	if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrapf(err, "CalcOneInValue() error calculating one-in inference")
 	}
