@@ -53,6 +53,7 @@ Summary TBD
 
 * [#603](https://github.com/allora-network/allora-chain/pull/603) Validate all Values for Correctness Prior to Storing them in the Keeper
 * [#620](https://github.com/allora-network/allora-chain/pull/620) Add a static analyzer to detect non-deferred `.Close()` calls, improve migration error handling
+* [622](https://github.com/allora-network/allora-chain/pull/622) Add telemetry metrics on queries/txs
 
 ### Refactor
 

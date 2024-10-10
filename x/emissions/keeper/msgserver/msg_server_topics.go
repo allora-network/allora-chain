@@ -10,12 +10,9 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest,
-) (
-	_ *types.CreateNewTopicResponse,
-	returnErr error,
-) {
-	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), returnErr == nil)
+func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
+	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), &err == nil)
+
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
