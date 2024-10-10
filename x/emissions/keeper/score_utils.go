@@ -34,17 +34,25 @@ func UpdateLowestScoreFromReputerAddresses(
 	addedReputer string,
 	removedReputerAddress string,
 ) error {
-	reputerAddresses = append(reputerAddresses, addedReputer)
-	lowScore := types.Score{}
+	// remove reputer from the list
 	for i, address := range reputerAddresses {
 		if address == removedReputerAddress {
-			continue
+			reputerAddresses = append(reputerAddresses[:i], reputerAddresses[i+1:]...)
+			break
 		}
+	}
+	// add new reputer to the list
+	reputerAddresses = append(reputerAddresses, addedReputer)
+	lowScore, err := k.GetReputerScoreEma(ctx, topicId, reputerAddresses[0])
+	if err != nil {
+		return err
+	}
+	for _, address := range reputerAddresses {
 		score, err := k.GetReputerScoreEma(ctx, topicId, address)
 		if err != nil {
-			continue
+			return err
 		}
-		if lowScore.Score.Gt(score.Score) || i == 0 {
+		if lowScore.Score.Gt(score.Score) {
 			lowScore = score
 		}
 	}
@@ -60,17 +68,25 @@ func UpdateLowestScoreFromInfererAddresses(
 	addedInferer string,
 	removedInfererAddress string,
 ) error {
-	infererAddresses = append(infererAddresses, addedInferer)
-	lowScore := types.Score{}
+	// remove inferer from the list
 	for i, address := range infererAddresses {
 		if address == removedInfererAddress {
-			continue
+			infererAddresses = append(infererAddresses[:i], infererAddresses[i+1:]...)
+			break
 		}
+	}
+	// add new inferer to the list
+	infererAddresses = append(infererAddresses, addedInferer)
+	lowScore, err := k.GetInfererScoreEma(ctx, topicId, infererAddresses[0])
+	if err != nil {
+		return err
+	}
+	for _, address := range infererAddresses {
 		score, err := k.GetInfererScoreEma(ctx, topicId, address)
 		if err != nil {
-			continue
+			return err
 		}
-		if lowScore.Score.Gt(score.Score) || i == 0 {
+		if lowScore.Score.Gt(score.Score) {
 			lowScore = score
 		}
 	}
@@ -105,17 +121,25 @@ func UpdateLowestScoreFromForecasterAddresses(
 	addedForecaster string,
 	removedForecasterAddress string,
 ) error {
-	forecasterAddresses = append(forecasterAddresses, addedForecaster)
-	lowScore := types.Score{}
+	// remove forecaster from the list
 	for i, address := range forecasterAddresses {
 		if address == removedForecasterAddress {
-			continue
+			forecasterAddresses = append(forecasterAddresses[:i], forecasterAddresses[i+1:]...)
+			break
 		}
+	}
+	// add new forecaster to the list
+	forecasterAddresses = append(forecasterAddresses, addedForecaster)
+	lowScore, err := k.GetForecasterScoreEma(ctx, topicId, forecasterAddresses[0])
+	if err != nil {
+		return err
+	}
+	for _, address := range forecasterAddresses {
 		score, err := k.GetForecasterScoreEma(ctx, topicId, address)
 		if err != nil {
-			continue
+			return err
 		}
-		if lowScore.Score.Gt(score.Score) || i == 0 {
+		if lowScore.Score.Gt(score.Score) {
 			lowScore = score
 		}
 	}
