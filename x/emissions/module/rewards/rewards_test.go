@@ -65,7 +65,7 @@ func (s *RewardsTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
+	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}) // nolint: exhaustruct
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 
 	maccPerms := map[string][]string{
@@ -241,6 +241,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 		Metadata:                 "test",
 		LossMethod:               "mse",
 		EpochLength:              10800,
+		AllowNegative:            false,
 		GroundTruthLag:           10800,
 		WorkerSubmissionWindow:   10,
 		AlphaRegret:              alloraMath.NewDecFromInt64(1),
@@ -362,6 +363,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	newTopicMsg := &types.CreateNewTopicRequest{
 		Creator:                  s.addrsStr[reputerIndexes[0]],
 		Metadata:                 "test",
+		AllowNegative:            false,
 		LossMethod:               "mse",
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
@@ -495,6 +497,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 		Creator:                  s.addrsStr[reputerIndexes[0]],
 		Metadata:                 "test",
 		LossMethod:               "mse",
+		AllowNegative:            false,
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
 		WorkerSubmissionWindow:   10,
@@ -632,6 +635,7 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 		Metadata:                 "test",
 		LossMethod:               "mse",
 		EpochLength:              epochLength,
+		AllowNegative:            false,
 		GroundTruthLag:           epochLength,
 		WorkerSubmissionWindow:   min(10, epochLength-2),
 		AlphaRegret:              alphaRegret,
@@ -1229,6 +1233,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		Creator:                  s.addrsStr[reputerIndexes[0]],
 		Metadata:                 "test",
 		LossMethod:               "mse",
+		AllowNegative:            false,
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
 		WorkerSubmissionWindow:   10,
@@ -1378,6 +1383,7 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 		Creator:                  s.addrsStr[reputerIndexes[0]],
 		Metadata:                 "test",
 		LossMethod:               "mse",
+		AllowNegative:            false,
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
 		WorkerSubmissionWindow:   10,
@@ -1522,6 +1528,7 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 		Metadata:                 "test",
 		LossMethod:               "mse",
 		EpochLength:              epochLength,
+		AllowNegative:            false,
 		GroundTruthLag:           epochLength,
 		WorkerSubmissionWindow:   10,
 		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
@@ -1693,6 +1700,7 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 		Metadata:                 "test",
 		LossMethod:               "mse",
 		EpochLength:              epochLength,
+		AllowNegative:            false,
 		GroundTruthLag:           epochLength,
 		WorkerSubmissionWindow:   10,
 		AlphaRegret:              alloraMath.NewDecFromInt64(1),
@@ -1917,6 +1925,7 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 		LossMethod:               "mse",
 		EpochLength:              epochLength,
 		GroundTruthLag:           epochLength,
+		AllowNegative:            false,
 		WorkerSubmissionWindow:   10,
 		AlphaRegret:              alloraMath.NewDecFromInt64(1),
 		PNorm:                    alloraMath.NewDecFromInt64(3),
@@ -1992,7 +2001,10 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker],
 			Value:       alloraMath.MustNewDecFromString("0.01127"),
+			ExtraData:   []byte("extra data"),
+			Proof:       "",
 		},
+		Forecast: nil,
 	}
 	worker1Sig, err := signInferenceForecastBundle(worker1InferenceForecastBundle, s.privKeys[worker])
 	s.Require().NoError(err)
@@ -2018,14 +2030,16 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 				BlockHeight: blockHeight,
 			},
 		},
-		Reputer:                s.addrsStr[reputer],
-		CombinedValue:          alloraMath.MustNewDecFromString("0.01127"),
-		NaiveValue:             alloraMath.MustNewDecFromString("0.0116"),
-		InfererValues:          []*types.WorkerAttributedValue{{Worker: s.addrsStr[worker], Value: alloraMath.MustNewDecFromString("0.0112")}},
-		ForecasterValues:       []*types.WorkerAttributedValue{},
-		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{},
-		OneInForecasterValues:  []*types.WorkerAttributedValue{},
+		ExtraData:                     nil,
+		Reputer:                       s.addrsStr[reputer],
+		CombinedValue:                 alloraMath.MustNewDecFromString("0.01127"),
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0116"),
+		InfererValues:                 []*types.WorkerAttributedValue{{Worker: s.addrsStr[worker], Value: alloraMath.MustNewDecFromString("0.0112")}},
+		ForecasterValues:              []*types.WorkerAttributedValue{},
+		OneOutInfererValues:           []*types.WithheldWorkerAttributedValue{},
+		OneOutForecasterValues:        []*types.WithheldWorkerAttributedValue{},
+		OneInForecasterValues:         []*types.WorkerAttributedValue{},
+		OneOutInfererForecasterValues: nil,
 	}
 	sig, err := signValueBundle(valueBundle, s.privKeys[reputer])
 	s.Require().NoError(err)
@@ -2073,6 +2087,44 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		MinEpochLength:          []int64{1},
 		RegistrationFee:         []cosmosMath.Int{cosmosMath.NewInt(6)},
 		MaxActiveTopicsPerBlock: []uint64{2},
+		// the following fields are not set
+		Version:                             nil,
+		MaxSerializedMsgLength:              nil,
+		MinTopicWeight:                      nil,
+		RequiredMinimumStake:                nil,
+		RemoveStakeDelayWindow:              nil,
+		BetaEntropy:                         nil,
+		LearningRate:                        nil,
+		MaxGradientThreshold:                nil,
+		MinStakeFraction:                    nil,
+		MaxUnfulfilledWorkerRequests:        nil,
+		MaxUnfulfilledReputerRequests:       nil,
+		TopicRewardStakeImportance:          nil,
+		TopicRewardFeeRevenueImportance:     nil,
+		TopicRewardAlpha:                    nil,
+		TaskRewardAlpha:                     nil,
+		ValidatorsVsAlloraPercentReward:     nil,
+		MaxSamplesToScaleScores:             nil,
+		MaxTopForecastersToReward:           nil,
+		MaxTopReputersToReward:              nil,
+		CreateTopicFee:                      nil,
+		GradientDescentMaxIters:             nil,
+		DefaultPageLimit:                    nil,
+		MaxPageLimit:                        nil,
+		MinEpochLengthRecordLimit:           nil,
+		BlocksPerMonth:                      nil,
+		PRewardInference:                    nil,
+		PRewardForecast:                     nil,
+		PRewardReputer:                      nil,
+		CRewardInference:                    nil,
+		CRewardForecast:                     nil,
+		CNorm:                               nil,
+		EpsilonReputer:                      nil,
+		HalfMaxProcessStakeRemovalsEndBlock: nil,
+		DataSendingFee:                      nil,
+		EpsilonSafeDiv:                      nil,
+		MaxElementsPerForecast:              nil,
+		MaxStringLength:                     nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -2109,6 +2161,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 		Creator:                  s.addrsStr[reputerIndexes[0]],
 		Metadata:                 "test",
 		LossMethod:               "mse",
+		AllowNegative:            false,
 		EpochLength:              epochLength,
 		GroundTruthLag:           epochLength,
 		WorkerSubmissionWindow:   10,
@@ -2220,6 +2273,7 @@ func (s *RewardsTestSuite) TestOnlyFewTopActorsGetReward() {
 
 	networkLossBundles, err := s.emissionsKeeper.GetNetworkLossBundleAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err)
+	s.Require().NotNil(networkLossBundles)
 
 	infererScores, err := rewards.GenerateInferenceScores(
 		s.ctx,
@@ -2261,6 +2315,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		Creator:                  s.addrsStr[reputerIndexes[0]],
 		Metadata:                 "test",
 		LossMethod:               "mse",
+		AllowNegative:            false,
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
 		WorkerSubmissionWindow:   10,
@@ -2433,6 +2488,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		Creator:                  s.addrsStr[reputerIndexes[0]],
 		Metadata:                 "test",
 		LossMethod:               "mse",
+		AllowNegative:            false,
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
 		WorkerSubmissionWindow:   10,
@@ -2590,6 +2646,7 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		Creator:                  s.addrsStr[reputerIndexes[0]],
 		Metadata:                 "test",
 		LossMethod:               "mse",
+		AllowNegative:            false,
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
 		WorkerSubmissionWindow:   10,

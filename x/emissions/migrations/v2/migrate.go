@@ -83,7 +83,7 @@ func MigrateTopics(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 			newWorkerSubmissionWindow = max(1, oldMsg.EpochLength/2)
 		}
 
-		newMsg := types.Topic{
+		newMsg := types.Topic{ //nolint: exhaustruct // not sure if safe to fix, also this upgrade has already happened.
 			Id:                     oldMsg.Id,
 			Creator:                oldMsg.Creator,
 			Metadata:               oldMsg.Metadata,
@@ -165,6 +165,11 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 			return err
 		}
 
+		newInfererValues := make([]*types.WorkerAttributedValue, 0)
+		newForecastValues := make([]*types.WorkerAttributedValue, 0)
+		newOneOutInfererValues := make([]*types.WithheldWorkerAttributedValue, 0)
+		newOneOutForecasterValues := make([]*types.WithheldWorkerAttributedValue, 0)
+		newOneInForecastValues := make([]*types.WorkerAttributedValue, 0)
 		newMsg := types.ValueBundle{
 			TopicId: oldMsg.TopicId,
 			ReputerRequestNonce: &types.ReputerRequestNonce{
@@ -175,15 +180,15 @@ func MigrateNetworkLossBundles(store storetypes.KVStore, cdc codec.BinaryCodec) 
 			Reputer:                       oldMsg.Reputer,
 			ExtraData:                     oldMsg.ExtraData,
 			CombinedValue:                 oldMsg.CombinedValue,
+			InfererValues:                 newInfererValues,
+			ForecasterValues:              newForecastValues,
 			NaiveValue:                    oldMsg.NaiveValue,
 			OneOutInfererForecasterValues: []*types.OneOutInfererForecasterValues{},
+			OneOutInfererValues:           newOneOutInfererValues,
+			OneOutForecasterValues:        newOneOutForecasterValues,
+			OneInForecasterValues:         newOneInForecastValues,
 		}
 
-		newInfererValues := make([]*types.WorkerAttributedValue, 0)
-		newForecastValues := make([]*types.WorkerAttributedValue, 0)
-		newOneOutInfererValues := make([]*types.WithheldWorkerAttributedValue, 0)
-		newOneOutForecasterValues := make([]*types.WithheldWorkerAttributedValue, 0)
-		newOneInForecastValues := make([]*types.WorkerAttributedValue, 0)
 		for _, inference := range oldMsg.InfererValues {
 			newInfererValues = append(newInfererValues, &types.WorkerAttributedValue{
 				Worker: inference.Worker,

@@ -376,7 +376,7 @@ func (qs queryServer) GetStakeRemovalForReputerAndTopicId(
 		return nil, err
 	}
 	if !found {
-		return &types.GetStakeRemovalForReputerAndTopicIdResponse{}, nil
+		return &types.GetStakeRemovalForReputerAndTopicIdResponse{StakeRemovalInfo: nil}, nil
 	}
 
 	return &types.GetStakeRemovalForReputerAndTopicIdResponse{StakeRemovalInfo: &stakeRemovalInfo}, nil

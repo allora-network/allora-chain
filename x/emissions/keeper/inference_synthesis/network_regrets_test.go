@@ -13,6 +13,12 @@ import (
 func (s *InferenceSynthesisTestSuite) TestConvertValueBundleToNetworkLossesByWorker() {
 	require := s.Require()
 	valueBundle := emissionstypes.ValueBundle{
+		TopicId: uint64(1),
+		Reputer: s.addrsStr[1],
+		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
+			ReputerNonce: &emissionstypes.Nonce{BlockHeight: 100},
+		},
+		ExtraData:     nil,
 		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
 		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
@@ -35,6 +41,7 @@ func (s *InferenceSynthesisTestSuite) TestConvertValueBundleToNetworkLossesByWor
 			{Worker: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("0.1")},
 			{Worker: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("0.2")},
 		},
+		OneOutInfererForecasterValues: nil,
 	}
 
 	result := inferencesynthesis.ConvertValueBundleToNetworkLossesByWorker(valueBundle)
@@ -178,16 +185,17 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require.True(worker3NoPriorRegret)
 
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		s.emissionsKeeper,
-		topicId,
-		valueBundle,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: valueBundle,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	bothAccs := []string{worker1, worker2}
@@ -251,6 +259,12 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 
 	valueBundle := emissionstypes.ValueBundle{
+		TopicId: uint64(1),
+		Reputer: s.addrsStr[1],
+		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
+			ReputerNonce: &emissionstypes.Nonce{BlockHeight: 100},
+		},
+		ExtraData:     nil,
 		CombinedValue: alloraMath.MustNewDecFromString("500"),
 		NaiveValue:    alloraMath.MustNewDecFromString("123"),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
@@ -268,6 +282,9 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker3, Value: alloraMath.MustNewDecFromString("200")},
 		},
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneOutInfererForecasterValues: nil,
 	}
 	blockHeight := int64(42)
 	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}
@@ -315,16 +332,17 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	require.NoError(err)
 
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		s.emissionsKeeper,
-		topicId,
-		valueBundle,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: valueBundle,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	allWorkerAccs := []string{worker1, worker2, worker3}
@@ -388,16 +406,17 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 	s.Require().NoError(err)
 
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		k,
-		topicId,
-		networkLosses,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: networkLosses,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	checkRegret := func(worker string, expected alloraMath.Dec, getter func(context.Context, uint64, string) (emissionstypes.TimestampedValue, bool, error)) {
@@ -570,16 +589,17 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	resetRegrets()
 
 	err := inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		k,
-		topicId,
-		networkLossesValueBundle0,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: networkLossesValueBundle0,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	// Record resulting regrets
@@ -609,16 +629,17 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 	resetRegrets()
 
 	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		k,
-		topicId,
-		networkLossesValueBundle1,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+			Ctx:           s.ctx,
+			K:             s.emissionsKeeper,
+			TopicId:       topicId,
+			NetworkLosses: networkLossesValueBundle1,
+			Nonce:         nonce,
+			AlphaRegret:   alpha,
+			CNorm:         cNorm,
+			PNorm:         pNorm,
+			EpsilonTopic:  epsilon,
+		})
 	require.NoError(err)
 
 	// Record resulting regrets

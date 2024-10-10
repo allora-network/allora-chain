@@ -50,7 +50,7 @@ func (s *EmissionsV2MigrationsTestSuite) SetupTest() {
 	storeService := runtime.NewKVStoreService(key)
 	s.storeService = storeService
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
+	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}) // nolint: exhaustruct
 	s.ctx = ctx
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 	s.codec = encCfg.Codec
@@ -254,6 +254,7 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateValueBundle() {
 		ReputerRequestNonce: &oldtypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
 		},
+		Reputer:       "testReputer",
 		ExtraData:     []byte("testExtraData"),
 		CombinedValue: alloraMath.OneDec(),
 		InfererValues: []*oldtypes.WorkerAttributedValue{
@@ -335,6 +336,7 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateAllLossBundles() {
 		ReputerRequestNonce: &oldtypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
 		},
+		Reputer:       "testReputer",
 		ExtraData:     []byte("testExtraData"),
 		CombinedValue: alloraMath.OneDec(),
 		InfererValues: []*oldtypes.WorkerAttributedValue{

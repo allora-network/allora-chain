@@ -166,15 +166,17 @@ func CloseReputerNonce(
 	types.EmitNewNetworkLossSetEvent(sdkCtx, topicId, nonce.BlockHeight, networkLossBundle)
 
 	err = synth.GetCalcSetNetworkRegrets(
-		sdkCtx,
-		*k,
-		topicId,
-		networkLossBundle,
-		nonce,
-		topic.AlphaRegret,
-		params.CNorm,
-		topic.PNorm,
-		topic.Epsilon)
+		synth.GetCalcSetNetworkRegretsArgs{
+			Ctx:           sdkCtx,
+			K:             *k,
+			TopicId:       topicId,
+			NetworkLosses: networkLossBundle,
+			Nonce:         nonce,
+			AlphaRegret:   topic.AlphaRegret,
+			CNorm:         params.CNorm,
+			PNorm:         topic.PNorm,
+			EpsilonTopic:  topic.Epsilon,
+		})
 	if err != nil {
 		return err
 	}

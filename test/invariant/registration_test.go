@@ -49,7 +49,7 @@ func registerWorker(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	registerWorkerResponse := &emissionstypes.RegisterResponse{}
+	registerWorkerResponse := &emissionstypes.RegisterResponse{} // nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerWorkerResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	if data.failOnErr {
@@ -95,7 +95,7 @@ func unregisterWorker(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	removeRegistrationResponse := &emissionstypes.RemoveRegistrationResponse{}
+	removeRegistrationResponse := &emissionstypes.RemoveRegistrationResponse{} // nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(removeRegistrationResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	if data.failOnErr {
@@ -142,7 +142,7 @@ func registerReputer(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	registerWorkerResponse := &emissionstypes.RegisterResponse{}
+	registerWorkerResponse := &emissionstypes.RegisterResponse{} // nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerWorkerResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	if data.failOnErr {
@@ -188,7 +188,7 @@ func unregisterReputer(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	removeRegistrationResponseMsg := &emissionstypes.RemoveRegistrationResponse{}
+	removeRegistrationResponseMsg := &emissionstypes.RemoveRegistrationResponse{} // nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(removeRegistrationResponseMsg)
 	requireNoError(m.T, data.failOnErr, err)
 	if data.failOnErr {

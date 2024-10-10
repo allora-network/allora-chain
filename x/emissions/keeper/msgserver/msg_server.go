@@ -12,7 +12,7 @@ type msgServer struct {
 	k keeper.Keeper
 }
 
-var _ types.MsgServiceServer = msgServer{}
+var _ types.MsgServiceServer = msgServer{k: keeper.Keeper{}}
 
 // NewMsgServerImpl returns an implementation of the module MsgServer interface.
 func NewMsgServerImpl(keeper keeper.Keeper) types.MsgServiceServer {

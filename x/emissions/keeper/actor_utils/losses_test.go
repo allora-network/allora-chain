@@ -55,7 +55,7 @@ func (a *ActorUtilsTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(a.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
+	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}) // nolint: exhaustruct
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 
@@ -230,6 +230,12 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 	// Prepare a sample ReputerValueBundle
 	valueBundle := &emissionstypes.ValueBundle{
 		TopicId: 1,
+		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
+			ReputerNonce: &workerNonce,
+		},
+		Reputer:       a.addrsStr[40],
+		ExtraData:     nil,
+		CombinedValue: alloraMath.NewDecFromInt64(1000),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
 			{Worker: inferer1, Value: alloraMath.NewDecFromInt64(100)},
 			{Worker: inferer2, Value: alloraMath.NewDecFromInt64(100)},
@@ -239,6 +245,7 @@ func (a *ActorUtilsTestSuite) TestFilterUnacceptedWorkersFromReputerValueBundle(
 			{Worker: forecaster1, Value: alloraMath.NewDecFromInt64(300)},
 			{Worker: forecaster3, Value: alloraMath.NewDecFromInt64(400)}, // Should be filtered out
 		},
+		NaiveValue: alloraMath.NewDecFromInt64(1000),
 		OneOutInfererValues: []*emissionstypes.WithheldWorkerAttributedValue{
 			{Worker: inferer1, Value: alloraMath.NewDecFromInt64(500)},
 			{Worker: inferer5, Value: alloraMath.NewDecFromInt64(600)}, // Should be filtered out

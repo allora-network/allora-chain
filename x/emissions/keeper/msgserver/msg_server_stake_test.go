@@ -35,6 +35,7 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
 		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
 		AlphaRegret:              alloraMath.NewDecFromInt64(1),
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
@@ -78,9 +79,10 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 
 	// Register Worker
 	workerRegMsg := &types.RegisterRequest{
-		Sender:  worker,
-		Owner:   worker,
-		TopicId: topicId,
+		Sender:    worker,
+		Owner:     worker,
+		TopicId:   topicId,
+		IsReputer: false,
 	}
 	_, err = msgServer.Register(ctx, workerRegMsg)
 	require.NoError(err, "Registering worker should not return an error")
@@ -1400,11 +1402,21 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 
 	reputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
-			TopicId:       topicId,
-			Reputer:       reputer,
-			CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
-			NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
+			TopicId:                       topicId,
+			ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: block}},
+			Reputer:                       reputer,
+			ExtraData:                     nil,
+			CombinedValue:                 alloraMath.MustNewDecFromString("1500.0"),
+			InfererValues:                 nil,
+			ForecasterValues:              nil,
+			NaiveValue:                    alloraMath.MustNewDecFromString("1500.0"),
+			OneOutInfererValues:           nil,
+			OneOutForecasterValues:        nil,
+			OneInForecasterValues:         nil,
+			OneOutInfererForecasterValues: nil,
 		},
+		Signature: []byte{},
+		Pubkey:    "",
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
 	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, block, reputerValueBundles)
@@ -1456,11 +1468,21 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 
 	newReputerValueBundle := &types.ReputerValueBundle{
 		ValueBundle: &types.ValueBundle{
-			TopicId:       topicId,
-			Reputer:       reputer,
-			CombinedValue: alloraMath.MustNewDecFromString("1500.0"),
-			NaiveValue:    alloraMath.MustNewDecFromString("1500.0"),
+			TopicId:                       topicId,
+			ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: newBlock}},
+			Reputer:                       reputer,
+			ExtraData:                     nil,
+			CombinedValue:                 alloraMath.MustNewDecFromString("1500.0"),
+			InfererValues:                 nil,
+			ForecasterValues:              nil,
+			NaiveValue:                    alloraMath.MustNewDecFromString("1500.0"),
+			OneOutInfererValues:           nil,
+			OneOutForecasterValues:        nil,
+			OneInForecasterValues:         nil,
+			OneOutInfererForecasterValues: nil,
 		},
+		Signature: []byte{},
+		Pubkey:    "",
 	}
 	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
 	_ = s.emissionsKeeper.InsertReputerLossBundlesAtBlock(s.ctx, topicId, newBlock, newReputerValueBundles)
@@ -2023,9 +2045,10 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStake() {
 
 	// Call CancelRemoveDelegateStake
 	msg := &types.CancelRemoveDelegateStakeRequest{
-		Sender:  delegator,
-		Reputer: reputer,
-		TopicId: topicId,
+		Sender:    delegator,
+		Reputer:   reputer,
+		TopicId:   topicId,
+		Delegator: delegator,
 	}
 	_, err = s.msgServer.CancelRemoveDelegateStake(ctx, msg)
 	require.NoError(err)
@@ -2052,9 +2075,10 @@ func (s *MsgServerTestSuite) TestCancelRemoveDelegateStakeNotExist() {
 
 	// Call CancelRemoveDelegateStake
 	msg := &types.CancelRemoveDelegateStakeRequest{
-		Sender:  delegator,
-		Reputer: reputer,
-		TopicId: topicId,
+		Sender:    delegator,
+		Reputer:   reputer,
+		TopicId:   topicId,
+		Delegator: delegator,
 	}
 	_, err := s.msgServer.CancelRemoveDelegateStake(ctx, msg)
 	require.Error(err)

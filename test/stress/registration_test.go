@@ -29,7 +29,7 @@ func RegisterReputerForTopic(
 	if err != nil {
 		return err
 	}
-	registerAliceResponse := &emissionstypes.RegisterResponse{}
+	registerAliceResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerAliceResponse)
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func RegisterWorkerForTopic(
 	if err != nil {
 		return err
 	}
-	registerBobResponse := &emissionstypes.RegisterResponse{}
+	registerBobResponse := &emissionstypes.RegisterResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(registerBobResponse)
 	if err != nil {
 		return err

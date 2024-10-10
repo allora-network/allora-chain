@@ -173,7 +173,13 @@ func findFirstValidStakeRemovalFromChain(m *testcommon.TestConfig) (emissionstyp
 		}
 		return *resp.Removals[0], true, nil
 	}
-	return emissionstypes.StakeRemovalInfo{}, false, nil
+	return emissionstypes.StakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		TopicId:               0,
+		BlockRemovalCompleted: 0,
+		Reputer:               "",
+		Amount:                cosmossdk_io_math.Int{},
+	}, false, nil // no stake removal was found
 }
 
 func cancelStakeRemoval(
@@ -387,7 +393,14 @@ func findFirstValidDelegateStakeRemovalFromChain(m *testcommon.TestConfig) (emis
 		}
 		return *resp.Removals[0], true, nil
 	}
-	return emissionstypes.DelegateStakeRemovalInfo{}, false, nil
+	return emissionstypes.DelegateStakeRemovalInfo{
+		BlockRemovalStarted:   0,
+		TopicId:               0,
+		BlockRemovalCompleted: 0,
+		Reputer:               "",
+		Delegator:             "",
+		Amount:                cosmossdk_io_math.Int{},
+	}, false, nil // no delegate stake removal was found
 }
 
 func cancelDelegateStakeRemoval(

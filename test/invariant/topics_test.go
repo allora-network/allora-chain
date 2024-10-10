@@ -52,7 +52,7 @@ func createTopic(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	createTopicResponse := &emissionstypes.CreateNewTopicResponse{}
+	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} // nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(createTopicResponse)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)

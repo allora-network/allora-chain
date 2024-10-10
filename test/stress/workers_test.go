@@ -183,21 +183,28 @@ func generateSingleWorkerBundle(
 
 	// Create a InsertReputerPayloadRequest message
 	workerDataBundle := &emissionstypes.WorkerDataBundle{
-		Worker: infererAddress,
+		Worker:  infererAddress,
+		Nonce:   &emissionstypes.Nonce{BlockHeight: blockHeight},
+		TopicId: topicId,
 		InferenceForecastsBundle: &emissionstypes.InferenceForecastBundle{
 			Inference: &emissionstypes.Inference{
 				TopicId:     topicId,
 				BlockHeight: blockHeight,
 				Inferer:     infererAddress,
 				Value:       infererValue,
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			Forecast: &emissionstypes.Forecast{
 				TopicId:          topicId,
 				BlockHeight:      blockHeight,
 				Forecaster:       infererAddress,
 				ForecastElements: forecastElements,
+				ExtraData:        nil,
 			},
 		},
+		InferencesForecastsBundleSignature: []byte{},
+		Pubkey:                             "",
 	}
 
 	// Sign

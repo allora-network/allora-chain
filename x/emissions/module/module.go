@@ -22,10 +22,10 @@ import (
 )
 
 var (
-	_ module.AppModuleBasic   = AppModule{}
-	_ module.HasGenesis       = AppModule{}
-	_ appmodule.AppModule     = AppModule{}
-	_ appmodule.HasEndBlocker = AppModule{}
+	_ module.AppModuleBasic   = AppModule{} // nolint: exhaustruct
+	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
+	_ appmodule.AppModule     = AppModule{} // nolint: exhaustruct
+	_ appmodule.HasEndBlocker = AppModule{} // nolint: exhaustruct
 )
 
 // ConsensusVersion defines the current module consensus version.

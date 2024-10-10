@@ -40,7 +40,7 @@ func createTopic(
 	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
 	require.NoError(m.T, err)
 
-	createTopicResponse := &emissionstypes.CreateNewTopicResponse{}
+	createTopicResponse := &emissionstypes.CreateNewTopicResponse{} //nolint:exhaustruct // the fields are populated by decode
 	err = txResp.Decode(createTopicResponse)
 	require.NoError(m.T, err)
 

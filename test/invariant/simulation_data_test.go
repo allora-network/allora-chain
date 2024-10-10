@@ -8,6 +8,7 @@ import (
 
 	cosmossdk_io_math "cosmossdk.io/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
+	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 )
 
 // SimulationData stores the active set of states we think we're in
@@ -381,7 +382,11 @@ func (s *SimulationData) getActorFromAddr(addr string) (Actor, bool) {
 			return actor, true
 		}
 	}
-	return Actor{}, false
+	return Actor{
+		name: "",
+		addr: "",
+		acc:  cosmosaccount.Account{Name: "", Record: nil},
+	}, false
 }
 
 // randomly flip the fail on err case to decide whether to be aggressive and fuzzy or
