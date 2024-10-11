@@ -2,19 +2,23 @@ package msgserver
 
 import (
 	"context"
+	"time"
 
 	"errors"
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // Function for reputers to call to add stake to an existing stake position.
-func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (*types.AddStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (_ *types.AddStakeResponse, err error) {
+	defer metrics.RecordMetrics("AddStake", time.Now(), &err)
+
+	if err = msg.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -56,8 +60,10 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (*
 // RemoveStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
-func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeRequest) (*types.RemoveStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeRequest) (_ *types.RemoveStakeResponse, err error) {
+	defer metrics.RecordMetrics("RemoveStake", time.Now(), &err)
+
+	if err = msg.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -110,15 +116,14 @@ func (ms msgServer) RemoveStake(ctx context.Context, msg *types.RemoveStakeReque
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
 	err = ms.k.SetStakeRemoval(ctx, stakeToRemove)
-	if err != nil {
-		return nil, err
-	}
-	return &types.RemoveStakeResponse{}, nil
+	return &types.RemoveStakeResponse{}, err
 }
 
 // cancel a request to remove your stake, during the delay window
-func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemoveStakeRequest) (*types.CancelRemoveStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemoveStakeRequest) (_ *types.CancelRemoveStakeResponse, err error) {
+	defer metrics.RecordMetrics("CancelRemoveStake", time.Now(), &err)
+
+	if err = msg.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -144,12 +149,14 @@ func (ms msgServer) CancelRemoveStake(ctx context.Context, msg *types.CancelRemo
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to delete previous stake removal")
 	}
-	return &types.CancelRemoveStakeResponse{}, nil
+	return &types.CancelRemoveStakeResponse{}, err
 }
 
 // Delegates a stake to a reputer. Sender does not have to be registered to delegate stake.
-func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeRequest) (*types.DelegateStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeRequest) (_ *types.DelegateStakeResponse, err error) {
+	defer metrics.RecordMetrics("DelegateStake", time.Now(), &err)
+
+	if err = msg.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -189,8 +196,10 @@ func (ms msgServer) DelegateStake(ctx context.Context, msg *types.DelegateStakeR
 // RemoveDelegateStake kicks off a stake removal process. Stake Removals are placed into a delayed queue.
 // once the withdrawal delay has passed then the ABCI endBlocker will automatically pay out the stake removal
 // if this function is called twice, it will overwrite the previous stake removal and the delay will reset.
-func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDelegateStakeRequest) (*types.RemoveDelegateStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDelegateStakeRequest) (_ *types.RemoveDelegateStakeResponse, err error) {
+	defer metrics.RecordMetrics("RemoveDelegateStake", time.Now(), &err)
+
+	if err = msg.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -265,15 +274,14 @@ func (ms msgServer) RemoveDelegateStake(ctx context.Context, msg *types.RemoveDe
 
 	// If no errors have occurred and the removal is valid, add the stake removal to the delayed queue
 	err = ms.k.SetDelegateStakeRemoval(ctx, stakeToRemove)
-	if err != nil {
-		return nil, err
-	}
-	return &types.RemoveDelegateStakeResponse{}, nil
+	return &types.RemoveDelegateStakeResponse{}, err
 }
 
 // cancel an ongoing stake removal request during the delay period
-func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.CancelRemoveDelegateStakeRequest) (*types.CancelRemoveDelegateStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.CancelRemoveDelegateStakeRequest) (_ *types.CancelRemoveDelegateStakeResponse, err error) {
+	defer metrics.RecordMetrics("CancelRemoveDelegateStake", time.Now(), &err)
+
+	if err = msg.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -314,11 +322,13 @@ func (ms msgServer) CancelRemoveDelegateStake(ctx context.Context, msg *types.Ca
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to delete previous delegate stake removal")
 	}
-	return &types.CancelRemoveDelegateStakeResponse{}, nil
+	return &types.CancelRemoveDelegateStakeResponse{}, err
 }
 
-func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDelegateStakeRequest) (*types.RewardDelegateStakeResponse, error) {
-	if err := msg.Validate(); err != nil {
+func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDelegateStakeRequest) (_ *types.RewardDelegateStakeResponse, err error) {
+	defer metrics.RecordMetrics("RewardDelegateStake", time.Now(), &err)
+
+	if err = msg.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -371,5 +381,5 @@ func (ms msgServer) RewardDelegateStake(ctx context.Context, msg *types.RewardDe
 			return nil, err
 		}
 	}
-	return &types.RewardDelegateStakeResponse{}, nil
+	return &types.RewardDelegateStakeResponse{}, err
 }

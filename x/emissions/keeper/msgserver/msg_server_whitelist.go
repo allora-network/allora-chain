@@ -2,13 +2,17 @@ package msgserver
 
 import (
 	"context"
+	"time"
 
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhitelistAdminRequest) (*types.AddToWhitelistAdminResponse, error) {
+func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhitelistAdminRequest) (_ *types.AddToWhitelistAdminResponse, err error) {
+	defer metrics.RecordMetrics("AddToWhitelistAdmin", time.Now(), &err)
+
 	// Validate the sender address
-	err := ms.k.ValidateStringIsBech32(msg.Sender)
+	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -25,15 +29,14 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhi
 	}
 	// Add the address to the whitelist
 	err = ms.k.AddWhitelistAdmin(ctx, msg.Address)
-	if err != nil {
-		return nil, err
-	}
-	return &types.AddToWhitelistAdminResponse{}, nil
+	return &types.AddToWhitelistAdminResponse{}, err
 }
 
-func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.RemoveFromWhitelistAdminRequest) (*types.RemoveFromWhitelistAdminResponse, error) {
+func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.RemoveFromWhitelistAdminRequest) (_ *types.RemoveFromWhitelistAdminResponse, err error) {
+	defer metrics.RecordMetrics("RemoveFromWhitelistAdmin", time.Now(), &err)
+
 	// Validate the sender address
-	err := ms.k.ValidateStringIsBech32(msg.Sender)
+	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +53,5 @@ func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.Rem
 	}
 	// Remove the address from the whitelist
 	err = ms.k.RemoveWhitelistAdmin(ctx, msg.Address)
-	if err != nil {
-		return nil, err
-	}
-	return &types.RemoveFromWhitelistAdminResponse{}, nil
+	return &types.RemoveFromWhitelistAdminResponse{}, err
 }

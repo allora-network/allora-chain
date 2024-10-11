@@ -2,9 +2,11 @@ package msgserver
 
 import (
 	"context"
+	"time"
 
 	errorsmod "cosmossdk.io/errors"
 	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -14,10 +16,11 @@ import (
 // Only 1 payload per registered worker is kept, ignore the rest. In particular, take the first payload from each
 // registered worker and none from any unregistered actor.
 // Signatures, anti-sybil procedures, and "skimming of only the top few workers by EMA score descending" should be done here.
-func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (*types.InsertWorkerPayloadResponse, error) {
+func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (_ *types.InsertWorkerPayloadResponse, err error) {
+	defer metrics.RecordMetrics("InsertWorkerPayload", time.Now(), &err)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
-	err := ms.k.ValidateStringIsBech32(msg.Sender)
+	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}

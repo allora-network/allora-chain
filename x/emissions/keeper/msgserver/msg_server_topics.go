@@ -2,13 +2,17 @@ package msgserver
 
 import (
 	"context"
+	"time"
 
 	errorsmod "cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
 
-func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (*types.CreateNewTopicResponse, error) {
+func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
+	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), &err)
+
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)

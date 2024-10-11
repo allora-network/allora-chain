@@ -2,21 +2,27 @@ package msgserver
 
 import (
 	"context"
+	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // A tx function that accepts a individual loss and possibly returns an error
-func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (*types.InsertReputerPayloadResponse, error) {
+func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (_ *types.InsertReputerPayloadResponse, err error) {
+	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
-	err := ms.k.ValidateStringIsBech32(msg.Sender)
+
+	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
+
 	err = checkInputLength(ctx, ms, msg)
 	if err != nil {
 		return nil, err
@@ -95,5 +101,5 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, err
 	}
 
-	return &types.InsertReputerPayloadResponse{}, nil
+	return &types.InsertReputerPayloadResponse{}, err
 }

@@ -2,14 +2,18 @@ package msgserver
 
 import (
 	"context"
+	"time"
 
+	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) (*types.FundTopicResponse, error) {
-	err := ms.k.ValidateStringIsBech32(msg.Sender)
+func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) (_ *types.FundTopicResponse, err error) {
+	defer metrics.RecordMetrics("FundTopic", time.Now(), &err)
+
+	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
