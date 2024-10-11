@@ -198,8 +198,7 @@ func validateVersion(v string) error {
 	lenV := len(v)
 	if v == "" || lenV == 0 {
 		return ErrValidationVersionEmpty
-	}
-	if lenV > 32 {
+	} else if lenV > 32 {
 		return ErrValidationVersionTooLong
 	}
 	return nil
@@ -210,8 +209,7 @@ func validateVersion(v string) error {
 func validateMinTopicWeight(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if i.IsNegative() {
+	} else if i.IsNegative() {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
@@ -249,8 +247,7 @@ func validateMinEpochLength(i BlockHeight) error {
 func validateBetaEntropy(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	} else if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -282,8 +279,7 @@ func validateGradientDescentMaxIters(i uint64) error {
 func validateMaxGradientThreshold(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+	} else if !isAlloraDecBetweenZeroAndOneExclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -294,8 +290,7 @@ func validateMaxGradientThreshold(i alloraMath.Dec) error {
 func validateMinStakeFraction(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	} else if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -306,8 +301,7 @@ func validateMinStakeFraction(i alloraMath.Dec) error {
 func validateEpsilonReputer(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if i.Lte(alloraMath.ZeroDec()) {
+	} else if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
@@ -317,8 +311,7 @@ func validateEpsilonReputer(i alloraMath.Dec) error {
 func validateEpsilonSafeDiv(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if i.Lte(alloraMath.ZeroDec()) {
+	} else if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
@@ -329,8 +322,7 @@ func validateEpsilonSafeDiv(i alloraMath.Dec) error {
 func validatePRewardInference(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if i.Lte(alloraMath.ZeroDec()) {
+	} else if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
@@ -341,8 +333,7 @@ func validatePRewardInference(i alloraMath.Dec) error {
 func validatePRewardForecast(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if i.Lte(alloraMath.ZeroDec()) {
+	} else if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
@@ -353,8 +344,7 @@ func validatePRewardForecast(i alloraMath.Dec) error {
 func validatePRewardReputer(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if i.Lte(alloraMath.ZeroDec()) {
+	} else if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
@@ -365,8 +355,7 @@ func validatePRewardReputer(i alloraMath.Dec) error {
 func validateCRewardInference(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if i.Lte(alloraMath.ZeroDec()) {
+	} else if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
@@ -377,8 +366,7 @@ func validateCRewardInference(i alloraMath.Dec) error {
 func validateCRewardForecast(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if i.Lte(alloraMath.ZeroDec()) {
+	} else if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
@@ -389,8 +377,7 @@ func validateCRewardForecast(i alloraMath.Dec) error {
 func validateCNorm(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if i.Lte(alloraMath.ZeroDec()) {
+	} else if i.Lte(alloraMath.ZeroDec()) {
 		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
@@ -413,8 +400,7 @@ func validateMaxUnfulfilledReputerRequests(_ uint64) error {
 func validateTopicRewardStakeImportance(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	} else if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -425,8 +411,7 @@ func validateTopicRewardStakeImportance(i alloraMath.Dec) error {
 func validateTopicRewardFeeRevenueImportance(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	} else if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -437,8 +422,7 @@ func validateTopicRewardFeeRevenueImportance(i alloraMath.Dec) error {
 func validateTopicRewardAlpha(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+	} else if !isAlloraDecBetweenZeroAndOneExclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -449,8 +433,7 @@ func validateTopicRewardAlpha(i alloraMath.Dec) error {
 func validateTaskRewardAlpha(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if !isAlloraDecBetweenZeroAndOneExclusive(i) {
+	} else if !isAlloraDecBetweenZeroAndOneExclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -461,8 +444,7 @@ func validateTaskRewardAlpha(i alloraMath.Dec) error {
 func validateValidatorsVsAlloraPercentReward(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	} else if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
@@ -579,8 +561,7 @@ func validateMaxStringLength(_ uint64) error {
 func validateInitialRegretQuantile(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
-	}
-	if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+	} else if !isAlloraDecBetweenZeroAndOneInclusive(i) {
 		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
