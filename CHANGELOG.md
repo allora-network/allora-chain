@@ -58,6 +58,10 @@ Summary TBD
 
 * [#538](https://github.com/allora-network/allora-chain/pull/538) Refactor Inference Synthesis to use Functions instead of "Builder Pattern"
 
+### Monitoring
+
+* [#624](https://github.com/allora-network/allora-chain/pull/624) Add `nurse` internal healthcheck service based on `pprof`.  See `health/README.md`.
+
 ## [Released]
 
 ## v0.5.0
