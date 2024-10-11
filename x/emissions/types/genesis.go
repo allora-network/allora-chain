@@ -70,6 +70,8 @@ func NewGenesisState() *GenesisState {
 		PreviousTopicQuantileInfererScoreEma:           []*TopicIdAndDec{},
 		PreviousTopicQuantileForecasterScoreEma:        []*TopicIdAndDec{},
 		PreviousTopicQuantileReputerScoreEma:           []*TopicIdAndDec{},
+		CountInfererInclusionsInTopicActiveSet:         []*TopicIdActorIdUint64{},
+		CountForecasterInclusionsInTopicActiveSet:      []*TopicIdActorIdUint64{},
 	}
 }
 

@@ -482,7 +482,7 @@ func (s *EmissionsV2MigrationsTestSuite) TestMigrateAllRecordCommits() {
 
 func (s *EmissionsV2MigrationsTestSuite) TestMigrateParams() {
 	// Create a Params with garbage in it
-	prevParams := types.Params{
+	prevParams := types.Params{ //nolint: exhaustruct
 		Version:                             "v1",
 		MaxSerializedMsgLength:              1,
 		MinTopicWeight:                      alloraMath.OneDec(),

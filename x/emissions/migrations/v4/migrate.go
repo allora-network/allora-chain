@@ -73,7 +73,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	// DIFFERENCE BETWEEN OLD PARAMS AND NEW PARAMS:
 	// ADDED:
 	//      MaxStringLength
-	newParams := emissionstypes.Params{
+	newParams := emissionstypes.Params{ //nolint: exhaustruct
 		Version:                             oldParams.Version,
 		MaxSerializedMsgLength:              oldParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      oldParams.MinTopicWeight,

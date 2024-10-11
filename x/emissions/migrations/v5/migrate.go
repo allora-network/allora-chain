@@ -52,7 +52,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // migrate params for this new version
 // the changes are the addition of InitialRegretQuantile,PnormSafeDiv
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV4Types.Params{}
+	oldParams := oldV4Types.Params{} //nolint: exhaustruct
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
@@ -169,6 +169,7 @@ func safelyClearWholeMap(ctx sdk.Context, store storetypes.KVStore, keyPrefix []
 	for {
 		// Gather keys to eventually delete
 		iterator := s.Iterator(nil, nil)
+		defer iterator.Close()
 		keysToDelete := make([][]byte, 0)
 		count := uint64(0)
 		for ; iterator.Valid(); iterator.Next() {

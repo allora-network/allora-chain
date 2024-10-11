@@ -776,17 +776,17 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	)
 	s.Require().NoError(err)
 
-	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		k,
-		topicId,
-		networkLosses,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+	err = inferencesynthesis.GetCalcSetNetworkRegrets(inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+		Ctx:           s.ctx,
+		K:             k,
+		TopicId:       topicId,
+		NetworkLosses: networkLosses,
+		Nonce:         nonce,
+		AlphaRegret:   alpha,
+		CNorm:         cNorm,
+		PNorm:         pNorm,
+		EpsilonTopic:  epsilon,
+	})
 	require.NoError(err)
 
 	// Assert that initial regret is updated
@@ -845,17 +845,17 @@ func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
 	)
 	s.Require().NoError(err)
 
-	err = inferencesynthesis.GetCalcSetNetworkRegrets(
-		s.ctx,
-		k,
-		topicId,
-		networkLosses,
-		nonce,
-		alpha,
-		cNorm,
-		pNorm,
-		epsilon,
-	)
+	err = inferencesynthesis.GetCalcSetNetworkRegrets(inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+		Ctx:           s.ctx,
+		K:             k,
+		TopicId:       topicId,
+		NetworkLosses: networkLosses,
+		Nonce:         nonce,
+		AlphaRegret:   alpha,
+		CNorm:         cNorm,
+		PNorm:         pNorm,
+		EpsilonTopic:  epsilon,
+	})
 	require.NoError(err)
 
 	// Initial Regret will not be updated because this topic has no experienced actors

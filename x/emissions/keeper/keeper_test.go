@@ -3835,6 +3835,8 @@ func mockUninitializedParams() types.Params {
 		MaxElementsPerForecast:              uint64(0),
 		MaxActiveTopicsPerBlock:             uint64(0),
 		MaxStringLength:                     uint64(0),
+		InitialRegretQuantile:               alloraMath.ZeroDec(),
+		PnormSafeDiv:                        alloraMath.ZeroDec(),
 	}
 }
 

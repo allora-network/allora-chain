@@ -2125,6 +2125,8 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		EpsilonSafeDiv:                      nil,
 		MaxElementsPerForecast:              nil,
 		MaxStringLength:                     nil,
+		InitialRegretQuantile:               nil,
+		PnormSafeDiv:                        nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
