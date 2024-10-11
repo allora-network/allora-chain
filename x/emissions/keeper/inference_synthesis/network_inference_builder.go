@@ -202,7 +202,7 @@ func calcOneOutInfererInference(args CalcOneOutInfererInferenceArgs) (
 	args.Logger.Debug(fmt.Sprintf(
 		"calcOneOutInfererInference() calculating one-out inference for topic %v withheld inferer %s", args.TopicId, args.WithheldInferer))
 
-	// Remove the inferer from the palette's inferers
+	// To calculate one out, remove the inferer from the list of inferers
 	remainingInferers := make([]Worker, 0)
 	remainingInfererToInference := make(map[Worker]*emissions.Inference)
 	remainingInfererRegrets := make(map[string]*alloraMath.Dec)
@@ -392,7 +392,7 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 ) {
 	args.Logger.Debug(fmt.Sprintf("Calculating one-out inference for topic %v withheld forecaster %s", args.TopicId, args.WithheldForecaster))
 
-	// Remove the withheldForecaster from the palette's forecasters
+	// To calculate one out, remove the withheldForecaster from the list of forecasters
 	remainingForecasters := make([]Forecaster, 0)
 	remainingForecasterToForecast := make(map[Forecaster]*emissions.Forecast)
 	remainingForecasterRegrets := make(map[Forecaster]*Regret)

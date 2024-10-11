@@ -23,7 +23,7 @@ type calcWeightsGivenWorkersArgs struct {
 	cNorm              alloraMath.Dec
 }
 
-// Given the current set of inferers and forecasters in the palette, calculate their
+// Given the current set of inferers and forecasters, calculate their
 // weights using the current regrets
 func calcWeightsGivenWorkers(args calcWeightsGivenWorkersArgs) (RegretInformedWeights, error) {
 	var regrets []alloraMath.Dec
