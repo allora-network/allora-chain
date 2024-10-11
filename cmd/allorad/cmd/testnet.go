@@ -122,6 +122,7 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 				MaxRate:       math.LegacyMustNewDecFromStr("0.1"),
 				MaxChangeRate: math.LegacyMustNewDecFromStr("0.05"),
 			},
+			UpdateTime: time.Time{},
 		},
 		MinSelfDelegation:       math.OneInt(),
 		UnbondingHeight:         0,
@@ -141,6 +142,7 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	for ; validatorsPowerStoreIterator.Valid(); validatorsPowerStoreIterator.Next() {
 		stakingStore.Delete(validatorsPowerStoreIterator.Key())
 	}
+	validatorsPowerStoreIterator.Close()
 
 	// Remove all valdiators from last validators store
 	lastValidatorsIterator, err := app.StakingKeeper.LastValidatorsIterator(ctx)
@@ -151,6 +153,7 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	for ; lastValidatorsIterator.Valid(); lastValidatorsIterator.Next() {
 		stakingStore.Delete(lastValidatorsIterator.Key())
 	}
+	lastValidatorsIterator.Close()
 
 	// Remove all validators from validators store
 	validatorsIterator := storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorsKey)
@@ -158,6 +161,7 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	for ; validatorsIterator.Valid(); validatorsIterator.Next() {
 		stakingStore.Delete(validatorsIterator.Key())
 	}
+	validatorsIterator.Close()
 
 	// Remove all validators from unbonding queue
 	validatorQueueIterator := storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorQueueKey)
@@ -165,6 +169,7 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	for ; validatorQueueIterator.Valid(); validatorQueueIterator.Next() {
 		stakingStore.Delete(validatorQueueIterator.Key())
 	}
+	validatorQueueIterator.Close()
 
 	// Add our validator to power and last validators store
 	err = app.StakingKeeper.SetValidator(ctx, newVal)
