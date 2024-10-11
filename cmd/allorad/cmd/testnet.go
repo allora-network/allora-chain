@@ -125,38 +125,38 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	// Remove all validators from power store
 	stakingKey := app.GetKey(stakingtypes.ModuleName)
 	stakingStore := ctx.KVStore(stakingKey)
-	iterator, err := app.StakingKeeper.ValidatorsPowerStoreIterator(ctx)
+	validatorsPowerStoreIterator, err := app.StakingKeeper.ValidatorsPowerStoreIterator(ctx)
 	if err != nil {
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to get validators power store iterator").Error())
 	}
-	for ; iterator.Valid(); iterator.Next() {
-		stakingStore.Delete(iterator.Key())
+	defer validatorsPowerStoreIterator.Close()
+	for ; validatorsPowerStoreIterator.Valid(); validatorsPowerStoreIterator.Next() {
+		stakingStore.Delete(validatorsPowerStoreIterator.Key())
 	}
-	iterator.Close()
 
 	// Remove all valdiators from last validators store
-	iterator, err = app.StakingKeeper.LastValidatorsIterator(ctx)
+	lastValidatorsIterator, err := app.StakingKeeper.LastValidatorsIterator(ctx)
 	if err != nil {
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to get last validators iterator").Error())
 	}
-	for ; iterator.Valid(); iterator.Next() {
-		stakingStore.Delete(iterator.Key())
+	defer lastValidatorsIterator.Close()
+	for ; lastValidatorsIterator.Valid(); lastValidatorsIterator.Next() {
+		stakingStore.Delete(lastValidatorsIterator.Key())
 	}
-	iterator.Close()
 
 	// Remove all validators from validators store
-	iterator = storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorsKey)
-	for ; iterator.Valid(); iterator.Next() {
-		stakingStore.Delete(iterator.Key())
+	validatorsIterator := storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorsKey)
+	defer validatorsIterator.Close()
+	for ; validatorsIterator.Valid(); validatorsIterator.Next() {
+		stakingStore.Delete(validatorsIterator.Key())
 	}
-	iterator.Close()
 
 	// Remove all validators from unbonding queue
-	iterator = storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorQueueKey)
-	for ; iterator.Valid(); iterator.Next() {
-		stakingStore.Delete(iterator.Key())
+	validatorQueueIterator := storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorQueueKey)
+	defer validatorQueueIterator.Close()
+	for ; validatorQueueIterator.Valid(); validatorQueueIterator.Next() {
+		stakingStore.Delete(validatorQueueIterator.Key())
 	}
-	iterator.Close()
 
 	// Add our validator to power and last validators store
 	err = app.StakingKeeper.SetValidator(ctx, newVal)
