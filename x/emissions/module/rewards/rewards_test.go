@@ -2788,6 +2788,24 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	)
 }
 
+// TestRewardForTopicGoesUpWhenRelativeStakeGoesUp tests that the reward for a topic increases
+// when its relative stake compared to other topics increases.
+//
+// Setup:
+// - Create two topics (topicId0 and topicId1) with identical initial stakes, workers, and reputers
+// - Set up identical worker and reputer values for both topics
+// - Record initial stakes for reputers on both topics
+//
+// Expected outcomes:
+// 1. Initially, rewards for both topics should be similar due to identical setups
+// 2. After increasing stake on one topic:
+//   - The reward for the topic with increased stake should be higher
+//   - The reward for the topic with unchanged stake should be lower
+//
+// 3. The total rewards across both topics should remain constant
+//
+// This test demonstrates that the reward distribution mechanism correctly
+// adjusts rewards based on the relative stakes of topics in the network.
 func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	// setup
 	require := s.Require()

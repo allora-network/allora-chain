@@ -85,6 +85,26 @@ func (s *InferenceSynthesisTestSuite) TestComputeAndBuildEMRegret() {
 	require.Equal(blockHeight, result.BlockHeight)
 }
 
+// TestGetCalcSetNetworkRegretsTwoWorkers tests the GetCalcSetNetworkRegrets function
+// with two workers in a simplified scenario.
+//
+// Setup:
+// - Create a topic with ID 1 and initial regret of 0
+// - Set AlphaRegret to 0.5, making the experience threshold 2 inclusions
+// - Define three workers, but only use two in the value bundle
+// - Set up a value bundle with combined value 500 and individual values of 200
+//
+// Expected outcomes:
+//  1. The function should execute without error
+//  2. Network regrets should be calculated and set for both workers
+//  3. The topic's initial regret should be updated from 0
+//  4. Regrets for both workers should be equal, as they have the same values
+//  5. The calculated regrets should reflect the difference between individual
+//     and combined values, influenced by the AlphaRegret parameter
+//
+// This test ensures that the regret calculation works correctly for a simple
+// case with two equally performing workers, and that the topic's initial
+// regret is properly updated.
 func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require := s.Require()
 	k := s.emissionsKeeper
@@ -709,6 +729,27 @@ func (s *InferenceSynthesisTestSuite) TestCalcTopicInitialRegret() {
 	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.3354820760526412097325669544281814")
 }
 
+// TestUpdateTopicInitialRegret tests the UpdateTopicInitialRegret function.
+//
+// Setup:
+// - Create a topic with ID 1 and initial regret of 0
+// - Set AlphaRegret to 0.5, making the experience threshold 2 inclusions
+// - Add 5 inferers and 3 forecasters, each with 2 inclusions to make them experienced
+// - Set up a simulated value getter for epochs 300 and 301
+//
+// Test steps:
+// 1. Create a value bundle with combined value and individual values for inferers and forecasters
+// 2. Call UpdateTopicInitialRegret with this value bundle
+// 3. Retrieve the updated topic
+//
+// Expected outcomes:
+// 1. The function should execute without error
+// 2. The topic's initial regret should be updated from 0 to a non-zero value
+// 3. The new initial regret should be calculated based on the provided values and parameters
+//
+// This test ensures that the UpdateTopicInitialRegret function correctly calculates
+// and updates the initial regret for a topic based on the performance of experienced
+// workers, using the provided normalization and calculation parameters.
 func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	require := s.Require()
 	k := s.emissionsKeeper
@@ -795,6 +836,24 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	require.NotEqual(topic.InitialRegret, initialRegret)
 }
 
+// TestNotUpdateTopicInitialRegret tests that the topic's initial regret is not updated
+// when there are no experienced workers for the topic.
+//
+// Setup:
+// - Create a topic with an initial regret of 0
+// - Set up inferer and forecaster addresses
+// - Do not increment the inclusion counts for workers, leaving them as inexperienced
+// - Set regrets from the previous epoch
+// - Generate network losses for the current epoch
+//
+// Expected outcomes:
+//  1. The GetCalcSetNetworkRegrets function should execute without error
+//  2. The topic's initial regret should remain unchanged (0) after the function call
+//     because there are no experienced workers to trigger an update
+//
+// This test ensures that the initial regret of a topic is not modified when
+// there are no experienced workers, maintaining the system's integrity by
+// preventing premature updates to the topic's regret baseline.
 func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
 	require := s.Require()
 	k := s.emissionsKeeper
