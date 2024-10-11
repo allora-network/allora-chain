@@ -156,14 +156,19 @@ func createWorkerDataBundle(
 				BlockHeight: blockHeight,
 				Inferer:     infererAddress,
 				Value:       infererValue,
+				ExtraData:   nil,
+				Proof:       "",
 			},
 			Forecast: &emissionstypes.Forecast{
 				TopicId:          topicId,
 				BlockHeight:      blockHeight,
 				Forecaster:       infererAddress,
 				ForecastElements: forecastElements,
+				ExtraData:        nil,
 			},
 		},
+		InferencesForecastsBundleSignature: nil,
+		Pubkey:                             "",
 	}
 
 	// Sign
@@ -258,6 +263,7 @@ func createReputerValueBundle(
 	return emissionstypes.ValueBundle{
 		TopicId:                topicId,
 		Reputer:                reputer.addr,
+		ExtraData:              nil,
 		CombinedValue:          alloraMath.NewDecFromInt64(100),
 		InfererValues:          generateWorkerAttributedValueLosses(m, workers, 3000, 3500),
 		ForecasterValues:       generateWorkerAttributedValueLosses(m, workers, 50, 50),
@@ -268,6 +274,7 @@ func createReputerValueBundle(
 		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
 			ReputerNonce: reputerNonce,
 		},
+		OneOutInfererForecasterValues: nil,
 	}
 }
 

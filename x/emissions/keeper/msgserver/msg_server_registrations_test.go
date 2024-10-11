@@ -312,6 +312,7 @@ func (s *MsgServerTestSuite) TestBlocklistedAddressUnableToRegister() {
 		EpochLength:              epochLength,
 		GroundTruthLag:           epochLength,
 		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
 		AlphaRegret:              alloraMath.NewDecFromInt64(1),
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),

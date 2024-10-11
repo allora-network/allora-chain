@@ -49,11 +49,7 @@ func NewTestConfig(
 	seed int,
 ) TestConfig {
 	t.Helper()
-	nodeConfig := TestConfig{}
 	var err error
-	nodeConfig.T = t
-	nodeConfig.AlloraHomeDir = alloraHomeDir
-	nodeConfig.Seed = seed
 	if rpcConnectionType == SingleRpc {
 		require.Len(t, nodeRpcAddresses, 1, "must have exactly one rpc address")
 	} else { // RoundRobin or RandomBasedOnDeterministicSeed
@@ -66,47 +62,65 @@ func NewTestConfig(
 		alloraHomeDir,
 		int64(seed),
 	)
-	nodeConfig.Client = client
 	//// restore from mnemonic
-	nodeConfig.FaucetAcc, err = client.Clients[0].AccountRegistry.GetByName("faucet")
+	faucetAcc, err := client.Clients[0].AccountRegistry.GetByName("faucet")
 	require.NoError(t, err)
-	nodeConfig.UpshotAcc, err = client.Clients[0].AccountRegistry.GetByName("upshot")
+	upshotAcc, err := client.Clients[0].AccountRegistry.GetByName("upshot")
 	require.NoError(t, err)
-	nodeConfig.AliceAcc, err = client.Clients[0].AccountRegistry.GetByName("faucet")
+	aliceAcc, err := client.Clients[0].AccountRegistry.GetByName("faucet")
 	require.NoError(t, err)
-	nodeConfig.BobAcc, err = client.Clients[0].AccountRegistry.GetByName("upshot")
+	bobAcc, err := client.Clients[0].AccountRegistry.GetByName("upshot")
 	require.NoError(t, err)
-	nodeConfig.Validator0Acc, err = client.Clients[0].AccountRegistry.GetByName("validator0")
+	validator0Acc, err := client.Clients[0].AccountRegistry.GetByName("validator0")
 	require.NoError(t, err)
-	nodeConfig.Validator1Acc, err = client.Clients[0].AccountRegistry.GetByName("validator1")
+	validator1Acc, err := client.Clients[0].AccountRegistry.GetByName("validator1")
 	require.NoError(t, err)
-	nodeConfig.Validator2Acc, err = client.Clients[0].AccountRegistry.GetByName("validator2")
+	validator2Acc, err := client.Clients[0].AccountRegistry.GetByName("validator2")
 	require.NoError(t, err)
-	nodeConfig.FaucetAddr, err = nodeConfig.FaucetAcc.Address(params.HumanCoinUnit)
+	faucetAddr, err := faucetAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-	nodeConfig.UpshotAddr, err = nodeConfig.UpshotAcc.Address(params.HumanCoinUnit)
+	upshotAddr, err := upshotAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-	nodeConfig.AliceAddr, err = nodeConfig.AliceAcc.Address(params.HumanCoinUnit)
+	aliceAddr, err := aliceAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-	nodeConfig.BobAddr, err = nodeConfig.BobAcc.Address(params.HumanCoinUnit)
+	bobAddr, err := bobAcc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-	nodeConfig.Validator0Addr, err = nodeConfig.Validator0Acc.Address(params.HumanCoinUnit)
+	validator0Addr, err := validator0Acc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-	nodeConfig.Validator1Addr, err = nodeConfig.Validator1Acc.Address(params.HumanCoinUnit)
+	validator1Addr, err := validator1Acc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
-	nodeConfig.Validator2Addr, err = nodeConfig.Validator2Acc.Address(params.HumanCoinUnit)
+	validator2Addr, err := validator2Acc.Address(params.HumanCoinUnit)
 	require.NoError(t, err)
 
 	encCfg := moduletestutil.MakeTestEncodingConfig(
-		mint.AppModuleBasic{},
-		emissions.AppModule{},
-		auth.AppModule{},
-		bank.AppModule{},
-		distribution.AppModule{},
-		gov.AppModule{},
-		upgrade.AppModule{},
+		mint.AppModuleBasic{},    //nolint:exhaustruct
+		emissions.AppModule{},    //nolint:exhaustruct
+		auth.AppModule{},         //nolint:exhaustruct
+		bank.AppModule{},         //nolint:exhaustruct
+		distribution.AppModule{}, //nolint:exhaustruct
+		gov.AppModule{},          //nolint:exhaustruct
+		upgrade.AppModule{},      //nolint:exhaustruct
 	)
-	nodeConfig.Cdc = codec.NewProtoCodec(encCfg.InterfaceRegistry)
 
-	return nodeConfig
+	return TestConfig{
+		T:              t,
+		AlloraHomeDir:  alloraHomeDir,
+		Seed:           seed,
+		Client:         client,
+		Cdc:            codec.NewProtoCodec(encCfg.InterfaceRegistry),
+		FaucetAcc:      faucetAcc,
+		FaucetAddr:     faucetAddr,
+		UpshotAcc:      upshotAcc,
+		UpshotAddr:     upshotAddr,
+		AliceAcc:       aliceAcc,
+		AliceAddr:      aliceAddr,
+		BobAcc:         bobAcc,
+		BobAddr:        bobAddr,
+		Validator0Acc:  validator0Acc,
+		Validator0Addr: validator0Addr,
+		Validator1Acc:  validator1Acc,
+		Validator1Addr: validator1Addr,
+		Validator2Acc:  validator2Acc,
+		Validator2Addr: validator2Addr,
+	}
 }

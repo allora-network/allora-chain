@@ -74,7 +74,13 @@ func (s *MintModuleTestSuite) SetupTest() {
 	storeService := runtime.NewKVStoreService(key)
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, staking.AppModuleBasic{}, bank.AppModuleBasic{}, mint.AppModuleBasic{})
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
+	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{
+		Height:  1,
+		Hash:    []byte("test"),
+		ChainID: "localnet",
+		AppHash: []byte("test"),
+		Time:    time.Now(),
+	})
 
 	maccPerms := map[string][]string{
 		"fee_collector":                         nil,

@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ types.MsgServiceServer = msgServiceServer{}
+var _ types.MsgServiceServer = msgServiceServer{} //nolint: exhaustruct
 
 // msgServiceServer is a wrapper of Keeper.
 type msgServiceServer struct {

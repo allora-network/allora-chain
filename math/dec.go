@@ -67,11 +67,20 @@ var dec128Context = apd.Context{
 	MaxExponent: apd.MaxExponent,
 	MinExponent: apd.MinExponent,
 	Traps:       apd.DefaultTraps,
+	Rounding:    apd.RoundDown,
 }
 
 // create a new Dec that represents NaN
 func NewNaN() Dec {
-	return Dec{apd.Decimal{}, true}
+	return Dec{
+		apd.Decimal{
+			Form:     apd.Finite,
+			Negative: false,
+			Exponent: 0,
+			Coeff:    *apd.NewBigInt(0),
+		},
+		true,
+	}
 }
 
 // NewDecFromString returns a new Dec from a given string. It returns an error if the string
@@ -754,7 +763,7 @@ func (x Dec) NumDecimalPlaces() uint32 {
 // Reduce returns a copy of x with all trailing zeros removed and the number
 // of trailing zeros removed.
 func (x Dec) Reduce() (Dec, int) {
-	y := Dec{}
+	y := ZeroDec()
 	_, n := y.dec.Reduce(&x.dec)
 	return y, n
 }

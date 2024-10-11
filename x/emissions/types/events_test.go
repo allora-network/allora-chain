@@ -206,11 +206,13 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 			TopicId: uint64(1),
 			Address: "address1",
 			Reward:  alloraMath.NewDecFromInt64(100),
+			Type:    types.WorkerInferenceRewardType,
 		},
 		{
 			TopicId: uint64(1),
 			Address: "address2",
 			Reward:  alloraMath.NewDecFromInt64(200),
+			Type:    types.WorkerInferenceRewardType,
 		},
 	}
 
@@ -263,11 +265,13 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 			TopicId: uint64(1),
 			Address: "address1",
 			Reward:  alloraMath.NewDecFromInt64(100),
+			Type:    types.WorkerForecastRewardType,
 		},
 		{
 			TopicId: uint64(1),
 			Address: "address2",
 			Reward:  alloraMath.NewDecFromInt64(200),
+			Type:    types.WorkerForecastRewardType,
 		},
 	}
 
@@ -320,11 +324,13 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 			TopicId: uint64(1),
 			Address: "address1",
 			Reward:  alloraMath.NewDecFromInt64(100),
+			Type:    types.ReputerAndDelegatorRewardType,
 		},
 		{
 			TopicId: uint64(1),
 			Address: "address2",
 			Reward:  alloraMath.NewDecFromInt64(200),
+			Type:    types.ReputerAndDelegatorRewardType,
 		},
 	}
 
@@ -375,13 +381,18 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	topicId := uint64(1)
 	blockHeight := int64(10)
 	loss := types.ValueBundle{
-		CombinedValue:          alloraMath.MustNewDecFromString("10"),
-		NaiveValue:             alloraMath.MustNewDecFromString("20"),
-		InfererValues:          []*types.WorkerAttributedValue{{Worker: "TestInferer", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer1", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "TestForecaster", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster1", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "TestInferer2", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer3", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "TestForecaster3", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster4", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "TestForecaster5", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster6", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		TopicId:                       topicId,
+		ReputerRequestNonce:           &types.ReputerRequestNonce{ReputerNonce: &types.Nonce{BlockHeight: blockHeight}},
+		Reputer:                       "",
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.MustNewDecFromString("10"),
+		NaiveValue:                    alloraMath.MustNewDecFromString("20"),
+		InfererValues:                 []*types.WorkerAttributedValue{{Worker: "TestInferer", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		ForecasterValues:              []*types.WorkerAttributedValue{{Worker: "TestForecaster", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster1", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererValues:           []*types.WithheldWorkerAttributedValue{{Worker: "TestInferer2", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer3", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutForecasterValues:        []*types.WithheldWorkerAttributedValue{{Worker: "TestForecaster3", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster4", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneInForecasterValues:         []*types.WorkerAttributedValue{{Worker: "TestForecaster5", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster6", Value: alloraMath.MustNewDecFromString("0.0112")}},
+		OneOutInfererForecasterValues: nil,
 	}
 
 	types.EmitNewNetworkLossSetEvent(ctx, topicId, blockHeight, loss)
@@ -411,17 +422,10 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	topicId := uint64(1)
-	loss := types.ValueBundle{
-		CombinedValue:          alloraMath.MustNewDecFromString("10"),
-		NaiveValue:             alloraMath.MustNewDecFromString("20"),
-		InfererValues:          []*types.WorkerAttributedValue{{Worker: "TestInferer", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer1", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		ForecasterValues:       []*types.WorkerAttributedValue{{Worker: "TestForecaster", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster1", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutInfererValues:    []*types.WithheldWorkerAttributedValue{{Worker: "TestInferer2", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestInferer3", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneOutForecasterValues: []*types.WithheldWorkerAttributedValue{{Worker: "TestForecaster3", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster4", Value: alloraMath.MustNewDecFromString("0.0112")}},
-		OneInForecasterValues:  []*types.WorkerAttributedValue{{Worker: "TestForecaster5", Value: alloraMath.MustNewDecFromString("0.0112")}, {Worker: "TestForecaster6", Value: alloraMath.MustNewDecFromString("0.0112")}},
-	}
+	CombinedValue := alloraMath.MustNewDecFromString("10")
+	NaiveValue := alloraMath.MustNewDecFromString("20")
 
-	score, err := loss.NaiveValue.Sub(loss.CombinedValue)
+	score, err := NaiveValue.Sub(CombinedValue)
 	require.NoError(t, err)
 
 	types.EmitNewForecastTaskUtilityScoreSetEvent(ctx, topicId, score)

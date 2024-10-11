@@ -137,6 +137,12 @@ func (s *InferenceSynthesisTestSuite) getTestCasesOneWorker() []struct {
 			},
 			epsilon: alloraMath.MustNewDecFromString("1e-4"),
 			expectedOutput: emissions.ValueBundle{
+				TopicId: uint64(1),
+				Reputer: s.addrsStr[1],
+				ReputerRequestNonce: &emissions.ReputerRequestNonce{
+					ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+				},
+				ExtraData:     nil,
 				CombinedValue: alloraMath.MustNewDecFromString("0.1587401051968199"),
 				NaiveValue:    alloraMath.MustNewDecFromString("0.1587401051968199"),
 				InfererValues: []*emissions.WorkerAttributedValue{
@@ -169,6 +175,7 @@ func (s *InferenceSynthesisTestSuite) getTestCasesOneWorker() []struct {
 						Value:  alloraMath.MustNewDecFromString("0.1587401051968199"),
 					},
 				},
+				OneOutInfererForecasterValues: nil,
 			},
 			expectedError: nil,
 		},
@@ -247,7 +254,8 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 	signature1 := s.signValueBundle(&valueBundle1, s.privKeys[1])
 
 	valueBundle2 := emissions.ValueBundle{
-		TopicId: uint64(1),
+		ExtraData: nil,
+		TopicId:   uint64(1),
 		ReputerRequestNonce: &emissions.ReputerRequestNonce{
 			ReputerNonce: &emissions.Nonce{BlockHeight: 100},
 		},
@@ -337,6 +345,12 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 			},
 			epsilon: alloraMath.MustNewDecFromString("1e-4"),
 			expectedOutput: emissions.ValueBundle{
+				TopicId: uint64(1),
+				Reputer: s.addrsStr[1],
+				ReputerRequestNonce: &emissions.ReputerRequestNonce{
+					ReputerNonce: &emissions.Nonce{BlockHeight: 100},
+				},
+				ExtraData:     nil,
 				CombinedValue: alloraMath.MustNewDecFromString("0.166666666"),
 				NaiveValue:    alloraMath.MustNewDecFromString("0.166666666"),
 				InfererValues: []*emissions.WorkerAttributedValue{
@@ -389,6 +403,7 @@ func (s *InferenceSynthesisTestSuite) getTestCasesTwoWorkers() []struct {
 						Value:  alloraMath.MustNewDecFromString("0.166666666"),
 					},
 				},
+				OneOutInfererForecasterValues: nil,
 			},
 			expectedError: nil,
 		},

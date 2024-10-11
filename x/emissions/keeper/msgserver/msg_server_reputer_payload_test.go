@@ -83,9 +83,11 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 	}
 
 	reputerValueBundle = types.ValueBundle{
-		TopicId:       topicId,
-		Reputer:       reputerAddr.String(),
-		CombinedValue: alloraMath.NewDecFromInt64(100),
+		TopicId:             topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{ReputerNonce: &workerNonce},
+		Reputer:             reputerAddr.String(),
+		ExtraData:           nil,
+		CombinedValue:       alloraMath.NewDecFromInt64(100),
 		InfererValues: []*types.WorkerAttributedValue{
 			{
 				Worker: workerAddr.String(),
@@ -112,9 +114,7 @@ func (s *MsgServerTestSuite) setUpMsgReputerPayload(
 				Value:  alloraMath.NewDecFromInt64(100),
 			},
 		},
-		ReputerRequestNonce: &types.ReputerRequestNonce{
-			ReputerNonce: &workerNonce,
-		},
+		OneOutInfererForecasterValues: nil,
 	}
 
 	return reputerValueBundle, expectedInferences, expectedForecasts, topicId

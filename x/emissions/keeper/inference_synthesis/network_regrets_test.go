@@ -13,6 +13,12 @@ import (
 func (s *InferenceSynthesisTestSuite) TestConvertValueBundleToNetworkLossesByWorker() {
 	require := s.Require()
 	valueBundle := emissionstypes.ValueBundle{
+		TopicId: uint64(1),
+		Reputer: s.addrsStr[1],
+		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
+			ReputerNonce: &emissionstypes.Nonce{BlockHeight: 100},
+		},
+		ExtraData:     nil,
 		CombinedValue: alloraMath.MustNewDecFromString("0.1"),
 		NaiveValue:    alloraMath.MustNewDecFromString("0.1"),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
@@ -35,6 +41,7 @@ func (s *InferenceSynthesisTestSuite) TestConvertValueBundleToNetworkLossesByWor
 			{Worker: s.addrsStr[1], Value: alloraMath.MustNewDecFromString("0.1")},
 			{Worker: s.addrsStr[2], Value: alloraMath.MustNewDecFromString("0.2")},
 		},
+		OneOutInfererForecasterValues: nil,
 	}
 
 	result := inferencesynthesis.ConvertValueBundleToNetworkLossesByWorker(valueBundle)
@@ -252,6 +259,12 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	epsilon := alloraMath.MustNewDecFromString("0.0001")
 
 	valueBundle := emissionstypes.ValueBundle{
+		TopicId: uint64(1),
+		Reputer: s.addrsStr[1],
+		ReputerRequestNonce: &emissionstypes.ReputerRequestNonce{
+			ReputerNonce: &emissionstypes.Nonce{BlockHeight: 100},
+		},
+		ExtraData:     nil,
 		CombinedValue: alloraMath.MustNewDecFromString("500"),
 		NaiveValue:    alloraMath.MustNewDecFromString("123"),
 		InfererValues: []*emissionstypes.WorkerAttributedValue{
@@ -269,6 +282,9 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 			{Worker: worker2, Value: alloraMath.MustNewDecFromString("200")},
 			{Worker: worker3, Value: alloraMath.MustNewDecFromString("200")},
 		},
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneOutInfererForecasterValues: nil,
 	}
 	blockHeight := int64(42)
 	nonce := emissionstypes.Nonce{BlockHeight: blockHeight}

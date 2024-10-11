@@ -8,6 +8,8 @@ import (
 	testcommon "github.com/allora-network/allora-chain/test/common"
 )
 
+var UnusedActor Actor = Actor{} // nolint:exhaustruct
+
 // Every function responsible for doing a state transition
 // should adhere to this function signature
 type StateTransitionFunc func(
@@ -214,27 +216,27 @@ func pickActorAndTopicIdForStateTransition(
 	case "unregisterWorker":
 		worker, topicId, err := data.pickRandomRegisteredWorker()
 		if err != nil {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
-		return true, worker, Actor{}, nil, topicId
+		return true, worker, UnusedActor, nil, topicId
 	case "unregisterReputer":
 		reputer, topicId, err := data.pickRandomRegisteredReputer()
 		if err != nil {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
-		return true, reputer, Actor{}, nil, topicId
+		return true, reputer, UnusedActor, nil, topicId
 	case "stakeAsReputer":
 		reputer, topicId, err := data.pickRandomRegisteredReputer()
 		if err != nil {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		amount, err := pickRandomBalanceLessThanHalf(m, reputer) // if err amount=zero which is a valid transition
 		requireNoError(m.T, data.failOnErr, err)
-		return true, reputer, Actor{}, &amount, topicId
+		return true, reputer, UnusedActor, &amount, topicId
 	case "delegateStake":
 		reputer, topicId, err := data.pickRandomRegisteredReputer()
 		if err != nil {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		delegator := pickRandomActorExcept(m, data, []Actor{reputer})
 		amount, err := pickRandomBalanceLessThanHalf(m, delegator)
@@ -243,52 +245,52 @@ func pickActorAndTopicIdForStateTransition(
 	case "unstakeAsReputer":
 		reputer, topicId, err := data.pickRandomStakedReputer()
 		if err != nil {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		amount := data.pickPercentOfStakeByReputer(m.Client.Rand, topicId, reputer)
-		return true, reputer, Actor{}, &amount, topicId
+		return true, reputer, UnusedActor, &amount, topicId
 	case "undelegateStake":
 		delegator, reputer, topicId, err := data.pickRandomStakedDelegator()
 		if err != nil {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		amount := data.pickPercentOfStakeByDelegator(m.Client.Rand, topicId, delegator, reputer)
 		return true, delegator, reputer, &amount, topicId
 	case "collectDelegatorRewards":
 		delegator, reputer, topicId, err := data.pickRandomStakedDelegator()
 		if err != nil {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		return true, delegator, reputer, nil, topicId
 	case "cancelStakeRemoval":
 		stakeRemoval, found, err := findFirstValidStakeRemovalFromChain(m)
 		if err != nil || !found {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		reputer, found := data.getActorFromAddr(stakeRemoval.Reputer)
 		if !found {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
-		return true, reputer, Actor{}, &stakeRemoval.Amount, stakeRemoval.TopicId
+		return true, reputer, UnusedActor, &stakeRemoval.Amount, stakeRemoval.TopicId
 	case "cancelDelegateStakeRemoval":
 		stakeRemoval, found, err := findFirstValidDelegateStakeRemovalFromChain(m)
 		if err != nil || !found {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		delegator, found := data.getActorFromAddr(stakeRemoval.Delegator)
 		if !found {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		reputer, found := data.getActorFromAddr(stakeRemoval.Reputer)
 		if !found {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		return true, delegator, reputer, &stakeRemoval.Amount, stakeRemoval.TopicId
 	case "doInferenceAndReputation":
 		ctx := context.Background()
 		blockHeightNow, err := m.Client.BlockHeight(ctx)
 		if err != nil {
-			return false, Actor{}, Actor{}, nil, 0
+			return false, UnusedActor, UnusedActor, nil, 0
 		}
 		topics := findActiveTopicsAtThisBlock(m, data, blockHeightNow)
 		if len(topics) > 0 {
@@ -306,7 +308,7 @@ func pickActorAndTopicIdForStateTransition(
 				return true, worker, reputer, nil, topicId
 			}
 		}
-		return false, Actor{}, Actor{}, nil, 0
+		return false, UnusedActor, UnusedActor, nil, 0
 	default:
 		return pickFullRandomValues(m, data)
 	}

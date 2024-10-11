@@ -63,8 +63,8 @@ message GenesisState {
   repeated TopicIdActorIdDec previousInferenceRewardFraction = 18;
   // map of (topic, worker) -> previous reward for forecast (used for EMA)
   repeated TopicIdActorIdDec previousForecastRewardFraction = 19;
-  // map of (topic, forecaster) -> ratio of forecaster score
-  repeated TopicIdActorIdDec previousForecasterScoreRatio = 20;
+  // map of (topic) -> ratio of forecaster score
+  repeated TopicIdAndDec previousForecasterScoreRatio = 20;
 
   /// STAKING
 

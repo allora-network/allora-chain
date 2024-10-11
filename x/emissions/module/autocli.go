@@ -659,6 +659,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 			},
+			SubCommands:          nil,
+			EnhanceCustomCommand: false,
+			Short:                "Emissions module query commands",
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
 			Service: statev4.MsgService_ServiceDesc.ServiceName,
@@ -832,6 +835,9 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 			},
+			SubCommands:          nil,
+			EnhanceCustomCommand: false,
+			Short:                "Emissions module transaction commands",
 		},
 	}
 }

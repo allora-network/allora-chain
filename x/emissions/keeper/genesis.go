@@ -538,8 +538,7 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	//openWorkerWindows []*BlockHeightAndListOfTopicIds
 	if len(data.OpenWorkerWindows) != 0 {
 		for _, blockHeightAndListOfTopicIds := range data.OpenWorkerWindows {
-			topicIds := types.TopicIds{}
-			topicIds.TopicIds = blockHeightAndListOfTopicIds.TopicIds
+			topicIds := types.TopicIds{TopicIds: blockHeightAndListOfTopicIds.TopicIds}
 			for _, topicId := range topicIds.TopicIds {
 				if err := types.ValidateTopicId(topicId); err != nil {
 					return errors.Wrap(err, "error validating topic id")
@@ -1289,6 +1288,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		blockHeightTopicIdReputerStakeRemovalInfo := types.BlockHeightTopicIdReputerStakeRemovalInfo{
 			BlockHeight:      keyValue.Key.K1(),
 			TopicId:          keyValue.Key.K2(),
+			Reputer:          value.Reputer,
 			StakeRemovalInfo: &value,
 		}
 		stakeRemovalsByBlock = append(stakeRemovalsByBlock, &blockHeightTopicIdReputerStakeRemovalInfo)
@@ -1328,6 +1328,8 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo := types.BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo{
 			BlockHeight:              keyValue.Key.K1(),
 			TopicId:                  keyValue.Key.K2(),
+			Reputer:                  value.Reputer,
+			Delegator:                value.Delegator,
 			DelegateStakeRemovalInfo: &value,
 		}
 		delegateStakeRemovalsByBlock = append(delegateStakeRemovalsByBlock, &blockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo)
@@ -1775,6 +1777,22 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		latestOneInForecasterNetworkRegrets = append(latestOneInForecasterNetworkRegrets, &topicIdActorIdActorIdTimeStampedValue)
 	}
 
+	previousForecasterScoreRatio := make([]*types.TopicIdAndDec, 0)
+	previousForecasterScoreRatioIter, err := k.previousForecasterScoreRatio.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate previous forecaster score ratio")
+	}
+	for ; previousForecasterScoreRatioIter.Valid(); previousForecasterScoreRatioIter.Next() {
+		keyValue, err := previousForecasterScoreRatioIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: previousForecasterScoreRatioIter")
+		}
+		previousForecasterScoreRatio = append(previousForecasterScoreRatio, &types.TopicIdAndDec{
+			TopicId: keyValue.Key,
+			Dec:     keyValue.Value,
+		})
+	}
+
 	coreTeamAddresses := make([]string, 0)
 	coreTeamAddressesIter, err := k.whitelistAdmins.Iterate(ctx, nil)
 	if err != nil {
@@ -1923,6 +1941,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		LatestInfererNetworkRegrets:                    latestInfererNetworkRegrets,
 		LatestForecasterNetworkRegrets:                 latestForecasterNetworkRegrets,
 		LatestOneInForecasterNetworkRegrets:            latestOneInForecasterNetworkRegrets,
+		PreviousForecasterScoreRatio:                   previousForecasterScoreRatio,
 		CoreTeamAddresses:                              coreTeamAddresses,
 		TopicLastWorkerCommit:                          topicLastWorkerCommit,
 		TopicLastReputerCommit:                         topicLastReputerCommit,

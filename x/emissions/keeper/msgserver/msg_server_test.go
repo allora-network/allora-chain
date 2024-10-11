@@ -77,7 +77,7 @@ func (s *MsgServerTestSuite) SetupTest() {
 	storeService := runtime.NewKVStoreService(key)
 	s.storeService = storeService
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()})
+	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}) // nolint: exhaustruct // dependency code
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 	s.codec = encCfg.Codec
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
@@ -211,6 +211,8 @@ func (s *MsgServerTestSuite) CreateCustomEpochTopic(epochLen int64) types.Topic 
 		Metadata:                 newTopicMsg.Metadata,
 		LossMethod:               newTopicMsg.LossMethod,
 		EpochLength:              newTopicMsg.EpochLength,
+		EpochLastEnded:           0,
+		InitialRegret:            alloraMath.ZeroDec(),
 		GroundTruthLag:           newTopicMsg.GroundTruthLag,
 		WorkerSubmissionWindow:   newTopicMsg.WorkerSubmissionWindow,
 		AlphaRegret:              newTopicMsg.AlphaRegret,
@@ -239,6 +241,7 @@ func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 		EpochLength:              10800,
 		GroundTruthLag:           10800,
 		WorkerSubmissionWindow:   10,
+		AllowNegative:            false,
 		AlphaRegret:              alloraMath.NewDecFromInt64(1),
 		PNorm:                    alloraMath.NewDecFromInt64(3),
 		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
