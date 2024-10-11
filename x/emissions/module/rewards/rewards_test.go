@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	l "log"
 	"testing"
 	"time"
 
@@ -2864,23 +2865,29 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	require.NoError(err)
 
 	worker1InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[0]])
+	l.Println("worker1InclusionNum", worker1InclusionNum)
 	require.NoError(err)
-	require.Positive(worker1InclusionNum)
+	require.Equal(uint64(1), worker1InclusionNum)
 	worker2InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[1]])
+	l.Println("worker2InclusionNum", worker2InclusionNum)
 	require.NoError(err)
-	require.Positive(worker2InclusionNum)
+	require.Equal(uint64(1), worker2InclusionNum)
 	worker3InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[2]])
-	require.Positive(worker3InclusionNum)
+	l.Println("worker3InclusionNum", worker3InclusionNum)
+	require.Equal(uint64(1), worker3InclusionNum)
 	require.NoError(err)
 
 	worker1InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[0]])
+	l.Println("worker1InclusionNum", worker1InclusionNum)
 	require.NoError(err)
-	require.Positive(worker1InclusionNum)
+	require.Equal(uint64(1), worker1InclusionNum)
 	worker2InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[1]])
+	l.Println("worker2InclusionNum", worker2InclusionNum)
 	require.NoError(err)
-	require.Positive(worker2InclusionNum)
+	require.Equal(uint64(1), worker2InclusionNum)
 	worker3InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[2]])
-	require.Positive(worker3InclusionNum)
+	l.Println("worker3InclusionNum", worker3InclusionNum)
+	require.Equal(uint64(1), worker3InclusionNum)
 	require.NoError(err)
 	const topicFundAmount int64 = 1000
 
