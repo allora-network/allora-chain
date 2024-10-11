@@ -26,6 +26,7 @@ func TestEnsureDirAndMaxPerms(t *testing.T) {
 			name:    "Create new directory",
 			path:    filepath.Join(tempDir, "newdir"),
 			perms:   0755,
+			setup:   nil,
 			wantErr: false,
 		},
 		{
