@@ -11,7 +11,7 @@ import (
 )
 
 func (qs queryServer) GetInfererScoreEma(ctx context.Context, req *types.GetInfererScoreEmaRequest) (_ *types.GetInfererScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetInfererScoreEma", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetInfererScoreEma", time.Now(), &err)
 
 	latestInfererScore, err := qs.k.GetInfererScoreEma(ctx, req.TopicId, req.Inferer)
 	if err != nil {
@@ -22,7 +22,7 @@ func (qs queryServer) GetInfererScoreEma(ctx context.Context, req *types.GetInfe
 }
 
 func (qs queryServer) GetForecasterScoreEma(ctx context.Context, req *types.GetForecasterScoreEmaRequest) (_ *types.GetForecasterScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetForecasterScoreEma", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetForecasterScoreEma", time.Now(), &err)
 
 	latestForecasterScore, err := qs.k.GetForecasterScoreEma(ctx, req.TopicId, req.Forecaster)
 	if err != nil {
@@ -36,7 +36,7 @@ func (qs queryServer) GetReputerScoreEma(
 	ctx context.Context,
 	req *types.GetReputerScoreEmaRequest,
 ) (_ *types.GetReputerScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetReputerScoreEma", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetReputerScoreEma", time.Now(), &err)
 
 	latestReputerScore, err := qs.k.GetReputerScoreEma(ctx, req.TopicId, req.Reputer)
 	if err != nil {
@@ -47,7 +47,7 @@ func (qs queryServer) GetReputerScoreEma(
 }
 
 func (qs queryServer) GetPreviousTopicQuantileForecasterScoreEma(ctx context.Context, req *types.GetPreviousTopicQuantileForecasterScoreEmaRequest) (_ *types.GetPreviousTopicQuantileForecasterScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetPreviousTopicQuantileForecasterScoreEma", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetPreviousTopicQuantileForecasterScoreEma", time.Now(), &err)
 	previousQuantileForecasterScore, err := qs.k.GetPreviousTopicQuantileForecasterScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (qs queryServer) GetPreviousTopicQuantileForecasterScoreEma(ctx context.Con
 }
 
 func (qs queryServer) GetPreviousTopicQuantileInfererScoreEma(ctx context.Context, req *types.GetPreviousTopicQuantileInfererScoreEmaRequest) (_ *types.GetPreviousTopicQuantileInfererScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetPreviousTopicQuantileInfererScoreEma", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetPreviousTopicQuantileInfererScoreEma", time.Now(), &err)
 	previousQuantileInfererScore, err := qs.k.GetPreviousTopicQuantileInfererScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (qs queryServer) GetPreviousTopicQuantileInfererScoreEma(ctx context.Contex
 }
 
 func (qs queryServer) GetPreviousTopicQuantileReputerScoreEma(ctx context.Context, req *types.GetPreviousTopicQuantileReputerScoreEmaRequest) (resp *types.GetPreviousTopicQuantileReputerScoreEmaResponse, err error) {
-	defer metrics.RecordMetrics("GetPreviousTopicQuantileReputerScoreEma", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetPreviousTopicQuantileReputerScoreEma", time.Now(), &err)
 	previousQuantileReputerScore, err := qs.k.GetPreviousTopicQuantileReputerScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (qs queryServer) GetPreviousTopicQuantileReputerScoreEma(ctx context.Contex
 }
 
 func (qs queryServer) GetInferenceScoresUntilBlock(ctx context.Context, req *types.GetInferenceScoresUntilBlockRequest) (_ *types.GetInferenceScoresUntilBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetInferenceScoresUntilBlock", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetInferenceScoresUntilBlock", time.Now(), &err)
 	inferenceScores, err := qs.k.GetInferenceScoresUntilBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (qs queryServer) GetInferenceScoresUntilBlock(ctx context.Context, req *typ
 }
 
 func (qs queryServer) GetWorkerInferenceScoresAtBlock(ctx context.Context, req *types.GetWorkerInferenceScoresAtBlockRequest) (_ *types.GetWorkerInferenceScoresAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetWorkerInferenceScoresAtBlock", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetWorkerInferenceScoresAtBlock", time.Now(), &err)
 	workerInferenceScores, err := qs.k.GetWorkerInferenceScoresAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (qs queryServer) GetWorkerInferenceScoresAtBlock(ctx context.Context, req *
 }
 
 func (qs queryServer) GetCurrentLowestInfererScore(ctx context.Context, req *types.GetCurrentLowestInfererScoreRequest) (_ *types.GetCurrentLowestInfererScoreResponse, err error) {
-	defer metrics.RecordMetrics("GetCurrentLowestInfererScore", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetCurrentLowestInfererScore", time.Now(), &err)
 	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -132,7 +132,7 @@ func (qs queryServer) GetCurrentLowestInfererScore(ctx context.Context, req *typ
 }
 
 func (qs queryServer) GetForecastScoresUntilBlock(ctx context.Context, req *types.GetForecastScoresUntilBlockRequest) (_ *types.GetForecastScoresUntilBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetForecastScoresUntilBlock", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetForecastScoresUntilBlock", time.Now(), &err)
 	forecastScores, err := qs.k.GetForecastScoresUntilBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ func (qs queryServer) GetForecastScoresUntilBlock(ctx context.Context, req *type
 }
 
 func (qs queryServer) GetWorkerForecastScoresAtBlock(ctx context.Context, req *types.GetWorkerForecastScoresAtBlockRequest) (_ *types.GetWorkerForecastScoresAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetWorkerForecastScoresAtBlock", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetWorkerForecastScoresAtBlock", time.Now(), &err)
 	workerForecastScores, err := qs.k.GetWorkerForecastScoresAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -152,7 +152,7 @@ func (qs queryServer) GetWorkerForecastScoresAtBlock(ctx context.Context, req *t
 }
 
 func (qs queryServer) GetCurrentLowestForecasterScore(ctx context.Context, req *types.GetCurrentLowestForecasterScoreRequest) (_ *types.GetCurrentLowestForecasterScoreResponse, err error) {
-	defer metrics.RecordMetrics("GetCurrentLowestForecasterScore", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetCurrentLowestForecasterScore", time.Now(), &err)
 	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -190,7 +190,7 @@ func (qs queryServer) GetCurrentLowestForecasterScore(ctx context.Context, req *
 }
 
 func (qs queryServer) GetReputersScoresAtBlock(ctx context.Context, req *types.GetReputersScoresAtBlockRequest) (_ *types.GetReputersScoresAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetReputersScoresAtBlock", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetReputersScoresAtBlock", time.Now(), &err)
 	reputersScores, err := qs.k.GetReputersScoresAtBlock(ctx, req.TopicId, req.BlockHeight)
 	if err != nil {
 		return nil, err
@@ -200,7 +200,7 @@ func (qs queryServer) GetReputersScoresAtBlock(ctx context.Context, req *types.G
 }
 
 func (qs queryServer) GetCurrentLowestReputerScore(ctx context.Context, req *types.GetCurrentLowestReputerScoreRequest) (_ *types.GetCurrentLowestReputerScoreResponse, err error) {
-	defer metrics.RecordMetrics("GetCurrentLowestReputerScore", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetCurrentLowestReputerScore", time.Now(), &err)
 	unfulfilledReputerNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -234,7 +234,7 @@ func (qs queryServer) GetCurrentLowestReputerScore(ctx context.Context, req *typ
 }
 
 func (qs queryServer) GetListeningCoefficient(ctx context.Context, req *types.GetListeningCoefficientRequest) (_ *types.GetListeningCoefficientResponse, err error) {
-	defer metrics.RecordMetrics("GetListeningCoefficient", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetListeningCoefficient", time.Now(), &err)
 
 	listeningCoefficient, err := qs.k.GetListeningCoefficient(ctx, req.TopicId, req.Reputer)
 	if err != nil {

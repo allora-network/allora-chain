@@ -11,7 +11,7 @@ import (
 )
 
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
-	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), &err)
 
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {

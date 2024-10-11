@@ -11,7 +11,7 @@ import (
 )
 
 func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) (_ *types.FundTopicResponse, err error) {
-	defer metrics.RecordMetrics("FundTopic", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("FundTopic", time.Now(), &err)
 
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {

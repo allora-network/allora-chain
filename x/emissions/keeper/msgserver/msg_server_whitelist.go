@@ -9,7 +9,7 @@ import (
 )
 
 func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhitelistAdminRequest) (_ *types.AddToWhitelistAdminResponse, err error) {
-	defer metrics.RecordMetrics("AddToWhitelistAdmin", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("AddToWhitelistAdmin", time.Now(), &err)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
@@ -33,7 +33,7 @@ func (ms msgServer) AddToWhitelistAdmin(ctx context.Context, msg *types.AddToWhi
 }
 
 func (ms msgServer) RemoveFromWhitelistAdmin(ctx context.Context, msg *types.RemoveFromWhitelistAdminRequest) (_ *types.RemoveFromWhitelistAdminResponse, err error) {
-	defer metrics.RecordMetrics("RemoveFromWhitelistAdmin", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("RemoveFromWhitelistAdmin", time.Now(), &err)
 
 	// Validate the sender address
 	err = ms.k.ValidateStringIsBech32(msg.Sender)

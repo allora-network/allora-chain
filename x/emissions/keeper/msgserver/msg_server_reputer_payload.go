@@ -13,7 +13,7 @@ import (
 
 // A tx function that accepts a individual loss and possibly returns an error
 func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertReputerPayloadRequest) (_ *types.InsertReputerPayloadResponse, err error) {
-	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()

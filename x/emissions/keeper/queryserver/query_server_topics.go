@@ -14,7 +14,7 @@ import (
 
 // NextTopicId is a monotonically increasing counter that is used to assign unique IDs to topics.
 func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.GetNextTopicIdRequest) (_ *types.GetNextTopicIdResponse, err error) {
-	defer metrics.RecordMetrics("GetNextTopicId", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetNextTopicId", time.Now(), &err)
 	nextTopicId, err := qs.k.GetNextTopicId(ctx)
 	if err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func (qs queryServer) GetNextTopicId(ctx context.Context, req *types.GetNextTopi
 
 // Topics defines the handler for the Get/Topics RPC method.
 func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) (_ *types.GetTopicResponse, err error) {
-	defer metrics.RecordMetrics("GetTopic", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetTopic", time.Now(), &err)
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting topic")
@@ -56,7 +56,7 @@ func (qs queryServer) GetTopic(ctx context.Context, req *types.GetTopicRequest) 
 
 // Return last payload timestamp & nonce by worker/reputer
 func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *types.GetTopicLastWorkerCommitInfoRequest) (_ *types.GetTopicLastWorkerCommitInfoResponse, err error) {
-	defer metrics.RecordMetrics("GetTopicLastWorkerCommitInfo", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetTopicLastWorkerCommitInfo", time.Now(), &err)
 	lastCommit, err := qs.k.GetWorkerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -67,7 +67,7 @@ func (qs queryServer) GetTopicLastWorkerCommitInfo(ctx context.Context, req *typ
 
 // Return last payload timestamp & nonce by worker/reputer
 func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *types.GetTopicLastReputerCommitInfoRequest) (_ *types.GetTopicLastReputerCommitInfoResponse, err error) {
-	defer metrics.RecordMetrics("GetTopicLastReputerCommitInfo", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetTopicLastReputerCommitInfo", time.Now(), &err)
 	lastCommit, err := qs.k.GetReputerTopicLastCommit(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -77,7 +77,7 @@ func (qs queryServer) GetTopicLastReputerCommitInfo(ctx context.Context, req *ty
 }
 
 func (qs queryServer) GetTopicRewardNonce(ctx context.Context, req *types.GetTopicRewardNonceRequest) (_ *types.GetTopicRewardNonceResponse, err error) {
-	defer metrics.RecordMetrics("GetTopicRewardNonce", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetTopicRewardNonce", time.Now(), &err)
 	nonce, err := qs.k.GetTopicRewardNonce(ctx, req.TopicId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -87,7 +87,7 @@ func (qs queryServer) GetTopicRewardNonce(ctx context.Context, req *types.GetTop
 }
 
 func (qs queryServer) GetPreviousTopicWeight(ctx context.Context, req *types.GetPreviousTopicWeightRequest) (_ *types.GetPreviousTopicWeightResponse, err error) {
-	defer metrics.RecordMetrics("GetPreviousTopicWeight", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetPreviousTopicWeight", time.Now(), &err)
 	previousTopicWeight, notFound, err := qs.k.GetPreviousTopicWeight(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (qs queryServer) GetPreviousTopicWeight(ctx context.Context, req *types.Get
 }
 
 func (qs queryServer) TopicExists(ctx context.Context, req *types.TopicExistsRequest) (_ *types.TopicExistsResponse, err error) {
-	defer metrics.RecordMetrics("TopicExists", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("TopicExists", time.Now(), &err)
 	exists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func (qs queryServer) TopicExists(ctx context.Context, req *types.TopicExistsReq
 }
 
 func (qs queryServer) IsTopicActive(ctx context.Context, req *types.IsTopicActiveRequest) (_ *types.IsTopicActiveResponse, err error) {
-	defer metrics.RecordMetrics("IsTopicActive", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("IsTopicActive", time.Now(), &err)
 	isActive, err := qs.k.IsTopicActive(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func (qs queryServer) IsTopicActive(ctx context.Context, req *types.IsTopicActiv
 }
 
 func (qs queryServer) GetTopicFeeRevenue(ctx context.Context, req *types.GetTopicFeeRevenueRequest) (_ *types.GetTopicFeeRevenueResponse, err error) {
-	defer metrics.RecordMetrics("GetTopicFeeRevenue", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetTopicFeeRevenue", time.Now(), &err)
 	feeRevenue, err := qs.k.GetTopicFeeRevenue(ctx, req.TopicId)
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (qs queryServer) GetTopicFeeRevenue(ctx context.Context, req *types.GetTopi
 }
 
 func (qs queryServer) GetActiveTopicsAtBlock(ctx context.Context, req *types.GetActiveTopicsAtBlockRequest) (_ *types.GetActiveTopicsAtBlockResponse, err error) {
-	defer metrics.RecordMetrics("GetActiveTopicsAtBlock", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetActiveTopicsAtBlock", time.Now(), &err)
 	activeTopicIds, err := qs.k.GetActiveTopicIdsAtBlock(ctx, req.BlockHeight)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -145,7 +145,7 @@ func (qs queryServer) GetActiveTopicsAtBlock(ctx context.Context, req *types.Get
 }
 
 func (qs queryServer) GetNextChurningBlockByTopicId(ctx context.Context, req *types.GetNextChurningBlockByTopicIdRequest) (_ *types.GetNextChurningBlockByTopicIdResponse, err error) {
-	defer metrics.RecordMetrics("GetNextChurningBlockByTopicId", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetNextChurningBlockByTopicId", time.Now(), &err)
 	blockHeight, _, err := qs.k.GetNextPossibleChurningBlockByTopicId(ctx, req.TopicId)
 	if err != nil {
 		return &types.GetNextChurningBlockByTopicIdResponse{BlockHeight: 0}, err

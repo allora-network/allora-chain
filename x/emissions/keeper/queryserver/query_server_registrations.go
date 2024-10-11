@@ -14,7 +14,7 @@ import (
 )
 
 func (qs queryServer) GetWorkerNodeInfo(ctx context.Context, req *types.GetWorkerNodeInfoRequest) (_ *types.GetWorkerNodeInfoResponse, err error) {
-	defer metrics.RecordMetrics("GetWorkerNodeInfo", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetWorkerNodeInfo", time.Now(), &err)
 
 	node, err := qs.k.GetWorkerInfo(sdk.UnwrapSDKContext(ctx), req.Address)
 	if err != nil {
@@ -25,7 +25,7 @@ func (qs queryServer) GetWorkerNodeInfo(ctx context.Context, req *types.GetWorke
 }
 
 func (qs queryServer) GetReputerNodeInfo(ctx context.Context, req *types.GetReputerNodeInfoRequest) (_ *types.GetReputerNodeInfoResponse, err error) {
-	defer metrics.RecordMetrics("GetReputerNodeInfo", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("GetReputerNodeInfo", time.Now(), &err)
 
 	node, err := qs.k.GetReputerInfo(sdk.UnwrapSDKContext(ctx), req.Address)
 	if err != nil {
@@ -36,7 +36,7 @@ func (qs queryServer) GetReputerNodeInfo(ctx context.Context, req *types.GetRepu
 }
 
 func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *types.IsWorkerRegisteredInTopicIdRequest) (_ *types.IsWorkerRegisteredInTopicIdResponse, err error) {
-	defer metrics.RecordMetrics("IsWorkerRegisteredInTopicId", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("IsWorkerRegisteredInTopicId", time.Now(), &err)
 
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, sdkerrors.ErrInvalidAddress.Wrapf("invalid address: %s", err)
@@ -58,7 +58,7 @@ func (qs queryServer) IsWorkerRegisteredInTopicId(ctx context.Context, req *type
 }
 
 func (qs queryServer) IsReputerRegisteredInTopicId(ctx context.Context, req *types.IsReputerRegisteredInTopicIdRequest) (_ *types.IsReputerRegisteredInTopicIdResponse, err error) {
-	defer metrics.RecordMetrics("IsReputerRegisteredInTopicId", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("IsReputerRegisteredInTopicId", time.Now(), &err)
 
 	if err := qs.k.ValidateStringIsBech32(req.Address); err != nil {
 		return nil, err

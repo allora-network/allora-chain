@@ -14,7 +14,8 @@ import (
 // Metric Name:
 //
 //	allora_rpc_request_counter
-func IncrementRpcRequestCounter(endpoint string, success bool) {
+func IncrementRpcRequestCounter(endpoint string, err *error) {
+	success := *err == nil
 	telemetry.IncrCounterWithLabels(
 		[]string{"allora", "request", "counter"},
 		float32(1),
@@ -52,7 +53,7 @@ func IncrProducerEventCount(msgType string) {
 	)
 }
 
-func RecordMetrics(apiMethod string, startTime time.Time, success func() bool) {
-	IncrementRpcRequestCounter(apiMethod, success())
+func RecordMetrics(apiMethod string, startTime time.Time, err *error) {
+	IncrementRpcRequestCounter(apiMethod, err)
 	MeasureRpcRequestLatency(apiMethod, startTime)
 }

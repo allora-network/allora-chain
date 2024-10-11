@@ -14,7 +14,7 @@ import (
 
 // Registers a new network participant to the network for the first time for worker or reputer
 func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_ *types.RegisterResponse, err error) {
-	defer metrics.RecordMetrics("Register", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("Register", time.Now(), &err)
 
 	err = msg.Validate()
 	if err != nil {
@@ -81,7 +81,7 @@ func (ms msgServer) Register(ctx context.Context, msg *types.RegisterRequest) (_
 
 // Remove registration from a topic for worker or reputer
 func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveRegistrationRequest) (_ *types.RemoveRegistrationResponse, err error) {
-	defer metrics.RecordMetrics("RemoveRegistration", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("RemoveRegistration", time.Now(), &err)
 
 	err = msg.Validate()
 	if err != nil {
@@ -137,7 +137,7 @@ func (ms msgServer) RemoveRegistration(ctx context.Context, msg *types.RemoveReg
 }
 
 func (ms msgServer) CheckBalanceForRegistration(ctx context.Context, address string) (success bool, fee sdk.Coin, err error) {
-	defer metrics.RecordMetrics("CheckBalanceForRegistration", time.Now(), func() bool { return err == nil })
+	defer metrics.RecordMetrics("CheckBalanceForRegistration", time.Now(), &err)
 
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
