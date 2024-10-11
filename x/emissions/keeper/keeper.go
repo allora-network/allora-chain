@@ -69,10 +69,14 @@ type Keeper struct {
 	activeInferers collections.KeySet[collections.Pair[TopicId, ActorId]]
 	// active topic forecasters for a topic
 	activeForecasters collections.KeySet[collections.Pair[TopicId, ActorId]]
+	// active reputers for a topic
+	activeReputers collections.KeySet[collections.Pair[TopicId, ActorId]]
 	// lowest topic inferer score ema for a topic
 	lowestInfererScoreEma collections.Map[TopicId, types.Score]
 	// lowest topic forecaster score ema for a topic
 	lowestForecasterScoreEma collections.Map[TopicId, types.Score]
+	// lowest reputer score ema for a topic
+	lowestReputerScoreEma collections.Map[TopicId, types.Score]
 
 	/// SCORES
 
@@ -143,7 +147,7 @@ type Keeper struct {
 	forecasts collections.Map[collections.Pair[TopicId, ActorId], types.Forecast]
 
 	// map of (topic, reputer) -> reputer loss
-	reputerLosses collections.Map[collections.Pair[TopicId, Reputer], types.ReputerValueBundle]
+	lossBundles collections.Map[collections.Pair[TopicId, Reputer], types.ReputerValueBundle]
 
 	// map of worker id to node data about that worker
 	workers collections.Map[ActorId, types.OffchainNode]
@@ -219,11 +223,6 @@ type Keeper struct {
 
 	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
-
-	// active reputers for a topic
-	activeReputers collections.KeySet[collections.Pair[TopicId, ActorId]]
-	// lowest reputer score ema for a topic
-	lowestReputerScoreEma collections.Map[TopicId, types.Score]
 }
 
 func NewKeeper(
@@ -268,6 +267,7 @@ func NewKeeper(
 		previousTopicWeight:                      collections.NewMap(sb, types.PreviousTopicWeightKey, "previous_topic_weight", collections.Uint64Key, alloraMath.DecValue),
 		inferences:                               collections.NewMap(sb, types.InferencesKey, "inferences", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Inference](cdc)),
 		forecasts:                                collections.NewMap(sb, types.ForecastsKey, "forecasts", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Forecast](cdc)),
+		lossBundles:                              collections.NewMap(sb, types.LossBundlesKey, "loss_bundles", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ReputerValueBundle](cdc)),
 		workers:                                  collections.NewMap(sb, types.WorkerNodesKey, "worker_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		reputers:                                 collections.NewMap(sb, types.ReputerNodesKey, "reputer_nodes", collections.StringKey, codec.CollValue[types.OffchainNode](cdc)),
 		allInferences:                            collections.NewMap(sb, types.AllInferencesKey, "inferences_all", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Inferences](cdc)),
@@ -339,7 +339,6 @@ func NewKeeper(
 		lowestForecasterScoreEma:                collections.NewMap(sb, types.LowestForecasterScoreEmaKey, "lowest_forecaster_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 		activeReputers:                          collections.NewKeySet(sb, types.ActiveReputersKey, "active_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		lowestReputerScoreEma:                   collections.NewMap(sb, types.LowestReputerScoreEmaKey, "lowest_reputer_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
-		reputerLosses:                           collections.NewMap(sb, types.ReputerLossesKey, "reputer_losses", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.ReputerValueBundle](cdc)),
 	}
 
 	schema, err := sb.Build()
@@ -1488,7 +1487,7 @@ func (k *Keeper) GetReputerLatestLossByTopicId(
 	reputer ActorId,
 ) (types.ReputerValueBundle, error) {
 	key := collections.Join(topicId, reputer)
-	return k.reputerLosses.Get(ctx, key)
+	return k.lossBundles.Get(ctx, key)
 }
 
 // InsertReputerLoss inserts a reputer loss for a specific topic
@@ -1505,7 +1504,7 @@ func (k *Keeper) InsertReputerLoss(
 		return errorsmod.Wrap(err, "reputer loss is invalid")
 	}
 	key := collections.Join(topicId, reputerLoss.ValueBundle.Reputer)
-	return k.reputerLosses.Set(ctx, key, reputerLoss)
+	return k.lossBundles.Set(ctx, key, reputerLoss)
 }
 
 // Insert a loss bundle for a topic and timestamp but do it in the CloseReputerNonce, so reputer loss bundles are known to be validated
@@ -3852,7 +3851,7 @@ func (k *Keeper) ResetActiveWorkersForTopic(ctx context.Context, topicId TopicId
 // ResetReputersIndividualSubmissionsForTopic resets the reputer individual submissions for a topic
 func (k *Keeper) ResetReputersIndividualSubmissionsForTopic(ctx context.Context, topicId TopicId) error {
 	reputerRange := collections.NewPrefixedPairRange[TopicId, ActorId](topicId)
-	if err := k.reputerLosses.Clear(ctx, reputerRange); err != nil {
+	if err := k.lossBundles.Clear(ctx, reputerRange); err != nil {
 		return errorsmod.Wrap(err, "error clearing reputer losses")
 	}
 	return nil

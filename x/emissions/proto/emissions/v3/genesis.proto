@@ -185,6 +185,21 @@ message GenesisState {
   repeated TopicIdAndDec previousTopicQuantileInfererScoreEma = 63;
   repeated TopicIdAndDec previousTopicQuantileForecasterScoreEma = 64;
   repeated TopicIdAndDec previousTopicQuantileReputerScoreEma = 65;
+
+  // active inferers for each topic
+  repeated TopicAndActorId active_inferers = 66;
+  // active forecasters for each topic
+  repeated TopicAndActorId active_forecasters = 67;
+  // lowest inferer score EMA for each topic
+  repeated TopicIdActorIdScore lowest_inferer_score_emas = 68;
+  // lowest forecaster score EMA for each topic
+  repeated TopicIdActorIdScore lowest_forecaster_score_emas = 69;
+  // active reputers for each topic
+  repeated TopicAndActorId active_reputers = 70;
+  // lowest reputer score EMA for each topic
+  repeated TopicIdActorIdScore lowest_reputer_score_emas = 71;
+  // map of (topic, reputer) -> reputer loss
+  repeated TopicIdReputerReputerValueBundle lossBundles = 72;
 }
 
 message TopicIdAndTopic {
@@ -375,4 +390,10 @@ message BlockHeightTopicIds {
 message BlockHeightTopicIdWeightPair {
   int64 BlockHeight = 1;
   TopicIdWeightPair TopicWeight = 2;
+}
+
+message TopicIdReputerReputerValueBundle {
+  uint64 TopicId = 1;
+  string Reputer = 2;
+  ReputerValueBundle ReputerValueBundle = 3;
 }
