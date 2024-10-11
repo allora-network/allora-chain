@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
@@ -81,8 +82,7 @@ func newTestnetApp(logger log.Logger, db dbm.DB, traceStore io.Writer, appOpts s
 
 func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	// Required Changes:
-	//
-	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{})
+	ctx := app.BaseApp.NewUncachedContext(true, tmproto.Header{}) //nolint:exhaustruct // cosmos-sdk logic
 
 	pubkey := &ed25519.PubKey{Key: args.newValPubKey.Bytes()}
 	pubkeyAny, err := codectypes.NewAnyWithValue(pubkey)
@@ -110,7 +110,11 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 		Tokens:          math.NewInt(9e18),
 		DelegatorShares: math.LegacyNewDec(1e18),
 		Description: stakingtypes.Description{
-			Moniker: "Testnet Validator",
+			Moniker:         "Testnet Validator",
+			Identity:        "",
+			Website:         "",
+			SecurityContact: "",
+			Details:         "",
 		},
 		Commission: stakingtypes.Commission{
 			CommissionRates: stakingtypes.CommissionRates{
@@ -119,7 +123,11 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 				MaxChangeRate: math.LegacyMustNewDecFromStr("0.05"),
 			},
 		},
-		MinSelfDelegation: math.OneInt(),
+		MinSelfDelegation:       math.OneInt(),
+		UnbondingHeight:         0,
+		UnbondingTime:           time.Time{},
+		UnbondingOnHoldRefCount: 0,
+		UnbondingIds:            []uint64{},
 	}
 
 	// Remove all validators from power store
@@ -215,9 +223,12 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	// Set validator signing info for our new validator.
 	newConsAddr := sdk.ConsAddress(args.newValAddr.Bytes())
 	newValidatorSigningInfo := slashingtypes.ValidatorSigningInfo{
-		Address:     newConsAddr.String(),
-		StartHeight: app.LastBlockHeight() - 1,
-		Tombstoned:  false,
+		Address:             newConsAddr.String(),
+		StartHeight:         app.LastBlockHeight() - 1,
+		Tombstoned:          false,
+		IndexOffset:         0,
+		JailedUntil:         time.Time{},
+		MissedBlocksCounter: 0,
 	}
 	err = app.SlashingKeeper.SetValidatorSigningInfo(ctx, newConsAddr, newValidatorSigningInfo)
 	if err != nil {
@@ -250,48 +261,49 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 
 // parse the input flags and returns valArgs
 func getCommandArgs(appOpts servertypes.AppOptions) (valArgs, error) {
-	args := valArgs{}
-
 	newValAddr, ok := appOpts.Get(server.KeyNewValAddr).(bytes.HexBytes)
 	if !ok {
 		panic("newValAddr is not of type bytes.HexBytes")
 	}
-	args.newValAddr = newValAddr
 	newValPubKey, ok := appOpts.Get(server.KeyUserPubKey).(crypto.PubKey)
 	if !ok {
 		panic("newValPubKey is not of type crypto.PubKey")
 	}
-	args.newValPubKey = newValPubKey
 	newOperatorAddress, ok := appOpts.Get(server.KeyNewOpAddr).(string)
 	if !ok {
 		panic("newOperatorAddress is not of type string")
 	}
-	args.newOperatorAddress = newOperatorAddress
 	upgradeToTrigger, ok := appOpts.Get(server.KeyTriggerTestnetUpgrade).(string)
 	if !ok {
 		panic("upgradeToTrigger is not of type string")
 	}
-	args.upgradeToTrigger = upgradeToTrigger
 
 	// validate  and set accounts to fund
 	accountsString := cast.ToString(appOpts.Get(flagAccountsToFund))
 
+	accountsToFund := []sdk.AccAddress{}
 	for _, account := range strings.Split(accountsString, ",") {
 		if account != "" {
 			addr, err := sdk.AccAddressFromBech32(account)
 			if err != nil {
-				return args, fmt.Errorf("invalid bech32 address format %w", err)
+				return valArgs{}, fmt.Errorf("invalid bech32 address format %w", err)
 			}
-			args.accountsToFund = append(args.accountsToFund, addr)
+			accountsToFund = append(accountsToFund, addr)
 		}
 	}
 
 	// home dir
 	homeDir := cast.ToString(appOpts.Get(flags.FlagHome))
 	if homeDir == "" {
-		return args, fmt.Errorf("invalid home dir")
+		return valArgs{}, fmt.Errorf("invalid home dir")
 	}
-	args.homeDir = homeDir
 
-	return args, nil
+	return valArgs{
+		newValAddr:         newValAddr,
+		newOperatorAddress: newOperatorAddress,
+		newValPubKey:       newValPubKey,
+		accountsToFund:     accountsToFund,
+		upgradeToTrigger:   upgradeToTrigger,
+		homeDir:            homeDir,
+	}, nil
 }
