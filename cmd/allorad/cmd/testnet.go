@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/hex"
 	"fmt"
 	"io"
 	"strings"
@@ -88,7 +87,6 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	pubkey := &ed25519.PubKey{Key: args.newValPubKey.Bytes()}
 	pubkeyAny, err := codectypes.NewAnyWithValue(pubkey)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to create pubkey any")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to create pubkey any").Error())
 	}
 
@@ -98,21 +96,19 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	// Create Validator struct for our new validator.
 	_, bz, err := bech32.DecodeAndConvert(args.newOperatorAddress)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to decode operator address")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to decode operator address").Error())
 	}
 	bech32Addr, err := bech32.ConvertAndEncode("allovaloper", bz)
 	if err != nil {
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to convert and encode operator address").Error())
 	}
-	fmt.Println("initAppForTestnet(): creating new testnet validator", "pubkey", bech32Addr)
 	newVal := stakingtypes.Validator{
 		OperatorAddress: bech32Addr,
 		ConsensusPubkey: pubkeyAny,
 		Jailed:          false,
 		Status:          stakingtypes.Bonded,
-		Tokens:          math.NewInt(900000000000000),
-		DelegatorShares: math.LegacyMustNewDecFromStr("10000000"),
+		Tokens:          math.NewInt(9e18),
+		DelegatorShares: math.LegacyNewDec(1e18),
 		Description: stakingtypes.Description{
 			Moniker: "Testnet Validator",
 		},
@@ -127,154 +123,89 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	}
 
 	// Remove all validators from power store
-	fmt.Println("initAppForTestnet(): removing all validators from power store")
 	stakingKey := app.GetKey(stakingtypes.ModuleName)
 	stakingStore := ctx.KVStore(stakingKey)
 	iterator, err := app.StakingKeeper.ValidatorsPowerStoreIterator(ctx)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to get validators power store iterator")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to get validators power store iterator").Error())
 	}
 	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("initAppForTestnet(): deleting validator from power store", "validator", hex.EncodeToString(iterator.Key()))
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
 
 	// Remove all valdiators from last validators store
-	fmt.Println("initAppForTestnet(): removing all validators from last validators store")
 	iterator, err = app.StakingKeeper.LastValidatorsIterator(ctx)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to get last validators iterator")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to get last validators iterator").Error())
 	}
 	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("initAppForTestnet(): deleting validator from last validators store", "validator", hex.EncodeToString(iterator.Key()))
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
 
 	// Remove all validators from validators store
-	fmt.Println("initAppForTestnet(): removing all validators from validators store")
-	//iterator = stakingStore.Iterator(stakingtypes.ValidatorsKey, storetypes.PrefixEndBytes(stakingtypes.ValidatorsKey))
 	iterator = storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorsKey)
 	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("initAppForTestnet(): deleting validator from validators store", "validator", hex.EncodeToString(iterator.Key()))
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
 
 	// Remove all validators from unbonding queue
-	fmt.Println("initAppForTestnet(): removing all validators from unbonding queue")
-	//iterator = stakingStore.Iterator(stakingtypes.ValidatorQueueKey, storetypes.PrefixEndBytes(stakingtypes.ValidatorQueueKey))
 	iterator = storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorQueueKey)
 	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("initAppForTestnet(): deleting validator from unbonding queue", "validator", hex.EncodeToString(iterator.Key()))
 		stakingStore.Delete(iterator.Key())
 	}
 	iterator.Close()
 
 	// Add our validator to power and last validators store
-	fmt.Println("initAppForTestnet(): adding new validator to power and last validators store", newVal.OperatorAddress)
 	err = app.StakingKeeper.SetValidator(ctx, newVal)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to set validator")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to set validator").Error())
 	}
-	fmt.Println("initAppForTestnet(): setting validator by consensus address", newVal.OperatorAddress)
 	err = app.StakingKeeper.SetValidatorByConsAddr(ctx, newVal)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to set validator by consensus address")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to set validator by consensus address").Error())
 	}
-	fmt.Println("initAppForTestnet(): setting validator by power index", newVal.OperatorAddress)
 	err = app.StakingKeeper.SetValidatorByPowerIndex(ctx, newVal)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to set validator by power index")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to set validator by power index").Error())
 	}
 	valAddr, err := sdk.ValAddressFromBech32(newVal.GetOperator())
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to convert validator address to bytes")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to convert validator address to bytes").Error())
 	}
-	fmt.Println("initAppForTestnet(): setting last validator power", valAddr)
-	err = app.StakingKeeper.SetLastValidatorPower(ctx, valAddr, 0)
+	err = app.StakingKeeper.SetLastValidatorPower(ctx, valAddr, 9e18)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to set last validator power")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to set last validator power").Error())
 	}
-	fmt.Println("initAppForTestnet(): calling after validator created hook", valAddr)
 	err = app.StakingKeeper.Hooks().AfterValidatorCreated(ctx, valAddr)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to call after validator created hook")
 		panic(errors.Wrap(err, "initAppForTestnet(): failed to call after validator created hook").Error())
 	}
-
-	/* printf debugging */
-	fmt.Println("initAppForTestnet(): printing data from staking keeper")
-	iterator, err = app.StakingKeeper.ValidatorsPowerStoreIterator(ctx)
-	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to get validators power store iterator")
-		panic("debugging failed")
-	}
-	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("initAppForTestnet(): printing validator from power store", "validator", hex.EncodeToString(iterator.Key()))
-	}
-	iterator.Close()
-
-	iterator, err = app.StakingKeeper.LastValidatorsIterator(ctx)
-	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to get last validators iterator")
-		panic("debugging failed")
-	}
-	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("initAppForTestnet(): printing validator from last validators store", "validator", hex.EncodeToString(iterator.Key()))
-	}
-	iterator.Close()
-
-	iterator = storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorsKey)
-	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("initAppForTestnet(): printing validator from validators store", "validator", hex.EncodeToString(iterator.Key()))
-	}
-	iterator.Close()
-
-	iterator = storetypes.KVStorePrefixIterator(stakingStore, stakingtypes.ValidatorQueueKey)
-	for ; iterator.Valid(); iterator.Next() {
-		fmt.Println("initAppForTestnet(): printing validator from unbonding queue", "validator", hex.EncodeToString(iterator.Key()))
-	}
-	iterator.Close()
-
-	/* end printf debugging */
 
 	// DISTRIBUTION
 	//
 
 	valAddr, err = sdk.ValAddressFromBech32(newVal.GetOperator())
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to convert validator address to bytes")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to convert validator address to bytes").Error())
 	}
 	// Initialize records for this validator across all distribution stores
-	fmt.Println("initAppForTestnet(): initializing records for new validator across all distribution stores")
 	err = app.DistrKeeper.SetValidatorHistoricalRewards(ctx, valAddr, 0, distrtypes.NewValidatorHistoricalRewards(sdk.DecCoins{}, 1))
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to set validator historical rewards")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to set validator historical rewards").Error())
 	}
 	err = app.DistrKeeper.SetValidatorCurrentRewards(ctx, valAddr, distrtypes.NewValidatorCurrentRewards(sdk.DecCoins{}, 1))
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to set validator current rewards")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to set validator current rewards").Error())
 	}
 	err = app.DistrKeeper.SetValidatorAccumulatedCommission(ctx, valAddr, distrtypes.InitialValidatorAccumulatedCommission())
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to set validator accumulated commission")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to set validator accumulated commission").Error())
 	}
 	err = app.DistrKeeper.SetValidatorOutstandingRewards(ctx, valAddr, distrtypes.ValidatorOutstandingRewards{Rewards: sdk.DecCoins{}})
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to set validator outstanding rewards")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to set validator outstanding rewards").Error())
 	}
 
@@ -283,7 +214,6 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 
 	// Set validator signing info for our new validator.
 	newConsAddr := sdk.ConsAddress(args.newValAddr.Bytes())
-	fmt.Println("initAppForTestnet(): setting validator signing info for new validator")
 	newValidatorSigningInfo := slashingtypes.ValidatorSigningInfo{
 		Address:     newConsAddr.String(),
 		StartHeight: app.LastBlockHeight() - 1,
@@ -291,32 +221,26 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 	}
 	err = app.SlashingKeeper.SetValidatorSigningInfo(ctx, newConsAddr, newValidatorSigningInfo)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to set validator signing info")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to set validator signing info").Error())
 	}
 
 	// BANK
 	//
-	fmt.Println("initAppForTestnet(): getting bond denom")
 	bondDenom, err := app.StakingKeeper.BondDenom(ctx)
 	if err != nil {
-		fmt.Println("initAppForTestnet(): failed to get bond denom")
 		tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to get bond denom").Error())
 	}
 
-	defaultCoins := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 1000000000))
+	defaultCoins := sdk.NewCoins(sdk.NewInt64Coin(bondDenom, 9e18))
 
 	// Fund local accounts
-	fmt.Println("initAppForTestnet(): funding local accounts")
 	for _, account := range args.accountsToFund {
 		err := app.BankKeeper.MintCoins(ctx, minttypes.ModuleName, defaultCoins)
 		if err != nil {
-			fmt.Println("initAppForTestnet(): failed to mint coins")
 			tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to mint coins").Error())
 		}
 		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, account, defaultCoins)
 		if err != nil {
-			fmt.Println("initAppForTestnet(): failed to send coins from module to account")
 			tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to send coins from module to account").Error())
 		}
 	}
