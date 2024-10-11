@@ -53,6 +53,27 @@ When you run a node you have 2 options:
  - Run node and a Head, main advantage is - you can use the head for your workers and reputers
  - Run only a node, in this case you will use Allora's heads.
 
+## Run a Fork of Testnet/Mainnet State
+To run a fork of a testnet or mainnet in order to check changes against the database state for those networks, first set up some local `$HOME/.allorad/` config genesis, etc:
+
+```bash
+allorad init devnet
+allorad keys add test
+```
+
+Then copy an existing node snapshot of the `$HOME/.allorad/data/` folder to your new validator's same allorad home folder. You might use `allorad snapshots dump` to get a tar.gz snapshot.
+
+Next get the local validator key for your new validator:
+```bash
+allorad comet show-address
+```
+
+Start the node with an in-place-testnet, swapping the state of the node for the snapshot state. Put the comet address from the previous step:
+
+```bash
+allorad in-place-testnet devnet allovaloper<comet address> --home $HOME/.allorad --minimum-gas-prices 0uallo --skip-confirmation
+```
+
 ## Run a node with script
 `scripts/l1_node.sh`, you will see the log in the output of the script.
 
