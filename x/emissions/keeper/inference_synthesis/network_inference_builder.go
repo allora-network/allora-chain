@@ -408,8 +408,7 @@ func calcOneOutForecasterInference(args CalcOneOutForecasterInferenceArgs) (
 
 			forecast, ok := args.ForecasterToForecast[forecaster]
 			if !ok {
-				args.Logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecasterRegrets in UpdateForecastersInfo %v", forecaster))
-				continue
+				return alloraMath.Dec{}, errorsmod.Wrapf(emissions.ErrNotFound, "calcOneOutForecasterInference() cannot find forecaster in ForecasterRegrets %v", forecaster)
 			}
 			remainingForecasterToForecast[forecaster] = forecast
 		}
