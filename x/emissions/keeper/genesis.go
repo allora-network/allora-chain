@@ -785,6 +785,84 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
+	// ActiveInferers []*TopicAndActorId
+	if len(data.ActiveInferers) != 0 {
+		for _, topicAndActorId := range data.ActiveInferers {
+			if topicAndActorId != nil {
+				if err := k.AddActiveInferer(ctx, topicAndActorId.TopicId, topicAndActorId.ActorId); err != nil {
+					return errors.Wrap(err, "error setting activeInferers")
+				}
+			}
+		}
+	}
+
+	// ActiveForecasters []*TopicAndActorId
+	if len(data.ActiveForecasters) != 0 {
+		for _, topicAndActorId := range data.ActiveForecasters {
+			if topicAndActorId != nil {
+				if err := k.AddActiveForecaster(ctx, topicAndActorId.TopicId, topicAndActorId.ActorId); err != nil {
+					return errors.Wrap(err, "error setting activeForecasters")
+				}
+			}
+		}
+	}
+
+	// LowestInfererScoreEmas []*TopicIdActorIdScore
+	if len(data.LowestInfererScoreEmas) != 0 {
+		for _, topicIdActorIdScore := range data.LowestInfererScoreEmas {
+			if topicIdActorIdScore != nil {
+				if err := k.SetLowestInfererScoreEma(ctx, topicIdActorIdScore.TopicId, *topicIdActorIdScore.Score); err != nil {
+					return errors.Wrap(err, "error setting lowestInfererScoreEma")
+				}
+			}
+		}
+	}
+
+	// LowestForecasterScoreEmas []*TopicIdActorIdScore
+	if len(data.LowestForecasterScoreEmas) != 0 {
+		for _, topicIdActorIdScore := range data.LowestForecasterScoreEmas {
+			if topicIdActorIdScore != nil {
+				if err := k.SetLowestForecasterScoreEma(ctx, topicIdActorIdScore.TopicId, *topicIdActorIdScore.Score); err != nil {
+					return errors.Wrap(err, "error setting lowestForecasterScoreEma")
+				}
+			}
+		}
+	}
+
+	// ActiveReputers []*TopicAndActorId
+	if len(data.ActiveReputers) != 0 {
+		for _, topicAndActorId := range data.ActiveReputers {
+			if topicAndActorId != nil {
+				if err := k.AddActiveReputer(ctx, topicAndActorId.TopicId, topicAndActorId.ActorId); err != nil {
+					return errors.Wrap(err, "error setting activeReputers")
+				}
+			}
+		}
+	}
+
+	// LowestReputerScoreEmas []*TopicIdActorIdScore
+	if len(data.LowestReputerScoreEmas) != 0 {
+		for _, topicIdActorIdScore := range data.LowestReputerScoreEmas {
+			if topicIdActorIdScore != nil {
+				if err := k.SetLowestReputerScoreEma(ctx, topicIdActorIdScore.TopicId, *topicIdActorIdScore.Score); err != nil {
+					return errors.Wrap(err, "error setting lowestReputerScoreEma")
+				}
+			}
+		}
+	}
+
+	// LossBundles
+	if len(data.LossBundles) != 0 {
+		for _, bundle := range data.LossBundles {
+			if bundle != nil {
+				key := collections.Join(bundle.TopicId, bundle.Reputer)
+				if err := k.lossBundles.Set(ctx, key, *bundle.ReputerValueBundle); err != nil {
+					return errors.Wrap(err, "error setting loss bundle")
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -1891,6 +1969,122 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		previousTopicQuantileReputerScoreEma = append(previousTopicQuantileReputerScoreEma, &topicIdAndDec)
 	}
 
+	activeInferers := make([]*types.TopicAndActorId, 0)
+	activeInferersIter, err := k.activeInferers.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate active inferers")
+	}
+	for ; activeInferersIter.Valid(); activeInferersIter.Next() {
+		key, err := activeInferersIter.Key()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key: activeInferersIter")
+		}
+		activeInferers = append(activeInferers, &types.TopicAndActorId{
+			TopicId: key.K1(),
+			ActorId: key.K2(),
+		})
+	}
+
+	activeForecasters := make([]*types.TopicAndActorId, 0)
+	activeForecasterIter, err := k.activeForecasters.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate active forecasters")
+	}
+	for ; activeForecasterIter.Valid(); activeForecasterIter.Next() {
+		key, err := activeForecasterIter.Key()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key: activeForecasterIter")
+		}
+		activeForecasters = append(activeForecasters, &types.TopicAndActorId{
+			TopicId: key.K1(),
+			ActorId: key.K2(),
+		})
+	}
+
+	lowestInfererScoreEmas := make([]*types.TopicIdActorIdScore, 0)
+	lowestInfererScoreEmaIter, err := k.lowestInfererScoreEma.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate lowest inferer score emas")
+	}
+	for ; lowestInfererScoreEmaIter.Valid(); lowestInfererScoreEmaIter.Next() {
+		keyValue, err := lowestInfererScoreEmaIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: lowestInfererScoreEmaIter")
+		}
+		lowestInfererScoreEmas = append(lowestInfererScoreEmas, &types.TopicIdActorIdScore{
+			TopicId: keyValue.Key,
+			ActorId: keyValue.Value.Address,
+			Score:   &keyValue.Value,
+		})
+	}
+
+	lowestForecasterScoreEmas := make([]*types.TopicIdActorIdScore, 0)
+	lowestForecasterScoreEmaIter, err := k.lowestForecasterScoreEma.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate lowest forecaster score emas")
+	}
+	for ; lowestForecasterScoreEmaIter.Valid(); lowestForecasterScoreEmaIter.Next() {
+		keyValue, err := lowestForecasterScoreEmaIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: lowestForecasterScoreEmaIter")
+		}
+		lowestForecasterScoreEmas = append(lowestForecasterScoreEmas, &types.TopicIdActorIdScore{
+			TopicId: keyValue.Key,
+			ActorId: keyValue.Value.Address,
+			Score:   &keyValue.Value,
+		})
+	}
+
+	activeReputers := make([]*types.TopicAndActorId, 0)
+	activeReputersIter, err := k.activeReputers.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate active reputers")
+	}
+	for ; activeReputersIter.Valid(); activeReputersIter.Next() {
+		key, err := activeReputersIter.Key()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key: activeReputersIter")
+		}
+		activeReputers = append(activeReputers, &types.TopicAndActorId{
+			TopicId: key.K1(),
+			ActorId: key.K2(),
+		})
+	}
+
+	lowestReputerScoreEmas := make([]*types.TopicIdActorIdScore, 0)
+	lowestReputerScoreEmaIter, err := k.lowestReputerScoreEma.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate lowest reputer score emas")
+	}
+	for ; lowestReputerScoreEmaIter.Valid(); lowestReputerScoreEmaIter.Next() {
+		keyValue, err := lowestReputerScoreEmaIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: lowestReputerScoreEmaIter")
+		}
+		lowestReputerScoreEmas = append(lowestReputerScoreEmas, &types.TopicIdActorIdScore{
+			TopicId: keyValue.Key,
+			ActorId: keyValue.Value.Address,
+			Score:   &keyValue.Value,
+		})
+	}
+
+	lossBundles := make([]*types.TopicIdReputerReputerValueBundle, 0)
+	lossBundlesIter, err := k.lossBundles.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate loss bundles")
+	}
+	for ; lossBundlesIter.Valid(); lossBundlesIter.Next() {
+		keyValue, err := lossBundlesIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key-value: lossBundlesIter")
+		}
+		lossBundles = append(lossBundles, &types.TopicIdReputerReputerValueBundle{
+			TopicId:            keyValue.Key.K1(),
+			Reputer:            keyValue.Key.K2(),
+			ReputerValueBundle: &keyValue.Value,
+		})
+	}
+
 	return &types.GenesisState{
 		Params:                          moduleParams,
 		NextTopicId:                     nextTopicId,
@@ -1956,6 +2150,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		PreviousTopicQuantileInfererScoreEma:           previousTopicQuantileInfererScoreEma,
 		PreviousTopicQuantileForecasterScoreEma:        previousTopicQuantileForecasterScoreEma,
 		PreviousTopicQuantileReputerScoreEma:           previousTopicQuantileReputerScoreEma,
+		ActiveInferers:                                 activeInferers,
+		ActiveForecasters:                              activeForecasters,
+		LowestInfererScoreEmas:                         lowestInfererScoreEmas,
+		LowestForecasterScoreEmas:                      lowestForecasterScoreEmas,
+		ActiveReputers:                                 activeReputers,
+		LowestReputerScoreEmas:                         lowestReputerScoreEmas,
 	}, nil
 }
 

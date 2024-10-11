@@ -92,5 +92,5 @@ var (
 	LowestInfererScoreEmaKey                          = collections.NewPrefix(77)
 	LowestForecasterScoreEmaKey                       = collections.NewPrefix(78)
 	LowestReputerScoreEmaKey                          = collections.NewPrefix(79)
-	ReputerLossesKey                                  = collections.NewPrefix(80)
+	LossBundlesKey                                    = collections.NewPrefix(80)
 )
