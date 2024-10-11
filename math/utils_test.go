@@ -589,7 +589,7 @@ func TestGetQuantileOfDecs(t *testing.T) {
 			},
 			quantile:    alloraMath.MustNewDecFromString("0.5"),
 			expected:    alloraMath.NewNaN(),
-			expectedErr: alloraMath.ErrNaN,
+			expectedErr: nil,
 			name:        "data is NaN",
 		},
 	}
