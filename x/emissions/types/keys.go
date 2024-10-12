@@ -95,4 +95,5 @@ var (
 	LowestForecasterScoreEmaKey                       = collections.NewPrefix(80)
 	LowestReputerScoreEmaKey                          = collections.NewPrefix(81)
 	LossBundlesKey                                    = collections.NewPrefix(82)
+	TotalSumPreviousTopicWeightsKey                   = collections.NewPrefix(83)
 )

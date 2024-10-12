@@ -157,6 +157,32 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 		return errors.Wrap(err, "failed to remove active topics")
 	}
 
+	// Remove previous weight from total sum of previous topic weights, but keep on list
+	totalSumPreviousTopicWeights, err := k.totalSumPreviousTopicWeights.Get(ctx)
+	if err != nil {
+		if !errors.IsOf(err, collections.ErrNotFound) {
+			return errors.Wrap(err, "failed to get total sum of previous topic weights")
+		}
+		totalSumPreviousTopicWeights = alloraMath.ZeroDec()
+	}
+
+	previousTopicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
+	if err != nil {
+		if !errors.IsOf(err, collections.ErrNotFound) {
+			return errors.Wrap(err, "failed to get previous topic weight")
+		}
+		// no previous weight, no need to remove
+		return nil
+	}
+	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Sub(previousTopicWeight)
+	if err != nil {
+		return errors.Wrap(err, "failed to subtract previous topic weight from total sum of previous topic weights")
+	}
+	err = k.totalSumPreviousTopicWeights.Set(ctx, totalSumPreviousTopicWeights)
+	if err != nil {
+		return errors.Wrap(err, "failed to set total sum of previous topic weights")
+	}
+
 	return nil
 }
 

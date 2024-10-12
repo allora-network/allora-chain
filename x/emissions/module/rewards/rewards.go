@@ -45,18 +45,26 @@ func EmitRewards(
 	if uint64(len(sortedRewardableTopics)) > moduleParams.MaxActiveTopicsPerBlock {
 		sortedRewardableTopics = sortedRewardableTopics[:moduleParams.MaxActiveTopicsPerBlock]
 	}
-	// Get total weight of rewardable topics
-	sumWeightOfRewardableTopics := alloraMath.ZeroDec()
+
+	// Get the global total sum of previous topic weights
+	totalWeightOfActiveTopics, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get total sum of previous topic weights")
+	}
+	// Get epoch lengths for sorted rewardable topics
+	epochLengths := make(map[uint64]int64)
 	for _, topicId := range sortedRewardableTopics {
-		sumWeightOfRewardableTopics, err = sumWeightOfRewardableTopics.Add(*weights[topicId])
+		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			return errors.Wrapf(err, "failed to add weight of top topics")
+			return errors.Wrapf(err, "failed to get epoch length for topic %d", topicId)
 		}
+		epochLengths[topicId] = topic.EpochLength
 	}
 
 	// Revenue (above) is what was earned by topics in this timestep. Rewards are what are actually paid to topics => participants
 	// The reward and revenue calculations are coupled here to minimize excessive compute
-	topicRewards, err := CalcTopicRewards(ctx, k, weights, sortedRewardableTopics, sumWeightOfRewardableTopics, totalReward)
+	topicRewards, err := CalcTopicRewards(ctx, k, weights, sortedRewardableTopics,
+		totalWeightOfActiveTopics, totalReward, epochLengths, moduleParams.BlocksPerMonth)
 	if err != nil {
 		return errors.Wrapf(err, "failed to calculate topic rewards")
 	}
@@ -64,7 +72,7 @@ func EmitRewards(
 	// Initialize totalRewardToStakedReputers
 	totalRewardToStakedReputers := alloraMath.ZeroDec()
 
-	// Get nonce for each topic before processing
+	// Process rewards for each topic, pruning at the end of epoch
 	for _, topicId := range sortedRewardableTopics {
 		topicRewardNonce, err := k.GetTopicRewardNonce(ctx, topicId)
 		if err != nil || topicRewardNonce == 0 {
@@ -78,7 +86,12 @@ func EmitRewards(
 			}
 		}(topicId, topicRewardNonce)
 
-		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicRewards, moduleParams)
+		topicReward := topicRewards[topicId]
+		if topicReward == nil {
+			Logger(ctx).Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
+			continue
+		}
+		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicReward, moduleParams)
 		if err != nil {
 			Logger(ctx).Error(fmt.Sprintf("Failed to process rewards for topic %d: %s", topicId, err.Error()))
 			continue
@@ -125,16 +138,11 @@ func getDistributionAndPayoutRewardsToTopicActors(
 	k keeper.Keeper,
 	topicId uint64,
 	topicRewardNonce int64,
-	topicRewards map[uint64]*alloraMath.Dec,
+	topicReward *alloraMath.Dec,
+	// topicRewards map[uint64]*alloraMath.Dec,
 	moduleParams types.Params,
 ) (alloraMath.Dec, error) {
 	Logger(ctx).Debug(fmt.Sprintf("Distributing rewards for topic %d", topicId))
-
-	topicReward := topicRewards[topicId]
-	if topicReward == nil {
-		Logger(ctx).Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
-		return alloraMath.ZeroDec(), nil
-	}
 
 	Logger(ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", topicId, topicRewardNonce, topicReward))
 
@@ -164,6 +172,8 @@ func CalcTopicRewards(
 	sortedTopics []uint64,
 	sumWeight alloraMath.Dec,
 	totalReward alloraMath.Dec,
+	epochLengths map[uint64]int64,
+	timeframeLength uint64,
 ) (
 	map[uint64]*alloraMath.Dec,
 	error,
@@ -177,6 +187,23 @@ func CalcTopicRewards(
 		topicReward, err := GetTopicReward(topicRewardFraction, totalReward)
 		if err != nil {
 			return nil, errors.Wrapf(err, "topic reward error")
+		}
+		epochLength := epochLengths[topicId]
+		if epochLength <= 0 {
+			return nil, errors.Wrapf(types.ErrInvalidLengthTopic, "epoch length is nil or zero for topic %d", topicId)
+		}
+		epochLengthDec := alloraMath.NewDecFromInt64(epochLength)
+		timeframeLengthDec, err := alloraMath.NewDecFromUint64(timeframeLength)
+		if err != nil {
+			return nil, errors.Wrapf(err, "calcTopicRewards: timeframe length conversion to decimal error")
+		}
+		epochLengthFraction, err := epochLengthDec.Quo(timeframeLengthDec)
+		if err != nil {
+			return nil, errors.Wrapf(err, "calcTopicRewards: epoch length fraction calculation error")
+		}
+		topicReward, err = topicReward.Mul(epochLengthFraction)
+		if err != nil {
+			return nil, errors.Wrapf(err, "calcTopicRewards:topic reward multiplication with epoch length fraction error")
 		}
 		topicRewards[topicId] = &topicReward
 	}
