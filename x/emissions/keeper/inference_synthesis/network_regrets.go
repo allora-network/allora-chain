@@ -96,15 +96,17 @@ func ComputeAndBuildEMRegret(
 
 // args for GetCalcSetNetworkRegrets
 type GetCalcSetNetworkRegretsArgs struct {
-	Ctx           sdk.Context
-	K             keeper.Keeper
-	TopicId       TopicId
-	NetworkLosses emissions.ValueBundle
-	Nonce         emissions.Nonce
-	AlphaRegret   alloraMath.Dec
-	CNorm         alloraMath.Dec
-	PNorm         alloraMath.Dec
-	EpsilonTopic  alloraMath.Dec
+	Ctx                   sdk.Context
+	K                     keeper.Keeper
+	TopicId               TopicId
+	NetworkLosses         emissions.ValueBundle
+	Nonce                 emissions.Nonce
+	AlphaRegret           alloraMath.Dec
+	CNorm                 alloraMath.Dec
+	PNorm                 alloraMath.Dec
+	EpsilonTopic          alloraMath.Dec
+	InitialRegretQuantile alloraMath.Dec
+	PnormSafeDiv          alloraMath.Dec
 }
 
 // Calculate the new network regrets by taking EMAs between the previous network regrets
@@ -117,11 +119,6 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 	blockHeight := args.Nonce.BlockHeight
 
 	workersRegrets := make([]alloraMath.Dec, 0)
-
-	topic, err := args.K.GetTopic(args.Ctx, args.TopicId)
-	if err != nil {
-		return errorsmod.Wrapf(err, "failed to get topic")
-	}
 
 	// R_ij - Inferer Regrets
 	for _, infererLoss := range args.NetworkLosses.InfererValues {
@@ -147,7 +144,8 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		shouldAddWorkerRegret, err := isExperiencedInferer(
 			args.Ctx,
 			args.K,
-			topic,
+			args.TopicId,
+			args.AlphaRegret,
 			infererLoss.Worker,
 			newParticipant,
 		)
@@ -183,7 +181,8 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		shouldAddWorkerRegret, err := isExperiencedForecaster(
 			args.Ctx,
 			args.K,
-			topic,
+			args.TopicId,
+			args.AlphaRegret,
 			forecasterLoss.Worker,
 			newParticipant,
 		)
@@ -359,17 +358,13 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 
 	// Recalculate topic initial regret
 	if len(workersRegrets) > 0 {
-		params, err := args.K.GetParams(args.Ctx)
-		if err != nil {
-			return errorsmod.Wrapf(err, "GetCalcSetNetworkRegrets error getting params")
-		}
 		updatedTopicInitialRegret, err := CalcTopicInitialRegret(
 			workersRegrets,
 			args.EpsilonTopic,
 			args.PNorm,
 			args.CNorm,
-			params.InitialRegretQuantile,
-			params.PnormSafeDiv,
+			args.InitialRegretQuantile,
+			args.PnormSafeDiv,
 		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error calculating topic initial regret")
@@ -444,16 +439,17 @@ func CalcTopicInitialRegret(
 func isExperiencedInferer(
 	ctx context.Context,
 	k keeper.Keeper,
-	topic emissions.Topic,
+	topicId TopicId,
+	alphaRegret alloraMath.Dec,
 	inferer Worker,
 	newParticipant bool,
 ) (bool, error) {
 	numInclusions := uint64(0)
-	numInclusions, err := k.GetCountInfererInclusionsInTopic(ctx, topic.Id, inferer)
+	numInclusions, err := k.GetCountInfererInclusionsInTopic(ctx, topicId, inferer)
 	if err != nil {
 		return false, errorsmod.Wrapf(err, "failed to get inferer inclusions")
 	}
-	return isExperiencedActor(newParticipant, numInclusions, topic.AlphaRegret)
+	return isExperiencedActor(newParticipant, numInclusions, alphaRegret)
 }
 
 // Determine if a forecaster is an experienced worker by checking
@@ -461,16 +457,17 @@ func isExperiencedInferer(
 func isExperiencedForecaster(
 	ctx context.Context,
 	k keeper.Keeper,
-	topic emissions.Topic,
+	topicId TopicId,
+	alphaRegret alloraMath.Dec,
 	forecaster Worker,
 	newParticipant bool,
 ) (bool, error) {
 	numInclusions := uint64(0)
-	numInclusions, err := k.GetCountForecasterInclusionsInTopic(ctx, topic.Id, forecaster)
+	numInclusions, err := k.GetCountForecasterInclusionsInTopic(ctx, topicId, forecaster)
 	if err != nil {
 		return false, errorsmod.Wrapf(err, "failed to get forecaster inclusions")
 	}
-	return isExperiencedActor(newParticipant, numInclusions, topic.AlphaRegret)
+	return isExperiencedActor(newParticipant, numInclusions, alphaRegret)
 }
 
 // helper function for isExperiencedForecaster and isExperiencedInferer
