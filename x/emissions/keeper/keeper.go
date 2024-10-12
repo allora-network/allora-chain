@@ -3675,9 +3675,19 @@ func (k *Keeper) GetLowestInfererScoreEma(ctx context.Context, topicId TopicId) 
 	lowestScore, err := k.lowestInfererScoreEma.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, false, nil
+			return types.Score{
+				BlockHeight: 0,
+				Address:     "",
+				TopicId:     topicId,
+				Score:       alloraMath.ZeroDec(),
+			}, false, nil
 		}
-		return types.Score{}, false, errorsmod.Wrap(err, "error getting lowest inferer score EMA")
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, errorsmod.Wrap(err, "error getting lowest inferer score EMA")
 	}
 	return lowestScore, true, nil
 }
@@ -3698,9 +3708,19 @@ func (k *Keeper) GetLowestForecasterScoreEma(ctx context.Context, topicId TopicI
 	lowestScore, err := k.lowestForecasterScoreEma.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, false, nil
+			return types.Score{
+				BlockHeight: 0,
+				Address:     "",
+				TopicId:     topicId,
+				Score:       alloraMath.ZeroDec(),
+			}, false, nil
 		}
-		return types.Score{}, false, errorsmod.Wrap(err, "error getting lowest forecaster score EMA")
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, errorsmod.Wrap(err, "error getting lowest forecaster score EMA")
 	}
 	return lowestScore, true, nil
 }
@@ -3806,9 +3826,19 @@ func (k *Keeper) GetLowestReputerScoreEma(ctx context.Context, topicId TopicId) 
 	lowestScore, err := k.lowestReputerScoreEma.Get(ctx, topicId)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{}, false, nil
+			return types.Score{
+				BlockHeight: 0,
+				Address:     "",
+				TopicId:     topicId,
+				Score:       alloraMath.ZeroDec(),
+			}, false, nil
 		}
-		return types.Score{}, false, errorsmod.Wrap(err, "error getting lowest reputer score EMA")
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, errorsmod.Wrap(err, "error getting lowest reputer score EMA")
 	}
 	return lowestScore, true, nil
 }

@@ -191,13 +191,13 @@ message GenesisState {
   // active forecasters for each topic
   repeated TopicAndActorId active_forecasters = 67;
   // lowest inferer score EMA for each topic
-  repeated TopicIdActorIdScore lowest_inferer_score_emas = 68;
+  repeated TopicIdActorIdScore lowest_inferer_score_ema = 68;
   // lowest forecaster score EMA for each topic
-  repeated TopicIdActorIdScore lowest_forecaster_score_emas = 69;
+  repeated TopicIdActorIdScore lowest_forecaster_score_ema = 69;
   // active reputers for each topic
   repeated TopicAndActorId active_reputers = 70;
   // lowest reputer score EMA for each topic
-  repeated TopicIdActorIdScore lowest_reputer_score_emas = 71;
+  repeated TopicIdActorIdScore lowest_reputer_score_ema = 71;
   // map of (topic, reputer) -> reputer loss
   repeated TopicIdReputerReputerValueBundle lossBundles = 72;
 }

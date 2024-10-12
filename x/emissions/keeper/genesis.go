@@ -2001,7 +2001,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		})
 	}
 
-	lowestInfererScoreEmas := make([]*types.TopicIdActorIdScore, 0)
+	lowestInfererScoreEma := make([]*types.TopicIdActorIdScore, 0)
 	lowestInfererScoreEmaIter, err := k.lowestInfererScoreEma.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate lowest inferer score emas")
@@ -2011,14 +2011,14 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get key value: lowestInfererScoreEmaIter")
 		}
-		lowestInfererScoreEmas = append(lowestInfererScoreEmas, &types.TopicIdActorIdScore{
+		lowestInfererScoreEma = append(lowestInfererScoreEma, &types.TopicIdActorIdScore{
 			TopicId: keyValue.Key,
 			ActorId: keyValue.Value.Address,
 			Score:   &keyValue.Value,
 		})
 	}
 
-	lowestForecasterScoreEmas := make([]*types.TopicIdActorIdScore, 0)
+	lowestForecasterScoreEma := make([]*types.TopicIdActorIdScore, 0)
 	lowestForecasterScoreEmaIter, err := k.lowestForecasterScoreEma.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate lowest forecaster score emas")
@@ -2028,7 +2028,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get key value: lowestForecasterScoreEmaIter")
 		}
-		lowestForecasterScoreEmas = append(lowestForecasterScoreEmas, &types.TopicIdActorIdScore{
+		lowestForecasterScoreEma = append(lowestForecasterScoreEma, &types.TopicIdActorIdScore{
 			TopicId: keyValue.Key,
 			ActorId: keyValue.Value.Address,
 			Score:   &keyValue.Value,
@@ -2051,7 +2051,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		})
 	}
 
-	lowestReputerScoreEmas := make([]*types.TopicIdActorIdScore, 0)
+	lowestReputerScoreEma := make([]*types.TopicIdActorIdScore, 0)
 	lowestReputerScoreEmaIter, err := k.lowestReputerScoreEma.Iterate(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to iterate lowest reputer score emas")
@@ -2061,7 +2061,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get key value: lowestReputerScoreEmaIter")
 		}
-		lowestReputerScoreEmas = append(lowestReputerScoreEmas, &types.TopicIdActorIdScore{
+		lowestReputerScoreEma = append(lowestReputerScoreEma, &types.TopicIdActorIdScore{
 			TopicId: keyValue.Key,
 			ActorId: keyValue.Value.Address,
 			Score:   &keyValue.Value,
@@ -2152,10 +2152,11 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		PreviousTopicQuantileReputerScoreEma:           previousTopicQuantileReputerScoreEma,
 		ActiveInferers:                                 activeInferers,
 		ActiveForecasters:                              activeForecasters,
-		LowestInfererScoreEmas:                         lowestInfererScoreEmas,
-		LowestForecasterScoreEmas:                      lowestForecasterScoreEmas,
 		ActiveReputers:                                 activeReputers,
-		LowestReputerScoreEmas:                         lowestReputerScoreEmas,
+		LowestInfererScoreEma:                          lowestInfererScoreEma,
+		LowestForecasterScoreEma:                       lowestForecasterScoreEma,
+		LowestReputerScoreEma:                          lowestReputerScoreEma,
+		LossBundles:                                    lossBundles,
 	}, nil
 }
 

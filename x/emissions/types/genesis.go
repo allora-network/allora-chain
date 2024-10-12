@@ -70,6 +70,13 @@ func NewGenesisState() *GenesisState {
 		PreviousTopicQuantileInfererScoreEma:           []*TopicIdAndDec{},
 		PreviousTopicQuantileForecasterScoreEma:        []*TopicIdAndDec{},
 		PreviousTopicQuantileReputerScoreEma:           []*TopicIdAndDec{},
+		ActiveInferers:                                 []*TopicAndActorId{},
+		ActiveForecasters:                              []*TopicAndActorId{},
+		ActiveReputers:                                 []*TopicAndActorId{},
+		LowestInfererScoreEma:                          []*TopicIdActorIdScore{},
+		LowestForecasterScoreEma:                       []*TopicIdActorIdScore{},
+		LowestReputerScoreEma:                          []*TopicIdActorIdScore{},
+		LossBundles:                                    []*TopicIdReputerReputerValueBundle{},
 	}
 }
 
