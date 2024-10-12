@@ -146,6 +146,9 @@ type Keeper struct {
 	// store previous weights for exponential moving average in rewards calc
 	previousTopicWeight collections.Map[TopicId, alloraMath.Dec]
 
+	// total weights of all active topics on the network
+	totalSumPreviousTopicWeights collections.Item[alloraMath.Dec]
+
 	// map of (topic, block_height) -> Inference
 	allInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.Inferences]
 
@@ -291,6 +294,7 @@ func NewKeeper(
 		previousTopicQuantileReputerScoreEma:      collections.NewMap(sb, types.PreviousTopicQuantileReputerScoreEmaKey, "previous_topic_quantile_reputer_score_ema", collections.Uint64Key, alloraMath.DecValue),
 		countInfererInclusionsInTopicActiveSet:    collections.NewMap(sb, types.CountInfererInclusionsInTopicKey, "count_inferer_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
 		countForecasterInclusionsInTopicActiveSet: collections.NewMap(sb, types.CountForecasterInclusionsInTopicKey, "count_forecaster_inclusions_in_topic", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), collections.Uint64Value),
+		totalSumPreviousTopicWeights:              collections.NewItem(sb, types.TotalSumPreviousTopicWeightsKey, "total_sum_previous_topic_weights", alloraMath.DecValue),
 	}
 
 	schema, err := sb.Build()
@@ -2438,7 +2442,43 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 	if err := types.ValidateDec(weight); err != nil {
 		return errorsmod.Wrap(err, "weight validation failed")
 	}
+	// Update total sum of previous topic weights.
+	// Get the current total sum, set to zero if not existent.
+	totalSumPreviousTopicWeights, err := k.totalSumPreviousTopicWeights.Get(ctx)
+	if err != nil {
+		if !errors.Is(err, collections.ErrNotFound) {
+			return errorsmod.Wrap(err, "error getting total sum of previous topic weights")
+		}
+	} else {
+		totalSumPreviousTopicWeights = alloraMath.ZeroDec()
+	}
+	// Remove old weight
+	oldTopicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
+	if err != nil {
+		// If not existent, do not subtract anything.
+		if !errors.Is(err, collections.ErrNotFound) {
+			return errorsmod.Wrap(err, "error getting previous weight of topic")
+		}
+		oldTopicWeight = alloraMath.ZeroDec()
+	}
+	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Sub(oldTopicWeight)
+	if err != nil {
+		return errorsmod.Wrap(err, "error subtracting old weight from total sum of previous topic weights")
+	}
+
+	// Add new weight
+	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Add(weight)
+	if err != nil {
+		return errorsmod.Wrap(err, "error adding new weight to total sum of previous topic weights")
+	}
+
+	// Then set the new total sum
 	return k.previousTopicWeight.Set(ctx, topicId, weight)
+}
+
+// Get the total sum of previous topic weights
+func (k *Keeper) GetTotalSumPreviousTopicWeights(ctx context.Context) (alloraMath.Dec, error) {
+	return k.totalSumPreviousTopicWeights.Get(ctx)
 }
 
 // Gets next topic id
