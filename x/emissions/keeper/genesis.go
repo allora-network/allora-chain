@@ -808,8 +808,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	}
 
 	// LowestInfererScoreEmas []*TopicIdActorIdScore
-	if len(data.LowestInfererScoreEmas) != 0 {
-		for _, topicIdActorIdScore := range data.LowestInfererScoreEmas {
+	if len(data.LowestInfererScoreEma) != 0 {
+		for _, topicIdActorIdScore := range data.LowestInfererScoreEma {
 			if topicIdActorIdScore != nil {
 				if err := k.SetLowestInfererScoreEma(ctx, topicIdActorIdScore.TopicId, *topicIdActorIdScore.Score); err != nil {
 					return errors.Wrap(err, "error setting lowestInfererScoreEma")
@@ -819,8 +819,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	}
 
 	// LowestForecasterScoreEmas []*TopicIdActorIdScore
-	if len(data.LowestForecasterScoreEmas) != 0 {
-		for _, topicIdActorIdScore := range data.LowestForecasterScoreEmas {
+	if len(data.LowestForecasterScoreEma) != 0 {
+		for _, topicIdActorIdScore := range data.LowestForecasterScoreEma {
 			if topicIdActorIdScore != nil {
 				if err := k.SetLowestForecasterScoreEma(ctx, topicIdActorIdScore.TopicId, *topicIdActorIdScore.Score); err != nil {
 					return errors.Wrap(err, "error setting lowestForecasterScoreEma")
@@ -841,8 +841,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	}
 
 	// LowestReputerScoreEmas []*TopicIdActorIdScore
-	if len(data.LowestReputerScoreEmas) != 0 {
-		for _, topicIdActorIdScore := range data.LowestReputerScoreEmas {
+	if len(data.LowestReputerScoreEma) != 0 {
+		for _, topicIdActorIdScore := range data.LowestReputerScoreEma {
 			if topicIdActorIdScore != nil {
 				if err := k.SetLowestReputerScoreEma(ctx, topicIdActorIdScore.TopicId, *topicIdActorIdScore.Score); err != nil {
 					return errors.Wrap(err, "error setting lowestReputerScoreEma")
