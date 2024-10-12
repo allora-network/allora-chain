@@ -5,7 +5,6 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
-	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 )
@@ -98,7 +97,7 @@ func (qs queryServer) GetWorkerInferenceScoresAtBlock(ctx context.Context, req *
 
 func (qs queryServer) GetCurrentLowestInfererScore(ctx context.Context, req *types.GetCurrentLowestInfererScoreRequest) (_ *types.GetCurrentLowestInfererScoreResponse, err error) {
 	defer metrics.RecordMetrics("GetCurrentLowestInfererScore", time.Now(), &err)
-	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	lowestInfererScore, found, err := qs.k.GetLowestInfererScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting lowest inferer score EMA")
 	} else if !found {
@@ -130,7 +129,7 @@ func (qs queryServer) GetWorkerForecastScoresAtBlock(ctx context.Context, req *t
 
 func (qs queryServer) GetCurrentLowestForecasterScore(ctx context.Context, req *types.GetCurrentLowestForecasterScoreRequest) (_ *types.GetCurrentLowestForecasterScoreResponse, err error) {
 	defer metrics.RecordMetrics("GetCurrentLowestForecasterScore", time.Now(), &err)
-	unfulfilledWorkerNonces, err := qs.k.GetUnfulfilledWorkerNonces(ctx, req.TopicId)
+	lowestForecasterScore, found, err := qs.k.GetLowestForecasterScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting lowest forecaster score EMA")
 	} else if !found {
@@ -152,7 +151,7 @@ func (qs queryServer) GetReputersScoresAtBlock(ctx context.Context, req *types.G
 
 func (qs queryServer) GetCurrentLowestReputerScore(ctx context.Context, req *types.GetCurrentLowestReputerScoreRequest) (_ *types.GetCurrentLowestReputerScoreResponse, err error) {
 	defer metrics.RecordMetrics("GetCurrentLowestReputerScore", time.Now(), &err)
-	unfulfilledReputerNonces, err := qs.k.GetUnfulfilledReputerNonces(ctx, req.TopicId)
+	lowestReputerScore, found, err := qs.k.GetLowestReputerScoreEma(ctx, req.TopicId)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting lowest reputer score EMA")
 	} else if !found {

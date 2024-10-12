@@ -1417,7 +1417,6 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 			OneOutInfererForecasterValues: nil,
 		},
 		Signature: []byte{},
-		Pubkey:    "",
 	}
 	reputerValueBundles.ReputerValueBundles = append(reputerValueBundles.ReputerValueBundles, reputerValueBundle)
 	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, block, reputerValueBundles)
@@ -1484,7 +1483,7 @@ func (s *MsgServerTestSuite) TestRewardDelegateStake() {
 			OneOutInfererForecasterValues: nil,
 		},
 		Signature: []byte{},
-		Pubkey: s.pubKeyHexStr[1],
+		Pubkey:    s.pubKeyHexStr[1],
 	}
 	newReputerValueBundles.ReputerValueBundles = append(newReputerValueBundles.ReputerValueBundles, newReputerValueBundle)
 	err = s.emissionsKeeper.InsertActiveReputerLosses(s.ctx, topicId, newBlock, newReputerValueBundles)

@@ -167,7 +167,7 @@ func CloseReputerNonce(
 		synth.GetCalcSetNetworkRegretsArgs{
 			Ctx:           sdkCtx,
 			K:             *k,
-			TopicId:       topicId,
+			TopicId:       topic.Id,
 			NetworkLosses: networkLossBundle,
 			Nonce:         nonce,
 			AlphaRegret:   topic.AlphaRegret,
