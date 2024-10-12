@@ -67,59 +67,7 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllLossBundles() {
 	_ = k.SetReputerScoreEma(ctx, topicId, reputer2, score2)
 	_ = k.SetReputerScoreEma(ctx, topicId, reputer3, score3)
 
-	allReputerLosses := types.ReputerValueBundles{
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:                       reputer1,
-					CombinedValue:                 alloraMath.MustNewDecFromString(".0000117005278862668"),
-					ReputerRequestNonce:           reputerRequestNonce,
-					TopicId:                       topicId,
-					ExtraData:                     nil,
-					InfererValues:                 nil,
-					ForecasterValues:              nil,
-					NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
-					OneOutInfererValues:           nil,
-					OneOutForecasterValues:        nil,
-					OneInForecasterValues:         nil,
-					OneOutInfererForecasterValues: nil,
-				},
-			},
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:                       reputer2,
-					CombinedValue:                 alloraMath.MustNewDecFromString(".00000962701954026944"),
-					ReputerRequestNonce:           reputerRequestNonce,
-					TopicId:                       topicId,
-					ExtraData:                     nil,
-					InfererValues:                 nil,
-					ForecasterValues:              nil,
-					NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
-					OneOutInfererValues:           nil,
-					OneOutForecasterValues:        nil,
-					OneInForecasterValues:         nil,
-					OneOutInfererForecasterValues: nil,
-				},
-			},
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:                       reputer3,
-					CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
-					ReputerRequestNonce:           reputerRequestNonce,
-					TopicId:                       topicId,
-					ExtraData:                     nil,
-					InfererValues:                 nil,
-					ForecasterValues:              nil,
-					NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
-					OneOutInfererValues:           nil,
-					OneOutForecasterValues:        nil,
-					OneInForecasterValues:         nil,
-					OneOutInfererForecasterValues: nil,
-				},
-			},
-		},
-	}
-	lowScore, lowScoreIndex, err := keeper.GetLowScoreFromAllLossBundles(ctx, &k, topicId, allReputerLosses)
+	lowScore, err := keeper.GetLowestScoreFromAllReputers(ctx, &k, topicId, reputerAddresses)
 	s.Require().NoError(err)
 	s.Require().Equal(lowScore, score2)
 }

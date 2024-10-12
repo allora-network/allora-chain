@@ -16,7 +16,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err := ms.k.ValidateStringIsBech32(msg.Sender)
+	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}

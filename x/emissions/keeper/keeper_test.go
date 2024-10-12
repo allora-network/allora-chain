@@ -3931,7 +3931,6 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 				},
 			},
 		},
-		ExtraData: nil,
 	}
 
 	topic, err := k.GetTopic(ctx, topicId)
