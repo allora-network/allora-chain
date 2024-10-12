@@ -62,7 +62,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		MaxActiveTopicsPerBlock:             []uint64{1234},
 		MaxStringLength:                     []uint64{1234},
 		InitialRegretQuantile:               []alloraMath.Dec{alloraMath.ZeroDec()},
-		PnormSafeDiv:                        []alloraMath.Dec{alloraMath.ZeroDec()},
+		PNormSafeDiv:                        []alloraMath.Dec{alloraMath.ZeroDec()},
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -166,7 +166,7 @@ func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
 		MaxActiveTopicsPerBlock:             nil,
 		MaxStringLength:                     nil,
 		InitialRegretQuantile:               nil,
-		PnormSafeDiv:                        nil,
+		PNormSafeDiv:                        nil,
 	}
 
 	// Creating the UpdateParamsRequest message with a non-whitelisted user

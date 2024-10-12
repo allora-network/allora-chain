@@ -148,7 +148,7 @@ message Params {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];
-  string pnorm_safe_div = 49 [ // pnorm divide value to calculate offset with cnorm
+  string p_norm_safe_div = 49 [ // pnorm divide value to calculate offset with cnorm
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false
   ];

@@ -223,7 +223,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 			PNorm:                 pNorm,
 			EpsilonTopic:          epsilon,
 			InitialRegretQuantile: initialRegretQuantile,
-			PnormSafeDiv:          pnormSafeDiv,
+			PNormSafeDiv:          pnormSafeDiv,
 		})
 	require.NoError(err)
 
@@ -377,7 +377,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 			PNorm:                 pNorm,
 			EpsilonTopic:          epsilon,
 			InitialRegretQuantile: initialRegretQuantile,
-			PnormSafeDiv:          pnormSafeDiv,
+			PNormSafeDiv:          pnormSafeDiv,
 		})
 	require.NoError(err)
 
@@ -455,7 +455,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 			PNorm:                 pNorm,
 			EpsilonTopic:          epsilon,
 			InitialRegretQuantile: initialRegretQuantile,
-			PnormSafeDiv:          pnormSafeDiv,
+			PNormSafeDiv:          pnormSafeDiv,
 		})
 	require.NoError(err)
 
@@ -642,7 +642,7 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 			PNorm:                 pNorm,
 			EpsilonTopic:          epsilon,
 			InitialRegretQuantile: initialRegretQuantile,
-			PnormSafeDiv:          pnormSafeDiv,
+			PNormSafeDiv:          pnormSafeDiv,
 		})
 	require.NoError(err)
 
@@ -684,7 +684,7 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 			PNorm:                 pNorm,
 			EpsilonTopic:          epsilon,
 			InitialRegretQuantile: initialRegretQuantile,
-			PnormSafeDiv:          pnormSafeDiv,
+			PNormSafeDiv:          pnormSafeDiv,
 		})
 	require.NoError(err)
 
@@ -850,7 +850,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 		PNorm:                 pNorm,
 		EpsilonTopic:          epsilon,
 		InitialRegretQuantile: initialRegretQuantile,
-		PnormSafeDiv:          pnormSafeDiv,
+		PNormSafeDiv:          pnormSafeDiv,
 	})
 	require.NoError(err)
 
@@ -941,7 +941,7 @@ func (s *InferenceSynthesisTestSuite) TestNotUpdateTopicInitialRegret() {
 		PNorm:                 pNorm,
 		EpsilonTopic:          epsilon,
 		InitialRegretQuantile: initialRegretQuantile,
-		PnormSafeDiv:          pnormSafeDiv,
+		PNormSafeDiv:          pnormSafeDiv,
 	})
 	require.NoError(err)
 

@@ -54,7 +54,7 @@ func DefaultParams() Params {
 		MaxActiveTopicsPerBlock:             uint64(1),                                    // maximum number of active topics per block
 		MaxStringLength:                     uint64(255),                                  // maximum length of strings uploaded to the chain
 		InitialRegretQuantile:               alloraMath.MustNewDecFromString("0.25"),      // quantile value for getting initial regret during network regret calculation
-		PnormSafeDiv:                        alloraMath.MustNewDecFromString("8.25"),      // pnorm divide value to calculate offset with cnorm
+		PNormSafeDiv:                        alloraMath.MustNewDecFromString("8.25"),      // pnorm divide value to calculate offset with cnorm
 	}
 }
 
@@ -186,7 +186,7 @@ func (p Params) Validate() error {
 	if err := validateInitialRegretQuantile(p.InitialRegretQuantile); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: regret percentile")
 	}
-	if err := validatePnormSafeDiv(p.PnormSafeDiv); err != nil {
+	if err := validatePNormSafeDiv(p.PNormSafeDiv); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: pnorm safe div")
 	}
 	return nil
@@ -567,7 +567,7 @@ func validateInitialRegretQuantile(i alloraMath.Dec) error {
 	return nil
 }
 
-func validatePnormSafeDiv(i alloraMath.Dec) error {
+func validatePNormSafeDiv(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
 	}

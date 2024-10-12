@@ -177,7 +177,7 @@ func CloseReputerNonce(
 			PNorm:                 topic.PNorm,
 			EpsilonTopic:          topic.Epsilon,
 			InitialRegretQuantile: params.InitialRegretQuantile,
-			PnormSafeDiv:          params.PnormSafeDiv,
+			PNormSafeDiv:          params.PNormSafeDiv,
 		})
 	if err != nil {
 		return err

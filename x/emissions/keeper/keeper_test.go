@@ -3836,7 +3836,7 @@ func mockUninitializedParams() types.Params {
 		MaxActiveTopicsPerBlock:             uint64(0),
 		MaxStringLength:                     uint64(0),
 		InitialRegretQuantile:               alloraMath.ZeroDec(),
-		PnormSafeDiv:                        alloraMath.ZeroDec(),
+		PNormSafeDiv:                        alloraMath.ZeroDec(),
 	}
 }
 

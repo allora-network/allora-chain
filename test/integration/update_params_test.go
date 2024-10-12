@@ -84,7 +84,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			MaxActiveTopicsPerBlock:             nil,
 			MaxStringLength:                     nil,
 			InitialRegretQuantile:               nil,
-			PnormSafeDiv:                        nil,
+			PNormSafeDiv:                        nil,
 		},
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, updateParamRequest)
@@ -140,7 +140,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			MaxActiveTopicsPerBlock:             nil,
 			MaxStringLength:                     nil,
 			InitialRegretQuantile:               nil,
-			PnormSafeDiv:                        nil,
+			PNormSafeDiv:                        nil,
 		},
 	}
 	_, err = m.Client.BroadcastTx(ctx, m.BobAcc, updateParamRequest)
@@ -200,7 +200,7 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			MaxActiveTopicsPerBlock:             nil,
 			MaxStringLength:                     nil,
 			InitialRegretQuantile:               nil,
-			PnormSafeDiv:                        nil,
+			PNormSafeDiv:                        nil,
 		},
 	}
 	txResp, err = m.Client.BroadcastTx(ctx, m.AliceAcc, updateParamRequest)

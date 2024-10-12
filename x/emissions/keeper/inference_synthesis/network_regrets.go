@@ -106,7 +106,7 @@ type GetCalcSetNetworkRegretsArgs struct {
 	PNorm                 alloraMath.Dec
 	EpsilonTopic          alloraMath.Dec
 	InitialRegretQuantile alloraMath.Dec
-	PnormSafeDiv          alloraMath.Dec
+	PNormSafeDiv          alloraMath.Dec
 }
 
 // Calculate the new network regrets by taking EMAs between the previous network regrets
@@ -364,7 +364,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 			args.PNorm,
 			args.CNorm,
 			args.InitialRegretQuantile,
-			args.PnormSafeDiv,
+			args.PNormSafeDiv,
 		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error calculating topic initial regret")

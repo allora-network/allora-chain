@@ -128,7 +128,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigrateParams() {
 
 	// TO BE ADDED VIA DEFAULT PARAMS
 	// InitialRegretQuantile - defaultParams.InitialRegretQuantile
-	// PnormSafeDiv - defaultParams.PnormSafeDiv
+	// PNormSafeDiv - defaultParams.PNormSafeDiv
 
 	paramsExpected := defaultParams
 
@@ -176,7 +176,7 @@ func (s *EmissionsV5MigrationTestSuite) TestMigrateParams() {
 	s.Require().Equal(paramsExpected.MaxActiveTopicsPerBlock, params.MaxActiveTopicsPerBlock)
 	s.Require().Equal(paramsExpected.MaxStringLength, params.MaxStringLength)
 	s.Require().Equal(paramsExpected.InitialRegretQuantile, params.InitialRegretQuantile)
-	s.Require().Equal(paramsExpected.PnormSafeDiv, params.PnormSafeDiv)
+	s.Require().Equal(paramsExpected.PNormSafeDiv, params.PNormSafeDiv)
 	s.Require().Equal(paramsExpected, params)
 }
 
