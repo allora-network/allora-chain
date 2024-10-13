@@ -59,6 +59,10 @@ Summary TBD
 * [#620](https://github.com/allora-network/allora-chain/pull/620) Add a static analyzer to detect non-deferred `.Close()` calls, improve migration error handling
 * [#622](https://github.com/allora-network/allora-chain/pull/622) Add telemetry metrics on queries/txs
 
+### Removed
+
+* [#626](https://github.com/allora-network/allora-chain/pull/626) Remove excess check on input length for worker and reputer payloads and deprecate related `max_serialized_msg_length` parameter
+
 ### Refactor
 
 * [#538](https://github.com/allora-network/allora-chain/pull/538) Refactor Inference Synthesis to use Functions instead of "Builder Pattern"
