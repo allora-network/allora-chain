@@ -60,7 +60,7 @@ message OptionalParams {
   reserved "max_topics_per_block", "min_effective_topic_revenue", "max_retries_to_fulfil_nonces_worker", "topic_fee_revenue_decay_rate", "max_retries_to_fulfil_nonces_reputer";
 
   repeated string version = 1;
-  repeated int64 max_serialized_msg_length = 2;
+  repeated int64 max_serialized_msg_length = 2 [deprecated = true];
   repeated string min_topic_weight = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false

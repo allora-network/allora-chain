@@ -14,7 +14,7 @@ message Params {
 
   string version = 1; // version of the protocol should be in lockstep with
   // github release tag version
-  int64 max_serialized_msg_length = 2; // max length of input data for msg and query server calls
+  int64 max_serialized_msg_length = 2 [deprecated = true]; // max length of input data for msg and query server calls
   string min_topic_weight = 3 [
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false

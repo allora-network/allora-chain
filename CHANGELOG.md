@@ -62,6 +62,7 @@ Summary TBD
 ### Refactor
 
 * [#538](https://github.com/allora-network/allora-chain/pull/538) Refactor Inference Synthesis to use Functions instead of "Builder Pattern"
+* [#623](https://github.com/allora-network/allora-chain/pull/623) Optimize worker and reputer payload ingress
 
 ### Monitoring
 

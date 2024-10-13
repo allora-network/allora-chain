@@ -32,10 +32,6 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
-	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
-	if err != nil {
-		return nil, err
-	}
 
 	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
 	topicId := msg.ReputerValueBundle.ValueBundle.TopicId

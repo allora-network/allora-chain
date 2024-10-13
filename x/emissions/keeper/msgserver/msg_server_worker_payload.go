@@ -35,10 +35,6 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
 	}
-	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
-	if err != nil {
-		return nil, err
-	}
 
 	nonce := msg.WorkerDataBundle.Nonce
 	topicId := msg.WorkerDataBundle.TopicId
