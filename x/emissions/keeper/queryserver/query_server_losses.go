@@ -62,13 +62,9 @@ func (qs queryServer) GetReputerLossBundlesAtBlock(ctx context.Context, req *typ
 	return &types.GetReputerLossBundlesAtBlockResponse{LossBundles: reputerLossBundles}, nil
 }
 
-func (qs queryServer) GetActiveReputersForTopic(
-	ctx context.Context,
-	req *types.GetActiveReputersForTopicRequest,
-) (
-	*types.GetActiveReputersForTopicResponse,
-	error,
-) {
+func (qs queryServer) GetActiveReputersForTopic(ctx context.Context, req *types.GetActiveReputersForTopicRequest) (_ *types.GetActiveReputersForTopicResponse, err error) {
+	defer metrics.RecordMetrics("GetActiveReputersForTopic", time.Now(), &err)
+
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)

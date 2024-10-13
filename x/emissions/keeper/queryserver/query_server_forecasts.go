@@ -29,7 +29,9 @@ func (qs queryServer) GetForecastsAtBlock(ctx context.Context, req *types.GetFor
 	return &types.GetForecastsAtBlockResponse{Forecasts: forecasts}, nil
 }
 
-func (qs queryServer) GetActiveForecastersForTopic(ctx context.Context, req *types.GetActiveForecastersForTopicRequest) (*types.GetActiveForecastersForTopicResponse, error) {
+func (qs queryServer) GetActiveForecastersForTopic(ctx context.Context, req *types.GetActiveForecastersForTopicRequest) (_ *types.GetActiveForecastersForTopicResponse, err error) {
+	defer metrics.RecordMetrics("GetActiveForecastersForTopic", time.Now(), &err)
+
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)

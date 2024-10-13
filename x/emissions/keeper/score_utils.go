@@ -34,28 +34,22 @@ func UpdateLowestScoreFromReputerAddresses(
 	addedReputer string,
 	removedReputerAddress string,
 ) error {
-	// remove reputer from the list
+	// Remove reputer from the list
 	for i, address := range reputerAddresses {
 		if address == removedReputerAddress {
 			reputerAddresses = append(reputerAddresses[:i], reputerAddresses[i+1:]...)
 			break
 		}
 	}
-	// add new reputer to the list
+	// Add new reputer to the list
 	reputerAddresses = append(reputerAddresses, addedReputer)
-	lowScore, err := k.GetReputerScoreEma(ctx, topicId, reputerAddresses[0])
+
+	// Get lowest score from all reputers
+	lowScore, err := GetLowestScoreFromAllReputers(ctx, k, topicId, reputerAddresses)
 	if err != nil {
 		return err
 	}
-	for _, address := range reputerAddresses {
-		score, err := k.GetReputerScoreEma(ctx, topicId, address)
-		if err != nil {
-			return err
-		}
-		if lowScore.Score.Gt(score.Score) {
-			lowScore = score
-		}
-	}
+
 	return k.SetLowestReputerScoreEma(ctx, topicId, lowScore)
 }
 
@@ -68,28 +62,22 @@ func UpdateLowestScoreFromInfererAddresses(
 	addedInferer string,
 	removedInfererAddress string,
 ) error {
-	// remove inferer from the list
+	// Remove inferer from the list
 	for i, address := range infererAddresses {
 		if address == removedInfererAddress {
 			infererAddresses = append(infererAddresses[:i], infererAddresses[i+1:]...)
 			break
 		}
 	}
-	// add new inferer to the list
+	// Add new inferer to the list
 	infererAddresses = append(infererAddresses, addedInferer)
-	lowScore, err := k.GetInfererScoreEma(ctx, topicId, infererAddresses[0])
+
+	// Get lowest score from all inferers
+	lowScore, err := GetLowestScoreFromAllInferers(ctx, k, topicId, infererAddresses)
 	if err != nil {
 		return err
 	}
-	for _, address := range infererAddresses {
-		score, err := k.GetInfererScoreEma(ctx, topicId, address)
-		if err != nil {
-			return err
-		}
-		if lowScore.Score.Gt(score.Score) {
-			lowScore = score
-		}
-	}
+
 	return k.SetLowestInfererScoreEma(ctx, topicId, lowScore)
 }
 
@@ -121,28 +109,22 @@ func UpdateLowestScoreFromForecasterAddresses(
 	addedForecaster string,
 	removedForecasterAddress string,
 ) error {
-	// remove forecaster from the list
+	// Remove forecaster from the list
 	for i, address := range forecasterAddresses {
 		if address == removedForecasterAddress {
 			forecasterAddresses = append(forecasterAddresses[:i], forecasterAddresses[i+1:]...)
 			break
 		}
 	}
-	// add new forecaster to the list
+	// Add new forecaster to the list
 	forecasterAddresses = append(forecasterAddresses, addedForecaster)
-	lowScore, err := k.GetForecasterScoreEma(ctx, topicId, forecasterAddresses[0])
+
+	// Get lowest score from all forecasters
+	lowScore, err := GetLowestScoreFromAllForecasters(ctx, k, topicId, forecasterAddresses)
 	if err != nil {
 		return err
 	}
-	for _, address := range forecasterAddresses {
-		score, err := k.GetForecasterScoreEma(ctx, topicId, address)
-		if err != nil {
-			return err
-		}
-		if lowScore.Score.Gt(score.Score) {
-			lowScore = score
-		}
-	}
+
 	return k.SetLowestForecasterScoreEma(ctx, topicId, lowScore)
 }
 

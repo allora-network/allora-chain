@@ -55,7 +55,9 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionsty
 	return &emissionstypes.GetInferencesAtBlockResponse{Inferences: inferences}, nil
 }
 
-func (qs queryServer) GetActiveInferersForTopic(ctx context.Context, req *emissionstypes.GetActiveInferersForTopicRequest) (*emissionstypes.GetActiveInferersForTopicResponse, error) {
+func (qs queryServer) GetActiveInferersForTopic(ctx context.Context, req *emissionstypes.GetActiveInferersForTopicRequest) (_ *emissionstypes.GetActiveInferersForTopicResponse, err error) {
+	defer metrics.RecordMetrics("GetActiveInferersForTopic", time.Now(), &err)
+
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
