@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 
 	storetypes "cosmossdk.io/store/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/libs/bytes"
 	tmos "github.com/cometbft/cometbft/libs/os"
@@ -258,6 +259,17 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, account, defaultCoins)
 		if err != nil {
 			tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to send coins from module to account").Error())
+		}
+	}
+
+	if args.upgradeToTrigger != "" {
+		upgradePlan := upgradetypes.Plan{
+			Name:   args.upgradeToTrigger,
+			Height: app.LastBlockHeight() + 10,
+		}
+		err = app.UpgradeKeeper.ScheduleUpgrade(ctx, upgradePlan)
+		if err != nil {
+			tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to schedule upgrade").Error())
 		}
 	}
 
