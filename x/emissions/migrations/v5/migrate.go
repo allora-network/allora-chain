@@ -52,7 +52,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 // migrate params for this new version
 // the changes are the addition of InitialRegretQuantile,PNormSafeDiv
 func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
-	oldParams := oldV4Types.Params{} //nolint: exhaustruct
+	oldParams := oldV4Types.Params{} //nolint: exhaustruct // empty struct used by cosmos-sdk Unmarshal below
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
 		return errorsmod.Wrapf(emissionstypes.ErrNotFound, "old parameters not found")
