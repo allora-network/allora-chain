@@ -1171,6 +1171,11 @@ func (k *Keeper) AppendInference(
 		if err != nil {
 			return errorsmod.Wrap(err, "error removing active inferer")
 		}
+		// Remove inference from inferer with lowest score
+		err = k.RemoveInference(ctx, topic.Id, lowestEmaScore.Address)
+		if err != nil {
+			return errorsmod.Wrap(err, "error removing inference from inferer")
+		}
 		// Add new active inferer
 		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
 		if err != nil {
@@ -1207,6 +1212,16 @@ func (k *Keeper) InsertInference(
 	}
 	key := collections.Join(topicId, inference.Inferer)
 	return k.inferences.Set(ctx, key, inference)
+}
+
+// RemoveInference removes an inference from a inferer
+func (k *Keeper) RemoveInference(
+	ctx context.Context,
+	topicId TopicId,
+	inferer ActorId,
+) error {
+	key := collections.Join(topicId, inferer)
+	return k.inferences.Remove(ctx, key)
 }
 
 // Insert a complete set of inferences for a topic/block.
@@ -1288,6 +1303,11 @@ func (k *Keeper) AppendForecast(
 		if err != nil {
 			return errorsmod.Wrap(err, "error removing active forecaster")
 		}
+		// Remove forecast from forecaster with lowest score
+		err = k.RemoveForecast(ctx, topic.Id, lowestEmaScore.Address)
+		if err != nil {
+			return errorsmod.Wrap(err, "error removing forecast from forecaster")
+		}
 		// Add new active forecaster
 		err = k.AddActiveForecaster(ctx, topic.Id, forecast.Forecaster)
 		if err != nil {
@@ -1324,6 +1344,16 @@ func (k *Keeper) InsertForecast(
 	}
 	key := collections.Join(topicId, forecast.Forecaster)
 	return k.forecasts.Set(ctx, key, forecast)
+}
+
+// RemoveForecast removes a forecast from a forecaster
+func (k *Keeper) RemoveForecast(
+	ctx context.Context,
+	topicId TopicId,
+	forecaster ActorId,
+) error {
+	key := collections.Join(topicId, forecaster)
+	return k.forecasts.Remove(ctx, key)
 }
 
 // Insert a complete set of forecasts for a topic/block.
@@ -1459,6 +1489,11 @@ func (k *Keeper) AppendReputerLoss(
 		if err != nil {
 			return errorsmod.Wrap(err, "error removing active reputer")
 		}
+		// Remove reputer loss from reputer with lowest score
+		err = k.RemoveReputerLoss(ctx, topic.Id, lowestEmaScore.Address)
+		if err != nil {
+			return errorsmod.Wrap(err, "error removing reputer loss from reputer")
+		}
 		// Add new active reputer
 		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
@@ -1505,6 +1540,16 @@ func (k *Keeper) InsertReputerLoss(
 	}
 	key := collections.Join(topicId, reputerLoss.ValueBundle.Reputer)
 	return k.lossBundles.Set(ctx, key, reputerLoss)
+}
+
+// RemoveReputerLoss removes a reputer loss for a specific topic
+func (k *Keeper) RemoveReputerLoss(
+	ctx context.Context,
+	topicId TopicId,
+	reputer ActorId,
+) error {
+	key := collections.Join(topicId, reputer)
+	return k.lossBundles.Remove(ctx, key)
 }
 
 // Insert a loss bundle for a topic and timestamp but do it in the CloseReputerNonce, so reputer loss bundles are known to be validated

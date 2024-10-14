@@ -4348,6 +4348,127 @@ func (s *KeeperTestSuite) TestLowestReputerScoreEmaFunctions() {
 	s.Require().Equal(lowestReputerScore, retrievedScore)
 }
 
+func (s *KeeperTestSuite) TestRemoveReputerLoss() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := s.CreateOneTopic(10800)
+	reputer := s.addrsStr[0]
+
+	// Create a reputer loss bundle
+	valueBundle := &types.ValueBundle{
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{BlockHeight: 100},
+		},
+		Reputer:                       reputer,
+		ExtraData:                     []byte("data"),
+		CombinedValue:                 alloraMath.MustNewDecFromString("123"),
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("123"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}
+	signature := s.signValueBundle(valueBundle, s.privKeys[0])
+	reputerLossBundle := types.ReputerValueBundle{
+		ValueBundle: valueBundle,
+		Signature:   signature,
+		Pubkey:      s.pubKeyHexStr[0],
+	}
+
+	// Insert the reputer loss bundle
+	err := k.InsertReputerLoss(ctx, topicId, reputerLossBundle)
+	s.Require().NoError(err)
+
+	// Verify the reputer loss was added
+	retrievedLoss, err := k.GetReputerLatestLossByTopicId(ctx, topicId, reputer)
+	s.Require().NoError(err)
+	s.Require().Equal(reputerLossBundle, retrievedLoss)
+
+	// Remove the reputer loss
+	err = k.RemoveReputerLoss(ctx, topicId, reputer)
+	s.Require().NoError(err)
+
+	// Verify the reputer loss was removed
+	_, err = k.GetReputerLatestLossByTopicId(ctx, topicId, reputer)
+	s.Require().Error(err) // Expect an error since the loss should be removed
+}
+
+func (s *KeeperTestSuite) TestRemoveForecast() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := s.CreateOneTopic(10800)
+	forecaster := s.addrsStr[0]
+
+	// Create a forecast
+	forecast := types.Forecast{
+		TopicId:     topicId,
+		BlockHeight: 100,
+		Forecaster:  forecaster,
+		ForecastElements: []*types.ForecastElement{
+			{
+				Inferer: "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+				Value:   alloraMath.MustNewDecFromString("1"),
+			},
+			{
+				Inferer: "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+				Value:   alloraMath.MustNewDecFromString("2"),
+			},
+		},
+	}
+
+	// Insert the forecast
+	err := k.InsertForecast(ctx, topicId, forecast)
+	s.Require().NoError(err)
+
+	// Verify the forecast was added
+	retrievedForecast, err := k.GetWorkerLatestForecastByTopicId(ctx, topicId, forecaster)
+	s.Require().NoError(err)
+	s.Require().Equal(forecast, retrievedForecast)
+
+	// Remove the forecast
+	err = k.RemoveForecast(ctx, topicId, forecaster)
+	s.Require().NoError(err)
+
+	// Verify the forecast was removed
+	_, err = k.GetWorkerLatestForecastByTopicId(ctx, topicId, forecaster)
+	s.Require().Error(err) // Expect an error since the forecast should be removed
+}
+
+func (s *KeeperTestSuite) TestRemoveInference() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := s.CreateOneTopic(10800)
+	inferer := s.addrsStr[0]
+
+	// Create an inference
+	inference := types.Inference{
+		TopicId:     topicId,
+		BlockHeight: 100,
+		Value:       alloraMath.NewDecFromInt64(1),
+		Inferer:     inferer,
+	}
+
+	// Insert the inference
+	err := k.InsertInference(ctx, topicId, inference)
+	s.Require().NoError(err)
+
+	// Verify the inference was added
+	retrievedInference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(inference, retrievedInference)
+
+	// Remove the inference
+	err = k.RemoveInference(ctx, topicId, inferer)
+	s.Require().NoError(err)
+
+	// Verify the inference was removed
+	_, err = k.GetWorkerLatestInferenceByTopicId(ctx, topicId, inferer)
+	s.Require().Error(err) // Expect an error since the inference should be removed
+}
+
 func (s *KeeperTestSuite) TestGetCountInfererInclusionsInTopic() {
 	// Initialize the test environment
 	ctx := s.ctx
