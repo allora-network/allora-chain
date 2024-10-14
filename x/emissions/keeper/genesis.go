@@ -785,6 +785,24 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
+	// CountInfererInclusionsInTopicActiveSet
+	if len(data.CountInfererInclusionsInTopicActiveSet) != 0 {
+		for _, topicIdInfererCount := range data.CountInfererInclusionsInTopicActiveSet {
+			if err := k.countInfererInclusionsInTopicActiveSet.Set(ctx, collections.Join(topicIdInfererCount.TopicId, topicIdInfererCount.ActorId), topicIdInfererCount.Uint64); err != nil {
+				return errors.Wrap(err, "error setting countInfererInclusionsInTopicActiveSet")
+			}
+		}
+	}
+
+	// CountForecasterInclusionsInTopicActiveSet
+	if len(data.CountForecasterInclusionsInTopicActiveSet) != 0 {
+		for _, topicIdForecasterCount := range data.CountForecasterInclusionsInTopicActiveSet {
+			if err := k.countForecasterInclusionsInTopicActiveSet.Set(ctx, collections.Join(topicIdForecasterCount.TopicId, topicIdForecasterCount.ActorId), topicIdForecasterCount.Uint64); err != nil {
+				return errors.Wrap(err, "error setting countForecasterInclusionsInTopicActiveSet")
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -1891,64 +1909,98 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		previousTopicQuantileReputerScoreEma = append(previousTopicQuantileReputerScoreEma, &topicIdAndDec)
 	}
 
+	countInfererInclusionsInTopicActiveSet := make([]*types.TopicIdActorIdUint64, 0)
+	countInfererInclusionsInTopicIter, err := k.countInfererInclusionsInTopicActiveSet.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate count inferer inclusions in topic")
+	}
+	for ; countInfererInclusionsInTopicIter.Valid(); countInfererInclusionsInTopicIter.Next() {
+		keyValue, err := countInfererInclusionsInTopicIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: countInfererInclusionsInTopicIter")
+		}
+		topicIdAndUint64 := types.TopicIdActorIdUint64{
+			TopicId: keyValue.Key.K1(),
+			ActorId: keyValue.Key.K2(),
+			Uint64:  keyValue.Value,
+		}
+		countInfererInclusionsInTopicActiveSet = append(countInfererInclusionsInTopicActiveSet, &topicIdAndUint64)
+	}
+
+	countForecasterInclusionsInTopicActiveSet := make([]*types.TopicIdActorIdUint64, 0)
+	countForecasterInclusionsInTopicIter, err := k.countForecasterInclusionsInTopicActiveSet.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate count forecaster inclusions in topic")
+	}
+	for ; countForecasterInclusionsInTopicIter.Valid(); countForecasterInclusionsInTopicIter.Next() {
+		keyValue, err := countForecasterInclusionsInTopicIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: countForecasterInclusionsInTopicIter")
+		}
+		topicIdAndUint64 := types.TopicIdActorIdUint64{
+			TopicId: keyValue.Key.K1(),
+			ActorId: keyValue.Key.K2(),
+			Uint64:  keyValue.Value,
+		}
+		countForecasterInclusionsInTopicActiveSet = append(countForecasterInclusionsInTopicActiveSet, &topicIdAndUint64)
+	}
+
 	return &types.GenesisState{
-		Params:                          moduleParams,
-		NextTopicId:                     nextTopicId,
-		Topics:                          topics,
-		ActiveTopics:                    activeTopics,
-		RewardableTopics:                rewardableTopics,
-		TopicWorkers:                    topicWorkers,
-		TopicReputers:                   topicReputers,
-		TopicRewardNonce:                topicRewardNonce,
-		InfererScoresByBlock:            infererScoresByBlock,
-		ForecasterScoresByBlock:         forecasterScoresByBlock,
-		ReputerScoresByBlock:            reputerScoresByBlock,
-		InfererScoreEmas:                innfererScoreEmas,
-		ForecasterScoreEmas:             forecasterScoreEmas,
-		ReputerScoreEmas:                reputerScoreEmas,
-		ReputerListeningCoefficient:     reputerListeningCoefficient,
-		PreviousReputerRewardFraction:   previousReputerRewardFraction,
-		PreviousInferenceRewardFraction: previousInferenceRewardFraction,
-		PreviousForecastRewardFraction:  previousForecastRewardFraction,
-		// to be fixed in exhaustruct work
-		//PreviousForecasterScoreRatio:                previousForecasterScoreRatio,
-		TotalStake:                                     totalStake,
-		TopicStake:                                     topicStake,
-		StakeReputerAuthority:                          stakeReputerAuthority,
-		StakeSumFromDelegator:                          stakeSumFromDelegator,
-		DelegatedStakes:                                delegatedStakes,
-		StakeFromDelegatorsUponReputer:                 stakeFromDelegatorsUponReputer,
-		DelegateRewardPerShare:                         delegateRewardPerShare,
-		StakeRemovalsByBlock:                           stakeRemovalsByBlock,
-		StakeRemovalsByActor:                           stakeRemovalsByActor,
-		DelegateStakeRemovalsByBlock:                   delegateStakeRemovalsByBlock,
-		DelegateStakeRemovalsByActor:                   delegateStakeRemovalsByActor,
-		Inferences:                                     inferences,
-		Forecasts:                                      forecasts,
-		Workers:                                        workers,
-		Reputers:                                       reputers,
-		TopicFeeRevenue:                                topicFeeRevenue,
-		PreviousTopicWeight:                            previousTopicWeight,
-		AllInferences:                                  allInferences,
-		AllForecasts:                                   allForecasts,
-		AllLossBundles:                                 allLossBundles,
-		NetworkLossBundles:                             networkLossBundles,
-		PreviousPercentageRewardToStakedReputers:       previousPercentageRewardToStakedReputers,
-		OpenWorkerWindows:                              openWorkerWindows,
-		UnfulfilledWorkerNonces:                        unfulfilledWorkerNonces,
-		UnfulfilledReputerNonces:                       unfulfilledReputerNonces,
-		LastDripBlock:                                  lastDripBlock,
-		LatestInfererNetworkRegrets:                    latestInfererNetworkRegrets,
-		LatestForecasterNetworkRegrets:                 latestForecasterNetworkRegrets,
-		LatestOneInForecasterNetworkRegrets:            latestOneInForecasterNetworkRegrets,
-		PreviousForecasterScoreRatio:                   previousForecasterScoreRatio,
-		CoreTeamAddresses:                              coreTeamAddresses,
-		TopicLastWorkerCommit:                          topicLastWorkerCommit,
-		TopicLastReputerCommit:                         topicLastReputerCommit,
-		LatestNaiveInfererNetworkRegrets:               latestNaiveInfererNetworkRegrets,
-		LatestOneOutInfererInfererNetworkRegrets:       latestOneOutInfererInfererNetworkRegrets,
-		LatestOneOutForecasterInfererNetworkRegrets:    latestOneOutForecasterInfererNetworkRegrets,
-		LatestOneOutInfererForecasterNetworkRegrets:    latestOneOutInfererForecasterNetworkRegrets,
+		Params:                                      moduleParams,
+		NextTopicId:                                 nextTopicId,
+		Topics:                                      topics,
+		ActiveTopics:                                activeTopics,
+		RewardableTopics:                            rewardableTopics,
+		TopicWorkers:                                topicWorkers,
+		TopicReputers:                               topicReputers,
+		TopicRewardNonce:                            topicRewardNonce,
+		InfererScoresByBlock:                        infererScoresByBlock,
+		ForecasterScoresByBlock:                     forecasterScoresByBlock,
+		ReputerScoresByBlock:                        reputerScoresByBlock,
+		InfererScoreEmas:                            innfererScoreEmas,
+		ForecasterScoreEmas:                         forecasterScoreEmas,
+		ReputerScoreEmas:                            reputerScoreEmas,
+		ReputerListeningCoefficient:                 reputerListeningCoefficient,
+		PreviousReputerRewardFraction:               previousReputerRewardFraction,
+		PreviousInferenceRewardFraction:             previousInferenceRewardFraction,
+		PreviousForecastRewardFraction:              previousForecastRewardFraction,
+		TotalStake:                                  totalStake,
+		TopicStake:                                  topicStake,
+		StakeReputerAuthority:                       stakeReputerAuthority,
+		StakeSumFromDelegator:                       stakeSumFromDelegator,
+		DelegatedStakes:                             delegatedStakes,
+		StakeFromDelegatorsUponReputer:              stakeFromDelegatorsUponReputer,
+		DelegateRewardPerShare:                      delegateRewardPerShare,
+		StakeRemovalsByBlock:                        stakeRemovalsByBlock,
+		StakeRemovalsByActor:                        stakeRemovalsByActor,
+		DelegateStakeRemovalsByBlock:                delegateStakeRemovalsByBlock,
+		DelegateStakeRemovalsByActor:                delegateStakeRemovalsByActor,
+		Inferences:                                  inferences,
+		Forecasts:                                   forecasts,
+		Workers:                                     workers,
+		Reputers:                                    reputers,
+		TopicFeeRevenue:                             topicFeeRevenue,
+		PreviousTopicWeight:                         previousTopicWeight,
+		AllInferences:                               allInferences,
+		AllForecasts:                                allForecasts,
+		AllLossBundles:                              allLossBundles,
+		NetworkLossBundles:                          networkLossBundles,
+		PreviousPercentageRewardToStakedReputers:    previousPercentageRewardToStakedReputers,
+		OpenWorkerWindows:                           openWorkerWindows,
+		UnfulfilledWorkerNonces:                     unfulfilledWorkerNonces,
+		UnfulfilledReputerNonces:                    unfulfilledReputerNonces,
+		LastDripBlock:                               lastDripBlock,
+		LatestInfererNetworkRegrets:                 latestInfererNetworkRegrets,
+		LatestForecasterNetworkRegrets:              latestForecasterNetworkRegrets,
+		LatestOneInForecasterNetworkRegrets:         latestOneInForecasterNetworkRegrets,
+		PreviousForecasterScoreRatio:                previousForecasterScoreRatio,
+		CoreTeamAddresses:                           coreTeamAddresses,
+		TopicLastWorkerCommit:                       topicLastWorkerCommit,
+		TopicLastReputerCommit:                      topicLastReputerCommit,
+		LatestNaiveInfererNetworkRegrets:            latestNaiveInfererNetworkRegrets,
+		LatestOneOutInfererInfererNetworkRegrets:    latestOneOutInfererInfererNetworkRegrets,
+		LatestOneOutForecasterInfererNetworkRegrets: latestOneOutForecasterInfererNetworkRegrets,
+		LatestOneOutInfererForecasterNetworkRegrets: latestOneOutInfererForecasterNetworkRegrets,
 		LatestOneOutForecasterForecasterNetworkRegrets: latestOneOutForecasterForecasterNetworkRegrets,
 		TopicToNextPossibleChurningBlock:               topicToNextPossibleChurningBlock,
 		BlockToActiveTopics:                            blockHeightTopicIds,
@@ -1956,6 +2008,8 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		PreviousTopicQuantileInfererScoreEma:           previousTopicQuantileInfererScoreEma,
 		PreviousTopicQuantileForecasterScoreEma:        previousTopicQuantileForecasterScoreEma,
 		PreviousTopicQuantileReputerScoreEma:           previousTopicQuantileReputerScoreEma,
+		CountInfererInclusionsInTopicActiveSet:         countInfererInclusionsInTopicActiveSet,
+		CountForecasterInclusionsInTopicActiveSet:      countForecasterInclusionsInTopicActiveSet,
 	}, nil
 }
 

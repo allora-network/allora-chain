@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	l "log"
 	"testing"
 	"time"
 
@@ -2125,6 +2126,8 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		EpsilonSafeDiv:                      nil,
 		MaxElementsPerForecast:              nil,
 		MaxStringLength:                     nil,
+		InitialRegretQuantile:               nil,
+		PNormSafeDiv:                        nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -2785,6 +2788,24 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	)
 }
 
+// TestRewardForTopicGoesUpWhenRelativeStakeGoesUp tests that the reward for a topic increases
+// when its relative stake compared to other topics increases.
+//
+// Setup:
+// - Create two topics (topicId0 and topicId1) with identical initial stakes, workers, and reputers
+// - Set up identical worker and reputer values for both topics
+// - Record initial stakes for reputers on both topics
+//
+// Expected outcomes:
+// 1. Initially, rewards for both topics should be similar due to identical setups
+// 2. After increasing stake on one topic:
+//   - The reward for the topic with increased stake should be higher
+//   - The reward for the topic with unchanged stake should be lower
+//
+// 3. The total rewards across both topics should remain constant
+//
+// This test demonstrates that the reward distribution mechanism correctly
+// adjusts rewards based on the relative stakes of topics in the network.
 func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	// setup
 	require := s.Require()
@@ -2861,6 +2882,31 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
+	worker1InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[0]])
+	l.Println("worker1InclusionNum", worker1InclusionNum)
+	require.NoError(err)
+	require.Equal(uint64(1), worker1InclusionNum)
+	worker2InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[1]])
+	l.Println("worker2InclusionNum", worker2InclusionNum)
+	require.NoError(err)
+	require.Equal(uint64(1), worker2InclusionNum)
+	worker3InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[2]])
+	l.Println("worker3InclusionNum", worker3InclusionNum)
+	require.Equal(uint64(1), worker3InclusionNum)
+	require.NoError(err)
+
+	worker1InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[0]])
+	l.Println("worker1InclusionNum", worker1InclusionNum)
+	require.NoError(err)
+	require.Equal(uint64(1), worker1InclusionNum)
+	worker2InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[1]])
+	l.Println("worker2InclusionNum", worker2InclusionNum)
+	require.NoError(err)
+	require.Equal(uint64(1), worker2InclusionNum)
+	worker3InclusionNum, err = s.emissionsKeeper.GetCountForecasterInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[2]])
+	l.Println("worker3InclusionNum", worker3InclusionNum)
+	require.Equal(uint64(1), worker3InclusionNum)
+	require.NoError(err)
 	const topicFundAmount int64 = 1000
 
 	fundTopic := func(topicId uint64, funderAddr sdk.AccAddress, amount int64) {

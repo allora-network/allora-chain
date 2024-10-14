@@ -3835,6 +3835,8 @@ func mockUninitializedParams() types.Params {
 		MaxElementsPerForecast:              uint64(0),
 		MaxActiveTopicsPerBlock:             uint64(0),
 		MaxStringLength:                     uint64(0),
+		InitialRegretQuantile:               alloraMath.ZeroDec(),
+		PNormSafeDiv:                        alloraMath.ZeroDec(),
 	}
 }
 
@@ -4183,4 +4185,56 @@ func (s *KeeperTestSuite) TestDripTopicFeeRevenue() {
 	expectedRevenue := initialRevenue.Sub(expectedDrip)
 	require.Equal(expectedRevenue.String(), updatedTopicFeeRevenue.String(),
 		"The topic fee revenue should match the expected value after dripping")
+}
+
+func (s *KeeperTestSuite) TestGetCountInfererInclusionsInTopic() {
+	// Initialize the test environment
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	require := s.Require()
+
+	// Define test data
+	topicId := uint64(1)
+	inferer1 := s.addrsStr[0]
+	inferer2 := s.addrsStr[1]
+	err := k.IncrementCountInfererInclusionsInTopic(ctx, topicId, inferer1)
+	require.NoError(err)
+	err = k.IncrementCountInfererInclusionsInTopic(ctx, topicId, inferer1)
+	require.NoError(err)
+	err = k.IncrementCountInfererInclusionsInTopic(ctx, topicId, inferer2)
+	require.NoError(err)
+
+	// Assert the expected results
+	count, err := k.GetCountInfererInclusionsInTopic(ctx, topicId, inferer1)
+	require.NoError(err)
+	require.Equal(uint64(2), count)
+	count, err = k.GetCountInfererInclusionsInTopic(ctx, topicId, inferer2)
+	require.NoError(err)
+	require.Equal(uint64(1), count)
+}
+
+func (s *KeeperTestSuite) TestGetCountForecasterInclusionsInTopic() {
+	// Initialize the test environment
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	require := s.Require()
+
+	// Define test data
+	topicId := uint64(1)
+	forecaster1 := s.addrsStr[0]
+	forecaster2 := s.addrsStr[1]
+	err := k.IncrementCountForecasterInclusionsInTopic(ctx, topicId, forecaster1)
+	require.NoError(err)
+	err = k.IncrementCountForecasterInclusionsInTopic(ctx, topicId, forecaster1)
+	require.NoError(err)
+	err = k.IncrementCountForecasterInclusionsInTopic(ctx, topicId, forecaster2)
+	require.NoError(err)
+
+	// Assert the expected results
+	count, err := k.GetCountForecasterInclusionsInTopic(ctx, topicId, forecaster1)
+	require.NoError(err)
+	require.Equal(uint64(2), count)
+	count, err = k.GetCountForecasterInclusionsInTopic(ctx, topicId, forecaster2)
+	require.NoError(err)
+	require.Equal(uint64(1), count)
 }

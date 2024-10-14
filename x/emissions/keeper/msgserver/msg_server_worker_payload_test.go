@@ -328,6 +328,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 		EpsilonSafeDiv:                      nil,
 		MaxActiveTopicsPerBlock:             nil,
 		MaxStringLength:                     nil,
+		InitialRegretQuantile:               nil,
+		PNormSafeDiv:                        nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -712,6 +714,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 		EpsilonSafeDiv:                      nil,
 		MaxActiveTopicsPerBlock:             nil,
 		MaxStringLength:                     nil,
+		InitialRegretQuantile:               nil,
+		PNormSafeDiv:                        nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{

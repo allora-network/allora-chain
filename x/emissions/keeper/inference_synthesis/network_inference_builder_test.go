@@ -603,6 +603,23 @@ func (s *InferenceSynthesisTestSuite) getNetworkCalcArgs(
 		calcArgs.Forecasters, calcArgs.ForecasterToForecast, calcArgs.ForecasterToRegret, calcArgs.ForecasterToForecastImpliedInference
 }
 
+func (s *InferenceSynthesisTestSuite) incrementRegretsInTopic(
+	topicId uint64,
+	actor string,
+	times int,
+	actorType emissionstypes.ActorType,
+) {
+	for index := 0; index < times; index++ {
+		if actorType == emissionstypes.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED {
+			err := s.emissionsKeeper.IncrementCountInfererInclusionsInTopic(s.ctx, topicId, actor)
+			s.Require().NoError(err)
+		} else if actorType == emissionstypes.ActorType_ACTOR_TYPE_FORECASTER {
+			err := s.emissionsKeeper.IncrementCountForecasterInclusionsInTopic(s.ctx, topicId, actor)
+			s.Require().NoError(err)
+		}
+	}
+}
+
 func (s *InferenceSynthesisTestSuite) testCorrectCombinedInitialValueForEpoch(epoch int) {
 	_, _, logger, topicId, allInferersAreNew,
 		inferers, inferenceByWorker, infererRegrets,
