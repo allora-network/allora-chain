@@ -4417,6 +4417,7 @@ func (s *KeeperTestSuite) TestRemoveForecast() {
 				Value:   alloraMath.MustNewDecFromString("2"),
 			},
 		},
+		ExtraData: []byte("data"),
 	}
 
 	// Insert the forecast
@@ -4449,6 +4450,8 @@ func (s *KeeperTestSuite) TestRemoveInference() {
 		BlockHeight: 100,
 		Value:       alloraMath.NewDecFromInt64(1),
 		Inferer:     inferer,
+		ExtraData:   []byte("data"),
+		Proof:       "",
 	}
 
 	// Insert the inference
