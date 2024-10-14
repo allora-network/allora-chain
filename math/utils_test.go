@@ -1,9 +1,12 @@
 package math_test
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	alloratestutil "github.com/allora-network/allora-chain/test/testutil"
 	"github.com/stretchr/testify/require"
 )
 
@@ -495,7 +498,9 @@ func TestGetSortedElementsByDecWeightDesc(t *testing.T) {
 	require.Equal(t, expected, keys)
 }
 
+// TestGetQuantileOfDecs tests the behavior of GetQuantileOfDecs
 func TestGetQuantileOfDecs(t *testing.T) {
+	// Test with positive data
 	m := []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("1"),
 		alloraMath.MustNewDecFromString("2"),
@@ -508,6 +513,7 @@ func TestGetQuantileOfDecs(t *testing.T) {
 		alloraMath.MustNewDecFromString("9"),
 		alloraMath.MustNewDecFromString("10"),
 	}
+	// Test with negative data
 	negativeData := []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("-5"),
 		alloraMath.MustNewDecFromString("-3"),
@@ -515,6 +521,7 @@ func TestGetQuantileOfDecs(t *testing.T) {
 		alloraMath.MustNewDecFromString("-4"),
 		alloraMath.MustNewDecFromString("-2"),
 	}
+	// Test with mixed data
 	mixedData := []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("-5"),
 		alloraMath.MustNewDecFromString("-3"),
@@ -608,6 +615,8 @@ func TestGetQuantileOfDecs(t *testing.T) {
 	}
 }
 
+// TestGetQuantileOfDecsWithInvalidQuantile tests the behavior of GetQuantileOfDecs
+// when given an invalid quantile, including NaN
 func TestGetQuantileOfDecsWithInvalidQuantile(t *testing.T) {
 	data := []alloraMath.Dec{
 		alloraMath.MustNewDecFromString("1"),
@@ -624,5 +633,114 @@ func TestGetQuantileOfDecsWithInvalidQuantile(t *testing.T) {
 	for _, quantile := range invalidQuantiles {
 		_, err := alloraMath.GetQuantileOfDecs(data, quantile)
 		require.Error(t, err)
+	}
+}
+
+// TestGetQuantileOfDecsWithLargerAltDataset tests the behavior of GetQuantileOfDecs
+// when given a larger dataset.
+func TestGetQuantileOfDecsWithLargerAltDataset(t *testing.T) {
+	decsSorted := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0.8"),
+		alloraMath.MustNewDecFromString("0.7"),
+		alloraMath.MustNewDecFromString("0.0"),
+		alloraMath.MustNewDecFromString("0.3"),
+		alloraMath.MustNewDecFromString("0.4"),
+		alloraMath.MustNewDecFromString("0.9"),
+		alloraMath.MustNewDecFromString("0.6"),
+		alloraMath.MustNewDecFromString("0.5"),
+		alloraMath.MustNewDecFromString("0.1"),
+		alloraMath.MustNewDecFromString("0.2"),
+	}
+	quantile := alloraMath.MustNewDecFromString("0.2")
+	expectedResult := alloraMath.MustNewDecFromString("0.18")
+
+	result, err := alloraMath.GetQuantileOfDecs(decsSorted, quantile)
+	require.NoError(t, err)
+	alloratestutil.InEpsilon5Dec(t, result, expectedResult)
+}
+
+// TestGetQuantileOfDecsWithEmptySlice tests the behavior of GetQuantileOfDecs
+// when given an empty slice of Decs.
+func TestGetQuantileOfDecsWithEmptySlice(t *testing.T) {
+	// Create an empty slice of Decs
+	emptySlice := []alloraMath.Dec{}
+
+	// Define a valid quantile (any value between 0 and 1 is valid for this test)
+	quantile := alloraMath.MustNewDecFromString("0.5")
+
+	// Call GetQuantileOfDecs with the empty slice and quantile
+	result, err := alloraMath.GetQuantileOfDecs(emptySlice, quantile)
+
+	// We expect no error to be returned
+	require.NoError(t, err)
+
+	// We expect the result to be zero
+	// This is a design decision to ensure chain continuity in edge cases
+	expectedResult := alloraMath.ZeroDec()
+	require.True(t, result.Equal(expectedResult))
+}
+
+// TestGetQuantileOfDecsWithSingleElement tests the behavior of GetQuantileOfDecs
+// when given a slice with only one Dec.
+func TestGetQuantileOfDecsWithSingleElement(t *testing.T) {
+	// Create a slice with a single Dec
+	singleElementSlice := []alloraMath.Dec{alloraMath.MustNewDecFromString("42")}
+
+	// Test with different quantiles
+	quantiles := []string{"0", "0.3", "0.5", "0.7", "1"}
+
+	for _, q := range quantiles {
+		t.Run(fmt.Sprintf("Quantile_%s", q), func(t *testing.T) {
+			quantile := alloraMath.MustNewDecFromString(q)
+
+			// Call GetQuantileOfDecs with the single-element slice and quantile
+			result, err := alloraMath.GetQuantileOfDecs(singleElementSlice, quantile)
+
+			// We expect no error to be returned
+			require.NoError(t, err)
+
+			// We expect the result to always be the single element in the slice
+			// regardless of the quantile value
+			expectedResult := singleElementSlice[0]
+			require.True(t, result.Equal(expectedResult))
+		})
+	}
+}
+
+// TestGetQuantileOfScoresCsv tests the behavior of GetQuantileOfDecs
+// by comparing the result with the expected value from a CSV file.
+func TestGetQuantileOfScoresCsv(t *testing.T) {
+	// Iterate over epochs 301 to 399
+	for epoch := 301; epoch < 400; epoch++ {
+		epochGet := alloratestutil.GetSortitionSimulatorValuesGetterForEpochs()[epoch]
+
+		nParticipants, err := epochGet("n_participants").UInt64()
+		require.NoError(t, err)
+		nParticipantsDrawn, err := epochGet("n_participants_drawn").UInt64()
+		require.NoError(t, err)
+
+		// populate the data from the csv
+		decsSorted := make([]alloraMath.Dec, nParticipantsDrawn)
+		for i := uint64(0); i < nParticipants; i++ {
+			participantName := strconv.FormatUint(i, 10)
+			active := epochGet(fmt.Sprintf("%s_active", participantName))
+			if active.Equal(alloraMath.OneDec()) {
+				sortPosition := epochGet(fmt.Sprintf("%s_sort_position_quality_metrics", participantName))
+				sortPos, err := sortPosition.UInt64()
+				require.NoError(t, err)
+				qualityMetric := epochGet(fmt.Sprintf("%s_quality_metric", participantName))
+				decsSorted[sortPos] = qualityMetric
+			}
+		}
+		for _, dec := range decsSorted {
+			require.NotEmpty(t, dec)
+		}
+		expected := epochGet("quality_percentile")
+		percentile_to_use := epochGet("percentile")
+		quantile, err := percentile_to_use.Quo(alloraMath.NewDecFromInt64(int64(100)))
+		require.NoError(t, err)
+		result, err := alloraMath.GetQuantileOfDecs(decsSorted, quantile)
+		require.NoError(t, err)
+		alloratestutil.InEpsilon5Dec(t, result, expected)
 	}
 }

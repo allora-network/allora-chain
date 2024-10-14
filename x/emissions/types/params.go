@@ -558,6 +558,8 @@ func validateMaxStringLength(_ uint64) error {
 	return nil
 }
 
+// quantile for regret calculation
+// should be between 0 and 1 inclusive
 func validateInitialRegretQuantile(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err

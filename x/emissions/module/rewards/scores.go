@@ -4,7 +4,6 @@ import (
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
-	actorutils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -15,6 +14,22 @@ import (
  of workers (who perform the forecast task and network task), the last 10 previous scores will also be taken into
  consideration to generate the score at the most recent time step.
 */
+
+// Returns the quantile value of the given sorted scores
+// e.g. if quantile is 0.25 (25%), for all the scores sorted from greatest to smallest
+// give me the value that is greater than 25% of the values and less than 75% of the values
+// the domain of this quantile is assumed to be between 0 and 1.
+// Scores should be of unique actors => no two elements have the same actor address.
+func getQuantileOfScores(
+	scores []types.Score,
+	quantile alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	decScores := make([]alloraMath.Dec, len(scores))
+	for i, score := range scores {
+		decScores[i] = score.Score
+	}
+	return alloraMath.GetQuantileOfDecs(decScores, quantile)
+}
 
 // GenerateReputerScores calculates and persists scores for reputers based on their reported losses.
 func GenerateReputerScores(
@@ -129,7 +144,7 @@ func GenerateReputerScores(
 	}
 
 	// Update topic quantile of instant score
-	topicInstantScoreQuantile, err := actorutils.GetQuantileOfScores(instantScores, topic.ActiveReputerQuantile)
+	topicInstantScoreQuantile, err := getQuantileOfScores(instantScores, topic.ActiveReputerQuantile)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +218,7 @@ func GenerateInferenceScores(
 	}
 
 	// Update topic quantile of instant score
-	topicInstantScoreQuantile, err := actorutils.GetQuantileOfScores(instantScores, topic.ActiveInfererQuantile)
+	topicInstantScoreQuantile, err := getQuantileOfScores(instantScores, topic.ActiveInfererQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error getting quantile of scores")
 	}
@@ -303,7 +318,7 @@ func GenerateForecastScores(
 	}
 
 	// Update topic quantile of instant score
-	topicInstantScoreQuantile, err := actorutils.GetQuantileOfScores(instantScores, topic.ActiveForecasterQuantile)
+	topicInstantScoreQuantile, err := getQuantileOfScores(instantScores, topic.ActiveForecasterQuantile)
 	if err != nil {
 		return nil, err
 	}
