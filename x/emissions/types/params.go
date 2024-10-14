@@ -184,7 +184,7 @@ func (p Params) Validate() error {
 		return errorsmod.Wrap(err, "params validation failure: max string length")
 	}
 	if err := validateInitialRegretQuantile(p.InitialRegretQuantile); err != nil {
-		return errorsmod.Wrap(err, "params validation failure: regret percentile")
+		return errorsmod.Wrap(err, "params validation failure: regret quantile")
 	}
 	if err := validatePNormSafeDiv(p.PNormSafeDiv); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: pnorm safe div")
