@@ -2592,20 +2592,29 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 	if err := types.ValidateDec(weight); err != nil {
 		return errorsmod.Wrap(err, "weight validation failed")
 	}
-	// Update total sum of previous topic weights.
+	err := k.previousTopicWeight.Set(ctx, topicId, weight)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting previous topic weight")
+	}
+	// Update total sum of previous topic weights
+	return k.UpdateTotalSumPreviousTopicWeights(ctx, topicId, weight)
+}
+
+// UpdateTotalSumPreviousTopicWeights updates the total sum of previous topic weights
+// by subtracting the old weight if any, and adding the new weight for the given topicId.
+func (k *Keeper) UpdateTotalSumPreviousTopicWeights(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec) error {
 	// Get the current total sum, set to zero if not existent.
 	totalSumPreviousTopicWeights, err := k.totalSumPreviousTopicWeights.Get(ctx)
 	if err != nil {
 		if !errors.Is(err, collections.ErrNotFound) {
 			return errorsmod.Wrap(err, "error getting total sum of previous topic weights")
 		}
-	} else {
 		totalSumPreviousTopicWeights = alloraMath.ZeroDec()
 	}
-	// Remove old weight
+
+	// Subtract old weight
 	oldTopicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
 	if err != nil {
-		// If not existent, do not subtract anything.
 		if !errors.Is(err, collections.ErrNotFound) {
 			return errorsmod.Wrap(err, "error getting previous weight of topic")
 		}
@@ -2617,18 +2626,26 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 	}
 
 	// Add new weight
-	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Add(weight)
+	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Add(newWeight)
 	if err != nil {
 		return errorsmod.Wrap(err, "error adding new weight to total sum of previous topic weights")
 	}
 
-	// Then set the new total sum
-	return k.previousTopicWeight.Set(ctx, topicId, weight)
+	// Set the new total sum
+	return k.SetTotalSumPreviousTopicWeights(ctx, totalSumPreviousTopicWeights)
 }
 
 // Get the total sum of previous topic weights
 func (k *Keeper) GetTotalSumPreviousTopicWeights(ctx context.Context) (alloraMath.Dec, error) {
 	return k.totalSumPreviousTopicWeights.Get(ctx)
+}
+
+// Set the total sum of previous topic weights
+func (k *Keeper) SetTotalSumPreviousTopicWeights(ctx context.Context, weight alloraMath.Dec) error {
+	if err := types.ValidateDec(weight); err != nil {
+		return errorsmod.Wrap(err, "previous total topic weight validation failed")
+	}
+	return k.totalSumPreviousTopicWeights.Set(ctx, weight)
 }
 
 // Gets next topic id
