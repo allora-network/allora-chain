@@ -248,3 +248,8 @@ func (k Keeper) GetPreviousRewardEmissionPerUnitStakedToken(ctx context.Context)
 func (k Keeper) GetEmissionsKeeperTotalStake(ctx context.Context) (math.Int, error) {
 	return k.emissionsKeeper.GetTotalStake(ctx)
 }
+
+// wrapper for interface compatibility for unit testing
+func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
+	return k.emissionsKeeper.SetRewardCurrentBlockEmission(ctx, emission)
+}
