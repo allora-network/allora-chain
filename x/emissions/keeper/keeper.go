@@ -3613,7 +3613,7 @@ func (k *Keeper) GetRewardCurrentBlockEmission(ctx context.Context) (math.Int, e
 }
 
 // SetRewardCurrentBlockEmission sets the current block emission reward.
-func (k *Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
+func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
 	if emission.IsNegative() {
 		return errorsmod.Wrap(types.ErrInvalidValue, "current block emission reward cannot be negative")
 	}
