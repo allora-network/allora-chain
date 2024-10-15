@@ -38,8 +38,7 @@ type FeeMarketTestSuite struct {
 }
 
 func TestFeeMarketTestSuite(t *testing.T) {
-	feemarketSuite := &FeeMarketTestSuite{}
-	suite.Run(t, feemarketSuite)
+	suite.Run(t, new(FeeMarketTestSuite))
 }
 
 func (suite *FeeMarketTestSuite) SetupTest() {
@@ -121,7 +120,6 @@ func alloraAppInitializer() (ibctesting.TestingApp, map[string]json.RawMessage) 
 // SendMsgs() behavior must be changed since the default one uses zero fees
 func OverrideSendMsgs(chains map[string]*ibctesting.TestChain, feeAmount sdk.Coin, gasLimit uint64) {
 	for _, chain := range chains {
-		chain := chain
 		chain.SendMsgsOverride = func(msgs ...sdk.Msg) (*abci.ExecTxResult, error) {
 			return SendMsgsOverride(chain, feeAmount, gasLimit, msgs...)
 		}
@@ -197,5 +195,12 @@ func SignAndDeliver(
 		Time:               blockTime,
 		NextValidatorsHash: nextValHash,
 		Txs:                [][]byte{txBytes},
+		DecidedLastCommit: abci.CommitInfo{
+			Round: 0,
+			Votes: nil,
+		},
+		Hash:            nil,
+		Misbehavior:     nil,
+		ProposerAddress: nil,
 	})
 }

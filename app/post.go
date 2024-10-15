@@ -18,7 +18,7 @@ type PostHandlerOptions struct {
 // NewPostHandler returns a PostHandler chain with the fee deduct decorator.
 func NewPostHandler(options PostHandlerOptions) (sdk.PostHandler, error) {
 	if !UseFeeMarketDecorator {
-		return nil, nil
+		return nil, nil //nolint:nilnil
 	}
 
 	if options.AccountKeeper == nil {

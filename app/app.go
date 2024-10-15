@@ -288,11 +288,13 @@ func NewAlloraApp(
 	// Create a global ante handler that will be called on each transaction when
 	// proposals are being built and verified.
 	anteHandlerOptions := ante.HandlerOptions{
-		AccountKeeper:   app.AccountKeeper,
-		BankKeeper:      app.BankKeeper,
-		FeegrantKeeper:  app.FeeGrantKeeper,
-		SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
-		SignModeHandler: app.txConfig.SignModeHandler(),
+		AccountKeeper:          app.AccountKeeper,
+		BankKeeper:             app.BankKeeper,
+		FeegrantKeeper:         app.FeeGrantKeeper,
+		SigGasConsumer:         ante.DefaultSigVerificationGasConsumer,
+		SignModeHandler:        app.txConfig.SignModeHandler(),
+		TxFeeChecker:           nil,
+		ExtensionOptionChecker: nil,
 	}
 
 	anteOptions := AnteHandlerOptions{
