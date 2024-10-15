@@ -181,7 +181,7 @@ type Keeper struct {
 	previousPercentageRewardToStakedReputers collections.Item[alloraMath.Dec]
 
 	// Current block emission, set by mint module
-	RewardCurrentBlockEmission collections.Item[math.Int]
+	rewardCurrentBlockEmission collections.Item[math.Int]
 
 	/// NONCES
 
@@ -321,7 +321,7 @@ func NewKeeper(
 		activeReputers:                            collections.NewKeySet(sb, types.ActiveReputersKey, "active_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		lowestReputerScoreEma:                     collections.NewMap(sb, types.LowestReputerScoreEmaKey, "lowest_reputer_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 		totalSumPreviousTopicWeights:              collections.NewItem(sb, types.TotalSumPreviousTopicWeightsKey, "total_sum_previous_topic_weights", alloraMath.DecValue),
-		RewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "rewardcurrentblockemission", sdk.IntValue),
+		rewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "rewardcurrentblockemission", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()
@@ -3485,7 +3485,7 @@ func (k *Keeper) GetBankBalance(ctx context.Context, addr sdk.AccAddress, denom 
 	return k.bankKeeper.GetBalance(ctx, addr, denom)
 }
 
-// GetTotalRewardToDistribute
+// Gets the total rewards available to be distributed from the Allora Rewards Account
 func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec, error) {
 	// Get Allora Rewards Account
 	alloraRewardsAccountAddr := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
@@ -3989,8 +3989,8 @@ func (k *Keeper) GetLowestReputerScoreEma(ctx context.Context, topicId TopicId) 
 }
 
 // GetRewardCurrentBlockEmission retrieves the current block emission reward.
-func (k Keeper) GetRewardCurrentBlockEmission(ctx context.Context) (math.Int, error) {
-	emission, err := k.RewardCurrentBlockEmission.Get(ctx)
+func (k *Keeper) GetRewardCurrentBlockEmission(ctx context.Context) (math.Int, error) {
+	emission, err := k.rewardCurrentBlockEmission.Get(ctx)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return math.ZeroInt(), nil // Return zero if not found
@@ -4001,9 +4001,9 @@ func (k Keeper) GetRewardCurrentBlockEmission(ctx context.Context) (math.Int, er
 }
 
 // SetRewardCurrentBlockEmission sets the current block emission reward.
-func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
+func (k *Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
 	if emission.IsNegative() {
 		return errorsmod.Wrap(types.ErrInvalidValue, "current block emission reward cannot be negative")
 	}
-	return k.RewardCurrentBlockEmission.Set(ctx, emission)
+	return k.rewardCurrentBlockEmission.Set(ctx, emission)
 }

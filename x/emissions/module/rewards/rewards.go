@@ -22,13 +22,14 @@ func EmitRewards(
 	sumWeight alloraMath.Dec,
 	totalRevenue cosmosMath.Int,
 ) error {
+	// TODO Remove this if not for checking treasury covers the rewards to give (should always cover)
 	totalReward, err := k.GetTotalRewardToDistribute(ctx)
-	Logger(ctx).Debug(fmt.Sprintf("Reward to distribute this epoch: %s", totalReward.String()))
+	Logger(ctx).Debug(fmt.Sprintf("Max rewards to distribute this epoch: %s", totalReward.String()))
 	if err != nil {
-		return errors.Wrapf(err, "failed to get total reward to distribute")
+		return errors.Wrapf(err, "failed to get max rewards to distribute")
 	}
 	if totalReward.IsZero() {
-		Logger(ctx).Warn("The total scheduled rewards to distribute this epoch are zero!")
+		Logger(ctx).Warn("The rewards treasury account has a total value of zero on this epoch!")
 		return nil
 	}
 
@@ -61,13 +62,24 @@ func EmitRewards(
 		epochLengths[topicId] = topic.EpochLength
 	}
 
+	// Get current block emission, to be extrapolated to be used in rewards calculation
+	currentBlockEmission, err := k.GetRewardCurrentBlockEmission(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get current block emission")
+	}
+	Logger(ctx).Warn(fmt.Sprintf("Current block emission: %s", currentBlockEmission.String()))
+	currentBlockEmissionDec, err := alloraMath.NewDecFromSdkInt(currentBlockEmission)
+	if err != nil {
+		return errors.Wrapf(err, "failed to convert current block emission to decimal")
+	}
 	// Revenue (above) is what was earned by topics in this timestep. Rewards are what are actually paid to topics => participants
 	// The reward and revenue calculations are coupled here to minimize excessive compute
 	topicRewards, err := CalcTopicRewards(ctx, k, weights, sortedRewardableTopics,
-		totalWeightOfActiveTopics, totalReward, epochLengths, moduleParams.BlocksPerMonth)
+		totalWeightOfActiveTopics, totalReward, epochLengths, currentBlockEmissionDec)
 	if err != nil {
 		return errors.Wrapf(err, "failed to calculate topic rewards")
 	}
+	Logger(ctx).Debug(fmt.Sprintf("Topic rewards: %v", topicRewards))
 
 	// Initialize totalRewardToStakedReputers
 	totalRewardToStakedReputers := alloraMath.ZeroDec()
@@ -171,20 +183,21 @@ func CalcTopicRewards(
 	weights map[uint64]*alloraMath.Dec,
 	sortedTopics []uint64,
 	sumWeight alloraMath.Dec,
-	totalReward alloraMath.Dec,
+	totalReward alloraMath.Dec, // maxTotalReward in treasury
 	epochLengths map[uint64]int64,
-	timeframeLength uint64,
+	currentBlockEmissionDec alloraMath.Dec, // perBlockEmission
 ) (
 	map[uint64]*alloraMath.Dec,
 	error,
 ) {
+	totalTopicRewardsSum := alloraMath.ZeroDec()
 	topicRewards := make(map[TopicId]*alloraMath.Dec)
 	for _, topicId := range sortedTopics {
 		topicRewardFraction, err := GetTopicRewardFraction(weights[topicId], sumWeight)
 		if err != nil {
 			return nil, errors.Wrapf(err, "topic reward fraction error")
 		}
-		topicReward, err := GetTopicReward(topicRewardFraction, totalReward)
+		topicRewardPerBlock, err := GetTopicReward(topicRewardFraction, currentBlockEmissionDec)
 		if err != nil {
 			return nil, errors.Wrapf(err, "topic reward error")
 		}
@@ -193,19 +206,18 @@ func CalcTopicRewards(
 			return nil, errors.Wrapf(types.ErrInvalidLengthTopic, "epoch length is nil or zero for topic %d", topicId)
 		}
 		epochLengthDec := alloraMath.NewDecFromInt64(epochLength)
-		timeframeLengthDec, err := alloraMath.NewDecFromUint64(timeframeLength)
-		if err != nil {
-			return nil, errors.Wrapf(err, "calcTopicRewards: timeframe length conversion to decimal error")
-		}
-		epochLengthFraction, err := epochLengthDec.Quo(timeframeLengthDec)
-		if err != nil {
-			return nil, errors.Wrapf(err, "calcTopicRewards: epoch length fraction calculation error")
-		}
-		topicReward, err = topicReward.Mul(epochLengthFraction)
+		topicRewardPerEpoch, err := topicRewardPerBlock.Mul(epochLengthDec)
 		if err != nil {
 			return nil, errors.Wrapf(err, "calcTopicRewards:topic reward multiplication with epoch length fraction error")
 		}
-		topicRewards[topicId] = &topicReward
+		topicRewards[topicId] = &topicRewardPerEpoch
+		totalTopicRewardsSum, err = totalTopicRewardsSum.Add(topicRewardPerEpoch)
+		if err != nil {
+			return nil, errors.Wrapf(err, "calcTopicRewards: total topic rewards sum error")
+		}
+	}
+	if totalTopicRewardsSum.Gt(totalReward) {
+		return nil, errors.Wrapf(types.ErrInvalidReward, "total topic rewards sum is greater than total reward in treasury")
 	}
 	return topicRewards, nil
 }
