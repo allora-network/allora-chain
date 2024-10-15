@@ -10,6 +10,9 @@ import (
 	feemarketante "github.com/skip-mev/feemarket/x/feemarket/ante"
 )
 
+// UseFeeMarketDecorator to make the integration testing easier: we can switch off its ante and post decorators with this flag
+var UseFeeMarketDecorator = true
+
 // AnteHandlerOptions are the options required for constructing an SDK AnteHandler with the fee market injected.
 type AnteHandlerOptions struct {
 	BaseOptions     authante.HandlerOptions
@@ -49,23 +52,28 @@ func NewAnteHandler(options AnteHandlerOptions) (sdk.AnteHandler, error) {
 		authante.NewTxTimeoutHeightDecorator(),
 		authante.NewValidateMemoDecorator(options.AccountKeeper),
 		authante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		feemarketante.NewFeeMarketCheckDecorator( // fee market check replaces fee deduct decorator
-			options.AccountKeeper,
-			options.BankKeeper,
-			options.BaseOptions.FeegrantKeeper,
-			options.FeeMarketKeeper,
-			authante.NewDeductFeeDecorator(
-				options.AccountKeeper,
-				options.BaseOptions.BankKeeper,
-				options.BaseOptions.FeegrantKeeper,
-				options.BaseOptions.TxFeeChecker,
-			),
-		), // fees are deducted in the fee market deduct post handler
 		authante.NewSetPubKeyDecorator(options.AccountKeeper), // SetPubKeyDecorator must be called before all signature verification decorators
 		authante.NewValidateSigCountDecorator(options.AccountKeeper),
 		authante.NewSigGasConsumeDecorator(options.AccountKeeper, options.BaseOptions.SigGasConsumer),
 		authante.NewSigVerificationDecorator(options.AccountKeeper, options.BaseOptions.SignModeHandler),
 		authante.NewIncrementSequenceDecorator(options.AccountKeeper),
+	}
+
+	if UseFeeMarketDecorator {
+		anteDecorators = append(anteDecorators,
+			feemarketante.NewFeeMarketCheckDecorator(
+				options.AccountKeeper,
+				options.BankKeeper,
+				options.BaseOptions.FeegrantKeeper,
+				options.FeeMarketKeeper,
+				authante.NewDeductFeeDecorator(
+					options.AccountKeeper,
+					options.BaseOptions.BankKeeper,
+					options.BaseOptions.FeegrantKeeper,
+					options.BaseOptions.TxFeeChecker,
+				),
+			),
+		)
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
