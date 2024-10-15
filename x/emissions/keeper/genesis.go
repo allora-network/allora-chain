@@ -2220,6 +2220,8 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		LossBundles:                                    lossBundles,
 		CountInfererInclusionsInTopicActiveSet:         countInfererInclusionsInTopicActiveSet,
 		CountForecasterInclusionsInTopicActiveSet:      countForecasterInclusionsInTopicActiveSet,
+		TotalSumPreviousTopicWeights:                   totalSumPreviousTopicWeights,
+		RewardCurrentBlockEmission:                     rewardCurrentBlockEmission,
 	}, nil
 }
 

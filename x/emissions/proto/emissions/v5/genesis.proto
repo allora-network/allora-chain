@@ -204,6 +204,20 @@ message GenesisState {
   repeated TopicIdActorIdScore lowest_reputer_score_ema = 73;
   // map of (topic, reputer) -> reputer loss
   repeated TopicIdReputerReputerValueBundle loss_bundles = 74;
+
+  // total sum of topic weights
+  string total_sum_previous_topic_weights = 75 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // reward emission on current block 
+  string reward_current_block_emission = 76 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message TopicIdAndTopic {
