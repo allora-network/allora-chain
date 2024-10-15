@@ -25,13 +25,10 @@ func checkInputLength(ctx context.Context, ms msgServer, msg proto.Message) erro
 		return err
 	}
 
-	serializedMsg, err := proto.Marshal(msg)
-	if err != nil {
-		return types.ErrFailedToSerializePayload
-	}
+	size := proto.Size(msg)
 
 	// Check the length of the serialized message
-	if int64(len(serializedMsg)) > params.MaxSerializedMsgLength {
+	if int64(size) > params.MaxSerializedMsgLength {
 		return types.ErrQueryTooLarge
 	}
 

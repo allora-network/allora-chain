@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/hex"
+	"sync"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
@@ -10,6 +11,18 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
+
+var reputerValueBundleBufferPool = sync.Pool{
+	New: func() interface{} {
+		return make([]byte, 0, 1024)
+	},
+}
+
+var inferenceForecastsBundleBufferPool = sync.Pool{
+	New: func() interface{} {
+		return make([]byte, 0, 1024)
+	},
+}
 
 /// EXTERNAL TYPE VALIDATIONS
 
@@ -212,9 +225,14 @@ func (bundle *WorkerDataBundle) Validate() error {
 	}
 
 	// Check signature from the bundle, throw if invalid!
-	src := make([]byte, 0)
-	src, _ = bundle.InferenceForecastsBundle.XXX_Marshal(src, true)
-	if !pubkey.VerifySignature(src, bundle.InferencesForecastsBundleSignature) {
+	buf := inferenceForecastsBundleBufferPool.Get().([]byte) // nolint:forcetypeassert
+	defer inferenceForecastsBundleBufferPool.Put(buf)        //nolint:staticcheck
+	buf = buf[:0]
+	marshaled, err := bundle.InferenceForecastsBundle.XXX_Marshal(buf, true)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal inference forecasts bundle: %s", err)
+	}
+	if !pubkey.VerifySignature(marshaled, bundle.InferencesForecastsBundleSignature) {
 		return errors.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed")
 	}
 	// Source: https://docs.cosmos.network/v0.46/basics/accounts.html#addresses
@@ -320,9 +338,14 @@ func (bundle *ReputerValueBundle) Validate() error {
 		return errors.Wrap(err, "value bundle is invalid")
 	}
 
-	src := make([]byte, 0)
-	src, _ = bundle.ValueBundle.XXX_Marshal(src, true)
-	if !pubkey.VerifySignature(src, bundle.Signature) {
+	buf := reputerValueBundleBufferPool.Get().([]byte) // nolint:forcetypeassert
+	defer reputerValueBundleBufferPool.Put(buf)        //nolint:staticcheck
+	buf = buf[:0]
+	marshaled, err := bundle.ValueBundle.XXX_Marshal(buf, true)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal value bundle: %s", err)
+	}
+	if !pubkey.VerifySignature(marshaled, bundle.Signature) {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")
 	}
 
