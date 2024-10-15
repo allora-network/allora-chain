@@ -189,6 +189,20 @@ message GenesisState {
   // INCLUSIONS
   repeated TopicIdActorIdUint64 count_inferer_inclusions_in_topic_active_set = 66;
   repeated TopicIdActorIdUint64 count_forecaster_inclusions_in_topic_active_set = 67;
+
+  // total sum of topic weights
+  string total_sum_previous_topic_weights = 68 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  // reward emission on current block 
+  string reward_current_block_emission = 69 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
 }
 
 message TopicIdAndTopic {
