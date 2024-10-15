@@ -2,27 +2,20 @@ package types
 
 import (
 	"encoding/hex"
-	"sync"
 
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
-var reputerValueBundleBufferPool = sync.Pool{
-	New: func() interface{} {
-		return make([]byte, 0, 1024)
-	},
-}
-
-var inferenceForecastsBundleBufferPool = sync.Pool{
-	New: func() interface{} {
-		return make([]byte, 0, 1024)
-	},
-}
+var (
+	reputerValueBundleBufferPool       = utils.NewBytesPool(1024, 0)
+	inferenceForecastsBundleBufferPool = utils.NewBytesPool(1024, 0)
+)
 
 /// EXTERNAL TYPE VALIDATIONS
 
@@ -225,9 +218,8 @@ func (bundle *WorkerDataBundle) Validate() error {
 	}
 
 	// Check signature from the bundle, throw if invalid!
-	buf := inferenceForecastsBundleBufferPool.Get().([]byte) // nolint:forcetypeassert
-	defer inferenceForecastsBundleBufferPool.Put(buf)        //nolint:staticcheck
-	buf = buf[:0]
+	buf := inferenceForecastsBundleBufferPool.Get()
+	defer inferenceForecastsBundleBufferPool.Put(buf)
 	marshaled, err := bundle.InferenceForecastsBundle.XXX_Marshal(buf, true)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal inference forecasts bundle: %s", err)
@@ -338,9 +330,8 @@ func (bundle *ReputerValueBundle) Validate() error {
 		return errors.Wrap(err, "value bundle is invalid")
 	}
 
-	buf := reputerValueBundleBufferPool.Get().([]byte) // nolint:forcetypeassert
-	defer reputerValueBundleBufferPool.Put(buf)        //nolint:staticcheck
-	buf = buf[:0]
+	buf := reputerValueBundleBufferPool.Get()
+	defer reputerValueBundleBufferPool.Put(buf)
 	marshaled, err := bundle.ValueBundle.XXX_Marshal(buf, true)
 	if err != nil {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal value bundle: %s", err)

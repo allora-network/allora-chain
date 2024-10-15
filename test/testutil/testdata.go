@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"fmt"
 	"strings"
-	"sync"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -15,11 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var valueBundleBufferPool = sync.Pool{
-	New: func() interface{} {
-		return make([]byte, 0, 1024)
-	},
-}
+var valueBundleBufferPool = utils.NewBytesPool(1024, 0)
 
 func GenerateTestAccounts(count int) (
 	privKeys []secp256k1.PrivKey,
@@ -538,9 +534,8 @@ func GetNetworkLossFromCsv(
 }
 
 func signValueBundle(valueBundle *emissionstypes.ValueBundle, privateKey secp256k1.PrivKey) []byte {
-	buf := valueBundleBufferPool.Get().([]byte) // nolint:forcetypeassert
-	defer valueBundleBufferPool.Put(buf)        //nolint:staticcheck
-	buf = buf[:0]
+	buf := valueBundleBufferPool.Get()
+	defer valueBundleBufferPool.Put(buf)
 	marshaled, err := valueBundle.XXX_Marshal(buf, true)
 	if err != nil {
 		panic(err)
