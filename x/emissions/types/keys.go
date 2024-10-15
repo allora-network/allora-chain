@@ -89,4 +89,5 @@ var (
 	CountInfererInclusionsInTopicKey                  = collections.NewPrefix(74)
 	CountForecasterInclusionsInTopicKey               = collections.NewPrefix(75)
 	TotalSumPreviousTopicWeightsKey                   = collections.NewPrefix(76)
+	RewardCurrentBlockEmissionKey                     = collections.NewPrefix(77)
 )
