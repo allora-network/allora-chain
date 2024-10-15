@@ -39,6 +39,8 @@ modules:
         - account: feeibc
         - account: interchainaccounts
         - account: gov
+        - account: feemarket
+        - account: feemarket-fee-collector
   - name: gov
     config:
       "@type": cosmos.gov.module.v1.Module
