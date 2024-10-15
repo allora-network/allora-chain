@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -179,6 +180,9 @@ type Keeper struct {
 	// Percentage of all rewards, paid out to staked reputers, during the previous reward cadence. Used by mint module
 	previousPercentageRewardToStakedReputers collections.Item[alloraMath.Dec]
 
+	// Current block emission, set by mint module
+	RewardCurrentBlockEmission collections.Item[math.Int]
+
 	/// NONCES
 
 	// map of open worker nonce windows for topics on particular block heights
@@ -317,6 +321,7 @@ func NewKeeper(
 		activeReputers:                            collections.NewKeySet(sb, types.ActiveReputersKey, "active_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		lowestReputerScoreEma:                     collections.NewMap(sb, types.LowestReputerScoreEmaKey, "lowest_reputer_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 		totalSumPreviousTopicWeights:              collections.NewItem(sb, types.TotalSumPreviousTopicWeightsKey, "total_sum_previous_topic_weights", alloraMath.DecValue),
+		RewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "rewardcurrentblockemission", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()
@@ -3981,4 +3986,24 @@ func (k *Keeper) GetLowestReputerScoreEma(ctx context.Context, topicId TopicId) 
 		}, false, errorsmod.Wrap(err, "error getting lowest reputer score EMA")
 	}
 	return lowestScore, true, nil
+}
+
+// GetRewardCurrentBlockEmission retrieves the current block emission reward.
+func (k Keeper) GetRewardCurrentBlockEmission(ctx context.Context) (math.Int, error) {
+	emission, err := k.RewardCurrentBlockEmission.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return math.ZeroInt(), nil // Return zero if not found
+		}
+		return math.Int{}, errorsmod.Wrap(err, "error getting current block emission reward")
+	}
+	return emission, nil
+}
+
+// SetRewardCurrentBlockEmission sets the current block emission reward.
+func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
+	if emission.IsNegative() {
+		return errorsmod.Wrap(types.ErrInvalidValue, "current block emission reward cannot be negative")
+	}
+	return k.RewardCurrentBlockEmission.Set(ctx, emission)
 }
