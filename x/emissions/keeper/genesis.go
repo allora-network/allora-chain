@@ -803,6 +803,15 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
+	if data.TotalSumPreviousTopicWeights.Gt(alloraMath.ZeroDec()) {
+		if err := k.SetTotalSumPreviousTopicWeights(ctx, data.TotalSumPreviousTopicWeights); err != nil {
+			return errors.Wrap(err, "error setting TotalSumPreviousTopicWeights")
+		}
+	} else {
+		if err := k.SetTotalSumPreviousTopicWeights(ctx, alloraMath.ZeroDec()); err != nil {
+			return errors.Wrap(err, "error setting TotalSumPreviousTopicWeights to zero int")
+		}
+	}
 	return nil
 }
 
