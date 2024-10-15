@@ -72,6 +72,8 @@ func NewGenesisState() *GenesisState {
 		PreviousTopicQuantileReputerScoreEma:           []*TopicIdAndDec{},
 		CountInfererInclusionsInTopicActiveSet:         []*TopicIdActorIdUint64{},
 		CountForecasterInclusionsInTopicActiveSet:      []*TopicIdActorIdUint64{},
+		TotalSumPreviousTopicWeights:                   alloraMath.ZeroDec(),
+		RewardCurrentBlockEmission:                     cosmosMath.ZeroInt(),
 	}
 }
 
