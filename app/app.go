@@ -12,11 +12,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
 
-	abci "github.com/cometbft/cometbft/abci/types"
-	dbm "github.com/cosmos/cosmos-db"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
-	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"cosmossdk.io/core/appconfig"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
@@ -31,6 +26,8 @@ import (
 	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	mintkeeper "github.com/allora-network/allora-chain/x/mint/keeper"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
+	abci "github.com/cometbft/cometbft/abci/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -59,14 +56,17 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
 	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
+	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
 	feemarketkeeper "github.com/skip-mev/feemarket/x/feemarket/keeper"
@@ -74,6 +74,7 @@ import (
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	_ "cosmossdk.io/x/circuit"               // import for side-effects
+	_ "cosmossdk.io/x/feegrant/module"       // import for side-effects
 	_ "cosmossdk.io/x/upgrade"
 	_ "github.com/allora-network/allora-chain/x/emissions/module"
 	_ "github.com/allora-network/allora-chain/x/mint/module" // import for side-effects
@@ -221,6 +222,7 @@ func NewAlloraApp(
 		&app.interfaceRegistry,
 		&app.AccountKeeper,
 		&app.BankKeeper,
+		&app.FeeGrantKeeper,
 		&app.StakingKeeper,
 		&app.SlashingKeeper,
 		&app.DistrKeeper,
@@ -232,8 +234,6 @@ func NewAlloraApp(
 		&app.ParamsKeeper,
 		&app.AuthzKeeper,
 		&app.CircuitBreakerKeeper,
-		&app.FeeGrantKeeper,
-		&app.FeeMarketKeeper,
 	); err != nil {
 		return nil, err
 	}
@@ -251,13 +251,10 @@ func NewAlloraApp(
 		return nil, err
 	}
 
-	/****  Module Options ****/
 	app.ModuleManager.SetOrderPreBlockers(
 		upgradetypes.ModuleName,
 	)
 
-	//begin_blockers: [capability, distribution, staking, mint, ibc, transfer, genutil, interchainaccounts, feeibc]
-	//end_blockers: [staking, ibc, transfer, capability, genutil, interchainaccounts, feeibc, emissions]
 	app.ModuleManager.SetOrderBeginBlockers(
 		capabilitytypes.ModuleName,
 		distrtypes.ModuleName,
@@ -277,6 +274,7 @@ func NewAlloraApp(
 	app.ModuleManager.SetOrderEndBlockers(
 		govtypes.ModuleName,
 		feemarkettypes.ModuleName,
+		feegrant.ModuleName,
 		stakingtypes.ModuleName,
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -285,7 +283,6 @@ func NewAlloraApp(
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		emissions.ModuleName,
-		feegrant.ModuleName,
 	)
 
 	// Create a global ante handler that will be called on each transaction when
@@ -300,6 +297,7 @@ func NewAlloraApp(
 
 	anteOptions := AnteHandlerOptions{
 		BaseOptions:     anteHandlerOptions,
+		BankKeeper:      app.BankKeeper,
 		AccountKeeper:   app.AccountKeeper,
 		FeeMarketKeeper: app.FeeMarketKeeper,
 	}
@@ -326,9 +324,6 @@ func NewAlloraApp(
 	// NOTE: this is not required apps that don't use the simulator for fuzz testing transactions
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, make(map[string]module.AppModuleSimulation, 0))
 	app.sm.RegisterStoreDecoders()
-
-	topicsHandler := NewTopicsHandler(app.EmissionsKeeper)
-	app.SetPrepareProposal(topicsHandler.PrepareProposalHandler())
 
 	app.setupUpgradeHandlers()
 
@@ -424,7 +419,7 @@ func (app *AlloraApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.API
 
 // ibctesting.TestingApp compatibility
 func (app *AlloraApp) GetBaseApp() *baseapp.BaseApp {
-	return app.App.BaseApp
+	return app.BaseApp
 }
 
 // ibctesting.TestingApp compatibility
