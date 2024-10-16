@@ -412,17 +412,17 @@ service QueryService {
 
   rpc GetActiveReputersForTopic(GetActiveReputersForTopicRequest) returns (GetActiveReputersForTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v4/active_reputers/{topic_id}";
+    option (google.api.http).get = "/emissions/v5/active_reputers/{topic_id}";
   }
 
   rpc GetActiveForecastersForTopic(GetActiveForecastersForTopicRequest) returns (GetActiveForecastersForTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v4/active_forecasters/{topic_id}";
+    option (google.api.http).get = "/emissions/v5/active_forecasters/{topic_id}";
   }
 
   rpc GetActiveInferersForTopic(GetActiveInferersForTopicRequest) returns (GetActiveInferersForTopicResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v4/active_inferers/{topic_id}";
+    option (google.api.http).get = "/emissions/v5/active_inferers/{topic_id}";
   }
 }
 

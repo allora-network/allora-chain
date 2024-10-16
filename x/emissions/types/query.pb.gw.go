@@ -8857,11 +8857,11 @@ var (
 
 	pattern_QueryService_GetCountForecasterInclusionsInTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v5", "count_forecaster_inclusions_in_topic", "topic_id", "forecaster"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_QueryService_GetActiveReputersForTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v4", "active_reputers", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_QueryService_GetActiveReputersForTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v5", "active_reputers", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_QueryService_GetActiveForecastersForTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v4", "active_forecasters", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_QueryService_GetActiveForecastersForTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v5", "active_forecasters", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_QueryService_GetActiveInferersForTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v4", "active_inferers", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_QueryService_GetActiveInferersForTopic_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v5", "active_inferers", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (
