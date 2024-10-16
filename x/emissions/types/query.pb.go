@@ -11191,6 +11191,7 @@ func _QueryService_GetActiveInferersForTopic_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+var QueryService_serviceDesc = _QueryService_serviceDesc
 var _QueryService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "emissions.v5.QueryService",
 	HandlerType: (*QueryServiceServer)(nil),
