@@ -66,7 +66,9 @@ func (s *RewardsTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
-	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}) // nolint: exhaustruct
+	// Set logger to show logs from the rewards module too
+	logger := log.NewTestLogger(s.T()).With("module", "rewards")
+	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{Time: time.Now()}).WithLogger(logger) // nolint: exhaustruct
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 
 	maccPerms := map[string][]string{
@@ -139,6 +141,9 @@ func (s *RewardsTestSuite) SetupTest() {
 	defaultMintGenesis := mintAppModule.DefaultGenesis(encCfg.Codec)
 	mintAppModule.InitGenesis(ctx, encCfg.Codec, defaultMintGenesis)
 	s.mintAppModule = mintAppModule
+
+	// Fund the rewards account generously
+	s.FundAccount(10000000000, s.accountKeeper.GetModuleAddress(types.AlloraRewardsAccountName))
 
 	s.privKeys, s.pubKeyHexStr, s.addrs, s.addrsStr = alloratestutil.GenerateTestAccounts(50)
 	for _, addr := range s.addrs {
@@ -345,6 +350,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmission() {
 	s.ctx = s.ctx.WithBlockHeight(block)
 
 	// Trigger end block - rewards distribution
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 }
@@ -472,6 +479,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Trigger end block - rewards distribution
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 	// Insert loss bundle from reputers
@@ -584,6 +593,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionShouldRewardTopicsWithFulfi
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Trigger end block - rewards distribution
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -712,9 +723,12 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 
 	// Move to end of this epoch block
 	nextBlock, _, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId)
+	s.T().Logf("Next block: %v", nextBlock)
 	s.Require().NoError(err)
 	blockHeight := nextBlock
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(blockHeight)
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
@@ -745,8 +759,11 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	}
 	// Advance to close the window
 	newBlock := blockHeight + topic.WorkerSubmissionWindow
+	s.T().Logf("SubmissionWindow Next block: %v", nextBlock)
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlock)
 	// EndBlock closes the nonce
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -1324,6 +1341,8 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	newBlockheight := block + topic.GroundTruthLag
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 	// Trigger end block - rewards distribution
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -1480,6 +1499,8 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	newBlockheight += topic.GroundTruthLag - 1
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 	// Trigger end block - rewards distribution
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -1658,6 +1679,8 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
 
 	// Trigger end block - rewards distribution
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -1680,6 +1703,8 @@ func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
 	// Trigger end block - rewards distribution
 	newBlockheight += epochLength
 	s.ctx = s.ctx.WithBlockHeight(newBlockheight)
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -1920,6 +1945,8 @@ func (s *RewardsTestSuite) TestRewardsHandleStandardDeviationOfZero() {
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(10000000000))
 
 	// Trigger end block - rewards distribution
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 }
@@ -2087,6 +2114,8 @@ func (s *RewardsTestSuite) TestStandardRewardEmissionWithOneInfererAndOneReputer
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(10000000000))
 
 	// Trigger end block - rewards distribution
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 }
@@ -2351,6 +2380,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	// Get Topic Id
 	topicId := res.TopicId
 
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -2431,6 +2462,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(block)
 
 	// Trigger end block - rewards distribution
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -2570,6 +2603,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	block += newTopicMsg.EpochLength
 	s.ctx = s.ctx.WithBlockHeight(block)
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 	err = s.emissionsKeeper.AddWorkerNonce(s.ctx, topicId, &types.Nonce{
@@ -2604,6 +2639,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 		})
 		s.Require().NoError(err)
 	}
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -2732,6 +2769,8 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	block += newTopicMsg.EpochLength
 	s.ctx = s.ctx.WithBlockHeight(block)
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 
@@ -2899,9 +2938,28 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
 	nextBlock, _, err := s.emissionsKeeper.GetNextPossibleChurningBlockByTopicId(s.ctx, topicId0)
+
+	s.T().Logf("Next block: %v", nextBlock)
 	s.Require().NoError(err)
 	s.ctx = s.ctx.WithBlockHeight(nextBlock)
+
+	// Check that the total sum of previous topic weights is equal to the sum of the weights of the two topics
+	topic1Weight0, _, err := s.emissionsKeeper.GetPreviousTopicWeight(s.ctx, topicId0)
+	s.Require().NoError(err)
+	topic0Weight1, _, err := s.emissionsKeeper.GetPreviousTopicWeight(s.ctx, topicId1)
+	s.Require().NoError(err)
+	totalSumPreviousTopicWeights, err := s.emissionsKeeper.GetTotalSumPreviousTopicWeights(s.ctx)
+	s.Require().NoError(err)
+	sumWeights, err := topic0Weight1.Add(topic1Weight0)
+	s.Require().NoError(err)
+	inDelta, err := alloraMath.InDelta(totalSumPreviousTopicWeights, sumWeights, alloraMath.MustNewDecFromString("0.0001"))
+	s.Require().NoError(err)
+	s.Require().True(inDelta)
+
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
+
 	require.NoError(err)
 
 	worker1InclusionNum, err := s.emissionsKeeper.GetCountInfererInclusionsInTopic(s.ctx, topicId0, s.addrsStr[workerIndexes[0]])
@@ -3010,6 +3068,8 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
@@ -3067,6 +3127,8 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
 
 	topicId0 := s.setUpTopicWithEpochLength(block, workerIndexes, reputerIndexes, stake, alphaRegret, 5)
+	s.T().Logf("TopicId: %v", topicId0)
+	s.emissionsKeeper.SetPreviousTopicWeight(s.ctx, topicId0, alloraMath.MustNewDecFromString("100"))
 
 	reputerValues := []TestWorkerValue{
 		{Index: reputerIndexes[0], Value: "0.1"},
@@ -3107,6 +3169,8 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
@@ -3193,6 +3257,8 @@ func (s *RewardsTestSuite) TestReputerBelowConsensusGetsLessRewards() {
 
 	s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
 
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
@@ -3285,6 +3351,8 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	s.Require().NoError(err)
 	s.ctx = s.ctx.WithBlockHeight(nextBlock)
 	// force rewards to be distributed
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
@@ -3336,6 +3404,8 @@ func (s *RewardsTestSuite) TestRewardForRemainingParticipantsGoUpWhenParticipant
 	s.Require().NoError(err)
 	s.ctx = s.ctx.WithBlockHeight(nextBlock)
 	// force rewards to be distributed
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	require.NoError(err)
 
@@ -3432,6 +3502,8 @@ func (s *RewardsTestSuite) TestRewardIncreaseContiouslyAfterTopicReactivated() {
 	require.NoError(err)
 	blocklHeight := topic0.EpochLength
 	s.ctx = s.ctx.WithBlockHeight(blocklHeight)
+	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+	s.Require().NoError(err)
 	err = s.emissionsAppModule.EndBlock(s.ctx)
 	s.Require().NoError(err)
 	worker0Values := []TestWorkerValue{
@@ -3508,4 +3580,243 @@ func (s *RewardsTestSuite) returnIndexes(start, count int) []int {
 		res[ind-start] = ind
 	}
 	return res
+}
+
+func decPtr(s string) *alloraMath.Dec {
+	d := alloraMath.MustNewDecFromString(s)
+	return &d
+}
+
+func (s *RewardsTestSuite) TestCalcTopicRewards() {
+	testCases := []struct {
+		name                string
+		setupFunc           func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec)
+		expectedRewardsFunc func(map[uint64]*alloraMath.Dec) bool
+		expectedError       error
+	}{
+		{
+			name: "Happy path - multiple topics",
+			setupFunc: func() (map[uint64]*alloraMath.Dec,
+				[]uint64,
+				alloraMath.Dec,
+				alloraMath.Dec,
+				map[uint64]int64,
+				alloraMath.Dec) {
+				weights := map[uint64]*alloraMath.Dec{
+					1: decPtr("0.5"),
+					2: decPtr("0.3"),
+					3: decPtr("0.2"),
+				}
+				sortedTopics := []uint64{1, 2, 3}
+				sumWeight := alloraMath.MustNewDecFromString("1.0")
+				totalReward := alloraMath.MustNewDecFromString("1000.0")
+				epochLengths := map[uint64]int64{
+					1: 100,
+					2: 100,
+					3: 100,
+				}
+				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
+				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
+			},
+			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+				expected := map[uint64]*alloraMath.Dec{
+					1: decPtr("500.0"),
+					2: decPtr("300.0"),
+					3: decPtr("200.0"),
+				}
+				return s.compareRewards(rewards, expected)
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Single topic",
+			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
+				weights := map[uint64]*alloraMath.Dec{
+					1: decPtr("1.0"),
+				}
+				sortedTopics := []uint64{1}
+				sumWeight := alloraMath.MustNewDecFromString("1.0")
+				totalReward := alloraMath.MustNewDecFromString("1000.0")
+				epochLengths := map[uint64]int64{
+					1: 100,
+				}
+				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
+				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
+			},
+			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+				expected := map[uint64]*alloraMath.Dec{
+					1: decPtr("1000.0"),
+				}
+				return s.compareRewards(rewards, expected)
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Zero total reward",
+			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
+				weights := map[uint64]*alloraMath.Dec{
+					1: decPtr("0.5"),
+					2: decPtr("0.5"),
+				}
+				sortedTopics := []uint64{1, 2}
+				sumWeight := alloraMath.MustNewDecFromString("1.0")
+				totalReward := alloraMath.ZeroDec()
+				epochLengths := map[uint64]int64{
+					1: 100,
+					2: 100,
+				}
+				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
+				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
+			},
+			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+				expected := map[uint64]*alloraMath.Dec{
+					1: decPtr("0"),
+					2: decPtr("0"),
+				}
+				return s.compareRewards(rewards, expected)
+			},
+			expectedError: types.ErrInvalidReward,
+		},
+		{
+			name: "Different epoch lengths",
+			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
+				weights := map[uint64]*alloraMath.Dec{
+					1: decPtr("0.75"),
+					2: decPtr("0.25"),
+				}
+				sortedTopics := []uint64{1, 2}
+				sumWeight := alloraMath.MustNewDecFromString("1")
+				totalReward := alloraMath.MustNewDecFromString("1000.0")
+				epochLengths := map[uint64]int64{
+					1: 100,
+					2: 200,
+				}
+				currentBlockEmission := alloraMath.MustNewDecFromString("1.0")
+				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
+			},
+			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+				expected := map[uint64]*alloraMath.Dec{
+					1: decPtr("75"),
+					2: decPtr("50"),
+				}
+				return s.compareRewards(rewards, expected)
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Very small weights",
+			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
+				weights := map[uint64]*alloraMath.Dec{
+					1: decPtr("0.000000000000000001"),
+					2: decPtr("0.000000000000000002"),
+				}
+				sortedTopics := []uint64{1, 2}
+				sumWeight := alloraMath.MustNewDecFromString("0.000000000000000003")
+				totalReward := alloraMath.MustNewDecFromString("1000.0")
+				epochLengths := map[uint64]int64{
+					1: 100,
+					2: 100,
+				}
+				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
+				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
+			},
+			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+				expected := map[uint64]*alloraMath.Dec{
+					1: decPtr("333.333333333333333333"),
+					2: decPtr("666.666666666666666667"),
+				}
+				return s.compareRewards(rewards, expected)
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Zero sum weight",
+			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
+				weights := map[uint64]*alloraMath.Dec{
+					1: decPtr("0"),
+					2: decPtr("0"),
+				}
+				sortedTopics := []uint64{1, 2}
+				sumWeight := alloraMath.ZeroDec()
+				totalReward := alloraMath.MustNewDecFromString("10000.0")
+				epochLengths := map[uint64]int64{
+					1: 100,
+					2: 100,
+				}
+				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
+				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
+			},
+			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+				return len(rewards) == 0
+			},
+			expectedError: types.ErrInvalidReward,
+		},
+		{
+			name: "Mismatched weights and sorted topics",
+			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
+				weights := map[uint64]*alloraMath.Dec{
+					1: decPtr("0.5"),
+					2: decPtr("0.5"),
+				}
+				sortedTopics := []uint64{1, 2, 3}
+				sumWeight := alloraMath.MustNewDecFromString("1.0")
+				totalReward := alloraMath.MustNewDecFromString("1000.0")
+				epochLengths := map[uint64]int64{
+					1: 100,
+					2: 100,
+				}
+				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
+				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
+			},
+			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+				return len(rewards) == 2
+			},
+			expectedError: types.ErrInvalidLengthTopic,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission := tc.setupFunc()
+
+			rewards, err := rewards.CalcTopicRewards(
+				s.ctx,
+				weights,
+				sortedTopics,
+				sumWeight,
+				totalReward,
+				epochLengths,
+				currentBlockEmission,
+			)
+
+			if tc.expectedError != nil {
+				s.Require().ErrorIs(err, tc.expectedError)
+			} else {
+				s.Require().NoError(err)
+				s.Require().True(tc.expectedRewardsFunc(rewards))
+			}
+		})
+	}
+}
+
+// Helper function to compare rewards
+func (s *RewardsTestSuite) compareRewards(actual, expected map[uint64]*alloraMath.Dec) bool {
+	if len(actual) != len(expected) {
+		return false
+	}
+	for topicID, expectedReward := range expected {
+		actualReward, exists := actual[topicID]
+		if !exists {
+			return false
+		}
+		inDelta, err := alloraMath.InDelta(*actualReward, *expectedReward, alloraMath.MustNewDecFromString("0.0001"))
+		s.Require().NoError(err)
+		s.Require().True(inDelta)
+		if !inDelta {
+			s.T().Logf("Actual   %v not found", actualReward)
+			s.T().Logf("Expected %v not found", expectedReward)
+			return false
+		}
+	}
+	return true
 }
