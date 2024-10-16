@@ -16,69 +16,62 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	blockHeight := sdkCtx.BlockHeight()
-
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkInputLength(ctx, ms, msg)
-	if err != nil {
-		return nil, err
-	}
-
+	blockHeight := sdkCtx.BlockHeight()
 	err = msg.ReputerValueBundle.Validate()
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
-			"Error validating reputer value bundle at block height: %d", blockHeight)
-	}
-
-	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
-	topicId := msg.ReputerValueBundle.ValueBundle.TopicId
-
-	// Check if the topic exists
-	topic, err := ms.k.GetTopic(ctx, topicId)
-	if err != nil {
-		return nil, types.ErrInvalidTopicId
-	}
-
-	// Check if the worker nonce is fulfilled
-	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
-	if err != nil {
-		return nil, err
-	}
-	// Returns an error if unfulfilled worker nonce exists
-	if workerNonceUnfulfilled {
-		return nil, errorsmod.Wrapf(types.ErrNonceStillUnfulfilled, "worker nonce")
-	}
-
-	// Check if the reputer nonce is unfulfilled
-	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
-	if err != nil {
-		return nil, err
-	}
-	// If the reputer nonce is already fulfilled, return an error
-	if !reputerNonceUnfulfilled {
-		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
-	}
-
-	// Check if the ground truth lag has passed: if blockheight > nonce.BlockHeight + topic.GroundTruthLag
-	if !ms.k.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
-		return nil, types.ErrReputerNonceWindowNotAvailable
-	}
-
-	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, topicId, msg.ReputerValueBundle.ValueBundle.Reputer)
-	if err != nil {
-		return nil, err
-	}
-	if !isRegistered {
-		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is not registered in this topic")
+			"Reputer invalid data for block: %d", blockHeight)
 	}
 
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+	}
+	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce := msg.ReputerValueBundle.ValueBundle.ReputerRequestNonce
+	topicId := msg.ReputerValueBundle.ValueBundle.TopicId
+
+	topic, err := ms.k.GetTopic(ctx, topicId)
+	if err != nil {
+		return nil, types.ErrInvalidTopicId
+	}
+
+	workerNonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
+	if err != nil {
+		return nil, err
+	} else if workerNonceUnfulfilled {
+		return nil, errorsmod.Wrapf(types.ErrNonceStillUnfulfilled, "worker nonce")
+	}
+
+	reputerNonceUnfulfilled, err := ms.k.IsReputerNonceUnfulfilled(ctx, topicId, nonce.ReputerNonce)
+	if err != nil {
+		return nil, err
+	} else if !reputerNonceUnfulfilled {
+		return nil, errorsmod.Wrapf(types.ErrUnfulfilledNonceNotFound, "reputer nonce")
+	}
+
+	if !ms.k.BlockWithinReputerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
+		return nil, errorsmod.Wrapf(
+			types.ErrReputerNonceWindowNotAvailable,
+			"Reputer window not open for topic: %d, current block %d, start window: %d, end window: %d",
+			topicId, blockHeight, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag*2,
+		)
+	}
+
+	isRegistered, err := ms.k.IsReputerRegisteredInTopic(ctx, topicId, msg.ReputerValueBundle.ValueBundle.Reputer)
+	if err != nil {
+		return nil, err
+	} else if !isRegistered {
+		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "reputer is not registered in this topic")
 	}
 
 	// Check that the reputer enough stake in the topic

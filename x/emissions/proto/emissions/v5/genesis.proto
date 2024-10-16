@@ -189,6 +189,21 @@ message GenesisState {
   // INCLUSIONS
   repeated TopicIdActorIdUint64 count_inferer_inclusions_in_topic_active_set = 66;
   repeated TopicIdActorIdUint64 count_forecaster_inclusions_in_topic_active_set = 67;
+
+  // active inferers for each topic
+  repeated TopicAndActorId active_inferers = 68;
+  // active forecasters for each topic
+  repeated TopicAndActorId active_forecasters = 69;
+  // lowest inferer score EMA for each topic
+  repeated TopicIdActorIdScore lowest_inferer_score_ema = 70;
+  // lowest forecaster score EMA for each topic
+  repeated TopicIdActorIdScore lowest_forecaster_score_ema = 71;
+  // active reputers for each topic
+  repeated TopicAndActorId active_reputers = 72;
+  // lowest reputer score EMA for each topic
+  repeated TopicIdActorIdScore lowest_reputer_score_ema = 73;
+  // map of (topic, reputer) -> reputer loss
+  repeated TopicIdReputerReputerValueBundle loss_bundles = 74;
 }
 
 message TopicIdAndTopic {
@@ -385,4 +400,10 @@ message BlockHeightTopicIds {
 message BlockHeightTopicIdWeightPair {
   int64 block_height = 1;
   emissions.v3.TopicIdWeightPair topic_weight = 2;
+}
+
+message TopicIdReputerReputerValueBundle {
+  uint64 topic_id = 1;
+  string reputer = 2;
+  emissions.v3.ReputerValueBundle reputer_value_bundle = 3;
 }

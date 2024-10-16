@@ -12,29 +12,15 @@ import (
 // WORKER NONCES CLOSING
 
 // Closes an open worker nonce.
-func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId, nonce types.Nonce) error {
-	// Check if the topic exists
-	topicExists, err := k.TopicExists(ctx, topicId)
-	if err != nil {
-		return err
-	}
-	if !topicExists {
-		return types.ErrInvalidTopicId
-	}
-
+func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonce types.Nonce) error {
 	// Check if the nonce is unfulfilled
-	nonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topicId, &nonce)
+	nonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
 	// If the nonce is already fulfilled, return an error
 	if !nonceUnfulfilled {
 		return types.ErrUnfulfilledNonceNotFound
-	}
-
-	topic, err := k.GetTopic(ctx, topicId)
-	if err != nil {
-		return types.ErrInvalidTopicId
 	}
 
 	// Check if the window time has passed: if blockHeight > nonce.BlockHeight + topic.WorkerSubmissionWindow
@@ -44,45 +30,49 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return types.ErrWorkerNonceWindowNotAvailable
 	}
 
-	// Get all inferences from this topic, nonce
-	inferences, err := k.GetInferencesAtBlock(ctx, topicId, nonce.BlockHeight)
+	// Get all active inferers for this topic
+	activeInfererAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
-	if len(inferences.Inferences) == 0 {
-		return types.ErrNoValidInferences
+	if len(activeInfererAddresses) == 0 {
+		return types.ErrNoQualifiedInferers
 	}
 
-	acceptedInferers, err := insertInferencesFromTopInferers(
+	// Insert set of active inferences for this topic/block and return a map
+	// of the inferers with active inferers to be used in the forecasts processing
+	activeInfererAddressesMap, err := closeActiveInferencesSet(
 		ctx,
 		k,
-		topicId,
+		topic.Id,
 		nonce,
-		inferences.Inferences,
+		activeInfererAddresses,
 	)
 	if err != nil {
 		return err
 	}
 
-	// Get all forecasts from this topicId, nonce
-	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, nonce.BlockHeight)
+	// Get all active forecasters for this topic
+	activeForecastAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
 
-	err = insertForecastsFromTopForecasters(
+	// Insert set of active forecasts for this topic/block and return a map
+	// of the forecasters with active forecasts to be used in the forecasts processing
+	err = closeActiveForecastsSet(
 		ctx,
 		k,
-		topicId,
+		topic.Id,
 		nonce,
-		forecasts.Forecasts,
-		acceptedInferers,
+		activeForecastAddresses,
+		activeInfererAddressesMap,
 	)
 	if err != nil {
 		return err
 	}
 	// Update the unfulfilled worker nonce
-	_, err = k.FulfillWorkerNonce(ctx, topicId, &nonce)
+	_, err = k.FulfillWorkerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
 	}
@@ -97,72 +87,72 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topicId keeper.TopicId,
 		return err
 	}
 
+	err = k.ResetActiveWorkersForTopic(ctx, topic.Id)
+	if err != nil {
+		return err
+	}
+
+	err = k.ResetWorkersIndividualSubmissionsForTopic(ctx, topic.Id)
+	if err != nil {
+		return err
+	}
+
 	types.EmitNewWorkerLastCommitSetEvent(ctx, topic.Id, blockHeight, &nonce)
-	ctx.Logger().Info(fmt.Sprintf("Closed worker nonce for topic: %d, nonce: %v", topicId, nonce))
+	ctx.Logger().Info(fmt.Sprintf("Closed worker nonce for topic: %d, nonce: %v", topic.Id, nonce))
 	// Return an empty response as the operation was successful
 	return nil
 }
 
-// It is assumed `inferences` come from unique, registered, top inferers by EMA score descending
-// It is also assumed that the inferences are for the correct topic and nonce
-func insertInferencesFromTopInferers(
+func closeActiveInferencesSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
 	nonce types.Nonce,
-	inferences []*types.Inference,
-) (acceptedInferers map[string]bool, err error) {
-	acceptedInferers = make(map[string]bool, 0)
-	if len(inferences) == 0 {
-		ctx.Logger().Warn(fmt.Sprintf("No inferences to process for topic: %d, nonce: %v", topicId, nonce))
-		return nil, types.ErrNoInferencesToInsert
-	}
-	for _, inference := range inferences {
-		// Check that the forecast exist, is for the correct topic, and is for the correct nonce
-		if inference.TopicId != topicId {
-			ctx.Logger().Warn("Inference does not match topic: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
-			continue
+	activeInfererAddresses []string,
+) (map[string]bool, error) {
+	activeInferences := make([]*types.Inference, 0)
+	activeInfererAddressesMap := make(map[string]bool, 0)
+	for _, address := range activeInfererAddresses {
+		inference, err := k.GetWorkerLatestInferenceByTopicId(ctx, topicId, address)
+		if err != nil {
+			return nil, err
 		}
-		if inference.BlockHeight != nonce.BlockHeight {
-			ctx.Logger().Warn("Inference does not match blockHeight: ", topicId, ", nonce: ", nonce, "for inferer: ", inference.Inferer)
-			continue
-		}
-		acceptedInferers[inference.Inferer] = true
+		activeInferences = append(activeInferences, &inference)
+		activeInfererAddressesMap[inference.Inferer] = true
 	}
 
-	// Ensure deterministic ordering of inferences
-	sort.Slice(inferences, func(i, j int) bool {
-		return inferences[i].Inferer < inferences[j].Inferer
+	// Ensure deterministic ordering
+	sort.Slice(activeInferences, func(i, j int) bool {
+		return activeInferences[i].Inferer < activeInferences[j].Inferer
 	})
 
-	// Store the final list of inferences
-	inferencesToInsert := types.Inferences{
-		Inferences: inferences,
-	}
-	err = k.InsertInferences(ctx, topicId, nonce.BlockHeight, inferencesToInsert)
+	err := k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, types.Inferences{
+		Inferences: activeInferences,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return acceptedInferers, nil
+	return activeInfererAddressesMap, nil
 }
 
 // insert forecasts from top forecasters
 // check forecast elements to ensure they are forecasts made about
 // the active list of inferers.
-func insertForecastsFromTopForecasters(
+func closeActiveForecastsSet(
 	ctx sdk.Context,
 	k *keeper.Keeper,
 	topicId uint64,
 	nonce types.Nonce,
-	forecasts []*types.Forecast,
+	activeForecastAddresses []string,
 	acceptedInferersOfBatch map[string]bool,
 ) error {
 	forecastsByForecaster := make(map[string]*types.Forecast)
-	latestForecaster := make([]*types.Forecast, 0)
-	for _, forecast := range forecasts {
-		if forecast == nil {
-			continue
+	activeForecasts := make([]*types.Forecast, 0)
+	for _, address := range activeForecastAddresses {
+		forecast, err := k.GetWorkerLatestForecastByTopicId(ctx, topicId, address)
+		if err != nil {
+			return err
 		}
 
 		// Examine forecast elements to verify that they're for inferers in the current set.
@@ -203,27 +193,17 @@ func insertForecastsFromTopForecasters(
 		/// Now do filters on each forecaster
 		// Ensure that we only have one forecast per forecaster. If not, we just take the first one
 		if _, ok := forecastsByForecaster[forecast.Forecaster]; !ok {
-			latestForecaster = append(latestForecaster, forecast)
-			forecastsByForecaster[forecast.Forecaster] = forecast
+			activeForecasts = append(activeForecasts, &forecast)
+			forecastsByForecaster[forecast.Forecaster] = &forecast
 		}
 	}
 
-	// Though less than ideal because it produces less-accurate network inferences,
-	// it is fine if no forecasts are accepted
-	// => no need to check len(forecastsFromTopForecasters) == 0
-
 	// Ensure deterministic ordering
-	sort.Slice(latestForecaster, func(i, j int) bool {
-		return latestForecaster[i].Forecaster < latestForecaster[j].Forecaster
+	sort.Slice(activeForecasts, func(i, j int) bool {
+		return activeForecasts[i].Forecaster < activeForecasts[j].Forecaster
 	})
-	// Store the final list of forecasts
-	forecastsToInsert := types.Forecasts{
-		Forecasts: latestForecaster,
-	}
-	err := k.InsertForecasts(ctx, topicId, nonce.BlockHeight, forecastsToInsert)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return k.InsertActiveForecasts(ctx, topicId, nonce.BlockHeight, types.Forecasts{
+		Forecasts: activeForecasts,
+	})
 }

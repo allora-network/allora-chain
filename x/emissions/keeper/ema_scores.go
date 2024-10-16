@@ -124,21 +124,17 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,
-	worker ActorId,
+	previousInfererScore types.Score,
 ) error {
-	previousScore, err := k.GetInfererScoreEma(ctx, topic.Id, worker)
-	if err != nil {
-		return errors.Wrapf(err, "Error getting inferer score ema")
-	}
 	previousTopicQuantileInfererScoreEma, err := k.GetPreviousTopicQuantileInfererScoreEma(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
-	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
+	firstTime := previousInfererScore.BlockHeight == 0 && previousInfererScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
 		topic.MeritSortitionAlpha,
 		previousTopicQuantileInfererScoreEma,
-		previousScore.Score,
+		previousInfererScore.Score,
 		firstTime,
 	)
 	if err != nil {
@@ -147,42 +143,38 @@ func (k *Keeper) CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
 	emaScore := types.Score{
 		TopicId:     topic.Id,
 		BlockHeight: block,
-		Address:     worker,
+		Address:     previousInfererScore.Address,
 		Score:       emaScoreDec,
 	}
-	err = k.SetInfererScoreEma(ctx, topic.Id, worker, emaScore)
+	err = k.SetInfererScoreEma(ctx, topic.Id, previousInfererScore.Address, emaScore)
 	if err != nil {
 		return errors.Wrapf(err, "error setting latest inferer score")
 	}
 
 	emaScores := []types.Score{emaScore}
-	activeArr := map[string]bool{worker: false}
+	activeArr := map[string]bool{previousInfererScore.Address: false}
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, emaScores, activeArr)
 	return nil
 }
 
-// Calculates and saves the EMA scores for a given worker and topic.
+// Calculates and saves the EMA scores for a given forecaster and topic.
 // Uses the last saved topic quantile score to calculate the EMA.
-// This is useful for updating EMAs of workers in the passive set.
+// This is useful for updating EMAs of forecasters in the passive set.
 func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,
-	worker ActorId,
+	previousForecasterScore types.Score,
 ) error {
-	previousScore, err := k.GetForecasterScoreEma(ctx, topic.Id, worker)
-	if err != nil {
-		return errors.Wrapf(err, "Error getting forecaster score ema")
-	}
 	previousTopicQuantileForecasterScoreEma, err := k.GetPreviousTopicQuantileForecasterScoreEma(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
-	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
+	firstTime := previousForecasterScore.BlockHeight == 0 && previousForecasterScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
 		topic.MeritSortitionAlpha,
 		previousTopicQuantileForecasterScoreEma,
-		previousScore.Score,
+		previousForecasterScore.Score,
 		firstTime,
 	)
 	if err != nil {
@@ -191,16 +183,16 @@ func (k *Keeper) CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(
 	emaScore := types.Score{
 		TopicId:     topic.Id,
 		BlockHeight: block,
-		Address:     worker,
+		Address:     previousForecasterScore.Address,
 		Score:       emaScoreDec,
 	}
-	err = k.SetForecasterScoreEma(ctx, topic.Id, worker, emaScore)
+	err = k.SetForecasterScoreEma(ctx, topic.Id, previousForecasterScore.Address, emaScore)
 	if err != nil {
 		return errors.Wrapf(err, "error setting latest forecaster score")
 	}
 
 	emaScores := []types.Score{emaScore}
-	activeArr := map[string]bool{worker: false}
+	activeArr := map[string]bool{previousForecasterScore.Address: false}
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_FORECASTER, emaScores, activeArr)
 	return nil
 }
@@ -212,22 +204,17 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
 	ctx sdk.Context,
 	topic types.Topic,
 	block types.BlockHeight,
-	reputer ActorId,
+	previousReputerScore types.Score,
 ) error {
-	previousScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputer)
-	if err != nil {
-		return errors.Wrapf(err, "Error getting reputer score ema")
-	}
-	// Only calc and save if there's a new update
 	previousTopicQuantileReputerScoreEma, err := k.GetPreviousTopicQuantileReputerScoreEma(ctx, topic.Id)
 	if err != nil {
 		return err
 	}
-	firstTime := previousScore.BlockHeight == 0 && previousScore.Score.IsZero()
+	firstTime := previousReputerScore.BlockHeight == 0 && previousReputerScore.Score.IsZero()
 	emaScoreDec, err := alloraMath.CalcEma(
 		topic.MeritSortitionAlpha,
 		previousTopicQuantileReputerScoreEma,
-		previousScore.Score,
+		previousReputerScore.Score,
 		firstTime,
 	)
 	if err != nil {
@@ -236,16 +223,16 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
 	emaScore := types.Score{
 		TopicId:     topic.Id,
 		BlockHeight: block,
-		Address:     reputer,
+		Address:     previousReputerScore.Address,
 		Score:       emaScoreDec,
 	}
-	err = k.SetReputerScoreEma(ctx, topic.Id, reputer, emaScore)
+	err = k.SetReputerScoreEma(ctx, topic.Id, previousReputerScore.Address, emaScore)
 	if err != nil {
 		return errors.Wrapf(err, "error setting latest reputer score")
 	}
 
 	emaScores := []types.Score{emaScore}
-	activeArr := map[string]bool{reputer: false}
+	activeArr := map[string]bool{previousReputerScore.Address: false}
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
 	return nil
 }

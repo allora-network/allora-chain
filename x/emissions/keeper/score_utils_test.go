@@ -10,11 +10,11 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllInferences() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := uint64(1)
-	blockHeightInferences := int64(10)
 
 	worker1 := s.addrsStr[0]
 	worker2 := s.addrsStr[1]
 	worker3 := s.addrsStr[2]
+	workerAddresses := []string{worker1, worker2, worker3}
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
@@ -23,28 +23,20 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllInferences() {
 	_ = k.SetInfererScoreEma(ctx, topicId, worker2, score2)
 	_ = k.SetInfererScoreEma(ctx, topicId, worker3, score3)
 
-	allInferences := types.Inferences{
-		Inferences: []*types.Inference{
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.52")},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.71")},
-			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.71")},
-		},
-	}
-	lowScore, lowScoreIndex, err := keeper.GetLowScoreFromAllInferences(ctx, &k, topicId, allInferences)
+	lowScore, err := keeper.GetLowestScoreFromAllInferers(ctx, &k, topicId, workerAddresses)
 	s.Require().NoError(err)
 	s.Require().Equal(lowScore, score2)
-	s.Require().Equal(lowScoreIndex, 1)
 }
 
 func (s *KeeperTestSuite) TestGetLowScoreFromAllForecasts() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := uint64(1)
-	blockHeightInferences := int64(10)
 
 	worker1 := s.addrsStr[0]
 	worker2 := s.addrsStr[1]
 	worker3 := s.addrsStr[2]
+	forecasterAddresses := []string{worker1, worker2, worker3}
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
@@ -53,73 +45,20 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllForecasts() {
 	_ = k.SetForecasterScoreEma(ctx, topicId, worker2, score2)
 	_ = k.SetForecasterScoreEma(ctx, topicId, worker3, score3)
 
-	allForecasts := types.Forecasts{
-		Forecasts: []*types.Forecast{
-			{
-				TopicId:     topicId,
-				BlockHeight: blockHeightInferences,
-				Forecaster:  worker1,
-				ForecastElements: []*types.ForecastElement{
-					{
-						Inferer: worker1,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
-					},
-					{
-						Inferer: worker2,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
-					},
-				},
-			},
-			{
-				TopicId:     topicId,
-				BlockHeight: blockHeightInferences,
-				Forecaster:  worker2,
-				ForecastElements: []*types.ForecastElement{
-					{
-						Inferer: worker1,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
-					},
-					{
-						Inferer: worker2,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
-					},
-				},
-			},
-			{
-				TopicId:     topicId,
-				BlockHeight: blockHeightInferences,
-				Forecaster:  worker3,
-				ForecastElements: []*types.ForecastElement{
-					{
-						Inferer: worker1,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
-					},
-					{
-						Inferer: worker2,
-						Value:   alloraMath.MustNewDecFromString("0.52"),
-					},
-				},
-			},
-		},
-	}
-	lowScore, lowScoreIndex, err := keeper.GetLowScoreFromAllForecasts(ctx, &k, topicId, allForecasts)
+	lowScore, err := keeper.GetLowestScoreFromAllForecasters(ctx, &k, topicId, forecasterAddresses)
 	s.Require().NoError(err)
 	s.Require().Equal(lowScore, score2)
-	s.Require().Equal(lowScoreIndex, 1)
 }
 
 func (s *KeeperTestSuite) TestGetLowScoreFromAllLossBundles() {
 	ctx := s.ctx
 	k := s.emissionsKeeper
 	topicId := uint64(1)
-	blockHeight := int64(10)
-	reputerRequestNonce := &types.ReputerRequestNonce{
-		ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
-	}
 
 	reputer1 := s.addrsStr[0]
 	reputer2 := s.addrsStr[1]
 	reputer3 := s.addrsStr[2]
+	reputerAddresses := []string{reputer1, reputer2, reputer3}
 
 	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer1, Score: alloraMath.NewDecFromInt64(95)}
 	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer2, Score: alloraMath.NewDecFromInt64(90)}
@@ -128,60 +67,7 @@ func (s *KeeperTestSuite) TestGetLowScoreFromAllLossBundles() {
 	_ = k.SetReputerScoreEma(ctx, topicId, reputer2, score2)
 	_ = k.SetReputerScoreEma(ctx, topicId, reputer3, score3)
 
-	allReputerLosses := types.ReputerValueBundles{
-		ReputerValueBundles: []*types.ReputerValueBundle{
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:                       reputer1,
-					CombinedValue:                 alloraMath.MustNewDecFromString(".0000117005278862668"),
-					ReputerRequestNonce:           reputerRequestNonce,
-					TopicId:                       topicId,
-					ExtraData:                     nil,
-					InfererValues:                 nil,
-					ForecasterValues:              nil,
-					NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
-					OneOutInfererValues:           nil,
-					OneOutForecasterValues:        nil,
-					OneInForecasterValues:         nil,
-					OneOutInfererForecasterValues: nil,
-				},
-			},
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:                       reputer2,
-					CombinedValue:                 alloraMath.MustNewDecFromString(".00000962701954026944"),
-					ReputerRequestNonce:           reputerRequestNonce,
-					TopicId:                       topicId,
-					ExtraData:                     nil,
-					InfererValues:                 nil,
-					ForecasterValues:              nil,
-					NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
-					OneOutInfererValues:           nil,
-					OneOutForecasterValues:        nil,
-					OneInForecasterValues:         nil,
-					OneOutInfererForecasterValues: nil,
-				},
-			},
-			{
-				ValueBundle: &types.ValueBundle{
-					Reputer:                       reputer3,
-					CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
-					ReputerRequestNonce:           reputerRequestNonce,
-					TopicId:                       topicId,
-					ExtraData:                     nil,
-					InfererValues:                 nil,
-					ForecasterValues:              nil,
-					NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
-					OneOutInfererValues:           nil,
-					OneOutForecasterValues:        nil,
-					OneInForecasterValues:         nil,
-					OneOutInfererForecasterValues: nil,
-				},
-			},
-		},
-	}
-	lowScore, lowScoreIndex, err := keeper.GetLowScoreFromAllLossBundles(ctx, &k, topicId, allReputerLosses)
+	lowScore, err := keeper.GetLowestScoreFromAllReputers(ctx, &k, topicId, reputerAddresses)
 	s.Require().NoError(err)
 	s.Require().Equal(lowScore, score2)
-	s.Require().Equal(lowScoreIndex, 1)
 }

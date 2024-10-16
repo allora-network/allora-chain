@@ -19,68 +19,62 @@ import (
 func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWorkerPayloadRequest) (_ *types.InsertWorkerPayloadResponse, err error) {
 	defer metrics.RecordMetrics("InsertWorkerPayload", time.Now(), &err)
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	blockHeight := sdkCtx.BlockHeight()
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
 		return nil, err
 	}
-	err = checkInputLength(ctx, ms, msg)
-	if err != nil {
-		return nil, err
-	}
 
+	blockHeight := sdkCtx.BlockHeight()
 	err = msg.WorkerDataBundle.Validate()
 	if err != nil {
 		return nil, errorsmod.Wrapf(err,
 			"Worker invalid data for block: %d", blockHeight)
 	}
 
+	moduleParams, err := ms.k.GetParams(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+	}
+	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
+	if err != nil {
+		return nil, err
+	}
+
 	nonce := msg.WorkerDataBundle.Nonce
 	topicId := msg.WorkerDataBundle.TopicId
 
-	// Check if the topic exists. Will throw if topic does not exist
 	topic, err := ms.k.GetTopic(ctx, topicId)
 	if err != nil {
 		return nil, types.ErrInvalidTopicId
 	}
-	// Check if the nonce is unfulfilled
 	nonceUnfulfilled, err := ms.k.IsWorkerNonceUnfulfilled(ctx, topicId, nonce)
 	if err != nil {
 		return nil, err
-	}
-	// If the nonce is already fulfilled, return an error
-	if !nonceUnfulfilled {
+	} else if !nonceUnfulfilled {
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
-	// Check if the window time is open
 	if !ms.k.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
 		return nil, errorsmod.Wrapf(
 			types.ErrWorkerNonceWindowNotAvailable,
-			"Worker window not open for topic: %d, current block %d , nonce block height: %d , start window: %d, end window: %d",
-			topicId, blockHeight, nonce.BlockHeight, nonce.BlockHeight+topic.WorkerSubmissionWindow, nonce.BlockHeight+topic.GroundTruthLag,
+			"Worker window not open for topic: %d, current block %d, start window: %d, end window: %d",
+			topicId, blockHeight, nonce.BlockHeight, nonce.BlockHeight+topic.WorkerSubmissionWindow,
 		)
 	}
 
-	isInfererRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, msg.WorkerDataBundle.Worker)
+	isWorkerRegistered, err := ms.k.IsWorkerRegisteredInTopic(ctx, topicId, msg.WorkerDataBundle.Worker)
 	if err != nil {
 		return nil, err
-	}
-	if !isInfererRegistered {
+	} else if !isWorkerRegistered {
 		return nil, errorsmod.Wrapf(types.ErrAddressNotRegistered, "worker is not registered in this topic")
 	}
 
-	// Before accepting data, transfer fee amount from sender to ecosystem bucket
-	params, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
-	}
-	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, params.DataSendingFee)
+	err = sendEffectiveRevenueActivateTopicIfWeightSufficient(ctx, ms, msg.Sender, topicId, moduleParams.DataSendingFee)
 	if err != nil {
 		return nil, err
 	}
 
-	// Inferences
+	// Process Inferences
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Inference != nil {
 		inference := msg.WorkerDataBundle.InferenceForecastsBundle.Inference
 		if inference == nil {
@@ -91,13 +85,13 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 				"inferer not using the same topic as bundle")
 		}
 
-		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference)
+		err = ms.k.AppendInference(sdkCtx, topic, nonce.BlockHeight, inference, moduleParams.MaxTopInferersToReward)
 		if err != nil {
 			return nil, errorsmod.Wrapf(err, "Error appending inference")
 		}
 	}
 
-	// Forecasts
+	// Process Forecasts
 	if msg.WorkerDataBundle.InferenceForecastsBundle.Forecast != nil {
 		forecast := msg.WorkerDataBundle.InferenceForecastsBundle.Forecast
 		if len(forecast.ForecastElements) == 0 {
@@ -117,10 +111,6 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 			latestScoresForForecastedInferers = append(latestScoresForForecastedInferers, score)
 		}
 
-		moduleParams, err := ms.k.GetParams(ctx)
-		if err != nil {
-			return nil, err
-		}
 		_, _, topNInferer := actorutils.FindTopNByScoreDesc(
 			sdkCtx,
 			moduleParams.MaxElementsPerForecast,
@@ -152,7 +142,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 
 		if len(acceptedForecastElements) > 0 {
 			forecast.ForecastElements = acceptedForecastElements
-			err = ms.k.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast)
+			err = ms.k.AppendForecast(sdkCtx, topic, nonce.BlockHeight, forecast, moduleParams.MaxTopForecastersToReward)
 			if err != nil {
 				return nil, errorsmod.Wrapf(err,
 					"Error appending forecast")

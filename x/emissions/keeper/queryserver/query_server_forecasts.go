@@ -28,3 +28,21 @@ func (qs queryServer) GetForecastsAtBlock(ctx context.Context, req *types.GetFor
 
 	return &types.GetForecastsAtBlockResponse{Forecasts: forecasts}, nil
 }
+
+func (qs queryServer) GetActiveForecastersForTopic(ctx context.Context, req *types.GetActiveForecastersForTopicRequest) (_ *types.GetActiveForecastersForTopicResponse, err error) {
+	defer metrics.RecordMetrics("GetActiveForecastersForTopic", time.Now(), &err)
+
+	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
+	if !topicExists {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	} else if err != nil {
+		return nil, err
+	}
+
+	forecasters, err := qs.k.GetActiveForecastersForTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.GetActiveForecastersForTopicResponse{Forecasters: forecasters}, nil
+}

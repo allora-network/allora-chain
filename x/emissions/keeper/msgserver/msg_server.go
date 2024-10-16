@@ -1,8 +1,6 @@
 package msgserver
 
 import (
-	"context"
-
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/gogo/protobuf/proto"
@@ -19,16 +17,11 @@ func NewMsgServerImpl(keeper keeper.Keeper) types.MsgServiceServer {
 	return &msgServer{k: keeper}
 }
 
-func checkInputLength(ctx context.Context, ms msgServer, msg proto.Message) error {
-	params, err := ms.k.GetParams(ctx)
-	if err != nil {
-		return err
-	}
-
+func checkInputLength(maxSerializedMsgLength int64, msg proto.Message) error {
 	size := proto.Size(msg)
 
 	// Check the length of the serialized message
-	if int64(size) > params.MaxSerializedMsgLength {
+	if int64(size) > maxSerializedMsgLength {
 		return types.ErrQueryTooLarge
 	}
 

@@ -87,7 +87,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 						continue
 					}
 					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId, nonce))
-					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topicId, *nonce)
+					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
 					if err != nil {
 						sdkCtx.Logger().Info(fmt.Sprintf("Error closing worker nonce, proactively fulfilling: %s", err.Error()))
 						// Proactively close the nonce
