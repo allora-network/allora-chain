@@ -2,6 +2,8 @@ package utils
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewPool(t *testing.T) {
@@ -12,15 +14,10 @@ func TestNewPool(t *testing.T) {
 		return x + 1
 	}
 	pool := NewPool(newFunc, resetFunc, nil)
-
-	if pool == nil {
-		t.Fatal("Expected pool to be initialized")
-	}
+	require.NotNil(t, pool, "Expected pool to be initialized")
 
 	x := pool.Get()
-	if x != 42 {
-		t.Errorf("Expected Get() to return 42, got %d", x)
-	}
+	require.Equal(t, 42, x, "Expected Get() to return 42")
 }
 
 func TestPool_GetPut(t *testing.T) {
@@ -28,31 +25,23 @@ func TestPool_GetPut(t *testing.T) {
 
 	// Get a new item
 	s := pool.Get()
-	if s != "initial" {
-		t.Errorf("Expected 'initial', got '%s'", s)
-	}
+	require.Equal(t, "initial", s, "Expected 'initial'")
 
 	// Put back a different string
 	pool.Put("updated")
 
 	// Get should return the updated string
 	s = pool.Get()
-	if s != "updated" {
-		t.Errorf("Expected 'updated', got '%s'", s)
-	}
+	require.Equal(t, "updated", s, "Expected 'updated'")
 }
 
 func TestNewBytesPool(t *testing.T) {
 	size := 1024
 	bytesPool := NewBytesPool(size, 0)
-	if bytesPool == nil {
-		t.Fatal("Expected bytes pool to be initialized")
-	}
+	require.NotNil(t, bytesPool, "Expected bytes pool to be initialized")
 
 	b := bytesPool.Get()
-	if cap(b) != size {
-		t.Errorf("Expected byte slice with capacity %d, got %d", size, cap(b))
-	}
+	require.Equal(t, size, cap(b), "Expected byte slice with capacity %d", size)
 
 	// Modify and put back
 	b = append(b, 1, 2, 3)
@@ -60,31 +49,23 @@ func TestNewBytesPool(t *testing.T) {
 
 	// Get again and check reset
 	b = bytesPool.Get()
-	if len(b) != 0 {
-		t.Errorf("Expected byte slice length 0 after reset, got %d", len(b))
-	}
+	require.Empty(t, b, "Expected byte slice length 0 after reset")
 
 	// Change the size of b
 	b = make([]byte, size+1)
 	bytesPool.Put(b)
 	b = bytesPool.Get()
-	if cap(b) != size+1 {
-		t.Errorf("Expected byte slice with capacity %d, got %d", size+1, cap(b))
-	}
+	require.Equal(t, size+1, cap(b), "Expected byte slice with capacity %d", size+1)
 
 	bytesPool = NewBytesPool(size, size+1)
 	b = make([]byte, size+2)
 	bytesPool.Put(b)
 	b = bytesPool.Get()
-	if cap(b) != size {
-		t.Errorf("Expected byte slice with capacity %d, got %d", size, cap(b))
-	}
+	require.Equal(t, size, cap(b), "Expected byte slice with capacity %d", size)
 
 	bytesPool = NewBytesPool(size, 0)
 	b = nil
 	bytesPool.Put(b)
 	b = bytesPool.Get()
-	if cap(b) != size {
-		t.Errorf("Expected byte slice with capacity %d, got %d", size, cap(b))
-	}
+	require.Equal(t, size, cap(b), "Expected byte slice with capacity %d", size)
 }
