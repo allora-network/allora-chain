@@ -1020,8 +1020,7 @@ message GetPreviousTopicWeightResponse {
   bool not_found = 2;
 }
 
-message GetTotalSumPreviousTopicWeightsRequest {
-}
+message GetTotalSumPreviousTopicWeightsRequest {}
 
 message GetTotalSumPreviousTopicWeightsResponse {
   string weight = 1 [
