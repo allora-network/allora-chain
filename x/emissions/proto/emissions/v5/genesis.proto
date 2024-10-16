@@ -203,7 +203,7 @@ message GenesisState {
   // lowest reputer score EMA for each topic
   repeated TopicIdActorIdScore lowest_reputer_score_ema = 73;
   // map of (topic, reputer) -> reputer loss
-  repeated TopicIdReputerReputerValueBundle lossBundles = 74;
+  repeated TopicIdReputerReputerValueBundle loss_bundles = 74;
 }
 
 message TopicIdAndTopic {
