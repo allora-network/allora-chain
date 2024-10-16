@@ -3128,7 +3128,8 @@ func (s *RewardsTestSuite) TestReputerAboveConsensusGetsLessRewards() {
 
 	topicId0 := s.setUpTopicWithEpochLength(block, workerIndexes, reputerIndexes, stake, alphaRegret, 5)
 	s.T().Logf("TopicId: %v", topicId0)
-	s.emissionsKeeper.SetPreviousTopicWeight(s.ctx, topicId0, alloraMath.MustNewDecFromString("100"))
+	err := s.emissionsKeeper.SetPreviousTopicWeight(s.ctx, topicId0, alloraMath.MustNewDecFromString("100"))
+	require.NoError(err)
 
 	reputerValues := []TestWorkerValue{
 		{Index: reputerIndexes[0], Value: "0.1"},
