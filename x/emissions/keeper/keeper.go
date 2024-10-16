@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
-	"cosmossdk.io/math"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -166,7 +165,7 @@ type Keeper struct {
 	previousPercentageRewardToStakedReputers collections.Item[alloraMath.Dec]
 
 	// Current block emission, set by mint module
-	rewardCurrentBlockEmission collections.Item[math.Int]
+	rewardCurrentBlockEmission collections.Item[cosmosMath.Int]
 
 	/// NONCES
 
@@ -3610,19 +3609,19 @@ func (k *Keeper) GetPreviousForecasterScoreRatio(ctx context.Context, topicId To
 }
 
 // GetRewardCurrentBlockEmission retrieves the current block emission reward.
-func (k *Keeper) GetRewardCurrentBlockEmission(ctx context.Context) (math.Int, error) {
+func (k *Keeper) GetRewardCurrentBlockEmission(ctx context.Context) (cosmosMath.Int, error) {
 	emission, err := k.rewardCurrentBlockEmission.Get(ctx)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
-			return math.ZeroInt(), nil // Return zero if not found
+			return cosmosMath.ZeroInt(), nil // Return zero if not found
 		}
-		return math.Int{}, errorsmod.Wrap(err, "error getting current block emission reward")
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting current block emission reward")
 	}
 	return emission, nil
 }
 
 // SetRewardCurrentBlockEmission sets the current block emission reward.
-func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
+func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission cosmosMath.Int) error {
 	if emission.IsNegative() {
 		return errorsmod.Wrap(types.ErrInvalidValue, "current block emission reward cannot be negative")
 	}
