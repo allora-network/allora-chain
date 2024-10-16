@@ -196,7 +196,7 @@ message GenesisState {
     (gogoproto.nullable) = false
   ];
 
-  // reward emission on current block 
+  // reward emission on current block
   string reward_current_block_emission = 69 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
