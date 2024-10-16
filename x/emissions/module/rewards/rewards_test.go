@@ -1,6 +1,7 @@
 package rewards_test
 
 import (
+	"fmt"
 	l "log"
 	"testing"
 	"time"
@@ -2886,7 +2887,6 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	epochLength := int64(100)
 	topicId0 := s.setUpTopicWithEpochLength(block, workerIndexes, reputerIndexes, stake, alphaRegret, epochLength)
 	topicId1 := s.setUpTopicWithEpochLength(block, workerIndexes, reputerIndexes, stake, alphaRegret, epochLength)
-
 	// setup values to be identical for both topics
 	reputerValues := []TestWorkerValue{
 		{Index: reputerIndexes[0], Value: "0.2"},
@@ -2954,7 +2954,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	s.Require().NoError(err)
 	inDelta, err := alloraMath.InDelta(totalSumPreviousTopicWeights, sumWeights, alloraMath.MustNewDecFromString("0.0001"))
 	s.Require().NoError(err)
-	s.Require().True(inDelta)
+	s.Require().True(inDelta, fmt.Sprintf("Total sum of previous topic weights %s + %s = %s is not equal to the sum of the weights of the two topics %s", topic0Weight1, topic1Weight0, totalSumPreviousTopicWeights, sumWeights))
 
 	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
 	s.Require().NoError(err)

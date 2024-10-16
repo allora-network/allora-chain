@@ -288,6 +288,27 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 		return errors.Wrap(err, "failed to set active topics")
 	}
 
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.Logger().Info(fmt.Sprintf("Topic %d activated at block %d", topicId, currentBlock))
+	// This topic was activated, so we need to add its previous weight if any to the total sum of previous topic weights
+	topicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
+	if err != nil {
+		return errors.Wrap(err, "failed to get topic weight from topic id")
+	}
+	if !noPrior && !topicWeight.IsZero() {
+		totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
+		if err != nil {
+			return errors.Wrap(err, "failed to get total sum of previous topic weights")
+		}
+		totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Add(topicWeight)
+		if err != nil {
+			return errors.Wrap(err, "failed to add weight to total sum of previous topic weights")
+		}
+		err = k.SetTotalSumPreviousTopicWeights(ctx, totalSumPreviousTopicWeights)
+		if err != nil {
+			return errors.Wrap(err, "failed to set total sum of previous topic weights")
+		}
+	}
 	return nil
 }
 
