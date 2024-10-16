@@ -250,6 +250,11 @@ service QueryService {
     option (google.api.http).get = "/emissions/v5/previous_topic_weight/{topic_id}";
   }
 
+  rpc GetTotalSumPreviousTopicWeights(GetTotalSumPreviousTopicWeightsRequest) returns (GetTotalSumPreviousTopicWeightsResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v5/previous_total_topic_weight";
+  }
+
   rpc TopicExists(TopicExistsRequest) returns (TopicExistsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v5/topic_exists/{topic_id}";
@@ -1013,6 +1018,16 @@ message GetPreviousTopicWeightResponse {
     (gogoproto.nullable) = false
   ];
   bool not_found = 2;
+}
+
+message GetTotalSumPreviousTopicWeightsRequest {
+}
+
+message GetTotalSumPreviousTopicWeightsResponse {
+  string weight = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
 
 message TopicExistsRequest {

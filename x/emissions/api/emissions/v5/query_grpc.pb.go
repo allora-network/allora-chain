@@ -65,6 +65,7 @@ const (
 	QueryService_GetStakeRemovalForReputerAndTopicId_FullMethodName         = "/emissions.v5.QueryService/GetStakeRemovalForReputerAndTopicId"
 	QueryService_GetDelegateStakeRemoval_FullMethodName                     = "/emissions.v5.QueryService/GetDelegateStakeRemoval"
 	QueryService_GetPreviousTopicWeight_FullMethodName                      = "/emissions.v5.QueryService/GetPreviousTopicWeight"
+	QueryService_GetTotalSumPreviousTopicWeights_FullMethodName             = "/emissions.v5.QueryService/GetTotalSumPreviousTopicWeights"
 	QueryService_TopicExists_FullMethodName                                 = "/emissions.v5.QueryService/TopicExists"
 	QueryService_IsTopicActive_FullMethodName                               = "/emissions.v5.QueryService/IsTopicActive"
 	QueryService_GetTopicFeeRevenue_FullMethodName                          = "/emissions.v5.QueryService/GetTopicFeeRevenue"
@@ -155,6 +156,7 @@ type QueryServiceClient interface {
 	GetStakeRemovalForReputerAndTopicId(ctx context.Context, in *GetStakeRemovalForReputerAndTopicIdRequest, opts ...grpc.CallOption) (*GetStakeRemovalForReputerAndTopicIdResponse, error)
 	GetDelegateStakeRemoval(ctx context.Context, in *GetDelegateStakeRemovalRequest, opts ...grpc.CallOption) (*GetDelegateStakeRemovalResponse, error)
 	GetPreviousTopicWeight(ctx context.Context, in *GetPreviousTopicWeightRequest, opts ...grpc.CallOption) (*GetPreviousTopicWeightResponse, error)
+	GetTotalSumPreviousTopicWeights(ctx context.Context, in *GetTotalSumPreviousTopicWeightsRequest, opts ...grpc.CallOption) (*GetTotalSumPreviousTopicWeightsResponse, error)
 	TopicExists(ctx context.Context, in *TopicExistsRequest, opts ...grpc.CallOption) (*TopicExistsResponse, error)
 	IsTopicActive(ctx context.Context, in *IsTopicActiveRequest, opts ...grpc.CallOption) (*IsTopicActiveResponse, error)
 	GetTopicFeeRevenue(ctx context.Context, in *GetTopicFeeRevenueRequest, opts ...grpc.CallOption) (*GetTopicFeeRevenueResponse, error)
@@ -660,6 +662,15 @@ func (c *queryServiceClient) GetPreviousTopicWeight(ctx context.Context, in *Get
 	return out, nil
 }
 
+func (c *queryServiceClient) GetTotalSumPreviousTopicWeights(ctx context.Context, in *GetTotalSumPreviousTopicWeightsRequest, opts ...grpc.CallOption) (*GetTotalSumPreviousTopicWeightsResponse, error) {
+	out := new(GetTotalSumPreviousTopicWeightsResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetTotalSumPreviousTopicWeights_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *queryServiceClient) TopicExists(ctx context.Context, in *TopicExistsRequest, opts ...grpc.CallOption) (*TopicExistsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TopicExistsResponse)
@@ -1063,6 +1074,7 @@ type QueryServiceServer interface {
 	GetStakeRemovalForReputerAndTopicId(context.Context, *GetStakeRemovalForReputerAndTopicIdRequest) (*GetStakeRemovalForReputerAndTopicIdResponse, error)
 	GetDelegateStakeRemoval(context.Context, *GetDelegateStakeRemovalRequest) (*GetDelegateStakeRemovalResponse, error)
 	GetPreviousTopicWeight(context.Context, *GetPreviousTopicWeightRequest) (*GetPreviousTopicWeightResponse, error)
+	GetTotalSumPreviousTopicWeights(context.Context, *GetTotalSumPreviousTopicWeightsRequest) (*GetTotalSumPreviousTopicWeightsResponse, error)
 	TopicExists(context.Context, *TopicExistsRequest) (*TopicExistsResponse, error)
 	IsTopicActive(context.Context, *IsTopicActiveRequest) (*IsTopicActiveResponse, error)
 	GetTopicFeeRevenue(context.Context, *GetTopicFeeRevenueRequest) (*GetTopicFeeRevenueResponse, error)
@@ -1245,6 +1257,9 @@ func (UnimplementedQueryServiceServer) GetDelegateStakeRemoval(context.Context, 
 }
 func (UnimplementedQueryServiceServer) GetPreviousTopicWeight(context.Context, *GetPreviousTopicWeightRequest) (*GetPreviousTopicWeightResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPreviousTopicWeight not implemented")
+}
+func (UnimplementedQueryServiceServer) GetTotalSumPreviousTopicWeights(context.Context, *GetTotalSumPreviousTopicWeightsRequest) (*GetTotalSumPreviousTopicWeightsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTotalSumPreviousTopicWeights not implemented")
 }
 func (UnimplementedQueryServiceServer) TopicExists(context.Context, *TopicExistsRequest) (*TopicExistsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TopicExists not implemented")
@@ -2200,6 +2215,24 @@ func _QueryService_GetPreviousTopicWeight_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueryService_GetTotalSumPreviousTopicWeights_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTotalSumPreviousTopicWeightsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetTotalSumPreviousTopicWeights(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetTotalSumPreviousTopicWeights_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetTotalSumPreviousTopicWeights(ctx, req.(*GetTotalSumPreviousTopicWeightsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _QueryService_TopicExists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TopicExistsRequest)
 	if err := dec(in); err != nil {
@@ -3020,6 +3053,10 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPreviousTopicWeight",
 			Handler:    _QueryService_GetPreviousTopicWeight_Handler,
+		},
+		{
+			MethodName: "GetTotalSumPreviousTopicWeights",
+			Handler:    _QueryService_GetTotalSumPreviousTopicWeights_Handler,
 		},
 		{
 			MethodName: "TopicExists",

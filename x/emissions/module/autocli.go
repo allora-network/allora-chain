@@ -365,6 +365,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod:      "GetTotalSumPreviousTopicWeights",
+					Use:            "previous-total-topic-weights",
+					Short:          "Return previous total topic weights sum.",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{},
+				},
+				{
 					RpcMethod: "GetReputerLossBundlesAtBlock",
 					Use:       "reputer-loss-bundle [topic_id] [block_height]",
 					Short:     "Return reputer loss bundle at block height. May not exist if it was already pruned",
