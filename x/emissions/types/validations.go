@@ -6,9 +6,15 @@ import (
 	"cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+)
+
+var (
+	reputerValueBundleBufferPool       = utils.NewBytesPool(1024, 0)
+	inferenceForecastsBundleBufferPool = utils.NewBytesPool(1024, 0)
 )
 
 /// EXTERNAL TYPE VALIDATIONS
@@ -212,9 +218,13 @@ func (bundle *WorkerDataBundle) Validate() error {
 	}
 
 	// Check signature from the bundle, throw if invalid!
-	src := make([]byte, 0)
-	src, _ = bundle.InferenceForecastsBundle.XXX_Marshal(src, true)
-	if !pubkey.VerifySignature(src, bundle.InferencesForecastsBundleSignature) {
+	buf := inferenceForecastsBundleBufferPool.Get()
+	defer inferenceForecastsBundleBufferPool.Put(buf)
+	marshaled, err := bundle.InferenceForecastsBundle.XXX_Marshal(buf, true)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal inference forecasts bundle: %s", err)
+	}
+	if !pubkey.VerifySignature(marshaled, bundle.InferencesForecastsBundleSignature) {
 		return errors.Wrap(sdkerrors.ErrUnauthorized, "signature verification failed")
 	}
 	// Source: https://docs.cosmos.network/v0.46/basics/accounts.html#addresses
@@ -320,9 +330,13 @@ func (bundle *ReputerValueBundle) Validate() error {
 		return errors.Wrap(err, "value bundle is invalid")
 	}
 
-	src := make([]byte, 0)
-	src, _ = bundle.ValueBundle.XXX_Marshal(src, true)
-	if !pubkey.VerifySignature(src, bundle.Signature) {
+	buf := reputerValueBundleBufferPool.Get()
+	defer reputerValueBundleBufferPool.Put(buf)
+	marshaled, err := bundle.ValueBundle.XXX_Marshal(buf, true)
+	if err != nil {
+		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "failed to marshal value bundle: %s", err)
+	}
+	if !pubkey.VerifySignature(marshaled, bundle.Signature) {
 		return errors.Wrapf(sdkerrors.ErrInvalidRequest, "signature verification failed")
 	}
 

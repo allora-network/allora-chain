@@ -7,12 +7,15 @@ import (
 	"strings"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	inferencesynthesis "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
+
+var valueBundleBufferPool = utils.NewBytesPool(1024, 0)
 
 func GenerateTestAccounts(count int) (
 	privKeys []secp256k1.PrivKey,
@@ -531,13 +534,14 @@ func GetNetworkLossFromCsv(
 }
 
 func signValueBundle(valueBundle *emissionstypes.ValueBundle, privateKey secp256k1.PrivKey) []byte {
-	src := make([]byte, 0)
-	src, err := valueBundle.XXX_Marshal(src, true)
+	buf := valueBundleBufferPool.Get()
+	defer valueBundleBufferPool.Put(buf)
+	marshaled, err := valueBundle.XXX_Marshal(buf, true)
 	if err != nil {
 		panic(err)
 	}
 
-	valueBundleSignature, err := privateKey.Sign(src)
+	valueBundleSignature, err := privateKey.Sign(marshaled)
 	if err != nil {
 		panic(err)
 	}
