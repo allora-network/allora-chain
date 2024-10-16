@@ -2147,12 +2147,12 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		}
 		countForecasterInclusionsInTopicActiveSet = append(countForecasterInclusionsInTopicActiveSet, &topicIdAndUint64)
 	}
-	rewardCurrentBlockEmission, err := k.rewardCurrentBlockEmission.Get(ctx)
+	rewardCurrentBlockEmission, err := k.GetRewardCurrentBlockEmission(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get reward current block emission")
 	}
 
-	totalSumPreviousTopicWeights, err := k.totalSumPreviousTopicWeights.Get(ctx)
+	totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get total sum previous topic weights")
 	}
