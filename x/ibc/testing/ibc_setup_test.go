@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/log"
 
 	"cosmossdk.io/math"
-	app2 "github.com/allora-network/allora-chain/app"
+	app "github.com/allora-network/allora-chain/app"
 	"github.com/allora-network/allora-chain/app/params"
 	dbm "github.com/cosmos/cosmos-db"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
@@ -45,7 +45,7 @@ func TestIBCTestSuite(t *testing.T) {
 }
 
 func alloraAppInitializer() (ibctesting.TestingApp, map[string]json.RawMessage) {
-	app, err := app2.NewAlloraApp(
+	testApp, err := app.NewAlloraApp(
 		log.NewNopLogger(),
 		dbm.NewMemDB(),
 		nil,
@@ -56,14 +56,14 @@ func alloraAppInitializer() (ibctesting.TestingApp, map[string]json.RawMessage) 
 		return nil, nil
 	}
 
-	return app, app.DefaultGenesis()
+	return testApp, testApp.DefaultGenesis()
 }
 
 func (s *IBCTestSuite) SetupTest() {
+	app.UseFeeMarketDecorator = false
 	// we need to redefine this variable to make tests work cause we use untrn as default bond denom in allora
 	sdk.DefaultBondDenom = nativeDenom
 	ibctesting.DefaultTestingAppInit = alloraAppInitializer
-	//params.InitSDKConfig()
 
 	s.coordinator = ibctesting.NewCoordinator(s.T(), 2)
 	s.alloraChain = s.coordinator.GetChain(ibctesting.GetChainID(1))
@@ -192,7 +192,7 @@ func (s *IBCTestSuite) assertAlloraBalance(
 	denom string,
 	expectedAmt math.Int,
 ) {
-	app, _ := s.alloraChain.App.(*app2.AlloraApp)
+	app, _ := s.alloraChain.App.(*app.AlloraApp)
 	s.assertBalance(app.BankKeeper, s.alloraChain, addr, denom, expectedAmt)
 }
 
@@ -201,6 +201,6 @@ func (s *IBCTestSuite) assertProviderBalance(
 	denom string,
 	expectedAmt math.Int,
 ) {
-	app, _ := s.providerChain.App.(*app2.AlloraApp)
+	app, _ := s.providerChain.App.(*app.AlloraApp)
 	s.assertBalance(app.BankKeeper, s.providerChain, addr, denom, expectedAmt)
 }

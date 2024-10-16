@@ -8,11 +8,11 @@ modules:
       # NOTE: staking module is required if HistoricalEntries param > 0
       # order of emissions must come before distribution for reputers + workers take their rewards cut before validators cut
       pre_blockers: [ upgrade ]
-      begin_blockers: [capability, distribution, slashing, staking, upgrade, mint, ibc, transfer, genutil, authz, interchainaccounts, feeibc]
-      end_blockers: [gov, staking, ibc, transfer, capability, genutil, authz, interchainaccounts, feeibc, emissions]
+      begin_blockers: [capability, distribution, slashing, staking, upgrade, mint, feegrant, feemarket, ibc, transfer, genutil, authz, interchainaccounts, feeibc]
+      end_blockers: [gov, feegrant, feemarket, staking, ibc, transfer, capability, genutil, authz, interchainaccounts, feeibc, emissions]
       # NOTE: The genutils module must occur after staking so that pools are properly initialized with tokens from genesis accounts.
       # NOTE: The genutils module must also occur after auth so that it can access the params from auth.
-      init_genesis: [capability, auth, bank, distribution, staking, slashing, gov, mint, ibc, genutil, authz, transfer, interchainaccounts, feeibc, params, upgrade, consensus, circuit, emissions, allorastaking, allorarequests, allorarewards, allorapendingrewards, ecosystem]
+      init_genesis: [capability, auth, bank, distribution, staking, slashing, gov, mint, ibc, genutil, authz, feegrant,transfer, interchainaccounts, feeibc, params, upgrade, consensus, circuit, emissions, allorastaking, allorarequests, allorarewards, allorapendingrewards, ecosystem, feemarket]
       override_store_keys:
         - module_name: auth
           kv_store_key: acc
@@ -39,6 +39,8 @@ modules:
         - account: feeibc
         - account: interchainaccounts
         - account: gov
+        - account: feemarket
+        - account: feemarket-fee-collector
   - name: gov
     config:
       "@type": cosmos.gov.module.v1.Module
@@ -83,3 +85,6 @@ modules:
   - name: slashing
     config:
       "@type": cosmos.slashing.module.v1.Module
+  - name: feegrant
+    config:
+      "@type": cosmos.feegrant.module.v1.Module

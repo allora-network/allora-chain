@@ -159,10 +159,6 @@ func (app *AlloraApp) registerIBCModules() {
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerIBCModule).
 		AddRoute(icahosttypes.SubModuleName, icaHostIBCModule)
 
-	//blogIBCModule := ibcfee.NewIBCMiddleware(blogmodule.NewIBCModule(app.BlogKeeper), app.IBCFeeKeeper)
-	//ibcRouter.AddRoute(blogmoduletypes.ModuleName, blogIBCModule)
-	//// this line is used by starport scaffolding # ibc/app/module
-
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
