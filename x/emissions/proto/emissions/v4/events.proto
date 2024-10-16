@@ -32,10 +32,8 @@ message EventScoresSet {
   uint64 topic_id = 2;
   int64 block_height = 3;
   repeated string addresses = 4;
-  repeated string scores = 5 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  repeated string scores = 5
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message EventRewardsSettled {
@@ -43,10 +41,8 @@ message EventRewardsSettled {
   uint64 topic_id = 2;
   int64 block_height = 3;
   repeated string addresses = 4;
-  repeated string rewards = 5 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  repeated string rewards = 5
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message EventNetworkLossSet {
@@ -57,10 +53,8 @@ message EventNetworkLossSet {
 
 message EventForecastTaskScoreSet {
   uint64 topic_id = 1;
-  string score = 2 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  string score = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message EventWorkerLastCommitSet {
@@ -77,10 +71,8 @@ message EventReputerLastCommitSet {
 
 message EventTopicRewardsSet {
   repeated uint64 topic_ids = 1;
-  repeated string rewards = 2 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  repeated string rewards = 2
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
 }
 
 message EventEMAScoresSet {
@@ -88,9 +80,7 @@ message EventEMAScoresSet {
   uint64 topic_id = 2;
   int64 nonce = 3;
   repeated string addresses = 4;
-  repeated string scores = 5 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
+  repeated string scores = 5
+      [(gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec", (gogoproto.nullable) = false];
   repeated bool is_active = 6;
 }

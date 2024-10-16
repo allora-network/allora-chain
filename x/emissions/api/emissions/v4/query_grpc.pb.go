@@ -95,9 +95,6 @@ const (
 	QueryService_GetOneOutForecasterForecasterNetworkRegret_FullMethodName  = "/emissions.v4.QueryService/GetOneOutForecasterForecasterNetworkRegret"
 	QueryService_GetActiveTopicsAtBlock_FullMethodName                      = "/emissions.v4.QueryService/GetActiveTopicsAtBlock"
 	QueryService_GetNextChurningBlockByTopicId_FullMethodName               = "/emissions.v4.QueryService/GetNextChurningBlockByTopicId"
-	QueryService_GetActiveReputersForTopic_FullMethodName                   = "/emissions.v4.QueryService/GetActiveReputersForTopic"
-	QueryService_GetActiveForecastersForTopic_FullMethodName                = "/emissions.v4.QueryService/GetActiveForecastersForTopic"
-	QueryService_GetActiveInferersForTopic_FullMethodName                   = "/emissions.v4.QueryService/GetActiveInferersForTopic"
 )
 
 // QueryServiceClient is the client API for QueryService service.
@@ -181,9 +178,6 @@ type QueryServiceClient interface {
 	GetOneOutForecasterForecasterNetworkRegret(ctx context.Context, in *GetOneOutForecasterForecasterNetworkRegretRequest, opts ...grpc.CallOption) (*GetOneOutForecasterForecasterNetworkRegretResponse, error)
 	GetActiveTopicsAtBlock(ctx context.Context, in *GetActiveTopicsAtBlockRequest, opts ...grpc.CallOption) (*GetActiveTopicsAtBlockResponse, error)
 	GetNextChurningBlockByTopicId(ctx context.Context, in *GetNextChurningBlockByTopicIdRequest, opts ...grpc.CallOption) (*GetNextChurningBlockByTopicIdResponse, error)
-	GetActiveReputersForTopic(ctx context.Context, in *GetActiveReputersForTopicRequest, opts ...grpc.CallOption) (*GetActiveReputersForTopicResponse, error)
-	GetActiveForecastersForTopic(ctx context.Context, in *GetActiveForecastersForTopicRequest, opts ...grpc.CallOption) (*GetActiveForecastersForTopicResponse, error)
-	GetActiveInferersForTopic(ctx context.Context, in *GetActiveInferersForTopicRequest, opts ...grpc.CallOption) (*GetActiveInferersForTopicResponse, error)
 }
 
 type queryServiceClient struct {
@@ -878,33 +872,6 @@ func (c *queryServiceClient) GetNextChurningBlockByTopicId(ctx context.Context, 
 	return out, nil
 }
 
-func (c *queryServiceClient) GetActiveReputersForTopic(ctx context.Context, in *GetActiveReputersForTopicRequest, opts ...grpc.CallOption) (*GetActiveReputersForTopicResponse, error) {
-	out := new(GetActiveReputersForTopicResponse)
-	err := c.cc.Invoke(ctx, QueryService_GetActiveReputersForTopic_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryServiceClient) GetActiveForecastersForTopic(ctx context.Context, in *GetActiveForecastersForTopicRequest, opts ...grpc.CallOption) (*GetActiveForecastersForTopicResponse, error) {
-	out := new(GetActiveForecastersForTopicResponse)
-	err := c.cc.Invoke(ctx, QueryService_GetActiveForecastersForTopic_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *queryServiceClient) GetActiveInferersForTopic(ctx context.Context, in *GetActiveInferersForTopicRequest, opts ...grpc.CallOption) (*GetActiveInferersForTopicResponse, error) {
-	out := new(GetActiveInferersForTopicResponse)
-	err := c.cc.Invoke(ctx, QueryService_GetActiveInferersForTopic_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // QueryServiceServer is the server API for QueryService service.
 // All implementations must embed UnimplementedQueryServiceServer
 // for forward compatibility
@@ -986,9 +953,6 @@ type QueryServiceServer interface {
 	GetOneOutForecasterForecasterNetworkRegret(context.Context, *GetOneOutForecasterForecasterNetworkRegretRequest) (*GetOneOutForecasterForecasterNetworkRegretResponse, error)
 	GetActiveTopicsAtBlock(context.Context, *GetActiveTopicsAtBlockRequest) (*GetActiveTopicsAtBlockResponse, error)
 	GetNextChurningBlockByTopicId(context.Context, *GetNextChurningBlockByTopicIdRequest) (*GetNextChurningBlockByTopicIdResponse, error)
-	GetActiveReputersForTopic(context.Context, *GetActiveReputersForTopicRequest) (*GetActiveReputersForTopicResponse, error)
-	GetActiveForecastersForTopic(context.Context, *GetActiveForecastersForTopicRequest) (*GetActiveForecastersForTopicResponse, error)
-	GetActiveInferersForTopic(context.Context, *GetActiveInferersForTopicRequest) (*GetActiveInferersForTopicResponse, error)
 	mustEmbedUnimplementedQueryServiceServer()
 }
 
@@ -1223,15 +1187,6 @@ func (UnimplementedQueryServiceServer) GetActiveTopicsAtBlock(context.Context, *
 }
 func (UnimplementedQueryServiceServer) GetNextChurningBlockByTopicId(context.Context, *GetNextChurningBlockByTopicIdRequest) (*GetNextChurningBlockByTopicIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNextChurningBlockByTopicId not implemented")
-}
-func (UnimplementedQueryServiceServer) GetActiveReputersForTopic(context.Context, *GetActiveReputersForTopicRequest) (*GetActiveReputersForTopicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetActiveReputersForTopic not implemented")
-}
-func (UnimplementedQueryServiceServer) GetActiveForecastersForTopic(context.Context, *GetActiveForecastersForTopicRequest) (*GetActiveForecastersForTopicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetActiveForecastersForTopic not implemented")
-}
-func (UnimplementedQueryServiceServer) GetActiveInferersForTopic(context.Context, *GetActiveInferersForTopicRequest) (*GetActiveInferersForTopicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetActiveInferersForTopic not implemented")
 }
 func (UnimplementedQueryServiceServer) mustEmbedUnimplementedQueryServiceServer() {}
 
@@ -2614,60 +2569,6 @@ func _QueryService_GetNextChurningBlockByTopicId_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _QueryService_GetActiveReputersForTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetActiveReputersForTopicRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServiceServer).GetActiveReputersForTopic(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: QueryService_GetActiveReputersForTopic_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServiceServer).GetActiveReputersForTopic(ctx, req.(*GetActiveReputersForTopicRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _QueryService_GetActiveForecastersForTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetActiveForecastersForTopicRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServiceServer).GetActiveForecastersForTopic(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: QueryService_GetActiveForecastersForTopic_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServiceServer).GetActiveForecastersForTopic(ctx, req.(*GetActiveForecastersForTopicRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _QueryService_GetActiveInferersForTopic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetActiveInferersForTopicRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServiceServer).GetActiveInferersForTopic(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: QueryService_GetActiveInferersForTopic_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServiceServer).GetActiveInferersForTopic(ctx, req.(*GetActiveInferersForTopicRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // QueryService_ServiceDesc is the grpc.ServiceDesc for QueryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2978,18 +2879,6 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNextChurningBlockByTopicId",
 			Handler:    _QueryService_GetNextChurningBlockByTopicId_Handler,
-		},
-		{
-			MethodName: "GetActiveReputersForTopic",
-			Handler:    _QueryService_GetActiveReputersForTopic_Handler,
-		},
-		{
-			MethodName: "GetActiveForecastersForTopic",
-			Handler:    _QueryService_GetActiveForecastersForTopic_Handler,
-		},
-		{
-			MethodName: "GetActiveInferersForTopic",
-			Handler:    _QueryService_GetActiveInferersForTopic_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
