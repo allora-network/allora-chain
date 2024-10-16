@@ -18,15 +18,10 @@ func NewMsgServerImpl(keeper keeper.Keeper) types.MsgServiceServer {
 }
 
 func checkInputLength(maxSerializedMsgLength int64, msg proto.Message) error {
-	serializedMsg, err := proto.Marshal(msg)
-	if err != nil {
-		return err
-	}
-
 	size := proto.Size(msg)
 
 	// Check the length of the serialized message
-	if int64(size) > params.MaxSerializedMsgLength {
+	if int64(size) > maxSerializedMsgLength {
 		return types.ErrQueryTooLarge
 	}
 
