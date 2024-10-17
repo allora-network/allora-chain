@@ -257,6 +257,155 @@ func (s *EmissionsV5MigrationTestSuite) TestMigratedTopicWithNaNInitialRegret() 
 	s.Require().Equal(newMsg, topic)
 }
 
+func (s *EmissionsV5MigrationTestSuite) TestMigratedSumTotalPreviousTopicWeights() {
+	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))
+	cdc := s.emissionsKeeper.GetBinaryCodec()
+
+	_, err := s.emissionsKeeper.IncrementTopicId(s.ctx)
+	s.Require().NoError(err)
+	migratedOldTopic1 := emissionstypes.Topic{
+		Id:                       1,
+		Creator:                  "creator",
+		Metadata:                 "metadata",
+		LossMethod:               "lossMethod",
+		EpochLastEnded:           0,
+		EpochLength:              100,
+		GroundTruthLag:           10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		InitialRegret:            alloraMath.MustNewDecFromString("0"),
+		WorkerSubmissionWindow:   120,
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.1337"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.1337"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.1337"),
+	}
+	migratedOldTopic2 := migratedOldTopic1
+	migratedOldTopic2.Id = 2
+
+	_, err = s.emissionsKeeper.IncrementTopicId(s.ctx)
+	s.Require().NoError(err)
+
+	// Create 2 topics
+	topicStore := prefix.NewStore(store, emissionstypes.TopicsKey)
+	// Topic 1
+	bz, err := proto.Marshal(&migratedOldTopic1)
+	s.Require().NoError(err)
+	bytesKey := make([]byte, collections.Uint64Key.Size(migratedOldTopic1.Id))
+	countWritten, err := collections.Uint64Key.Encode(bytesKey, migratedOldTopic1.Id)
+	s.Require().NoError(err)
+	s.Require().NotEqual(0, countWritten)
+	topicStore.Set(bytesKey, bz)
+
+	// Topic 2
+	_, err = s.emissionsKeeper.IncrementTopicId(s.ctx)
+	s.Require().NoError(err)
+
+	bz, err = proto.Marshal(&migratedOldTopic2)
+	s.Require().NoError(err)
+	bytesKey = make([]byte, collections.Uint64Key.Size(migratedOldTopic2.Id))
+	countWritten, err = collections.Uint64Key.Encode(bytesKey, migratedOldTopic2.Id)
+	s.Require().NoError(err)
+	s.Require().NotEqual(0, countWritten)
+	topicStore.Set(bytesKey, bz)
+
+	// Activate 1 topic
+	activeTopicsStore := prefix.NewStore(store, emissionstypes.TopicToNextPossibleChurningBlockKey)
+	bytesKey = make([]byte, collections.Uint64Key.Size(migratedOldTopic1.Id))
+	countWritten, err = collections.Uint64Key.Encode(bytesKey, migratedOldTopic1.Id)
+	s.Require().NoError(err)
+	s.Require().NotEqual(0, countWritten)
+	blockHeightBytes, err := collections.Int64Value.Encode(100)
+	s.Require().NoError(err)
+	activeTopicsStore.Set(bytesKey, blockHeightBytes)
+
+	// Set 1 topic weight
+	topicWeightStore := prefix.NewStore(store, emissionstypes.PreviousTopicWeightKey)
+	bytesKey = make([]byte, collections.Uint64Key.Size(migratedOldTopic1.Id))
+	countWritten, err = collections.Uint64Key.Encode(bytesKey, migratedOldTopic1.Id)
+	s.Require().NoError(err)
+	s.Require().NotEqual(0, countWritten)
+	topic1WeightDec := alloraMath.MustNewDecFromString("1000.1")
+	marshaledWeight, err := topic1WeightDec.Marshal()
+	s.Require().NoError(err)
+	topicWeightStore.Set(bytesKey, marshaledWeight)
+
+	err = v5.MigrateTopics(s.ctx, store, cdc, *s.emissionsKeeper)
+	s.Require().NoError(err)
+
+	// Verify the sumPreviousTopicWeights store has been updated correctly
+	sumPreviousTopicWeightsStore := prefix.NewStore(store, emissionstypes.TotalSumPreviousTopicWeightsKey)
+	weightsIterator := sumPreviousTopicWeightsStore.Iterator(nil, nil)
+	s.Require().True(weightsIterator.Valid())
+	defer weightsIterator.Close()
+
+	var weightsMsg alloraMath.Dec // collcodec.ValueCodec[alloraMath.Dec]
+	err = weightsMsg.Unmarshal(weightsIterator.Value())
+	s.Require().NoError(err)
+	s.Require().True(topic1WeightDec.Equal(weightsMsg))
+
+	// Verify the rest of the topic store has been updated correctly
+	topicIterator := topicStore.Iterator(nil, nil)
+	s.Require().True(topicIterator.Valid())
+	defer topicIterator.Close()
+
+	// Check topic 1
+	var topic1 emissionstypes.Topic
+	err = proto.Unmarshal(topicIterator.Value(), &topic1)
+	s.Require().NoError(err)
+
+	// correct props are the same topic 1
+	s.Require().Equal(migratedOldTopic1.Id, topic1.Id)
+	s.Require().Equal(migratedOldTopic1.Creator, topic1.Creator)
+	s.Require().Equal(migratedOldTopic1.Metadata, topic1.Metadata)
+	s.Require().Equal(migratedOldTopic1.LossMethod, topic1.LossMethod)
+	s.Require().Equal(migratedOldTopic1.EpochLastEnded, topic1.EpochLastEnded)
+	s.Require().Equal(migratedOldTopic1.EpochLength, topic1.EpochLength)
+	s.Require().Equal(migratedOldTopic1.GroundTruthLag, topic1.GroundTruthLag)
+	s.Require().Equal(migratedOldTopic1.PNorm.String(), topic1.PNorm.String())
+	s.Require().Equal(migratedOldTopic1.AlphaRegret.String(), topic1.AlphaRegret.String())
+	s.Require().False(topic1.AllowNegative)
+	s.Require().Equal(migratedOldTopic1.Epsilon.String(), topic1.Epsilon.String())
+	s.Require().Equal(migratedOldTopic1.WorkerSubmissionWindow, topic1.WorkerSubmissionWindow)
+	s.Require().Equal(migratedOldTopic1.MeritSortitionAlpha.String(), topic1.MeritSortitionAlpha.String())
+	s.Require().Equal(migratedOldTopic1.ActiveInfererQuantile.String(), topic1.ActiveInfererQuantile.String())
+	s.Require().Equal(migratedOldTopic1.ActiveForecasterQuantile.String(), topic1.ActiveForecasterQuantile.String())
+	s.Require().Equal(migratedOldTopic1.ActiveReputerQuantile.String(), topic1.ActiveReputerQuantile.String())
+	// InitialRegret is reset to 0
+	s.Require().Equal("0", topic1.InitialRegret.String())
+
+	var topic2 emissionstypes.Topic
+	err = proto.Unmarshal(topicIterator.Value(), &topic2)
+	s.Require().NoError(err)
+
+	// correct props are the same topic 1
+	s.Require().Equal(migratedOldTopic1.Id, topic2.Id)
+	s.Require().Equal(migratedOldTopic1.Creator, topic2.Creator)
+	s.Require().Equal(migratedOldTopic1.Metadata, topic2.Metadata)
+	s.Require().Equal(migratedOldTopic1.LossMethod, topic2.LossMethod)
+	s.Require().Equal(migratedOldTopic1.EpochLastEnded, topic2.EpochLastEnded)
+	s.Require().Equal(migratedOldTopic1.EpochLength, topic2.EpochLength)
+	s.Require().Equal(migratedOldTopic1.GroundTruthLag, topic2.GroundTruthLag)
+	s.Require().Equal(migratedOldTopic1.PNorm.String(), topic2.PNorm.String())
+	s.Require().Equal(migratedOldTopic1.AlphaRegret.String(), topic2.AlphaRegret.String())
+	s.Require().False(topic1.AllowNegative)
+	s.Require().Equal(migratedOldTopic1.Epsilon.String(), topic2.Epsilon.String())
+	s.Require().Equal(migratedOldTopic1.WorkerSubmissionWindow, topic2.WorkerSubmissionWindow)
+	s.Require().Equal(migratedOldTopic1.MeritSortitionAlpha.String(), topic2.MeritSortitionAlpha.String())
+	s.Require().Equal(migratedOldTopic1.ActiveInfererQuantile.String(), topic2.ActiveInfererQuantile.String())
+	s.Require().Equal(migratedOldTopic1.ActiveForecasterQuantile.String(), topic2.ActiveForecasterQuantile.String())
+	s.Require().Equal(migratedOldTopic1.ActiveReputerQuantile.String(), topic2.ActiveReputerQuantile.String())
+	// InitialRegret is reset to 0
+	s.Require().Equal("0", topic2.InitialRegret.String())
+
+	// sanity check that the emissions keeper collections.go API also gets the same data
+	topic, err := s.emissionsKeeper.GetTopic(s.ctx, 1)
+	s.Require().NoError(err)
+	s.Require().Equal(topic1, topic)
+}
+
 // check that the specified maps are reset correctly
 func (s *EmissionsV5MigrationTestSuite) TestResetMapsWithNonNumericValues() {
 	store := runtime.KVStoreAdapter(s.storeService.OpenKVStore(s.ctx))

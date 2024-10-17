@@ -23,6 +23,7 @@ const maxPageSize = uint64(10000)
 // it does the following:
 // - migrates topics to set initial regret
 // - Deletes the contents of previous quantile score maps
+// - Sets the sumTotalPreviousTopicWeights to the sum of previousTopicWeight
 func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	ctx.Logger().Info("STARTING EMISSIONS MODULE MIGRATION FROM VERSION 4 TO VERSION 5")
 	ctx.Logger().Info("MIGRATING STORE FROM VERSION 4 TO VERSION 5")
@@ -137,6 +138,7 @@ func MigrateTopics(
 	}
 	// iterate all topics to migrate using collections.go api
 	topicsToChange := make(map[string]emissionstypes.Topic, 0)
+	sumTotalPreviousTopicWeights := alloraMath.ZeroDec()
 	for id := uint64(1); id < nextTopicId; id++ {
 		idByte := make([]byte, 8)
 		binary.BigEndian.PutUint64(idByte, id)
@@ -151,11 +153,34 @@ func MigrateTopics(
 		// was wrongly set to true for existing topics
 		newTopic.AllowNegative = false
 		topicsToChange[string(idByte)] = newTopic
+
+		// Initialization of sumTotalPreviousTopicWeights, summing up all active topic weights
+		isActive, err := emissionsKeeper.IsTopicActive(ctx, topic.Id)
+		if err != nil {
+			return errorsmod.Wrapf(err, "failed to get topic")
+		}
+		if isActive {
+			topicWeight, _, err := emissionsKeeper.GetPreviousTopicWeight(ctx, topic.Id)
+			if err != nil {
+				return errorsmod.Wrapf(err, "failed to get topic weight")
+			}
+			sumTotalPreviousTopicWeights, err = sumTotalPreviousTopicWeights.Add(topicWeight)
+			if err != nil {
+				return errorsmod.Wrapf(err, "failed to add topic weight")
+			}
+		} else {
+			ctx.Logger().Debug("MIGRATION V5: Topic is not active, skipping weight - topic", topic.Id)
+		}
 	}
+	ctx.Logger().Debug("MIGRATION V5: Setting modified topics")
 	for key, value := range topicsToChange {
 		topicStore.Set([]byte(key), cdc.MustMarshal(&value))
 	}
-
+	ctx.Logger().Debug("MIGRATION V5: Updating total sum previous topic weights, sum: ", sumTotalPreviousTopicWeights)
+	err = emissionsKeeper.SetTotalSumPreviousTopicWeights(ctx, sumTotalPreviousTopicWeights)
+	if err != nil {
+		return errorsmod.Wrapf(err, "failed to set total sum previous topic weights")
+	}
 	return nil
 }
 
