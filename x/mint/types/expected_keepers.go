@@ -40,6 +40,7 @@ type EmissionsKeeper interface {
 	GetTotalStake(ctx context.Context) (math.Int, error)
 	GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error)
 	GetParams(ctx context.Context) (emissionstypes.Params, error)
+	SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error
 	IsWhitelistAdmin(ctx context.Context, admin string) (bool, error)
 	SetParams(ctx context.Context, params emissionstypes.Params) error
 }

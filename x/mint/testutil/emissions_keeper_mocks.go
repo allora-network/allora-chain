@@ -110,3 +110,15 @@ func (m *MockEmissionsKeeper) IsWhitelistAdmin(ctx context.Context, admin string
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
+
+func (mr *MockEmissionsKeeperMockRecorder) SetRewardCurrentBlockEmission(ctx interface{}, emission interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRewardCurrentBlockEmission", reflect.TypeOf((*MockEmissionsKeeper)(nil).SetRewardCurrentBlockEmission), ctx, emission)
+}
+
+func (m *MockEmissionsKeeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetRewardCurrentBlockEmission", ctx, emission)
+	ret0, _ := ret[0].(error)
+	return ret0
+}

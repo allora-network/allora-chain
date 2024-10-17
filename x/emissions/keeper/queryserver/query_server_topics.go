@@ -96,6 +96,16 @@ func (qs queryServer) GetPreviousTopicWeight(ctx context.Context, req *types.Get
 	return &types.GetPreviousTopicWeightResponse{Weight: previousTopicWeight, NotFound: notFound}, nil
 }
 
+func (qs queryServer) GetTotalSumPreviousTopicWeights(ctx context.Context, req *types.GetTotalSumPreviousTopicWeightsRequest) (_ *types.GetTotalSumPreviousTopicWeightsResponse, err error) {
+	defer metrics.RecordMetrics("GetTotalSumPreviousTopicWeights", time.Now(), &err)
+	previousTopicWeight, err := qs.k.GetTotalSumPreviousTopicWeights(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.GetTotalSumPreviousTopicWeightsResponse{Weight: previousTopicWeight}, nil
+}
+
 func (qs queryServer) TopicExists(ctx context.Context, req *types.TopicExistsRequest) (_ *types.TopicExistsResponse, err error) {
 	defer metrics.RecordMetrics("TopicExists", time.Now(), &err)
 	exists, err := qs.k.TopicExists(ctx, req.TopicId)

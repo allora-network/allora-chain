@@ -66,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * [#538](https://github.com/allora-network/allora-chain/pull/538) Refactor Inference Synthesis to use Functions instead of "Builder Pattern"
+* [#625](https://github.com/allora-network/allora-chain/pull/625) Rewards system revamped, closer to the whitepaper spec.
 
 ### Fixed
 

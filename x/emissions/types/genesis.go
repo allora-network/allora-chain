@@ -79,6 +79,8 @@ func NewGenesisState() *GenesisState {
 		LossBundles:                                    []*TopicIdReputerReputerValueBundle{},
 		CountInfererInclusionsInTopicActiveSet:         []*TopicIdActorIdUint64{},
 		CountForecasterInclusionsInTopicActiveSet:      []*TopicIdActorIdUint64{},
+		TotalSumPreviousTopicWeights:                   alloraMath.ZeroDec(),
+		RewardCurrentBlockEmission:                     cosmosMath.ZeroInt(),
 	}
 }
 
