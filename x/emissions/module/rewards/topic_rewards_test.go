@@ -385,5 +385,4 @@ func (s *RewardsTestSuite) TestPreviousTopicWeightsAfterInactivation() {
 	reactiveTotalSumPreviousTopicWeights, err := s.emissionsKeeper.GetTotalSumPreviousTopicWeights(s.ctx)
 	s.Require().NoError(err)
 	s.Require().True(previousTopicWeight.Equal(reactiveTotalSumPreviousTopicWeights), "Total sum of previous topic weights should be equal to previous topic weight after reactivation")
-
 }
