@@ -103,10 +103,6 @@ func EmitRewards(
 		}(topicId, topicRewardNonce)
 
 		topicReward := topicRewards[topicId]
-		if topicReward == nil {
-			Logger(ctx).Warn(fmt.Sprintf("Topic %d has no reward, skipping", topicId))
-			continue
-		}
 		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicReward, moduleParams)
 		if err != nil {
 			Logger(ctx).Error(fmt.Sprintf("Failed to process rewards for topic %d: %s", topicId, err.Error()))
