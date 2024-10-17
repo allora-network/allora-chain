@@ -30,6 +30,7 @@ data_validator/
 # test setups
 test/testnet
 test/devnet
+test/localnet
 test/stress/*.log
 
 # coverage

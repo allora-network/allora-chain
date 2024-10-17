@@ -28,7 +28,7 @@ VALIDATORS_IP_START=10
 VALIDATORS_RPC_PORT_START=26657
 VALIDATORS_API_PORT_START=1317
 HEADS_IP_START=20
-CHAIN_ID="${CHAIN_ID:-devnet}"
+CHAIN_ID="${CHAIN_ID:-localnet}"
 LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
 UPGRADE_VERSION="v0.5.0"
 
@@ -59,10 +59,8 @@ pushd ..
 docker build -t $DOCKER_IMAGE -f ./Dockerfile.upgrade .
 popd
 
-echo "Download generate_genesis.sh from testnet"
-mkdir -p ${LOCALNET_DATADIR}
-curl -so- https://raw.githubusercontent.com/allora-network/networks/main/${CHAIN_ID}/generate_genesis.sh > ${LOCALNET_DATADIR}/generate_genesis.sh
-chmod a+x ${LOCALNET_DATADIR}/generate_genesis.sh
+echo "Copy generate_genesis.sh into localnet data directory so it can go into the container"
+cp generate_genesis.sh ${LOCALNET_DATADIR}/generate_genesis.sh
 
 echo "Set permissions on data folder"
 docker run \
