@@ -48,7 +48,7 @@ func EmitRewards(
 	}
 
 	// Get the global total sum of previous topic weights
-	totalWeightOfActiveTopics, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total sum of previous topic weights")
 	}
@@ -76,7 +76,7 @@ func EmitRewards(
 	// Revenue (above) is what was earned by topics in this timestep. Rewards are what are actually paid to topics => participants
 	// The reward and revenue calculations are coupled here to minimize excessive compute
 	topicRewards, err := CalcTopicRewards(ctx, weights, sortedRewardableTopics,
-		totalWeightOfActiveTopics, totalReward, epochLengths, currentBlockEmissionDec)
+		totalSumPreviousTopicWeights, totalReward, epochLengths, currentBlockEmissionDec)
 	if err != nil {
 		return errors.Wrapf(err, "failed to calculate topic rewards")
 	}
