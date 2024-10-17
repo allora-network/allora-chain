@@ -663,8 +663,9 @@ func (c *queryServiceClient) GetPreviousTopicWeight(ctx context.Context, in *Get
 }
 
 func (c *queryServiceClient) GetTotalSumPreviousTopicWeights(ctx context.Context, in *GetTotalSumPreviousTopicWeightsRequest, opts ...grpc.CallOption) (*GetTotalSumPreviousTopicWeightsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetTotalSumPreviousTopicWeightsResponse)
-	err := c.cc.Invoke(ctx, QueryService_GetTotalSumPreviousTopicWeights_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, QueryService_GetTotalSumPreviousTopicWeights_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
