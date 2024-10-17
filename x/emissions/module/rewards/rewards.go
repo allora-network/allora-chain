@@ -155,11 +155,8 @@ func getDistributionAndPayoutRewardsToTopicActors(
 	topicId uint64,
 	topicRewardNonce int64,
 	topicReward *alloraMath.Dec,
-	// topicRewards map[uint64]*alloraMath.Dec,
 	moduleParams types.Params,
 ) (alloraMath.Dec, error) {
-	Logger(ctx).Debug(fmt.Sprintf("Distributing rewards for topic %d", topicId))
-
 	Logger(ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", topicId, topicRewardNonce, topicReward))
 
 	// Get the distribution of rewards across actor types and participants in this topic
@@ -197,13 +194,13 @@ func CalcTopicRewards(
 	topicRewards := make(map[TopicId]*alloraMath.Dec)
 	for _, topicId := range sortedTopics {
 		topicWeight := weights[topicId]
-		if topicWeight == nil {
-			zero := alloraMath.ZeroDec()
-			topicWeight = &zero
-		}
 		topicRewardFraction, err := GetTopicRewardFraction(topicWeight, sumWeight)
 		if err != nil {
 			return nil, errors.Wrapf(err, "topic reward fraction error")
+		}
+		if alloraMath.ZeroDec().Equal(topicRewardFraction) {
+			ctx.Logger().Warn(fmt.Sprintf("Skipping rewards for topic: %d, zero weights", topicId))
+			continue
 		}
 		topicRewardPerBlock, err := GetTopicReward(topicRewardFraction, currentBlockEmissionDec)
 		if err != nil {

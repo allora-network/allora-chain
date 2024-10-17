@@ -3750,7 +3750,7 @@ func (s *RewardsTestSuite) TestCalcTopicRewards() {
 			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
 				return len(rewards) == 2
 			},
-			expectedError: types.ErrInvalidLengthTopic,
+			expectedError: types.ErrInvalidValue,
 		},
 	}
 
