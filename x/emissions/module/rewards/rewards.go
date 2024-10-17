@@ -23,12 +23,12 @@ func EmitRewards(
 	totalRevenue cosmosMath.Int,
 ) error {
 	// Get current total treasury, to confirm it covers the rewards to give
-	totalReward, err := k.GetTotalRewardToDistribute(ctx)
-	Logger(ctx).Debug(fmt.Sprintf("Max rewards to distribute this epoch: %s", totalReward.String()))
+	totalRewardTreasury, err := k.GetTotalRewardToDistribute(ctx)
+	Logger(ctx).Debug(fmt.Sprintf("Max rewards to distribute this epoch: %s", totalRewardTreasury.String()))
 	if err != nil {
 		return errors.Wrapf(err, "failed to get max rewards to distribute")
 	}
-	if totalReward.IsZero() {
+	if totalRewardTreasury.IsZero() {
 		Logger(ctx).Warn("The rewards treasury account has a total value of zero on this epoch!")
 		return nil
 	}
@@ -51,6 +51,9 @@ func EmitRewards(
 	totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get total sum of previous topic weights")
+	}
+	if totalSumPreviousTopicWeights.IsZero() {
+		return errors.Wrapf(types.ErrInvalidReward, "No total weights set, no rewards")
 	}
 	// Get epoch lengths for sorted rewardable topics
 	epochLengths := make(map[uint64]int64)
@@ -76,7 +79,7 @@ func EmitRewards(
 	// Revenue (above) is what was earned by topics in this timestep. Rewards are what are actually paid to topics => participants
 	// The reward and revenue calculations are coupled here to minimize excessive compute
 	topicRewards, err := CalcTopicRewards(ctx, weights, sortedRewardableTopics,
-		totalSumPreviousTopicWeights, totalReward, epochLengths, currentBlockEmissionDec)
+		totalSumPreviousTopicWeights, totalRewardTreasury, epochLengths, currentBlockEmissionDec)
 	if err != nil {
 		return errors.Wrapf(err, "failed to calculate topic rewards")
 	}
@@ -128,8 +131,8 @@ func EmitRewards(
 			totalRewardToStakedReputers.String(),
 			len(topicRewards)))
 
-	if !totalReward.IsZero() && uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
-		percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalReward)
+	if !totalRewardTreasury.IsZero() && uint64(blockHeight)%moduleParams.BlocksPerMonth == 0 {
+		percentageToStakedReputers, err := totalRewardToStakedReputers.Quo(totalRewardTreasury)
 		if err != nil {
 			return errors.Wrapf(err, "failed to calculate percentage to staked reputers")
 		}
@@ -190,9 +193,6 @@ func CalcTopicRewards(
 	map[uint64]*alloraMath.Dec,
 	error,
 ) {
-	if sumWeight.IsZero() {
-		return nil, errors.Wrapf(types.ErrInvalidReward, "total reward is zero")
-	}
 	totalTopicRewardsSum := alloraMath.ZeroDec()
 	topicRewards := make(map[TopicId]*alloraMath.Dec)
 	for _, topicId := range sortedTopics {

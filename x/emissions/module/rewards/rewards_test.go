@@ -3731,28 +3731,6 @@ func (s *RewardsTestSuite) TestCalcTopicRewards() {
 			expectedError: nil,
 		},
 		{
-			name: "Zero sum weight",
-			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
-				weights := map[uint64]*alloraMath.Dec{
-					1: decPtr("0"),
-					2: decPtr("0"),
-				}
-				sortedTopics := []uint64{1, 2}
-				sumWeight := alloraMath.ZeroDec()
-				totalReward := alloraMath.MustNewDecFromString("10000.0")
-				epochLengths := map[uint64]int64{
-					1: 100,
-					2: 100,
-				}
-				currentBlockEmission := alloraMath.MustNewDecFromString("10.0")
-				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
-			},
-			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
-				return len(rewards) == 0
-			},
-			expectedError: types.ErrInvalidReward,
-		},
-		{
 			name: "Mismatched weights and sorted topics",
 			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
 				weights := map[uint64]*alloraMath.Dec{
