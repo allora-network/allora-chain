@@ -224,18 +224,47 @@ func getDistributionAndPayoutRewardsToTopicActors(args GetDistributionAndPayoutR
 // Calculates rewards per-block based on their weights vs all active topics.
 // Rewards are then calculated per epoch, so topic's epochLength is used to calculate epoch rewards.
 // Uses the current total amount rewardable in treasury as the max reward available to check against.
-// If rewards treasury does not cover the computed rewards for the topics, it cancels the rewards distribution.
+// If rewards treasury does not cover the computed rewards for the topics, the distribution is recalculated
+// by distributing the rewards treasury fairly among all topics based on their weight and epoch length.
+// Assumes SumTopicWeights to be nonzero
 func CalcTopicRewards(args CalcTopicRewardsArgs) (
 	topicRewards map[uint64]*alloraMath.Dec,
 	err error,
 ) {
-	totalTopicRewardsSum := alloraMath.ZeroDec()
-	topicRewards = make(map[TopicId]*alloraMath.Dec)
+	// General case calculation
+	topicRewards, totalTopicRewardsSum, err := calculateRewardsForCurrentTopics(args)
+	if err != nil {
+		return nil, errors.Wrapf(err, "calcTopicRewards: calculate rewards for current topics error")
+	}
+	if totalTopicRewardsSum.Gt(args.TotalAvailableInRewardsTreasury) {
+		// Note this will happen when the treasury is not enough to cover the rewards for all topics
+		// This will happen very rarely (cases where rewards emission changes dramatically), so optimization is done for the main case.
+		Logger(args.Ctx).Warn("Treasury lower than calculated rewards. Distributing treasury equally among current topics.")
+		if len(args.SortedTopics) == 1 {
+			// most likely case, only one topic - so it gets the entire treasury directly
+			topicId := args.SortedTopics[0]
+			topicRewards[topicId] = &args.TotalAvailableInRewardsTreasury
+		} else {
+			topicRewards, err = calculateRewardsFromWholeTreasury(args)
+			if err != nil {
+				return nil, errors.Wrapf(err, "calcTopicRewards: distribute rewards treasury to current topics error")
+			}
+		}
+	}
+	return topicRewards, nil
+}
+
+// Calculates rewards per-block based on their weights vs all active topics.
+// The notion emission per-block is used to calculate the rewards per-block.
+// Rewards are then calculated per epoch, so topic's epochLength is used to calculate epoch rewards.
+func calculateRewardsForCurrentTopics(args CalcTopicRewardsArgs) (topicRewards map[uint64]*alloraMath.Dec, totalTopicRewardsSum alloraMath.Dec, err error) {
+	totalTopicRewardsSum = alloraMath.ZeroDec()
+	topicRewards = make(map[uint64]*alloraMath.Dec)
 	for _, topicId := range args.SortedTopics {
 		topicWeight := args.Weights[topicId]
 		topicRewardFraction, err := GetTopicRewardFraction(topicWeight, args.SumTopicWeights)
 		if err != nil {
-			return nil, errors.Wrapf(err, "topic reward fraction error")
+			return nil, alloraMath.Dec{}, errors.Wrapf(err, "topic reward fraction error")
 		}
 		if alloraMath.ZeroDec().Equal(topicRewardFraction) {
 			args.Ctx.Logger().Warn(fmt.Sprintf("Skipping rewards for topic: %d, zero weights", topicId))
@@ -243,29 +272,62 @@ func CalcTopicRewards(args CalcTopicRewardsArgs) (
 		}
 		topicRewardPerBlock, err := GetTopicReward(topicRewardFraction, args.CurrentRewardsEmissionPerBlock)
 		if err != nil {
-			return nil, errors.Wrapf(err, "topic reward error")
+			return nil, alloraMath.Dec{}, errors.Wrapf(err, "topic reward error")
 		}
 		epochLength := args.EpochLengths[topicId]
 		if epochLength <= 0 {
-			return nil, errors.Wrapf(types.ErrInvalidLengthTopic, "epoch length is nil or zero for topic %d", topicId)
+			return nil, alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidLengthTopic, "epoch length is nil or zero for topic %d", topicId)
 		}
 		epochLengthDec := alloraMath.NewDecFromInt64(epochLength)
 		topicRewardPerEpoch, err := topicRewardPerBlock.Mul(epochLengthDec)
 		if err != nil {
-			return nil, errors.Wrapf(err, "calcTopicRewards:topic reward multiplication with epoch length fraction error")
+			return nil, alloraMath.Dec{}, errors.Wrapf(err, "calcTopicRewards:topic reward multiplication with epoch length fraction error")
 		}
 		topicRewards[topicId] = &topicRewardPerEpoch
 		totalTopicRewardsSum, err = totalTopicRewardsSum.Add(topicRewardPerEpoch)
 		if err != nil {
-			return nil, errors.Wrapf(err, "calcTopicRewards: total topic rewards sum error")
+			return nil, alloraMath.Dec{}, errors.Wrapf(err, "calcTopicRewards: total topic rewards sum error")
 		}
 	}
-	if totalTopicRewardsSum.Gt(args.TotalAvailableInRewardsTreasury) {
-		return nil, errors.Wrapf(types.ErrInvalidReward, "total topic rewards sum %s is greater than total reward in treasury %s, cancelling rewards distribution",
-			totalTopicRewardsSum.String(),
-			args.TotalAvailableInRewardsTreasury.String(),
-		)
+	return topicRewards, totalTopicRewardsSum, nil
+}
+
+// Distributes the whole rewards treasury across the topics based on their factor
+func calculateRewardsFromWholeTreasury(args CalcTopicRewardsArgs) (topicRewards map[uint64]*alloraMath.Dec, err error) {
+	// Factors of each topic, relative to the total factor of topics. Not using weight because already used in this context.
+	topicFactors := make(map[uint64]*alloraMath.Dec)
+	totalTopicFactors := alloraMath.ZeroDec()
+	// Rewards awarded to each topic
+	topicRewards = make(map[uint64]*alloraMath.Dec)
+
+	// Calculate topic factors
+	for _, topicId := range args.SortedTopics {
+		topicWeight := args.Weights[topicId]
+		topicEpochLength := args.EpochLengths[topicId]
+		topicFactor, err := topicWeight.Mul(alloraMath.NewDecFromInt64(topicEpochLength))
+		if err != nil {
+			return nil, errors.Wrapf(err, "distributeRewardsTreasuryToCurrentTopics: topic factor error")
+		}
+		topicFactors[topicId] = &topicFactor
+		totalTopicFactors, err = totalTopicFactors.Add(topicFactor)
+		if err != nil {
+			return nil, errors.Wrapf(err, "distributeRewardsTreasuryToCurrentTopics: total topic factors sum error")
+		}
 	}
+
+	// Distribute treasury across topics based on their factor
+	for _, topicId := range args.SortedTopics {
+		topicRewardPerEpoch, err := args.TotalAvailableInRewardsTreasury.Mul(*topicFactors[topicId])
+		if err != nil {
+			return nil, errors.Wrapf(err, "distributeRewardsTreasuryToCurrentTopics: topic reward per epoch error")
+		}
+		topicRewardPerEpoch, err = topicRewardPerEpoch.Quo(totalTopicFactors)
+		if err != nil {
+			return nil, errors.Wrapf(err, "distributeRewardsTreasuryToCurrentTopics: topic reward per epoch error")
+		}
+		topicRewards[topicId] = &topicRewardPerEpoch
+	}
+
 	return topicRewards, nil
 }
 

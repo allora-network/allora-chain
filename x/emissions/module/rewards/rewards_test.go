@@ -3708,7 +3708,7 @@ func (s *RewardsTestSuite) TestCalcTopicRewards() {
 				}
 				return s.compareRewards(rewards, expected)
 			},
-			expectedError: types.ErrInvalidReward,
+			expectedError: nil,
 		},
 		{
 			name: "Different epoch lengths",
@@ -3783,6 +3783,35 @@ func (s *RewardsTestSuite) TestCalcTopicRewards() {
 				return len(rewards) == 2
 			},
 			expectedError: types.ErrInvalidValue,
+		},
+		{
+			name: "Treasury lower than rewards",
+			setupFunc: func() (map[uint64]*alloraMath.Dec, []uint64, alloraMath.Dec, alloraMath.Dec, map[uint64]int64, alloraMath.Dec) {
+				weights := map[uint64]*alloraMath.Dec{
+					1: decPtr("0.5"),
+					2: decPtr("0.3"),
+					3: decPtr("0.2"),
+				}
+				sortedTopics := []uint64{1, 2, 3}
+				sumWeight := alloraMath.MustNewDecFromString("1.0")
+				totalReward := alloraMath.MustNewDecFromString("50.0") // Lower than expected rewards
+				epochLengths := map[uint64]int64{
+					1: 100,
+					2: 100,
+					3: 100,
+				}
+				currentBlockEmission := alloraMath.MustNewDecFromString("1.0")
+				return weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission
+			},
+			expectedRewardsFunc: func(rewards map[uint64]*alloraMath.Dec) bool {
+				expected := map[uint64]*alloraMath.Dec{
+					1: decPtr("25.0"),
+					2: decPtr("15.0"),
+					3: decPtr("10.0"),
+				}
+				return s.compareRewards(rewards, expected)
+			},
+			expectedError: nil,
 		},
 	}
 
