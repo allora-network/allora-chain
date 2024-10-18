@@ -32,6 +32,15 @@ type GenerateRewardsDistributionByTopicParticipantArgs struct {
 	ModuleParams types.Params
 }
 
+type GetDistributionAndPayoutRewardsToTopicActorsArgs struct {
+	Ctx              sdk.Context
+	K                keeper.Keeper
+	TopicId          uint64
+	TopicRewardNonce int64
+	TopicReward      *alloraMath.Dec
+	ModuleParams     types.Params
+}
+
 func EmitRewards(
 	ctx sdk.Context,
 	k keeper.Keeper,
@@ -130,7 +139,14 @@ func EmitRewards(
 		}(topicId, topicRewardNonce)
 
 		topicReward := topicRewards[topicId]
-		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(ctx, k, topicId, topicRewardNonce, topicReward, moduleParams)
+		rewardInTopicToReputers, err := getDistributionAndPayoutRewardsToTopicActors(GetDistributionAndPayoutRewardsToTopicActorsArgs{
+			Ctx:              ctx,
+			K:                k,
+			TopicId:          topicId,
+			TopicRewardNonce: topicRewardNonce,
+			TopicReward:      topicReward,
+			ModuleParams:     moduleParams,
+		})
 		if err != nil {
 			Logger(ctx).Error(fmt.Sprintf("Failed to process rewards for topic %d: %s", topicId, err.Error()))
 			continue
@@ -172,34 +188,27 @@ func EmitRewards(
 
 // This function distributes and pays out rewards to topic actors based on their participation.
 // It returns the total reward distributed to reputers
-func getDistributionAndPayoutRewardsToTopicActors(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	topicId uint64,
-	topicRewardNonce int64,
-	topicReward *alloraMath.Dec,
-	moduleParams types.Params,
-) (alloraMath.Dec, error) {
-	Logger(ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", topicId, topicRewardNonce, topicReward))
+func getDistributionAndPayoutRewardsToTopicActors(args GetDistributionAndPayoutRewardsToTopicActorsArgs) (alloraMath.Dec, error) {
+	Logger(args.Ctx).Debug(fmt.Sprintf("Generating rewards distribution for topic: %d, topicRewardNonce: %d, topicReward: %s", args.TopicId, args.TopicRewardNonce, args.TopicReward))
 
 	// Get the distribution of rewards across actor types and participants in this topic
 	totalRewardsDistribution, rewardInTopicToActors, err := GenerateRewardsDistributionByTopicParticipant(GenerateRewardsDistributionByTopicParticipantArgs{
-		Ctx:          ctx,
-		K:            k,
-		TopicId:      topicId,
-		TopicReward:  topicReward,
-		BlockHeight:  topicRewardNonce,
-		ModuleParams: moduleParams,
+		Ctx:          args.Ctx,
+		K:            args.K,
+		TopicId:      args.TopicId,
+		TopicReward:  args.TopicReward,
+		BlockHeight:  args.TopicRewardNonce,
+		ModuleParams: args.ModuleParams,
 	})
 	if err != nil {
-		return alloraMath.ZeroDec(), errors.Wrapf(err, "Failed to Generate Rewards for Topic %d", topicId)
+		return alloraMath.ZeroDec(), errors.Wrapf(err, "Failed to Generate Rewards for Topic %d", args.TopicId)
 	}
 
 	// Pay out rewards to topic participants
-	payoutErrors := payoutRewards(ctx, k, totalRewardsDistribution)
+	payoutErrors := payoutRewards(args.Ctx, args.K, totalRewardsDistribution)
 	if len(payoutErrors) > 0 {
 		for _, payoutErr := range payoutErrors {
-			Logger(ctx).Warn(fmt.Sprintf("Failed to pay out rewards to participant in Topic %d: %s", topicId, payoutErr.Error()))
+			Logger(args.Ctx).Warn(fmt.Sprintf("Failed to pay out rewards to participant in Topic %d: %s", args.TopicId, payoutErr.Error()))
 		}
 		return alloraMath.ZeroDec(), nil // continue to next topic
 	}
