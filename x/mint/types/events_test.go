@@ -46,3 +46,21 @@ func TestEmitNewEcosystemTokenMintedSetEvent(t *testing.T) {
 	require.Contains(t, events[0].Attributes[1].Key, "token_amount")
 	require.Contains(t, events[0].Attributes[1].Value, tokenAmount.String())
 }
+
+func TestEmitNewRewardCurrentBlockEmissionEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	blockHeight := uint64(100)
+	currentBlockEmission := math.NewInt(100)
+
+	types.EmitNewRewardCurrentBlockEmissionEvent(ctx, blockHeight, currentBlockEmission)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	require.Equal(t, "mint.v3.EventRewardCurrentBlockEmission", events[0].Type)
+	require.Len(t, events[0].Attributes, 2)
+	require.Contains(t, events[0].Attributes[0].Key, "block_height")
+	require.Contains(t, events[0].Attributes[0].Value, "100")
+	require.Contains(t, events[0].Attributes[1].Key, "token_amount")
+	require.Contains(t, events[0].Attributes[1].Value, currentBlockEmission.String())
+}
