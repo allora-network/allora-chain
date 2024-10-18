@@ -184,10 +184,10 @@ func CalcTopicRewards(
 	ctx sdk.Context,
 	weights map[uint64]*alloraMath.Dec, // weights of all active topics in this block
 	sortedTopics []uint64, // topics sorted by weight in descending order
-	sumWeight alloraMath.Dec, // sum of all topic weights
+	sumTopicWeights alloraMath.Dec, // sum of all active topic weights
 	totalAvailableInRewardsTreasury alloraMath.Dec, // Maximum amount of rewards available in treasury
 	epochLengths map[uint64]int64, // epoch lengths for each topic
-	currentBlockEmissionDec alloraMath.Dec, // Rewards emission per block
+	currentRewardsEmissionPerBlock alloraMath.Dec, // Rewards emission per block
 ) (
 	map[uint64]*alloraMath.Dec,
 	error,
@@ -196,7 +196,7 @@ func CalcTopicRewards(
 	topicRewards := make(map[TopicId]*alloraMath.Dec)
 	for _, topicId := range sortedTopics {
 		topicWeight := weights[topicId]
-		topicRewardFraction, err := GetTopicRewardFraction(topicWeight, sumWeight)
+		topicRewardFraction, err := GetTopicRewardFraction(topicWeight, sumTopicWeights)
 		if err != nil {
 			return nil, errors.Wrapf(err, "topic reward fraction error")
 		}
@@ -204,7 +204,7 @@ func CalcTopicRewards(
 			ctx.Logger().Warn(fmt.Sprintf("Skipping rewards for topic: %d, zero weights", topicId))
 			continue
 		}
-		topicRewardPerBlock, err := GetTopicReward(topicRewardFraction, currentBlockEmissionDec)
+		topicRewardPerBlock, err := GetTopicReward(topicRewardFraction, currentRewardsEmissionPerBlock)
 		if err != nil {
 			return nil, errors.Wrapf(err, "topic reward error")
 		}
