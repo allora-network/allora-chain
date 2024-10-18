@@ -165,7 +165,7 @@ func GetAndUpdateActiveTopicWeights(
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get current topic weight")
 		}
-
+		Logger(ctx).Debug(fmt.Sprintf("Setting previous topic weight for topic %d: %s", topic.Id, weight.String()))
 		err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to set previous topic weight")
@@ -192,7 +192,12 @@ func GetAndUpdateActiveTopicWeights(
 		// Update topic active status
 		err = k.AttemptTopicReactivation(ctx, topicId)
 		if err != nil {
-			ctx.Logger().Error("Error on attempt topic reactivation")
+			ctx.Logger().Error("Error on attempt topic reactivation, explicitly inactivating topic")
+			err := k.InactivateTopic(ctx, topic.Id)
+			if err != nil {
+				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
+			}
+			ctx.Logger().Debug(fmt.Sprintf("Topic %d inactivated at block %d", topic.Id, block))
 			continue
 		}
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)

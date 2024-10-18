@@ -161,6 +161,9 @@ type Keeper struct {
 	// store previous weights for exponential moving average in rewards calc
 	previousTopicWeight collections.Map[TopicId, alloraMath.Dec]
 
+	// total weights of all active topics on the network
+	totalSumPreviousTopicWeights collections.Item[alloraMath.Dec]
+
 	// map of (topic, block_height) -> Inference
 	allInferences collections.Map[collections.Pair[TopicId, BlockHeight], types.Inferences]
 
@@ -175,6 +178,9 @@ type Keeper struct {
 
 	// Percentage of all rewards, paid out to staked reputers, during the previous reward cadence. Used by mint module
 	previousPercentageRewardToStakedReputers collections.Item[alloraMath.Dec]
+
+	// Current block emission, set by mint module
+	rewardCurrentBlockEmission collections.Item[cosmosMath.Int]
 
 	/// NONCES
 
@@ -313,6 +319,8 @@ func NewKeeper(
 		lowestForecasterScoreEma:                  collections.NewMap(sb, types.LowestForecasterScoreEmaKey, "lowest_forecaster_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 		activeReputers:                            collections.NewKeySet(sb, types.ActiveReputersKey, "active_reputers", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
 		lowestReputerScoreEma:                     collections.NewMap(sb, types.LowestReputerScoreEmaKey, "lowest_reputer_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
+		totalSumPreviousTopicWeights:              collections.NewItem(sb, types.TotalSumPreviousTopicWeightsKey, "total_sum_previous_topic_weights", alloraMath.DecValue),
+		rewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "rewardcurrentblockemission", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()
@@ -2583,7 +2591,66 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 	if err := types.ValidateDec(weight); err != nil {
 		return errorsmod.Wrap(err, "weight validation failed")
 	}
+	// First update total because it uses previous weight value
+	err := k.UpdateTotalSumPreviousTopicWeights(ctx, topicId, weight)
+	if err != nil {
+		return errorsmod.Wrap(err, "error updating total sum of previous topic weights")
+	}
+	// Then update the previous weight
 	return k.previousTopicWeight.Set(ctx, topicId, weight)
+}
+
+// UpdateTotalSumPreviousTopicWeights updates the total sum of previous topic weights
+// by subtracting the old weight if any, and adding the new weight for the given topicId.
+func (k *Keeper) UpdateTotalSumPreviousTopicWeights(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec) error {
+	// Get the current total sum, set to zero if not existent.
+	totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
+	if err != nil {
+		return errorsmod.Wrap(err, fmt.Sprintf("error getting total sum of previous topic weights while updating topic: %d", topicId))
+	}
+
+	// Subtract old weight
+	oldTopicWeight, _, err := k.GetPreviousTopicWeight(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, fmt.Sprintf("error getting previous weight of topic: %d", topicId))
+	}
+	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Sub(oldTopicWeight)
+	if err != nil {
+		return errorsmod.Wrap(err, "error subtracting old weight from total sum of previous topic weights")
+	}
+
+	// Add new weight
+	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Add(newWeight)
+	if err != nil {
+		return errorsmod.Wrap(err, "error adding new weight to total sum of previous topic weights")
+	}
+
+	// Set the new total sum
+	return k.SetTotalSumPreviousTopicWeights(ctx, totalSumPreviousTopicWeights)
+}
+
+// Get the total sum of previous topic weights
+func (k *Keeper) GetTotalSumPreviousTopicWeights(ctx context.Context) (alloraMath.Dec, error) {
+	sumPreviousWeights, err := k.totalSumPreviousTopicWeights.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting topic fee revenue")
+	}
+
+	return sumPreviousWeights, nil
+}
+
+// Set the total sum of previous topic weights
+func (k *Keeper) SetTotalSumPreviousTopicWeights(ctx context.Context, weight alloraMath.Dec) error {
+	if err := types.ValidateDec(weight); err != nil {
+		return errorsmod.Wrap(err, "previous total topic weight validation failed")
+	}
+	if weight.Lt(alloraMath.ZeroDec()) {
+		return errorsmod.Wrap(types.ErrInvalidValue, "total sum of previous topic weights cannot be negative")
+	}
+	return k.totalSumPreviousTopicWeights.Set(ctx, weight)
 }
 
 // Gets next topic id
@@ -3440,7 +3507,7 @@ func (k *Keeper) GetBankBalance(ctx context.Context, addr sdk.AccAddress, denom 
 	return k.bankKeeper.GetBalance(ctx, addr, denom)
 }
 
-// GetTotalRewardToDistribute
+// Gets the total rewards available to be distributed from the Allora Rewards Module Account
 func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec, error) {
 	// Get Allora Rewards Account
 	alloraRewardsAccountAddr := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
@@ -3941,4 +4008,24 @@ func (k *Keeper) GetLowestReputerScoreEma(ctx context.Context, topicId TopicId) 
 		}, false, errorsmod.Wrap(err, "error getting lowest reputer score EMA")
 	}
 	return lowestScore, true, nil
+}
+
+// GetRewardCurrentBlockEmission retrieves the current block emission reward.
+func (k *Keeper) GetRewardCurrentBlockEmission(ctx context.Context) (cosmosMath.Int, error) {
+	emission, err := k.rewardCurrentBlockEmission.Get(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return cosmosMath.ZeroInt(), nil // Return zero if not found
+		}
+		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting current block emission reward")
+	}
+	return emission, nil
+}
+
+// SetRewardCurrentBlockEmission sets the current block emission reward.
+func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission cosmosMath.Int) error {
+	if emission.IsNegative() {
+		return errorsmod.Wrap(types.ErrInvalidValue, "current block emission reward cannot be negative")
+	}
+	return k.rewardCurrentBlockEmission.Set(ctx, emission)
 }

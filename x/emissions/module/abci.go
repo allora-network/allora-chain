@@ -56,7 +56,15 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 	}
 
 	// REWARDS (will internally filter any non-RewardReady topics)
-	err = rewards.EmitRewards(sdkCtx, am.keeper, moduleParams, blockHeight, weights, sumWeight, totalRevenue)
+	err = rewards.EmitRewards(rewards.EmitRewardsArgs{
+		Ctx:          sdkCtx,
+		K:            am.keeper,
+		ModuleParams: moduleParams,
+		BlockHeight:  blockHeight,
+		Weights:      weights,
+		SumWeight:    sumWeight,
+		TotalRevenue: totalRevenue,
+	})
 	if err != nil {
 		sdkCtx.Logger().Error("Error calculating global emission per topic: ", err)
 		return errors.Wrapf(err, "Rewards error")

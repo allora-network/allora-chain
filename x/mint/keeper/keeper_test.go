@@ -102,5 +102,6 @@ func (s *MintKeeperTestSuite) TestAliasFunctions() {
 
 	fees := sdk.NewCoins(sdk.NewCoin("stake", math.NewInt(1000)))
 	s.bankKeeper.EXPECT().SendCoinsFromModuleToModule(s.ctx, types.EcosystemModuleName, emissionstypes.AlloraRewardsAccountName, fees).Return(nil)
+	s.emissionsKeeper.EXPECT().SetRewardCurrentBlockEmission(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 	s.Require().NoError(s.mintKeeper.PayAlloraRewardsFromEcosystem(s.ctx, fees))
 }

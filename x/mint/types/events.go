@@ -34,3 +34,17 @@ func EcosystemTokenMintSetEventBase(blockHeight uint64, tokenAmount math.Int) pr
 		TokenAmount: tokenAmount,
 	}
 }
+
+func EmitNewRewardCurrentBlockEmissionEvent(ctx sdk.Context, blockHeight uint64, amount math.Int) {
+	err := ctx.EventManager().EmitTypedEvent(RewardCurrentBlockEmissionEventBase(blockHeight, amount))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting EmitNewRewardCurrentBlockEmissionEvent: ", err.Error())
+	}
+}
+
+func RewardCurrentBlockEmissionEventBase(blockHeight uint64, tokenAmount math.Int) proto.Message {
+	return &EventRewardCurrentBlockEmission{
+		BlockHeight: blockHeight,
+		TokenAmount: tokenAmount,
+	}
+}

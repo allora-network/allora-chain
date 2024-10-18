@@ -159,12 +159,17 @@ func (k Keeper) PayAlloraRewardsFromEcosystem(ctx context.Context, rewards sdk.C
 	if rewards.Empty() {
 		return nil
 	}
-	return k.bankKeeper.SendCoinsFromModuleToModule(
+	err := k.bankKeeper.SendCoinsFromModuleToModule(
 		ctx,
 		types.EcosystemModuleName,
 		emissionstypes.AlloraRewardsAccountName,
 		rewards,
 	)
+	if err != nil {
+		return err
+	}
+
+	return k.emissionsKeeper.SetRewardCurrentBlockEmission(ctx, rewards.AmountOf(params.BaseCoinUnit))
 }
 
 // GetTotalCurrTokenSupply implements an alias call to the underlying supply keeper's
@@ -242,4 +247,9 @@ func (k Keeper) GetPreviousRewardEmissionPerUnitStakedToken(ctx context.Context)
 // wrapper for interface compatibility for unit testing
 func (k Keeper) GetEmissionsKeeperTotalStake(ctx context.Context) (math.Int, error) {
 	return k.emissionsKeeper.GetTotalStake(ctx)
+}
+
+// wrapper for interface compatibility for unit testing
+func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
+	return k.emissionsKeeper.SetRewardCurrentBlockEmission(ctx, emission)
 }

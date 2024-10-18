@@ -157,6 +157,33 @@ func (k *Keeper) inactivateTopicWithoutMinWeightReset(ctx context.Context, topic
 		return errors.Wrap(err, "failed to remove active topics")
 	}
 
+	// Remove previous weight from total sum of previous topic weights, but keep on list
+	totalSumPreviousTopicWeights, err := k.totalSumPreviousTopicWeights.Get(ctx)
+	if err != nil {
+		if !errors.IsOf(err, collections.ErrNotFound) {
+			return errors.Wrap(err, "failed to get total sum of previous topic weights")
+		}
+		totalSumPreviousTopicWeights = alloraMath.ZeroDec()
+	}
+
+	previousTopicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
+	if err != nil {
+		if !errors.IsOf(err, collections.ErrNotFound) {
+			return errors.Wrap(err, "failed to get previous topic weight")
+		}
+		// no previous weight, no need to remove
+
+		return nil
+	}
+	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Sub(previousTopicWeight)
+	if err != nil {
+		return errors.Wrap(err, "failed to subtract previous topic weight from total sum of previous topic weights")
+	}
+	err = k.totalSumPreviousTopicWeights.Set(ctx, totalSumPreviousTopicWeights)
+	if err != nil {
+		return errors.Wrap(err, "failed to set total sum of previous topic weights")
+	}
+
 	return nil
 }
 
@@ -170,7 +197,6 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 	if err != nil {
 		return false, err
 	}
-
 	topicIdsActiveAtBlock, err := k.GetActiveTopicIdsAtBlock(ctx, block)
 	if err != nil {
 		return false, err
@@ -198,7 +224,7 @@ func (k *Keeper) addTopicToActiveSetRespectingLimitsWithoutMinWeightReset(
 		}
 
 		if weight.Lt(lowestWeight.Weight) {
-			sdkCtx.Logger().Warn(fmt.Sprintf("Topic%d cannot be activated due to less than lowest weight at block %d", topicId, block))
+			sdkCtx.Logger().Warn(fmt.Sprintf("Topic %d cannot be activated due to less than lowest weight at block %d", topicId, block))
 			return false, nil
 		}
 		err = k.inactivateTopicWithoutMinWeightReset(ctx, lowestWeight.TopicId)
@@ -248,7 +274,8 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get topic")
 	}
-	currentBlock := sdk.UnwrapSDKContext(ctx).BlockHeight()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	currentBlock := sdkCtx.BlockHeight()
 	epochEndBlock := currentBlock + topic.EpochLength
 
 	err = k.activateTopicAndResetLowestWeightAtBlock(ctx, topicId, epochEndBlock)
@@ -262,6 +289,26 @@ func (k *Keeper) ActivateTopic(ctx context.Context, topicId TopicId) error {
 		return errors.Wrap(err, "failed to set active topics")
 	}
 
+	sdkCtx.Logger().Info(fmt.Sprintf("Topic %d activated at block %d", topicId, currentBlock))
+	// This topic was activated, so we need to add its previous weight if any to the total sum of previous topic weights
+	topicWeight, noPrior, err := k.GetPreviousTopicWeight(ctx, topicId)
+	if err != nil {
+		return errors.Wrap(err, "failed to get topic weight from topic id")
+	}
+	if !noPrior && !topicWeight.IsZero() {
+		totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
+		if err != nil {
+			return errors.Wrap(err, "failed to get total sum of previous topic weights")
+		}
+		totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Add(topicWeight)
+		if err != nil {
+			return errors.Wrap(err, "failed to add weight to total sum of previous topic weights")
+		}
+		err = k.SetTotalSumPreviousTopicWeights(ctx, totalSumPreviousTopicWeights)
+		if err != nil {
+			return errors.Wrap(err, "failed to set total sum of previous topic weights")
+		}
+	}
 	return nil
 }
 
@@ -334,6 +381,7 @@ func (k *Keeper) activateTopicAndResetLowestWeightAtBlock(ctx context.Context, t
 		return errors.Wrap(err, "failed to add topic to active set respecting limits without min weight reset")
 	}
 	if !isAdded {
+		sdkCtx.Logger().Info(fmt.Sprintf("Failed to add topic at next epoch %d, %d", topicId, epochEndBlock))
 		return nil
 	}
 

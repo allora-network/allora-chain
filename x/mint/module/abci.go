@@ -107,5 +107,6 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
+	types.EmitNewRewardCurrentBlockEmissionEvent(sdkCtx, blockHeight, alloraRewardsCut)
 	return nil
 }
