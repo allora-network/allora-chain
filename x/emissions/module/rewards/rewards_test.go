@@ -3757,16 +3757,16 @@ func (s *RewardsTestSuite) TestCalcTopicRewards() {
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
 			weights, sortedTopics, sumWeight, totalReward, epochLengths, currentBlockEmission := tc.setupFunc()
-
-			rewards, err := rewards.CalcTopicRewards(
-				s.ctx,
-				weights,
-				sortedTopics,
-				sumWeight,
-				totalReward,
-				epochLengths,
-				currentBlockEmission,
-			)
+			args := rewards.CalcTopicRewardsArgs{
+				Ctx:                             s.ctx,
+				Weights:                         weights,
+				SortedTopics:                    sortedTopics,
+				SumTopicWeights:                 sumWeight,
+				TotalAvailableInRewardsTreasury: totalReward,
+				EpochLengths:                    epochLengths,
+				CurrentRewardsEmissionPerBlock:  currentBlockEmission,
+			}
+			rewards, err := rewards.CalcTopicRewards(args)
 
 			if tc.expectedError != nil {
 				s.Require().ErrorIs(err, tc.expectedError)

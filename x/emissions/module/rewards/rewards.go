@@ -13,6 +13,16 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+type CalcTopicRewardsArgs struct {
+	Ctx                             sdk.Context
+	Weights                         map[uint64]*alloraMath.Dec // weights of all active topics in this block
+	SortedTopics                    []uint64                   // topics sorted by weight in descending order
+	SumTopicWeights                 alloraMath.Dec             // sum of all active topic weights
+	TotalAvailableInRewardsTreasury alloraMath.Dec             // Maximum amount of rewards available in treasury
+	EpochLengths                    map[uint64]int64           // epoch lengths for each topic
+	CurrentRewardsEmissionPerBlock  alloraMath.Dec             // Rewards emission per block
+}
+
 func EmitRewards(
 	ctx sdk.Context,
 	k keeper.Keeper,
@@ -78,8 +88,16 @@ func EmitRewards(
 	}
 	// Revenue (above) is what was earned by topics in this timestep. Rewards are what are actually paid to topics => participants
 	// The reward and revenue calculations are coupled here to minimize excessive compute
-	topicRewards, err := CalcTopicRewards(ctx, weights, sortedRewardableTopics,
-		totalSumPreviousTopicWeights, totalRewardTreasury, epochLengths, currentBlockEmissionDec)
+	args := CalcTopicRewardsArgs{
+		Ctx:                             ctx,
+		Weights:                         weights,
+		SortedTopics:                    sortedRewardableTopics,
+		SumTopicWeights:                 totalSumPreviousTopicWeights,
+		TotalAvailableInRewardsTreasury: totalRewardTreasury,
+		EpochLengths:                    epochLengths,
+		CurrentRewardsEmissionPerBlock:  currentBlockEmissionDec,
+	}
+	topicRewards, err := CalcTopicRewards(args)
 	if err != nil {
 		return errors.Wrapf(err, "failed to calculate topic rewards")
 	}
@@ -180,35 +198,27 @@ func getDistributionAndPayoutRewardsToTopicActors(
 // Rewards are then calculated per epoch, so topic's epochLength is used to calculate epoch rewards.
 // Uses the current total amount rewardable in treasury as the max reward available to check against.
 // If rewards treasury does not cover the computed rewards for the topics, it cancels the rewards distribution.
-func CalcTopicRewards(
-	ctx sdk.Context,
-	weights map[uint64]*alloraMath.Dec, // weights of all active topics in this block
-	sortedTopics []uint64, // topics sorted by weight in descending order
-	sumTopicWeights alloraMath.Dec, // sum of all active topic weights
-	totalAvailableInRewardsTreasury alloraMath.Dec, // Maximum amount of rewards available in treasury
-	epochLengths map[uint64]int64, // epoch lengths for each topic
-	currentRewardsEmissionPerBlock alloraMath.Dec, // Rewards emission per block
-) (
-	map[uint64]*alloraMath.Dec,
-	error,
+func CalcTopicRewards(args CalcTopicRewardsArgs) (
+	topicRewards map[uint64]*alloraMath.Dec,
+	err error,
 ) {
 	totalTopicRewardsSum := alloraMath.ZeroDec()
-	topicRewards := make(map[TopicId]*alloraMath.Dec)
-	for _, topicId := range sortedTopics {
-		topicWeight := weights[topicId]
-		topicRewardFraction, err := GetTopicRewardFraction(topicWeight, sumTopicWeights)
+	topicRewards = make(map[TopicId]*alloraMath.Dec)
+	for _, topicId := range args.SortedTopics {
+		topicWeight := args.Weights[topicId]
+		topicRewardFraction, err := GetTopicRewardFraction(topicWeight, args.SumTopicWeights)
 		if err != nil {
 			return nil, errors.Wrapf(err, "topic reward fraction error")
 		}
 		if alloraMath.ZeroDec().Equal(topicRewardFraction) {
-			ctx.Logger().Warn(fmt.Sprintf("Skipping rewards for topic: %d, zero weights", topicId))
+			args.Ctx.Logger().Warn(fmt.Sprintf("Skipping rewards for topic: %d, zero weights", topicId))
 			continue
 		}
-		topicRewardPerBlock, err := GetTopicReward(topicRewardFraction, currentRewardsEmissionPerBlock)
+		topicRewardPerBlock, err := GetTopicReward(topicRewardFraction, args.CurrentRewardsEmissionPerBlock)
 		if err != nil {
 			return nil, errors.Wrapf(err, "topic reward error")
 		}
-		epochLength := epochLengths[topicId]
+		epochLength := args.EpochLengths[topicId]
 		if epochLength <= 0 {
 			return nil, errors.Wrapf(types.ErrInvalidLengthTopic, "epoch length is nil or zero for topic %d", topicId)
 		}
@@ -223,8 +233,11 @@ func CalcTopicRewards(
 			return nil, errors.Wrapf(err, "calcTopicRewards: total topic rewards sum error")
 		}
 	}
-	if totalTopicRewardsSum.Gt(totalAvailableInRewardsTreasury) {
-		return nil, errors.Wrapf(types.ErrInvalidReward, "total topic rewards sum %s is greater than total reward in treasury %s, cancelling rewards distribution", totalTopicRewardsSum.String(), totalAvailableInRewardsTreasury.String())
+	if totalTopicRewardsSum.Gt(args.TotalAvailableInRewardsTreasury) {
+		return nil, errors.Wrapf(types.ErrInvalidReward, "total topic rewards sum %s is greater than total reward in treasury %s, cancelling rewards distribution",
+			totalTopicRewardsSum.String(),
+			args.TotalAvailableInRewardsTreasury.String(),
+		)
 	}
 	return topicRewards, nil
 }
