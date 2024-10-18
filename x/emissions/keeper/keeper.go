@@ -2647,6 +2647,9 @@ func (k *Keeper) SetTotalSumPreviousTopicWeights(ctx context.Context, weight all
 	if err := types.ValidateDec(weight); err != nil {
 		return errorsmod.Wrap(err, "previous total topic weight validation failed")
 	}
+	if weight.Lt(alloraMath.ZeroDec()) {
+		return errorsmod.Wrap(types.ErrInvalidValue, "total sum of previous topic weights cannot be negative")
+	}
 	return k.totalSumPreviousTopicWeights.Set(ctx, weight)
 }
 
