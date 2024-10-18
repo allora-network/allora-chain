@@ -2604,21 +2604,15 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 // by subtracting the old weight if any, and adding the new weight for the given topicId.
 func (k *Keeper) UpdateTotalSumPreviousTopicWeights(ctx context.Context, topicId TopicId, newWeight alloraMath.Dec) error {
 	// Get the current total sum, set to zero if not existent.
-	totalSumPreviousTopicWeights, err := k.totalSumPreviousTopicWeights.Get(ctx)
+	totalSumPreviousTopicWeights, err := k.GetTotalSumPreviousTopicWeights(ctx)
 	if err != nil {
-		if !errors.Is(err, collections.ErrNotFound) {
-			return errorsmod.Wrap(err, "error getting total sum of previous topic weights")
-		}
-		totalSumPreviousTopicWeights = alloraMath.ZeroDec()
+		return errorsmod.Wrap(err, fmt.Sprintf("error getting total sum of previous topic weights while updating topic: %d", topicId))
 	}
 
 	// Subtract old weight
-	oldTopicWeight, err := k.previousTopicWeight.Get(ctx, topicId)
+	oldTopicWeight, _, err := k.GetPreviousTopicWeight(ctx, topicId)
 	if err != nil {
-		if !errors.Is(err, collections.ErrNotFound) {
-			return errorsmod.Wrap(err, "error getting previous weight of topic")
-		}
-		oldTopicWeight = alloraMath.ZeroDec()
+		return errorsmod.Wrap(err, fmt.Sprintf("error getting previous weight of topic: %d", topicId))
 	}
 	totalSumPreviousTopicWeights, err = totalSumPreviousTopicWeights.Sub(oldTopicWeight)
 	if err != nil {
