@@ -25,6 +25,7 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.60.3
+          args: --timeout=10m
 
   custom-linters:
     name: custom-linters
@@ -35,6 +36,5 @@ jobs:
         with:
           go-version: stable
       - name: check-defer-close
-        run:  go run ./cmd/check-defer-close .
-
-
+        run: go run ./cmd/check-defer-close .
+        timeout-minutes: 10
