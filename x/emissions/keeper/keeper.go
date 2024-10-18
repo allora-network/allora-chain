@@ -3504,7 +3504,7 @@ func (k *Keeper) GetBankBalance(ctx context.Context, addr sdk.AccAddress, denom 
 	return k.bankKeeper.GetBalance(ctx, addr, denom)
 }
 
-// Gets the total rewards available to be distributed from the Allora Rewards Account
+// Gets the total rewards available to be distributed from the Allora Rewards Module Account
 func (k *Keeper) GetTotalRewardToDistribute(ctx context.Context) (alloraMath.Dec, error) {
 	// Get Allora Rewards Account
 	alloraRewardsAccountAddr := k.authKeeper.GetModuleAccount(ctx, types.AlloraRewardsAccountName).GetAddress()
