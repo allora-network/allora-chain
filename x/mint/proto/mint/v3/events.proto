@@ -1,0 +1,18 @@
+syntax = "proto3";
+package mint.v3;
+
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/mint/types";
+
+message EventRewardCurrentBlockEmission {
+  uint64 block_height = 1;
+  string token_amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
