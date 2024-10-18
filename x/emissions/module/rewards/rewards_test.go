@@ -799,12 +799,14 @@ func (s *RewardsTestSuite) getRewardsDistribution(
 	topicTotalRewards := alloraMath.NewDecFromInt64(1000000)
 
 	rewardsDistributionByTopicParticipant, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
-		s.ctx,
-		s.emissionsKeeper,
-		topicId,
-		&topicTotalRewards,
-		blockHeight,
-		params,
+		rewards.GenerateRewardsDistributionByTopicParticipantArgs{
+			Ctx:          s.ctx,
+			K:            s.emissionsKeeper,
+			TopicId:      topicId,
+			TopicReward:  &topicTotalRewards,
+			BlockHeight:  blockHeight,
+			ModuleParams: params,
+		},
 	)
 	require.NoError(err)
 
@@ -1368,7 +1370,14 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	params, err := s.emissionsKeeper.GetParams(s.ctx)
 	s.Require().NoError(err)
 
-	firstRewardsDistribution, firstTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	firstRewardsDistribution, firstTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(rewards.GenerateRewardsDistributionByTopicParticipantArgs{
+		Ctx:          s.ctx,
+		K:            s.emissionsKeeper,
+		TopicId:      topicId,
+		TopicReward:  &topicTotalRewards,
+		BlockHeight:  block,
+		ModuleParams: params,
+	})
 	s.Require().NoError(err)
 
 	calcFirstTotalReputerReward := alloraMath.ZeroDec()
@@ -1522,7 +1531,15 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 	)
 	s.Require().NoError(err)
 
-	secondRewardsDistribution, secondTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards, block, params)
+	secondRewardsDistribution, secondTotalReputerReward, err := rewards.GenerateRewardsDistributionByTopicParticipant(
+		rewards.GenerateRewardsDistributionByTopicParticipantArgs{
+			Ctx:          s.ctx,
+			K:            s.emissionsKeeper,
+			TopicId:      topicId,
+			TopicReward:  &topicTotalRewards,
+			BlockHeight:  block,
+			ModuleParams: params,
+		})
 	s.Require().NoError(err)
 
 	calcSecondTotalReputerReward := alloraMath.ZeroDec()
@@ -2485,9 +2502,14 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 	s.Require().NoError(err)
 
 	firstRewardsDistribution, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
-		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards,
-		lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		params)
+		rewards.GenerateRewardsDistributionByTopicParticipantArgs{
+			Ctx:          s.ctx,
+			K:            s.emissionsKeeper,
+			TopicId:      topicId,
+			TopicReward:  &topicTotalRewards,
+			BlockHeight:  lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+			ModuleParams: params,
+		})
 	s.Require().NoError(err)
 
 	totalInferersReward := alloraMath.ZeroDec()
@@ -2670,9 +2692,14 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	topicTotalRewards = alloraMath.NewDecFromInt64(1000000)
 	secondRewardsDistribution, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
-		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards,
-		lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		params)
+		rewards.GenerateRewardsDistributionByTopicParticipantArgs{
+			Ctx:          s.ctx,
+			K:            s.emissionsKeeper,
+			TopicId:      topicId,
+			TopicReward:  &topicTotalRewards,
+			BlockHeight:  lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+			ModuleParams: params,
+		})
 	s.Require().NoError(err)
 
 	totalInferersReward = alloraMath.ZeroDec()
@@ -2825,9 +2852,14 @@ func (s *RewardsTestSuite) TestTotalInferersRewardFractionGrowsWithMoreInferers(
 
 	topicTotalRewards = alloraMath.NewDecFromInt64(1000000)
 	thirdRewardsDistribution, _, err := rewards.GenerateRewardsDistributionByTopicParticipant(
-		s.ctx, s.emissionsKeeper, topicId, &topicTotalRewards,
-		lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
-		params)
+		rewards.GenerateRewardsDistributionByTopicParticipantArgs{
+			Ctx:          s.ctx,
+			K:            s.emissionsKeeper,
+			TopicId:      topicId,
+			TopicReward:  &topicTotalRewards,
+			BlockHeight:  lossBundles.ReputerValueBundles[0].ValueBundle.ReputerRequestNonce.ReputerNonce.BlockHeight,
+			ModuleParams: params,
+		})
 	s.Require().NoError(err)
 
 	totalInferersReward = alloraMath.ZeroDec()
