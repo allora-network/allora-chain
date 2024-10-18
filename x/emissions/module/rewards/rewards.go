@@ -174,14 +174,20 @@ func getDistributionAndPayoutRewardsToTopicActors(
 	return rewardInTopicToActors, nil
 }
 
+// Calculates the rewards for each topic.
+//
+// Calculates rewards per-block based on their weights vs all active topics.
+// Rewards are then calculated per epoch, so topic's epochLength is used to calculate epoch rewards.
+// Uses the current total amount rewardable in treasury as the max reward available to check against.
+// If rewards treasury does not cover the computed rewards for the topics, it cancels the rewards distribution.
 func CalcTopicRewards(
 	ctx sdk.Context,
-	weights map[uint64]*alloraMath.Dec,
-	sortedTopics []uint64,
+	weights map[uint64]*alloraMath.Dec, // weights of all active topics in this block
+	sortedTopics []uint64, // topics sorted by weight in descending order
 	sumWeight alloraMath.Dec, // sum of all topic weights
-	totalReward alloraMath.Dec, // maxTotalReward in treasury
+	totalAvailableInRewardsTreasury alloraMath.Dec, // Maximum amount of rewards available in treasury
 	epochLengths map[uint64]int64, // epoch lengths for each topic
-	currentBlockEmissionDec alloraMath.Dec, // perBlockEmission
+	currentBlockEmissionDec alloraMath.Dec, // Rewards emission per block
 ) (
 	map[uint64]*alloraMath.Dec,
 	error,
@@ -217,8 +223,8 @@ func CalcTopicRewards(
 			return nil, errors.Wrapf(err, "calcTopicRewards: total topic rewards sum error")
 		}
 	}
-	if totalTopicRewardsSum.Gt(totalReward) {
-		return nil, errors.Wrapf(types.ErrInvalidReward, "total topic rewards sum %s is greater than total reward in treasury %s, cancelling rewards distribution", totalTopicRewardsSum.String(), totalReward.String())
+	if totalTopicRewardsSum.Gt(totalAvailableInRewardsTreasury) {
+		return nil, errors.Wrapf(types.ErrInvalidReward, "total topic rewards sum %s is greater than total reward in treasury %s, cancelling rewards distribution", totalTopicRewardsSum.String(), totalAvailableInRewardsTreasury.String())
 	}
 	return topicRewards, nil
 }
