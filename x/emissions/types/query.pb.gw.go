@@ -8854,7 +8854,7 @@ var (
 
 	pattern_QueryService_GetPreviousTopicWeight_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v5", "previous_topic_weight", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_QueryService_GetTotalSumPreviousTopicWeights_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"emissions", "v5", "previous_total_topic_weight"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_QueryService_GetTotalSumPreviousTopicWeights_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"emissions", "v5", "sum_previous_total_topic_weight"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_QueryService_TopicExists_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v5", "topic_exists", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 

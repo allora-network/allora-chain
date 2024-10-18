@@ -252,7 +252,7 @@ service QueryService {
 
   rpc GetTotalSumPreviousTopicWeights(GetTotalSumPreviousTopicWeightsRequest) returns (GetTotalSumPreviousTopicWeightsResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get = "/emissions/v5/previous_total_topic_weight";
+    option (google.api.http).get = "/emissions/v5/sum_previous_total_topic_weight";
   }
 
   rpc TopicExists(TopicExistsRequest) returns (TopicExistsResponse) {
