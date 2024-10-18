@@ -153,7 +153,7 @@ func GenerateReputerScores(
 		return nil, err
 	}
 
-	types.EmitNewReputerScoresSetEvent(ctx, instantScores)
+	types.EmitNewReputerScoresSetEvent(ctx, instantScores, newCoefficients)
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
 	return instantScores, nil
 }

@@ -14,7 +14,7 @@ func EmitNewInfererScoresSetEvent(ctx sdk.Context, scores []Score) {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.INFERER_SCORE_EVENT)
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, scores, nil))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewInfererScoresSetEvent: ", err.Error())
 	}
@@ -25,18 +25,18 @@ func EmitNewForecasterScoresSetEvent(ctx sdk.Context, scores []Score) {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.FORECASTER_SCORE_EVENT)
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, scores, nil))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewForecasterScoresSetEvent: ", err.Error())
 	}
 }
 
-func EmitNewReputerScoresSetEvent(ctx sdk.Context, scores []Score) {
+func EmitNewReputerScoresSetEvent(ctx sdk.Context, scores []Score, listeningCoefficients []alloraMath.Dec) {
 	if len(scores) < 1 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.REPUTER_SOCRE_EVENT)
-	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_REPUTER, scores))
+	err := ctx.EventManager().EmitTypedEvent(NewScoresSetEventBase(ActorType_ACTOR_TYPE_REPUTER, scores, listeningCoefficients))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewReputerScoresSetEvent: ", err.Error())
 	}
@@ -129,7 +129,7 @@ func EmitNewActorEMAScoresSetEvent(ctx sdk.Context, actorType ActorType, scores 
 /// Utils
 
 // Assumes length of `scores` is at least 1
-func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
+func NewScoresSetEventBase(actorType ActorType, scores []Score, listeningCoefficients []alloraMath.Dec) proto.Message {
 	topicId := scores[0].TopicId
 	blockHeight := scores[0].BlockHeight
 	addresses := make([]string, len(scores))
@@ -139,11 +139,12 @@ func NewScoresSetEventBase(actorType ActorType, scores []Score) proto.Message {
 		scoreValues[i] = score.Score
 	}
 	return &EventScoresSet{
-		ActorType:   actorType,
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Addresses:   addresses,
-		Scores:      scoreValues,
+		ActorType:             actorType,
+		TopicId:               topicId,
+		BlockHeight:           blockHeight,
+		Addresses:             addresses,
+		Scores:                scoreValues,
+		ListeningCoefficients: listeningCoefficients,
 	}
 }
 
