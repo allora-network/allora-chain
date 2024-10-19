@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * [#624](https://github.com/allora-network/allora-chain/pull/624) Add `nurse` internal healthcheck service based on `pprof`.  See `health/README.md`.
+* [#634](https://github.com/allora-network/allora-chain/pull/634) Add events for listening coefficients and the computationally cheapest regrets
 
 ### Changed
 
