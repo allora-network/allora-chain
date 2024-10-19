@@ -121,8 +121,8 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 	workersRegrets := make([]alloraMath.Dec, 0)
 
 	// R_ij - Inferer Regrets
-	var workersForEvent []Worker = nil
-	var regretsForEvent []alloraMath.Dec = nil
+	var workersForEvent []Worker
+	var regretsForEvent []alloraMath.Dec
 	for _, infererLoss := range args.NetworkLosses.InfererValues {
 		lastRegret, newParticipant, err := args.K.GetInfererNetworkRegret(args.Ctx, args.TopicId, infererLoss.Worker)
 		if err != nil {
