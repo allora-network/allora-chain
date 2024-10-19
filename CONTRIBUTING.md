@@ -45,6 +45,23 @@ For `x/emissions`:
 For `x/mint`:
 __TBD__
 
+## Checklist for adding new events
+
+1. `x/emissions|mint/keeper/events.go`
+   1. Add a new `New...Event` function
+      1. May not always be needed
+   2. Add a new `Emit...Event` function
+2. `x/emissions|mint/metrics/labels.go`
+   1. Add a new label to identify the new event
+      1. May not always be needed
+3. `x/emissions|mint/proto/emissions|mint/vX/events.proto`
+   1. Update/Create the proto for the new event
+4. `x/emissions|mint/types/events_test.go`
+   1. Test the new event
+5. `x/emissions|mint/...`
+   1. Emit the new event where desired
+
+`vX` should refer to the latest version of the respective module (the version of the highest `X`).
 
 ## Checklist for updating the state machine
 

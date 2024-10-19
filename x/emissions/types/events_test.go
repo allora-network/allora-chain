@@ -21,6 +21,8 @@ const (
 	AttributeKeyRewards      = "rewards"
 	AttributeKeyValueBundle  = "value_bundle"
 	AttributeKeyCoefficients = "coefficients"
+	AttributeKeyRegrets      = "regrets"
+	AttributeKeyRegret       = "regret"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -629,4 +631,200 @@ func TestEmitNewReputerScoresSetEventWithNoCoefficients(t *testing.T) {
 
 	events := ctx.EventManager().Events()
 	require.Empty(t, events)
+}
+
+func TestEmitNewInfererNetworkRegretSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{"address1", "address2"}
+	regrets := []alloraMath.Dec{alloraMath.NewDecFromInt64(100), alloraMath.NewDecFromInt64(200)}
+
+	types.EmitNewInfererNetworkRegretSetEvent(ctx, topicID, blockHeight, addresses, regrets)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v5.EventInfererNetworkRegretSet", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyRegrets)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
+}
+
+func TestEmitNewInfererNetworkRegretSetEventWithNoAddresses(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{}
+	regrets := []alloraMath.Dec{alloraMath.NewDecFromInt64(100), alloraMath.NewDecFromInt64(200)}
+
+	types.EmitNewInfererNetworkRegretSetEvent(ctx, topicID, blockHeight, addresses, regrets)
+	events := ctx.EventManager().Events()
+	require.Empty(t, events)
+}
+
+func TestEmitNewInfererNetworkRegretSetEventWithNoRegrets(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{"address1", "address2"}
+	regrets := []alloraMath.Dec{}
+
+	types.EmitNewInfererNetworkRegretSetEvent(ctx, topicID, blockHeight, addresses, regrets)
+
+	events := ctx.EventManager().Events()
+	require.Empty(t, events)
+}
+
+func TestEmitNewForecasterNetworkRegretSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{"address1", "address2"}
+	regrets := []alloraMath.Dec{alloraMath.NewDecFromInt64(100), alloraMath.NewDecFromInt64(200)}
+
+	types.EmitNewForecasterNetworkRegretSetEvent(ctx, topicID, blockHeight, addresses, regrets)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v5.EventForecasterNetworkRegretSet", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyRegrets)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
+}
+
+func TestEmitNewForecasterNetworkRegretSetEventWithNoAddresses(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{}
+	regrets := []alloraMath.Dec{alloraMath.NewDecFromInt64(100), alloraMath.NewDecFromInt64(200)}
+
+	types.EmitNewForecasterNetworkRegretSetEvent(ctx, topicID, blockHeight, addresses, regrets)
+	events := ctx.EventManager().Events()
+	require.Empty(t, events)
+}
+
+func TestEmitNewForecasterNetworkRegretSetEventWithNoRegrets(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{"address1", "address2"}
+	regrets := []alloraMath.Dec{}
+
+	types.EmitNewForecasterNetworkRegretSetEvent(ctx, topicID, blockHeight, addresses, regrets)
+	events := ctx.EventManager().Events()
+	require.Empty(t, events)
+}
+
+func TestEmitNewNaiveInfererNetworkRegretSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{"address1", "address2"}
+	regrets := []alloraMath.Dec{alloraMath.NewDecFromInt64(100), alloraMath.NewDecFromInt64(200)}
+
+	types.EmitNewNaiveInfererNetworkRegretSetEvent(ctx, topicID, blockHeight, addresses, regrets)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v5.EventNaiveInfererNetworkRegretSet", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyRegrets)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
+}
+
+func TestEmitNewNaiveInfererNetworkRegretSetEventWithNoAddresses(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{}
+	regrets := []alloraMath.Dec{alloraMath.NewDecFromInt64(100), alloraMath.NewDecFromInt64(200)}
+
+	types.EmitNewNaiveInfererNetworkRegretSetEvent(ctx, topicID, blockHeight, addresses, regrets)
+	events := ctx.EventManager().Events()
+	require.Empty(t, events)
+}
+
+func TestEmitNewNaiveInfererNetworkRegretSetEventWithNoRegrets(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{"address1", "address2"}
+	regrets := []alloraMath.Dec{}
+
+	types.EmitNewNaiveInfererNetworkRegretSetEvent(ctx, topicID, blockHeight, addresses, regrets)
+	events := ctx.EventManager().Events()
+	require.Empty(t, events)
+}
+
+func TestEmitNewTopicInitialRegretSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	regret := alloraMath.NewDecFromInt64(100)
+
+	types.EmitNewTopicInitialRegretSetEvent(ctx, topicID, blockHeight, regret)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v5.EventTopicInitialRegretSet", event.Type)
+
+	val, exists := event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute(AttributeKeyRegret)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "100")
 }
