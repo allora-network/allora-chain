@@ -126,6 +126,17 @@ func EmitNewActorEMAScoresSetEvent(ctx sdk.Context, actorType ActorType, scores 
 	}
 }
 
+func EmitNewListeningCoefficientsSetEvent(ctx sdk.Context, actorType ActorType, topicID uint64, blockHeight int64, addresses []string, coefficients []alloraMath.Dec) {
+	if len(addresses) == 0 || len(coefficients) == 0 {
+		return
+	}
+	metrics.IncrProducerEventCount(metrics.LISTENING_COEFFICIENTS_EVENT)
+	err := ctx.EventManager().EmitTypedEvent(NewListeningCoefficientsSetEventBase(topicID, blockHeight, addresses, actorType, coefficients))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewListeningCoefficientsSetEvent: ", err.Error())
+	}
+}
+
 /// Utils
 
 // Assumes length of `scores` is at least 1
@@ -227,5 +238,15 @@ func NewEMAScoresSetEventBase(actorType ActorType, scores []Score, activations m
 		Addresses: addresses,
 		Scores:    scoreValues,
 		IsActive:  activeArr,
+	}
+}
+
+func NewListeningCoefficientsSetEventBase(topicID uint64, blockHeight int64, addresses []string, actorType ActorType, coefficients []alloraMath.Dec) proto.Message {
+	return &EventListeningCoefficientsSet{
+		ActorType:    actorType,
+		TopicId:      topicID,
+		BlockHeight:  blockHeight,
+		Addresses:    addresses,
+		Coefficients: coefficients,
 	}
 }

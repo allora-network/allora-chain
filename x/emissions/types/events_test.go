@@ -13,13 +13,14 @@ import (
 )
 
 const (
-	AttributeKeyActorType   = "actor_type"
-	AttributeKeyTopicId     = "topic_id"
-	AttributeKeyBlockHeight = "block_height"
-	AttributeKeyAddresses   = "addresses"
-	AttributeKeyScores      = "scores"
-	AttributeKeyRewards     = "rewards"
-	AttributeKeyValueBundle = "value_bundle"
+	AttributeKeyActorType    = "actor_type"
+	AttributeKeyTopicId      = "topic_id"
+	AttributeKeyBlockHeight  = "block_height"
+	AttributeKeyAddresses    = "addresses"
+	AttributeKeyScores       = "scores"
+	AttributeKeyRewards      = "rewards"
+	AttributeKeyValueBundle  = "value_bundle"
+	AttributeKeyCoefficients = "coefficients"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -45,7 +46,7 @@ func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v4.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v5.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -104,7 +105,7 @@ func TestEmitNewForecasterScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v4.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v5.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -163,7 +164,7 @@ func TestEmitNewReputerScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v4.EventScoresSet", event.Type)
+	require.Equal(t, "emissions.v5.EventScoresSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -222,7 +223,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v4.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v5.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -281,7 +282,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v4.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v5.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -340,7 +341,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v4.EventRewardsSettled", event.Type)
+	require.Equal(t, "emissions.v5.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 5)
@@ -401,7 +402,7 @@ func TestEmitNewNetworkLossSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v4.EventNetworkLossSet", event.Type)
+	require.Equal(t, "emissions.v5.EventNetworkLossSet", event.Type)
 
 	attributes := event.Attributes
 	require.Len(t, attributes, 3)
@@ -434,7 +435,7 @@ func TestEmitNewForecastTaskSetEvent(t *testing.T) {
 	require.Len(t, events, 1)
 
 	event := events[0]
-	require.Equal(t, "emissions.v4.EventForecastTaskScoreSet", event.Type)
+	require.Equal(t, "emissions.v5.EventForecastTaskScoreSet", event.Type)
 
 	require.Contains(t, event.Attributes[0].Key, "score")
 	require.Contains(t, event.Attributes[0].Value, "10")
@@ -457,9 +458,9 @@ func TestNewLastCommitSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 3)
 
-	require.Equal(t, "emissions.v4.EventWorkerLastCommitSet", events[0].Type)
-	require.Equal(t, "emissions.v4.EventWorkerLastCommitSet", events[1].Type)
-	require.Equal(t, "emissions.v4.EventReputerLastCommitSet", events[2].Type)
+	require.Equal(t, "emissions.v5.EventWorkerLastCommitSet", events[0].Type)
+	require.Equal(t, "emissions.v5.EventWorkerLastCommitSet", events[1].Type)
+	require.Equal(t, "emissions.v5.EventReputerLastCommitSet", events[2].Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "block_height")
 	require.Contains(t, events[0].Attributes[1].Key, "nonce")
@@ -496,7 +497,7 @@ func TestEmitNewTopicRewardsSetEvent(t *testing.T) {
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
 
-	require.Equal(t, "emissions.v4.EventTopicRewardsSet", events[0].Type)
+	require.Equal(t, "emissions.v5.EventTopicRewardsSet", events[0].Type)
 	require.Contains(t, events[0].Attributes[0].Key, "rewards")
 	require.Contains(t, events[0].Attributes[0].Value, `["0","10","20","30","40"]`)
 	require.Contains(t, events[0].Attributes[1].Key, "topic_ids")
@@ -535,7 +536,7 @@ func TestEmitNewEMAScoresSetEventWithScores(t *testing.T) {
 	require.Len(t, events, 3)
 
 	event := events[0]
-	require.Equal(t, "emissions.v4.EventEMAScoresSet", event.Type)
+	require.Equal(t, "emissions.v5.EventEMAScoresSet", event.Type)
 
 	require.Contains(t, events[0].Attributes[0].Key, "actor_type")
 	require.Contains(t, events[0].Attributes[0].Value, "\"ACTOR_TYPE_INFERER_UNSPECIFIED\"")
@@ -559,4 +560,73 @@ func TestEmitNewEMAScoresSetEventWithScores(t *testing.T) {
 	require.Contains(t, events[2].Attributes[0].Value, "\"ACTOR_TYPE_REPUTER\"")
 	require.Contains(t, events[2].Attributes[2].Key, "is_active")
 	require.Contains(t, events[2].Attributes[2].Value, "[true,true]")
+}
+
+func TestEmitNewListeningCoefficientsSetEvent(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+
+	actorType := types.ActorType_ACTOR_TYPE_REPUTER
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{"address1", "address2"}
+	coefficients := []alloraMath.Dec{alloraMath.NewDecFromInt64(100), alloraMath.NewDecFromInt64(200)}
+
+	types.EmitNewListeningCoefficientsSetEvent(ctx, actorType, topicID, blockHeight, addresses, coefficients)
+
+	events := ctx.EventManager().Events()
+	require.Len(t, events, 1)
+
+	event := events[0]
+	require.Equal(t, "emissions.v5.EventListeningCoefficientsSet", event.Type)
+
+	attributes := event.Attributes
+	require.Len(t, attributes, 5)
+
+	val, exists := event.GetAttribute(AttributeKeyActorType)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "ACTOR_TYPE_REPUTER")
+
+	val, exists = event.GetAttribute(AttributeKeyTopicId)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "1")
+
+	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute(AttributeKeyAddresses)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["address1","address2"]`)
+
+	val, exists = event.GetAttribute(AttributeKeyCoefficients)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), `["100","200"]`)
+}
+
+func TestEmitNewReputerScoresSetEventWithNoAddresses(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	actorType := types.ActorType_ACTOR_TYPE_REPUTER
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{}
+	coefficients := []alloraMath.Dec{}
+
+	types.EmitNewListeningCoefficientsSetEvent(ctx, actorType, topicID, blockHeight, addresses, coefficients)
+
+	events := ctx.EventManager().Events()
+	require.Empty(t, events)
+}
+
+func TestEmitNewReputerScoresSetEventWithNoCoefficients(t *testing.T) {
+	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
+	actorType := types.ActorType_ACTOR_TYPE_REPUTER
+	topicID := uint64(1)
+	blockHeight := int64(10)
+	addresses := []string{"address1", "address2"}
+	coefficients := []alloraMath.Dec{}
+
+	types.EmitNewListeningCoefficientsSetEvent(ctx, actorType, topicID, blockHeight, addresses, coefficients)
+
+	events := ctx.EventManager().Events()
+	require.Empty(t, events)
 }
