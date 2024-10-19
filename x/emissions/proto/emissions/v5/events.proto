@@ -105,3 +105,42 @@ message EventListeningCoefficientsSet {
     (gogoproto.nullable) = false
   ];
 }
+
+message EventInfererNetworkRegretSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  repeated string addresses = 3;
+  repeated string regrets = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventForecasterNetworkRegretSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  repeated string addresses = 3;
+  repeated string regrets = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventNaiveInfererNetworkRegretSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  repeated string addresses = 3;
+  repeated string regrets = 4 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message EventTopicInitialRegretSet {
+  uint64 topic_id = 1;
+  int64 block_height = 2;
+  string regret = 3 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
