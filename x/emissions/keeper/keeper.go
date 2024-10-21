@@ -1008,7 +1008,6 @@ func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(
 			BlockHeight: 0,
 			Value:       topic.InitialRegret,
 		}, true, nil
-
 	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out forecaster forecaster network regret")
 	}
