@@ -7,6 +7,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+func Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", "inference_synthesis")
+}
+
 func CosmosIntOneE18() cosmosMath.Int {
 	ret, ok := cosmosMath.NewIntFromString("1000000000000000000")
 	if !ok {
@@ -40,23 +44,4 @@ func ConvertWeightsToArrays(workers []Worker, weights map[Worker]Weight) []*emis
 		weightsArray = append(weightsArray, &emissionstypes.RegretInformedWeight{Worker: worker, Weight: weights[worker]})
 	}
 	return weightsArray
-}
-
-// It is assumed every key of `forecastImpliedInferenceByWorker` is contained within the `workers` slice
-func ConvertForecastImpliedInferencesToArrays(
-	workers []Worker,
-	forecastImpliedInferenceByWorker map[string]*emissionstypes.Inference,
-) []*emissionstypes.WorkerAttributedValue {
-	forecastImpliedInferences := make([]*emissionstypes.WorkerAttributedValue, 0)
-	for _, worker := range workers {
-		forecastImpliedInferences = append(
-			forecastImpliedInferences,
-			&emissionstypes.WorkerAttributedValue{Worker: worker, Value: forecastImpliedInferenceByWorker[worker].Value},
-		)
-	}
-	return forecastImpliedInferences
-}
-
-func Logger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", "inference_synthesis")
 }

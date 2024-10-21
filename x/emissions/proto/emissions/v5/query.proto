@@ -811,10 +811,12 @@ message GetNetworkInferencesAtBlockResponse {
 }
 
 message GetLatestNetworkInferencesResponse {
+  reserved 4;
+  reserved "forecast_implied_inferences";
+
   emissions.v3.ValueBundle network_inferences = 1;
   repeated emissions.v3.RegretInformedWeight inferer_weights = 2;
   repeated emissions.v3.RegretInformedWeight forecaster_weights = 3;
-  repeated emissions.v3.WorkerAttributedValue forecast_implied_inferences = 4;
   int64 inference_block_height = 5;
   int64 loss_block_height = 6;
   repeated string confidence_interval_raw_percentiles = 7 [
@@ -828,10 +830,12 @@ message GetLatestNetworkInferencesResponse {
 }
 
 message GetLatestAvailableNetworkInferencesResponse {
+  reserved 4;
+  reserved "forecast_implied_inferences";
+
   emissions.v3.ValueBundle network_inferences = 1;
   repeated emissions.v3.RegretInformedWeight inferer_weights = 2;
   repeated emissions.v3.RegretInformedWeight forecaster_weights = 3;
-  repeated emissions.v3.WorkerAttributedValue forecast_implied_inferences = 4;
   int64 inference_block_height = 5;
   int64 loss_block_height = 6;
   repeated string confidence_interval_raw_percentiles = 7 [
