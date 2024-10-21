@@ -3,11 +3,11 @@ package keeper
 import (
 	"context"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"strings"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/pkg/errors"
 
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
@@ -999,17 +999,17 @@ func (k *Keeper) GetOneOutForecasterForecasterNetworkRegret(
 ) (regret types.TimestampedValue, noPrior bool, err error) {
 	key := collections.Join3(topicId, oneOutForecaster, forecaster)
 	regret, err = k.latestOneOutForecasterForecasterNetworkRegrets.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			topic, err := k.GetTopic(ctx, topicId)
-			if err != nil {
-				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
-			}
-			return types.TimestampedValue{
-				BlockHeight: 0,
-				Value:       topic.InitialRegret,
-			}, true, nil
+	if errors.Is(err, collections.ErrNotFound) {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
+		return types.TimestampedValue{
+			BlockHeight: 0,
+			Value:       topic.InitialRegret,
+		}, true, nil
+
+	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out forecaster forecaster network regret")
 	}
 	return regret, false, nil
@@ -1026,10 +1026,9 @@ func (k Keeper) SetParams(ctx context.Context, params types.Params) error {
 
 func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 	ret, err := k.params.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.DefaultParams(), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.DefaultParams(), nil
+	} else if err != nil {
 		return types.Params{}, errorsmod.Wrap(err, "error getting params")
 	}
 	return ret, nil
@@ -1040,10 +1039,9 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return &types.Inferences{Inferences: []*types.Inference{}}, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return &types.Inferences{Inferences: []*types.Inference{}}, nil
+	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting inferences at block")
 	}
 	return &inferences, nil
@@ -1075,10 +1073,9 @@ func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId) 
 func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, error) {
 	key := collections.Join(topicId, block)
 	forecasts, err := k.allForecasts.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return &types.Forecasts{Forecasts: []*types.Forecast{}}, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return &types.Forecasts{Forecasts: []*types.Forecast{}}, nil
+	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting forecasts at block")
 	}
 	return &forecasts, nil
