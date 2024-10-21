@@ -103,7 +103,8 @@ func calcNetworkInferencesMultipleByMedian(
 	}
 
 	networkInferences := &emissions.ValueBundle{
-		TopicId: topicId,
+		TopicId:   topicId,
+		ExtraData: nil,
 		ReputerRequestNonce: &emissions.ReputerRequestNonce{
 			ReputerNonce: &emissions.Nonce{BlockHeight: ctx.BlockHeight()},
 		},
