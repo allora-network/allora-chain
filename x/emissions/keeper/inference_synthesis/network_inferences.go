@@ -53,7 +53,6 @@ func GetNetworkInferences(
 
 		// 2b. Otherwise, calculate the normal way.
 		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, inferenceBlockHeight, networkLosses)
-
 	} else if len(inferences.Inferences) == 1 {
 		// If we only have a single inference, simply return it as is.
 		return calcNetworkInferencesSingle(ctx, inferenceBlockHeight, topicId, inferences)
@@ -77,7 +76,6 @@ func getRequestedInferences(
 			return nil, 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at latest block", topicId)
 		}
 		return inferences, inferenceBlockHeight, nil
-
 	} else {
 		inferences, err := k.GetInferencesAtBlock(ctx, topicId, *inferencesNonce)
 		if err != nil {
