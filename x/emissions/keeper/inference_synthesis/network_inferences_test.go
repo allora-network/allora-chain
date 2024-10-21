@@ -134,7 +134,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	s.Require().NoError(err)
 
 	// Calculate
-	valueBundle, _, _, _, _, _, err :=
+	valueBundle, _, _, _, _, lossBlockHeight, err :=
 		inferencesynthesis.GetNetworkInferences(
 			s.ctx,
 			s.emissionsKeeper,
@@ -145,6 +145,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
 	testutil.InEpsilon5(s.T(), valueBundle.NaiveValue, epoch3Get("network_naive_inference").String())
 
+	s.Require().Equal(lossBlockHeight, blockHeightPreviousLosses)
 	s.Require().Len(valueBundle.InfererValues, 5)
 	for _, inference := range inferences.Inferences {
 		found := false

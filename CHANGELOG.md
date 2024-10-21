@@ -72,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#615](https://github.com/allora-network/allora-chain/pull/615) Improvement to merit-based sortition to enable more cycling through the crowd
 * [#615](https://github.com/allora-network/allora-chain/pull/615) Fixed runaway regret calculation where large influx of workers would cause the regret to grow negatively without bound
+* [#636](https://github.com/allora-network/allora-chain/pull/636) Actually filled in loss block height return value
 
 ### Added
 
