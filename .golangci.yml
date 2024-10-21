@@ -38,7 +38,6 @@ linters:
     - thelper
     - unconvert
     - unused
-    - whitespace
     - unparam
     - revive
     - gosec

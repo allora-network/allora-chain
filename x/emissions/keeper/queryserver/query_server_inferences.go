@@ -85,7 +85,7 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
 	}
 
-	networkInferences, _, _, _, _, _, err := synth.GetNetworkInferences(
+	result, err := synth.GetNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
@@ -95,7 +95,7 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 		return nil, err
 	}
 
-	return &emissionstypes.GetNetworkInferencesAtBlockResponse{NetworkInferences: networkInferences}, nil
+	return &emissionstypes.GetNetworkInferencesAtBlockResponse{NetworkInferences: result.NetworkInferences}, nil
 }
 
 // Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences
@@ -109,7 +109,7 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 		return nil, err
 	}
 
-	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, inferenceBlockHeight, lossBlockHeight, err := synth.GetNetworkInferences(
+	result, err := synth.GetNetworkInferences(
 		sdk.UnwrapSDKContext(ctx),
 		qs.k,
 		req.TopicId,
@@ -120,10 +120,10 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 	}
 
 	ciRawPercentiles, ciValues, err := qs.GetConfidenceIntervalsForInferenceData(
-		networkInferences,
-		forecastImpliedInferenceByWorker,
-		infererWeights,
-		forecasterWeights,
+		result.NetworkInferences,
+		result.ForecasterToForecastImpliedInference,
+		result.InfererToWeight,
+		result.ForecasterToWeight,
 	)
 	if err != nil {
 		return nil, err
@@ -137,16 +137,16 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 		ciValues = []alloraMath.Dec{}
 	}
 
-	inferers := alloraMath.GetSortedKeys(infererWeights)
-	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
+	inferers := alloraMath.GetSortedKeys(result.InfererToWeight)
+	forecasters := alloraMath.GetSortedKeys(result.ForecasterToWeight)
 
 	return &emissionstypes.GetLatestNetworkInferencesResponse{
-		NetworkInferences:                networkInferences,
-		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
-		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
-		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
-		InferenceBlockHeight:             inferenceBlockHeight,
-		LossBlockHeight:                  lossBlockHeight,
+		NetworkInferences:                result.NetworkInferences,
+		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, result.InfererToWeight),
+		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, result.ForecasterToWeight),
+		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, result.ForecasterToForecastImpliedInference),
+		InferenceBlockHeight:             result.InferenceBlockHeight,
+		LossBlockHeight:                  result.LossBlockHeight,
 		ConfidenceIntervalRawPercentiles: ciRawPercentiles,
 		ConfidenceIntervalValues:         ciValues,
 	}, nil
@@ -165,7 +165,7 @@ func (qs queryServer) GetLatestAvailableNetworkInferences(ctx context.Context, r
 		return nil, err
 	}
 
-	networkInferences, forecastImpliedInferenceByWorker, infererWeights, forecasterWeights, _, _, err :=
+	result, err :=
 		synth.GetNetworkInferences(
 			sdk.UnwrapSDKContext(ctx),
 			qs.k,
@@ -178,10 +178,10 @@ func (qs queryServer) GetLatestAvailableNetworkInferences(ctx context.Context, r
 
 	ciRawPercentiles, ciValues, err :=
 		qs.GetConfidenceIntervalsForInferenceData(
-			networkInferences,
-			forecastImpliedInferenceByWorker,
-			infererWeights,
-			forecasterWeights,
+			result.NetworkInferences,
+			result.ForecasterToForecastImpliedInference,
+			result.InfererToWeight,
+			result.ForecasterToWeight,
 		)
 	if err != nil {
 		return nil, err
@@ -195,14 +195,14 @@ func (qs queryServer) GetLatestAvailableNetworkInferences(ctx context.Context, r
 		ciValues = []alloraMath.Dec{}
 	}
 
-	inferers := alloraMath.GetSortedKeys(infererWeights)
-	forecasters := alloraMath.GetSortedKeys(forecasterWeights)
+	inferers := alloraMath.GetSortedKeys(result.InfererToWeight)
+	forecasters := alloraMath.GetSortedKeys(result.ForecasterToWeight)
 
 	return &emissionstypes.GetLatestAvailableNetworkInferencesResponse{
-		NetworkInferences:                networkInferences,
-		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, infererWeights),
-		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, forecasterWeights),
-		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, forecastImpliedInferenceByWorker),
+		NetworkInferences:                result.NetworkInferences,
+		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, result.InfererToWeight),
+		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, result.ForecasterToWeight),
+		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, result.ForecasterToForecastImpliedInference),
 		InferenceBlockHeight:             lastWorkerCommit.Nonce.BlockHeight,
 		LossBlockHeight:                  lastReputerCommit.Nonce.BlockHeight,
 		ConfidenceIntervalRawPercentiles: ciRawPercentiles,
