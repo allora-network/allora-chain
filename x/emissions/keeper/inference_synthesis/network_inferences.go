@@ -330,10 +330,14 @@ func GetCalcNetworkInferenceArgs(
 	// It will not have available forecast-implied inferences if the forecasters
 	// didn't make any forecasts for the existing inferers
 	if len(forecastImpliedInferencesByWorker) > 0 {
-		calcArgs.Forecasters = sortedForecasters
-		calcArgs.ForecasterToForecast = forecasterToForecast
-		calcArgs.ForecasterToRegret = forecasterToRegret
-		calcArgs.ForecasterToForecastImpliedInference = forecastImpliedInferencesByWorker
+		for _, forecaster := range sortedForecasters {
+			if forecastImpliedInference, ok := forecastImpliedInferencesByWorker[forecaster]; ok {
+				calcArgs.Forecasters = append(calcArgs.Forecasters, forecaster)
+				calcArgs.ForecasterToForecast[forecaster] = forecasterToForecast[forecaster]
+				calcArgs.ForecasterToRegret[forecaster] = forecasterToRegret[forecaster]
+				calcArgs.ForecasterToForecastImpliedInference[forecaster] = forecastImpliedInference
+			}
+		}
 	}
 
 	return calcArgs, nil
