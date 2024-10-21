@@ -469,7 +469,7 @@ func (s *QueryServerTestSuite) TestGetLatestNetworkInferences() {
 
 	require.Equal(len(response.InfererWeights), 5)
 	require.Equal(len(response.ForecasterWeights), 3)
-	require.Equal(len(response.ForecastImpliedInferences), 3)
+	require.Equal(len(response.NetworkInferences.ForecasterValues), 3)
 }
 
 func (s *QueryServerTestSuite) TestIsWorkerNonceUnfulfilled() {
@@ -879,7 +879,7 @@ func (s *QueryServerTestSuite) TestGetLatestAvailableNetworkInference() {
 	// should be 4 since we would be looking at inferences from a previous block
 	require.Equal(len(response.InfererWeights), 5)
 	require.Equal(len(response.ForecasterWeights), 3)
-	require.Equal(len(response.ForecastImpliedInferences), 3)
+	require.Equal(len(response.NetworkInferences.ForecasterValues), 3)
 	require.Equal(len(response.ConfidenceIntervalRawPercentiles), 5)
 	require.Equal(len(response.ConfidenceIntervalValues), 5)
 
