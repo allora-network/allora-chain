@@ -16,8 +16,12 @@ import (
 )
 
 type GetNetworkInferencesResult struct {
+	NetworkInferences    *emissions.ValueBundle
+	InfererToWeight      map[Inferer]Weight
+	ForecasterToWeight   map[Forecaster]Weight
+	InferenceBlockHeight int64
+	LossBlockHeight      int64 // TODO(spook): this is never set anywhere in the code.  intentional or bug?
 	NetworkInferences                    *emissions.ValueBundle
-	ForecasterToForecastImpliedInference map[string]*emissions.Inference
 	InfererToWeight                      map[Inferer]Weight
 	ForecasterToWeight                   map[Forecaster]Weight
 	InferenceBlockHeight                 int64
@@ -117,12 +121,11 @@ func calcNetworkInferencesMultipleByMedian(
 		ExtraData:                     nil,
 	}
 	return &GetNetworkInferencesResult{
-		NetworkInferences:                    networkInferences,
-		ForecasterToForecastImpliedInference: nil,
-		InfererToWeight:                      nil,
-		ForecasterToWeight:                   nil,
-		InferenceBlockHeight:                 inferenceBlockHeight,
-		LossBlockHeight:                      0,
+		NetworkInferences:    networkInferences,
+		InfererToWeight:      nil,
+		ForecasterToWeight:   nil,
+		InferenceBlockHeight: inferenceBlockHeight,
+		LossBlockHeight:      0,
 	}, nil
 }
 
@@ -190,7 +193,6 @@ func calcNetworkInferencesMultiple(
 
 	return &GetNetworkInferencesResult{
 		NetworkInferences:                    networkInferences,
-		ForecasterToForecastImpliedInference: calcArgs.ForecasterToForecastImpliedInference,
 		InfererToWeight:                      weights.inferers,
 		ForecasterToWeight:                   weights.forecasters,
 		InferenceBlockHeight:                 inferenceBlockHeight,
@@ -232,7 +234,6 @@ func calcNetworkInferencesSingle(
 	}
 	return &GetNetworkInferencesResult{
 		NetworkInferences:                    networkInferences,
-		ForecasterToForecastImpliedInference: nil,
 		InfererToWeight:                      nil,
 		ForecasterToWeight:                   nil,
 		InferenceBlockHeight:                 inferenceBlockHeight,
@@ -315,15 +316,26 @@ func GetCalcNetworkInferenceArgs(
 		InfererToInference:                   infererToInference,
 		InfererToRegret:                      infererToRegret,
 		AllInferersAreNew:                    allInferersAreNew,
-		Forecasters:                          sortedForecasters,
-		ForecasterToForecast:                 forecasterToForecast,
-		ForecasterToRegret:                   forecasterToRegret,
-		ForecasterToForecastImpliedInference: forecastImpliedInferencesByWorker,
+		Forecasters:                          make([]Forecaster, 0),
+		ForecasterToForecast:                 make(map[Forecaster]*emissions.Forecast, 0),
+		ForecasterToRegret:                   make(map[Forecaster]*alloraMath.Dec, 0),
+		ForecasterToForecastImpliedInference: make(map[Forecaster]*emissions.Inference, 0),
 		NetworkCombinedLoss:                  networkLosses.CombinedValue,
 		EpsilonTopic:                         topic.Epsilon,
 		EpsilonSafeDiv:                       moduleParams.EpsilonSafeDiv,
 		PNorm:                                topic.PNorm,
 		CNorm:                                moduleParams.CNorm,
 	}
+
+	// If there are forecast-implied inferences, add forecasters info
+	// It will not have available forecast-implied inferences if the forecasters
+	// didn't make any forecasts for the existing inferers
+	if len(forecastImpliedInferencesByWorker) > 0 {
+		calcArgs.Forecasters = sortedForecasters
+		calcArgs.ForecasterToForecast = forecasterToForecast
+		calcArgs.ForecasterToRegret = forecasterToRegret
+		calcArgs.ForecasterToForecastImpliedInference = forecastImpliedInferencesByWorker
+	}
+
 	return calcArgs, nil
 }
