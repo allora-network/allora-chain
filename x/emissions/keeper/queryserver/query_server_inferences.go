@@ -121,7 +121,6 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 
 	ciRawPercentiles, ciValues, err := qs.GetConfidenceIntervalsForInferenceData(
 		result.NetworkInferences,
-		result.ForecasterToForecastImpliedInference,
 		result.InfererToWeight,
 		result.ForecasterToWeight,
 	)
@@ -144,7 +143,6 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 		NetworkInferences:                result.NetworkInferences,
 		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, result.InfererToWeight),
 		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, result.ForecasterToWeight),
-		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, result.ForecasterToForecastImpliedInference),
 		InferenceBlockHeight:             result.InferenceBlockHeight,
 		LossBlockHeight:                  result.LossBlockHeight,
 		ConfidenceIntervalRawPercentiles: ciRawPercentiles,
@@ -179,7 +177,6 @@ func (qs queryServer) GetLatestAvailableNetworkInferences(ctx context.Context, r
 	ciRawPercentiles, ciValues, err :=
 		qs.GetConfidenceIntervalsForInferenceData(
 			result.NetworkInferences,
-			result.ForecasterToForecastImpliedInference,
 			result.InfererToWeight,
 			result.ForecasterToWeight,
 		)
@@ -202,7 +199,6 @@ func (qs queryServer) GetLatestAvailableNetworkInferences(ctx context.Context, r
 		NetworkInferences:                result.NetworkInferences,
 		InfererWeights:                   synth.ConvertWeightsToArrays(inferers, result.InfererToWeight),
 		ForecasterWeights:                synth.ConvertWeightsToArrays(forecasters, result.ForecasterToWeight),
-		ForecastImpliedInferences:        synth.ConvertForecastImpliedInferencesToArrays(forecasters, result.ForecasterToForecastImpliedInference),
 		InferenceBlockHeight:             lastWorkerCommit.Nonce.BlockHeight,
 		LossBlockHeight:                  lastReputerCommit.Nonce.BlockHeight,
 		ConfidenceIntervalRawPercentiles: ciRawPercentiles,
@@ -212,7 +208,6 @@ func (qs queryServer) GetLatestAvailableNetworkInferences(ctx context.Context, r
 
 func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 	networkInferences *emissionstypes.ValueBundle,
-	forecastImpliedInferenceByWorker map[string]*emissionstypes.Inference,
 	infererWeights map[string]alloraMath.Dec,
 	forecasterWeights map[string]alloraMath.Dec,
 ) (_ []alloraMath.Dec, _ []alloraMath.Dec, err error) {
@@ -231,7 +226,7 @@ func (qs queryServer) GetConfidenceIntervalsForInferenceData(
 	for _, forecast := range networkInferences.ForecasterValues {
 		weight, exists := forecasterWeights[forecast.Worker]
 		if exists {
-			inferences = append(inferences, forecastImpliedInferenceByWorker[forecast.Worker].Value)
+			inferences = append(inferences, forecast.Value)
 			weights = append(weights, weight)
 		}
 	}
