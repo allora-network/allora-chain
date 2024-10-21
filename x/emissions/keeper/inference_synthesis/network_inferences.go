@@ -98,7 +98,8 @@ func calcNetworkInferencesMultipleByMedian(
 	}
 
 	networkInferences := &emissions.ValueBundle{
-		TopicId: topicId,
+		TopicId:   topicId,
+		ExtraData: nil,
 		ReputerRequestNonce: &emissions.ReputerRequestNonce{
 			ReputerNonce: &emissions.Nonce{BlockHeight: ctx.BlockHeight()},
 		},
@@ -219,12 +220,12 @@ func calcNetworkInferencesSingle(
 				Value:  singleInference.Value,
 			},
 		},
-		ForecasterValues:              make([]*emissions.WorkerAttributedValue, 0, 0), // TODO(spook): can all of these be nil?
+		ForecasterValues:              make([]*emissions.WorkerAttributedValue, 0), // TODO(spook): can all of these be nil?
 		NaiveValue:                    singleInference.Value,
-		OneOutInfererValues:           make([]*emissions.WithheldWorkerAttributedValue, 0, 0), // TODO(spook): can all of these be nil?
-		OneOutForecasterValues:        make([]*emissions.WithheldWorkerAttributedValue, 0, 0), // TODO(spook): can all of these be nil?
-		OneInForecasterValues:         make([]*emissions.WorkerAttributedValue, 0, 0),         // TODO(spook): can all of these be nil?
-		OneOutInfererForecasterValues: make([]*emissions.OneOutInfererForecasterValues, 0, 0), // TODO(spook): can all of these be nil?
+		OneOutInfererValues:           make([]*emissions.WithheldWorkerAttributedValue, 0), // TODO(spook): can all of these be nil?
+		OneOutForecasterValues:        make([]*emissions.WithheldWorkerAttributedValue, 0), // TODO(spook): can all of these be nil?
+		OneInForecasterValues:         make([]*emissions.WorkerAttributedValue, 0),         // TODO(spook): can all of these be nil?
+		OneOutInfererForecasterValues: make([]*emissions.OneOutInfererForecasterValues, 0), // TODO(spook): can all of these be nil?
 	}
 	return &GetNetworkInferencesResult{
 		NetworkInferences:    networkInferences,
