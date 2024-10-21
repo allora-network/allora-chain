@@ -118,6 +118,7 @@ func GetNetworkInferences(
 			return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
 		} else {
 			Logger(ctx).Debug(fmt.Sprintf("Creating network inferences for topic %v with %v inferences and %v forecasts", topicId, len(inferences.Inferences), len(forecasts.Forecasts)))
+			lossBlockHeight = networkLosses.ReputerRequestNonce.ReputerNonce.BlockHeight
 
 			calcArgs, err := GetCalcNetworkInferenceArgs(
 				ctx,
