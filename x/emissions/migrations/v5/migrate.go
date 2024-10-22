@@ -222,7 +222,7 @@ func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cd
 
 	for _, prefix := range prefixes {
 		ctx.Logger().Info(fmt.Sprintf("MIGRATION V5: RESETTING %v MAP", prefix.name))
-		err := migutils.SafelyClearWholeMap(store, prefix.prefix, maxPageSize)
+		err := migutils.SafelyClearWholeMap(ctx, store, prefix.prefix, maxPageSize)
 		if err != nil {
 			return err
 		}
