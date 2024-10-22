@@ -33,10 +33,6 @@ import (
 	"github.com/allora-network/allora-chain/app"
 )
 
-const (
-	valVotingPower int64 = 900000000000000
-)
-
 var (
 	flagAccountsToFund = "accounts-to-fund"
 )
@@ -267,8 +263,11 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 
 	if args.upgradeToTrigger != "" {
 		upgradePlan := upgradetypes.Plan{
-			Name:   args.upgradeToTrigger,
-			Height: app.LastBlockHeight() + 10,
+			Name:                args.upgradeToTrigger,
+			Height:              app.LastBlockHeight() + 10,
+			Info:                "",
+			Time:                time.Time{},
+			UpgradedClientState: nil,
 		}
 		err = app.UpgradeKeeper.ScheduleUpgrade(ctx, upgradePlan)
 		if err != nil {
