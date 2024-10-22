@@ -143,7 +143,7 @@ func CalcForecastImpliedInferences(args CalcForecastImpliedInferencesArgs) (
 						return nil, nil, nil, errorsmod.Wrapf(err,
 							"error calculating forecast-implied inferences:error calculating normalized forecasted regrets")
 					}
-					infererWeightsForThisForecaster = weights.inferers
+					infererWeightsForThisForecaster = weights.Inferers
 				} else if len(sortedInferersInForecast) == 1 {
 					weights := make(map[Worker]Weight, 1)
 					weights[sortedInferersInForecast[0]] = alloraMath.OneDec()

@@ -186,8 +186,8 @@ func calcNetworkInferencesMultiple(
 
 	return &GetNetworkInferencesResult{
 		NetworkInferences:    networkInferences,
-		InfererToWeight:      weights.inferers,
-		ForecasterToWeight:   weights.forecasters,
+		InfererToWeight:      weights.Inferers,
+		ForecasterToWeight:   weights.Forecasters,
 		InferenceBlockHeight: inferenceBlockHeight,
 		LossBlockHeight:      networkLosses.ReputerRequestNonce.ReputerNonce.BlockHeight,
 	}, nil
