@@ -1212,6 +1212,158 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 	s.Require().Len(valueBundle.OneInForecasterValues, 3)
 }
 
+func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoForecastersValidOneForecasterInvalid() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	topicId := uint64(1)
+	blockHeight := int64(300)
+	worker1 := s.addrsStr[1]
+	worker2 := s.addrsStr[2]
+	worker3 := s.addrsStr[3]
+
+	forecaster1 := s.addrsStr[4]
+	forecaster2 := s.addrsStr[5]
+	forecaster3 := s.addrsStr[6]
+
+	// Set up input data
+	inferences := &emissionstypes.Inferences{
+		Inferences: []*emissionstypes.Inference{
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker1, Value: alloraMath.MustNewDecFromString("100")},
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker2, Value: alloraMath.MustNewDecFromString("200")},
+			{TopicId: topicId, BlockHeight: blockHeight, Inferer: worker3, Value: alloraMath.MustNewDecFromString("300")},
+		},
+	}
+
+	forecasts := &emissionstypes.Forecasts{
+		Forecasts: []*emissionstypes.Forecast{
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  forecaster1,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("400")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("500")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("600")},
+				},
+				ExtraData: nil,
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  forecaster2,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: worker1, Value: alloraMath.MustNewDecFromString("700")},
+					{Inferer: worker2, Value: alloraMath.MustNewDecFromString("800")},
+					{Inferer: worker3, Value: alloraMath.MustNewDecFromString("900")},
+				},
+				ExtraData: nil,
+			},
+			// Invalid forecaster info
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeight,
+				Forecaster:  forecaster3,
+				ForecastElements: []*emissionstypes.ForecastElement{
+					{Inferer: "unexistent_worker1", Value: alloraMath.MustNewDecFromString("100")},
+					{Inferer: "unexistent_worker2", Value: alloraMath.MustNewDecFromString("200")},
+					{Inferer: "unexistent_worker3", Value: alloraMath.MustNewDecFromString("300")},
+				},
+				ExtraData: nil,
+			},
+		},
+	}
+
+	// Set inferer network regrets
+	err := k.SetInfererNetworkRegret(ctx, topicId, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.001"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetInfererNetworkRegret(ctx, topicId, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.002"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetInfererNetworkRegret(ctx, topicId, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.003"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+
+	// Set forecaster network regrets
+	err = k.SetForecasterNetworkRegret(ctx, topicId, forecaster1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.004"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetForecasterNetworkRegret(ctx, topicId, forecaster2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.005"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetForecasterNetworkRegret(ctx, topicId, forecaster3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.006"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+
+	// Set one-in forecaster network regrets
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster1, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.007"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster1, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.008"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster1, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.009"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster2, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.001"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster2, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.002"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster2, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.003"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster3, worker1, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.004"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster3, worker2, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.005"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+	err = k.SetOneInForecasterNetworkRegret(ctx, topicId, forecaster3, worker3, emissionstypes.TimestampedValue{Value: alloraMath.MustNewDecFromString("0.006"), BlockHeight: blockHeight})
+	s.Require().NoError(err)
+
+	networkCombinedLoss := alloraMath.MustNewDecFromString("10000")
+	epsilonTopic := alloraMath.MustNewDecFromString("0.001")
+	epsilonSafeDiv := alloraMath.MustNewDecFromString("0.0000001")
+	pNorm := alloraMath.MustNewDecFromString("2")
+	cNorm := alloraMath.MustNewDecFromString("0.75")
+
+	inferers, inferenceByWorker, infererRegrets,
+		allInferersAreNew, forecasters, forecastByWorker,
+		forecasterRegrets, forecastImpliedInferenceByWorker := s.getNetworkCalcArgs(
+		blockHeight, inferences, forecasts,
+		networkCombinedLoss, epsilonTopic, epsilonSafeDiv, pNorm, cNorm)
+
+	calcArgs := inferencesynthesis.CalcNetworkInferencesArgs{
+		Ctx:                                  ctx,
+		K:                                    k,
+		Logger:                               ctx.Logger(),
+		TopicId:                              topicId,
+		Inferers:                             inferers,
+		InfererToInference:                   inferenceByWorker,
+		InfererToRegret:                      infererRegrets,
+		AllInferersAreNew:                    allInferersAreNew,
+		Forecasters:                          forecasters,
+		ForecasterToForecast:                 forecastByWorker,
+		ForecasterToRegret:                   forecasterRegrets,
+		ForecasterToForecastImpliedInference: forecastImpliedInferenceByWorker,
+		NetworkCombinedLoss:                  networkCombinedLoss,
+		EpsilonTopic:                         epsilonTopic,
+		EpsilonSafeDiv:                       epsilonSafeDiv,
+		PNorm:                                pNorm,
+		CNorm:                                cNorm,
+	}
+
+	valueBundle, weights, err := inferencesynthesis.CalcNetworkInferences(
+		calcArgs,
+	)
+	s.Require().NoError(err)
+
+	// Check the results
+	s.Require().NotNil(valueBundle)
+	s.Require().NotNil(valueBundle.CombinedValue)
+	s.Require().NotNil(valueBundle.NaiveValue)
+	s.Require().Len(valueBundle.InfererValues, 3)
+	s.Require().Len(valueBundle.ForecasterValues, 2)
+
+	s.Require().Len(valueBundle.OneOutInfererValues, 3)
+	s.Require().Len(valueBundle.OneOutForecasterValues, 2)
+	s.Require().Len(valueBundle.OneInForecasterValues, 2)
+
+	s.Require().NotNil(weights)
+	s.Require().Len(weights.Inferers, 3)
+	s.Require().Len(weights.Forecasters, 2)
+}
+
 func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTwoInferersNewOneOldOneNew() {
 	k := s.emissionsKeeper
 	ctx := s.ctx
