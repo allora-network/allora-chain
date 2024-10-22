@@ -19,6 +19,6 @@ type Stake = cosmosMath.Int
 // Need to differentiate between the two types of regrets because workers may complete tasks
 // for both roles and may have different regrets for those different roles
 type RegretInformedWeights struct {
-	inferers    map[Worker]Weight
-	forecasters map[Worker]Weight
+	Inferers    map[Worker]Weight
+	Forecasters map[Worker]Weight
 }
