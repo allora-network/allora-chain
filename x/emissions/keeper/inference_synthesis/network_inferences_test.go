@@ -168,6 +168,7 @@ func (s *InferenceSynthesisTestSuite) TestGetNetworkInferencesAtBlock() {
 			&blockHeight,
 		)
 	require.NoError(err)
+	s.Require().Equal(result.LossBlockHeight, blockHeightPreviousLosses)
 	valueBundle := result.NetworkInferences
 
 	testutil.InEpsilon5(s.T(), valueBundle.CombinedValue, epoch3Get("network_inference").String())
