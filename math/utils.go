@@ -165,8 +165,8 @@ func Median(data []Dec) (Dec, error) {
 	}
 
 	// Sort the data
-	sort.Slice(data, func(i, j int) bool {
-		return data[i].Lt(data[j])
+	slices.SortFunc(data, func(x, y Dec) int {
+		return x.Cmp(y)
 	})
 
 	if n%2 == 1 {

@@ -126,8 +126,8 @@ func calcWeightsGivenWorkers(args calcWeightsGivenWorkersArgs) (RegretInformedWe
 	}
 
 	return RegretInformedWeights{
-		inferers:    infererWeights,
-		forecasters: forecasterWeights,
+		Inferers:    infererWeights,
+		Forecasters: forecasterWeights,
 	}, nil
 }
 
@@ -173,7 +173,7 @@ func calcWeightedInference(args calcWeightedInferenceArgs) (InferenceValue, erro
 				args.logger.Debug(fmt.Sprintf("Cannot find inferer in InferenceByWorker in CalcWeightedInference %v", inferer))
 				continue
 			}
-			infererWeight, exists := args.weights.inferers[inferer]
+			infererWeight, exists := args.weights.Inferers[inferer]
 			if !exists {
 				args.logger.Debug(fmt.Sprintf("Cannot find inferer in weights.inferers in CalcWeightedInference %v", inferer))
 				continue
@@ -200,7 +200,7 @@ func calcWeightedInference(args calcWeightedInferenceArgs) (InferenceValue, erro
 				args.logger.Debug(fmt.Sprintf("Cannot find forecaster in ForecastImpliedInferenceByWorker in CalcWeightedInference %v", forecaster))
 				continue
 			}
-			forecasterWeight, exists := args.weights.forecasters[forecaster]
+			forecasterWeight, exists := args.weights.Forecasters[forecaster]
 			if !exists {
 				args.logger.Debug(fmt.Sprintf("Cannot find forecaster in weights.forecasters in CalcWeightedInference %v", forecaster))
 				continue

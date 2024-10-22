@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * [#624](https://github.com/allora-network/allora-chain/pull/624) Add `nurse` internal healthcheck service based on `pprof`.  See `health/README.md`.
+* [#642](https://github.com/allora-network/allora-chain/pull/642) Add release signing keys
 
 ### Changed
 
@@ -72,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#615](https://github.com/allora-network/allora-chain/pull/615) Improvement to merit-based sortition to enable more cycling through the crowd
 * [#615](https://github.com/allora-network/allora-chain/pull/615) Fixed runaway regret calculation where large influx of workers would cause the regret to grow negatively without bound
+* [#635](https://github.com/allora-network/allora-chain/pull/635) Fixed occasional nil pointer dereference bug when calling `GetNetworkInferences`. Also, actually filled in loss block height return value.
 
 ### Added
 

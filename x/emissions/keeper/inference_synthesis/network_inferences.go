@@ -1,200 +1,223 @@
 package inferencesynthesis
 
 import (
-	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
-	alloraMath "github.com/allora-network/allora-chain/math"
-	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
-	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/pkg/errors"
+
+	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils/fn"
+	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+	emissions "github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+type GetNetworkInferencesResult struct {
+	NetworkInferences    *emissions.ValueBundle
+	InfererToWeight      map[Inferer]Weight
+	ForecasterToWeight   map[Forecaster]Weight
+	InferenceBlockHeight int64
+	LossBlockHeight      int64
+}
 
 func GetNetworkInferences(
 	ctx sdk.Context,
 	k emissionskeeper.Keeper,
 	topicId TopicId,
 	inferencesNonce *BlockHeight,
-) (
-	networkInferences *emissions.ValueBundle,
-	forecasterToForecastImpliedInference map[string]*emissions.Inference,
-	infererToWeight map[Inferer]Weight,
-	forecasterToWeight map[Forecaster]Weight,
-	inferenceBlockHeight int64,
-	lossBlockHeight int64,
-	err error,
-) {
-	// Decide whether to use the latest inferences or inferences at a specific block height
-	var inferences *emissions.Inferences
-	if inferencesNonce == nil {
-		inferences, inferenceBlockHeight, err = k.GetLatestTopicInferences(ctx, topicId)
-		if err != nil || len(inferences.Inferences) == 0 {
-			if err != nil {
-				Logger(ctx).Warn(fmt.Sprintf("Error getting inferences: %s", err.Error()))
-			}
-			return nil, nil, nil, nil, inferenceBlockHeight, lossBlockHeight, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v", topicId)
-		}
-	} else {
-		inferences, err = k.GetInferencesAtBlock(ctx, topicId, *inferencesNonce)
-		inferenceBlockHeight = *inferencesNonce
-		if err != nil || len(inferences.Inferences) == 0 {
-			return nil, nil, nil, nil, inferenceBlockHeight, lossBlockHeight, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, *inferencesNonce)
-		}
+) (*GetNetworkInferencesResult, error) {
+	// Retrieve the requested inferences (either latest or specified, depending on inferencesNonce)
+	inferences, inferenceBlockHeight, err := getRequestedInferences(ctx, k, topicId, inferencesNonce)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "while getting inferences")
 	}
 
-	// ATTN: PROTO-2464
-	networkInferences = &emissions.ValueBundle{
-		TopicId: topicId,
+	if len(inferences.Inferences) > 1 {
+		// If we have multiple inferences:
+		// 1. Try to get latest network loss
+		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
+		if errors.Is(err, emissions.ErrNotFound) {
+			// 2a. If we have no network losses, fallback to using the median of the inferences.
+			return calcNetworkInferencesMultipleByMedian(ctx, topicId, inferences, inferenceBlockHeight)
+		} else if err != nil {
+			return nil, errorsmod.Wrap(err, "while getting latest network loss bundle")
+		}
+
+		// 2b. Otherwise, calculate the normal way.
+		return calcNetworkInferencesMultiple(ctx, k, topicId, inferences, inferenceBlockHeight, networkLosses)
+	} else if len(inferences.Inferences) == 1 {
+		// If we only have a single inference, simply return it as is.
+		return calcNetworkInferencesSingle(ctx, inferenceBlockHeight, topicId, inferences)
+	} else {
+		return nil, errors.Wrap(emissions.ErrNotFound, "no inferences found")
+	}
+}
+
+// Decide whether to use the latest inferences or inferences at a specific block height
+func getRequestedInferences(
+	ctx sdk.Context,
+	k emissionskeeper.Keeper,
+	topicId TopicId,
+	inferencesNonce *BlockHeight,
+) (*emissions.Inferences, int64, error) {
+	if inferencesNonce == nil {
+		inferences, inferenceBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId)
+		if err != nil {
+			return nil, 0, err
+		} else if len(inferences.Inferences) == 0 {
+			return nil, 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at latest block", topicId)
+		}
+		return inferences, inferenceBlockHeight, nil
+	} else {
+		inferences, err := k.GetInferencesAtBlock(ctx, topicId, *inferencesNonce)
+		if err != nil {
+			return nil, 0, err
+		} else if len(inferences.Inferences) == 0 {
+			return nil, 0, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, "no inferences found for topic %v at block %v", topicId, *inferencesNonce)
+		}
+		return inferences, *inferencesNonce, nil
+	}
+}
+
+func calcNetworkInferencesMultipleByMedian(
+	ctx sdk.Context,
+	topicId TopicId,
+	inferences *emissions.Inferences,
+	inferenceBlockHeight BlockHeight,
+) (*GetNetworkInferencesResult, error) {
+	inferenceValues := fn.Map(inferences.Inferences, func(inf *emissions.Inference) alloraMath.Dec { return inf.Value })
+
+	medianValue, err := alloraMath.Median(inferenceValues)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "while calculating median")
+	}
+
+	networkInferences := &emissions.ValueBundle{
+		TopicId:   topicId,
+		ExtraData: nil,
 		ReputerRequestNonce: &emissions.ReputerRequestNonce{
 			ReputerNonce: &emissions.Nonce{BlockHeight: ctx.BlockHeight()},
 		},
-		Reputer:                       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
-		ExtraData:                     nil,
-		CombinedValue:                 alloraMath.ZeroDec(),
-		InfererValues:                 make([]*emissions.WorkerAttributedValue, 0),
-		ForecasterValues:              make([]*emissions.WorkerAttributedValue, 0),
+		Reputer:       "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		CombinedValue: medianValue,
+		InfererValues: fn.Map(inferences.Inferences, func(inf *emissions.Inference) *emissions.WorkerAttributedValue {
+			return &emissions.WorkerAttributedValue{Worker: inf.Inferer, Value: inf.Value}
+		}),
+		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.ZeroDec(),
-		OneOutInfererValues:           make([]*emissions.WithheldWorkerAttributedValue, 0),
-		OneOutForecasterValues:        make([]*emissions.WithheldWorkerAttributedValue, 0),
-		OneInForecasterValues:         make([]*emissions.WorkerAttributedValue, 0),
-		OneOutInfererForecasterValues: make([]*emissions.OneOutInfererForecasterValues, 0),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 	}
+	return &GetNetworkInferencesResult{
+		NetworkInferences:    networkInferences,
+		InfererToWeight:      nil,
+		ForecasterToWeight:   nil,
+		InferenceBlockHeight: inferenceBlockHeight,
+		LossBlockHeight:      0,
+	}, nil
+}
 
-	forecasterToForecastImpliedInference = make(map[string]*emissions.Inference, 0)
-
-	// Add inferences to the bundle
-	for _, inference := range inferences.Inferences {
-		networkInferences.InfererValues = append(networkInferences.InfererValues, &emissions.WorkerAttributedValue{
-			Worker: inference.Inferer,
-			Value:  inference.Value,
-		})
-	}
-
+func calcNetworkInferencesMultiple(
+	ctx sdk.Context,
+	k emissionskeeper.Keeper,
+	topicId TopicId,
+	inferences *emissions.Inferences,
+	inferenceBlockHeight BlockHeight,
+	networkLosses *emissions.ValueBundle,
+) (*GetNetworkInferencesResult, error) {
 	// Retrieve forecasts
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferenceBlockHeight)
+	if errors.Is(err, collections.ErrNotFound) {
+		forecasts = nil
+	} else if err != nil {
+		return nil, errorsmod.Wrap(err, "while getting forecasts")
+	}
+
+	// Retrieve module params
+	moduleParams, err := k.GetParams(ctx)
 	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			forecasts = &emissions.Forecasts{
-				Forecasts: make([]*emissions.Forecast, 0),
-			}
-		} else {
-			Logger(ctx).Warn(fmt.Sprintf("Error getting forecasts: %s", err.Error()))
-			return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
-		}
+		return nil, errorsmod.Wrap(err, "while getting params")
 	}
 
-	// Proceed with network inference calculations if more than one inference exists
-	if len(inferences.Inferences) > 1 {
-		moduleParams, err := k.GetParams(ctx)
-		if err != nil {
-			return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, err
-		}
-
-		topic, err := k.GetTopic(ctx, topicId)
-		if err != nil {
-			Logger(ctx).Warn(fmt.Sprintf("Error getting topic: %s", err.Error()))
-			return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
-		}
-
-		// Get latest network loss
-		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
-		if err != nil || networkLosses == nil {
-			// Fallback to using the median of the inferences
-			inferenceValues := make([]alloraMath.Dec, 0, len(inferences.Inferences))
-			for _, inference := range inferences.Inferences {
-				inferenceValues = append(inferenceValues, inference.Value)
-			}
-
-			medianValue, err := alloraMath.Median(inferenceValues)
-			if err != nil {
-				Logger(ctx).Warn(fmt.Sprintf("Error calculating median: %s", err.Error()))
-				return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
-			}
-
-			networkInferences.CombinedValue = medianValue
-			return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
-		} else {
-			Logger(ctx).Debug(fmt.Sprintf("Creating network inferences for topic %v with %v inferences and %v forecasts", topicId, len(inferences.Inferences), len(forecasts.Forecasts)))
-
-			calcArgs, err := GetCalcNetworkInferenceArgs(
-				ctx,
-				k,
-				topicId,
-				inferences,
-				forecasts,
-				topic,
-				*networkLosses,
-				moduleParams,
-			)
-			if err != nil {
-				Logger(ctx).Warn(fmt.Sprintf("Error getting network inference args: %s", err.Error()))
-				return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
-			}
-
-			var weights RegretInformedWeights
-			networkInferences, weights, err = CalcNetworkInferences(calcArgs)
-			if err != nil {
-				Logger(ctx).Warn(fmt.Sprintf("Error calculating network inferences: %s", err.Error()))
-				return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
-			}
-			infererToWeight = weights.inferers
-			forecasterToWeight = weights.forecasters
-
-			// Calculate the forecastImpliedInferencesByWorker
-			forecasterToForecastImpliedInference, _, _, err = CalcForecastImpliedInferences(
-				CalcForecastImpliedInferencesArgs{
-					Logger:               calcArgs.Logger,
-					TopicId:              topicId,
-					AllInferersAreNew:    calcArgs.AllInferersAreNew,
-					Inferers:             calcArgs.Inferers,
-					InfererToInference:   calcArgs.InfererToInference,
-					InfererToRegret:      calcArgs.InfererToRegret,
-					Forecasters:          calcArgs.Forecasters,
-					ForecasterToForecast: calcArgs.ForecasterToForecast,
-					ForecasterToRegret:   calcArgs.ForecasterToRegret,
-					NetworkCombinedLoss:  calcArgs.NetworkCombinedLoss,
-					EpsilonTopic:         calcArgs.EpsilonTopic,
-					PNorm:                calcArgs.PNorm,
-					CNorm:                calcArgs.CNorm,
-				})
-			if err != nil {
-				Logger(ctx).Warn(fmt.Sprintf("Error calculating forecast implied inferences: %s", err.Error()))
-				return networkInferences, nil, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
-			}
-		}
-	} else {
-		// Single valid inference case
-		singleInference := inferences.Inferences[0]
-
-		networkInferences = &emissions.ValueBundle{
-			TopicId: topicId,
-			Reputer: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
-			ReputerRequestNonce: &emissions.ReputerRequestNonce{
-				ReputerNonce: &emissions.Nonce{
-					BlockHeight: ctx.BlockHeight(),
-				},
-			},
-			ExtraData:     nil,
-			CombinedValue: singleInference.Value,
-			InfererValues: []*emissions.WorkerAttributedValue{
-				{
-					Worker: singleInference.Inferer,
-					Value:  singleInference.Value,
-				},
-			},
-			ForecasterValues:              []*emissions.WorkerAttributedValue{},
-			NaiveValue:                    singleInference.Value,
-			OneOutInfererValues:           []*emissions.WithheldWorkerAttributedValue{},
-			OneOutForecasterValues:        []*emissions.WithheldWorkerAttributedValue{},
-			OneInForecasterValues:         []*emissions.WorkerAttributedValue{},
-			OneOutInfererForecasterValues: []*emissions.OneOutInfererForecasterValues{},
-		}
+	// Retrieve topic
+	topic, err := k.GetTopic(ctx, topicId)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "while getting topic")
 	}
 
-	return networkInferences, forecasterToForecastImpliedInference, infererToWeight, forecasterToWeight, inferenceBlockHeight, lossBlockHeight, nil
+	// Otherwise, go ahead and calculate the inferences in the more complex way
+	calcArgs, err := GetCalcNetworkInferenceArgs(
+		ctx,
+		k,
+		topicId,
+		inferences,
+		forecasts,
+		topic,
+		*networkLosses,
+		moduleParams,
+	)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "while getting network inference args")
+	}
+
+	networkInferences, weights, err := CalcNetworkInferences(calcArgs)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "while calculating network inferences")
+	}
+
+	return &GetNetworkInferencesResult{
+		NetworkInferences:    networkInferences,
+		InfererToWeight:      weights.Inferers,
+		ForecasterToWeight:   weights.Forecasters,
+		InferenceBlockHeight: inferenceBlockHeight,
+		LossBlockHeight:      networkLosses.ReputerRequestNonce.ReputerNonce.BlockHeight,
+	}, nil
+}
+
+// Single valid inference case
+func calcNetworkInferencesSingle(
+	ctx sdk.Context,
+	inferenceBlockHeight BlockHeight,
+	topicId TopicId,
+	inferences *emissions.Inferences,
+) (*GetNetworkInferencesResult, error) {
+	singleInference := inferences.Inferences[0]
+
+	networkInferences := &emissions.ValueBundle{
+		TopicId: topicId,
+		Reputer: "allo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqas6usy",
+		ReputerRequestNonce: &emissions.ReputerRequestNonce{
+			ReputerNonce: &emissions.Nonce{
+				BlockHeight: ctx.BlockHeight(),
+			},
+		},
+		ExtraData:     nil,
+		CombinedValue: singleInference.Value,
+		InfererValues: []*emissions.WorkerAttributedValue{
+			{
+				Worker: singleInference.Inferer,
+				Value:  singleInference.Value,
+			},
+		},
+		ForecasterValues:              nil,
+		NaiveValue:                    singleInference.Value,
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}
+	return &GetNetworkInferencesResult{
+		NetworkInferences:    networkInferences,
+		InfererToWeight:      nil,
+		ForecasterToWeight:   nil,
+		InferenceBlockHeight: inferenceBlockHeight,
+		LossBlockHeight:      0, // Loss data may actually be available but is not needed to calculate network inference in this case
+	}, nil
 }
 
 // helper function for getting the args needed for calcNetworkInferences
@@ -272,15 +295,30 @@ func GetCalcNetworkInferenceArgs(
 		InfererToInference:                   infererToInference,
 		InfererToRegret:                      infererToRegret,
 		AllInferersAreNew:                    allInferersAreNew,
-		Forecasters:                          sortedForecasters,
-		ForecasterToForecast:                 forecasterToForecast,
-		ForecasterToRegret:                   forecasterToRegret,
-		ForecasterToForecastImpliedInference: forecastImpliedInferencesByWorker,
+		Forecasters:                          make([]Forecaster, 0),
+		ForecasterToForecast:                 make(map[Forecaster]*emissions.Forecast, 0),
+		ForecasterToRegret:                   make(map[Forecaster]*alloraMath.Dec, 0),
+		ForecasterToForecastImpliedInference: make(map[Forecaster]*emissions.Inference, 0),
 		NetworkCombinedLoss:                  networkLosses.CombinedValue,
 		EpsilonTopic:                         topic.Epsilon,
 		EpsilonSafeDiv:                       moduleParams.EpsilonSafeDiv,
 		PNorm:                                topic.PNorm,
 		CNorm:                                moduleParams.CNorm,
 	}
+
+	// If there are forecast-implied inferences, add forecasters info
+	// It will not have available forecast-implied inferences if the forecasters
+	// didn't make any forecasts for the existing inferers
+	if len(forecastImpliedInferencesByWorker) > 0 {
+		for _, forecaster := range sortedForecasters {
+			if forecastImpliedInference, ok := forecastImpliedInferencesByWorker[forecaster]; ok {
+				calcArgs.Forecasters = append(calcArgs.Forecasters, forecaster)
+				calcArgs.ForecasterToForecast[forecaster] = forecasterToForecast[forecaster]
+				calcArgs.ForecasterToRegret[forecaster] = forecasterToRegret[forecaster]
+				calcArgs.ForecasterToForecastImpliedInference[forecaster] = forecastImpliedInference
+			}
+		}
+	}
+
 	return calcArgs, nil
 }
