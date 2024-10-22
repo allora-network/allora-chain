@@ -517,7 +517,7 @@ func (s *EmissionsV3MigrationTestSuite) TestResetMapsWithNonNumericValues() {
 	iterator.Close()
 	s.Require().Len(scores.Scores, 1)
 
-	err = v3.ResetMapsWithNonNumericValues(store, cdc)
+	err = v3.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
 	s.Require().NoError(err)
 
 	// Verify the store has been updated correctly
