@@ -9,9 +9,8 @@ import (
 	"cosmossdk.io/errors"
 	"cosmossdk.io/log"
 	"cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/types/bech32"
-
 	storetypes "cosmossdk.io/store/types"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/libs/bytes"
 	tmos "github.com/cometbft/cometbft/libs/os"
@@ -23,6 +22,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/bech32"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -258,6 +258,20 @@ func initAppForTestnet(app *app.AlloraApp, args valArgs) *app.AlloraApp {
 		err = app.BankKeeper.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, account, defaultCoins)
 		if err != nil {
 			tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to send coins from module to account").Error())
+		}
+	}
+
+	if args.upgradeToTrigger != "" {
+		upgradePlan := upgradetypes.Plan{
+			Name:                args.upgradeToTrigger,
+			Height:              app.LastBlockHeight() + 10,
+			Info:                "",
+			Time:                time.Time{},
+			UpgradedClientState: nil,
+		}
+		err = app.UpgradeKeeper.ScheduleUpgrade(ctx, upgradePlan)
+		if err != nil {
+			tmos.Exit(errors.Wrap(err, "initAppForTestnet(): failed to schedule upgrade").Error())
 		}
 	}
 
