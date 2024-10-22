@@ -189,45 +189,6 @@ func MigrateTopics(
 	return nil
 }
 
-// Deletes all keys in the store with the given keyPrefix `maxPageSize` keys at a time
-func safelyClearWholeMap(ctx sdk.Context, store storetypes.KVStore, keyPrefix []byte) {
-	s := prefix.NewStore(store, keyPrefix)
-
-	// Loop until all keys are deleted.
-	// Unbounded not best practice but we are sure that the number of keys will be limited
-	// and not deleting all keys means "poison" will remain in the store.
-	for {
-		// Gather keys to eventually delete
-		iterator := s.Iterator(nil, nil)
-		defer iterator.Close()
-		keysToDelete := make([][]byte, 0)
-		count := uint64(0)
-		for ; iterator.Valid(); iterator.Next() {
-			ctx.Logger().Info("MIGRATION V5: DELETING keys in store with prefix", "prefix", keyPrefix, "page", count)
-			if count >= maxPageSize {
-				break
-			}
-
-			keysToDelete = append(keysToDelete, iterator.Key())
-			count++
-		}
-		err := iterator.Close()
-		if err != nil {
-			break
-		}
-
-		// If no keys to delete, break => Exit whole function
-		if len(keysToDelete) == 0 {
-			break
-		}
-
-		// Delete the keys
-		for _, key := range keysToDelete {
-			s.Delete(key)
-		}
-	}
-}
-
 // Clear out poison NaN values on different inferences, scores etc
 func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	prefixes := []struct {

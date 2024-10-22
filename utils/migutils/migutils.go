@@ -28,7 +28,7 @@ func SafelyClearWholeMap(store storetypes.KVStore, keyPrefix []byte, maxPageSize
 		}
 		err := iterator.Close()
 		if err != nil {
-			return false, errorsmod.Wrap(err, "while closing iterator in `safelyClearWholeMap`")
+			return false, errorsmod.Wrap(err, "while closing iterator in `SafelyClearWholeMap`")
 		}
 
 		// Delete the keys
