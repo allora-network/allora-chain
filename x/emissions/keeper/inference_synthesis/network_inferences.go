@@ -38,7 +38,7 @@ func GetNetworkInferences(
 	if len(inferences.Inferences) > 1 {
 		// If we have multiple inferences:
 		// 1. Try to get latest network loss
-		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId) // TODO(spook): why latest?  why not use `inferenceBlockHeight`?
+		networkLosses, err := k.GetLatestNetworkLossBundle(ctx, topicId)
 		if errors.Is(err, emissions.ErrNotFound) {
 			// 2a. If we have no network losses, fallback to using the median of the inferences.
 			return calcNetworkInferencesMultipleByMedian(ctx, topicId, inferences, inferenceBlockHeight)
@@ -130,11 +130,6 @@ func calcNetworkInferencesMultiple(
 	inferenceBlockHeight BlockHeight,
 	networkLosses *emissions.ValueBundle,
 ) (*GetNetworkInferencesResult, error) {
-	// TODO(spook): should the following fetches happen at the very top of the
-	// call stack to ensure that the topic is real and the module params are present?
-	// It would waste some i/o for the other cases (single, multiple+median), but
-	// would be more correct and could surface issues more readily.
-
 	// Retrieve forecasts
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferenceBlockHeight)
 	if errors.Is(err, collections.ErrNotFound) {
@@ -156,12 +151,6 @@ func calcNetworkInferencesMultiple(
 	}
 
 	// Otherwise, go ahead and calculate the inferences in the more complex way
-	Logger(ctx).Debug("Creating network inferences",
-		"topic_id", topicId,
-		"num_inferences", len(inferences.Inferences),
-		"num_forecasts", len(forecasts.Forecasts),
-	)
-
 	calcArgs, err := GetCalcNetworkInferenceArgs(
 		ctx,
 		k,
@@ -180,9 +169,6 @@ func calcNetworkInferencesMultiple(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while calculating network inferences")
 	}
-
-	// TODO(spook): GetCalcNetworkInferenceArgs already calls CalcForecastImpliedInferences.
-	// Why were we calling it again here?
 
 	return &GetNetworkInferencesResult{
 		NetworkInferences:    networkInferences,
