@@ -108,12 +108,12 @@ func calcNetworkInferencesMultipleByMedian(
 		InfererValues: fn.Map(inferences.Inferences, func(inf *emissions.Inference) *emissions.WorkerAttributedValue {
 			return &emissions.WorkerAttributedValue{Worker: inf.Inferer, Value: inf.Value}
 		}),
-		ForecasterValues:              make([]*emissions.WorkerAttributedValue, 0), // TODO(spook): can all of these be nil?
+		ForecasterValues:              nil,
 		NaiveValue:                    alloraMath.ZeroDec(),
-		OneOutInfererValues:           make([]*emissions.WithheldWorkerAttributedValue, 0), // TODO(spook): can all of these be nil?
-		OneOutForecasterValues:        make([]*emissions.WithheldWorkerAttributedValue, 0), // TODO(spook): can all of these be nil?
-		OneInForecasterValues:         make([]*emissions.WorkerAttributedValue, 0),         // TODO(spook): can all of these be nil?
-		OneOutInfererForecasterValues: make([]*emissions.OneOutInfererForecasterValues, 0), // TODO(spook): can all of these be nil?
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 		ExtraData:                     nil,
 	}
 	return &GetNetworkInferencesResult{
@@ -142,7 +142,7 @@ func calcNetworkInferencesMultiple(
 	// Retrieve forecasts
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferenceBlockHeight)
 	if errors.Is(err, collections.ErrNotFound) {
-		forecasts = &emissions.Forecasts{Forecasts: make([]*emissions.Forecast, 0)} // TODO(spook): stop doing 0-length arrays
+		forecasts = &emissions.Forecasts{Forecasts: nil}
 	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting forecasts")
 	}
