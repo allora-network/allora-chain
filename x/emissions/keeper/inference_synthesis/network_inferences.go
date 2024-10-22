@@ -133,7 +133,7 @@ func calcNetworkInferencesMultiple(
 	// Retrieve forecasts
 	forecasts, err := k.GetForecastsAtBlock(ctx, topicId, inferenceBlockHeight)
 	if errors.Is(err, collections.ErrNotFound) {
-		forecasts = &emissions.Forecasts{Forecasts: nil}
+		forecasts = nil
 	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting forecasts")
 	}
