@@ -21,7 +21,7 @@ type GetNetworkInferencesResult struct {
 	InfererToWeight                      map[Inferer]Weight
 	ForecasterToWeight                   map[Forecaster]Weight
 	InferenceBlockHeight                 int64
-	LossBlockHeight                      int64 // TODO(spook): this is never set anywhere in the code.  intentional or bug?
+	LossBlockHeight                      int64
 }
 
 func GetNetworkInferences(
@@ -194,7 +194,7 @@ func calcNetworkInferencesMultiple(
 		InfererToWeight:                      weights.inferers,
 		ForecasterToWeight:                   weights.forecasters,
 		InferenceBlockHeight:                 inferenceBlockHeight,
-		LossBlockHeight:                      0,
+		LossBlockHeight:                      networkLosses.ReputerRequestNonce.ReputerNonce.BlockHeight,
 	}, nil
 }
 
@@ -223,12 +223,12 @@ func calcNetworkInferencesSingle(
 				Value:  singleInference.Value,
 			},
 		},
-		ForecasterValues:              make([]*emissions.WorkerAttributedValue, 0), // TODO(spook): can all of these be nil?
+		ForecasterValues:              nil,
 		NaiveValue:                    singleInference.Value,
-		OneOutInfererValues:           make([]*emissions.WithheldWorkerAttributedValue, 0), // TODO(spook): can all of these be nil?
-		OneOutForecasterValues:        make([]*emissions.WithheldWorkerAttributedValue, 0), // TODO(spook): can all of these be nil?
-		OneInForecasterValues:         make([]*emissions.WorkerAttributedValue, 0),         // TODO(spook): can all of these be nil?
-		OneOutInfererForecasterValues: make([]*emissions.OneOutInfererForecasterValues, 0), // TODO(spook): can all of these be nil?
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
 	}
 	return &GetNetworkInferencesResult{
 		NetworkInferences:                    networkInferences,
@@ -236,7 +236,7 @@ func calcNetworkInferencesSingle(
 		InfererToWeight:                      nil,
 		ForecasterToWeight:                   nil,
 		InferenceBlockHeight:                 inferenceBlockHeight,
-		LossBlockHeight:                      0,
+		LossBlockHeight:                      0, // Loss data may actually be available but is not needed to calculate network inference in this case
 	}, nil
 }
 
