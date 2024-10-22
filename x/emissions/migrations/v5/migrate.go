@@ -4,10 +4,12 @@ import (
 	"encoding/binary"
 	"fmt"
 
+	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils/migutils"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	oldV4Types "github.com/allora-network/allora-chain/x/emissions/migrations/v5/oldtypes"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
@@ -44,7 +46,10 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 
 	ctx.Logger().Info("INVOKING ResetMapsWithNonNumericValues() IN MIGRATION FROM VERSION 4 TO VERSION 5")
-	ResetMapsWithNonNumericValues(ctx, store, cdc)
+	if err := ResetMapsWithNonNumericValues(ctx, store, cdc); err != nil {
+		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER ResetMapsWithNonNumericValues() FROM VERSION 4 TO VERSION 5")
+		return err
+	}
 
 	ctx.Logger().Info("MIGRATING EMISSIONS MODULE FROM VERSION 4 TO VERSION 5 COMPLETE")
 	return nil
@@ -224,13 +229,44 @@ func safelyClearWholeMap(ctx sdk.Context, store storetypes.KVStore, keyPrefix []
 }
 
 // Clear out poison NaN values on different inferences, scores etc
-func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) {
-	ctx.Logger().Info("MIGRATION V5: RESETTING PreviousTopicQuantileInfererScoreEmaKey MAP")
-	safelyClearWholeMap(ctx, store, emissionstypes.PreviousTopicQuantileInfererScoreEmaKey)
-	ctx.Logger().Info("MIGRATION V5: RESETTING PreviousTopicQuantileForecasterScoreEmaKey MAP")
-	safelyClearWholeMap(ctx, store, emissionstypes.PreviousTopicQuantileForecasterScoreEmaKey)
-	ctx.Logger().Info("MIGRATION V5: RESETTING PreviousTopicQuantileReputerScoreEmaKey MAP")
-	safelyClearWholeMap(ctx, store, emissionstypes.PreviousTopicQuantileReputerScoreEmaKey)
+func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
+	prefixes := []struct {
+		prefix collections.Prefix
+		name   string
+	}{
+		{emissionstypes.InferenceScoresKey, "InferenceScores"},
+		{emissionstypes.ForecastScoresKey, "ForecastScores"},
+		{emissionstypes.ReputerScoresKey, "ReputerScores"},
+		{emissionstypes.InfererScoreEmasKey, "InfererScoreEmas"},
+		{emissionstypes.ForecasterScoreEmasKey, "ForecasterScoreEmas"},
+		{emissionstypes.ReputerScoreEmasKey, "ReputerScoreEmas"},
+		{emissionstypes.AllLossBundlesKey, "AllLossBundles"},
+		{emissionstypes.NetworkLossBundlesKey, "NetworkLossBundles"},
+		{emissionstypes.InfererNetworkRegretsKey, "InfererNetworkRegrets"},
+		{emissionstypes.ForecasterNetworkRegretsKey, "ForecasterNetworkRegrets"},
+		{emissionstypes.OneInForecasterNetworkRegretsKey, "OneInForecasterNetworkRegrets"},
+		{emissionstypes.LatestNaiveInfererNetworkRegretsKey, "LatestNaiveInfererNetworkRegrets"},
+		{emissionstypes.LatestOneOutInfererInfererNetworkRegretsKey, "LatestOneOutInfererInfererNetworkRegrets"},
+		{emissionstypes.LatestOneOutInfererForecasterNetworkRegretsKey, "LatestOneOutInfererForecasterNetworkRegrets"},
+		{emissionstypes.LatestOneOutForecasterInfererNetworkRegretsKey, "LatestOneOutForecasterInfererNetworkRegrets"},
+		{emissionstypes.LatestOneOutForecasterForecasterNetworkRegretsKey, "LatestOneOutForecasterForecasterNetworkRegrets"},
+		{emissionstypes.ReputerListeningCoefficientKey, "ReputerListeningCoefficient"},
+		{emissionstypes.PreviousTopicQuantileInfererScoreEmaKey, "PreviousTopicQuantileInfererScoreEma"},
+		{emissionstypes.PreviousTopicQuantileForecasterScoreEmaKey, "PreviousTopicQuantileForecasterScoreEma"},
+		{emissionstypes.PreviousTopicQuantileReputerScoreEmaKey, "PreviousTopicQuantileReputerScoreEma"},
+		{emissionstypes.PreviousInferenceRewardFractionKey, "PreviousInferenceRewardFraction"},
+		{emissionstypes.PreviousForecastRewardFractionKey, "PreviousForecastRewardFraction"},
+		{emissionstypes.PreviousReputerRewardFractionKey, "PreviousReputerRewardFraction"},
+	}
+
+	for _, prefix := range prefixes {
+		ctx.Logger().Info("MIGRATION V5: RESETTING %v MAP", prefix.name)
+		err := migutils.SafelyClearWholeMap(store, prefix.prefix, maxPageSize)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // copyTopic duplicates a topic into a new struct

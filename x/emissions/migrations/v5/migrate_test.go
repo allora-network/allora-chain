@@ -452,7 +452,8 @@ func testPreviousQuantileMapDeletion(
 	s.Require().True(iterator.Valid())
 	defer iterator.Close()
 
-	v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	err = v5.ResetMapsWithNonNumericValues(s.ctx, store, cdc)
+	s.Require().NoError(err)
 
 	// Verify the inferer store has been updated correctly
 	iterator = mapInfererStore.Iterator(nil, nil)
