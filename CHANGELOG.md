@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#624](https://github.com/allora-network/allora-chain/pull/624) Add `nurse` internal healthcheck service based on `pprof`.  See `health/README.md`.
 * [#642](https://github.com/allora-network/allora-chain/pull/642) Add release signing keys
+* [#648](https://github.com/allora-network/allora-chain/pull/648) Update emissions v5 migration to reset way more maps => complete cleanup of poisonously negative values
 
 ### Changed
 

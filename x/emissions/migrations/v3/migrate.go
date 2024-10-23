@@ -42,7 +42,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 	}
 
 	ctx.Logger().Info("INVOKING MIGRATION HANDLER ResetMapsWithNonNumericValues() FROM VERSION 2 TO VERSION 3")
-	err := ResetMapsWithNonNumericValues(store, cdc)
+	err := ResetMapsWithNonNumericValues(ctx, store, cdc)
 	if err != nil {
 		ctx.Logger().Error("ERROR RESETTING MAPS WITH NON NUMERIC VALUES: %v", err)
 		return err
@@ -297,7 +297,7 @@ func getNewTopic(oldMsg oldtypes.Topic) types.Topic {
 	}
 }
 
-func ResetMapsWithNonNumericValues(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func ResetMapsWithNonNumericValues(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	prefixes := []collections.Prefix{
 		types.InferenceScoresKey,
 		types.ForecastScoresKey,
@@ -317,7 +317,7 @@ func ResetMapsWithNonNumericValues(store storetypes.KVStore, cdc codec.BinaryCod
 		types.LatestOneOutForecasterForecasterNetworkRegretsKey,
 	}
 	for _, prefix := range prefixes {
-		err := migutils.SafelyClearWholeMap(store, prefix, maxPageSize)
+		err := migutils.SafelyClearWholeMap(ctx, store, prefix, maxPageSize)
 		if err != nil {
 			return err
 		}
