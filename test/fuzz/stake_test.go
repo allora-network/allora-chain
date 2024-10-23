@@ -145,43 +145,6 @@ func unstakeAsReputer(
 	}
 }
 
-// ask the chain if any stake removals exist
-func findFirstValidStakeRemovalFromChain(m *testcommon.TestConfig) (emissionstypes.StakeRemovalInfo, bool, error) {
-	ctx := context.Background()
-	blockHeightNow, err := m.Client.BlockHeight(ctx)
-	if err != nil {
-		return emissionstypes.StakeRemovalInfo{}, false, err
-	}
-	moduleParams, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
-	if err != nil {
-		return emissionstypes.StakeRemovalInfo{}, false, err
-	}
-	blockHeightEnd := blockHeightNow + moduleParams.Params.RemoveStakeDelayWindow
-	for i := blockHeightNow; i < blockHeightEnd; i++ {
-		query := &emissionstypes.GetStakeRemovalsUpUntilBlockRequest{
-			BlockHeight: i,
-		}
-		resp, err := m.Client.QueryEmissions().GetStakeRemovalsUpUntilBlock(ctx, query)
-		if err != nil || resp == nil {
-			continue
-		}
-		if len(resp.Removals) == 0 {
-			continue
-		}
-		if resp.Removals[0] == nil {
-			continue
-		}
-		return *resp.Removals[0], true, nil
-	}
-	return emissionstypes.StakeRemovalInfo{
-		BlockRemovalStarted:   0,
-		TopicId:               0,
-		BlockRemovalCompleted: 0,
-		Reputer:               "",
-		Amount:                cosmossdk_io_math.Int{},
-	}, false, nil // no stake removal was found
-}
-
 func cancelStakeRemoval(
 	m *testcommon.TestConfig,
 	actor Actor,
@@ -371,44 +334,6 @@ func undelegateStake(
 	} else {
 		iterFailLog(m.T, iteration, "undelegation failed", delegator, "from reputer", reputer, "in topic id", topicId, " in amount", amount.String())
 	}
-}
-
-// ask the chain if any stake removals exist
-func findFirstValidDelegateStakeRemovalFromChain(m *testcommon.TestConfig) (emissionstypes.DelegateStakeRemovalInfo, bool, error) {
-	ctx := context.Background()
-	blockHeightNow, err := m.Client.BlockHeight(ctx)
-	if err != nil {
-		return emissionstypes.DelegateStakeRemovalInfo{}, false, err
-	}
-	moduleParams, err := m.Client.QueryEmissions().GetParams(ctx, &emissionstypes.GetParamsRequest{})
-	if err != nil {
-		return emissionstypes.DelegateStakeRemovalInfo{}, false, err
-	}
-	blockHeightEnd := blockHeightNow + moduleParams.Params.RemoveStakeDelayWindow
-	for i := blockHeightNow; i < blockHeightEnd; i++ {
-		query := &emissionstypes.GetDelegateStakeRemovalsUpUntilBlockRequest{
-			BlockHeight: i,
-		}
-		resp, err := m.Client.QueryEmissions().GetDelegateStakeRemovalsUpUntilBlock(ctx, query)
-		if err != nil || resp == nil {
-			continue
-		}
-		if len(resp.Removals) == 0 {
-			continue
-		}
-		if resp.Removals[0] == nil {
-			continue
-		}
-		return *resp.Removals[0], true, nil
-	}
-	return emissionstypes.DelegateStakeRemovalInfo{
-		BlockRemovalStarted:   0,
-		TopicId:               0,
-		BlockRemovalCompleted: 0,
-		Reputer:               "",
-		Delegator:             "",
-		Amount:                cosmossdk_io_math.Int{},
-	}, false, nil // no delegate stake removal was found
 }
 
 func cancelDelegateStakeRemoval(

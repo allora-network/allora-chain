@@ -10,6 +10,7 @@ import (
 
 	cosmossdk_io_math "cosmossdk.io/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
+	"github.com/stretchr/testify/require"
 )
 
 type SimulationMode string
@@ -73,6 +74,8 @@ func TestFuzzTestSuite(t *testing.T) {
 	t.Log(">>> Starting Test <<<")
 	timestr := fmt.Sprintf(">>> Starting %s <<<", time.Now().Format(time.RFC850))
 	t.Log(timestr)
+
+	require.True(t, CheckAllTransitionsWeightSum(), "State transition weights must sum to 100")
 
 	simulate(
 		&testConfig,
@@ -160,12 +163,32 @@ func simulateAutomatic(
 	// pick a state transition, then run it. every 5 print a summary
 	// if the test mode is alternating, flip whether to behave nicely or not
 	maxIterations = maxIterations + iterationCountInitialState
+	var followTransition *StateTransition = nil
+	stateTransition := StateTransition{
+		name:         "",
+		f:            nil,
+		weight:       0,
+		follow:       nil,
+		followWeight: 0,
+	}
+	actor1, actor2 := UnusedActor, UnusedActor
+	var amount *cosmossdk_io_math.Int = nil
+	var topicId uint64 = 0
 	for iteration := iterationCountInitialState; maxIterations == 0 || iteration < maxIterations; iteration++ {
 		if data.mode == Alternate {
 			data.randomlyFlipFailOnErr(m, iteration)
 		}
-		stateTransition, actor1, actor2, amount, topicId := pickTransition(m, data, iteration)
-		stateTransition.f(m, actor1, actor2, amount, topicId, data, iteration)
+		// This is not a follow-on transition, pick a new one
+		if followTransition == nil {
+			stateTransition, actor1, actor2, amount, topicId = pickTransition(m, data, iteration)
+			stateTransition.f(m, actor1, actor2, amount, topicId, data, iteration)
+
+			// if this state transition has a follow-on transition, decide whether to do it or not
+			followTransition = pickFollowOnTransitionWithWeight(m, stateTransition)
+		} else { // This is a follow-on transition, do it with the same actors values and topic id
+			followTransition.f(m, actor1, actor2, amount, topicId, data, iteration)
+			followTransition = nil
+		}
 		if iteration%5 == 0 {
 			m.T.Log("State Transitions Summary:", data.counts)
 		}
