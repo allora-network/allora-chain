@@ -36,6 +36,7 @@ func doInferenceAndReputation(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 	topic := resp.Topic
+	iterLog(m.T, iteration, "Inference topic epoch last ended ", topic.EpochLastEnded, " epoch length ", topic.EpochLength)
 	workerNonce := topic.EpochLastEnded + topic.EpochLength
 	blockHeightNow, err := m.Client.BlockHeight(ctx)
 	requireNoError(m.T, data.failOnErr, err)

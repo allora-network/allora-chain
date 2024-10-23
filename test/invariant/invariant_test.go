@@ -86,76 +86,6 @@ func TestInvariantTestSuite(t *testing.T) {
 	t.Log(timestr)
 }
 
-// set up the common state for the simulator
-// prior to either doing random simulation
-// or manual simulation
-func simulateSetUp(
-	m *testcommon.TestConfig,
-	numActors int,
-	epochLength int,
-	mode SimulationMode,
-) (
-	faucet Actor,
-	simulationData *SimulationData,
-) {
-	// fund all actors from the faucet with some amount
-	// give everybody the same amount of money to start with
-	actorsList := createActors(m, numActors)
-	faucet = Actor{
-		name: getFaucetName(m.Seed),
-		addr: m.FaucetAddr,
-		acc:  m.FaucetAcc,
-	}
-	preFundAmount, err := getPreFundAmount(m, faucet, numActors)
-	if err != nil {
-		m.T.Fatal(err)
-	}
-	err = fundActors(
-		m,
-		faucet,
-		actorsList,
-		preFundAmount,
-	)
-	if err != nil {
-		m.T.Fatal(err)
-	}
-	data := SimulationData{
-		epochLength: int64(epochLength),
-		actors:      actorsList,
-		counts: StateTransitionCounts{
-			createTopic:                0,
-			fundTopic:                  0,
-			registerWorker:             0,
-			registerReputer:            0,
-			unregisterWorker:           0,
-			unregisterReputer:          0,
-			stakeAsReputer:             0,
-			delegateStake:              0,
-			unstakeAsReputer:           0,
-			undelegateStake:            0,
-			cancelStakeRemoval:         0,
-			cancelDelegateStakeRemoval: 0,
-			collectDelegatorRewards:    0,
-			doInferenceAndReputation:   0,
-		},
-		registeredWorkers:  testcommon.NewRandomKeyMap[Registration, struct{}](m.Client.Rand),
-		registeredReputers: testcommon.NewRandomKeyMap[Registration, struct{}](m.Client.Rand),
-		reputerStakes: testcommon.NewRandomKeyMap[Registration, cosmossdk_io_math.Int](
-			m.Client.Rand,
-		),
-		delegatorStakes: testcommon.NewRandomKeyMap[Delegation, cosmossdk_io_math.Int](
-			m.Client.Rand,
-		),
-		mode:      mode,
-		failOnErr: false,
-	}
-	// if we're in manual mode or behaving mode we want to fail on errors
-	if mode == Manual || mode == Behave {
-		data.failOnErr = true
-	}
-	return faucet, &data
-}
-
 // run the outer loop of the simulator
 func simulate(
 	m *testcommon.TestConfig,
@@ -172,7 +102,8 @@ func simulate(
 	}
 }
 
-// this is the body of the "manual" simulation mode
+// Note: this code never runs unless you're in manual mode
+// body of the "manual" simulation mode
 // put your code here if you wish to manually send transactions
 // in some specific order to test something
 func simulateManual(
@@ -212,78 +143,6 @@ func simulateManual(
 	m.T.Log("Done.")
 }
 
-// for initial state for the automatic test
-// 4 workers, 4 reputers, and 2 delegators
-// reputers and delegators not the same actors
-func pickAutoSetupActors(m *testcommon.TestConfig, data *SimulationData) (reputers []Actor, workers []Actor, delegators []Actor) {
-	reputers = make([]Actor, 0)
-	workers = make([]Actor, 0)
-	delegators = make([]Actor, 0)
-
-	reputers = append(reputers, pickRandomActor(m, data))
-	reputers = append(reputers, pickRandomActorExcept(m, data, reputers))
-	reputers = append(reputers, pickRandomActorExcept(m, data, reputers))
-	reputers = append(reputers, pickRandomActorExcept(m, data, reputers))
-
-	workers = append(workers, pickRandomActor(m, data))
-	workers = append(workers, pickRandomActorExcept(m, data, workers))
-	workers = append(workers, pickRandomActorExcept(m, data, workers))
-	workers = append(workers, pickRandomActorExcept(m, data, workers))
-	workers = append(workers, pickRandomActorExcept(m, data, workers))
-
-	delegators = append(delegators, pickRandomActorExcept(m, data, reputers))
-	delegators = append(delegators, pickRandomActorExcept(m, data, append(reputers, delegators[0])))
-
-	return reputers, workers, delegators
-}
-
-// golang does not have a ternary expression
-// pick the topic id based on whether i is even or odd
-func pickAutoSetupTopicId(i int) uint64 {
-	var topicId uint64
-	if i%2 == 0 {
-		topicId = 1
-	} else {
-		topicId = 2
-	}
-	return topicId
-}
-
-// always start the test with 2 topics created
-// 4 workers, 4 reputers, and 2 delegators
-// all with some stake, then fund the two topics
-// and run inferences on both.
-func simulateAutomaticInitialState(m *testcommon.TestConfig, faucet Actor, data *SimulationData) {
-	createTopic(m, faucet, UnusedActor, nil, 0, data, 0)
-	createTopic(m, faucet, UnusedActor, nil, 0, data, 1)
-	startReputers, startWorkers, startDelegators := pickAutoSetupActors(m, data)
-	for i, reputer := range startReputers {
-		topicId := pickAutoSetupTopicId(i)
-		registerReputer(m, reputer, UnusedActor, nil, topicId, data, i*2+2)
-		bal, err := pickRandomBalanceLessThanHalf(m, reputer)
-		requireNoError(m.T, true, err)
-		stakeAsReputer(m, reputer, UnusedActor, &bal, topicId, data, (i*2+1)+2)
-	}
-	for i, worker := range startWorkers {
-		topicId := pickAutoSetupTopicId(i)
-		registerWorker(m, worker, UnusedActor, nil, topicId, data, 10+i)
-	}
-	for i, delegator := range startDelegators {
-		topicId := pickAutoSetupTopicId(i)
-		bal, err := pickRandomBalanceLessThanHalf(m, delegator)
-		requireNoError(m.T, true, err)
-		delegateStake(m, delegator, startReputers[i], &bal, topicId, data, 14+i)
-	}
-	fundAmount, err := pickRandomBalanceLessThanHalf(m, faucet)
-	requireNoError(m.T, true, err)
-	fundTopic(m, faucet, UnusedActor, &fundAmount, 1, data, 16)
-	fundAmount, err = pickRandomBalanceLessThanHalf(m, faucet)
-	requireNoError(m.T, true, err)
-	fundTopic(m, faucet, UnusedActor, &fundAmount, 2, data, 17)
-	doInferenceAndReputation(m, UnusedActor, UnusedActor, nil, 1, data, 18)
-	doInferenceAndReputation(m, UnusedActor, UnusedActor, nil, 2, data, 19)
-}
-
 // this is the body of the "normal" simulation mode
 func simulateAutomatic(
 	m *testcommon.TestConfig,
@@ -292,12 +151,16 @@ func simulateAutomatic(
 	maxIterations int,
 ) {
 	// start with some initial state so we have something to work with in the test
-	simulateAutomaticInitialState(m, faucet, data)
+	iterationCountInitialState := simulateAutomaticInitialState(m, faucet, data)
+
+	m.T.Log("Initial State Summary:", data.counts)
+	m.T.Log("Starting post-setup iterations, first non-setup fuzz iteration is ", iterationCountInitialState)
 
 	// for every iteration
 	// pick a state transition, then run it. every 5 print a summary
 	// if the test mode is alternating, flip whether to behave nicely or not
-	for iteration := 20; maxIterations == 0 || iteration < maxIterations+20; iteration++ {
+	maxIterations = maxIterations + iterationCountInitialState
+	for iteration := iterationCountInitialState; maxIterations == 0 || iteration < maxIterations; iteration++ {
 		if data.mode == Alternate {
 			data.randomlyFlipFailOnErr(m, iteration)
 		}
