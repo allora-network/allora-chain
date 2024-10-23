@@ -57,6 +57,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+[#652](https://github.com/allora-network/allora-chain/pull/652) Reduce code duplication, set local_testnet_upgrade_l1.sh using environment variables with local_testnet_l1.sh instead #652 
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [Released]
+
 ## v0.6.0
 
 ### Added
@@ -86,7 +102,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#620](https://github.com/allora-network/allora-chain/pull/620) Add a static analyzer to detect non-deferred `.Close()` calls, improve migration error handling
 * [#622](https://github.com/allora-network/allora-chain/pull/622) Add telemetry metrics on queries/txs
 
-## [Released]
 
 ## v0.5.0
 
