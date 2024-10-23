@@ -127,7 +127,7 @@ func runSafelyClearWholeMapCase[K, V any](
 		keys = append(keys, key)
 	}
 
-	err := migutils.SafelyClearWholeMap(testDB.Store, prefix, maxPageSize)
+	err := migutils.SafelyClearWholeMap(testDB.TestCtx.Ctx, testDB.Store, prefix, maxPageSize)
 	require.NoError(t, err)
 
 	for _, key := range keys {
