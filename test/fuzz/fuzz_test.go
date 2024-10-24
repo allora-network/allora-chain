@@ -1,4 +1,4 @@
-package invariant_test
+package fuzz_test
 
 import (
 	"os"
@@ -41,9 +41,9 @@ func lookupEnvSimulationMode() SimulationMode {
 	}
 }
 
-func TestInvariantTestSuite(t *testing.T) {
-	if _, isInvariant := os.LookupEnv("INVARIANT_TEST"); isInvariant == false {
-		t.Skip("Skipping Invariant Test unless explicitly enabled")
+func TestFuzzTestSuite(t *testing.T) {
+	if _, isFuzz := os.LookupEnv("FUZZ_TEST"); isFuzz == false {
+		t.Skip("Skipping Fuzz Test unless explicitly enabled")
 	}
 
 	t.Log(">>> Environment <<<")
