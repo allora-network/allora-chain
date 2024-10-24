@@ -36,5 +36,5 @@ jobs:
         with:
           go-version: stable
       - name: check-defer-close
-        run: go run ./cmd/check-defer-close .
+        run: go run ./linter/check-defer-close .
         timeout-minutes: 10

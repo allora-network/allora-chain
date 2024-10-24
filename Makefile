@@ -84,14 +84,14 @@ build-local-edits:
 lint:
 	@echo "--> Running linter"
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m
-	@go run ./cmd/check-defer-close .
+	@go run ./linter/check-defer-close .
 
 build-maprange-linter:
 	@echo "--> Buiding maprange linter"
-	cd linter && go build -o bin/maprange.so -buildmode=plugin maprange.go
+	cd linter/maprange && go build -o bin/maprange.so -buildmode=plugin maprange.go
 
 maprange: build-maprange-linter
 	@echo "--> Running maprange linter"
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m --config linter/.golangci-maprange.yml
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m --config linter/maprange/.golangci-maprange.yml
 
 .PHONY: all install build lint build-maprange-linter maprange
