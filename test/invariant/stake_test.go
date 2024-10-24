@@ -191,7 +191,7 @@ func cancelStakeRemoval(
 	data *SimulationData,
 	iteration int,
 ) {
-	wasErr := true
+	wasErr := false
 	iterLog(
 		m.T,
 		iteration,
@@ -217,13 +217,21 @@ func cancelStakeRemoval(
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
-	response := &emissionstypes.RemoveStakeResponse{}
+	response := &emissionstypes.CancelRemoveStakeResponse{}
 	err = txResp.Decode(response)
 	requireNoError(m.T, data.failOnErr, err)
 	wasErr = orErr(wasErr, err)
 
 	if !wasErr {
 		data.counts.incrementCancelStakeRemovalCount()
+		iterSuccessLog(
+			m.T,
+			iteration,
+			"cancelled stake removal as a reputer",
+			actor,
+			"in topic id",
+			topicId,
+		)
 	} else {
 		iterFailLog(m.T, iteration, "cancelling stake removal as a reputer failed", actor, "in topic id", topicId)
 	}
@@ -412,12 +420,14 @@ func cancelDelegateStakeRemoval(
 	data *SimulationData,
 	iteration int,
 ) {
-	wasErr := true
+	wasErr := false
 	iterLog(
 		m.T,
 		iteration,
 		"cancelling stake removal as a delegator",
 		delegator,
+		"on reputer",
+		reputer,
 		"in topic id",
 		topicId,
 	)
@@ -446,6 +456,14 @@ func cancelDelegateStakeRemoval(
 	wasErr = orErr(wasErr, err)
 	if !wasErr {
 		data.counts.incrementCancelDelegateStakeRemovalCount()
+		iterSuccessLog(
+			m.T,
+			iteration,
+			"cancelled stake removal as a delegator",
+			delegator,
+			"in topic id",
+			topicId,
+		)
 	} else {
 		iterFailLog(m.T, iteration, "cancelling stake removal as a delegator failed delegator ", delegator, " reputer", reputer, "in topic id", topicId)
 	}

@@ -293,30 +293,6 @@ func (s *SimulationData) isReputerRegistered(topicId uint64, actor Actor) bool {
 	return exists
 }
 
-// pick a random worker from a topic. This function is O(n) over the list of workers
-func (s *SimulationData) pickRandomWorkerRegisteredInTopic(rand *rand.Rand, topicId uint64) (Actor, error) {
-	workers, _ := s.registeredWorkers.Filter(func(reg Registration) bool {
-		return reg.TopicId == topicId
-	})
-	if len(workers) == 0 {
-		return Actor{}, fmt.Errorf("no workers in topic %d", topicId)
-	}
-	randIndex := rand.Intn(len(workers))
-	return workers[randIndex].Actor, nil
-}
-
-// pick a random reputer registered in a topic. This function is O(n) over the list of reputers
-func (s *SimulationData) pickRandomReputerRegisteredInTopic(rand *rand.Rand, topicId uint64) (Actor, error) {
-	reputers, _ := s.registeredReputers.Filter(func(reg Registration) bool {
-		return reg.TopicId == topicId
-	})
-	if len(reputers) == 0 {
-		return Actor{}, fmt.Errorf("no reputers in topic %d", topicId)
-	}
-	randIndex := rand.Intn(len(reputers))
-	return reputers[randIndex].Actor, nil
-}
-
 // isAnyWorkerRegisteredInTopic checks if any worker is registered in a topic
 func (s *SimulationData) isAnyWorkerRegisteredInTopic(topicId uint64) bool {
 	workers, _ := s.registeredWorkers.Filter(func(reg Registration) bool {

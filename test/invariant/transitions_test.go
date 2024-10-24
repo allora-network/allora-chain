@@ -294,19 +294,9 @@ func pickActorAndTopicIdForStateTransition(
 		}
 		topics := findActiveTopicsAtThisBlock(m, data, blockHeightNow)
 		if len(topics) > 0 {
-			for i := 0; i < 10; i++ {
-				randIndex := m.Client.Rand.Intn(len(topics))
-				topicId := topics[randIndex].Id
-				worker, err := data.pickRandomWorkerRegisteredInTopic(m.Client.Rand, topicId)
-				if err != nil {
-					continue
-				}
-				reputer, err := data.pickRandomReputerRegisteredInTopic(m.Client.Rand, topicId)
-				if err != nil {
-					continue
-				}
-				return true, worker, reputer, nil, topicId
-			}
+			randIndex := m.Client.Rand.Intn(len(topics))
+			topicId := topics[randIndex].Id
+			return true, UnusedActor, UnusedActor, nil, topicId
 		}
 		return false, UnusedActor, UnusedActor, nil, 0
 	default:
