@@ -1,4 +1,4 @@
-package invariant_test
+package fuzz_test
 
 import "strconv"
 
