@@ -30,6 +30,13 @@ VALIDATORS_API_PORT_START=1317
 HEADS_IP_START=20
 CHAIN_ID="${CHAIN_ID:-localnet}"
 LOCALNET_DATADIR="$(pwd)/$CHAIN_ID"
+UPGRADE_VERSION="${UPGRADE_VERSION:-"v0.6.0"}"
+DO_UPGRADE="${DO_UPGRADE:-"false"}"
+if [ "$DO_UPGRADE" == "true" ]; then
+    DOCKERFILE="${DOCKERFILE:-"./Dockerfile.upgrade"}"
+else
+    DOCKERFILE="${DOCKERFILE:-"./Dockerfile.development"}"
+fi
 
 ACCOUNTS_TOKENS=1000000
 
@@ -55,7 +62,7 @@ echo "ALLORA_RPC=http://${NETWORK_PREFIX}.${VALIDATORS_IP_START}:26657" >> ${ENV
 
 echo "Build the docker image"
 pushd ..
-docker build -t $DOCKER_IMAGE -f ./Dockerfile.development .
+docker build -t $DOCKER_IMAGE -f $DOCKERFILE .
 popd
 
 echo "Copy generate_genesis.sh into localnet data directory so it can go into the container"
@@ -96,7 +103,7 @@ genesis_file="${LOCALNET_DATADIR}/genesis/config/genesis.json"
 tmp_file=$(mktemp)
 jq '.app_state.gov.params.expedited_voting_period = "20s" | .app_state.gov.params.voting_period = "20s"' "$genesis_file" > "$tmp_file" && mv "$tmp_file" "$genesis_file"
 echo "Updating remove_stake_delay_window in genesis.json"
-jq '.app_state.emissions.params.remove_stake_delay_window = "5"' "$genesis_file" > "$tmp_file" && mv "$tmp_file" "$genesis_file"
+jq '.app_state.emissions.params.remove_stake_delay_window = "10"' "$genesis_file" > "$tmp_file" && mv "$tmp_file" "$genesis_file"
 
 echo "Whitelist faucet account"
 FAUCET_ADDRESS=$(docker run -t \
@@ -129,6 +136,22 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
         --env DAEMON_NAME=allorad \
         $DOCKER_IMAGE \
             init /usr/local/bin/allorad
+    if [ "$DO_UPGRADE" == "true" ]; then
+        echo "Setting $UPGRADE_VERSION upgrade for $valName"
+        docker run -t \
+            -u $(id -u):$(id -g) \
+            -v ${LOCALNET_DATADIR}:/data \
+            --entrypoint=mkdir \
+            $DOCKER_IMAGE \
+                -p /data/${valName}/cosmovisor/upgrades/${UPGRADE_VERSION}/bin
+
+        docker run -t \
+            -u $(id -u):$(id -g) \
+            -v ${LOCALNET_DATADIR}:/data \
+            --entrypoint=cp \
+            $DOCKER_IMAGE \
+            /usr/local/bin/allorad-${UPGRADE_VERSION} /data/${valName}/cosmovisor/upgrades/${UPGRADE_VERSION}/bin/allorad
+    fi
 done
 
 echo "Generate L1 peers, put them in persisent-peers and in genesis.json"
@@ -221,7 +244,7 @@ if [ $chain_status -eq $((VALIDATOR_NUMBER-1)) ]; then
     echo "  - 'allorad --home $LOCALNET_DATADIR/genesis status'"
 else
     echo "Chain is not producing blocks"
-    echo "If run localy you can check the logs with: docker logs allorad_validator_0"
+    echo "If run locally you can check the logs with: docker logs allorad_validator_0"
     echo "and connect to the validators ..."
     exit 1
 fi
