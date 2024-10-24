@@ -88,7 +88,7 @@ lint:
 
 build-maprange-linter:
 	@echo "--> Buiding maprange linter"
-	go build -o linter/bin/maprange.so -buildmode=plugin linter/maprange.go
+	cd linter && go build -o bin/maprange.so -buildmode=plugin maprange.go
 
 maprange: build-maprange-linter
 	@echo "--> Running maprange linter"
