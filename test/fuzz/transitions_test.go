@@ -6,6 +6,7 @@ import (
 
 	cosmossdk_io_math "cosmossdk.io/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
+	fuzzcommon "github.com/allora-network/allora-chain/test/fuzz/common"
 )
 
 var UnusedActor Actor = Actor{} // nolint:exhaustruct
@@ -50,50 +51,77 @@ type StateTransition struct {
 // produce reputation scores (insert reputer payloads)
 // NOTE: all weights must sum to 100
 func allTransitions() []StateTransition {
+	transitionWeights := fuzzcommon.GetTransitionWeights()
 	transitionCreateTopic := StateTransition{
-		name: "createTopic", f: createTopic, weight: 2, follow: nil, followWeight: 0,
+		name: "createTopic", f: createTopic,
+		weight: transitionWeights.CreateTopic,
+		follow: nil, followWeight: 0,
 	}
 	transitionFundTopic := StateTransition{
-		name: "fundTopic", f: fundTopic, weight: 10, follow: nil, followWeight: 0,
+		name: "fundTopic", f: fundTopic,
+		weight: transitionWeights.FundTopic,
+		follow: nil, followWeight: 0,
 	}
 	transitionRegisterWorker := StateTransition{
-		name: "registerWorker", f: registerWorker, weight: 2, follow: nil, followWeight: 0,
+		name: "registerWorker", f: registerWorker,
+		weight: transitionWeights.RegisterWorker,
+		follow: nil, followWeight: 0,
 	}
 	transitionRegisterReputer := StateTransition{
-		name: "registerReputer", f: registerReputer, weight: 2, follow: nil, followWeight: 0,
+		name: "registerReputer", f: registerReputer,
+		weight: transitionWeights.RegisterReputer,
+		follow: nil, followWeight: 0,
 	}
 	transitionStakeAsReputer := StateTransition{
-		name: "stakeAsReputer", f: stakeAsReputer, weight: 10, follow: nil, followWeight: 0,
+		name: "stakeAsReputer", f: stakeAsReputer,
+		weight: transitionWeights.StakeAsReputer,
+		follow: nil, followWeight: 0,
 	}
 	transitionDelegateStake := StateTransition{
-		name: "delegateStake", f: delegateStake, weight: 10, follow: nil, followWeight: 0,
+		name: "delegateStake", f: delegateStake,
+		weight: transitionWeights.DelegateStake,
+		follow: nil, followWeight: 0,
 	}
 	transitionCollectDelegatorRewards := StateTransition{
-		name: "collectDelegatorRewards", f: collectDelegatorRewards, weight: 10, follow: nil, followWeight: 0,
+		name: "collectDelegatorRewards", f: collectDelegatorRewards,
+		weight: transitionWeights.CollectDelegatorRewards,
+		follow: nil, followWeight: 0,
 	}
 	transitionDoInferenceAndReputation := StateTransition{
-		name: "doInferenceAndReputation", f: doInferenceAndReputation, weight: 30, follow: nil, followWeight: 0,
+		name: "doInferenceAndReputation", f: doInferenceAndReputation,
+		weight: transitionWeights.DoInferenceAndReputation,
+		follow: nil, followWeight: 0,
 	}
 	transitionUnregisterWorker := StateTransition{
-		name: "unregisterWorker", f: unregisterWorker, weight: 0, follow: nil, followWeight: 0,
+		name: "unregisterWorker", f: unregisterWorker,
+		weight: transitionWeights.UnregisterWorker,
+		follow: nil, followWeight: 0,
 	}
 	transitionUnregisterReputer := StateTransition{
-		name: "unregisterReputer", f: unregisterReputer, weight: 0, follow: nil, followWeight: 0,
+		name: "unregisterReputer", f: unregisterReputer,
+		weight: transitionWeights.UnregisterReputer,
+		follow: nil, followWeight: 0,
 	}
 
 	//cancels come after the unstake/undelegate
 	transitionCancelStakeRemoval := StateTransition{
-		name: "cancelStakeRemoval", f: cancelStakeRemoval, weight: 0, follow: nil, followWeight: 0,
+		name: "cancelStakeRemoval", f: cancelStakeRemoval,
+		weight: transitionWeights.CancelStakeRemoval,
+		follow: nil, followWeight: 0,
 	}
 	transitionCancelDelegateStakeRemoval := StateTransition{
-		name: "cancelDelegateStakeRemoval", f: cancelDelegateStakeRemoval, weight: 0, follow: nil, followWeight: 0,
+		name: "cancelDelegateStakeRemoval", f: cancelDelegateStakeRemoval,
+		weight: transitionWeights.CancelDelegateStakeRemoval,
+		follow: nil, followWeight: 0,
 	}
 	transitionUnstakeAsReputer := StateTransition{
-		name: "unstakeAsReputer", f: unstakeAsReputer, weight: 0,
+		name: "unstakeAsReputer", f: unstakeAsReputer,
+		weight: transitionWeights.UnstakeAsReputer,
 		follow: &transitionCancelStakeRemoval, followWeight: 50,
 	}
 	transitionUndelegateStake := StateTransition{
-		name: "undelegateStake", f: undelegateStake, weight: 0,
+		name: "undelegateStake", f: undelegateStake,
+		weight: transitionWeights.UndelegateStake,
 		follow: &transitionCancelDelegateStakeRemoval, followWeight: 50,
 	}
 
@@ -113,16 +141,6 @@ func allTransitions() []StateTransition {
 		transitionCancelStakeRemoval,
 		transitionCancelDelegateStakeRemoval,
 	}
-}
-
-// helper function to help check that the weights sum to 100 for the state transitions
-func CheckAllTransitionsWeightSum() bool {
-	transitions := allTransitions()
-	weightSum := uint64(0)
-	for _, transition := range transitions {
-		weightSum += uint64(transition.weight)
-	}
-	return weightSum == uint64(100)
 }
 
 // weight transitions that add registrations or stake, more heavily than those that take it away

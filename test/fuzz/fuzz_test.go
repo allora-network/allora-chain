@@ -10,7 +10,6 @@ import (
 
 	cosmossdk_io_math "cosmossdk.io/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
-	"github.com/stretchr/testify/require"
 )
 
 type SimulationMode string
@@ -74,8 +73,6 @@ func TestFuzzTestSuite(t *testing.T) {
 	t.Log(">>> Starting Test <<<")
 	timestr := fmt.Sprintf(">>> Starting %s <<<", time.Now().Format(time.RFC850))
 	t.Log(timestr)
-
-	require.True(t, CheckAllTransitionsWeightSum(), "State transition weights must sum to 100")
 
 	simulate(
 		&testConfig,
