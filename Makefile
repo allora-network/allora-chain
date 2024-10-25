@@ -85,6 +85,7 @@ lint:
 	@echo "--> Running linter"
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m
 	@go run ./linter/check-defer-close .
+	@go run ./linter/fuzz-transitions
 
 build-maprange-linter:
 	@echo "--> Buiding maprange linter"

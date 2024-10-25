@@ -38,3 +38,6 @@ jobs:
       - name: check-defer-close
         run: go run ./linter/check-defer-close .
         timeout-minutes: 10
+      - name: check-fuzz-transitions
+        run: go run ./linter/fuzz-transitions
+        timeout-minutes: 10
