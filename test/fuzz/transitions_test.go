@@ -143,16 +143,6 @@ func allTransitions() []StateTransition {
 	}
 }
 
-// helper function to help check that the weights sum to 100 for the state transitions
-func CheckAllTransitionsWeightSum() bool {
-	transitions := allTransitions()
-	weightSum := uint64(0)
-	for _, transition := range transitions {
-		weightSum += uint64(transition.weight)
-	}
-	return weightSum == uint64(100)
-}
-
 // weight transitions that add registrations or stake, more heavily than those that take it away
 // 70% of the time do additive stuff
 // 30% of the time do subtractive stuff
