@@ -9,6 +9,7 @@ import (
 
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	cosmosmath "cosmossdk.io/math"
 )
 
 // registerWorkers registers numWorkers as workers in topicId
@@ -153,6 +154,78 @@ func registerReputers(
 
 	totalTime := time.Since(start)
 	fmt.Printf("Total reputer registration time: %s\n", totalTime)
+
+	return nil
+}
+
+// broadcast tx to register reputer in topic, then check success
+func stakeReputers(
+	m *testcommon.TestConfig,
+	topicId uint64,
+	reputers []Actor,
+	stakeToAdd uint64,
+) error {
+	batchSize := 100
+	maxConcurrent := batchSize
+	sem := make(chan struct{}, maxConcurrent)
+	
+	ctx := context.Background()
+	start := time.Now()
+	completed := atomic.Int32{}
+	numReputers := len(reputers)
+
+	fmt.Printf("Starting staking for %d reputers in topic: %d\n", numReputers, topicId)
+
+	// Process in batches
+	for batchStart := 0; batchStart < numReputers; batchStart += batchSize {
+		batchEnd := batchStart + batchSize
+		if batchEnd > numReputers {
+			batchEnd = numReputers
+		}
+
+		var batchWg sync.WaitGroup
+		fmt.Printf("Processing stake batch %d-%d\n", batchStart, batchEnd)
+
+		// Process current batch
+		for i := batchStart; i < batchEnd; i++ {
+			batchWg.Add(1)
+			reputer := reputers[i]
+			
+			go func(reputer Actor, idx int) {
+				defer batchWg.Done()
+				
+				sem <- struct{}{}
+				defer func() { 
+					<-sem 
+					count := completed.Add(1)
+					if int(count)%batchSize == 0 || count == int32(numReputers) {
+						elapsed := time.Since(start)
+						fmt.Printf("Processed %d/%d reputer stakes (%.2f%%) in %s\n", 
+							count, numReputers, 
+							float64(count)/float64(numReputers)*100,
+							elapsed)
+					}
+				}()
+
+				request := &emissionstypes.AddStakeRequest{
+					Sender:  reputer.addr,
+					TopicId: topicId,
+					Amount:  cosmosmath.NewIntFromUint64(stakeToAdd),
+				}
+				
+				fmt.Printf("Staking reputer: %s in topic: %d with address: %s\n", reputer.name, topicId, reputer.addr)
+				
+				m.Client.BroadcastTxAsync(ctx, reputer.acc, request)
+			}(reputer, i)
+		}
+
+		// Wait for current batch to complete before starting next batch
+		batchWg.Wait()
+		fmt.Printf("Completed stake batch %d-%d\n", batchStart, batchEnd)
+	}
+
+	totalTime := time.Since(start)
+	fmt.Printf("Total reputer staking time: %s\n", totalTime)
 
 	return nil
 }

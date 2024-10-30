@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"testing"
 	"time"
+	"sync"
 
 	testcommon "github.com/allora-network/allora-chain/test/common"
 )
 
 const topicFunds int64 = 1e6
+const stakeToAdd uint64 = 9e4
 
 func TestNewStressTestSuite(t *testing.T) {
 	t.Log(">>> Environment <<<")
@@ -59,12 +61,12 @@ func TestNewStressTestSuite(t *testing.T) {
 
 	fmt.Println("Topic IDs: ", topicIds)
 
-	// simulateAutomatic(
-	// 	&testConfig,
-	// 	faucet,
-	// 	simulationData,
-	// 	maxIterations,
-	// )
+	err = simulateAutomatic(
+		&testConfig,
+		simulationData,
+		topicIds,
+	)
+	requireNoError(t, simulationData.failOnErr, err)
 }
 
 // startCreateTopicsAndRegister creates topics and registers workers and reputers according to env variables
@@ -82,13 +84,6 @@ func startCreateTopicsAndRegister(
 		return nil, err
 	}
 
-	// Fund Topics
-	err = fundTopics(m, topicIds, actor, topicFunds)
-	if err != nil {
-		return nil, err
-	}
-
-	// Register Workers and Reputers
 	for _, topicId := range topicIds {
 		fmt.Println("Registering workers in topic: ", workersPerTopic)
 		err = registerWorkers(m, data.actors, topicId, data, workersPerTopic)
@@ -101,7 +96,69 @@ func startCreateTopicsAndRegister(
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("Staking reputers in topic: ", topicId)
+		err = stakeReputers(m, topicId, data.actors, stakeToAdd)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = fundTopics(m, topicIds, actor, topicFunds)
+	if err != nil {
+		return nil, err
 	}
 
 	return topicIds, nil
+}
+
+func simulateAutomatic(
+	m *testcommon.TestConfig,
+	data *SimulationData,
+	topicIds []uint64,
+) error {
+	// Create wait group to track all goroutines
+	var wg sync.WaitGroup
+	// Create error channel to catch any errors from goroutines
+	errChan := make(chan error, len(topicIds)*2)
+
+	// For each topic, start a worker routine and a reputer routine
+	for _, topicId := range topicIds {
+		// Add 2 to waitgroup (1 for worker, 1 for reputer)
+		wg.Add(2)
+
+		// Start worker routine
+		go func(tid uint64) {
+			defer wg.Done()
+			err := runTopicWorkersLoop(m, data, tid)
+			if err != nil {
+				errChan <- fmt.Errorf("worker routine failed for topic %d: %w", tid, err)
+			}
+		}(topicId)
+
+		// Start reputer routine
+		go func(tid uint64) {
+			defer wg.Done()
+			err := runReputersProcess(m, data, tid)
+			if err != nil {
+				errChan <- fmt.Errorf("reputer routine failed for topic %d: %w", tid, err)
+			}
+		}(topicId)
+	}
+
+	// Create a channel that closes when all goroutines are done
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	// Wait for either completion or an error
+	select {
+	case err := <-errChan:
+		return err
+	case <-done:
+		return nil
+	case <-time.After(5 * time.Minute): //TODO: Add a timeout to prevent infinite running in ENV VARIABLES
+		return fmt.Errorf("simulation timed out after 5 minutes")
+	}
 }

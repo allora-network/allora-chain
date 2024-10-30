@@ -51,8 +51,8 @@ func simulateSetUp(
 	data := SimulationData{
 		epochLength:               int64(epochLength),
 		actors:                    actorsList,
-		registeredWorkersByTopic:  map[uint64][]string{},
-		registeredReputersByTopic: map[uint64][]string{},
+		registeredWorkersByTopic:  map[uint64][]Actor{},
+		registeredReputersByTopic: map[uint64][]Actor{},
 		failOnErr:                 false,
 	}
 
