@@ -3,13 +3,12 @@ package newstress_test
 import (
 	"context"
 	"fmt"
+	"sync"
+	"sync/atomic"
+	"time"
 
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	signingtypes "github.com/cosmos/cosmos-sdk/types/tx/signing"
-	proto "github.com/cosmos/gogoproto/proto"
-	"github.com/stretchr/testify/require"
 )
 
 // registerWorkers registers numWorkers as workers in topicId
@@ -20,55 +19,72 @@ func registerWorkers(
 	data *SimulationData,
 	numWorkers int,
 ) error {
-	workerRequests := make([]proto.Message, numWorkers)
-	signers := make([]signingtypes.SignatureV2, numWorkers)
-	for i := 0; i < numWorkers; i++ {
-		worker := actors[i]
-		workerRequest := &emissionstypes.RegisterRequest{
-			Sender:    worker.addr,
-			Owner:     worker.addr,
-			IsReputer: false,
-			TopicId:   topicId,
-		}
-		src, err := workerRequest.XXX_Marshal(nil, true)
-		require.NoError(m.T, err, "Marshall worker request should not return an error")
+	batchSize := 100
+	sem := make(chan struct{}, batchSize)
+	
+	ctx := context.Background()
+	start := time.Now()
+	completed := atomic.Int32{}
 
-		workerRequestSignature, pubKey, err := m.Client.Context().Keyring.Sign(worker.name, src, signing.SignMode_SIGN_MODE_DIRECT)
-		require.NoError(m.T, err, "Sign should not return an error")
+	fmt.Printf("Starting registration of %d workers in topic: %d\n", numWorkers, topicId)
 
-		signers[i] = signingtypes.SignatureV2{
-			PubKey: pubKey,
-			Data: &signingtypes.SingleSignatureData{
-				SignMode:  signingtypes.SignMode_SIGN_MODE_DIRECT,
-				Signature: workerRequestSignature,
-			},
+	// Process in batches
+	for batchStart := 0; batchStart < numWorkers; batchStart += batchSize {
+		batchEnd := batchStart + batchSize
+		if batchEnd > numWorkers {
+			batchEnd = numWorkers
 		}
 
-		workerRequests[i] = workerRequest
-		fmt.Println("Registering worker: ", worker.name, "in topic: ", topicId, "with address: ", worker.addr)
-		data.addWorkerRegistration(topicId, worker)
+		var batchWg sync.WaitGroup
+		fmt.Printf("Processing batch %d-%d\n", batchStart, batchEnd)
+
+		// Process current batch
+		for i := batchStart; i < batchEnd; i++ {
+			batchWg.Add(1)
+			worker := actors[i]
+			
+			go func(worker Actor, idx int) {
+				defer batchWg.Done()
+				
+				sem <- struct{}{}
+				defer func() { 
+					<-sem 
+					count := completed.Add(1)
+					if int(count)%batchSize == 0 || count == int32(numWorkers) {
+						elapsed := time.Since(start)
+						fmt.Printf("Processed %d/%d worker registrations (%.2f%%) in %s\n", 
+							count, numWorkers, 
+							float64(count)/float64(numWorkers)*100,
+							elapsed)
+					}
+				}()
+
+				request := &emissionstypes.RegisterRequest{
+					Sender:    worker.addr,
+					Owner:     worker.addr,
+					IsReputer: false,
+					TopicId:   topicId,
+				}
+				
+				fmt.Printf("Registering worker: %s in topic: %d with address: %s\n", worker.name, topicId, worker.addr)
+				
+				m.Client.BroadcastTxAsync(ctx, worker.acc, request)
+				data.addWorkerRegistration(topicId, worker)
+			}(worker, i)
+		}
+
+		// Wait for current batch to complete before starting next batch
+		batchWg.Wait()
+		fmt.Printf("Completed batch %d-%d\n", batchStart, batchEnd)
 	}
 
-	fmt.Println("Building tx with workers in topic: ", topicId)
-	builder := m.Client.Context().TxConfig.NewTxBuilder()
-	builder.SetMsgs(workerRequests...)
-	builder.SetSignatures(signers...)
-	tx := builder.GetTx()
-	fmt.Println("Encoding tx with workers in topic: ", topicId)
-	txBytes, err := m.Client.Context().TxConfig.TxEncoder()(tx)
-	require.NoError(m.T, err, "TxEncoder should not return an error")
-	fmt.Println("Broadcasting tx with workers in topic: ", topicId)
-
-	txResp, err := m.Client.Context().BroadcastTxSync(txBytes)
-	if err != nil {
-		fmt.Println("Error broadcasting tx: ", err)
-		return err
-	}
-	fmt.Printf("Transaction broadcast successful. TxHash: %s\n", txResp.TxHash)
+	totalTime := time.Since(start)
+	fmt.Printf("Total worker registration time: %s\n", totalTime)
 
 	return nil
 }
 
+// registerReputers registers numReputers as reputers in topicId
 func registerReputers(
 	m *testcommon.TestConfig,
 	actors []Actor,
@@ -76,30 +92,67 @@ func registerReputers(
 	data *SimulationData,
 	numReputers int,
 ) error {
-	fmt.Println("Registering reputers in topic: ", topicId)
+	batchSize := 100
+	sem := make(chan struct{}, batchSize)
+	
 	ctx := context.Background()
-	// Register each reputer in separate transactions
-	for i := 0; i < numReputers; i++ {
-		reputer := actors[i]
-		request := &emissionstypes.RegisterRequest{
-			Sender:    reputer.addr,
-			Owner:     reputer.addr,
-			IsReputer: true,
-			TopicId:   topicId,
+	start := time.Now()
+	completed := atomic.Int32{}
+
+	fmt.Printf("Starting registration of %d reputers in topic: %d\n", numReputers, topicId)
+
+	// Process in batches
+	for batchStart := 0; batchStart < numReputers; batchStart += batchSize {
+		batchEnd := batchStart + batchSize
+		if batchEnd > numReputers {
+			batchEnd = numReputers
 		}
-		fmt.Println("Registering reputer: ", reputer.name, "in topic: ", topicId, "with address: ", reputer.addr)
-		
-		// Broadcast transaction with the reputer's account
-		txResp, err := m.Client.BroadcastTx(ctx, reputer.acc, request)
-		if err != nil {
-			return err
+
+		var batchWg sync.WaitGroup
+		fmt.Printf("Processing batch %d-%d\n", batchStart, batchEnd)
+
+		// Process current batch
+		for i := batchStart; i < batchEnd; i++ {
+			batchWg.Add(1)
+			reputer := actors[i]
+			
+			go func(reputer Actor, idx int) {
+				defer batchWg.Done()
+				
+				sem <- struct{}{}
+				defer func() { 
+					<-sem 
+					count := completed.Add(1)
+					if int(count)%batchSize == 0 || count == int32(numReputers) {
+						elapsed := time.Since(start)
+						fmt.Printf("Processed %d/%d reputer registrations (%.2f%%) in %s\n", 
+							count, numReputers, 
+							float64(count)/float64(numReputers)*100,
+							elapsed)
+					}
+				}()
+
+				request := &emissionstypes.RegisterRequest{
+					Sender:    reputer.addr,
+					Owner:     reputer.addr,
+					IsReputer: true,
+					TopicId:   topicId,
+				}
+				
+				fmt.Printf("Registering reputer: %s in topic: %d with address: %s\n", reputer.name, topicId, reputer.addr)
+				
+				m.Client.BroadcastTxAsync(ctx, reputer.acc, request)
+				data.addReputerRegistration(topicId, reputer)
+			}(reputer, i)
 		}
-		_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
-		if err != nil {
-			return err
-		}
-		
-		data.addReputerRegistration(topicId, reputer)
+
+		// Wait for current batch to complete before starting next batch
+		batchWg.Wait()
+		fmt.Printf("Completed batch %d-%d\n", batchStart, batchEnd)
 	}
+
+	totalTime := time.Since(start)
+	fmt.Printf("Total reputer registration time: %s\n", totalTime)
+
 	return nil
 }

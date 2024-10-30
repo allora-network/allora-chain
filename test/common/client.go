@@ -13,6 +13,7 @@ import (
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -182,6 +183,16 @@ func (c *Client) BroadcastTx(
 	msgs ...sdktypes.Msg,
 ) (cosmosclient.Response, error) {
 	return c.Clients[c.getNextClientNumber()].BroadcastTx(ctx, account, msgs...)
+}
+
+func (c *Client) BroadcastTxAsync(
+	ctx context.Context,
+	account cosmosaccount.Account,
+	msgs ...sdktypes.Msg,
+) (cosmosclient.Response, error) {
+	client := c.Clients[c.getNextClientNumber()]
+	sdkCtx := client.Context().WithBroadcastMode(tx.BroadcastMode_BROADCAST_MODE_ASYNC.String())
+	return client.BroadcastTx(sdkCtx.CmdContext, account, msgs...)
 }
 
 func (c *Client) Context() sdkclient.Context {

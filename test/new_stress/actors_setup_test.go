@@ -11,7 +11,6 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
-	"github.com/stretchr/testify/require"
 )
 
 var UnusedActor Actor = Actor{} // nolint:exhaustruct
@@ -39,6 +38,7 @@ func simulateSetUp(
 	if err != nil {
 		m.T.Fatal(err)
 	}
+	fmt.Printf("Funding actors from faucet: %s with amount: %s\n", faucet.name, preFundAmount.String())
 	err = fundActors(
 		m,
 		faucet,
@@ -199,117 +199,3 @@ func (a *Actor) GetBalance(m *testcommon.TestConfig) (cosmossdk_io_math.Int, err
 	}
 	return bal.Balance.Amount, nil
 }
-
-// for initial state for the automatic test
-// 5 workers, 4 reputers, and 2 delegators
-// each set unique actors, no actor repeated anywhere
-func pickAutoSetupActors(m *testcommon.TestConfig, data *SimulationData) (reputers []Actor, workers []Actor, delegators []Actor) {
-	numReputers := 4
-	numWorkers := 5
-	numDelegators := 2
-	totalActorsForSetup := numReputers + numWorkers + numDelegators
-
-	reputers = make([]Actor, numReputers)
-	workers = make([]Actor, numWorkers)
-	delegators = make([]Actor, numDelegators)
-	require.GreaterOrEqual(
-		m.T,
-		len(data.actors),
-		totalActorsForSetup,
-		"not enough actors to do the setup, must have at least %d actors: have %d",
-		totalActorsForSetup,
-		len(data.actors),
-	)
-
-	for i := 0; i < numReputers; i++ {
-		newActor := data.actors[i]
-		reputers[i] = newActor
-	}
-
-	for i := 0; i < numWorkers; i++ {
-		newActor := data.actors[numReputers+i]
-		workers[i] = newActor
-	}
-
-	for i := 0; i < numDelegators; i++ {
-		newActor := data.actors[numReputers+numWorkers+i]
-		delegators[i] = newActor
-	}
-
-	return reputers, workers, delegators
-}
-
-// startRegisterReputers registers and then stakes a list of reputers to a list of topics.
-func startRegisterReputers(
-	m *testcommon.TestConfig,
-	data *SimulationData,
-	startReputers []Actor,
-	listTopics []uint64,
-	iterationCountStart int,
-) (iterationCountAfter int) {
-	iterationCount := iterationCountStart
-	// for _, reputer := range startReputers {
-	// 	for _, topicId := range listTopics {
-	// 		// register reputer on the topic
-	// 		registerReputer(m, reputer, UnusedActor, nil, topicId, data, iterationCount)
-	// 		iterationCount++
-	// 		// stake reputer on the topic
-	// 		bal, err := pickRandomBalanceLessThanHalf(m, reputer)
-	// 		requireNoError(m.T, true, err)
-	// 		stakeAsReputer(m, reputer, UnusedActor, &bal, topicId, data, iterationCount)
-	// 		iterationCount++
-	// 	}
-	// }
-	return iterationCount
-}
-
-// // startRegisterWorkers registers and then stakes a list of workers to a list of topics.
-// func startRegisterWorkers(
-// 	m *testcommon.TestConfig,
-// 	data *SimulationData,
-// 	startWorkers []Actor,
-// 	listTopics []uint64,
-// 	iterationCountStart int,
-// ) (iterationCountAfter int) {
-// 	iterationCount := iterationCountStart
-// 	for _, worker := range startWorkers {
-// 		for _, topicId := range listTopics {
-// 			registerWorker(m, worker, UnusedActor, nil, topicId, data, iterationCount)
-// 			iterationCount++
-// 		}
-// 	}
-// 	return iterationCount
-// }
-
-// // startFundTopics funds the topics with random amounts of money
-// func startFundTopics(
-// 	m *testcommon.TestConfig,
-// 	faucet Actor,
-// 	data *SimulationData,
-// 	listTopics []uint64,
-// 	iterationCountStart int,
-// ) (iterationCountAfter int) {
-// 	iterationCount := iterationCountStart
-// 	for _, topicId := range listTopics {
-// 		fundAmount, err := pickRandomBalanceLessThanHalf(m, faucet)
-// 		requireNoError(m.T, true, err)
-// 		fundTopic(m, faucet, UnusedActor, &fundAmount, topicId, data, iterationCount)
-// 		iterationCount++
-// 	}
-// 	return iterationCount
-// }
-
-// // startDoInferenceAndReputation does inference and reputation for both topics
-// func startDoInferenceAndReputation(
-// 	m *testcommon.TestConfig,
-// 	data *SimulationData,
-// 	listTopics []uint64,
-// 	iterationCountStart int,
-// ) (iterationCountAfter int) {
-// 	iterationCount := iterationCountStart
-// 	for _, topicId := range listTopics {
-// 		doInferenceAndReputation(m, UnusedActor, UnusedActor, nil, topicId, data, iterationCount)
-// 		iterationCount++
-// 	}
-// 	return iterationCount
-// }
