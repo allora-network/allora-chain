@@ -72,6 +72,7 @@ func runReputersProcess(
 	}
 }
 
+// Get the latest open worker nonce for a topic
 func getLatestOpenWorkerNonceByTopicId(m *testcommon.TestConfig, topicId uint64) (*emissionstypes.Nonce, error) {
 	ctx := context.Background()
 
@@ -90,6 +91,7 @@ func getLatestOpenWorkerNonceByTopicId(m *testcommon.TestConfig, topicId uint64)
 	return res.Nonces.Nonces[0], nil
 }
 
+// Get the oldest reputer nonce for a topic
 func getOldestReputerNonceByTopicId(m *testcommon.TestConfig, topicId uint64) (int64, error) {
 	ctx := context.Background()
 
@@ -127,7 +129,7 @@ func getActiveWorkersForTopic(m *testcommon.TestConfig, topicId uint64, blockHei
 	return workers, nil
 }
 
-// Inserts inference and forecast data for each worker
+// Create and send worker payloads
 func createAndSendWorkerPayloads(
 	m *testcommon.TestConfig,
 	data *SimulationData,
@@ -152,7 +154,7 @@ func createAndSendWorkerPayloads(
 	return wasErr
 }
 
-// create inferences and forecasts for a worker
+// Create inferences and forecasts for a worker
 func createWorkerDataBundle(
 	m *testcommon.TestConfig,
 	topicId uint64,
@@ -216,7 +218,7 @@ func createWorkerDataBundle(
 	return workerDataBundle, nil
 }
 
-// reputers submit their assessment of the quality of workers' work compared to ground truth
+// Create and send reputer payloads
 func createAndSendReputerPayloads(
 	m *testcommon.TestConfig,
 	data *SimulationData,
@@ -291,7 +293,7 @@ func createReputerValueBundle(
 	return reputerValueBundle, nil
 }
 
-// for every worker, generate a worker attributed value
+// For every worker, generate a worker attributed value
 func generateWorkerAttributedValueLosses(
 	m *testcommon.TestConfig,
 	workers []string,
@@ -308,7 +310,7 @@ func generateWorkerAttributedValueLosses(
 	return values
 }
 
-// for every worker, generate a withheld worker attribute value
+// For every worker, generate a withheld worker attribute value
 func generateWithheldWorkerAttributedValueLosses(
 	workers []string,
 	lowLimit,

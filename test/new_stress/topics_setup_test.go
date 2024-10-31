@@ -27,7 +27,6 @@ func createTopics(
 	if err != nil {
 		return nil, fmt.Errorf("failed to get block height: %w", err)
 	}
-	fmt.Println("resp: ")
 
 	if createTopicsSameBlock {
 		// Create all topics in one broadcast

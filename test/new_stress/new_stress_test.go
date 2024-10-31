@@ -57,7 +57,7 @@ func TestNewStressTestSuite(t *testing.T) {
 	)
 	requireNoError(t, simulationData.failOnErr, err)
 
-	err = simulateAutomatic(
+	err = startActorLoops(
 		&testConfig,
 		simulationData,
 		topicIds,
@@ -110,7 +110,7 @@ func startCreateTopicsAndRegister(
 	return topicIds, nil
 }
 
-func simulateAutomatic(
+func startActorLoops(
 	m *testcommon.TestConfig,
 	data *SimulationData,
 	topicIds []uint64,

@@ -4,20 +4,52 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
-	cosmossdk_io_math "cosmossdk.io/math"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/allora-network/allora-chain/app/params"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
+
+	cosmosmath "cosmossdk.io/math"
+	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
+
+// an actor in the simulation has a
+// human readable name,
+// string bech32 address,
+// and an account with private key etc
+// add a lock to this if you need to broadcast transactions in parallel
+// from actors
+type Actor struct {
+	name string
+	addr string
+	acc  cosmosaccount.Account
+}
+
+// stringer for actor
+func (a Actor) String() string {
+	return a.name
+}
+
+// get the faucet name based on the seed for this test run
+func getFaucetName(seed int) string {
+	return "run" + strconv.Itoa(seed) + "_faucet"
+}
+
+// generates an actors name from seed and index
+func getActorName(seed int, actorIndex int) string {
+	return "run" + strconv.Itoa(seed) + "_actor" + strconv.Itoa(actorIndex)
+}
 
 var UnusedActor Actor = Actor{} // nolint:exhaustruct
 
-// set up the common state for the simulator
-// prior to either doing random simulation
-// or manual simulation
+// Set up the common state for the simulator
 func simulateSetUp(
 	m *testcommon.TestConfig,
 	numActors int,
@@ -59,7 +91,7 @@ func simulateSetUp(
 	return faucet, &data
 }
 
-// creates a new actor and registers them in the nodes account registry
+// Create a new actor and register them in the node's account registry
 func createNewActor(m *testcommon.TestConfig, numActors int) Actor {
 	actorName := getActorName(m.Seed, numActors)
 	actorAccount, _, err := m.Client.AccountRegistryCreate(actorName)
@@ -98,7 +130,7 @@ func createNewActor(m *testcommon.TestConfig, numActors int) Actor {
 	}
 }
 
-// creates a list of actors both as a map and a slice, returns both
+// Create a list of actors both as a map and a slice, returns both
 func createActors(m *testcommon.TestConfig, numToCreate int) []Actor {
 	actorsList := make([]Actor, numToCreate)
 	for i := 0; i < numToCreate; i++ {
@@ -107,12 +139,12 @@ func createActors(m *testcommon.TestConfig, numToCreate int) []Actor {
 	return actorsList
 }
 
-// fund every target address from the sender in amount coins
+// Fund every target address from the sender in amount coins
 func fundActors(
 	m *testcommon.TestConfig,
 	sender Actor,
 	targets []Actor,
-	amount cosmossdk_io_math.Int,
+	amount cosmosmath.Int,
 ) error {
 	inputCoins := sdktypes.NewCoins(
 		sdktypes.NewCoin(
@@ -166,36 +198,164 @@ func fundActors(
 	return nil
 }
 
-// get the amount of money to give each actor in the simulation
-// based on how much money the faucet currently has
+// Get the amount of money to give each actor in the simulation
+// Based on how much money the faucet currently has
 func getPreFundAmount(
 	m *testcommon.TestConfig,
 	faucet Actor,
 	numActors int,
-) (cosmossdk_io_math.Int, error) {
+) (cosmosmath.Int, error) {
 	faucetBal, err := faucet.GetBalance(m)
 	if err != nil {
-		return cosmossdk_io_math.ZeroInt(), err
+		return cosmosmath.ZeroInt(), err
 	}
 	// divide by 10 so you can at least run 10 runs
 	amountForThisRun := faucetBal.QuoRaw(int64(10))
 	ret := amountForThisRun.QuoRaw(int64(numActors))
-	if ret.Equal(cosmossdk_io_math.ZeroInt()) || ret.IsNegative() {
-		return cosmossdk_io_math.ZeroInt(), fmt.Errorf(
+	if ret.Equal(cosmosmath.ZeroInt()) || ret.IsNegative() {
+		return cosmosmath.ZeroInt(), fmt.Errorf(
 			"Not enough funds in faucet account to fund actors",
 		)
 	}
 	return ret, nil
 }
 
-// how much money an actor has
-func (a *Actor) GetBalance(m *testcommon.TestConfig) (cosmossdk_io_math.Int, error) {
+// How much money an actor has
+func (a *Actor) GetBalance(m *testcommon.TestConfig) (cosmosmath.Int, error) {
 	ctx := context.Background()
 	bal, err := m.Client.QueryBank().
 		Balance(ctx, banktypes.NewQueryBalanceRequest(sdktypes.MustAccAddressFromBech32(a.addr), params.DefaultBondDenom))
 	if err != nil {
 		m.T.Logf("Error getting balance of actor %s: %v\n", a.String(), err)
-		return cosmossdk_io_math.ZeroInt(), err
+		return cosmosmath.ZeroInt(), err
 	}
 	return bal.Balance.Amount, nil
+}
+
+// RegisterWorkers registers numWorkers as workers in topicId
+func registerWorkers(
+	m *testcommon.TestConfig,
+	actors []Actor,
+	topicId uint64,
+	data *SimulationData,
+	numWorkers int,
+) error {
+	maxConcurrent := 100
+	sem := make(chan struct{}, maxConcurrent)
+
+	ctx := context.Background()
+	start := time.Now()
+	completed := atomic.Int32{}
+
+	var wg sync.WaitGroup
+	m.T.Logf("Starting registration of %d workers in topic: %d\n", numWorkers, topicId)
+
+	// Process all workers without batching
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		worker := actors[i]
+
+		go func(worker Actor, idx int) {
+			defer wg.Done()
+
+			sem <- struct{}{}
+			defer func() {
+				<-sem
+				count := completed.Add(1)
+				if int(count)%100 == 0 || count == int32(numWorkers) {
+					elapsed := time.Since(start)
+					m.T.Logf("Processed %d/%d worker registrations (%.2f%%) in %s\n",
+						count, numWorkers,
+						float64(count)/float64(numWorkers)*100,
+						elapsed)
+				}
+			}()
+
+			request := &emissionstypes.RegisterRequest{
+				Sender:    worker.addr,
+				Owner:     worker.addr,
+				IsReputer: false,
+				TopicId:   topicId,
+			}
+
+			m.T.Logf("Registering worker: %s in topic: %d with address: %s\n", worker.name, topicId, worker.addr)
+
+			m.Client.BroadcastTxAsync(ctx, worker.acc, request)
+			data.addWorkerRegistration(topicId, worker)
+		}(worker, i)
+	}
+
+	wg.Wait()
+
+	totalTime := time.Since(start)
+	m.T.Logf("Total worker registration time: %s\n", totalTime)
+
+	return nil
+}
+
+// RegisterReputersAndStake registers numReputers as reputers in topicId and stakes them
+func registerReputersAndStake(
+	m *testcommon.TestConfig,
+	actors []Actor,
+	topicId uint64,
+	data *SimulationData,
+	numReputers int,
+) error {
+	maxConcurrent := 100
+	sem := make(chan struct{}, maxConcurrent)
+
+	ctx := context.Background()
+	start := time.Now()
+	completed := atomic.Int32{}
+
+	var wg sync.WaitGroup
+	m.T.Logf("Starting registration of %d reputers in topic: %d\n", numReputers, topicId)
+
+	// Process all reputers without batching
+	for i := 0; i < numReputers; i++ {
+		wg.Add(1)
+		reputer := actors[i]
+
+		go func(reputer Actor, idx int) {
+			defer wg.Done()
+
+			sem <- struct{}{}
+			defer func() {
+				<-sem
+				count := completed.Add(1)
+				if int(count)%100 == 0 || count == int32(numReputers) {
+					elapsed := time.Since(start)
+					m.T.Logf("Processed %d/%d reputer registrations (%.2f%%) in %s\n",
+						count, numReputers,
+						float64(count)/float64(numReputers)*100,
+						elapsed)
+				}
+			}()
+
+			registerRequest := &emissionstypes.RegisterRequest{
+				Sender:    reputer.addr,
+				Owner:     reputer.addr,
+				IsReputer: true,
+				TopicId:   topicId,
+			}
+
+			stakeRequest := &emissionstypes.AddStakeRequest{
+				Sender:  reputer.addr,
+				TopicId: topicId,
+				Amount:  cosmosmath.NewIntFromUint64(stakeToAdd),
+			}
+
+			m.T.Logf("Registering reputer: %s in topic: %d with address: %s\n", reputer.name, topicId, reputer.addr)
+
+			m.Client.BroadcastTxAsync(ctx, reputer.acc, registerRequest, stakeRequest)
+			data.addReputerRegistration(topicId, reputer)
+		}(reputer, i)
+	}
+
+	wg.Wait()
+
+	totalTime := time.Since(start)
+	m.T.Logf("Total reputer registration time: %s\n", totalTime)
+
+	return nil
 }
