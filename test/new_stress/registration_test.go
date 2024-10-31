@@ -2,14 +2,13 @@ package newstress_test
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	cosmosmath "cosmossdk.io/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	cosmosmath "cosmossdk.io/math"
 )
 
 // registerWorkers registers numWorkers as workers in topicId
@@ -20,212 +19,122 @@ func registerWorkers(
 	data *SimulationData,
 	numWorkers int,
 ) error {
-	batchSize := 100
-	sem := make(chan struct{}, batchSize)
-	
+	maxConcurrent := 100
+	sem := make(chan struct{}, maxConcurrent)
+
 	ctx := context.Background()
 	start := time.Now()
 	completed := atomic.Int32{}
 
-	fmt.Printf("Starting registration of %d workers in topic: %d\n", numWorkers, topicId)
+	var wg sync.WaitGroup
+	m.T.Logf("Starting registration of %d workers in topic: %d\n", numWorkers, topicId)
 
-	// Process in batches
-	for batchStart := 0; batchStart < numWorkers; batchStart += batchSize {
-		batchEnd := batchStart + batchSize
-		if batchEnd > numWorkers {
-			batchEnd = numWorkers
-		}
+	// Process all workers without batching
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		worker := actors[i]
 
-		var batchWg sync.WaitGroup
-		fmt.Printf("Processing batch %d-%d\n", batchStart, batchEnd)
+		go func(worker Actor, idx int) {
+			defer wg.Done()
 
-		// Process current batch
-		for i := batchStart; i < batchEnd; i++ {
-			batchWg.Add(1)
-			worker := actors[i]
-			
-			go func(worker Actor, idx int) {
-				defer batchWg.Done()
-				
-				sem <- struct{}{}
-				defer func() { 
-					<-sem 
-					count := completed.Add(1)
-					if int(count)%batchSize == 0 || count == int32(numWorkers) {
-						elapsed := time.Since(start)
-						fmt.Printf("Processed %d/%d worker registrations (%.2f%%) in %s\n", 
-							count, numWorkers, 
-							float64(count)/float64(numWorkers)*100,
-							elapsed)
-					}
-				}()
-
-				request := &emissionstypes.RegisterRequest{
-					Sender:    worker.addr,
-					Owner:     worker.addr,
-					IsReputer: false,
-					TopicId:   topicId,
+			sem <- struct{}{}
+			defer func() {
+				<-sem
+				count := completed.Add(1)
+				if int(count)%100 == 0 || count == int32(numWorkers) {
+					elapsed := time.Since(start)
+					m.T.Logf("Processed %d/%d worker registrations (%.2f%%) in %s\n",
+						count, numWorkers,
+						float64(count)/float64(numWorkers)*100,
+						elapsed)
 				}
-				
-				fmt.Printf("Registering worker: %s in topic: %d with address: %s\n", worker.name, topicId, worker.addr)
-				
-				m.Client.BroadcastTxAsync(ctx, worker.acc, request)
-				data.addWorkerRegistration(topicId, worker)
-			}(worker, i)
-		}
+			}()
 
-		// Wait for current batch to complete before starting next batch
-		batchWg.Wait()
-		fmt.Printf("Completed batch %d-%d\n", batchStart, batchEnd)
+			request := &emissionstypes.RegisterRequest{
+				Sender:    worker.addr,
+				Owner:     worker.addr,
+				IsReputer: false,
+				TopicId:   topicId,
+			}
+
+			m.T.Logf("Registering worker: %s in topic: %d with address: %s\n", worker.name, topicId, worker.addr)
+
+			m.Client.BroadcastTxAsync(ctx, worker.acc, request)
+			data.addWorkerRegistration(topicId, worker)
+		}(worker, i)
 	}
 
+	wg.Wait()
+
 	totalTime := time.Since(start)
-	fmt.Printf("Total worker registration time: %s\n", totalTime)
+	m.T.Logf("Total worker registration time: %s\n", totalTime)
 
 	return nil
 }
 
-// registerReputers registers numReputers as reputers in topicId
-func registerReputers(
+// registerReputersAndStake registers numReputers as reputers in topicId and stakes them
+func registerReputersAndStake(
 	m *testcommon.TestConfig,
 	actors []Actor,
 	topicId uint64,
 	data *SimulationData,
 	numReputers int,
 ) error {
-	batchSize := 100
-	sem := make(chan struct{}, batchSize)
-	
-	ctx := context.Background()
-	start := time.Now()
-	completed := atomic.Int32{}
-
-	fmt.Printf("Starting registration of %d reputers in topic: %d\n", numReputers, topicId)
-
-	// Process in batches
-	for batchStart := 0; batchStart < numReputers; batchStart += batchSize {
-		batchEnd := batchStart + batchSize
-		if batchEnd > numReputers {
-			batchEnd = numReputers
-		}
-
-		var batchWg sync.WaitGroup
-		fmt.Printf("Processing batch %d-%d\n", batchStart, batchEnd)
-
-		// Process current batch
-		for i := batchStart; i < batchEnd; i++ {
-			batchWg.Add(1)
-			reputer := actors[i]
-			
-			go func(reputer Actor, idx int) {
-				defer batchWg.Done()
-				
-				sem <- struct{}{}
-				defer func() { 
-					<-sem 
-					count := completed.Add(1)
-					if int(count)%batchSize == 0 || count == int32(numReputers) {
-						elapsed := time.Since(start)
-						fmt.Printf("Processed %d/%d reputer registrations (%.2f%%) in %s\n", 
-							count, numReputers, 
-							float64(count)/float64(numReputers)*100,
-							elapsed)
-					}
-				}()
-
-				request := &emissionstypes.RegisterRequest{
-					Sender:    reputer.addr,
-					Owner:     reputer.addr,
-					IsReputer: true,
-					TopicId:   topicId,
-				}
-				
-				fmt.Printf("Registering reputer: %s in topic: %d with address: %s\n", reputer.name, topicId, reputer.addr)
-				
-				m.Client.BroadcastTxAsync(ctx, reputer.acc, request)
-				data.addReputerRegistration(topicId, reputer)
-			}(reputer, i)
-		}
-
-		// Wait for current batch to complete before starting next batch
-		batchWg.Wait()
-		fmt.Printf("Completed batch %d-%d\n", batchStart, batchEnd)
-	}
-
-	totalTime := time.Since(start)
-	fmt.Printf("Total reputer registration time: %s\n", totalTime)
-
-	return nil
-}
-
-// broadcast tx to register reputer in topic, then check success
-func stakeReputers(
-	m *testcommon.TestConfig,
-	topicId uint64,
-	reputers []Actor,
-	stakeToAdd uint64,
-) error {
-	batchSize := 100
-	maxConcurrent := batchSize
+	maxConcurrent := 100
 	sem := make(chan struct{}, maxConcurrent)
-	
+
 	ctx := context.Background()
 	start := time.Now()
 	completed := atomic.Int32{}
-	numReputers := len(reputers)
 
-	fmt.Printf("Starting staking for %d reputers in topic: %d\n", numReputers, topicId)
+	var wg sync.WaitGroup
+	m.T.Logf("Starting registration of %d reputers in topic: %d\n", numReputers, topicId)
 
-	// Process in batches
-	for batchStart := 0; batchStart < numReputers; batchStart += batchSize {
-		batchEnd := batchStart + batchSize
-		if batchEnd > numReputers {
-			batchEnd = numReputers
-		}
+	// Process all reputers without batching
+	for i := 0; i < numReputers; i++ {
+		wg.Add(1)
+		reputer := actors[i]
 
-		var batchWg sync.WaitGroup
-		fmt.Printf("Processing stake batch %d-%d\n", batchStart, batchEnd)
+		go func(reputer Actor, idx int) {
+			defer wg.Done()
 
-		// Process current batch
-		for i := batchStart; i < batchEnd; i++ {
-			batchWg.Add(1)
-			reputer := reputers[i]
-			
-			go func(reputer Actor, idx int) {
-				defer batchWg.Done()
-				
-				sem <- struct{}{}
-				defer func() { 
-					<-sem 
-					count := completed.Add(1)
-					if int(count)%batchSize == 0 || count == int32(numReputers) {
-						elapsed := time.Since(start)
-						fmt.Printf("Processed %d/%d reputer stakes (%.2f%%) in %s\n", 
-							count, numReputers, 
-							float64(count)/float64(numReputers)*100,
-							elapsed)
-					}
-				}()
-
-				request := &emissionstypes.AddStakeRequest{
-					Sender:  reputer.addr,
-					TopicId: topicId,
-					Amount:  cosmosmath.NewIntFromUint64(stakeToAdd),
+			sem <- struct{}{}
+			defer func() {
+				<-sem
+				count := completed.Add(1)
+				if int(count)%100 == 0 || count == int32(numReputers) {
+					elapsed := time.Since(start)
+					m.T.Logf("Processed %d/%d reputer registrations (%.2f%%) in %s\n",
+						count, numReputers,
+						float64(count)/float64(numReputers)*100,
+						elapsed)
 				}
-				
-				fmt.Printf("Staking reputer: %s in topic: %d with address: %s\n", reputer.name, topicId, reputer.addr)
-				
-				m.Client.BroadcastTxAsync(ctx, reputer.acc, request)
-			}(reputer, i)
-		}
+			}()
 
-		// Wait for current batch to complete before starting next batch
-		batchWg.Wait()
-		fmt.Printf("Completed stake batch %d-%d\n", batchStart, batchEnd)
+			registerRequest := &emissionstypes.RegisterRequest{
+				Sender:    reputer.addr,
+				Owner:     reputer.addr,
+				IsReputer: true,
+				TopicId:   topicId,
+			}
+
+			stakeRequest := &emissionstypes.AddStakeRequest{
+				Sender:  reputer.addr,
+				TopicId: topicId,
+				Amount:  cosmosmath.NewIntFromUint64(stakeToAdd),
+			}
+
+			m.T.Logf("Registering reputer: %s in topic: %d with address: %s\n", reputer.name, topicId, reputer.addr)
+
+			m.Client.BroadcastTxAsync(ctx, reputer.acc, registerRequest, stakeRequest)
+			data.addReputerRegistration(topicId, reputer)
+		}(reputer, i)
 	}
 
+	wg.Wait()
+
 	totalTime := time.Since(start)
-	fmt.Printf("Total reputer staking time: %s\n", totalTime)
+	m.T.Logf("Total reputer registration time: %s\n", totalTime)
 
 	return nil
 }

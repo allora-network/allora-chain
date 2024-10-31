@@ -2,9 +2,9 @@ package newstress_test
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
-	"sync"
 
 	testcommon "github.com/allora-network/allora-chain/test/common"
 )
@@ -27,21 +27,19 @@ func TestNewStressTestSuite(t *testing.T) {
 	)
 
 	// Read env vars with defaults
-	maxIterations := testcommon.LookupEnvInt(t, "MAX_ITERATIONS", 1000)
 	epochLength := testcommon.LookupEnvInt(t, "EPOCH_LENGTH", 12) // in blocks
-
-	
 	numTopics := testcommon.LookupEnvInt(t, "NUM_TOPICS", 10)
 	workersPerTopic := testcommon.LookupEnvInt(t, "WORKERS_PER_TOPIC", 5)
 	reputersPerTopic := testcommon.LookupEnvInt(t, "REPUTERS_PER_TOPIC", 4)
 	createTopicsSameBlock := testcommon.LookupEnvBool(t, "CREATE_TOPICS_SAME_BLOCK", false)
+	timeoutMinutes := testcommon.LookupEnvInt(t, "STRESS_TIMEOUT_MINUTES", 5)
 
-	t.Log("Max Iterations: ", maxIterations)
 	t.Log("Epoch Length: ", epochLength)
 	t.Log("Number of Topics: ", numTopics)
 	t.Log("Workers per Topic: ", workersPerTopic)
 	t.Log("Reputers per Topic: ", reputersPerTopic)
 	t.Log("Create Topics in Same Block: ", createTopicsSameBlock)
+	t.Log("Stress Test Timeout: ", timeoutMinutes)
 	t.Log(">>> Starting Test <<<")
 	timestr := fmt.Sprintf(">>> Starting %s <<<", time.Now().Format(time.RFC850))
 	t.Log(timestr)
@@ -59,12 +57,11 @@ func TestNewStressTestSuite(t *testing.T) {
 	)
 	requireNoError(t, simulationData.failOnErr, err)
 
-	fmt.Println("Topic IDs: ", topicIds)
-
 	err = simulateAutomatic(
 		&testConfig,
 		simulationData,
 		topicIds,
+		timeoutMinutes,
 	)
 	requireNoError(t, simulationData.failOnErr, err)
 }
@@ -84,23 +81,25 @@ func startCreateTopicsAndRegister(
 		return nil, err
 	}
 
+	/* TODO:
+	We will need to create individual workers and reputers accounts for each topic to be able to do concurrent registration
+	that's why I added 4 seconds sleep between registering workers and reputers for each topic, to avoid race conditions
+	*/
+	workers := data.actors[:workersPerTopic]
+	reputers := data.actors[workersPerTopic:]
 	for _, topicId := range topicIds {
-		fmt.Println("Registering workers in topic: ", workersPerTopic)
-		err = registerWorkers(m, data.actors, topicId, data, workersPerTopic)
+		m.T.Logf("Registering workers in topic: %d", topicId)
+		err = registerWorkers(m, workers, topicId, data, workersPerTopic)
 		if err != nil {
-			fmt.Println("Error registering workers: ", err)
+			m.T.Logf("Error registering workers: %v", err)
 			return nil, err
 		}
-		fmt.Println("Registering reputers in topic: ", reputersPerTopic)
-		err = registerReputers(m, data.actors, topicId, data, reputersPerTopic)
-		if err != nil {
-			return nil, err
-		}
-		fmt.Println("Staking reputers in topic: ", topicId)
-		err = stakeReputers(m, topicId, data.actors, stakeToAdd)
+		m.T.Logf("Registering reputers and adding stake in topic: %d", topicId)
+		err = registerReputersAndStake(m, reputers, topicId, data, reputersPerTopic)
 		if err != nil {
 			return nil, err
 		}
+		time.Sleep(4 * time.Second)
 	}
 
 	err = fundTopics(m, topicIds, actor, topicFunds)
@@ -115,7 +114,9 @@ func simulateAutomatic(
 	m *testcommon.TestConfig,
 	data *SimulationData,
 	topicIds []uint64,
+	timeoutMinutes int,
 ) error {
+	m.T.Logf("Starting submission loop for %d topics", len(topicIds))
 	// Create wait group to track all goroutines
 	var wg sync.WaitGroup
 	// Create error channel to catch any errors from goroutines
@@ -158,7 +159,7 @@ func simulateAutomatic(
 		return err
 	case <-done:
 		return nil
-	case <-time.After(5 * time.Minute): //TODO: Add a timeout to prevent infinite running in ENV VARIABLES
-		return fmt.Errorf("simulation timed out after 5 minutes")
+	case <-time.After(time.Duration(timeoutMinutes) * time.Minute):
+		return fmt.Errorf("simulation timed out after %d minutes", timeoutMinutes)
 	}
 }

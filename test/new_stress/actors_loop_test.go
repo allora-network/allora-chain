@@ -3,7 +3,6 @@ package newstress_test
 import (
 	"context"
 	"encoding/hex"
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 )
 
-// Will check for nonce opened every 4s and if opened, will produce inferences and reputation
+// Will check for nonce opened every 4s and if opened, will produce inferences and forecasts
 func runTopicWorkersLoop(
 	m *testcommon.TestConfig,
 	data *SimulationData,
@@ -26,21 +25,22 @@ func runTopicWorkersLoop(
 			return err
 		} else {
 			if latestOpenWorkerNonce.BlockHeight > latestNonceHeightActedUpon {
-				fmt.Println("Building and committing worker payload for topic: ", topicId)
+				m.T.Logf("Worker nonce opened for topic: %d at height: %d", topicId, latestOpenWorkerNonce.BlockHeight)
 				workers := data.getWorkersForTopic(topicId)
-				success := createAndSendWorkerPayloads(m, data, topicId, workers, latestOpenWorkerNonce.BlockHeight)
-				if !success {
-					fmt.Println("Error building and committing worker payload for topic")
+				m.T.Logf("Building and committing worker payload for topic: %d", topicId)
+				wasError := createAndSendWorkerPayloads(m, data, topicId, workers, latestOpenWorkerNonce.BlockHeight)
+				if wasError {
+					m.T.Logf("Error building and committing worker payload for topic: %d", topicId)
 				}
+				m.T.Logf("Successfully built and committed worker payload for topic: %d for %v workers", topicId, len(workers))
 				latestNonceHeightActedUpon = latestOpenWorkerNonce.BlockHeight
-			} else {
-				fmt.Println("No new worker nonce found")
 			}
 		}
 		time.Sleep(4 * time.Second)
 	}
 }
 
+// Will check for nonce opened every 4s and if opened, will produce reputation
 func runReputersProcess(
 	m *testcommon.TestConfig,
 	data *SimulationData,
@@ -50,23 +50,22 @@ func runReputersProcess(
 	for {
 		latestOpenReputerNonce, err := getOldestReputerNonceByTopicId(m, topicId)
 		if err != nil {
-			fmt.Println("Error getting latest open reputer nonce on topic - node availability issue?")
+			m.T.Logf("Error getting latest open reputer nonce on topic - node availability issue?: %v", err)
 		} else {
 			if latestOpenReputerNonce > latestNonceHeightActedUpon {
-				fmt.Println("Building and committing reputer payload for topic: ", topicId)
-
+				m.T.Logf("Reputer nonce opened for topic: %d at height: %d", topicId, latestOpenReputerNonce)
 				activeWorkersAddresses, err := getActiveWorkersForTopic(m, topicId, latestOpenReputerNonce)
 				if err != nil {
 					return err
 				}
 				reputers := data.getReputersForTopic(topicId)
-				success := createAndSendReputerPayloads(m, data, topicId, reputers, activeWorkersAddresses, latestOpenReputerNonce)
-				if !success {
-					fmt.Println("Error building and committing reputer payload for topic")
+				m.T.Logf("Building and committing reputer payload for topic: %d", topicId)
+				wasError := createAndSendReputerPayloads(m, data, topicId, reputers, activeWorkersAddresses, latestOpenReputerNonce)
+				if wasError {
+					m.T.Logf("Error building and committing reputer payload for topic: %d", topicId)
 				}
+				m.T.Logf("Successfully built and committed reputer payload for topic: %d for %v reputers", topicId, len(reputers))
 				latestNonceHeightActedUpon = latestOpenReputerNonce
-			} else {
-				fmt.Println("No new reputer nonce found")
 			}
 		}
 		time.Sleep(4 * time.Second)
@@ -109,6 +108,7 @@ func getOldestReputerNonceByTopicId(m *testcommon.TestConfig, topicId uint64) (i
 	return res.Nonces.Nonces[len(res.Nonces.Nonces)-1].ReputerNonce.BlockHeight, nil
 }
 
+// Get the active workers for a topic at a given block height to use for reputer payloads
 func getActiveWorkersForTopic(m *testcommon.TestConfig, topicId uint64, blockHeight int64) ([]string, error) {
 	ctx := context.Background()
 	res, err := m.Client.QueryEmissions().GetInferencesAtBlock(
@@ -136,17 +136,19 @@ func createAndSendWorkerPayloads(
 	workerNonce int64,
 ) bool {
 	wasErr := false
-	// Get Bundles
 	ctx := context.Background()
 	for _, worker := range workers {
 		workerData, err := createWorkerDataBundle(m, topicId, workerNonce, worker, workers)
+		if err != nil {
+			m.T.Logf("Error creating worker data bundle: %v", err.Error())
+		}
 		requireNoError(m.T, data.failOnErr, err)
-		// Broadcast
 		m.Client.BroadcastTxAsync(ctx, worker.acc, &emissionstypes.InsertWorkerPayloadRequest{
 			Sender:           worker.addr,
 			WorkerDataBundle: workerData,
 		})
 	}
+
 	return wasErr
 }
 
@@ -224,13 +226,15 @@ func createAndSendReputerPayloads(
 	workerNonce int64,
 ) bool {
 	wasErr := false
-	// Nonces are last two blockHeights
 	reputerNonce := &emissionstypes.Nonce{
 		BlockHeight: workerNonce,
 	}
 	ctx := context.Background()
 	for _, reputer := range reputers {
 		valueBundle, err := createReputerValueBundle(m, topicId, reputer, workers, reputerNonce)
+		if err != nil {
+			m.T.Logf("Error creating reputer value bundle: %v", err.Error())
+		}
 		requireNoError(m.T, data.failOnErr, err)
 		m.Client.BroadcastTxAsync(ctx, reputer.acc, &emissionstypes.InsertReputerPayloadRequest{
 			Sender:             reputer.addr,
