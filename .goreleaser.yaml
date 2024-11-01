@@ -12,12 +12,23 @@ builds:
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     binary: allorad
 
+    tags:
+      - netgo
+      - pebbledb
+      - ledger
+
+    ldflags:
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,pebbledb
+      - -X github.com/cosmos/cosmos-sdk/version.Name=allora
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=allorad
+      - -X github.com/cosmos/cosmos-sdk/version.Version={{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .FullCommit }}
+
     # GOOS list to build for.
     # For more info refer to: https://go.dev/doc/install/source#environment
     goos:
       - linux
       - darwin
-      - windows
 
     # GOARCH to build for.
     # For more info refer to: https://go.dev/doc/install/source#environment
@@ -26,8 +37,8 @@ builds:
       - arm64
 
     # Environment variables
-    env:
-      - CGO_ENABLED=0
+    # env:
+    #   - CGO_ENABLED=0
 
 archives:
   - format: tar.gz
@@ -42,3 +53,11 @@ checksum:
 
 source:
   enabled: true
+
+changelog:
+  use: github
+
+release:
+  draft: true
+  prerelease: "true"
+  make_latest: false

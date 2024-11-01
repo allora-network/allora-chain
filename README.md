@@ -266,3 +266,12 @@ STRESS_TEST=true RPC_MODE="RandomBasedOnDeterministicSeed" RPC_URLS="http://loca
 ```
 
 options for RPC Modes include "RandomBasedOnDeterministicSeed" "RoundRobin" and "SingleRpc"
+
+
+## Using PebbleDB
+
+To use PebbleDB as the Database backend, set this at `config.toml`: 
+
+```
+db_backend = "pebbledb"
+```

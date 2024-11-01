@@ -98,14 +98,18 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
-			// overwrite the minimum gas price from the app configuration
+			// Overwrite the default config
+			// Effective only if the config files don't exist
 			srvCfg := serverconfig.DefaultConfig()
+			// overwrite the minimum gas price from the app configuration
 			srvCfg.MinGasPrices = "0uallo"
-
-			// overwrite the block timeout
 			cmtCfg := cmtcfg.DefaultConfig()
+			// overwrite the block timeout
 			cmtCfg.Consensus.TimeoutCommit = 3 * time.Second
-			cmtCfg.LogLevel = "*:error,p2p:info,state:info" // better default logging
+			// overwrite the default db backend
+			cmtCfg.BaseConfig.DBBackend = "pebbledb"
+			// better default logging
+			cmtCfg.LogLevel = "*:error,p2p:info,state:info"
 
 			return server.InterceptConfigsPreRunHandler(cmd, serverconfig.DefaultConfigTemplate, srvCfg, cmtCfg)
 		},

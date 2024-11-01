@@ -36,6 +36,7 @@ ifeq ($(LEDGER_ENABLED),true)
 	endif
 endif
 
+build_tags += pebbledb
 build_tags += $(BUILD_TAGS)
 build_tags := $(strip $(build_tags))
 
@@ -49,7 +50,7 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=allora \
 	-X github.com/cosmos/cosmos-sdk/version.AppName=allorad \
 	-X github.com/cosmos/cosmos-sdk/version.Version=$(VERSION) \
 	-X github.com/cosmos/cosmos-sdk/version.Commit=$(COMMIT) \
-	-X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)"
+	-X "github.com/cosmos/cosmos-sdk/version.BuildTags=$(build_tags_comma_sep)" \
 
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
@@ -76,6 +77,13 @@ init:
 build:
 	mkdir -p $(BUILDDIR)/
 	GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
+
+build-all-platforms:
+	mkdir -p $(BUILDDIR)/
+	GOOS=linux GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=linux GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_arm64 github.com/allora-network/allora-chain/cmd/allorad
 
 build-local-edits:
 	mkdir -p $(BUILDDIR)/
