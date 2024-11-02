@@ -882,6 +882,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	}
 
 	// TotalSumPreviousTopicWeights
+	if data.TotalSumPreviousTopicWeights.IsNaN() {
+		return errors.Wrap(nil, "error TotalSumPreviousTopicWeights is NaN")
+	}
 	if data.TotalSumPreviousTopicWeights.Gt(alloraMath.ZeroDec()) {
 		if err := k.SetTotalSumPreviousTopicWeights(ctx, data.TotalSumPreviousTopicWeights); err != nil {
 			return errors.Wrap(err, "error setting TotalSumPreviousTopicWeights")
@@ -893,6 +896,9 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	}
 
 	// RewardsCurrentBlockEmission cosmossdk_io_math.Int
+	if data.RewardCurrentBlockEmission.IsNil() {
+		return errors.Wrap(nil, "error RewardCurrentBlockEmission is nil")
+	}
 	if data.RewardCurrentBlockEmission.GT(cosmosMath.ZeroInt()) {
 		if err := k.SetRewardCurrentBlockEmission(ctx, data.RewardCurrentBlockEmission); err != nil {
 			return errors.Wrap(err, "error setting RewardCurrentBlockEmission")
