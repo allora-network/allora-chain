@@ -1,13 +1,17 @@
 package app
 
 import (
+	"context"
 	_ "embed"
 	"io"
 	"math/big"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"cosmossdk.io/errors"
+	"github.com/cosmos/cosmos-sdk/telemetry"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
@@ -36,6 +40,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -69,6 +74,8 @@ import (
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
+
+	metrics "github.com/hashicorp/go-metrics"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	_ "cosmossdk.io/x/circuit"               // import for side-effects
@@ -401,4 +408,134 @@ func (app *AlloraApp) LastCommitID() storetypes.CommitID {
 // ibctesting.TestingApp compatibility
 func (app *AlloraApp) LastBlockHeight() int64 {
 	return app.BaseApp.LastBlockHeight()
+}
+
+func (app *AlloraApp) PrepareProposal(req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error) {
+	app.Logger().Info("CONSENSUS EVENT", "event", "PrepareProposal")
+	startTime := time.Now()
+	defer func() {
+		app.Logger().Info("CONSENSUS EVENT", "event", "End")
+		logMisbehaviors(req.Misbehavior, "prepare", "proposal")
+		metrics.MeasureSince([]string{"allora", "prepare", "proposal", "ms"}, startTime.UTC())
+	}()
+
+	res, err := app.App.PrepareProposal(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (app *AlloraApp) ProcessProposal(req *abci.RequestProcessProposal) (*abci.ResponseProcessProposal, error) {
+	app.Logger().Info("CONSENSUS EVENT", "event", "ProcessProposal")
+	startTime := time.Now()
+	defer func() {
+		app.Logger().Info("CONSENSUS EVENT", "event", "End")
+		logMisbehaviors(req.Misbehavior, "process", "proposal")
+		metrics.MeasureSince([]string{"allora", "process", "proposal", "ms"}, startTime.UTC())
+	}()
+
+	res, err := app.App.ProcessProposal(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (app *AlloraApp) ExtendVote(ctx context.Context, req *abci.RequestExtendVote) (*abci.ResponseExtendVote, error) {
+	app.Logger().Info("CONSENSUS EVENT", "event", "ExtendVote")
+	startTime := time.Now()
+	defer func() {
+		app.Logger().Info("CONSENSUS EVENT", "event", "End")
+		logMisbehaviors(req.Misbehavior, "extend", "vote")
+		metrics.MeasureSince([]string{"allora", "extend", "vote", "ms"}, startTime.UTC())
+	}()
+
+	res, err := app.App.ExtendVote(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (app *AlloraApp) VerifyVoteExtension(req *abci.RequestVerifyVoteExtension) (resp *abci.ResponseVerifyVoteExtension, err error) {
+	app.Logger().Info("CONSENSUS EVENT", "event", "VerifyVoteExtension")
+	startTime := time.Now()
+	defer func() {
+		app.Logger().Info("CONSENSUS EVENT", "event", "End")
+		metrics.MeasureSince([]string{"allora", "verify", "vote", "extension", "ms"}, startTime.UTC())
+	}()
+
+	res, err := app.App.VerifyVoteExtension(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (app *AlloraApp) FinalizeBlock(req *abci.RequestFinalizeBlock) (*abci.ResponseFinalizeBlock, error) {
+	app.Logger().Info("CONSENSUS EVENT", "event", "FinalizeBlock")
+	startTime := time.Now()
+	defer func() {
+		app.Logger().Info("CONSENSUS EVENT", "event", "End")
+		logMisbehaviors(req.Misbehavior, "finalize", "block")
+		metrics.SetGauge([]string{"allora", "finalize", "block", "height"}, float32(req.Height))
+		metrics.MeasureSince([]string{"allora", "finalize", "block", "ms"}, startTime.UTC())
+	}()
+
+	res, err := app.App.FinalizeBlock(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (app *AlloraApp) Commit() (*abci.ResponseCommit, error) {
+	startTime := time.Now()
+	app.Logger().Info("CONSENSUS EVENT", "event", "Commit")
+	defer func() {
+		app.Logger().Info("CONSENSUS EVENT", "event", "End", "duration", time.Since(startTime).Milliseconds())
+		metrics.MeasureSince([]string{"allora", "commit", "ms"}, startTime.UTC())
+	}()
+
+	res, err := app.App.Commit()
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func validatorAddr(pubkeyBytes []byte) string {
+	pubkey := secp256k1.PubKey(pubkeyBytes)
+	pubKeyConvertedToAddress := sdk.ValAddress(pubkey.Address().Bytes())
+	return pubKeyConvertedToAddress.String()
+}
+
+func logMisbehaviors(mbs []abci.Misbehavior, keys ...string) {
+	for _, misbehavior := range mbs {
+		var typ string
+		switch misbehavior.GetType() {
+		case abci.MisbehaviorType_UNKNOWN:
+			typ = "unknown"
+		case abci.MisbehaviorType_DUPLICATE_VOTE:
+			typ = "duplicate_vote"
+		case abci.MisbehaviorType_LIGHT_CLIENT_ATTACK:
+			typ = "light_client_attack"
+		}
+		metrics.IncrCounterWithLabels(
+			append(append([]string{"allora"}, keys...), "misbehavior"),
+			float32(1),
+			[]metrics.Label{
+				telemetry.NewLabel("validator", validatorAddr(misbehavior.Validator.Address)),
+				telemetry.NewLabel("validator_power", strconv.FormatInt(misbehavior.Validator.Power, 10)),
+				telemetry.NewLabel("misbehavior_type", typ),
+			},
+		)
+	}
 }
