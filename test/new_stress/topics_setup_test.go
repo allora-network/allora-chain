@@ -19,7 +19,7 @@ func createTopics(
 	epochLength int64,
 	createTopicsSameBlock bool,
 ) ([]uint64, error) {
-	m.T.Log("Creating", numTopics, "topics, same block:", createTopicsSameBlock)
+	m.T.Logf("Creating %d topics, same block: %t", numTopics, createTopicsSameBlock)
 	ctx := context.Background()
 
 	// Get Next Block Id
@@ -30,7 +30,6 @@ func createTopics(
 
 	if createTopicsSameBlock {
 		// Create all topics in one broadcast
-		numTopics++ // TODO: need to increment to create the exact number of topics due to a bug in the iteration - investigate
 		requests := make([]*emissionstypes.CreateNewTopicRequest, numTopics)
 		topicIds := make([]uint64, numTopics)
 		topicId := resp.NextTopicId
@@ -132,7 +131,7 @@ func fundTopics(
 			TopicId: topicId,
 			Amount:  math.NewInt(amount),
 		}
-		fmt.Println("Funding topic: ", topicId, "with amount: ", amount, "from: ", sender.name)
+		m.T.Logf("Funding topic: %d with amount: %d from: %s", topicId, amount, sender.name)
 	}
 
 	protoMsgs := make([]proto.Message, len(requests))

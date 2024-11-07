@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"math/rand"
+	"sync/atomic"
 	"time"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
@@ -25,15 +26,15 @@ func runTopicWorkersLoop(
 			return err
 		} else {
 			if latestOpenWorkerNonce.BlockHeight > latestNonceHeightActedUpon {
+				latestNonceHeightActedUpon = latestOpenWorkerNonce.BlockHeight
 				m.T.Logf("Worker nonce opened for topic: %d at height: %d", topicId, latestOpenWorkerNonce.BlockHeight)
 				workers := data.getWorkersForTopic(topicId)
-				m.T.Logf("Building and committing worker payload for topic: %d", topicId)
+
 				wasError := createAndSendWorkerPayloads(m, data, topicId, workers, latestOpenWorkerNonce.BlockHeight)
 				if wasError {
 					m.T.Logf("Error building and committing worker payload for topic: %d", topicId)
 				}
 				m.T.Logf("Successfully built and committed worker payload for topic: %d for %v workers", topicId, len(workers))
-				latestNonceHeightActedUpon = latestOpenWorkerNonce.BlockHeight
 			}
 		}
 		time.Sleep(4 * time.Second)
@@ -53,6 +54,7 @@ func runReputersProcess(
 			m.T.Logf("Error getting latest open reputer nonce on topic - node availability issue?: %v", err)
 		} else {
 			if latestOpenReputerNonce > latestNonceHeightActedUpon {
+				latestNonceHeightActedUpon = latestOpenReputerNonce
 				m.T.Logf("Reputer nonce opened for topic: %d at height: %d", topicId, latestOpenReputerNonce)
 				activeWorkersAddresses, err := getActiveWorkersForTopic(m, topicId, latestOpenReputerNonce)
 				if err != nil {
@@ -65,7 +67,6 @@ func runReputersProcess(
 					m.T.Logf("Error building and committing reputer payload for topic: %d", topicId)
 				}
 				m.T.Logf("Successfully built and committed reputer payload for topic: %d for %v reputers", topicId, len(reputers))
-				latestNonceHeightActedUpon = latestOpenReputerNonce
 			}
 		}
 		time.Sleep(4 * time.Second)
@@ -137,21 +138,49 @@ func createAndSendWorkerPayloads(
 	workers []Actor,
 	workerNonce int64,
 ) bool {
-	wasErr := false
-	ctx := context.Background()
+	completed := atomic.Int32{}
+	start := time.Now()
+
+	m.T.Logf("Starting worker payload creation for %d workers in topic: %d", len(workers), topicId)
+
 	for _, worker := range workers {
-		workerData, err := createWorkerDataBundle(m, topicId, workerNonce, worker, workers)
-		if err != nil {
-			m.T.Logf("Error creating worker data bundle: %v", err.Error())
-		}
-		requireNoError(m.T, data.failOnErr, err)
-		m.Client.BroadcastTxAsync(ctx, worker.acc, &emissionstypes.InsertWorkerPayloadRequest{
-			Sender:           worker.addr,
-			WorkerDataBundle: workerData,
-		})
+		go func(worker Actor) {
+			defer func() {
+				count := completed.Add(1)
+				if int(count)%1000 == 0 || count == int32(len(workers)) {
+					elapsed := time.Since(start)
+					m.T.Logf("Processed %d/%d worker payloads (%.2f%%) for topic: %d in %s",
+						count, len(workers),
+						float64(count)/float64(len(workers))*100,
+						topicId,
+						elapsed)
+				}
+			}()
+
+			workerData, err := createWorkerDataBundle(m, topicId, workerNonce, worker, workers)
+			if err != nil {
+				m.T.Logf("Error creating worker data bundle: %v", err.Error())
+				requireNoError(m.T, data.failOnErr, err)
+				return
+			}
+			m.T.Logf("Sending worker payload for topic: %d", topicId)
+			res, err := m.Client.BroadcastTxAsync(context.Background(), worker.acc, &emissionstypes.InsertWorkerPayloadRequest{
+				Sender:           worker.addr,
+				WorkerDataBundle: workerData,
+			})
+			if err != nil {
+				m.T.Logf("Error sending worker payload: %v", err.Error())
+			} else if res.Code != 0 {
+				m.T.Logf("Error sending worker payload: %v", res.RawLog)
+			}
+
+		}(worker)
 	}
 
-	return wasErr
+	totalTime := time.Since(start)
+	m.T.Logf("Total worker payload creation time: %s", totalTime)
+
+	return false
 }
 
 // Create inferences and forecasts for a worker
@@ -162,14 +191,15 @@ func createWorkerDataBundle(
 	inferer Actor,
 	workers []Actor,
 ) (*emissionstypes.WorkerDataBundle, error) {
+	// TODO: Add forecasts for specific workers (top workers)
 	// Iterate workerAddresses to get the worker address, and generate as many forecasts as there are workers
-	forecastElements := make([]*emissionstypes.ForecastElement, 0)
-	for key := range workers {
-		forecastElements = append(forecastElements, &emissionstypes.ForecastElement{
-			Inferer: workers[key].addr,
-			Value:   alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(51) + 50)),
-		})
-	}
+	// forecastElements := make([]*emissionstypes.ForecastElement, 0)
+	// for key := range workers {
+	// 	forecastElements = append(forecastElements, &emissionstypes.ForecastElement{
+	// 		Inferer: workers[key].addr,
+	// 		Value:   alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(51) + 50)),
+	// 	})
+	// }
 	infererAddress := inferer.addr
 	infererValue := alloraMath.NewDecFromInt64(int64(m.Client.Rand.Intn(300) + 3000))
 
@@ -188,13 +218,14 @@ func createWorkerDataBundle(
 				ExtraData:   nil,
 				Proof:       "",
 			},
-			Forecast: &emissionstypes.Forecast{
-				TopicId:          topicId,
-				BlockHeight:      blockHeight,
-				Forecaster:       infererAddress,
-				ForecastElements: forecastElements,
-				ExtraData:        nil,
-			},
+			Forecast: nil,
+			// Forecast: &emissionstypes.Forecast{
+			// 	TopicId:          topicId,
+			// 	BlockHeight:      blockHeight,
+			// 	Forecaster:       infererAddress,
+			// 	ForecastElements: nil,
+			// 	ExtraData:        nil,
+			// },
 		},
 		InferencesForecastsBundleSignature: nil,
 		Pubkey:                             "",
@@ -227,23 +258,52 @@ func createAndSendReputerPayloads(
 	workers []string,
 	workerNonce int64,
 ) bool {
-	wasErr := false
+	completed := atomic.Int32{}
+	start := time.Now()
+
 	reputerNonce := &emissionstypes.Nonce{
 		BlockHeight: workerNonce,
 	}
-	ctx := context.Background()
+
+	m.T.Logf("Starting reputer payload creation for %d reputers in topic: %d", len(reputers), topicId)
+
 	for _, reputer := range reputers {
-		valueBundle, err := createReputerValueBundle(m, topicId, reputer, workers, reputerNonce)
-		if err != nil {
-			m.T.Logf("Error creating reputer value bundle: %v", err.Error())
-		}
-		requireNoError(m.T, data.failOnErr, err)
-		m.Client.BroadcastTxAsync(ctx, reputer.acc, &emissionstypes.InsertReputerPayloadRequest{
-			Sender:             reputer.addr,
-			ReputerValueBundle: valueBundle,
-		})
+		go func(reputer Actor) {
+			defer func() {
+				count := completed.Add(1)
+				if int(count)%1000 == 0 || count == int32(len(reputers)) {
+					elapsed := time.Since(start)
+					m.T.Logf("Processed %d/%d reputer payloads (%.2f%%) for topic: %d in %s",
+						count, len(reputers),
+						float64(count)/float64(len(reputers))*100,
+						topicId,
+						elapsed)
+				}
+			}()
+
+			valueBundle, err := createReputerValueBundle(m, topicId, reputer, workers, reputerNonce)
+			if err != nil {
+				m.T.Logf("Error creating reputer value bundle: %v", err.Error())
+				requireNoError(m.T, data.failOnErr, err)
+				return
+			}
+
+			res, err := m.Client.BroadcastTxAsync(context.Background(), reputer.acc, &emissionstypes.InsertReputerPayloadRequest{
+				Sender:             reputer.addr,
+				ReputerValueBundle: valueBundle,
+			})
+			if err != nil {
+				m.T.Logf("Error sending reputer payload: %v", err.Error())
+			} else if res.Code != 0 {
+				m.T.Logf("Error sending reputer payload: %v", res.RawLog)
+			}
+		}(reputer)
 	}
-	return wasErr
+
+	totalTime := time.Since(start)
+	m.T.Logf("Total reputer payload creation time: %s", totalTime)
+
+	return false
 }
 
 // Generate the same valueBundle for a reputer

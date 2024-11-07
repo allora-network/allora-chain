@@ -13,13 +13,15 @@ import (
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/tx"
+
+	"github.com/cosmos/cosmos-sdk/client/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosclient"
+	"github.com/ignite/cli/v28/ignite/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,6 +32,16 @@ const (
 	RoundRobin
 	RandomBasedOnDeterministicSeed
 )
+
+// protects sdktypes.Config.
+var mconf sync.Mutex
+
+func (c Client) lockBech32Prefix() (unlockFn func()) {
+	mconf.Lock()
+	config := sdktypes.GetConfig()
+	config.SetBech32PrefixForAccount(params.HumanCoinUnit, params.HumanCoinUnit+"pub")
+	return mconf.Unlock
+}
 
 // where to get ahold of a node
 type Client struct {
@@ -48,6 +60,7 @@ type Client struct {
 
 	accountRegistry      cosmosaccount.Registry // registry for accounts
 	accountRegistryMutex *sync.Mutex            // mutex for the registry
+	accountRetriever     authtypes.AccountRetriever
 }
 
 // create a new appchain client that we can use
@@ -60,6 +73,7 @@ func NewClient(
 ) Client {
 	t.Helper()
 	ctx := context.Background()
+	prefix := params.HumanCoinUnit
 
 	clients := make([]cosmosclient.Client, len(nodeRpcAddresses))
 	queryAuths := make([]authtypes.QueryClient, len(nodeRpcAddresses))
@@ -78,10 +92,10 @@ func NewClient(
 		cosmosClient, err := cosmosclient.New(
 			ctx,
 			cosmosclient.WithNodeAddress(rpcAddress),
-			cosmosclient.WithAddressPrefix(params.HumanCoinUnit),
+			cosmosclient.WithAddressPrefix(prefix),
 			cosmosclient.WithHome(alloraHomeDir),
 			cosmosclient.WithGas("auto"),
-			cosmosclient.WithGasAdjustment(1.2),
+			cosmosclient.WithGasAdjustment(1.99),
 		)
 		require.NoError(t, err)
 		ccCtx := cosmosClient.Context()
@@ -120,6 +134,7 @@ func NewClient(
 		RpcCounterSeed:       rpcCounterSeed,
 		accountRegistry:      accountRegistry,
 		accountRegistryMutex: &sync.Mutex{},
+		accountRetriever:     authtypes.AccountRetriever{},
 		Rand:                 rand.New(rand.NewSource(seed)), //nolint:gosec // G404: Use of weak random number generator (math/rand or math/rand/v2 instead of crypto/rand)
 	}
 }
@@ -173,10 +188,9 @@ func (c *Client) QueryUpgrade() upgradetypes.QueryClient {
 	return c.QueryUpgrades[c.getNextClientNumber()]
 }
 
-/// Wrappers for cosmosclient functions
+// / Wrappers for cosmosclient functions
 // broadcast etc shouldn't have to worry about concurrency
 // because the RPC endpoint itself should handle that.
-
 func (c *Client) BroadcastTx(
 	ctx context.Context,
 	account cosmosaccount.Account,
@@ -190,9 +204,74 @@ func (c *Client) BroadcastTxAsync(
 	account cosmosaccount.Account,
 	msgs ...sdktypes.Msg,
 ) (cosmosclient.Response, error) {
+	defer c.lockBech32Prefix()()
+
 	client := c.Clients[c.getNextClientNumber()]
-	sdkCtx := client.Context().WithBroadcastMode(tx.BroadcastMode_BROADCAST_MODE_ASYNC.String())
-	return client.BroadcastTx(sdkCtx.CmdContext, account, msgs...)
+
+	sdkaddr, err := account.Record.GetAddress()
+	if err != nil {
+		return cosmosclient.Response{}, errors.WithStack(err)
+	}
+
+	clientCtx := client.Context().
+		WithFromName(account.Name).
+		WithFromAddress(sdkaddr)
+
+	if err := c.accountRetriever.EnsureExists(clientCtx, sdkaddr); err != nil {
+		return cosmosclient.Response{}, errors.WithStack(err)
+	}
+
+	txf := client.TxFactory
+	initNum, initSeq := txf.AccountNumber(), txf.Sequence()
+	if initNum == 0 || initSeq == 0 {
+		num, seq, err := c.accountRetriever.GetAccountNumberSequence(clientCtx, sdkaddr)
+		if err != nil {
+			return cosmosclient.Response{}, errors.WithStack(err)
+		}
+
+		if initNum == 0 {
+			txf = txf.WithAccountNumber(num)
+		}
+
+		if initSeq == 0 {
+			txf = txf.WithSequence(seq)
+		}
+	}
+
+	for _, msg := range msgs {
+		msg, ok := msg.(sdktypes.HasValidateBasic)
+		if !ok {
+			continue
+		}
+		if err := msg.ValidateBasic(); err != nil {
+			return cosmosclient.Response{}, errors.WithStack(err)
+		}
+	}
+
+	txUnsigned, err := txf.BuildUnsignedTx(msgs...)
+	if err != nil {
+		return cosmosclient.Response{}, errors.WithStack(err)
+	}
+
+	err = tx.Sign(ctx, txf, account.Name, txUnsigned, true)
+	if err != nil {
+		return cosmosclient.Response{}, errors.WithStack(err)
+	}
+
+	txBytes, err := clientCtx.TxConfig.TxEncoder()(txUnsigned.GetTx())
+	if err != nil {
+		return cosmosclient.Response{}, errors.WithStack(err)
+	}
+
+	txResp, err := clientCtx.BroadcastTx(txBytes)
+	if err != nil {
+		return cosmosclient.Response{}, errors.WithStack(err)
+	}
+
+	return cosmosclient.Response{
+		Codec:      clientCtx.Codec,
+		TxResponse: txResp,
+	}, nil
 }
 
 func (c *Client) Context() sdkclient.Context {
@@ -237,3 +316,5 @@ func (c *Client) AccountRegistryGetByName(name string) (
 	c.accountRegistryMutex.Unlock()
 	return acc, err
 }
+
+// GRPC

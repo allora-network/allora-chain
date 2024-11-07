@@ -60,6 +60,7 @@ func simulateSetUp(
 ) {
 	// fund all actors from the faucet with some amount
 	// give everybody the same amount of money to start with
+	m.T.Logf("Creating %d actors", numActors)
 	actorsList := createActors(m, numActors)
 	faucet = Actor{
 		name: getFaucetName(m.Seed),
@@ -70,7 +71,7 @@ func simulateSetUp(
 	if err != nil {
 		m.T.Fatal(err)
 	}
-	fmt.Printf("Funding actors from faucet: %s with amount: %s\n", faucet.name, preFundAmount.String())
+	m.T.Logf("Funding actors from faucet with amount: %s\n", preFundAmount.String())
 	err = fundActors(
 		m,
 		faucet,
@@ -86,6 +87,7 @@ func simulateSetUp(
 		registeredWorkersByTopic:  map[uint64][]Actor{},
 		registeredReputersByTopic: map[uint64][]Actor{},
 		failOnErr:                 false,
+		mu:                        sync.RWMutex{},
 	}
 
 	return faucet, &data
@@ -97,7 +99,6 @@ func createNewActor(m *testcommon.TestConfig, numActors int) Actor {
 	actorAccount, _, err := m.Client.AccountRegistryCreate(actorName)
 	if err != nil {
 		if errors.Is(err, cosmosaccount.ErrAccountExists) {
-			m.T.Log("WARNING WARNING WARNING\nACTOR ACCOUNTS ALREADY EXIST, YOU ARE REUSING YOUR SEED VALUE\nNON-DETERMINISM-DRAGONS AHEAD\nWARNING WARNING WARNING")
 			actorAccount, err := m.Client.AccountRegistryGetByName(actorName)
 			if err != nil {
 				m.T.Log("Error getting actor account: ", actorName, " - ", err)
@@ -146,55 +147,69 @@ func fundActors(
 	targets []Actor,
 	amount cosmosmath.Int,
 ) error {
-	inputCoins := sdktypes.NewCoins(
-		sdktypes.NewCoin(
-			params.BaseCoinUnit,
-			amount.MulRaw(int64(len(targets))),
-		),
-	)
-	outputCoins := sdktypes.NewCoins(
-		sdktypes.NewCoin(params.BaseCoinUnit, amount),
-	)
+	batchSize := 1000
+	start := time.Now()
+	completed := atomic.Int32{}
 
-	outputs := make([]banktypes.Output, len(targets))
-	names := make([]string, len(targets))
-	i := 0
-	for _, actor := range targets {
-		names[i] = actor.name
-		outputs[i] = banktypes.Output{
-			Address: actor.addr,
-			Coins:   outputCoins,
+	m.T.Logf("Starting funding of %d actors", len(targets))
+
+	for i := 0; i < len(targets); i += batchSize {
+		end := i + batchSize
+		if end > len(targets) {
+			end = len(targets)
 		}
-		i++
+		batch := targets[i:end]
+
+		inputCoins := sdktypes.NewCoins(
+			sdktypes.NewCoin(
+				params.BaseCoinUnit,
+				amount.MulRaw(int64(len(batch))),
+			),
+		)
+		outputCoins := sdktypes.NewCoins(
+			sdktypes.NewCoin(params.BaseCoinUnit, amount),
+		)
+
+		outputs := make([]banktypes.Output, len(batch))
+		names := make([]string, len(batch))
+		for j, actor := range batch {
+			names[j] = actor.name
+			outputs[j] = banktypes.Output{
+				Address: actor.addr,
+				Coins:   outputCoins,
+			}
+		}
+
+		sendMsg := &banktypes.MsgMultiSend{
+			Inputs: []banktypes.Input{
+				{
+					Address: sender.addr,
+					Coins:   inputCoins,
+				},
+			},
+			Outputs: outputs,
+		}
+
+		ctx := context.Background()
+		_, err := m.Client.BroadcastTx(ctx, sender.acc, sendMsg)
+		if err != nil {
+			m.T.Log("Error funding batch: ", err)
+			return err
+		}
+
+		count := completed.Add(int32(len(batch)))
+		if int(count)%1000 == 0 || count == int32(len(targets)) {
+			elapsed := time.Since(start)
+			m.T.Logf("Processed %d/%d funding operations (%.2f%%) in %s",
+				count, len(targets),
+				float64(count)/float64(len(targets))*100,
+				elapsed)
+		}
 	}
 
-	// Fund the accounts from faucet account in a single transaction
-	sendMsg := &banktypes.MsgMultiSend{
-		Inputs: []banktypes.Input{
-			{
-				Address: sender.addr,
-				Coins:   inputCoins,
-			},
-		},
-		Outputs: outputs,
-	}
-	ctx := context.Background()
-	_, err := m.Client.BroadcastTx(ctx, sender.acc, sendMsg)
-	if err != nil {
-		m.T.Log("Error worker address: ", err)
-		return err
-	}
-	m.T.Log(
-		"Funded ",
-		len(targets),
-		" accounts from ",
-		sender.name,
-		" with ",
-		amount,
-		" coins:",
-		" ",
-		names,
-	)
+	totalTime := time.Since(start)
+	m.T.Logf("Total funding time: %s", totalTime)
+
 	return nil
 }
 
@@ -240,10 +255,9 @@ func registerWorkers(
 	data *SimulationData,
 	numWorkers int,
 ) error {
-	maxConcurrent := 100
+	maxConcurrent := 1000
 	sem := make(chan struct{}, maxConcurrent)
 
-	ctx := context.Background()
 	start := time.Now()
 	completed := atomic.Int32{}
 
@@ -262,11 +276,12 @@ func registerWorkers(
 			defer func() {
 				<-sem
 				count := completed.Add(1)
-				if int(count)%100 == 0 || count == int32(numWorkers) {
+				if int(count)%1000 == 0 || count == int32(numWorkers) {
 					elapsed := time.Since(start)
-					m.T.Logf("Processed %d/%d worker registrations (%.2f%%) in %s\n",
+					m.T.Logf("Processed %d/%d worker registrations (%.2f%%) for topic: %d in %s\n",
 						count, numWorkers,
 						float64(count)/float64(numWorkers)*100,
+						topicId,
 						elapsed)
 				}
 			}()
@@ -278,9 +293,12 @@ func registerWorkers(
 				TopicId:   topicId,
 			}
 
-			m.T.Logf("Registering worker: %s in topic: %d with address: %s\n", worker.name, topicId, worker.addr)
-
-			m.Client.BroadcastTxAsync(ctx, worker.acc, request)
+			res, err := m.Client.BroadcastTxAsync(context.Background(), worker.acc, request)
+			if err != nil {
+				m.T.Logf("Error sending worker registration: %v", err.Error())
+			} else if res.Code != 0 {
+				m.T.Logf("Error sending worker registration: %v", res.RawLog)
+			}
 			data.addWorkerRegistration(topicId, worker)
 		}(worker, i)
 	}
@@ -304,7 +322,6 @@ func registerReputersAndStake(
 	maxConcurrent := 100
 	sem := make(chan struct{}, maxConcurrent)
 
-	ctx := context.Background()
 	start := time.Now()
 	completed := atomic.Int32{}
 
@@ -325,9 +342,10 @@ func registerReputersAndStake(
 				count := completed.Add(1)
 				if int(count)%100 == 0 || count == int32(numReputers) {
 					elapsed := time.Since(start)
-					m.T.Logf("Processed %d/%d reputer registrations (%.2f%%) in %s\n",
+					m.T.Logf("Processed %d/%d reputer registrations (%.2f%%) for topic: %d in %s\n",
 						count, numReputers,
 						float64(count)/float64(numReputers)*100,
+						topicId,
 						elapsed)
 				}
 			}()
@@ -345,9 +363,13 @@ func registerReputersAndStake(
 				Amount:  cosmosmath.NewIntFromUint64(stakeToAdd),
 			}
 
-			m.T.Logf("Registering reputer: %s in topic: %d with address: %s\n", reputer.name, topicId, reputer.addr)
+			res, err := m.Client.BroadcastTxAsync(context.Background(), reputer.acc, registerRequest, stakeRequest)
+			if err != nil {
+				m.T.Logf("Error sending reputer registration: %v", err.Error())
+			} else if res.Code != 0 {
+				m.T.Logf("Error sending reputer registration: %v", res.RawLog)
+			}
 
-			m.Client.BroadcastTxAsync(ctx, reputer.acc, registerRequest, stakeRequest)
 			data.addReputerRegistration(topicId, reputer)
 		}(reputer, i)
 	}

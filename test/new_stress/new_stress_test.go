@@ -32,7 +32,7 @@ func TestNewStressTestSuite(t *testing.T) {
 	workersPerTopic := testcommon.LookupEnvInt(t, "WORKERS_PER_TOPIC", 5)
 	reputersPerTopic := testcommon.LookupEnvInt(t, "REPUTERS_PER_TOPIC", 4)
 	createTopicsSameBlock := testcommon.LookupEnvBool(t, "CREATE_TOPICS_SAME_BLOCK", false)
-	timeoutMinutes := testcommon.LookupEnvInt(t, "STRESS_TIMEOUT_MINUTES", 5)
+	timeoutMinutes := testcommon.LookupEnvInt(t, "STRESS_TIMEOUT_MINUTES", 30)
 
 	t.Log("Epoch Length: ", epochLength)
 	t.Log("Number of Topics: ", numTopics)
@@ -44,7 +44,7 @@ func TestNewStressTestSuite(t *testing.T) {
 	timestr := fmt.Sprintf(">>> Starting %s <<<", time.Now().Format(time.RFC850))
 	t.Log(timestr)
 
-	numActors := workersPerTopic + reputersPerTopic
+	numActors := (workersPerTopic + reputersPerTopic) * numTopics
 	_, simulationData := simulateSetUp(&testConfig, numActors, epochLength)
 
 	topicIds, err := startCreateTopicsAndRegister(
@@ -81,19 +81,24 @@ func startCreateTopicsAndRegister(
 		return nil, err
 	}
 
-	/* TODO:
-	We will need to create individual workers and reputers accounts for each topic to be able to do concurrent registration
-	that's why I added 4 seconds sleep between registering workers and reputers for each topic, to avoid race conditions
-	*/
-	workers := data.actors[:workersPerTopic]
-	reputers := data.actors[workersPerTopic:]
-	for _, topicId := range topicIds {
-		m.T.Logf("Registering workers in topic: %d", topicId)
+	// Calculate actors per topic
+	actorsPerTopic := workersPerTopic + reputersPerTopic
+
+	for i, topicId := range topicIds {
+		// Get the slice of actors for this topic
+		startIdx := i * actorsPerTopic
+		topicActors := data.actors[startIdx : startIdx+actorsPerTopic]
+
+		workers := topicActors[:workersPerTopic]
+		reputers := topicActors[workersPerTopic:]
+
+		m.T.Logf("Registering workers in  topic: %d", topicId)
 		err = registerWorkers(m, workers, topicId, data, workersPerTopic)
 		if err != nil {
 			m.T.Logf("Error registering workers: %v", err)
 			return nil, err
 		}
+
 		m.T.Logf("Registering reputers and adding stake in topic: %d", topicId)
 		err = registerReputersAndStake(m, reputers, topicId, data, reputersPerTopic)
 		if err != nil {
@@ -117,31 +122,38 @@ func startActorLoops(
 	timeoutMinutes int,
 ) error {
 	m.T.Logf("Starting submission loop for %d topics", len(topicIds))
+
+	totalRoutines := len(topicIds) * 2 // 2 routines per topic (worker + reputer)
+	errChan := make(chan error, totalRoutines)
+
 	// Create wait group to track all goroutines
 	var wg sync.WaitGroup
-	// Create error channel to catch any errors from goroutines
-	errChan := make(chan error, len(topicIds)*2)
+	wg.Add(totalRoutines)
 
 	// For each topic, start a worker routine and a reputer routine
 	for _, topicId := range topicIds {
-		// Add 2 to waitgroup (1 for worker, 1 for reputer)
-		wg.Add(2)
-
+		m.T.Logf("Starting submission loop for topic: %d", topicId)
 		// Start worker routine
 		go func(tid uint64) {
 			defer wg.Done()
-			err := runTopicWorkersLoop(m, data, tid)
-			if err != nil {
-				errChan <- fmt.Errorf("worker routine failed for topic %d: %w", tid, err)
+			if err := runTopicWorkersLoop(m, data, tid); err != nil {
+				select {
+				case errChan <- fmt.Errorf("worker routine failed for topic %d: %w", tid, err):
+				default: // Don't block if channel is full
+					m.T.Logf("Error channel full - worker error for topic %d: %v", tid, err)
+				}
 			}
 		}(topicId)
 
 		// Start reputer routine
 		go func(tid uint64) {
 			defer wg.Done()
-			err := runReputersProcess(m, data, tid)
-			if err != nil {
-				errChan <- fmt.Errorf("reputer routine failed for topic %d: %w", tid, err)
+			if err := runReputersProcess(m, data, tid); err != nil {
+				select {
+				case errChan <- fmt.Errorf("reputer routine failed for topic %d: %w", tid, err):
+				default: // Don't block if channel is full
+					m.T.Logf("Error channel full - reputer error for topic %d: %v", tid, err)
+				}
 			}
 		}(topicId)
 	}

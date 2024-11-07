@@ -1,10 +1,9 @@
 package newstress_test
 
 import (
-	"testing"
 	"github.com/stretchr/testify/require"
+	"testing"
 )
-
 
 // wrapper around require.NoError to only error if noFail is false
 func requireNoError(t *testing.T, failOnErr bool, err error) {
