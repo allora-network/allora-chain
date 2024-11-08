@@ -155,6 +155,7 @@ func GenerateReputerScores(
 
 	types.EmitNewReputerScoresSetEvent(ctx, instantScores)
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
+	types.EmitNewListeningCoefficientsSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, topicId, block, reputers, newCoefficients)
 	return instantScores, nil
 }
 
