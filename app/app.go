@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	_ "embed"
+	"encoding/hex"
 	"io"
 	"math/big"
 	"os"
@@ -40,7 +41,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/cometbft/cometbft/crypto/secp256k1"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -511,12 +511,6 @@ func (app *AlloraApp) Commit() (*abci.ResponseCommit, error) {
 	return res, nil
 }
 
-func validatorAddr(pubkeyBytes []byte) string {
-	pubkey := secp256k1.PubKey(pubkeyBytes)
-	pubKeyConvertedToAddress := sdk.ValAddress(pubkey.Address().Bytes())
-	return pubKeyConvertedToAddress.String()
-}
-
 func logMisbehaviors(mbs []abci.Misbehavior, keys ...string) {
 	for _, misbehavior := range mbs {
 		var typ string
@@ -532,7 +526,8 @@ func logMisbehaviors(mbs []abci.Misbehavior, keys ...string) {
 			append(append([]string{"allora"}, keys...), "misbehavior"),
 			float32(1),
 			[]metrics.Label{
-				telemetry.NewLabel("validator", validatorAddr(misbehavior.Validator.Address)),
+				telemetry.NewLabel("validator", sdk.ValAddress(misbehavior.Validator.Address).String()),
+				telemetry.NewLabel("validator_hex", hex.EncodeToString(misbehavior.Validator.Address)),
 				telemetry.NewLabel("validator_power", strconv.FormatInt(misbehavior.Validator.Power, 10)),
 				telemetry.NewLabel("misbehavior_type", typ),
 			},
