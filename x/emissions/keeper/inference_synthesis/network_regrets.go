@@ -118,6 +118,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 	networkLossesByWorker := ConvertValueBundleToNetworkLossesByWorker(args.NetworkLosses)
 	blockHeight := args.Nonce.BlockHeight
 
+	fallbackRegrets := make([]alloraMath.Dec, 0)
 	workersRegrets := make([]alloraMath.Dec, 0)
 
 	// R_ij - Inferer Regrets
@@ -155,6 +156,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		if shouldAddWorkerRegret {
 			workersRegrets = append(workersRegrets, newInfererRegret.Value)
 		}
+		fallbackRegrets = append(fallbackRegrets, newInfererRegret.Value)
 	}
 
 	// R_ik - Forecaster Regrets
@@ -192,6 +194,7 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		if shouldAddWorkerRegret {
 			workersRegrets = append(workersRegrets, newForecasterRegret.Value)
 		}
+		fallbackRegrets = append(fallbackRegrets, newForecasterRegret.Value)
 	}
 
 	// R^-_ij - Naive Regrets
@@ -356,15 +359,25 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		}
 	}
 
-	// Recalculate topic initial regret
+	// Get the initial topic std dev regrets
+	// If we don't have enough workers with enough experience, use the fallback regrets
+	initialTopicStdDevRegrets := make([]alloraMath.Dec, 0)
 	if len(workersRegrets) > 0 {
+		initialTopicStdDevRegrets = workersRegrets
+	} else if len(fallbackRegrets) >= 10 {
+		initialTopicStdDevRegrets = fallbackRegrets
+	}
+	// Recalculate topic initial regret
+	if len(initialTopicStdDevRegrets) > 0 {
+		usingFallbackRegrets := len(workersRegrets) == 0
 		updatedTopicInitialRegret, err := CalcTopicInitialRegret(
-			workersRegrets,
+			initialTopicStdDevRegrets,
 			args.EpsilonTopic,
 			args.PNorm,
 			args.CNorm,
 			args.InitialRegretQuantile,
 			args.PNormSafeDiv,
+			usingFallbackRegrets,
 		)
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error calculating topic initial regret")
@@ -379,11 +392,15 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 }
 
 // Calculate the initial regret for all new workers in the topic
-// denominator = std(regrets[i-1, :]) + epsilon
-// offset = cnorm - 8.25 / pnorm
-// dummy_regret[i] = np.percentile(regrets[i-1, :], 25.) + offset * denominator
-// It is assumed that the regrets are filtered by experience for each actor
-// i.e. if they have not been included in the topic for enough epochs, their regret is ignored.
+// When using experienced workers' regrets:
+//
+//	denominator = std(regrets) + epsilon
+//	offset = cnorm - 8.25 / pnorm
+//	initialRegret = percentile(regrets, 25) + offset * denominator
+//
+// When using fallback regrets (not enough experienced workers):
+//
+//	initialRegret = percentile(regrets, 25)
 func CalcTopicInitialRegret(
 	regrets []alloraMath.Dec,
 	epsilon alloraMath.Dec,
@@ -391,19 +408,31 @@ func CalcTopicInitialRegret(
 	cNorm alloraMath.Dec,
 	quantileRegret alloraMath.Dec,
 	pNormDiv alloraMath.Dec,
+	usingFallbackRegrets bool,
 ) (initialRegret alloraMath.Dec, err error) {
-	// Calculate the Denominator
+	quantile, err := alloraMath.GetQuantileOfDecs(regrets, quantileRegret)
+	if err != nil {
+		return alloraMath.ZeroDec(), err
+	}
+
+	// If using fallback regrets, just return the quantile
+	if usingFallbackRegrets {
+		return quantile, nil
+	}
+
+	// Normal case with experienced workers - calculate with offset and std dev
 	stdDevRegrets, err := alloraMath.StdDev(regrets)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
 
+	// Calculate the Denominator
 	denominator, err := stdDevRegrets.Add(epsilon)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}
 
-	// calculate the offset
+	// Calculate the offset
 	eightPointTwoFiveDividedByPnorm, err := pNormDiv.Quo(pNorm)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
@@ -414,14 +443,8 @@ func CalcTopicInitialRegret(
 		return alloraMath.ZeroDec(), err
 	}
 
-	// calculate the dummy regret
+	// Calculate the dummy regret
 	offSetTimesDenominator, err := offset.Mul(denominator)
-	if err != nil {
-		return alloraMath.ZeroDec(), err
-	}
-
-	// Calculate quantile
-	quantile, err := alloraMath.GetQuantileOfDecs(regrets, quantileRegret)
 	if err != nil {
 		return alloraMath.ZeroDec(), err
 	}

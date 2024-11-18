@@ -445,10 +445,16 @@ func GetAllReputersOutput(
 	coefficients := make([]alloraMath.Dec, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
 
+	// Check if there's only one reputer and the listening coefficient is zero
+	// If so, set the listening coefficient to 0.5
+	// This is to ensure there's no bugs in the scores calculation
+	if len(coefficients) == 1 && coefficients[0].IsZero() {
+		coefficients[0] = alloraMath.MustNewDecFromString("0.5")
+	}
+
 	oldCoefficients := make([]alloraMath.Dec, numReputers)
 	var i uint64 = 0
 	var maxGradient = alloraMath.OneDec()
-	// finalScores := make([]alloraMath.Dec, numReputers)
 	newScores := make([]alloraMath.Dec, numReputers)
 
 	for maxGradient.Gte(maxGradientThreshold) && i < gradientDescentMaxIters {

@@ -1,4 +1,4 @@
-package newstress_test
+package stress_test
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testcommon "github.com/allora-network/allora-chain/test/common"
+	stresscommon "github.com/allora-network/allora-chain/test/stress/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
-	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 )
 
 // Will check for nonce opened every 4s and if opened, will produce inferences and forecasts
@@ -135,7 +135,7 @@ func createAndSendWorkerPayloads(
 	m *testcommon.TestConfig,
 	data *SimulationData,
 	topicId uint64,
-	workers []Actor,
+	workers []StressActor,
 	workerNonce int64,
 ) bool {
 	completed := atomic.Int32{}
@@ -144,7 +144,7 @@ func createAndSendWorkerPayloads(
 	m.T.Logf("Starting worker payload creation for %d workers in topic: %d", len(workers), topicId)
 
 	for _, worker := range workers {
-		go func(worker Actor) {
+		go func(worker StressActor) {
 			defer func() {
 				count := completed.Add(1)
 				if int(count)%1000 == 0 || count == int32(len(workers)) {
@@ -163,17 +163,15 @@ func createAndSendWorkerPayloads(
 				requireNoError(m.T, data.failOnErr, err)
 				return
 			}
-			m.T.Logf("Sending worker payload for topic: %d", topicId)
-			res, err := m.Client.BroadcastTxAsync(context.Background(), worker.acc, &emissionstypes.InsertWorkerPayloadRequest{
+
+			_, updatedSeq, err := stresscommon.SendDataWithRetry(worker.params, &emissionstypes.InsertWorkerPayloadRequest{
 				Sender:           worker.addr,
 				WorkerDataBundle: workerData,
 			})
 			if err != nil {
 				m.T.Logf("Error sending worker payload: %v", err.Error())
-			} else if res.Code != 0 {
-				m.T.Logf("Error sending worker payload: %v", res.RawLog)
 			}
-
+			worker.params.Sequence = updatedSeq
 		}(worker)
 	}
 
@@ -188,8 +186,8 @@ func createWorkerDataBundle(
 	m *testcommon.TestConfig,
 	topicId uint64,
 	blockHeight int64,
-	inferer Actor,
-	workers []Actor,
+	inferer StressActor,
+	workers []StressActor,
 ) (*emissionstypes.WorkerDataBundle, error) {
 	// TODO: Add forecasts for specific workers (top workers)
 	// Iterate workerAddresses to get the worker address, and generate as many forecasts as there are workers
@@ -238,11 +236,12 @@ func createWorkerDataBundle(
 		return nil, err
 	}
 
-	sig, pubKey, err := m.Client.Context().Keyring.Sign(inferer.name, src, signing.SignMode_SIGN_MODE_DIRECT)
+	sig, err := inferer.params.PrivKey.Sign(src)
 	if err != nil {
 		return nil, err
 	}
-	workerPublicKeyBytes := pubKey.Bytes()
+
+	workerPublicKeyBytes := inferer.params.PubKey.Bytes()
 	workerDataBundle.InferencesForecastsBundleSignature = sig
 	workerDataBundle.Pubkey = hex.EncodeToString(workerPublicKeyBytes)
 
@@ -254,7 +253,7 @@ func createAndSendReputerPayloads(
 	m *testcommon.TestConfig,
 	data *SimulationData,
 	topicId uint64,
-	reputers []Actor,
+	reputers []StressActor,
 	workers []string,
 	workerNonce int64,
 ) bool {
@@ -268,7 +267,7 @@ func createAndSendReputerPayloads(
 	m.T.Logf("Starting reputer payload creation for %d reputers in topic: %d", len(reputers), topicId)
 
 	for _, reputer := range reputers {
-		go func(reputer Actor) {
+		go func(reputer StressActor) {
 			defer func() {
 				count := completed.Add(1)
 				if int(count)%1000 == 0 || count == int32(len(reputers)) {
@@ -288,15 +287,14 @@ func createAndSendReputerPayloads(
 				return
 			}
 
-			res, err := m.Client.BroadcastTxAsync(context.Background(), reputer.acc, &emissionstypes.InsertReputerPayloadRequest{
+			_, updatedSeq, err := stresscommon.SendDataWithRetry(reputer.params, &emissionstypes.InsertReputerPayloadRequest{
 				Sender:             reputer.addr,
 				ReputerValueBundle: valueBundle,
 			})
 			if err != nil {
 				m.T.Logf("Error sending reputer payload: %v", err.Error())
-			} else if res.Code != 0 {
-				m.T.Logf("Error sending reputer payload: %v", res.RawLog)
 			}
+			reputer.params.Sequence = updatedSeq
 		}(reputer)
 	}
 
@@ -310,7 +308,7 @@ func createAndSendReputerPayloads(
 func createReputerValueBundle(
 	m *testcommon.TestConfig,
 	topicId uint64,
-	reputer Actor,
+	reputer StressActor,
 	workers []string,
 	reputerNonce *emissionstypes.Nonce,
 ) (*emissionstypes.ReputerValueBundle, error) {
@@ -337,17 +335,16 @@ func createReputerValueBundle(
 		return nil, err
 	}
 
-	valueBundleSignature, pubKey, err := m.Client.Context().Keyring.Sign(reputer.name, src, signing.SignMode_SIGN_MODE_DIRECT)
+	sig, err := reputer.params.PrivKey.Sign(src)
 	if err != nil {
 		return nil, err
 	}
-	reputerPublicKeyBytes := pubKey.Bytes()
 
 	// Create a InsertReputerPayloadRequest message
 	reputerValueBundle := &emissionstypes.ReputerValueBundle{
 		ValueBundle: &valueBundle,
-		Signature:   valueBundleSignature,
-		Pubkey:      hex.EncodeToString(reputerPublicKeyBytes),
+		Signature:   sig,
+		Pubkey:      reputer.params.PubKey.String(),
 	}
 
 	return reputerValueBundle, nil

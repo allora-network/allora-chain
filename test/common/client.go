@@ -13,15 +13,12 @@ import (
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
-
-	"github.com/cosmos/cosmos-sdk/client/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosclient"
-	"github.com/ignite/cli/v28/ignite/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -94,7 +91,7 @@ func NewClient(
 			cosmosclient.WithNodeAddress(rpcAddress),
 			cosmosclient.WithAddressPrefix(prefix),
 			cosmosclient.WithHome(alloraHomeDir),
-			cosmosclient.WithGas("auto"),
+			cosmosclient.WithGas("1000000000"),
 			cosmosclient.WithGasAdjustment(1.99),
 		)
 		require.NoError(t, err)
@@ -199,81 +196,6 @@ func (c *Client) BroadcastTx(
 	return c.Clients[c.getNextClientNumber()].BroadcastTx(ctx, account, msgs...)
 }
 
-func (c *Client) BroadcastTxAsync(
-	ctx context.Context,
-	account cosmosaccount.Account,
-	msgs ...sdktypes.Msg,
-) (cosmosclient.Response, error) {
-	defer c.lockBech32Prefix()()
-
-	client := c.Clients[c.getNextClientNumber()]
-
-	sdkaddr, err := account.Record.GetAddress()
-	if err != nil {
-		return cosmosclient.Response{}, errors.WithStack(err)
-	}
-
-	clientCtx := client.Context().
-		WithFromName(account.Name).
-		WithFromAddress(sdkaddr)
-
-	if err := c.accountRetriever.EnsureExists(clientCtx, sdkaddr); err != nil {
-		return cosmosclient.Response{}, errors.WithStack(err)
-	}
-
-	txf := client.TxFactory
-	initNum, initSeq := txf.AccountNumber(), txf.Sequence()
-	if initNum == 0 || initSeq == 0 {
-		num, seq, err := c.accountRetriever.GetAccountNumberSequence(clientCtx, sdkaddr)
-		if err != nil {
-			return cosmosclient.Response{}, errors.WithStack(err)
-		}
-
-		if initNum == 0 {
-			txf = txf.WithAccountNumber(num)
-		}
-
-		if initSeq == 0 {
-			txf = txf.WithSequence(seq)
-		}
-	}
-
-	for _, msg := range msgs {
-		msg, ok := msg.(sdktypes.HasValidateBasic)
-		if !ok {
-			continue
-		}
-		if err := msg.ValidateBasic(); err != nil {
-			return cosmosclient.Response{}, errors.WithStack(err)
-		}
-	}
-
-	txUnsigned, err := txf.BuildUnsignedTx(msgs...)
-	if err != nil {
-		return cosmosclient.Response{}, errors.WithStack(err)
-	}
-
-	err = tx.Sign(ctx, txf, account.Name, txUnsigned, true)
-	if err != nil {
-		return cosmosclient.Response{}, errors.WithStack(err)
-	}
-
-	txBytes, err := clientCtx.TxConfig.TxEncoder()(txUnsigned.GetTx())
-	if err != nil {
-		return cosmosclient.Response{}, errors.WithStack(err)
-	}
-
-	txResp, err := clientCtx.BroadcastTx(txBytes)
-	if err != nil {
-		return cosmosclient.Response{}, errors.WithStack(err)
-	}
-
-	return cosmosclient.Response{
-		Codec:      clientCtx.Codec,
-		TxResponse: txResp,
-	}, nil
-}
-
 func (c *Client) Context() sdkclient.Context {
 	return c.Clients[c.getNextClientNumber()].Context()
 }
@@ -316,5 +238,3 @@ func (c *Client) AccountRegistryGetByName(name string) (
 	c.accountRegistryMutex.Unlock()
 	return acc, err
 }
-
-// GRPC

@@ -1,4 +1,4 @@
-package newstress_test
+package stress_test
 
 import (
 	"github.com/stretchr/testify/require"

@@ -72,20 +72,20 @@ func UpdateNoncesOfActiveTopics(
 	for _, topicId := range sortedTopActiveTopics {
 		weight := weightsOfTopActiveTopics[topicId]
 		if weight.Equal(alloraMath.ZeroDec()) {
-			Logger(ctx).Debug("Skipping Topic ID: ", topicId, " Weight: ", weight)
+			Logger(ctx).Info("Skipping Topic ID: ", topicId, " Weight: ", weight)
 			continue
 		}
 		// Get the topic
 		topic, err := k.GetTopic(ctx, topicId)
 		if err != nil {
-			Logger(ctx).Debug("Error getting topic: ", err)
+			Logger(ctx).Info("Error getting topic: ", err)
 			continue
 		}
 
 		// Update the last inference ran
 		err = k.UpdateTopicEpochLastEnded(ctx, topic.Id, block)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error updating last inference ran: %s", err.Error()))
+			ctx.Logger().Info(fmt.Sprintf("Error updating last inference ran: %s", err.Error()))
 			continue
 		}
 
@@ -93,26 +93,26 @@ func UpdateNoncesOfActiveTopics(
 		nextNonce := types.Nonce{BlockHeight: block}
 		err = k.AddWorkerNonce(ctx, topic.Id, &nextNonce)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error adding worker nonce: %s", err.Error()))
+			ctx.Logger().Info(fmt.Sprintf("Error adding worker nonce: %s", err.Error()))
 			continue
 		}
-		ctx.Logger().Debug(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
+		ctx.Logger().Info(fmt.Sprintf("Added worker nonce for topic %d: %v \n", topic.Id, nextNonce.BlockHeight))
 
 		err = k.AddWorkerWindowTopicId(ctx, block+topic.WorkerSubmissionWindow, topic.Id)
 		if err != nil {
-			ctx.Logger().Warn(fmt.Sprintf("Error adding worker window topic id: %s", err.Error()))
+			ctx.Logger().Info(fmt.Sprintf("Error adding worker window topic id: %s", err.Error()))
 			continue
 		}
 
 		err = PruneReputerAndWorkerNonces(ctx, k, topic, block)
 		if err != nil {
-			Logger(ctx).Warn("Error pruning reputer and worker nonces: ", err)
+			Logger(ctx).Info("Error pruning reputer and worker nonces: ", err)
 			continue
 		}
 
 		err = UpdateReputerNonce(ctx, k, topic, block)
 		if err != nil {
-			Logger(ctx).Warn("Error updating reputer nonce: ", err)
+			Logger(ctx).Info("Error updating reputer nonce: ", err)
 		}
 	}
 	return nil
@@ -165,7 +165,7 @@ func GetAndUpdateActiveTopicWeights(
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to get current topic weight")
 		}
-		Logger(ctx).Debug(fmt.Sprintf("Setting previous topic weight for topic %d: %s", topic.Id, weight.String()))
+		Logger(ctx).Info(fmt.Sprintf("Setting previous topic weight for topic %d: %s", topic.Id, weight.String()))
 		err = k.SetPreviousTopicWeight(ctx, topic.Id, weight)
 		if err != nil {
 			return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to set previous topic weight")
@@ -185,7 +185,7 @@ func GetAndUpdateActiveTopicWeights(
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
-			ctx.Logger().Debug(fmt.Sprintf("Topic %d inactivated at block %d", topic.Id, block))
+			ctx.Logger().Info(fmt.Sprintf("Topic %d inactivated at block %d", topic.Id, block))
 			continue
 		}
 
@@ -197,7 +197,7 @@ func GetAndUpdateActiveTopicWeights(
 			if err != nil {
 				return nil, alloraMath.Dec{}, cosmosMath.Int{}, errors.Wrapf(err, "failed to inactivate topic")
 			}
-			ctx.Logger().Debug(fmt.Sprintf("Topic %d inactivated at block %d", topic.Id, block))
+			ctx.Logger().Info(fmt.Sprintf("Topic %d inactivated at block %d", topic.Id, block))
 			continue
 		}
 		totalRevenue = totalRevenue.Add(topicFeeRevenue)

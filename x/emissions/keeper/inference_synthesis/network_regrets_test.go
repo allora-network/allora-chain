@@ -744,6 +744,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcTopicInitialRegret() {
 		cNorm,
 		percentileRegert,
 		pnormDiv,
+		false,
 	)
 	require.NoError(err)
 	testutil.InEpsilon5(s.T(), calculatedInitialRegret, "0.3354820760526412097325669544281814")

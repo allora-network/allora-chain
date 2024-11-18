@@ -1,4 +1,4 @@
-package newstress_test
+package stress_test
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 // Creates multiple topics in a single broadcast or separate broadcasts
 func createTopics(
 	m *testcommon.TestConfig,
-	actor Actor,
+	actor SetupActor,
 	numTopics int,
 	epochLength int64,
 	createTopicsSameBlock bool,
@@ -43,12 +43,12 @@ func createTopics(
 				WorkerSubmissionWindow:   10,
 				PNorm:                    alloraMath.NewDecFromInt64(3),
 				AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
-				AllowNegative:            true,
+				AllowNegative:            false,
 				Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
 				MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
-				ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
-				ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
-				ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+				ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.25"),
+				ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.25"),
+				ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.25"),
 			}
 			topicIds[i] = topicId
 			topicId++
@@ -120,7 +120,7 @@ func createTopics(
 func fundTopics(
 	m *testcommon.TestConfig,
 	topicIds []uint64,
-	sender Actor,
+	sender SetupActor,
 	amount int64,
 ) error {
 	ctx := context.Background()

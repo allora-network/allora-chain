@@ -18,7 +18,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	blockHeight := sdkCtx.BlockHeight()
-	sdkCtx.Logger().Debug(
+	sdkCtx.Logger().Info(
 		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
 			blockHeight))
 	moduleParams, err := am.keeper.GetParams(sdkCtx)
@@ -42,7 +42,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 		return errors.Wrapf(err, "Weights error")
 	}
 
-	sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
+	sdkCtx.Logger().Info(fmt.Sprintf("ABCI EndBlocker %d: Total Revenue: %v, Sum Weight: %v", blockHeight, totalRevenue, sumWeight))
 
 	err = rewards.UpdateNoncesOfActiveTopics(
 		sdkCtx,
@@ -91,10 +91,10 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				for _, nonce := range nonces.Nonces {
 					// Skip rest of logic if the worker submission window is still open (i.e. don't close the window yet)
 					if am.keeper.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
-						sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Worker window still open for topic: %d, nonce: %v", blockHeight, topicId, nonce))
+						sdkCtx.Logger().Info(fmt.Sprintf("ABCI EndBlocker %d: Worker window still open for topic: %d, nonce: %v", blockHeight, topicId, nonce))
 						continue
 					}
-					sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId, nonce))
+					sdkCtx.Logger().Info(fmt.Sprintf("ABCI EndBlocker %d: Closing Worker window for topic: %d, nonce: %v", blockHeight, topicId, nonce))
 					err := allorautils.CloseWorkerNonce(&am.keeper, sdkCtx, topic, *nonce)
 					if err != nil {
 						sdkCtx.Logger().Info(fmt.Sprintf("Error closing worker nonce, proactively fulfilling: %s", err.Error()))
@@ -103,7 +103,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 						if err != nil {
 							sdkCtx.Logger().Warn(fmt.Sprintf("Error fulfilling worker nonce: %s", err.Error()))
 						} else {
-							sdkCtx.Logger().Debug(fmt.Sprintf("Fulfilled: %t, worker nonce: %v", fulfilledNonce, nonce))
+							sdkCtx.Logger().Info(fmt.Sprintf("Fulfilled: %t, worker nonce: %v", fulfilledNonce, nonce))
 						}
 					}
 				}

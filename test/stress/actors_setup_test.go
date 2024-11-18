@@ -1,8 +1,7 @@
-package newstress_test
+package stress_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/ignite/cli/v28/ignite/pkg/cosmosaccount"
 
 	cosmosmath "cosmossdk.io/math"
+	stresscommon "github.com/allora-network/allora-chain/test/stress/common"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
 )
 
@@ -26,14 +26,24 @@ import (
 // and an account with private key etc
 // add a lock to this if you need to broadcast transactions in parallel
 // from actors
-type Actor struct {
+type StressActor struct {
+	name   string
+	addr   string
+	params stresscommon.TransactionParams
+}
+
+type SetupActor struct {
 	name string
 	addr string
 	acc  cosmosaccount.Account
 }
 
 // stringer for actor
-func (a Actor) String() string {
+func (a StressActor) String() string {
+	return a.name
+}
+
+func (a SetupActor) String() string {
 	return a.name
 }
 
@@ -47,7 +57,7 @@ func getActorName(seed int, actorIndex int) string {
 	return "run" + strconv.Itoa(seed) + "_actor" + strconv.Itoa(actorIndex)
 }
 
-var UnusedActor Actor = Actor{} // nolint:exhaustruct
+var UnusedActor StressActor = StressActor{} // nolint:exhaustruct
 
 // Set up the common state for the simulator
 func simulateSetUp(
@@ -55,14 +65,14 @@ func simulateSetUp(
 	numActors int,
 	epochLength int,
 ) (
-	faucet Actor,
+	faucet SetupActor,
 	simulationData *SimulationData,
 ) {
 	// fund all actors from the faucet with some amount
 	// give everybody the same amount of money to start with
 	m.T.Logf("Creating %d actors", numActors)
 	actorsList := createActors(m, numActors)
-	faucet = Actor{
+	faucet = SetupActor{
 		name: getFaucetName(m.Seed),
 		addr: m.FaucetAddr,
 		acc:  m.FaucetAcc,
@@ -81,11 +91,13 @@ func simulateSetUp(
 	if err != nil {
 		m.T.Fatal(err)
 	}
+
 	data := SimulationData{
+		faucet:                    faucet,
 		epochLength:               int64(epochLength),
 		actors:                    actorsList,
-		registeredWorkersByTopic:  map[uint64][]Actor{},
-		registeredReputersByTopic: map[uint64][]Actor{},
+		registeredWorkersByTopic:  map[uint64][]StressActor{},
+		registeredReputersByTopic: map[uint64][]StressActor{},
 		failOnErr:                 false,
 		mu:                        sync.RWMutex{},
 	}
@@ -94,46 +106,35 @@ func simulateSetUp(
 }
 
 // Create a new actor and register them in the node's account registry
-func createNewActor(m *testcommon.TestConfig, numActors int) Actor {
+func createNewActor(m *testcommon.TestConfig, numActors int) StressActor {
 	actorName := getActorName(m.Seed, numActors)
-	actorAccount, _, err := m.Client.AccountRegistryCreate(actorName)
-	if err != nil {
-		if errors.Is(err, cosmosaccount.ErrAccountExists) {
-			actorAccount, err := m.Client.AccountRegistryGetByName(actorName)
-			if err != nil {
-				m.T.Log("Error getting actor account: ", actorName, " - ", err)
-				return UnusedActor
-			}
-			actorAddress, err := actorAccount.Address(params.HumanCoinUnit)
-			if err != nil {
-				m.T.Log("Error creating actor address: ", actorName, " - ", err)
-				return UnusedActor
-			}
-			return Actor{
-				name: actorName,
-				addr: actorAddress,
-				acc:  actorAccount,
-			}
-		} else {
-			m.T.Log("Error creating actor address: ", actorName, " - ", err)
-			return UnusedActor
-		}
-	}
-	actorAddress, err := actorAccount.Address(params.HumanCoinUnit)
-	if err != nil {
-		m.T.Log("Error creating actor address: ", actorName, " - ", err)
-		return UnusedActor
-	}
-	return Actor{
+	privKey, pubKey, address := stresscommon.GeneratePrivKey()
+
+	return StressActor{
 		name: actorName,
-		addr: actorAddress,
-		acc:  actorAccount,
+		addr: address,
+		params: stresscommon.TransactionParams{
+			Config: stresscommon.Config{
+				GasPerByte:   100,
+				BaseGas:      200000,
+				Denom:        params.BaseCoinUnit,
+				GasLow:       25,
+				GasPrecision: 3,
+			},
+			Sequence:    0,
+			AccNum:      0,
+			PrivKey:     privKey,
+			PubKey:      pubKey,
+			AcctAddress: address,
+			NodeURL:     "http://localhost:26657",
+			ChainID:     m.Client.Context().ChainID,
+		},
 	}
 }
 
 // Create a list of actors both as a map and a slice, returns both
-func createActors(m *testcommon.TestConfig, numToCreate int) []Actor {
-	actorsList := make([]Actor, numToCreate)
+func createActors(m *testcommon.TestConfig, numToCreate int) []StressActor {
+	actorsList := make([]StressActor, numToCreate)
 	for i := 0; i < numToCreate; i++ {
 		actorsList[i] = createNewActor(m, i)
 	}
@@ -143,11 +144,11 @@ func createActors(m *testcommon.TestConfig, numToCreate int) []Actor {
 // Fund every target address from the sender in amount coins
 func fundActors(
 	m *testcommon.TestConfig,
-	sender Actor,
-	targets []Actor,
+	sender SetupActor,
+	targets []StressActor,
 	amount cosmosmath.Int,
 ) error {
-	batchSize := 1000
+	batchSize := 2000
 	start := time.Now()
 	completed := atomic.Int32{}
 
@@ -217,7 +218,7 @@ func fundActors(
 // Based on how much money the faucet currently has
 func getPreFundAmount(
 	m *testcommon.TestConfig,
-	faucet Actor,
+	faucet SetupActor,
 	numActors int,
 ) (cosmosmath.Int, error) {
 	faucetBal, err := faucet.GetBalance(m)
@@ -236,7 +237,18 @@ func getPreFundAmount(
 }
 
 // How much money an actor has
-func (a *Actor) GetBalance(m *testcommon.TestConfig) (cosmosmath.Int, error) {
+func (a *StressActor) GetBalance(m *testcommon.TestConfig) (cosmosmath.Int, error) {
+	ctx := context.Background()
+	bal, err := m.Client.QueryBank().
+		Balance(ctx, banktypes.NewQueryBalanceRequest(sdktypes.MustAccAddressFromBech32(a.addr), params.DefaultBondDenom))
+	if err != nil {
+		m.T.Logf("Error getting balance of actor %s: %v\n", a.String(), err)
+		return cosmosmath.ZeroInt(), err
+	}
+	return bal.Balance.Amount, nil
+}
+
+func (a *SetupActor) GetBalance(m *testcommon.TestConfig) (cosmosmath.Int, error) {
 	ctx := context.Background()
 	bal, err := m.Client.QueryBank().
 		Balance(ctx, banktypes.NewQueryBalanceRequest(sdktypes.MustAccAddressFromBech32(a.addr), params.DefaultBondDenom))
@@ -250,7 +262,7 @@ func (a *Actor) GetBalance(m *testcommon.TestConfig) (cosmosmath.Int, error) {
 // RegisterWorkers registers numWorkers as workers in topicId
 func registerWorkers(
 	m *testcommon.TestConfig,
-	actors []Actor,
+	actors []StressActor,
 	topicId uint64,
 	data *SimulationData,
 	numWorkers int,
@@ -269,7 +281,7 @@ func registerWorkers(
 		wg.Add(1)
 		worker := actors[i]
 
-		go func(worker Actor, idx int) {
+		go func(worker StressActor, idx int) {
 			defer wg.Done()
 
 			sem <- struct{}{}
@@ -293,12 +305,12 @@ func registerWorkers(
 				TopicId:   topicId,
 			}
 
-			res, err := m.Client.BroadcastTxAsync(context.Background(), worker.acc, request)
+			_, updatedSeq, err := stresscommon.SendDataWithRetry(worker.params, request)
 			if err != nil {
 				m.T.Logf("Error sending worker registration: %v", err.Error())
-			} else if res.Code != 0 {
-				m.T.Logf("Error sending worker registration: %v", res.RawLog)
+				return
 			}
+			worker.params.Sequence = updatedSeq
 			data.addWorkerRegistration(topicId, worker)
 		}(worker, i)
 	}
@@ -314,7 +326,7 @@ func registerWorkers(
 // RegisterReputersAndStake registers numReputers as reputers in topicId and stakes them
 func registerReputersAndStake(
 	m *testcommon.TestConfig,
-	actors []Actor,
+	actors []StressActor,
 	topicId uint64,
 	data *SimulationData,
 	numReputers int,
@@ -333,7 +345,7 @@ func registerReputersAndStake(
 		wg.Add(1)
 		reputer := actors[i]
 
-		go func(reputer Actor, idx int) {
+		go func(reputer StressActor, idx int) {
 			defer wg.Done()
 
 			sem <- struct{}{}
@@ -356,19 +368,18 @@ func registerReputersAndStake(
 				IsReputer: true,
 				TopicId:   topicId,
 			}
-
 			stakeRequest := &emissionstypes.AddStakeRequest{
 				Sender:  reputer.addr,
 				TopicId: topicId,
 				Amount:  cosmosmath.NewIntFromUint64(stakeToAdd),
 			}
 
-			res, err := m.Client.BroadcastTxAsync(context.Background(), reputer.acc, registerRequest, stakeRequest)
+			_, updatedSeq, err := stresscommon.SendDataWithRetry(reputer.params, registerRequest, stakeRequest)
 			if err != nil {
-				m.T.Logf("Error sending reputer registration: %v", err.Error())
-			} else if res.Code != 0 {
-				m.T.Logf("Error sending reputer registration: %v", res.RawLog)
+				m.T.Logf("Error sending reputer stake: %v", err.Error())
+				return
 			}
+			reputer.params.Sequence = updatedSeq
 
 			data.addReputerRegistration(topicId, reputer)
 		}(reputer, i)

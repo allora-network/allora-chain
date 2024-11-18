@@ -34,6 +34,7 @@ func GetNetworkInferences(
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting inferences")
 	}
+	fmt.Println("GetNetworkInferences - 1 - Length of inferences :::", len(inferences.Inferences))
 
 	if len(inferences.Inferences) > 1 {
 		// If we have multiple inferences:

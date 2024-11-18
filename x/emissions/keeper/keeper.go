@@ -1421,6 +1421,7 @@ func (k *Keeper) AppendReputerLoss(
 	}
 	// If there are less than maxTopReputersToReward, add the current reputer
 	if uint64(len(reputerAddresses)) < moduleParams.MaxTopReputersToReward {
+		// fmt.Printf("Adding active reputer: %v \n", reputerLoss.ValueBundle.Reputer)
 		err := k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
 			return errorsmod.Wrap(err, "error adding active reputer")

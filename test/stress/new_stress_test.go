@@ -1,4 +1,4 @@
-package newstress_test
+package stress_test
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ func TestNewStressTestSuite(t *testing.T) {
 		t,
 		rpcMode,
 		rpcEndpoints,
-		"../localnet/genesis",
+		"../../../../../../../.allorad",
 		seed,
 	)
 
@@ -75,7 +75,7 @@ func startCreateTopicsAndRegister(
 	reputersPerTopic int,
 	createTopicsSameBlock bool,
 ) ([]uint64, error) {
-	actor := data.actors[0]
+	actor := data.faucet
 	topicIds, err := createTopics(m, actor, numTopics, data.epochLength, createTopicsSameBlock)
 	if err != nil {
 		return nil, err

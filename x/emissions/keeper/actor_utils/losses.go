@@ -24,6 +24,7 @@ func CloseReputerNonce(
 	ctx sdk.Context,
 	topic types.Topic,
 	nonce types.Nonce) error {
+	// fmt.Println("####################### CLOSING REPUTER NONCE #######################")
 	/// All filters should be done in order of increasing computational complexity
 	// Check if the worker nonce is unfulfilled
 	workerNonceUnfulfilled, err := k.IsWorkerNonceUnfulfilled(ctx, topic.Id, &nonce)
@@ -32,6 +33,7 @@ func CloseReputerNonce(
 	}
 	// Throw if worker nonce is unfulfilled -- can't report losses on something not yet committed
 	if workerNonceUnfulfilled {
+		// fmt.Printf("Reputer's worker nonce not yet fulfilled for reputer block: %v \n", &nonce.BlockHeight)
 		return errorsmod.Wrapf(
 			types.ErrNonceStillUnfulfilled,
 			"Reputer's worker nonce not yet fulfilled for reputer block: %v",
@@ -46,6 +48,7 @@ func CloseReputerNonce(
 	}
 	// Throw if already fulfilled -- can't return a response twice
 	if !reputerNonceUnfulfilled {
+		// fmt.Printf("Reputer nonce already fulfilled: %v \n", &nonce.BlockHeight)
 		return errorsmod.Wrapf(
 			types.ErrUnfulfilledNonceNotFound,
 			"Reputer nonce already fulfilled: %v",
@@ -55,6 +58,7 @@ func CloseReputerNonce(
 	// Check if the window time has passed
 	blockHeight := ctx.BlockHeight()
 	if blockHeight < nonce.BlockHeight+topic.GroundTruthLag {
+		// fmt.Printf("Reputer nonce window not available: %v \n", &nonce.BlockHeight)
 		return types.ErrReputerNonceWindowNotAvailable
 	}
 
@@ -68,6 +72,7 @@ func CloseReputerNonce(
 	if err != nil {
 		return err
 	}
+	// fmt.Printf("Length of active reputers: %d \n", len(activeReputerAddresses))
 
 	lossBundlesByReputer := make([]*types.ReputerValueBundle, 0)
 	stakesByReputer := make(map[string]cosmosMath.Int)

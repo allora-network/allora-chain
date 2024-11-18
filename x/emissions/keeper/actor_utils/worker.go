@@ -39,6 +39,8 @@ func CloseWorkerNonce(k *keeper.Keeper, ctx sdk.Context, topic types.Topic, nonc
 		return types.ErrNoQualifiedInferers
 	}
 
+	// fmt.Println("CloseWorkerNonce - 1 - Length of active inferers :::", len(activeInfererAddresses))
+
 	// Insert set of active inferences for this topic/block and return a map
 	// of the inferers with active inferers to be used in the forecasts processing
 	activeInfererAddressesMap, err := closeActiveInferencesSet(
@@ -125,7 +127,7 @@ func closeActiveInferencesSet(
 	sort.Slice(activeInferences, func(i, j int) bool {
 		return activeInferences[i].Inferer < activeInferences[j].Inferer
 	})
-
+	// fmt.Printf("CloseWorkerNonce - 2 - Length of active inferences ::: %d", len(activeInferences))
 	err := k.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, types.Inferences{
 		Inferences: activeInferences,
 	})

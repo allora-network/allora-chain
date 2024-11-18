@@ -864,3 +864,54 @@ func (s *RewardsTestSuite) TestGetAllReputersOutput() {
 	require.NoError(err)
 	require.True(slicesInDelta, "GetAllConsensusScores() got %v, want %v", gotScores3, wantScores3)
 }
+
+func TestGetAllReputersOutputWithOneReputerWithZeroListeningCoefficient(t *testing.T) {
+	// Set up test data
+	allLosses := [][]alloraMath.Dec{
+		{
+			alloraMath.MustNewDecFromString("3.811724449601937475281899547924191"),
+			alloraMath.MustNewDecFromString("3.811725595889419583135082803789292"),
+		},
+	}
+
+	stakes := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("1719220175183695502"),
+	}
+
+	initialCoefficients := []alloraMath.Dec{
+		alloraMath.MustNewDecFromString("0"),
+	}
+
+	// Parameters
+	numReputers := int64(1)
+	learningRate := alloraMath.MustNewDecFromString("0.01")
+	gradientDescentMaxIters := uint64(100)
+	epsilonReputer := alloraMath.MustNewDecFromString("0.01")
+	epsilon := alloraMath.MustNewDecFromString("0.01")
+	minStakeFraction := alloraMath.MustNewDecFromString("0.05")
+	maxGradientThreshold := alloraMath.MustNewDecFromString("0.001")
+
+	// Call GetAllReputersOutput
+	scores, coefficients, err := rewards.GetAllReputersOutput(
+		allLosses,
+		stakes,
+		initialCoefficients,
+		numReputers,
+		learningRate,
+		gradientDescentMaxIters,
+		epsilonReputer,
+		epsilon,
+		minStakeFraction,
+		maxGradientThreshold,
+	)
+
+	// Assertions
+	require.NoError(t, err)
+	require.NotNil(t, scores)
+	require.NotNil(t, coefficients)
+	require.Equal(t, 1, len(scores))
+	require.Equal(t, 1, len(coefficients))
+	// Check that the listening coefficient is set to 0.5 which happens
+	// when there's only one reputer and the listening coefficient is zero
+	require.True(t, coefficients[0].Equal(alloraMath.MustNewDecFromString("0.5")))
+}
