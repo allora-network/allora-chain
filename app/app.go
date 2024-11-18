@@ -237,6 +237,7 @@ func NewAlloraApp(
 		return nil, err
 	}
 
+	baseAppOptions = append(baseAppOptions, baseapp.SetOptimisticExecution())
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
 
 	// Register legacy modules

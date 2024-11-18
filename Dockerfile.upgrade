@@ -17,7 +17,7 @@ RUN git checkout $BASELINE_VERSION_TAG
 RUN mkdir -p $GOMODCACHE
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
-    go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@latest
+    go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
 RUN --mount=type=cache,target=/gocache \
     --mount=type=cache,target=/root/.cache/go-build \
     make install
