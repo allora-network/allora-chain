@@ -54,7 +54,13 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=allora \
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
-BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+gcflags = all=-N -l
+
+ifeq ($(DEBUG),true)
+	BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)' -gcflags '$(gcflags)'
+else
+	BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+endif
 BUILDDIR ?= $(CURDIR)/build
 
 ###########
@@ -80,6 +86,15 @@ build:
 build-local-edits:
 	mkdir -p $(BUILDDIR)/
 	go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
+
+build-all-platforms:
+	mkdir -p $(BUILDDIR)/
+	GOOS=linux GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=linux GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
 
 lint:
 	@echo "--> Running linter"
