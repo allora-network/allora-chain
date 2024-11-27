@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#650](https://github.com/allora-network/allora-chain/pull/650) Make fuzzer setup run through every state transition once before fuzzing starts
 * [#651](https://github.com/allora-network/allora-chain/pull/651) Refactor: Fuzzer rename invariants test to fuzz test
 * [#653](https://github.com/allora-network/allora-chain/pull/653) Fuzzer Bugfixes, Allow User to Set Fuzzer Transition Probability Distribution
+* [#686](https://github.com/allora-network/allora-chain/pull/686) CLI query commands alignment
 
 ### Deprecated
 
