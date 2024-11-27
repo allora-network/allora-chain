@@ -78,6 +78,7 @@ modules:
         - account: feeibc
         - account: interchainaccounts
         - account: gov
+          permissions: [burner]
   - name: gov
     config:
       "@type": cosmos.gov.module.v1.Module

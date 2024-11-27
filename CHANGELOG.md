@@ -65,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#678](https://github.com/allora-network/allora-chain/pull/678) Add optimistic execution + update CometBFT to v0.38.15
 * [#663](https://github.com/allora-network/allora-chain/pull/663) Add whitelists for admins, topic creators, workers, and reputers. Create x/emissions v6 migration and chain upgrade v0.7.0
 * [#654](https://github.com/allora-network/allora-chain/pull/654) Reorganize Linter Folder, add linter to check fuzzer state transition probabilities add to 100 percent. (Integrated as part of #653)
+* [#685](https://github.com/allora-network/allora-chain/pull/685) Add burner permission to gov module
 
 ### Changed
 * [#652](https://github.com/allora-network/allora-chain/pull/652) Reduce code duplication, set local_testnet_upgrade_l1.sh using environment variables with local_testnet_l1.sh instead
