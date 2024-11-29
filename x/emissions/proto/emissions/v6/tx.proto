@@ -212,7 +212,7 @@ message OptionalParams {
 
 message UpdateParamsRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   OptionalParams params = 2;
 }
 
@@ -227,7 +227,7 @@ message CreateNewTopicRequest {
   option (cosmos.msg.v1.signer) = "creator";
 
   // creator is the message sender.
-  string creator = 1;
+  string creator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string metadata = 2;
   string loss_method = 4;
   int64 epoch_length = 7;
@@ -275,7 +275,7 @@ message CreateNewTopicResponse {
 message InsertReputerPayloadRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   emissions.v3.ReputerValueBundle reputer_value_bundle = 2;
 }
 
@@ -284,7 +284,7 @@ message InsertReputerPayloadResponse {}
 message InsertWorkerPayloadRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   emissions.v3.WorkerDataBundle worker_data_bundle = 2;
 }
 
@@ -297,9 +297,9 @@ message RegisterRequest {
 
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 4;
-  string owner = 5;
+  string owner = 5 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   bool is_reputer = 6;
 }
 
@@ -311,7 +311,7 @@ message RegisterResponse {
 message RemoveRegistrationRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
   bool is_reputer = 3;
 }
@@ -326,7 +326,7 @@ message RemoveRegistrationResponse {
 message AddStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
   string amount = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -341,7 +341,7 @@ message AddStakeResponse {}
 message RemoveStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
   string amount = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -355,7 +355,7 @@ message RemoveStakeResponse {}
 
 message CancelRemoveStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -363,9 +363,9 @@ message CancelRemoveStakeResponse {}
 
 message DelegateStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
-  string reputer = 3;
+  string reputer = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 4 [
     (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
@@ -378,8 +378,8 @@ message DelegateStakeResponse {}
 
 message RemoveDelegateStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  string reputer = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string reputer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 3;
   string amount = 4 [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -393,19 +393,19 @@ message RemoveDelegateStakeResponse {}
 
 message CancelRemoveDelegateStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
-  string delegator = 3;
-  string reputer = 4;
+  string delegator = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string reputer = 4 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message CancelRemoveDelegateStakeResponse {}
 
 message RewardDelegateStakeRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
-  string reputer = 3;
+  string reputer = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message RewardDelegateStakeResponse {}
@@ -414,7 +414,7 @@ message RewardDelegateStakeResponse {}
 // ecosystem account via TopicFund messages
 message FundTopicRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
   string amount = 3 [
     (cosmos_proto.scalar) = "cosmos.Int",
@@ -431,8 +431,8 @@ message FundTopicResponse {}
 message AddToWhitelistAdminRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message AddToWhitelistAdminResponse {}
@@ -440,15 +440,15 @@ message AddToWhitelistAdminResponse {}
 message RemoveFromWhitelistAdminRequest {
   option (cosmos.msg.v1.signer) = "sender";
 
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message RemoveFromWhitelistAdminResponse {}
 
 message EnableTopicWorkerWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -456,7 +456,7 @@ message EnableTopicWorkerWhitelistResponse {}
 
 message DisableTopicWorkerWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -464,7 +464,7 @@ message DisableTopicWorkerWhitelistResponse {}
 
 message EnableTopicReputerWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -472,7 +472,7 @@ message EnableTopicReputerWhitelistResponse {}
 
 message DisableTopicReputerWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -480,40 +480,40 @@ message DisableTopicReputerWhitelistResponse {}
 
 message AddToGlobalWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message AddToGlobalWhitelistResponse {}
 
 message RemoveFromGlobalWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message RemoveFromGlobalWhitelistResponse {}
 
 message AddToTopicCreatorWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message AddToTopicCreatorWhitelistResponse {}
 
 message RemoveFromTopicCreatorWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message RemoveFromTopicCreatorWhitelistResponse {}
 
 message AddToTopicWorkerWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 3;
 }
 
@@ -521,8 +521,8 @@ message AddToTopicWorkerWhitelistResponse {}
 
 message RemoveFromTopicWorkerWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 3;
 }
 
@@ -530,8 +530,8 @@ message RemoveFromTopicWorkerWhitelistResponse {}
 
 message AddToTopicReputerWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 3;
 }
 
@@ -539,8 +539,8 @@ message AddToTopicReputerWhitelistResponse {}
 
 message RemoveFromTopicReputerWhitelistRequest {
   option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  string address = 2;
+  string sender = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 3;
 }
 

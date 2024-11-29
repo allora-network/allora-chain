@@ -508,7 +508,7 @@ message IsTopicReputerWhitelistEnabledResponse {
 }
 
 message IsWhitelistedTopicCreatorRequest {
-  string address = 1;
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message IsWhitelistedTopicCreatorResponse {
@@ -516,7 +516,7 @@ message IsWhitelistedTopicCreatorResponse {
 }
 
 message IsWhitelistedGlobalActorRequest {
-  string address = 1;
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message IsWhitelistedGlobalActorResponse {
@@ -525,7 +525,7 @@ message IsWhitelistedGlobalActorResponse {
 
 message IsWhitelistedTopicWorkerRequest {
   uint64 topic_id = 1;
-  string address = 2;
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message IsWhitelistedTopicWorkerResponse {
@@ -534,7 +534,7 @@ message IsWhitelistedTopicWorkerResponse {
 
 message IsWhitelistedTopicReputerRequest {
   uint64 topic_id = 1;
-  string address = 2;
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message IsWhitelistedTopicReputerResponse {
@@ -542,7 +542,7 @@ message IsWhitelistedTopicReputerResponse {
 }
 
 message CanUpdateGlobalWhitelistsRequest {
-  string address = 1;
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message CanUpdateGlobalWhitelistsResponse {
@@ -550,7 +550,7 @@ message CanUpdateGlobalWhitelistsResponse {
 }
 
 message CanUpdateParamsRequest {
-  string address = 1;
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message CanUpdateParamsResponse {
@@ -559,7 +559,7 @@ message CanUpdateParamsResponse {
 
 message CanUpdateTopicWhitelistRequest {
   uint64 topic_id = 1;
-  string address = 2;
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message CanUpdateTopicWhitelistResponse {
@@ -567,7 +567,7 @@ message CanUpdateTopicWhitelistResponse {
 }
 
 message CanCreateTopicRequest {
-  string address = 1;
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message CanCreateTopicResponse {
@@ -576,7 +576,7 @@ message CanCreateTopicResponse {
 
 message CanSubmitWorkerPayloadRequest {
   uint64 topic_id = 1;
-  string address = 2;
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message CanSubmitWorkerPayloadResponse {
@@ -585,7 +585,7 @@ message CanSubmitWorkerPayloadResponse {
 
 message CanSubmitReputerPayloadRequest {
   uint64 topic_id = 1;
-  string address = 2;
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message CanSubmitReputerPayloadResponse {
@@ -594,7 +594,7 @@ message CanSubmitReputerPayloadResponse {
 
 message GetCountInfererInclusionsInTopicRequest {
   uint64 topic_id = 1;
-  string inferer = 2;
+  string inferer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetCountInfererInclusionsInTopicResponse {
@@ -603,7 +603,7 @@ message GetCountInfererInclusionsInTopicResponse {
 
 message GetCountForecasterInclusionsInTopicRequest {
   uint64 topic_id = 1;
-  string forecaster = 2;
+  string forecaster = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetCountForecasterInclusionsInTopicResponse {
@@ -612,7 +612,7 @@ message GetCountForecasterInclusionsInTopicResponse {
 
 message GetNaiveInfererNetworkRegretRequest {
   uint64 topic_id = 1;
-  string inferer = 2;
+  string inferer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetNaiveInfererNetworkRegretResponse {
@@ -621,8 +621,8 @@ message GetNaiveInfererNetworkRegretResponse {
 
 message GetOneOutInfererInfererNetworkRegretRequest {
   uint64 topic_id = 1;
-  string one_out_inferer = 2;
-  string inferer = 3;
+  string one_out_inferer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string inferer = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetOneOutInfererInfererNetworkRegretResponse {
@@ -631,8 +631,8 @@ message GetOneOutInfererInfererNetworkRegretResponse {
 
 message GetOneOutInfererForecasterNetworkRegretRequest {
   uint64 topic_id = 1;
-  string one_out_inferer = 2;
-  string forecaster = 3;
+  string one_out_inferer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string forecaster = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetOneOutInfererForecasterNetworkRegretResponse {
@@ -641,8 +641,8 @@ message GetOneOutInfererForecasterNetworkRegretResponse {
 
 message GetOneOutForecasterInfererNetworkRegretRequest {
   uint64 topic_id = 1;
-  string one_out_forecaster = 2;
-  string inferer = 3;
+  string one_out_forecaster = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string inferer = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetOneOutForecasterInfererNetworkRegretResponse {
@@ -651,8 +651,8 @@ message GetOneOutForecasterInfererNetworkRegretResponse {
 
 message GetOneOutForecasterForecasterNetworkRegretRequest {
   uint64 topic_id = 1;
-  string one_out_forecaster = 2;
-  string forecaster = 3;
+  string one_out_forecaster = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string forecaster = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetOneOutForecasterForecasterNetworkRegretResponse {
@@ -689,7 +689,7 @@ message GetTotalStakeResponse {
 }
 
 message GetReputerStakeInTopicRequest {
-  string address = 1;
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -704,7 +704,7 @@ message GetReputerStakeInTopicResponse {
 }
 
 message GetMultiReputerStakeInTopicRequest {
-  repeated string addresses = 1;
+  repeated string addresses = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -713,7 +713,7 @@ message GetMultiReputerStakeInTopicResponse {
 }
 
 message GetStakeFromReputerInTopicInSelfRequest {
-  string reputer_address = 1;
+  string reputer_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -728,7 +728,7 @@ message GetStakeFromReputerInTopicInSelfResponse {
 }
 
 message GetDelegateStakeInTopicInReputerRequest {
-  string reputer_address = 1;
+  string reputer_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -743,8 +743,8 @@ message GetDelegateStakeInTopicInReputerResponse {
 }
 
 message GetStakeFromDelegatorInTopicInReputerRequest {
-  string delegator_address = 1;
-  string reputer_address = 2;
+  string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string reputer_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 3;
 }
 
@@ -759,7 +759,7 @@ message GetStakeFromDelegatorInTopicInReputerResponse {
 }
 
 message GetStakeFromDelegatorInTopicRequest {
-  string delegator_address = 1;
+  string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -860,7 +860,7 @@ message GetForecastsAtBlockResponse {
 
 message GetWorkerLatestInferenceByTopicIdRequest {
   uint64 topic_id = 1;
-  string worker_address = 2;
+  string worker_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetWorkerLatestInferenceByTopicIdResponse {
@@ -868,10 +868,7 @@ message GetWorkerLatestInferenceByTopicIdResponse {
 }
 
 message GetWorkerNodeInfoRequest {
-  reserved 1;
-  reserved "libp2p_key";
-
-  string address = 2;
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetWorkerNodeInfoResponse {
@@ -879,10 +876,7 @@ message GetWorkerNodeInfoResponse {
 }
 
 message GetReputerNodeInfoRequest {
-  reserved 1;
-  reserved "libp2p_key";
-
-  string address = 2;
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetReputerNodeInfoResponse {
@@ -941,7 +935,7 @@ message GetInfererNetworkRegretResponse {
 
 message GetForecasterNetworkRegretRequest {
   uint64 topic_id = 1;
-  string worker = 2;
+  string worker = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetForecasterNetworkRegretResponse {
@@ -950,8 +944,8 @@ message GetForecasterNetworkRegretResponse {
 
 message GetOneInForecasterNetworkRegretRequest {
   uint64 topic_id = 1;
-  string forecaster = 2;
-  string inferer = 3;
+  string forecaster = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string inferer = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetOneInForecasterNetworkRegretResponse {
@@ -1011,7 +1005,7 @@ message GetLatestAvailableNetworkInferencesResponse {
 
 message IsWorkerRegisteredInTopicIdRequest {
   uint64 topic_id = 1;
-  string address = 2;
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message IsWorkerRegisteredInTopicIdResponse {
@@ -1020,7 +1014,7 @@ message IsWorkerRegisteredInTopicIdResponse {
 
 message IsReputerRegisteredInTopicIdRequest {
   uint64 topic_id = 1;
-  string address = 2;
+  string address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message IsReputerRegisteredInTopicIdResponse {
@@ -1028,7 +1022,7 @@ message IsReputerRegisteredInTopicIdResponse {
 }
 
 message IsWhitelistAdminRequest {
-  string address = 1;
+  string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message IsWhitelistAdminResponse {
@@ -1053,7 +1047,7 @@ message GetDelegateStakeRemovalsUpUntilBlockResponse {
 
 message GetStakeRemovalInfoRequest {
   uint64 topic_id = 1;
-  string reputer = 2;
+  string reputer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetStakeRemovalInfoResponse {
@@ -1062,8 +1056,8 @@ message GetStakeRemovalInfoResponse {
 
 message GetDelegateStakeRemovalInfoRequest {
   uint64 topic_id = 1;
-  string delegator = 2;
-  string reputer = 3;
+  string delegator = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string reputer = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetDelegateStakeRemovalInfoResponse {
@@ -1105,7 +1099,7 @@ message GetReputerLossBundlesAtBlockResponse {
 
 message GetStakeReputerAuthorityRequest {
   uint64 topic_id = 1;
-  string reputer = 2;
+  string reputer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetStakeReputerAuthorityResponse {
@@ -1119,8 +1113,8 @@ message GetStakeReputerAuthorityResponse {
 
 message GetDelegateStakePlacementRequest {
   uint64 topic_id = 1;
-  string delegator = 2;
-  string target = 3;
+  string delegator = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string target = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetDelegateStakePlacementResponse {
@@ -1129,7 +1123,7 @@ message GetDelegateStakePlacementResponse {
 
 message GetDelegateStakeUponReputerRequest {
   uint64 topic_id = 1;
-  string target = 2;
+  string target = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetDelegateStakeUponReputerResponse {
@@ -1143,7 +1137,7 @@ message GetDelegateStakeUponReputerResponse {
 
 message GetDelegateRewardPerShareRequest {
   uint64 topic_id = 1;
-  string reputer = 2;
+  string reputer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetDelegateRewardPerShareResponse {
@@ -1154,7 +1148,7 @@ message GetDelegateRewardPerShareResponse {
 }
 
 message GetStakeRemovalForReputerAndTopicIdRequest {
-  string reputer = 1;
+  string reputer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   uint64 topic_id = 2;
 }
 
@@ -1165,8 +1159,8 @@ message GetStakeRemovalForReputerAndTopicIdResponse {
 message GetDelegateStakeRemovalRequest {
   int64 block_height = 1;
   uint64 topic_id = 2;
-  string delegator = 3;
-  string reputer = 4;
+  string delegator = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string reputer = 4 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetDelegateStakeRemovalResponse {
@@ -1225,7 +1219,7 @@ message GetTopicFeeRevenueResponse {
 
 message GetInfererScoreEmaRequest {
   uint64 topic_id = 1;
-  string inferer = 2;
+  string inferer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetInfererScoreEmaResponse {
@@ -1234,7 +1228,7 @@ message GetInfererScoreEmaResponse {
 
 message GetForecasterScoreEmaRequest {
   uint64 topic_id = 1;
-  string forecaster = 2;
+  string forecaster = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetForecasterScoreEmaResponse {
@@ -1243,7 +1237,7 @@ message GetForecasterScoreEmaResponse {
 
 message GetReputerScoreEmaRequest {
   uint64 topic_id = 1;
-  string reputer = 2;
+  string reputer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetReputerScoreEmaResponse {
@@ -1354,7 +1348,7 @@ message GetCurrentLowestReputerScoreResponse {
 
 message GetListeningCoefficientRequest {
   uint64 topic_id = 1;
-  string reputer = 2;
+  string reputer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetListeningCoefficientResponse {
@@ -1363,7 +1357,7 @@ message GetListeningCoefficientResponse {
 
 message GetPreviousReputerRewardFractionRequest {
   uint64 topic_id = 1;
-  string reputer = 2;
+  string reputer = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetPreviousReputerRewardFractionResponse {
@@ -1376,7 +1370,7 @@ message GetPreviousReputerRewardFractionResponse {
 
 message GetPreviousInferenceRewardFractionRequest {
   uint64 topic_id = 1;
-  string worker = 2;
+  string worker = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetPreviousInferenceRewardFractionResponse {
@@ -1389,7 +1383,7 @@ message GetPreviousInferenceRewardFractionResponse {
 
 message GetPreviousForecastRewardFractionRequest {
   uint64 topic_id = 1;
-  string worker = 2;
+  string worker = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetPreviousForecastRewardFractionResponse {
@@ -1439,7 +1433,7 @@ message GetActiveReputersForTopicRequest {
 }
 
 message GetActiveReputersForTopicResponse {
-  repeated string reputers = 1;
+  repeated string reputers = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetActiveForecastersForTopicRequest {
@@ -1447,7 +1441,7 @@ message GetActiveForecastersForTopicRequest {
 }
 
 message GetActiveForecastersForTopicResponse {
-  repeated string forecasters = 1;
+  repeated string forecasters = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message GetActiveInferersForTopicRequest {
@@ -1455,5 +1449,5 @@ message GetActiveInferersForTopicRequest {
 }
 
 message GetActiveInferersForTopicResponse {
-  repeated string inferers = 1;
+  repeated string inferers = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
