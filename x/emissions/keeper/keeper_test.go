@@ -3768,6 +3768,119 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().Equal(updateAttemptForWorker2.BlockHeight, updatedWorker2Score.BlockHeight, "unchanged height")
 }
 
+func getNewAddress() string {
+	addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
+	return addr.String()
+}
+
+func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	// Topic IDs
+	topicId := s.CreateOneTopic(10801)
+	nonce := types.Nonce{BlockHeight: 10}
+	blockHeightInferences := int64(10)
+
+	// Set previous topic quantile inferer score ema
+	err := k.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.MustNewDecFromString("1000"))
+	s.Require().NoError(err)
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	worker1 := getNewAddress()
+	worker2 := getNewAddress()
+	worker3 := getNewAddress()
+	worker4 := getNewAddress()
+	worker5 := getNewAddress()
+	worker6 := getNewAddress()
+	// score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(91)}
+	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(92)}
+	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(93)}
+	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(94)}
+	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(95)}
+	score6 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker6, Score: alloraMath.NewDecFromInt64(96)}
+	// err = k.SetInfererScoreEma(ctx, topicId, worker1, score1)
+	// s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker2, score2)
+	s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker3, score3)
+	s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker4, score4)
+	s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker5, score5)
+	s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker6, score6)
+	s.Require().NoError(err)
+
+	// Ensure that the number of top inferers is capped at the max top inferers to reward
+	// New high-score entrant should replace earlier low-score entrant
+	params := types.DefaultParams()
+	params.MaxTopInferersToReward = 4
+	err = k.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	allInferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.11")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.12")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.13")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.14")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.15")},
+		},
+	}
+	for _, inference := range allInferences.Inferences {
+		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		s.Require().NoError(err)
+	}
+
+	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
+
+	lowestEmaScore, found, err := k.GetLowestInfererScoreEma(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lowestEmaScore.Address, worker2)
+
+	err = k.ResetActiveWorkersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(activeInferers)
+
+	lowestEmaScore, found, err = k.GetLowestInfererScoreEma(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lowestEmaScore.Address, worker2)
+
+	blockHeightInferences = blockHeightInferences + topic.EpochLength
+	allInferences = types.Inferences{
+		Inferences: []*types.Inference{
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.22")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.23")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.24")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.25")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker6, Value: alloraMath.MustNewDecFromString("0.26")},
+		},
+	}
+	nonce.BlockHeight++
+	for _, inference := range allInferences.Inferences {
+		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		s.Require().NoError(err)
+	}
+
+	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
+
+	lowestEmaScore, found, err = k.GetLowestInfererScoreEma(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lowestEmaScore.Address, worker3)
+}
+
 func mockUninitializedParams() types.Params {
 	return types.Params{
 		Version:                             "v2",

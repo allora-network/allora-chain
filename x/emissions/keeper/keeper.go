@@ -1112,19 +1112,13 @@ func (k *Keeper) AppendInference(
 		return errors.New("inference already submitted")
 	}
 
+	// Get active inferers for topic
 	workerAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting active inferers for topic")
 	}
-	// If there are less than maxTopInferersToReward, add the current inferer
-	if uint64(len(workerAddresses)) < maxTopInferersToReward {
-		err := k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
-		if err != nil {
-			return errorsmod.Wrap(err, "error adding active inferer")
-		}
-		return k.InsertInference(ctx, topic.Id, *inference)
-	}
 
+	// Get previous EMA score for the current inferer
 	previousEmaScore, err := k.GetInfererScoreEma(ctx, topic.Id, inference.Inferer)
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting inferer score ema")
@@ -1134,21 +1128,39 @@ func (k *Keeper) AppendInference(
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
+	// Get lowest inferer score ema for the topic
 	lowestEmaScore, found, err := k.GetLowestInfererScoreEma(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting lowest inferer score ema")
-		// If there are no lowest inferer score ema, calculate it
-	} else if !found {
-		lowestEmaScore, err = GetLowestScoreFromAllInferers(ctx, k, topic.Id, workerAddresses)
-		if err != nil {
-			return errorsmod.Wrap(err, "error getting lowest score from all inferers")
-		}
+	}
+	// If there are no lowest inferer score ema, it means it is the first inference for the topic
+	if !found {
+		lowestEmaScore = previousEmaScore
 		err = k.SetLowestInfererScoreEma(ctx, topic.Id, lowestEmaScore)
 		if err != nil {
 			return errorsmod.Wrap(err, "error setting lowest inferer score ema")
 		}
 	}
 
+	// If there are less than maxTopInferersToReward, add the current inferer, update the lowest inferer score ema if needed, and return
+	if uint64(len(workerAddresses)) < maxTopInferersToReward {
+		// Update lowest inferer score ema if needed
+		if uint64(len(workerAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
+			err = k.SetLowestInfererScoreEma(ctx, topic.Id, previousEmaScore)
+			if err != nil {
+				return errorsmod.Wrap(err, "error setting lowest inferer score ema")
+			}
+		}
+
+		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
+		if err != nil {
+			return errorsmod.Wrap(err, "error adding active inferer")
+		}
+		return k.InsertInference(ctx, topic.Id, *inference)
+	}
+
+	// Else ...
+	// Checks if the inferer's previous EMA score is greater than the lowest EMA score
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
 		// Update EMA score for the lowest score inferer, who is not the current inferer
 		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
@@ -1160,6 +1172,16 @@ func (k *Keeper) AppendInference(
 		if err != nil {
 			return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
 		}
+
+		// Check if the inferer with lowest score is active before removing it, because remove will not fail if the inferer is not active
+		isActive, err := k.IsActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
+		if err != nil {
+			return errorsmod.Wrap(err, "error checking if inferer is active")
+		}
+		if !isActive {
+			return errors.New("inferer with lowest score is not active")
+		}
+
 		// Remove inferer with lowest score
 		err = k.RemoveActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
