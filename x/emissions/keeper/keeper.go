@@ -1112,12 +1112,6 @@ func (k *Keeper) AppendInference(
 		return errors.New("inference already submitted")
 	}
 
-	// Get active inferers for topic
-	workerAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting active inferers for topic")
-	}
-
 	// Get previous EMA score for the current inferer
 	previousEmaScore, err := k.GetInfererScoreEma(ctx, topic.Id, inference.Inferer)
 	if err != nil {
@@ -1129,17 +1123,15 @@ func (k *Keeper) AppendInference(
 	}
 
 	// Get lowest inferer score ema for the topic
-	lowestEmaScore, found, err := k.GetLowestInfererScoreEma(ctx, topic.Id)
+	lowestEmaScore, _, err := k.GetLowestInfererScoreEma(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting lowest inferer score ema")
 	}
-	// If there are no lowest inferer score ema, it means it is the first inference for the topic
-	if !found {
-		lowestEmaScore = previousEmaScore
-		err = k.SetLowestInfererScoreEma(ctx, topic.Id, lowestEmaScore)
-		if err != nil {
-			return errorsmod.Wrap(err, "error setting lowest inferer score ema")
-		}
+
+	// Get active inferers for topic
+	workerAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting active inferers for topic")
 	}
 
 	// If there are less than maxTopInferersToReward, add the current inferer, update the lowest inferer score ema if needed, and return
@@ -1267,19 +1259,6 @@ func (k *Keeper) AppendForecast(
 		return errors.New("forecast already submitted")
 	}
 
-	forecasterAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting active forecasters for topic")
-	}
-	// If there are less than maxTopForecastersToReward, add the current forecaster
-	if uint64(len(forecasterAddresses)) < maxTopForecastersToReward {
-		err := k.AddActiveForecaster(ctx, topic.Id, forecast.Forecaster)
-		if err != nil {
-			return errorsmod.Wrap(err, "error adding active forecaster")
-		}
-		return k.InsertForecast(ctx, topic.Id, *forecast)
-	}
-
 	previousEmaScore, err := k.GetForecasterScoreEma(ctx, topic.Id, forecast.Forecaster)
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting forecaster score ema")
@@ -1289,18 +1268,30 @@ func (k *Keeper) AppendForecast(
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
-	lowestEmaScore, found, err := k.GetLowestForecasterScoreEma(ctx, topic.Id)
+	lowestEmaScore, _, err := k.GetLowestForecasterScoreEma(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting lowest forecaster score ema")
-	} else if !found {
-		lowestEmaScore, err = GetLowestScoreFromAllForecasters(ctx, k, topic.Id, forecasterAddresses)
-		if err != nil {
-			return errorsmod.Wrap(err, "error getting lowest score from all forecasters")
+	}
+
+	forecasterAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting active forecasters for topic")
+	}
+
+	// If there are less than maxTopForecastersToReward, add the current forecaster
+	if uint64(len(forecasterAddresses)) < maxTopForecastersToReward {
+		if uint64(len(forecasterAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
+			err = k.SetLowestForecasterScoreEma(ctx, topic.Id, previousEmaScore)
+			if err != nil {
+				return errorsmod.Wrap(err, "error setting lowest forecaster score ema")
+			}
 		}
-		err = k.SetLowestForecasterScoreEma(ctx, topic.Id, lowestEmaScore)
+
+		err = k.AddActiveForecaster(ctx, topic.Id, forecast.Forecaster)
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting lowest forecaster score ema")
+			return errorsmod.Wrap(err, "error adding active forecaster")
 		}
+		return k.InsertForecast(ctx, topic.Id, *forecast)
 	}
 
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -1314,6 +1305,16 @@ func (k *Keeper) AppendForecast(
 		if err != nil {
 			return errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
 		}
+
+		// Check if the forecaster with lowest score is active before removing it, because remove will not fail if the forecaster is not active
+		isActive, err := k.IsActiveForecaster(ctx, topic.Id, lowestEmaScore.Address)
+		if err != nil {
+			return errorsmod.Wrap(err, "error checking if forecaster is active")
+		}
+		if !isActive {
+			return errors.New("forecaster with lowest score is not active")
+		}
+
 		// Remove forecaster with lowest score
 		err = k.RemoveActiveForecaster(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
@@ -1453,19 +1454,6 @@ func (k *Keeper) AppendReputerLoss(
 		return errors.New("reputer loss already submitted")
 	}
 
-	reputerAddresses, err := k.GetActiveReputersForTopic(ctx, topic.Id)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting active reputers for topic")
-	}
-	// If there are less than maxTopReputersToReward, add the current reputer
-	if uint64(len(reputerAddresses)) < moduleParams.MaxTopReputersToReward {
-		err := k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
-		if err != nil {
-			return errorsmod.Wrap(err, "error adding active reputer")
-		}
-		return k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
-	}
-
 	previousEmaScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting reputer score ema")
@@ -1475,18 +1463,29 @@ func (k *Keeper) AppendReputerLoss(
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
-	lowestEmaScore, found, err := k.GetLowestReputerScoreEma(ctx, topic.Id)
+	lowestEmaScore, _, err := k.GetLowestReputerScoreEma(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting lowest reputer score ema")
-	} else if !found {
-		lowestEmaScore, err = GetLowestScoreFromAllReputers(ctx, k, topic.Id, reputerAddresses)
-		if err != nil {
-			return errorsmod.Wrap(err, "error getting lowest score from all reputers")
+	}
+
+	reputerAddresses, err := k.GetActiveReputersForTopic(ctx, topic.Id)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting active reputers for topic")
+	}
+	// If there are less than maxTopReputersToReward, add the current reputer
+	if uint64(len(reputerAddresses)) < moduleParams.MaxTopReputersToReward {
+		if uint64(len(reputerAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
+			err = k.SetLowestReputerScoreEma(ctx, topic.Id, previousEmaScore)
+			if err != nil {
+				return errorsmod.Wrap(err, "error setting lowest reputer score ema")
+			}
 		}
-		err = k.SetLowestReputerScoreEma(ctx, topic.Id, lowestEmaScore)
+
+		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting lowest reputer score ema")
+			return errorsmod.Wrap(err, "error adding active reputer")
 		}
+		return k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
 	}
 
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -1500,6 +1499,16 @@ func (k *Keeper) AppendReputerLoss(
 		if err != nil {
 			return errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
 		}
+
+		// Check if the reputer with lowest score is active before removing it, because remove will not fail if the reputer is not active
+		isActive, err := k.IsActiveReputer(ctx, topic.Id, lowestEmaScore.Address)
+		if err != nil {
+			return errorsmod.Wrap(err, "error checking if reputer is active")
+		}
+		if !isActive {
+			return errors.New("reputer with lowest score is not active")
+		}
+
 		// Remove reputer with lowest score
 		err = k.RemoveActiveReputer(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
