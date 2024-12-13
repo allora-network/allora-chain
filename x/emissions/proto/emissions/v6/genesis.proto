@@ -227,6 +227,10 @@ message GenesisState {
   repeated TopicAndActorId topic_reputer_whitelist = 81;
   repeated uint64 topic_worker_whitelist_enabled = 82;
   repeated uint64 topic_reputer_whitelist_enabled = 83;
+
+  // Outlier resistant inferences
+  repeated TopicIdAndDec last_median_inferences = 84;
+  repeated TopicIdAndDec last_mad_inferences = 85;
 }
 
 message TopicIdAndTopic {
