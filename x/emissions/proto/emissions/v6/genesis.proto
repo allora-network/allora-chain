@@ -230,7 +230,7 @@ message GenesisState {
 
   // Outlier resistant inferences
   repeated TopicIdAndDec last_median_inferences = 84;
-  repeated TopicIdAndDec last_mad_inferences = 85;
+  repeated TopicIdAndDec mad_inferences = 85;
 }
 
 message TopicIdAndTopic {

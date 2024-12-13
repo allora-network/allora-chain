@@ -979,8 +979,8 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 	}
 
 	// madInferences
-	if len(data.LastMadInferences) != 0 {
-		for _, topicIdDec := range data.LastMadInferences {
+	if len(data.MadInferences) != 0 {
+		for _, topicIdDec := range data.MadInferences {
 			if err := k.SetMadInferences(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
 				return errors.Wrap(err, "error setting madInferences")
 			}
@@ -2377,7 +2377,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 	for ; madInferencesIter.Valid(); madInferencesIter.Next() {
 		keyValue, err := madInferencesIter.KeyValue()
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to get key value: lastMadInferencesIter")
+			return nil, errors.Wrap(err, "failed to get key value: MadInferencesIter")
 		}
 		madInferences = append(madInferences, &types.TopicIdAndDec{
 			TopicId: keyValue.Key,
@@ -2467,6 +2467,6 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		TopicWorkerWhitelistEnabled:                    topicWorkerWhitelistEnabled,
 		TopicReputerWhitelistEnabled:                   topicReputerWhitelistEnabled,
 		LastMedianInferences:                           lastMedianInferences,
-		LastMadInferences:                              madInferences,
+		MadInferences:                                  madInferences,
 	}, nil
 }
