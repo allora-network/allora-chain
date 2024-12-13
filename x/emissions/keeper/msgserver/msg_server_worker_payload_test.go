@@ -364,6 +364,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 		GlobalWhitelistEnabled:              nil,
 		TopicCreatorWhitelistEnabled:        nil,
 		MinExperiencedWorkerRegrets:         nil,
+		InferenceOutlierDetectionThreshold:  nil,
+		InferenceOutlierDetectionAlpha:      nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -764,6 +766,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 		GlobalWhitelistEnabled:              nil,
 		TopicCreatorWhitelistEnabled:        nil,
 		MinExperiencedWorkerRegrets:         nil,
+		InferenceOutlierDetectionThreshold:  nil,
+		InferenceOutlierDetectionAlpha:      nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{

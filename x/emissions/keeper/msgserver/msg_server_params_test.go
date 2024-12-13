@@ -66,6 +66,8 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 		GlobalWhitelistEnabled:              []bool{true},
 		TopicCreatorWhitelistEnabled:        []bool{true},
 		MinExperiencedWorkerRegrets:         []uint64{1234},
+		InferenceOutlierDetectionThreshold:  []alloraMath.Dec{alloraMath.MustNewDecFromString("11")},
+		InferenceOutlierDetectionAlpha:      []alloraMath.Dec{alloraMath.MustNewDecFromString("0.2")},
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -114,8 +116,20 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.CRewardInference[0], updatedParams.CRewardInference)
 	require.Equal(newParams.CRewardForecast[0], updatedParams.CRewardForecast)
 	require.Equal(newParams.CNorm[0], updatedParams.CNorm)
+	require.Equal(newParams.BlocksPerMonth[0], updatedParams.BlocksPerMonth)
+	require.Equal(newParams.HalfMaxProcessStakeRemovalsEndBlock[0], updatedParams.HalfMaxProcessStakeRemovalsEndBlock)
+	require.Equal(newParams.DataSendingFee[0], updatedParams.DataSendingFee)
+	require.Equal(newParams.EpsilonSafeDiv[0], updatedParams.EpsilonSafeDiv)
+	require.Equal(newParams.MaxElementsPerForecast[0], updatedParams.MaxElementsPerForecast)
+	require.Equal(newParams.MaxActiveTopicsPerBlock[0], updatedParams.MaxActiveTopicsPerBlock)
+	require.Equal(newParams.MaxStringLength[0], updatedParams.MaxStringLength)
+	require.Equal(newParams.InitialRegretQuantile[0], updatedParams.InitialRegretQuantile)
+	require.Equal(newParams.PNormSafeDiv[0], updatedParams.PNormSafeDiv)
 	require.Equal(newParams.GlobalWhitelistEnabled[0], updatedParams.GlobalWhitelistEnabled)
 	require.Equal(newParams.TopicCreatorWhitelistEnabled[0], updatedParams.TopicCreatorWhitelistEnabled)
+	require.Equal(newParams.MinExperiencedWorkerRegrets[0], updatedParams.MinExperiencedWorkerRegrets)
+	require.Equal(newParams.InferenceOutlierDetectionThreshold[0], updatedParams.InferenceOutlierDetectionThreshold)
+	require.Equal(newParams.InferenceOutlierDetectionAlpha[0], updatedParams.InferenceOutlierDetectionAlpha)
 }
 
 func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
@@ -175,6 +189,8 @@ func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
 		GlobalWhitelistEnabled:              nil,
 		TopicCreatorWhitelistEnabled:        nil,
 		MinExperiencedWorkerRegrets:         nil,
+		InferenceOutlierDetectionThreshold:  nil,
+		InferenceOutlierDetectionAlpha:      nil,
 	}
 
 	// Creating the UpdateParamsRequest message with a non-whitelisted user

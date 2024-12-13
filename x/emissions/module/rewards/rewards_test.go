@@ -2217,6 +2217,8 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		GlobalWhitelistEnabled:              nil,
 		TopicCreatorWhitelistEnabled:        nil,
 		MinExperiencedWorkerRegrets:         nil,
+		InferenceOutlierDetectionThreshold:  nil,
+		InferenceOutlierDetectionAlpha:      nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{

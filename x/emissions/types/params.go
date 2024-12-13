@@ -197,6 +197,12 @@ func (p Params) Validate() error {
 	if err := validateMinExperiencedWorkerRegrets(p.MinExperiencedWorkerRegrets); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: min experienced worker regrets")
 	}
+	if err := validateInferenceOutlierDetectionThreshold(p.InferenceOutlierDetectionThreshold); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: inference outlier detection threshold")
+	}
+	if err := validateInferenceOutlierDetectionAlpha(p.InferenceOutlierDetectionAlpha); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: inference outlier detection alpha")
+	}
 	return nil
 }
 
@@ -611,5 +617,19 @@ func validateDataSendingFee(i cosmosMath.Int) error {
 
 // No validation needed as it is a uint
 func validateMinExperiencedWorkerRegrets(i uint64) error {
+	return nil
+}
+
+func validateInferenceOutlierDetectionThreshold(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateInferenceOutlierDetectionAlpha(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	}
 	return nil
 }

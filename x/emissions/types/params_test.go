@@ -56,6 +56,8 @@ func TestDefaultParams(t *testing.T) {
 		GlobalWhitelistEnabled:              true,
 		TopicCreatorWhitelistEnabled:        true,
 		MinExperiencedWorkerRegrets:         uint64(10),
+		InferenceOutlierDetectionThreshold:  alloraMath.MustNewDecFromString("11"),
+		InferenceOutlierDetectionAlpha:      alloraMath.MustNewDecFromString("0.2"),
 	}
 
 	params := DefaultParams()

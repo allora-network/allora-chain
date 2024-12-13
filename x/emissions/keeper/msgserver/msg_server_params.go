@@ -165,6 +165,12 @@ func (ms msgServer) UpdateParams(ctx context.Context, msg *types.UpdateParamsReq
 	if len(newParams.MinExperiencedWorkerRegrets) == 1 {
 		existingParams.MinExperiencedWorkerRegrets = newParams.MinExperiencedWorkerRegrets[0]
 	}
+	if len(newParams.InferenceOutlierDetectionThreshold) == 1 {
+		existingParams.InferenceOutlierDetectionThreshold = newParams.InferenceOutlierDetectionThreshold[0]
+	}
+	if len(newParams.InferenceOutlierDetectionAlpha) == 1 {
+		existingParams.InferenceOutlierDetectionAlpha = newParams.InferenceOutlierDetectionAlpha[0]
+	}
 	err = existingParams.Validate()
 	if err != nil {
 		return nil, err
