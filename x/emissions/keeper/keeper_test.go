@@ -2,6 +2,7 @@ package keeper_test
 
 import (
 	"encoding/binary"
+	"fmt"
 	"testing"
 	"time"
 
@@ -3766,6 +3767,32 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().NoError(err)
 	s.Require().Equal(updateAttemptForWorker2Val, updatedWorker2ScoreVal, "unchanged score")
 	s.Require().Equal(updateAttemptForWorker2.BlockHeight, updatedWorker2Score.BlockHeight, "unchanged height")
+}
+
+func (s *KeeperTestSuite) TestMeasureReadTopicQuantile() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+
+	score := alloraMath.MustNewDecFromString("0.5")
+
+	numTopics := uint64(1e6)
+	start := time.Now()
+	for topicId := uint64(1); topicId <= numTopics; topicId++ {
+		// Set previous topic quantile inferer score ema
+		_ = k.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, score)
+		// s.Require().NoError(err)
+	}
+	elapsed := time.Since(start)
+	fmt.Println("Time taken to set 1e6 topic quantiles:", elapsed)
+
+	start = time.Now()
+	for topicId := uint64(1); topicId <= numTopics; topicId++ {
+		_, _ = k.GetPreviousTopicQuantileInfererScoreEma(ctx, topicId)
+		// s.Require().NoError(err)
+	}
+	elapsed = time.Since(start)
+	fmt.Println("Time taken to read 1e6 topic quantiles:", elapsed)
+
 }
 
 func getNewAddress() string {
