@@ -44,6 +44,7 @@ const (
 	QueryService_IsWorkerRegisteredInTopicId_FullMethodName                 = "/emissions.v6.QueryService/IsWorkerRegisteredInTopicId"
 	QueryService_IsReputerRegisteredInTopicId_FullMethodName                = "/emissions.v6.QueryService/IsReputerRegisteredInTopicId"
 	QueryService_GetNetworkInferencesAtBlock_FullMethodName                 = "/emissions.v6.QueryService/GetNetworkInferencesAtBlock"
+	QueryService_GetNetworkInferencesAtBlockOutlierResistant_FullMethodName = "/emissions.v6.QueryService/GetNetworkInferencesAtBlockOutlierResistant"
 	QueryService_GetLatestNetworkInferences_FullMethodName                  = "/emissions.v6.QueryService/GetLatestNetworkInferences"
 	QueryService_GetLatestAvailableNetworkInferences_FullMethodName         = "/emissions.v6.QueryService/GetLatestAvailableNetworkInferences"
 	QueryService_IsWorkerNonceUnfulfilled_FullMethodName                    = "/emissions.v6.QueryService/IsWorkerNonceUnfulfilled"
@@ -147,6 +148,7 @@ type QueryServiceClient interface {
 	IsWorkerRegisteredInTopicId(ctx context.Context, in *IsWorkerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*IsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(ctx context.Context, in *IsReputerRegisteredInTopicIdRequest, opts ...grpc.CallOption) (*IsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(ctx context.Context, in *GetNetworkInferencesAtBlockRequest, opts ...grpc.CallOption) (*GetNetworkInferencesAtBlockResponse, error)
+	GetNetworkInferencesAtBlockOutlierResistant(ctx context.Context, in *GetNetworkInferencesAtBlockOutlierResistantRequest, opts ...grpc.CallOption) (*GetNetworkInferencesAtBlockOutlierResistantResponse, error)
 	GetLatestNetworkInferences(ctx context.Context, in *GetLatestNetworkInferencesRequest, opts ...grpc.CallOption) (*GetLatestNetworkInferencesResponse, error)
 	GetLatestAvailableNetworkInferences(ctx context.Context, in *GetLatestAvailableNetworkInferencesRequest, opts ...grpc.CallOption) (*GetLatestAvailableNetworkInferencesResponse, error)
 	IsWorkerNonceUnfulfilled(ctx context.Context, in *IsWorkerNonceUnfulfilledRequest, opts ...grpc.CallOption) (*IsWorkerNonceUnfulfilledResponse, error)
@@ -470,6 +472,16 @@ func (c *queryServiceClient) GetNetworkInferencesAtBlock(ctx context.Context, in
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetNetworkInferencesAtBlockResponse)
 	err := c.cc.Invoke(ctx, QueryService_GetNetworkInferencesAtBlock_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetNetworkInferencesAtBlockOutlierResistant(ctx context.Context, in *GetNetworkInferencesAtBlockOutlierResistantRequest, opts ...grpc.CallOption) (*GetNetworkInferencesAtBlockOutlierResistantResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetNetworkInferencesAtBlockOutlierResistantResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetNetworkInferencesAtBlockOutlierResistant_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1198,6 +1210,7 @@ type QueryServiceServer interface {
 	IsWorkerRegisteredInTopicId(context.Context, *IsWorkerRegisteredInTopicIdRequest) (*IsWorkerRegisteredInTopicIdResponse, error)
 	IsReputerRegisteredInTopicId(context.Context, *IsReputerRegisteredInTopicIdRequest) (*IsReputerRegisteredInTopicIdResponse, error)
 	GetNetworkInferencesAtBlock(context.Context, *GetNetworkInferencesAtBlockRequest) (*GetNetworkInferencesAtBlockResponse, error)
+	GetNetworkInferencesAtBlockOutlierResistant(context.Context, *GetNetworkInferencesAtBlockOutlierResistantRequest) (*GetNetworkInferencesAtBlockOutlierResistantResponse, error)
 	GetLatestNetworkInferences(context.Context, *GetLatestNetworkInferencesRequest) (*GetLatestNetworkInferencesResponse, error)
 	GetLatestAvailableNetworkInferences(context.Context, *GetLatestAvailableNetworkInferencesRequest) (*GetLatestAvailableNetworkInferencesResponse, error)
 	IsWorkerNonceUnfulfilled(context.Context, *IsWorkerNonceUnfulfilledRequest) (*IsWorkerNonceUnfulfilledResponse, error)
@@ -1351,6 +1364,9 @@ func (UnimplementedQueryServiceServer) IsReputerRegisteredInTopicId(context.Cont
 }
 func (UnimplementedQueryServiceServer) GetNetworkInferencesAtBlock(context.Context, *GetNetworkInferencesAtBlockRequest) (*GetNetworkInferencesAtBlockResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkInferencesAtBlock not implemented")
+}
+func (UnimplementedQueryServiceServer) GetNetworkInferencesAtBlockOutlierResistant(context.Context, *GetNetworkInferencesAtBlockOutlierResistantRequest) (*GetNetworkInferencesAtBlockOutlierResistantResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkInferencesAtBlockOutlierResistant not implemented")
 }
 func (UnimplementedQueryServiceServer) GetLatestNetworkInferences(context.Context, *GetLatestNetworkInferencesRequest) (*GetLatestNetworkInferencesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLatestNetworkInferences not implemented")
@@ -2026,6 +2042,24 @@ func _QueryService_GetNetworkInferencesAtBlock_Handler(srv interface{}, ctx cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(QueryServiceServer).GetNetworkInferencesAtBlock(ctx, req.(*GetNetworkInferencesAtBlockRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetNetworkInferencesAtBlockOutlierResistant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNetworkInferencesAtBlockOutlierResistantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetNetworkInferencesAtBlockOutlierResistant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetNetworkInferencesAtBlockOutlierResistant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetNetworkInferencesAtBlockOutlierResistant(ctx, req.(*GetNetworkInferencesAtBlockOutlierResistantRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3378,6 +3412,10 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNetworkInferencesAtBlock",
 			Handler:    _QueryService_GetNetworkInferencesAtBlock_Handler,
+		},
+		{
+			MethodName: "GetNetworkInferencesAtBlockOutlierResistant",
+			Handler:    _QueryService_GetNetworkInferencesAtBlockOutlierResistant_Handler,
 		},
 		{
 			MethodName: "GetLatestNetworkInferences",

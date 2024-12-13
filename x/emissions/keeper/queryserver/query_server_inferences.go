@@ -100,7 +100,9 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 
 // An outlier resistant version of GetNetworkInferencesAtBlock
 // TODO implement
-func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(ctx context.Context, req *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantRequest) (_ *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse, err error) {
+func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
+	ctx context.Context,
+	req *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantRequest) (_ *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse, err error) {
 	defer metrics.RecordMetrics("GetNetworkInferencesAtBlockOutlierResistant", time.Now(), &err)
 
 	topic, err := qs.k.GetTopic(ctx, req.TopicId)
@@ -121,7 +123,7 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(ctx context.Co
 		return nil, err
 	}
 
-	return &emissionstypes.GetNetworkInferencesAtBlockResponse{NetworkInferences: result.NetworkInferences}, nil
+	return &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse{NetworkInferences: result.NetworkInferences}, nil
 }
 
 // Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences

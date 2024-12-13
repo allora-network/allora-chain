@@ -148,8 +148,7 @@ service QueryService {
 
   rpc GetNetworkInferencesAtBlockOutlierResistant(GetNetworkInferencesAtBlockOutlierResistantRequest) returns (GetNetworkInferencesAtBlockOutlierResistantResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
-    option (google.api.http).get =
-      "/emissions/v6/network_inferences_outlier_resistant/{topic_id}/last_inference/{block_height_last_inference}";
+    option (google.api.http).get = "/emissions/v6/network_inferences_outlier_resistant/{topic_id}/last_inference/{block_height_last_inference}";
   }
 
   rpc GetLatestNetworkInferences(GetLatestNetworkInferencesRequest) returns (GetLatestNetworkInferencesResponse) {
