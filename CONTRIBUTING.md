@@ -40,7 +40,7 @@ For `x/emissions`:
    1. Add code to the tx that allows us to set new params
 5. Update any tests where all params need to be specified
 6. Update any external docs here:
-   1. https://docs.allora.network/docs/chain-parameters
+   1. https://docs.allora.network/devs/reference/params/chain
 
 For `x/mint`:
 __TBD__
