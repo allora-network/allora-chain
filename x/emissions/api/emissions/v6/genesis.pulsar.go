@@ -3750,6 +3750,108 @@ func (x *_GenesisState_83_list) IsValid() bool {
 	return x.list != nil
 }
 
+var _ protoreflect.List = (*_GenesisState_84_list)(nil)
+
+type _GenesisState_84_list struct {
+	list *[]*TopicIdAndDec
+}
+
+func (x *_GenesisState_84_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_GenesisState_84_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_GenesisState_84_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*TopicIdAndDec)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_GenesisState_84_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*TopicIdAndDec)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_GenesisState_84_list) AppendMutable() protoreflect.Value {
+	v := new(TopicIdAndDec)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_84_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_GenesisState_84_list) NewElement() protoreflect.Value {
+	v := new(TopicIdAndDec)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_84_list) IsValid() bool {
+	return x.list != nil
+}
+
+var _ protoreflect.List = (*_GenesisState_85_list)(nil)
+
+type _GenesisState_85_list struct {
+	list *[]*TopicIdAndDec
+}
+
+func (x *_GenesisState_85_list) Len() int {
+	if x.list == nil {
+		return 0
+	}
+	return len(*x.list)
+}
+
+func (x *_GenesisState_85_list) Get(i int) protoreflect.Value {
+	return protoreflect.ValueOfMessage((*x.list)[i].ProtoReflect())
+}
+
+func (x *_GenesisState_85_list) Set(i int, value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*TopicIdAndDec)
+	(*x.list)[i] = concreteValue
+}
+
+func (x *_GenesisState_85_list) Append(value protoreflect.Value) {
+	valueUnwrapped := value.Message()
+	concreteValue := valueUnwrapped.Interface().(*TopicIdAndDec)
+	*x.list = append(*x.list, concreteValue)
+}
+
+func (x *_GenesisState_85_list) AppendMutable() protoreflect.Value {
+	v := new(TopicIdAndDec)
+	*x.list = append(*x.list, v)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_85_list) Truncate(n int) {
+	for i := n; i < len(*x.list); i++ {
+		(*x.list)[i] = nil
+	}
+	*x.list = (*x.list)[:n]
+}
+
+func (x *_GenesisState_85_list) NewElement() protoreflect.Value {
+	v := new(TopicIdAndDec)
+	return protoreflect.ValueOfMessage(v.ProtoReflect())
+}
+
+func (x *_GenesisState_85_list) IsValid() bool {
+	return x.list != nil
+}
+
 var (
 	md_GenesisState                                                      protoreflect.MessageDescriptor
 	fd_GenesisState_params                                               protoreflect.FieldDescriptor
@@ -3832,6 +3934,8 @@ var (
 	fd_GenesisState_topic_reputer_whitelist                              protoreflect.FieldDescriptor
 	fd_GenesisState_topic_worker_whitelist_enabled                       protoreflect.FieldDescriptor
 	fd_GenesisState_topic_reputer_whitelist_enabled                      protoreflect.FieldDescriptor
+	fd_GenesisState_last_median_inferences                               protoreflect.FieldDescriptor
+	fd_GenesisState_last_mad_inferences                                  protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -3917,6 +4021,8 @@ func init() {
 	fd_GenesisState_topic_reputer_whitelist = md_GenesisState.Fields().ByName("topic_reputer_whitelist")
 	fd_GenesisState_topic_worker_whitelist_enabled = md_GenesisState.Fields().ByName("topic_worker_whitelist_enabled")
 	fd_GenesisState_topic_reputer_whitelist_enabled = md_GenesisState.Fields().ByName("topic_reputer_whitelist_enabled")
+	fd_GenesisState_last_median_inferences = md_GenesisState.Fields().ByName("last_median_inferences")
+	fd_GenesisState_last_mad_inferences = md_GenesisState.Fields().ByName("last_mad_inferences")
 }
 
 var _ protoreflect.Message = (*fastReflection_GenesisState)(nil)
@@ -4464,6 +4570,18 @@ func (x *fastReflection_GenesisState) Range(f func(protoreflect.FieldDescriptor,
 			return
 		}
 	}
+	if len(x.LastMedianInferences) != 0 {
+		value := protoreflect.ValueOfList(&_GenesisState_84_list{list: &x.LastMedianInferences})
+		if !f(fd_GenesisState_last_median_inferences, value) {
+			return
+		}
+	}
+	if len(x.LastMadInferences) != 0 {
+		value := protoreflect.ValueOfList(&_GenesisState_85_list{list: &x.LastMadInferences})
+		if !f(fd_GenesisState_last_mad_inferences, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -4639,6 +4757,10 @@ func (x *fastReflection_GenesisState) Has(fd protoreflect.FieldDescriptor) bool 
 		return len(x.TopicWorkerWhitelistEnabled) != 0
 	case "emissions.v6.GenesisState.topic_reputer_whitelist_enabled":
 		return len(x.TopicReputerWhitelistEnabled) != 0
+	case "emissions.v6.GenesisState.last_median_inferences":
+		return len(x.LastMedianInferences) != 0
+	case "emissions.v6.GenesisState.last_mad_inferences":
+		return len(x.LastMadInferences) != 0
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v6.GenesisState"))
@@ -4815,6 +4937,10 @@ func (x *fastReflection_GenesisState) Clear(fd protoreflect.FieldDescriptor) {
 		x.TopicWorkerWhitelistEnabled = nil
 	case "emissions.v6.GenesisState.topic_reputer_whitelist_enabled":
 		x.TopicReputerWhitelistEnabled = nil
+	case "emissions.v6.GenesisState.last_median_inferences":
+		x.LastMedianInferences = nil
+	case "emissions.v6.GenesisState.last_mad_inferences":
+		x.LastMadInferences = nil
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v6.GenesisState"))
@@ -5293,6 +5419,18 @@ func (x *fastReflection_GenesisState) Get(descriptor protoreflect.FieldDescripto
 		}
 		listValue := &_GenesisState_83_list{list: &x.TopicReputerWhitelistEnabled}
 		return protoreflect.ValueOfList(listValue)
+	case "emissions.v6.GenesisState.last_median_inferences":
+		if len(x.LastMedianInferences) == 0 {
+			return protoreflect.ValueOfList(&_GenesisState_84_list{})
+		}
+		listValue := &_GenesisState_84_list{list: &x.LastMedianInferences}
+		return protoreflect.ValueOfList(listValue)
+	case "emissions.v6.GenesisState.last_mad_inferences":
+		if len(x.LastMadInferences) == 0 {
+			return protoreflect.ValueOfList(&_GenesisState_85_list{})
+		}
+		listValue := &_GenesisState_85_list{list: &x.LastMadInferences}
+		return protoreflect.ValueOfList(listValue)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v6.GenesisState"))
@@ -5621,6 +5759,14 @@ func (x *fastReflection_GenesisState) Set(fd protoreflect.FieldDescriptor, value
 		lv := value.List()
 		clv := lv.(*_GenesisState_83_list)
 		x.TopicReputerWhitelistEnabled = *clv.list
+	case "emissions.v6.GenesisState.last_median_inferences":
+		lv := value.List()
+		clv := lv.(*_GenesisState_84_list)
+		x.LastMedianInferences = *clv.list
+	case "emissions.v6.GenesisState.last_mad_inferences":
+		lv := value.List()
+		clv := lv.(*_GenesisState_85_list)
+		x.LastMadInferences = *clv.list
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v6.GenesisState"))
@@ -6090,6 +6236,18 @@ func (x *fastReflection_GenesisState) Mutable(fd protoreflect.FieldDescriptor) p
 		}
 		value := &_GenesisState_83_list{list: &x.TopicReputerWhitelistEnabled}
 		return protoreflect.ValueOfList(value)
+	case "emissions.v6.GenesisState.last_median_inferences":
+		if x.LastMedianInferences == nil {
+			x.LastMedianInferences = []*TopicIdAndDec{}
+		}
+		value := &_GenesisState_84_list{list: &x.LastMedianInferences}
+		return protoreflect.ValueOfList(value)
+	case "emissions.v6.GenesisState.last_mad_inferences":
+		if x.LastMadInferences == nil {
+			x.LastMadInferences = []*TopicIdAndDec{}
+		}
+		value := &_GenesisState_85_list{list: &x.LastMadInferences}
+		return protoreflect.ValueOfList(value)
 	case "emissions.v6.GenesisState.next_topic_id":
 		panic(fmt.Errorf("field next_topic_id of message emissions.v6.GenesisState is not mutable"))
 	case "emissions.v6.GenesisState.total_stake":
@@ -6348,6 +6506,12 @@ func (x *fastReflection_GenesisState) NewField(fd protoreflect.FieldDescriptor) 
 	case "emissions.v6.GenesisState.topic_reputer_whitelist_enabled":
 		list := []uint64{}
 		return protoreflect.ValueOfList(&_GenesisState_83_list{list: &list})
+	case "emissions.v6.GenesisState.last_median_inferences":
+		list := []*TopicIdAndDec{}
+		return protoreflect.ValueOfList(&_GenesisState_84_list{list: &list})
+	case "emissions.v6.GenesisState.last_mad_inferences":
+		list := []*TopicIdAndDec{}
+		return protoreflect.ValueOfList(&_GenesisState_85_list{list: &list})
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v6.GenesisState"))
@@ -6888,6 +7052,18 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 			}
 			n += 2 + runtime.Sov(uint64(l)) + l
 		}
+		if len(x.LastMedianInferences) > 0 {
+			for _, e := range x.LastMedianInferences {
+				l = options.Size(e)
+				n += 2 + l + runtime.Sov(uint64(l))
+			}
+		}
+		if len(x.LastMadInferences) > 0 {
+			for _, e := range x.LastMadInferences {
+				l = options.Size(e)
+				n += 2 + l + runtime.Sov(uint64(l))
+			}
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -6916,6 +7092,42 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.LastMadInferences) > 0 {
+			for iNdEx := len(x.LastMadInferences) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.LastMadInferences[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x5
+				i--
+				dAtA[i] = 0xaa
+			}
+		}
+		if len(x.LastMedianInferences) > 0 {
+			for iNdEx := len(x.LastMedianInferences) - 1; iNdEx >= 0; iNdEx-- {
+				encoded, err := options.Marshal(x.LastMedianInferences[iNdEx])
+				if err != nil {
+					return protoiface.MarshalOutput{
+						NoUnkeyedLiterals: input.NoUnkeyedLiterals,
+						Buf:               input.Buf,
+					}, err
+				}
+				i -= len(encoded)
+				copy(dAtA[i:], encoded)
+				i = runtime.EncodeVarint(dAtA, i, uint64(len(encoded)))
+				i--
+				dAtA[i] = 0x5
+				i--
+				dAtA[i] = 0xa2
+			}
 		}
 		if len(x.TopicReputerWhitelistEnabled) > 0 {
 			var pksize2 int
@@ -11180,6 +11392,74 @@ func (x *fastReflection_GenesisState) ProtoMethods() *protoiface.Methods {
 				} else {
 					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field TopicReputerWhitelistEnabled", wireType)
 				}
+			case 84:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LastMedianInferences", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LastMedianInferences = append(x.LastMedianInferences, &TopicIdAndDec{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.LastMedianInferences[len(x.LastMedianInferences)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
+			case 85:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field LastMadInferences", wireType)
+				}
+				var msglen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					msglen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if msglen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + msglen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.LastMadInferences = append(x.LastMadInferences, &TopicIdAndDec{})
+				if err := options.Unmarshal(dAtA[iNdEx:postIndex], x.LastMadInferences[len(x.LastMadInferences)-1]); err != nil {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, err
+				}
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -28331,6 +28611,9 @@ type GenesisState struct {
 	TopicReputerWhitelist        []*TopicAndActorId `protobuf:"bytes,81,rep,name=topic_reputer_whitelist,json=topicReputerWhitelist,proto3" json:"topic_reputer_whitelist,omitempty"`
 	TopicWorkerWhitelistEnabled  []uint64           `protobuf:"varint,82,rep,packed,name=topic_worker_whitelist_enabled,json=topicWorkerWhitelistEnabled,proto3" json:"topic_worker_whitelist_enabled,omitempty"`
 	TopicReputerWhitelistEnabled []uint64           `protobuf:"varint,83,rep,packed,name=topic_reputer_whitelist_enabled,json=topicReputerWhitelistEnabled,proto3" json:"topic_reputer_whitelist_enabled,omitempty"`
+	// Outlier resistant inferences
+	LastMedianInferences []*TopicIdAndDec `protobuf:"bytes,84,rep,name=last_median_inferences,json=lastMedianInferences,proto3" json:"last_median_inferences,omitempty"`
+	LastMadInferences    []*TopicIdAndDec `protobuf:"bytes,85,rep,name=last_mad_inferences,json=lastMadInferences,proto3" json:"last_mad_inferences,omitempty"`
 }
 
 func (x *GenesisState) Reset() {
@@ -28909,6 +29192,20 @@ func (x *GenesisState) GetTopicWorkerWhitelistEnabled() []uint64 {
 func (x *GenesisState) GetTopicReputerWhitelistEnabled() []uint64 {
 	if x != nil {
 		return x.TopicReputerWhitelistEnabled
+	}
+	return nil
+}
+
+func (x *GenesisState) GetLastMedianInferences() []*TopicIdAndDec {
+	if x != nil {
+		return x.LastMedianInferences
+	}
+	return nil
+}
+
+func (x *GenesisState) GetLastMadInferences() []*TopicIdAndDec {
+	if x != nil {
+		return x.LastMadInferences
 	}
 	return nil
 }
@@ -30521,7 +30818,7 @@ var file_emissions_v6_genesis_proto_rawDesc = []byte{
 	0x72, 0x6b, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x65, 0x6d, 0x69, 0x73,
 	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x36, 0x2f, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xfc, 0x3b, 0x0a, 0x0c,
+	0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x9c, 0x3d, 0x0a, 0x0c,
 	0x47, 0x65, 0x6e, 0x65, 0x73, 0x69, 0x73, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x32, 0x0a, 0x06,
 	0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x65,
 	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x36, 0x2e, 0x50, 0x61, 0x72, 0x61,
@@ -30994,7 +31291,17 @@ var file_emissions_v6_genesis_proto_rawDesc = []byte{
 	0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x5f, 0x77, 0x68, 0x69, 0x74, 0x65, 0x6c, 0x69, 0x73,
 	0x74, 0x5f, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x18, 0x53, 0x20, 0x03, 0x28, 0x04, 0x52,
 	0x1c, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x52, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x57, 0x68, 0x69,
-	0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x45, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x4a, 0x04, 0x08,
+	0x74, 0x65, 0x6c, 0x69, 0x73, 0x74, 0x45, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x64, 0x12, 0x51, 0x0a,
+	0x16, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x6d, 0x65, 0x64, 0x69, 0x61, 0x6e, 0x5f, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x54, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1b, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x36, 0x2e, 0x54, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x64, 0x41, 0x6e, 0x64, 0x44, 0x65, 0x63, 0x52, 0x14, 0x6c, 0x61, 0x73, 0x74,
+	0x4d, 0x65, 0x64, 0x69, 0x61, 0x6e, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73,
+	0x12, 0x4b, 0x0a, 0x13, 0x6c, 0x61, 0x73, 0x74, 0x5f, 0x6d, 0x61, 0x64, 0x5f, 0x69, 0x6e, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x18, 0x55, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1b, 0x2e,
+	0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x36, 0x2e, 0x54, 0x6f, 0x70,
+	0x69, 0x63, 0x49, 0x64, 0x41, 0x6e, 0x64, 0x44, 0x65, 0x63, 0x52, 0x11, 0x6c, 0x61, 0x73, 0x74,
+	0x4d, 0x61, 0x64, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x73, 0x4a, 0x04, 0x08,
 	0x0d, 0x10, 0x0e, 0x4a, 0x04, 0x08, 0x0e, 0x10, 0x0f, 0x4a, 0x04, 0x08, 0x0f, 0x10, 0x10, 0x52,
 	0x1b, 0x6c, 0x61, 0x74, 0x65, 0x73, 0x74, 0x49, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x72, 0x53, 0x63,
 	0x6f, 0x72, 0x65, 0x73, 0x42, 0x79, 0x57, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x1e, 0x6c, 0x61,
@@ -31443,33 +31750,35 @@ var file_emissions_v6_genesis_proto_depIdxs = []int32{
 	32, // 64: emissions.v6.GenesisState.loss_bundles:type_name -> emissions.v6.TopicIdReputerReputerValueBundle
 	2,  // 65: emissions.v6.GenesisState.topic_worker_whitelist:type_name -> emissions.v6.TopicAndActorId
 	2,  // 66: emissions.v6.GenesisState.topic_reputer_whitelist:type_name -> emissions.v6.TopicAndActorId
-	34, // 67: emissions.v6.TopicIdAndTopic.topic:type_name -> emissions.v3.Topic
-	35, // 68: emissions.v6.TopicIdBlockHeightScores.scores:type_name -> emissions.v3.Scores
-	36, // 69: emissions.v6.TopicIdActorIdScore.score:type_name -> emissions.v3.Score
-	37, // 70: emissions.v6.TopicIdActorIdListeningCoefficient.listening_coefficient:type_name -> emissions.v3.ListeningCoefficient
-	38, // 71: emissions.v6.TopicIdDelegatorReputerDelegatorInfo.delegator_info:type_name -> emissions.v3.DelegatorInfo
-	39, // 72: emissions.v6.BlockHeightTopicIdReputerStakeRemovalInfo.stake_removal_info:type_name -> emissions.v3.StakeRemovalInfo
-	40, // 73: emissions.v6.BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.delegate_stake_removal_info:type_name -> emissions.v3.DelegateStakeRemovalInfo
-	41, // 74: emissions.v6.TopicIdActorIdInference.inference:type_name -> emissions.v3.Inference
-	42, // 75: emissions.v6.TopicIdActorIdForecast.forecast:type_name -> emissions.v3.Forecast
-	43, // 76: emissions.v6.LibP2pKeyAndOffchainNode.offchain_node:type_name -> emissions.v3.OffchainNode
-	44, // 77: emissions.v6.TopicIdBlockHeightInferences.inferences:type_name -> emissions.v3.Inferences
-	45, // 78: emissions.v6.TopicIdBlockHeightForecasts.forecasts:type_name -> emissions.v3.Forecasts
-	46, // 79: emissions.v6.TopicIdBlockHeightReputerValueBundles.reputer_value_bundles:type_name -> emissions.v3.ReputerValueBundles
-	47, // 80: emissions.v6.TopicIdBlockHeightValueBundles.value_bundle:type_name -> emissions.v3.ValueBundle
-	48, // 81: emissions.v6.TopicIdAndNonces.nonces:type_name -> emissions.v3.Nonces
-	49, // 82: emissions.v6.TopicIdAndReputerRequestNonces.reputer_request_nonces:type_name -> emissions.v3.ReputerRequestNonces
-	50, // 83: emissions.v6.TopicIdActorIdTimeStampedValue.timestamped_value:type_name -> emissions.v3.TimestampedValue
-	50, // 84: emissions.v6.TopicIdActorIdActorIdTimeStampedValue.timestamped_value:type_name -> emissions.v3.TimestampedValue
-	51, // 85: emissions.v6.TopicIdTimestampedActorNonce.timestamped_actor_nonce:type_name -> emissions.v3.TimestampedActorNonce
-	52, // 86: emissions.v6.BlockHeightTopicIds.topic_ids:type_name -> emissions.v3.TopicIds
-	53, // 87: emissions.v6.BlockHeightTopicIdWeightPair.topic_weight:type_name -> emissions.v3.TopicIdWeightPair
-	54, // 88: emissions.v6.TopicIdReputerReputerValueBundle.reputer_value_bundle:type_name -> emissions.v3.ReputerValueBundle
-	89, // [89:89] is the sub-list for method output_type
-	89, // [89:89] is the sub-list for method input_type
-	89, // [89:89] is the sub-list for extension type_name
-	89, // [89:89] is the sub-list for extension extendee
-	0,  // [0:89] is the sub-list for field type_name
+	20, // 67: emissions.v6.GenesisState.last_median_inferences:type_name -> emissions.v6.TopicIdAndDec
+	20, // 68: emissions.v6.GenesisState.last_mad_inferences:type_name -> emissions.v6.TopicIdAndDec
+	34, // 69: emissions.v6.TopicIdAndTopic.topic:type_name -> emissions.v3.Topic
+	35, // 70: emissions.v6.TopicIdBlockHeightScores.scores:type_name -> emissions.v3.Scores
+	36, // 71: emissions.v6.TopicIdActorIdScore.score:type_name -> emissions.v3.Score
+	37, // 72: emissions.v6.TopicIdActorIdListeningCoefficient.listening_coefficient:type_name -> emissions.v3.ListeningCoefficient
+	38, // 73: emissions.v6.TopicIdDelegatorReputerDelegatorInfo.delegator_info:type_name -> emissions.v3.DelegatorInfo
+	39, // 74: emissions.v6.BlockHeightTopicIdReputerStakeRemovalInfo.stake_removal_info:type_name -> emissions.v3.StakeRemovalInfo
+	40, // 75: emissions.v6.BlockHeightTopicIdDelegatorReputerDelegateStakeRemovalInfo.delegate_stake_removal_info:type_name -> emissions.v3.DelegateStakeRemovalInfo
+	41, // 76: emissions.v6.TopicIdActorIdInference.inference:type_name -> emissions.v3.Inference
+	42, // 77: emissions.v6.TopicIdActorIdForecast.forecast:type_name -> emissions.v3.Forecast
+	43, // 78: emissions.v6.LibP2pKeyAndOffchainNode.offchain_node:type_name -> emissions.v3.OffchainNode
+	44, // 79: emissions.v6.TopicIdBlockHeightInferences.inferences:type_name -> emissions.v3.Inferences
+	45, // 80: emissions.v6.TopicIdBlockHeightForecasts.forecasts:type_name -> emissions.v3.Forecasts
+	46, // 81: emissions.v6.TopicIdBlockHeightReputerValueBundles.reputer_value_bundles:type_name -> emissions.v3.ReputerValueBundles
+	47, // 82: emissions.v6.TopicIdBlockHeightValueBundles.value_bundle:type_name -> emissions.v3.ValueBundle
+	48, // 83: emissions.v6.TopicIdAndNonces.nonces:type_name -> emissions.v3.Nonces
+	49, // 84: emissions.v6.TopicIdAndReputerRequestNonces.reputer_request_nonces:type_name -> emissions.v3.ReputerRequestNonces
+	50, // 85: emissions.v6.TopicIdActorIdTimeStampedValue.timestamped_value:type_name -> emissions.v3.TimestampedValue
+	50, // 86: emissions.v6.TopicIdActorIdActorIdTimeStampedValue.timestamped_value:type_name -> emissions.v3.TimestampedValue
+	51, // 87: emissions.v6.TopicIdTimestampedActorNonce.timestamped_actor_nonce:type_name -> emissions.v3.TimestampedActorNonce
+	52, // 88: emissions.v6.BlockHeightTopicIds.topic_ids:type_name -> emissions.v3.TopicIds
+	53, // 89: emissions.v6.BlockHeightTopicIdWeightPair.topic_weight:type_name -> emissions.v3.TopicIdWeightPair
+	54, // 90: emissions.v6.TopicIdReputerReputerValueBundle.reputer_value_bundle:type_name -> emissions.v3.ReputerValueBundle
+	91, // [91:91] is the sub-list for method output_type
+	91, // [91:91] is the sub-list for method input_type
+	91, // [91:91] is the sub-list for extension type_name
+	91, // [91:91] is the sub-list for extension extendee
+	0,  // [0:91] is the sub-list for field type_name
 }
 
 func init() { file_emissions_v6_genesis_proto_init() }
