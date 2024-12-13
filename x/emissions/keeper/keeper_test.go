@@ -1116,6 +1116,58 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	s.Require().Equal(&expectedInferences, actualInferences)
 }
 
+func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	// Force setting values of MAD and last_median to 10
+	keeper.SetLastMedianInferences(ctx, topicId, alloraMath.NewDecFromInt64(150))
+	keeper.SetMadInferences(ctx, topicId, alloraMath.NewDecFromInt64(10))
+
+	// Create a set of inferences with a high value to test outlier resistant filtering
+	expectedInferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				TopicId:     topicId,
+				BlockHeight: block,
+				Value:       alloraMath.NewDecFromInt64(100), // Assuming NewDecFromInt64 exists and is appropriate
+				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: block,
+				Value:       alloraMath.NewDecFromInt64(200),
+				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: block,
+				Value:       alloraMath.NewDecFromInt64(10000),
+				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+		},
+	}
+
+	// Assume InsertActiveInferences correctly sets up inferences
+	nonce := types.Nonce{BlockHeight: block} // Assuming block type cast to int64 if needed
+	err := keeper.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
+	s.Require().NoError(err)
+
+	// Confirm the non-or keeps all inferences
+	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block, false)
+	s.Require().NoError(err)
+	s.Require().Equal(3, len(actualInferences.Inferences))
+
+	// Retrieve inferences
+	actualInferences, err = keeper.GetInferencesAtBlock(ctx, topicId, block, true)
+	s.Require().NoError(err)
+	s.Require().Equal(2, len(actualInferences.Inferences))
+	s.Require().Equal(alloraMath.NewDecFromInt64(100), actualInferences.Inferences[0].Value)
+	s.Require().Equal(alloraMath.NewDecFromInt64(200), actualInferences.Inferences[1].Value)
+
+}
+
 func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	ctx := s.ctx
 	keeper := s.emissionsKeeper
