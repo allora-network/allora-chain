@@ -67,6 +67,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+### Added
+
+* [#703](https://github.com/allora-network/allora-chain/pull/703) Add outlier detection to inferences
+
+### Changed
+
+### Deprecated
+
+### Removed
+
 ### Fixed
 
 * [#702](https://github.com/allora-network/allora-chain/pull/702) Adjust score normalization to consider more scores samples
@@ -76,6 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 # [Released]
+
+### Security
 
 ## v0.7.0
 
