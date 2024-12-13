@@ -58,6 +58,8 @@ func DefaultParams() Params {
 		GlobalWhitelistEnabled:              true,                                         // global whitelist enabled => all global whitelisted actors can create topics and participate in all topics as workers and reputers
 		TopicCreatorWhitelistEnabled:        true,                                         // topic creator whitelist enabled => all topic creator whitelisted actors can create topics
 		MinExperiencedWorkerRegrets:         uint64(10),                                   // minimum number of experienced workers required to use their regrets for calculating the topic initial regret
+		InferenceOutlierDetectionThreshold:  alloraMath.MustNewDecFromString("11"),        // threshold for inference outlier detection
+		InferenceOutlierDetectionAlpha:      alloraMath.MustNewDecFromString("0.2"),       // alpha for inference outlier detection
 	}
 }
 
