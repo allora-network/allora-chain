@@ -184,11 +184,11 @@ func NewAlloraApp(
 		return nil, err
 	}
 
-	app.App.BaseApp.SetPrepareProposal(baseapp.NoOpPrepareProposal())
-	app.App.BaseApp.SetProcessProposal(baseapp.NoOpProcessProposal())
-
 	baseAppOptions = append(baseAppOptions, baseapp.SetOptimisticExecution())
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
+
+	app.App.BaseApp.SetPrepareProposal(baseapp.NoOpPrepareProposal())
+	app.App.BaseApp.SetProcessProposal(baseapp.NoOpProcessProposal())
 
 	// Register legacy modules
 	app.registerLegacyModules()
