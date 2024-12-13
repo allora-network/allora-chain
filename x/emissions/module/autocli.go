@@ -573,6 +573,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetNetworkInferencesAtBlockOutlierResistant",
+					Use:       "network-inferences-at-block-outlier-resistant [topic_id] [block_height_last_inference]",
+					Short:     "Get the Network Inferences for a topic at a block height where the last inference was made",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+						{ProtoField: "block_height_last_inference"},
+					},
+				},
+				{
 					RpcMethod: "GetLatestNetworkInferences",
 					Use:       "latest-network-inferences [topic_id]",
 					Short:     "Get the latest Network inferences and weights for a topic. Will return whatever information it has available.",

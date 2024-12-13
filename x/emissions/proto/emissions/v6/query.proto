@@ -146,6 +146,12 @@ service QueryService {
     option (google.api.http).get = "/emissions/v6/network_inferences/{topic_id}/last_inference/{block_height_last_inference}";
   }
 
+  rpc GetNetworkInferencesAtBlockOutlierResistant(GetNetworkInferencesAtBlockOutlierResistantRequest) returns (GetNetworkInferencesAtBlockOutlierResistantResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get =
+      "/emissions/v6/network_inferences_outlier_resistant/{topic_id}/last_inference/{block_height_last_inference}";
+  }
+
   rpc GetLatestNetworkInferences(GetLatestNetworkInferencesRequest) returns (GetLatestNetworkInferencesResponse) {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v6/latest_network_inferences/{topic_id}";
@@ -897,6 +903,11 @@ message GetNetworkInferencesAtBlockRequest {
   int64 block_height_last_inference = 2;
 }
 
+message GetNetworkInferencesAtBlockOutlierResistantRequest {
+  uint64 topic_id = 1;
+  int64 block_height_last_inference = 2;
+}
+
 message GetLatestNetworkInferencesRequest {
   uint64 topic_id = 1;
 }
@@ -968,6 +979,10 @@ message IsReputerNonceUnfulfilledResponse {
 }
 
 message GetNetworkInferencesAtBlockResponse {
+  emissions.v3.ValueBundle network_inferences = 1;
+}
+
+message GetNetworkInferencesAtBlockOutlierResistantResponse {
   emissions.v3.ValueBundle network_inferences = 1;
 }
 

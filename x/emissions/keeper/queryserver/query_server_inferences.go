@@ -98,6 +98,32 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 	return &emissionstypes.GetNetworkInferencesAtBlockResponse{NetworkInferences: result.NetworkInferences}, nil
 }
 
+// An outlier resistant version of GetNetworkInferencesAtBlock
+// TODO implement
+func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(ctx context.Context, req *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantRequest) (_ *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse, err error) {
+	defer metrics.RecordMetrics("GetNetworkInferencesAtBlockOutlierResistant", time.Now(), &err)
+
+	topic, err := qs.k.GetTopic(ctx, req.TopicId)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
+	}
+	if topic.EpochLastEnded == 0 {
+		return nil, status.Errorf(codes.NotFound, "network inference not available for topic %v", req.TopicId)
+	}
+
+	result, err := synth.GetNetworkInferences(
+		sdk.UnwrapSDKContext(ctx),
+		qs.k,
+		req.TopicId,
+		&req.BlockHeightLastInference,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emissionstypes.GetNetworkInferencesAtBlockResponse{NetworkInferences: result.NetworkInferences}, nil
+}
+
 // Return full set of inferences in I_i from the chain, as well as weights and forecast implied inferences
 func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emissionstypes.GetLatestNetworkInferencesRequest) (_ *emissionstypes.GetLatestNetworkInferencesResponse, err error) {
 	defer metrics.RecordMetrics("GetLatestNetworkInferences", time.Now(), &err)
