@@ -1062,11 +1062,11 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 
 // Remove the inferences that are outliers
 func (k *Keeper) FilterOutlierResistantInferences(ctx context.Context, topicId TopicId, inferences types.Inferences) (types.Inferences, error) {
-	last_median, err := k.GetLastMedianInferences(ctx, topicId)
+	lastMedian, err := k.GetLastMedianInferences(ctx, topicId)
 	if err != nil {
 		return types.Inferences{}, errorsmod.Wrap(err, "error getting last median inferences")
 	}
-	if last_median.IsZero() {
+	if lastMedian.IsZero() {
 		return inferences, nil
 	}
 	mad, err := k.GetMadInferences(ctx, topicId)
@@ -1085,10 +1085,10 @@ func (k *Keeper) FilterOutlierResistantInferences(ctx context.Context, topicId T
 	if err != nil {
 		return types.Inferences{}, errorsmod.Wrap(err, "error getting params")
 	}
-	outlier_threshold_multiplier := params.InferenceOutlierDetectionThreshold
+	outlierThresholdMultiplier := params.InferenceOutlierDetectionThreshold
 	for _, inf := range inferences.Inferences {
 		// Calculate absolute difference from median
-		diff, err := inf.Value.Sub(last_median)
+		diff, err := inf.Value.Sub(lastMedian)
 		if err != nil {
 			return types.Inferences{}, errorsmod.Wrap(err, "error getting difference from median")
 		}
@@ -1097,12 +1097,12 @@ func (k *Keeper) FilterOutlierResistantInferences(ctx context.Context, topicId T
 			return types.Inferences{}, errorsmod.Wrap(err, "error getting absolute difference")
 		}
 
-		threshold_mad, err := outlier_threshold_multiplier.Mul(mad)
+		thresholdMad, err := outlierThresholdMultiplier.Mul(mad)
 		if err != nil {
 			return types.Inferences{}, errorsmod.Wrap(err, "error getting threshold mad")
 		}
 		// Check if within threshold
-		if absDiff.Lte(threshold_mad) {
+		if absDiff.Lte(thresholdMad) {
 			filteredInferences.Inferences = append(filteredInferences.Inferences, inf)
 		}
 	}

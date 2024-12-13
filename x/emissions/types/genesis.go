@@ -88,6 +88,8 @@ func NewGenesisState() *GenesisState {
 		TopicReputerWhitelist:                          []*TopicAndActorId{},
 		TopicWorkerWhitelistEnabled:                    []uint64{},
 		TopicReputerWhitelistEnabled:                   []uint64{},
+		LastMedianInferences:                           []*TopicIdAndDec{},
+		LastMadInferences:                              []*TopicIdAndDec{},
 	}
 }
 
