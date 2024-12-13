@@ -567,3 +567,46 @@ func GetQuantileOfDecs(
 	}
 	return ret, nil
 }
+
+// MedianAbsoluteDeviation calculates the median absolute deviation of a slice of Dec values.
+// Returns (MAD, median, error)
+func MedianAbsoluteDeviation(data []Dec) (Dec, Dec, error) {
+	// Check for NaN values first, consistent with other functions
+	for _, v := range data {
+		if v.isNaN {
+			return Dec{}, Dec{}, errorsmod.Wrap(ErrNaN, "median absolute deviation input data contains NaN values")
+		}
+	}
+
+	if len(data) == 0 {
+		return ZeroDec(), ZeroDec(), nil
+	}
+
+	// Calculate the median of the original data
+	median, err := Median(data)
+	if err != nil {
+		return Dec{}, Dec{}, err
+	}
+
+	// Calculate absolute deviations
+	absDevs := make([]Dec, len(data))
+	for i, v := range data {
+		diff, err := v.Sub(median)
+		if err != nil {
+			return Dec{}, Dec{}, err
+		}
+		absDiff, err := diff.Abs()
+		if err != nil {
+			return Dec{}, Dec{}, err
+		}
+		absDevs[i] = absDiff
+	}
+
+	// Calculate the median of the absolute deviations
+	mad, err := Median(absDevs)
+	if err != nil {
+		return Dec{}, Dec{}, err
+	}
+
+	return mad, median, nil
+}

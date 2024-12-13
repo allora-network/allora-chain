@@ -103,4 +103,6 @@ var (
 	TopicReputerWhitelistKey                          = collections.NewPrefix(88)
 	TopicWorkerWhitelistEnabledKey                    = collections.NewPrefix(89)
 	TopicReputerWhitelistEnabledKey                   = collections.NewPrefix(90)
+	LastMedianInferencesKey                           = collections.NewPrefix(91)
+	MadInferencesKey                                  = collections.NewPrefix(92)
 )

@@ -964,6 +964,29 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
+	// LastMedianInferences
+	if len(data.LastMedianInferences) != 0 {
+		for _, topicIdAndDec := range data.LastMedianInferences {
+			if topicIdAndDec != nil {
+				if err := k.SetLastMedianInferences(
+					ctx,
+					topicIdAndDec.TopicId,
+					topicIdAndDec.Dec); err != nil {
+					return errors.Wrap(err, "error setting lastMedianInferences")
+				}
+			}
+		}
+	}
+
+	// madInferences
+	if len(data.LastMadInferences) != 0 {
+		for _, topicIdDec := range data.LastMadInferences {
+			if err := k.SetMadInferences(ctx, topicIdDec.TopicId, topicIdDec.Dec); err != nil {
+				return errors.Wrap(err, "error setting madInferences")
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -2329,6 +2352,39 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		topicReputerWhitelistEnabled = append(topicReputerWhitelistEnabled, key)
 	}
 
+	lastMedianInferences := make([]*types.TopicIdAndDec, 0)
+	lastMedianInferencesIter, err := k.lastMedianInferences.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate last median inferences")
+	}
+	for ; lastMedianInferencesIter.Valid(); lastMedianInferencesIter.Next() {
+		keyValue, err := lastMedianInferencesIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: lastMedianInferencesIter")
+		}
+		topicIdAndDec := types.TopicIdAndDec{
+			TopicId: keyValue.Key,
+			Dec:     keyValue.Value,
+		}
+		lastMedianInferences = append(lastMedianInferences, &topicIdAndDec)
+	}
+
+	madInferences := make([]*types.TopicIdAndDec, 0)
+	madInferencesIter, err := k.madInferences.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate last mad inferences")
+	}
+	for ; madInferencesIter.Valid(); madInferencesIter.Next() {
+		keyValue, err := madInferencesIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: lastMadInferencesIter")
+		}
+		madInferences = append(madInferences, &types.TopicIdAndDec{
+			TopicId: keyValue.Key,
+			Dec:     keyValue.Value,
+		})
+	}
+
 	return &types.GenesisState{
 		Params:                                      moduleParams,
 		NextTopicId:                                 nextTopicId,
@@ -2410,5 +2466,7 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		TopicReputerWhitelist:                          topicReputerWhitelist,
 		TopicWorkerWhitelistEnabled:                    topicWorkerWhitelistEnabled,
 		TopicReputerWhitelistEnabled:                   topicReputerWhitelistEnabled,
+		LastMedianInferences:                           lastMedianInferences,
+		LastMadInferences:                              madInferences,
 	}, nil
 }

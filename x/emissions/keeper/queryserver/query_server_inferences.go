@@ -47,7 +47,7 @@ func (qs queryServer) GetInferencesAtBlock(ctx context.Context, req *emissionsty
 		return nil, err
 	}
 
-	inferences, err := qs.k.GetInferencesAtBlock(ctx, req.TopicId, req.BlockHeight)
+	inferences, err := qs.k.GetInferencesAtBlock(ctx, req.TopicId, req.BlockHeight, false)
 	if err != nil {
 		return nil, err
 	}
@@ -90,6 +90,7 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 		qs.k,
 		req.TopicId,
 		&req.BlockHeightLastInference,
+		false,
 	)
 	if err != nil {
 		return nil, err
@@ -118,6 +119,7 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 		qs.k,
 		req.TopicId,
 		&req.BlockHeightLastInference,
+		true,
 	)
 	if err != nil {
 		return nil, err
@@ -142,6 +144,7 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 		qs.k,
 		req.TopicId,
 		nil,
+		false,
 	)
 	if err != nil {
 		return nil, err
@@ -197,6 +200,7 @@ func (qs queryServer) GetLatestAvailableNetworkInferences(ctx context.Context, r
 			qs.k,
 			req.TopicId,
 			&lastWorkerCommit.Nonce.BlockHeight,
+			false,
 		)
 	if err != nil {
 		return nil, err
@@ -290,7 +294,7 @@ func (qs queryServer) GetLatestTopicInferences(ctx context.Context, req *emissio
 		return nil, err
 	}
 
-	inferences, blockHeight, err := qs.k.GetLatestTopicInferences(ctx, req.TopicId)
+	inferences, blockHeight, err := qs.k.GetLatestTopicInferences(ctx, req.TopicId, false)
 	if err != nil {
 		return nil, err
 	}

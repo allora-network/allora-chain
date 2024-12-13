@@ -12,6 +12,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils/fn"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -182,6 +183,12 @@ type Keeper struct {
 	// Current block emission, set by mint module
 	rewardCurrentBlockEmission collections.Item[cosmosMath.Int]
 
+	// Last median per topic
+	lastMedianInferences collections.Map[TopicId, alloraMath.Dec]
+
+	// MAD (Median Absolute Deviation) per topic
+	madInferences collections.Map[TopicId, alloraMath.Dec]
+
 	/// NONCES
 
 	// map of open worker nonce windows for topics on particular block heights
@@ -337,6 +344,8 @@ func NewKeeper(
 		lowestReputerScoreEma:                     collections.NewMap(sb, types.LowestReputerScoreEmaKey, "lowest_reputer_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 		totalSumPreviousTopicWeights:              collections.NewItem(sb, types.TotalSumPreviousTopicWeightsKey, "total_sum_previous_topic_weights", alloraMath.DecValue),
 		rewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
+		lastMedianInferences:                      collections.NewMap(sb, types.LastMedianInferencesKey, "last_median_inferences", collections.Uint64Key, alloraMath.DecValue),
+		madInferences:                             collections.NewMap(sb, types.MadInferencesKey, "mad_inferences", collections.Uint64Key, alloraMath.DecValue),
 	}
 
 	schema, err := sb.Build()
@@ -1051,7 +1060,57 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 
 /// INFERENCES, FORECASTS
 
-func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
+// Remove the inferences that are outliers
+func (k *Keeper) FilterOutlierResistantInferences(ctx context.Context, topicId TopicId, inferences types.Inferences) (types.Inferences, error) {
+	last_median, err := k.GetLastMedianInferences(ctx, topicId)
+	if err != nil {
+		return types.Inferences{}, errorsmod.Wrap(err, "error getting last median inferences")
+	}
+	if last_median.IsZero() {
+		return inferences, nil
+	}
+	mad, err := k.GetMadInferences(ctx, topicId)
+	if err != nil {
+		return types.Inferences{}, errorsmod.Wrap(err, "error getting mad inferences")
+	}
+	if mad.IsZero() {
+		return inferences, nil
+	}
+
+	filteredInferences := types.Inferences{
+		Inferences: []*types.Inference{},
+	}
+
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return types.Inferences{}, errorsmod.Wrap(err, "error getting params")
+	}
+	outlier_threshold_multiplier := params.InferenceOutlierDetectionThreshold
+	for _, inf := range inferences.Inferences {
+		// Calculate absolute difference from median
+		diff, err := inf.Value.Sub(last_median)
+		if err != nil {
+			return types.Inferences{}, errorsmod.Wrap(err, "error getting difference from median")
+		}
+		absDiff, err := diff.Abs()
+		if err != nil {
+			return types.Inferences{}, errorsmod.Wrap(err, "error getting absolute difference")
+		}
+
+		threshold_mad, err := outlier_threshold_multiplier.Mul(mad)
+		if err != nil {
+			return types.Inferences{}, errorsmod.Wrap(err, "error getting threshold mad")
+		}
+		// Check if within threshold
+		if absDiff.Lte(threshold_mad) {
+			filteredInferences.Inferences = append(filteredInferences.Inferences, inf)
+		}
+	}
+
+	return filteredInferences, nil
+}
+
+func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, outlierResistant bool) (*types.Inferences, error) {
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
@@ -1059,11 +1118,19 @@ func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, bloc
 	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting inferences at block")
 	}
+
+	if outlierResistant {
+		filteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, inferences)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error filtering outlier resistant inferences")
+		}
+		return &filteredInferences, nil
+	}
 	return &inferences, nil
 }
 
 // GetLatestTopicInferences retrieves the latest topic inferences and its block height.
-func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId) (*types.Inferences, BlockHeight, error) {
+func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId, outlierResistant bool) (*types.Inferences, BlockHeight, error) {
 	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
 
 	iter, err := k.allInferences.Iterate(ctx, rng)
@@ -1072,17 +1139,102 @@ func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId) 
 	}
 	defer iter.Close()
 
+	inferences := &types.Inferences{
+		Inferences: make([]*types.Inference, 0),
+	}
+	var blockHeight int64 = 0
+
 	if iter.Valid() {
 		keyValue, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, errorsmod.Wrap(err, "error getting key value")
 		}
-		return &keyValue.Value, keyValue.Key.K2(), nil
+		inferences = &keyValue.Value
+		blockHeight = keyValue.Key.K2()
+
+		if outlierResistant {
+			filteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, *inferences)
+			if err != nil {
+				return nil, 0, errorsmod.Wrap(err, "error filtering outlier resistant inferences")
+			}
+			inferences = &filteredInferences
+		}
 	}
 
-	return &types.Inferences{
-		Inferences: make([]*types.Inference, 0),
-	}, 0, nil
+	return inferences, blockHeight, nil
+}
+
+// UpdateNetworkInferencesOutlierMetrics recalculates the network inferences outlier metrics
+// (MAD and median) for a given topic and with inferences from the given block height
+func (k *Keeper) UpdateNetworkInferencesOutlierMetrics(
+	ctx sdk.Context,
+	topicId TopicId,
+	inferenceBlockHeight BlockHeight,
+) error {
+	// Get all inferences at the block height
+	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferenceBlockHeight, false)
+	if err != nil {
+		return errorsmod.Wrap(err, "while getting inferences")
+	}
+	if len(inferences.Inferences) == 0 {
+		// If there are no inferences, do not update the metrics
+		ctx.Logger().Info("no inferences found, skipping update of outlier metrics, topicId: ", topicId)
+		return nil
+	}
+
+	// Create an array of the values
+	values := fn.Map(inferences.Inferences[:], func(inf *types.Inference) alloraMath.Dec { return inf.Value })
+
+	// Calculate MAD (median absolute deviation)
+	mad, median, err := alloraMath.MedianAbsoluteDeviation(values)
+	if err != nil {
+		return errorsmod.Wrap(err, "while calculating MAD")
+	}
+	// Validate mad and median
+	if err := types.ValidateDec(mad); err != nil {
+		return errorsmod.Wrap(err, "mad is not valid")
+	}
+	if err := types.ValidateDec(median); err != nil {
+		return errorsmod.Wrap(err, "median is not valid")
+	}
+
+	var newMad alloraMath.Dec
+	// Get current mad
+	previousMad, err := k.GetMadInferences(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting last mad")
+	}
+	if previousMad.IsZero() {
+		// if zero, set to current mad
+		newMad = mad
+	} else {
+		// Get alpha from params
+		params, err := k.GetParams(ctx)
+		if err != nil {
+			return errorsmod.Wrap(err, "error getting params")
+		}
+		alpha := params.InferenceOutlierDetectionAlpha
+
+		// Calculate EMA of MAD
+		newMad, err = alloraMath.CalcEma(alpha, mad, previousMad, false)
+		if err != nil {
+			return errorsmod.Wrap(err, "error calculating ema of mad")
+		}
+	}
+
+	// Set last mad inferences
+	err = k.SetMadInferences(ctx, topicId, newMad)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting last mad inferences")
+	}
+
+	// Set last median inferences
+	err = k.SetLastMedianInferences(ctx, topicId, median)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting last median inferences")
+	}
+
+	return nil
 }
 
 func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, error) {
@@ -2641,6 +2793,44 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 	}
 	// Then update the previous weight
 	return k.previousTopicWeight.Set(ctx, topicId, weight)
+}
+
+// Getter and setter for lastMedianInferences
+func (k *Keeper) GetLastMedianInferences(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	medianInferences, err := k.lastMedianInferences.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.ZeroDec(), errorsmod.Wrap(err, "error getting last median inferences")
+	}
+	return medianInferences, nil
+}
+
+func (k *Keeper) SetLastMedianInferences(ctx context.Context, topicId TopicId, medianInferences alloraMath.Dec) error {
+	if err := types.ValidateDec(medianInferences); err != nil {
+		return errorsmod.Wrap(err, "median inferences validation failed")
+	}
+	return k.lastMedianInferences.Set(ctx, topicId, medianInferences)
+}
+
+// Getter and setter for madInferences
+func (k *Keeper) GetMadInferences(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	madInferences, err := k.madInferences.Get(ctx, topicId)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return alloraMath.ZeroDec(), nil
+		}
+		return alloraMath.ZeroDec(), errorsmod.Wrap(err, "error getting last mad inferences")
+	}
+	return madInferences, nil
+}
+
+func (k *Keeper) SetMadInferences(ctx context.Context, topicId TopicId, madInferences alloraMath.Dec) error {
+	if err := types.ValidateDec(madInferences); err != nil {
+		return errorsmod.Wrap(err, "mad inferences validation failed")
+	}
+	return k.madInferences.Set(ctx, topicId, madInferences)
 }
 
 // UpdateTotalSumPreviousTopicWeights updates the total sum of previous topic weights

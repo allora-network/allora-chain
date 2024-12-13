@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-
 	"cosmossdk.io/collections"
 	cosmosAddress "cosmossdk.io/core/address"
 	"cosmossdk.io/core/header"
@@ -22,6 +20,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -1112,7 +1111,7 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	s.Require().NoError(err)
 
 	// Retrieve inferences
-	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block)
+	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block, false)
 	s.Require().NoError(err)
 	s.Require().Equal(&expectedInferences, actualInferences)
 }
@@ -1124,7 +1123,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	topicId := uint64(1)
 
 	// Initially, there should be no inferences, so we expect an empty result
-	emptyInferences, emptyBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId)
+	emptyInferences, emptyBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId, false)
 	s.Require().NoError(err, "Retrieving latest inferences when none exist should not result in an error")
 	s.Require().Equal(&types.Inferences{Inferences: []*types.Inference{}}, emptyInferences, "Expected no inferences initially")
 	s.Require().Equal(types.BlockHeight(0), emptyBlockHeight, "Expected block height to be zero initially")
@@ -1164,7 +1163,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	s.Require().NoError(err, "Inserting second set of inferences should not fail")
 
 	// Retrieve the latest inferences
-	latestInferences, latestBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId)
+	latestInferences, latestBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId, false)
 	s.Require().NoError(err, "Retrieving latest inferences should not fail")
 	s.Require().Equal(&inferences2, latestInferences, "Latest inferences should match the second inserted set")
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
@@ -3228,7 +3227,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
 
 	// Check if the records are set
-	_, err = s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
+	_, err = s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block, false)
 	s.Require().NoError(err, "Getting inferences should not fail")
 	_, err = s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting forecasts should not fail")
@@ -3243,7 +3242,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().NoError(err, "Pruning records after rewards should not fail")
 
 	// Check if the records are pruned
-	inferences, err := s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
+	inferences, err := s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block, false)
 	s.Require().NoError(err, "Getting inferences should not fail")
 	s.Require().Empty(inferences.Inferences, "Must be pruned")
 	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
@@ -4982,5 +4981,195 @@ func (s *KeeperTestSuite) TestScoreLimiting() {
 	for i, score := range scores.Scores {
 		expectedWorker := s.addrsStr[i+2]
 		s.Require().Equal(expectedWorker, score.Address)
+	}
+}
+
+func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
+	// Create one topic
+	topicId := s.CreateOneTopic(10800)
+	blockHeight := int64(1)
+
+	// Create specific inferences for testing
+	inferences := []*types.Inference{
+		{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.NewDecFromInt64(10),
+			Inferer:     s.addrsStr[0],
+		},
+		{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.NewDecFromInt64(11),
+			Inferer:     s.addrsStr[1],
+		},
+		{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.NewDecFromInt64(12),
+			Inferer:     s.addrsStr[2],
+		},
+	}
+
+	inferencesWrapper := types.Inferences{Inferences: inferences}
+	err := s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, blockHeight, inferencesWrapper)
+	s.Require().NoError(err)
+	// Test the update function
+	err = s.emissionsKeeper.UpdateNetworkInferencesOutlierMetrics(s.ctx, topicId, blockHeight)
+	s.Require().NoError(err)
+
+	// Verify results
+	mad, err := s.emissionsKeeper.GetMadInferences(s.ctx, topicId)
+	s.Require().NoError(err)
+	median, err := s.emissionsKeeper.GetLastMedianInferences(s.ctx, topicId)
+	s.Require().NoError(err)
+	// Verify expected values
+	s.Require().Equal(alloraMath.NewDecFromInt64(1), mad)
+	s.Require().Equal(alloraMath.NewDecFromInt64(11), median)
+
+	// Verify running it a second time, should change the
+	// Modify a copy of the previous inferences and run it again
+	inferencesCopy := inferences
+	inferencesCopy[0].Value = alloraMath.NewDecFromInt64(100)
+	inferencesCopy[1].Value = alloraMath.NewDecFromInt64(50)
+	inferencesWrapperCopy := types.Inferences{Inferences: inferencesCopy}
+	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, blockHeight, inferencesWrapperCopy)
+	s.Require().NoError(err)
+
+	err = s.emissionsKeeper.UpdateNetworkInferencesOutlierMetrics(s.ctx, topicId, blockHeight)
+	s.Require().NoError(err)
+
+	mad, err = s.emissionsKeeper.GetMadInferences(s.ctx, topicId)
+	s.Require().NoError(err)
+	median, err = s.emissionsKeeper.GetLastMedianInferences(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	s.Require().Equal(alloraMath.MustNewDecFromString("8.4"), mad)
+	s.Require().Equal(alloraMath.NewDecFromInt64(50), median)
+}
+
+func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
+	topicId := s.CreateOneTopic(10800)
+
+	// Ensure param is set to 11
+	params := types.DefaultParams()
+	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("11")
+
+	// Set the maximum number of unfulfilled worker nonces via the SetParams method
+	err := s.emissionsKeeper.SetParams(s.ctx, params)
+	s.Require().NoError(err, "Error retrieving nonces after addition")
+
+	testCases := []struct {
+		name          string
+		setupMetrics  func()
+		inferences    types.Inferences
+		expectedCount int
+		expectedVals  []alloraMath.Dec
+	}{
+		{
+			name: "filter with median=10, mad=1",
+			setupMetrics: func() {
+				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(10))
+				s.Require().NoError(err)
+				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(1))
+				s.Require().NoError(err)
+			},
+			inferences: types.Inferences{
+				Inferences: []*types.Inference{
+					{Value: alloraMath.NewDecFromInt64(9)},  // within bounds (|-1| < 11*1)
+					{Value: alloraMath.NewDecFromInt64(11)}, // within bounds (|1| < 11*1)
+					{Value: alloraMath.NewDecFromInt64(25)}, // outlier (|15| > 11*1)
+					{Value: alloraMath.NewDecFromInt64(-5)}, // outlier (|-15| > 11*1)
+					{Value: alloraMath.NewDecFromInt64(10)}, // within bounds (|0| < 11*1)
+				},
+			},
+			expectedCount: 3,
+			expectedVals: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(9),
+				alloraMath.NewDecFromInt64(11),
+				alloraMath.NewDecFromInt64(10),
+			},
+		},
+		{
+			name: "filter with median=100, mad=10",
+			setupMetrics: func() {
+				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(100))
+				s.Require().NoError(err)
+				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(10))
+				s.Require().NoError(err)
+			},
+			inferences: types.Inferences{
+				Inferences: []*types.Inference{
+					{Value: alloraMath.NewDecFromInt64(80)},  // within bounds (|-20| < 11*10)
+					{Value: alloraMath.NewDecFromInt64(120)}, // within bounds (|20| < 11*10)
+					{Value: alloraMath.NewDecFromInt64(250)}, // outlier (|150| > 11*10)
+					{Value: alloraMath.NewDecFromInt64(-50)}, // outlier (|-150| > 11*10)
+					{Value: alloraMath.NewDecFromInt64(100)}, // within bounds (|0| < 11*10)
+				},
+			},
+			expectedCount: 3,
+			expectedVals: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(80),
+				alloraMath.NewDecFromInt64(120),
+				alloraMath.NewDecFromInt64(100),
+			},
+		},
+		{
+			name: "zero mad - should return all inferences",
+			setupMetrics: func() {
+				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(10))
+				s.Require().NoError(err)
+				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.ZeroDec())
+				s.Require().NoError(err)
+			},
+			inferences: types.Inferences{
+				Inferences: []*types.Inference{
+					{Value: alloraMath.NewDecFromInt64(10)},
+					{Value: alloraMath.NewDecFromInt64(11)},
+				},
+			},
+			expectedCount: 2,
+			expectedVals: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(10),
+				alloraMath.NewDecFromInt64(11),
+			},
+		},
+		{
+			name: "zero last_median - should return all inferences",
+			setupMetrics: func() {
+				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.ZeroDec())
+				s.Require().NoError(err)
+				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(1))
+				s.Require().NoError(err)
+			},
+			inferences: types.Inferences{
+				Inferences: []*types.Inference{
+					{Value: alloraMath.NewDecFromInt64(5)},  // within bounds (|5| < 11*1)
+					{Value: alloraMath.NewDecFromInt64(-5)}, // within bounds (|-5| < 11*1)
+					{Value: alloraMath.NewDecFromInt64(15)}, // outlier (|15| > 11*1)
+				},
+			},
+			expectedCount: 3,
+			expectedVals: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(5),
+				alloraMath.NewDecFromInt64(-5),
+				alloraMath.NewDecFromInt64(15),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			tc.setupMetrics()
+
+			filtered, err := s.emissionsKeeper.FilterOutlierResistantInferences(s.ctx, topicId, tc.inferences)
+			s.Require().NoError(err)
+
+			s.Require().Equal(tc.expectedCount, len(filtered.Inferences))
+
+			for i, inf := range filtered.Inferences {
+				s.Require().Equal(tc.expectedVals[i], inf.Value)
+			}
+		})
 	}
 }
