@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
 	modulev1 "github.com/allora-network/allora-chain/x/mint/api/mint/module/v1"
+	v1beta1 "github.com/allora-network/allora-chain/x/mint/api/mint/v1beta1"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -50,6 +51,7 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 // RegisterInterfaces registers the module's interface types
 func (b AppModuleBasic) RegisterInterfaces(r cdctypes.InterfaceRegistry) {
 	types.RegisterInterfaces(r)
+	v1beta1.RegisterInterfaces(r)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the mint

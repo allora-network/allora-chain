@@ -79,15 +79,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-* [#702](https://github.com/allora-network/allora-chain/pull/702) Adjust score normalization to consider more scores samples
 * [#699](https://github.com/allora-network/allora-chain/pull/699) Make install script manage new release assets naming
+* [#700](https://github.com/allora-network/allora-chain/pull/700) Allow clients to unmarshall old transactions
+* [#702](https://github.com/allora-network/allora-chain/pull/702) Adjust score normalization to consider more scores samples
 * [#704](https://github.com/allora-network/allora-chain/pull/704) Correct Discrepancies with Whitepaper modified reward fractions vs plain EMA
 
 ### Security
 
 # [Released]
-
-### Security
 
 ## v0.7.0
 

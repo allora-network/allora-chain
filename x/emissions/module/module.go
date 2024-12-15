@@ -6,6 +6,10 @@ import (
 	"fmt"
 
 	"cosmossdk.io/core/appmodule"
+	v2 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v2"
+	v3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
+	v4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
+	v5 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v5"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
@@ -65,6 +69,10 @@ func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwrunt
 // RegisterInterfaces registers interfaces and implementations of the state module.
 func (AppModule) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	types.RegisterInterfaces(registry)
+	v2.RegisterInterfaces(registry)
+	v3.RegisterInterfaces(registry)
+	v4.RegisterInterfaces(registry)
+	v5.RegisterInterfaces(registry)
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
