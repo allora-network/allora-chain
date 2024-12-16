@@ -100,7 +100,6 @@ func (qs queryServer) GetNetworkInferencesAtBlock(ctx context.Context, req *emis
 }
 
 // An outlier resistant version of GetNetworkInferencesAtBlock
-// TODO implement
 func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 	ctx context.Context,
 	req *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantRequest) (_ *emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse, err error) {
