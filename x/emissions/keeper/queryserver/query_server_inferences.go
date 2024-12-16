@@ -127,14 +127,14 @@ func (qs queryServer) GetNetworkInferencesAtBlockOutlierResistant(
 	return &emissionstypes.GetNetworkInferencesAtBlockOutlierResistantResponse{NetworkInferences: result.NetworkInferences}, nil
 }
 
-// Input parameters type
+// Input parameters type for both outlier resistant and non-outlier resistant functions
 type NetworkInferencesParams struct {
 	ctx              context.Context
 	topicId          uint64
 	outlierResistant bool
 }
 
-// Output result type
+// Output result type for both outlier resistant and non-outlier resistant functions
 type NetworkInferencesResult struct {
 	networkInferences                *emissionstypes.ValueBundle
 	infererWeights                   []*emissionstypes.RegretInformedWeight
@@ -145,6 +145,7 @@ type NetworkInferencesResult struct {
 	confidenceIntervalValues         []alloraMath.Dec
 }
 
+// Base function to get latest network inferences for both outlier resistant and non-outlier resistant functions
 func (qs queryServer) getLatestNetworkInferencesBase(
 	params NetworkInferencesParams,
 ) (out *NetworkInferencesResult, err error) {
@@ -161,11 +162,12 @@ func (qs queryServer) getLatestNetworkInferencesBase(
 		return nil, err
 	}
 
-	ciRawPercentiles, ciValues, err := qs.GetConfidenceIntervalsForInferenceData(
-		result.NetworkInferences,
-		result.InfererToWeight,
-		result.ForecasterToWeight,
-	)
+	ciRawPercentiles, ciValues, err :=
+		qs.GetConfidenceIntervalsForInferenceData(
+			result.NetworkInferences,
+			result.InfererToWeight,
+			result.ForecasterToWeight,
+		)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +268,7 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 	}, nil
 }
 
-// Refactored base function using the new type
+// Base function to get latest available network inferences for both outlier resistant and non-outlier resistant functions
 func (qs queryServer) getLatestAvailableNetworkInferencesBase(
 	params NetworkInferencesParams,
 ) (out *NetworkInferencesResult, err error) {

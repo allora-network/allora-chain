@@ -165,6 +165,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetLatestAvailableNetworkInferencesOutlierResistant",
+					Use:       "latest-available-network-inferences-outlier-resistant [topic_id]",
+					Short:     "Returns network inference only if all available information to compute the inference is present, removing outliers",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetForecasterScoreEma",
 					Use:       "forecaster-score-ema [topic_id] [forecaster]",
 					Short:     "Returns latest score for a forecaster in a topic",
