@@ -230,7 +230,9 @@ func (qs queryServer) GetLatestNetworkInferences(ctx context.Context, req *emiss
 }
 
 // Gets latest network inference with outlier resistance
-func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Context, req *emissionstypes.GetLatestNetworkInferencesRequest) (_ *emissionstypes.GetLatestNetworkInferencesResponse, err error) {
+func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Context,
+	req *emissionstypes.GetLatestNetworkInferencesOutlierResistantRequest) (
+	_ *emissionstypes.GetLatestNetworkInferencesOutlierResistantResponse, err error) {
 	defer metrics.RecordMetrics("GetLatestNetworkInferencesOutlierResistant", time.Now(), &err)
 
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
@@ -254,7 +256,7 @@ func (qs queryServer) GetLatestNetworkInferencesOutlierResistant(ctx context.Con
 	}
 
 	// Convert result to response
-	return &emissionstypes.GetLatestNetworkInferencesResponse{
+	return &emissionstypes.GetLatestNetworkInferencesOutlierResistantResponse{
 		NetworkInferences:                result.networkInferences,
 		InfererWeights:                   result.infererWeights,
 		ForecasterWeights:                result.forecasterWeights,
@@ -360,8 +362,8 @@ func (qs queryServer) GetLatestAvailableNetworkInferences(
 
 func (qs queryServer) GetLatestAvailableNetworkInferencesOutlierResistant(
 	ctx context.Context,
-	req *emissionstypes.GetLatestAvailableNetworkInferencesRequest,
-) (*emissionstypes.GetLatestAvailableNetworkInferencesResponse, error) {
+	req *emissionstypes.GetLatestAvailableNetworkInferencesOutlierResistantRequest,
+) (*emissionstypes.GetLatestAvailableNetworkInferencesOutlierResistantResponse, error) {
 	topicExists, err := qs.k.TopicExists(ctx, req.TopicId)
 	if !topicExists {
 		return nil, status.Errorf(codes.NotFound, "topic %v not found", req.TopicId)
@@ -380,7 +382,7 @@ func (qs queryServer) GetLatestAvailableNetworkInferencesOutlierResistant(
 		return nil, err
 	}
 
-	return &emissionstypes.GetLatestAvailableNetworkInferencesResponse{
+	return &emissionstypes.GetLatestAvailableNetworkInferencesOutlierResistantResponse{
 		NetworkInferences:                result.networkInferences,
 		InfererWeights:                   result.infererWeights,
 		ForecasterWeights:                result.forecasterWeights,
