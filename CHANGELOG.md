@@ -61,17 +61,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* [#703](https://github.com/allora-network/allora-chain/pull/703) Add outlier detection to inferences
+
 ### Changed
 
 ### Deprecated
 
 ### Removed
 
-### Added
-
-* [#703](https://github.com/allora-network/allora-chain/pull/703) Add outlier detection to inferences
-
 ### Changed
+
+* [#694](https://github.com/allora-network/allora-chain/pull/694) Make fuzzer whitelist aware
 
 ### Deprecated
 
@@ -100,6 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#627](https://github.com/allora-network/allora-chain/pull/627) Add fee market and fee grant module
 * [#689](https://github.com/allora-network/allora-chain/pull/689) Add the `CircuitBreakerDecorator` to the `AnteHandler`
 * [#697](https://github.com/allora-network/allora-chain/pull/697) Add upgrade guide to contributing.md
+* [#694](https://github.com/allora-network/allora-chain/pull/694) Make fuzzer whitelist aware
 
 ### Changed
 

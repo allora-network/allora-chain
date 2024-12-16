@@ -153,7 +153,16 @@ func findActiveTopicsAtThisBlock(
 		BlockHeight: blockHeight,
 	})
 	failIfOnErr(m.T, data.failOnErr, err)
-	return response.Topics
+
+	// filter on the topics we created
+	var ourTopics []*emissionstypes.Topic
+	for _, topic := range response.Topics {
+		if data.hasTopic(topic.Id) {
+			ourTopics = append(ourTopics, topic)
+		}
+	}
+
+	return ourTopics
 }
 
 // Inserts inference and forecast data for each worker

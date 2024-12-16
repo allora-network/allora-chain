@@ -21,20 +21,41 @@ const (
 
 // full list of all possible transitions
 type TransitionWeights struct {
-	CreateTopic                uint8 `json:"createTopic"`
-	FundTopic                  uint8 `json:"fundTopic"`
-	RegisterWorker             uint8 `json:"registerWorker"`
-	RegisterReputer            uint8 `json:"registerReputer"`
-	StakeAsReputer             uint8 `json:"stakeAsReputer"`
-	DelegateStake              uint8 `json:"delegateStake"`
-	CollectDelegatorRewards    uint8 `json:"collectDelegatorRewards"`
-	DoInferenceAndReputation   uint8 `json:"doInferenceAndReputation"`
-	UnregisterWorker           uint8 `json:"unregisterWorker"`
-	UnregisterReputer          uint8 `json:"unregisterReputer"`
-	UnstakeAsReputer           uint8 `json:"unstakeAsReputer"`
-	UndelegateStake            uint8 `json:"undelegateStake"`
-	CancelStakeRemoval         uint8 `json:"cancelStakeRemoval"`
-	CancelDelegateStakeRemoval uint8 `json:"cancelDelegateStakeRemoval"`
+	CreateTopic                     uint8 `json:"createTopic"`
+	FundTopic                       uint8 `json:"fundTopic"`
+	RegisterWorker                  uint8 `json:"registerWorker"`
+	RegisterReputer                 uint8 `json:"registerReputer"`
+	StakeAsReputer                  uint8 `json:"stakeAsReputer"`
+	DelegateStake                   uint8 `json:"delegateStake"`
+	CollectDelegatorRewards         uint8 `json:"collectDelegatorRewards"`
+	DoInferenceAndReputation        uint8 `json:"doInferenceAndReputation"`
+	UnregisterWorker                uint8 `json:"unregisterWorker"`
+	UnregisterReputer               uint8 `json:"unregisterReputer"`
+	UnstakeAsReputer                uint8 `json:"unstakeAsReputer"`
+	UndelegateStake                 uint8 `json:"undelegateStake"`
+	CancelStakeRemoval              uint8 `json:"cancelStakeRemoval"`
+	CancelDelegateStakeRemoval      uint8 `json:"cancelDelegateStakeRemoval"`
+	AddToAdminWhitelist             uint8 `json:"addToAdminWhitelist"`
+	RemoveFromAdminWhitelist        uint8 `json:"removeFromAdminWhitelist"`
+	AddToGlobalWhitelist            uint8 `json:"addToGlobalWhitelist"`
+	RemoveFromGlobalWhitelist       uint8 `json:"removeFromGlobalWhitelist"`
+	AddToTopicCreatorWhitelist      uint8 `json:"addToTopicCreatorWhitelist"`
+	RemoveFromTopicCreatorWhitelist uint8 `json:"removeFromTopicCreatorWhitelist"`
+	EnableTopicWorkerWhitelist      uint8 `json:"enableTopicWorkerWhitelist"`
+	DisableTopicWorkerWhitelist     uint8 `json:"disableTopicWorkerWhitelist"`
+	EnableTopicReputerWhitelist     uint8 `json:"enableTopicReputerWhitelist"`
+	DisableTopicReputerWhitelist    uint8 `json:"disableTopicReputerWhitelist"`
+	AddToTopicWorkerWhitelist       uint8 `json:"addToTopicWorkerWhitelist"`
+	RemoveFromTopicWorkerWhitelist  uint8 `json:"removeFromTopicWorkerWhitelist"`
+	AddToTopicReputerWhitelist      uint8 `json:"addToTopicReputerWhitelist"`
+	RemoveFromTopicReputerWhitelist uint8 `json:"removeFromTopicReputerWhitelist"`
+}
+
+// InitialSetup holds configuration elements for the initial setup
+type InitialSetup struct {
+	NumAdminWhitelist        int `json:"numAdminWhitelist"`
+	NumGlobalWhitelist       int `json:"numGlobalWhitelist"`
+	NumTopicCreatorWhitelist int `json:"numTopicCreatorWhitelist"`
 }
 
 // struct that holds config from test/fuzz/.config.json
@@ -48,6 +69,7 @@ type FuzzConfigJson struct {
 	AlternateWeight   int               `json:"alternateWeight"`
 	NumActors         int               `json:"numActors"`
 	EpochLength       int               `json:"epochLength"`
+	InitialSetup      InitialSetup      `json:"initialSetup"`
 }
 
 // struct that holds the config for fuzz tests
@@ -63,6 +85,7 @@ type FuzzConfig struct {
 	AlternateWeight   int
 	TestConfig        *testcommon.TestConfig
 	TransitionWeights TransitionWeights
+	InitialSetup      InitialSetup
 }
 
 // helper function to look up the simulation mode from the environment variable key
@@ -91,20 +114,42 @@ func lookupEnvSimulationMode() (SimulationMode, bool) {
 // i.e. below, the probability of picking createTopic is 2%
 func GetHardCodedTransitionWeights() TransitionWeights {
 	return TransitionWeights{
-		CreateTopic:                2,
-		FundTopic:                  10,
-		RegisterWorker:             4,
-		RegisterReputer:            4,
-		StakeAsReputer:             10,
-		DelegateStake:              10,
-		CollectDelegatorRewards:    10,
-		DoInferenceAndReputation:   30,
-		UnregisterWorker:           4,
-		UnregisterReputer:          4,
-		UnstakeAsReputer:           6,
-		UndelegateStake:            6,
-		CancelStakeRemoval:         0,
-		CancelDelegateStakeRemoval: 0,
+		CreateTopic:                     2,
+		FundTopic:                       7,
+		RegisterWorker:                  4,
+		RegisterReputer:                 4,
+		StakeAsReputer:                  5,
+		DelegateStake:                   5,
+		CollectDelegatorRewards:         5,
+		DoInferenceAndReputation:        20,
+		UnregisterWorker:                4,
+		UnregisterReputer:               4,
+		UnstakeAsReputer:                5,
+		UndelegateStake:                 5,
+		CancelStakeRemoval:              0,
+		CancelDelegateStakeRemoval:      0,
+		AddToAdminWhitelist:             1,
+		RemoveFromAdminWhitelist:        1,
+		AddToGlobalWhitelist:            1,
+		RemoveFromGlobalWhitelist:       1,
+		AddToTopicCreatorWhitelist:      1,
+		RemoveFromTopicCreatorWhitelist: 1,
+		EnableTopicWorkerWhitelist:      1,
+		DisableTopicWorkerWhitelist:     1,
+		EnableTopicReputerWhitelist:     1,
+		DisableTopicReputerWhitelist:    1,
+		AddToTopicWorkerWhitelist:       5,
+		RemoveFromTopicWorkerWhitelist:  5,
+		AddToTopicReputerWhitelist:      5,
+		RemoveFromTopicReputerWhitelist: 5,
+	}
+}
+
+func GetHardCodedInitialSetup() InitialSetup {
+	return InitialSetup{
+		NumAdminWhitelist:        2,
+		NumGlobalWhitelist:       4,
+		NumTopicCreatorWhitelist: 2,
 	}
 }
 
@@ -140,6 +185,7 @@ func GetFuzzConfig(t *testing.T) FuzzConfig {
 	mode := Alternate
 	alternateWeight := 20
 	transitionWeights := GetHardCodedTransitionWeights()
+	initialSetup := GetHardCodedInitialSetup()
 
 	// get values from config.json
 	var jsonConfig *FuzzConfigJson = nil
@@ -169,6 +215,7 @@ func GetFuzzConfig(t *testing.T) FuzzConfig {
 		mode = jsonConfig.Mode
 		alternateWeight = jsonConfig.AlternateWeight
 		transitionWeights = jsonConfig.TransitionWeights
+		initialSetup = jsonConfig.InitialSetup
 	} else {
 		t.Log("No config.json found, proceeding without config.json values")
 	}
@@ -232,6 +279,7 @@ func GetFuzzConfig(t *testing.T) FuzzConfig {
 		AlternateWeight:   alternateWeight,
 		TestConfig:        &testCommonConfig,
 		TransitionWeights: transitionWeights,
+		InitialSetup:      initialSetup,
 	}
 
 }

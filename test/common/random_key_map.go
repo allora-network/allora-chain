@@ -44,6 +44,13 @@ func (rkm *RandomKeyMap[K, V]) GetAll() []V {
 	return values
 }
 
+// GetKeys returns all keys from the map
+func (rkm *RandomKeyMap[K, V]) GetKeys() []K {
+	keys := make([]K, len(rkm.s))
+	copy(keys, rkm.s)
+	return keys
+}
+
 // Filter returns all elements from the map that satisfy the predicate
 func (rkm *RandomKeyMap[K, V]) Filter(f func(K) bool) ([]K, []V) {
 	keys := make([]K, 0)

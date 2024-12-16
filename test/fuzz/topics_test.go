@@ -64,6 +64,9 @@ func createTopic(
 	}
 
 	data.counts.incrementCreateTopicCount()
+	data.setTopicCreator(createTopicResponse.TopicId, actor)
+	data.enableTopicWorkersWhitelist(createTopicResponse.TopicId)
+	data.enableTopicReputersWhitelist(createTopicResponse.TopicId)
 	iterSuccessLog(m.T, iteration, actor, "created topic", createTopicResponse.TopicId)
 	return true
 }

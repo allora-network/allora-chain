@@ -104,7 +104,7 @@ func simulateManual(
 // this is the body of the "normal" simulation mode
 func simulateAutomatic(f *fuzzcommon.FuzzConfig, faucet Actor, data *SimulationData) {
 	// start with some initial state so we have something to work with in the test
-	iterationCountInitialState := simulateAutomaticInitialState(f.TestConfig, faucet, data)
+	iterationCountInitialState := simulateAutomaticInitialState(f, faucet, data)
 
 	f.TestConfig.T.Log("Initial State Summary:", data.counts)
 	f.TestConfig.T.Log("Starting post-setup iterations, first non-setup fuzz iteration is ", iterationCountInitialState)

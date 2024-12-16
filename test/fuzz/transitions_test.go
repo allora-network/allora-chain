@@ -124,6 +124,76 @@ func allTransitions(f *fuzzcommon.FuzzConfig) []StateTransition {
 		weight: transitionWeights.UndelegateStake,
 		follow: &transitionCancelDelegateStakeRemoval, followWeight: 50,
 	}
+	transitionAddToAdminWhitelist := StateTransition{
+		name: "addToAdminWhitelist", f: addToAdminWhitelist,
+		weight: transitionWeights.AddToAdminWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromAdminWhitelist := StateTransition{
+		name: "removeFromAdminWhitelist", f: removeFromAdminWhitelist,
+		weight: transitionWeights.RemoveFromAdminWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionAddToGlobalWhitelist := StateTransition{
+		name: "addToGlobalWhitelist", f: addToGlobalWhitelist,
+		weight: transitionWeights.AddToGlobalWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromGlobalWhitelist := StateTransition{
+		name: "removeFromGlobalWhitelist", f: removeFromGlobalWhitelist,
+		weight: transitionWeights.RemoveFromGlobalWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionAddToTopicCreatorWhitelist := StateTransition{
+		name: "addToTopicCreatorWhitelist", f: addToTopicCreatorWhitelist,
+		weight: transitionWeights.AddToTopicCreatorWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromTopicCreatorWhitelist := StateTransition{
+		name: "removeFromTopicCreatorWhitelist", f: removeFromTopicCreatorWhitelist,
+		weight: transitionWeights.RemoveFromTopicCreatorWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionEnableTopicWorkerWhitelist := StateTransition{
+		name: "enableTopicWorkerWhitelist", f: enableTopicWorkerWhitelist,
+		weight: transitionWeights.EnableTopicWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionDisableTopicWorkerWhitelist := StateTransition{
+		name: "disableTopicWorkerWhitelist", f: disableTopicWorkerWhitelist,
+		weight: transitionWeights.DisableTopicWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionEnableTopicReputerWhitelist := StateTransition{
+		name: "enableTopicReputerWhitelist", f: enableTopicReputerWhitelist,
+		weight: transitionWeights.EnableTopicReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionDisableTopicReputerWhitelist := StateTransition{
+		name: "disableTopicReputerWhitelist", f: disableTopicReputerWhitelist,
+		weight: transitionWeights.DisableTopicReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionAddToTopicWorkerWhitelist := StateTransition{
+		name: "addToTopicWorkerWhitelist", f: addToTopicWorkerWhitelist,
+		weight: transitionWeights.AddToTopicWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromTopicWorkerWhitelist := StateTransition{
+		name: "removeFromTopicWorkerWhitelist", f: removeFromTopicWorkerWhitelist,
+		weight: transitionWeights.RemoveFromTopicWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionAddToTopicReputerWhitelist := StateTransition{
+		name: "addToTopicReputerWhitelist", f: addToTopicReputerWhitelist,
+		weight: transitionWeights.AddToTopicReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromTopicReputerWhitelist := StateTransition{
+		name: "removeFromTopicReputerWhitelist", f: removeFromTopicReputerWhitelist,
+		weight: transitionWeights.RemoveFromTopicReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
 
 	return []StateTransition{
 		transitionCreateTopic,
@@ -140,6 +210,20 @@ func allTransitions(f *fuzzcommon.FuzzConfig) []StateTransition {
 		transitionUndelegateStake,
 		transitionCancelStakeRemoval,
 		transitionCancelDelegateStakeRemoval,
+		transitionAddToAdminWhitelist,
+		transitionRemoveFromAdminWhitelist,
+		transitionAddToGlobalWhitelist,
+		transitionRemoveFromGlobalWhitelist,
+		transitionAddToTopicCreatorWhitelist,
+		transitionRemoveFromTopicCreatorWhitelist,
+		transitionEnableTopicWorkerWhitelist,
+		transitionDisableTopicWorkerWhitelist,
+		transitionEnableTopicReputerWhitelist,
+		transitionDisableTopicReputerWhitelist,
+		transitionAddToTopicWorkerWhitelist,
+		transitionRemoveFromTopicWorkerWhitelist,
+		transitionAddToTopicReputerWhitelist,
+		transitionRemoveFromTopicReputerWhitelist,
 	}
 }
 
@@ -254,6 +338,8 @@ func isValidTransition(m *testcommon.TestConfig, transition StateTransition, act
 			return false
 		}
 		return true
+	case "stakeAsReputer":
+		return data.isReputerRegisteredInTopic(topicId, actor1) && data.isReputerWhitelistedInTopic(topicId, actor1)
 	default:
 		return true
 	}
@@ -293,7 +379,7 @@ func pickFullRandomValues(
 	m *testcommon.TestConfig,
 	data *SimulationData,
 ) (bool, Actor, Actor, *cosmossdk_io_math.Int, uint64) {
-	randomTopicId, err := pickRandomTopicId(m)
+	randomTopicId, err := data.pickRandomTopicId()
 	failIfOnErr(m.T, data.failOnErr, err)
 	randomActor1 := pickRandomActor(m, data)
 	randomActor2 := pickRandomActor(m, data)
@@ -374,6 +460,58 @@ func pickActorAndTopicIdForStateTransition(
 			return true, UnusedActor, UnusedActor, nil, topicId
 		}
 		return false, UnusedActor, UnusedActor, nil, 0
+	case "createTopic":
+		creator, err := data.pickRandomTopicCreator(m)
+		if err != nil {
+			return false, UnusedActor, UnusedActor, nil, 0
+		}
+		return true, creator, UnusedActor, nil, 0
+	case "addToAdminWhitelist",
+		"removeFromAdminWhitelist",
+		"addToGlobalWhitelist",
+		"removeFromGlobalWhitelist",
+		"addToTopicCreatorWhitelist",
+		"removeFromTopicCreatorWhitelist":
+		admin, err := data.pickRandomAdmin()
+		if err != nil {
+			return false, UnusedActor, UnusedActor, nil, 0
+		}
+		return true, admin, pickRandomActor(m, data), nil, 0
+	case "enableTopicWorkerWhitelist",
+		"disableTopicWorkerWhitelist",
+		"enableTopicReputerWhitelist",
+		"disableTopicReputerWhitelist":
+		topicId, err := data.pickRandomTopicId()
+		if err != nil {
+			return false, UnusedActor, UnusedActor, nil, 0
+		}
+		admin, err := data.pickRandomTopicAdmin(m, topicId)
+		if err != nil {
+			return false, UnusedActor, UnusedActor, nil, 0
+		}
+		return true, admin, UnusedActor, nil, topicId
+	case "addToTopicWorkerWhitelist",
+		"removeFromTopicWorkerWhitelist":
+		topicId, err := data.pickRandomTopicId()
+		if err != nil {
+			return false, UnusedActor, UnusedActor, nil, 0
+		}
+		admin, err := data.pickRandomTopicAdmin(m, topicId)
+		if err != nil {
+			return false, UnusedActor, UnusedActor, nil, 0
+		}
+		return true, admin, pickRandomActor(m, data), nil, topicId
+	case "addToTopicReputerWhitelist",
+		"removeFromTopicReputerWhitelist":
+		topicId, err := data.pickRandomTopicId()
+		if err != nil {
+			return false, UnusedActor, UnusedActor, nil, 0
+		}
+		admin, err := data.pickRandomTopicAdmin(m, topicId)
+		if err != nil {
+			return false, UnusedActor, UnusedActor, nil, 0
+		}
+		return true, admin, pickRandomActor(m, data), nil, topicId
 	default:
 		return pickFullRandomValues(m, data)
 	}

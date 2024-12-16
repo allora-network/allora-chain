@@ -16,15 +16,24 @@ import (
 // right now it doesn't need mutexes, if we parallelize this test ever it will
 // to read and write out of the simulation data
 type SimulationData struct {
-	epochLength        int64
-	actors             []Actor
-	counts             StateTransitionCounts
-	registeredWorkers  *testcommon.RandomKeyMap[Registration, struct{}]
-	registeredReputers *testcommon.RandomKeyMap[Registration, struct{}]
-	reputerStakes      *testcommon.RandomKeyMap[Registration, struct{}]
-	delegatorStakes    *testcommon.RandomKeyMap[Delegation, struct{}]
-	failOnErr          bool
-	mode               fuzzcommon.SimulationMode
+	epochLength                   int64
+	actors                        []Actor
+	counts                        StateTransitionCounts
+	registeredWorkers             *testcommon.RandomKeyMap[Registration, struct{}]
+	registeredReputers            *testcommon.RandomKeyMap[Registration, struct{}]
+	reputerStakes                 *testcommon.RandomKeyMap[Registration, struct{}]
+	delegatorStakes               *testcommon.RandomKeyMap[Delegation, struct{}]
+	topicCreators                 *testcommon.RandomKeyMap[uint64, Actor]
+	adminWhitelist                *testcommon.RandomKeyMap[Actor, struct{}]
+	globalWhitelist               *testcommon.RandomKeyMap[Actor, struct{}]
+	topicCreatorsWhitelist        *testcommon.RandomKeyMap[Actor, struct{}]
+	topicWorkersWhitelistEnabled  *testcommon.RandomKeyMap[uint64, struct{}]
+	topicReputersWhitelistEnabled *testcommon.RandomKeyMap[uint64, struct{}]
+	topicWorkersWhitelist         *testcommon.RandomKeyMap[TopicWhitelistEntry, struct{}]
+	topicReputersWhitelist        *testcommon.RandomKeyMap[TopicWhitelistEntry, struct{}]
+
+	failOnErr bool
+	mode      fuzzcommon.SimulationMode
 }
 
 // String is the stringer for SimulationData
@@ -52,6 +61,11 @@ type Delegation struct {
 	TopicId   uint64
 	Delegator Actor
 	Reputer   Actor
+}
+
+type TopicWhitelistEntry struct {
+	TopicId uint64
+	Actor   Actor
 }
 
 // addWorkerRegistration adds a worker registration to the simulation data
@@ -118,6 +132,123 @@ func (s *SimulationData) removeDelegatorDelegated(topicId uint64, delegator Acto
 		Delegator: delegator,
 		Reputer:   reputer,
 	})
+}
+
+// setTopicCreator sets the topic's creator in the simulation data
+func (s *SimulationData) setTopicCreator(topicId uint64, actor Actor) {
+	s.topicCreators.Upsert(topicId, actor)
+}
+
+// addAdminWhitelist adds an actor to the admin whitelist in the simulation data
+func (s *SimulationData) addAdminWhitelist(actor Actor) {
+	s.adminWhitelist.Upsert(actor, struct{}{})
+}
+
+// addGlobalWhitelist adds an actor to the global whitelist in the simulation data
+func (s *SimulationData) addGlobalWhitelist(actor Actor) {
+	s.globalWhitelist.Upsert(actor, struct{}{})
+}
+
+// addTopicCreatorWhitelist adds an actor to the topic creator whitelist in the simulation data
+func (s *SimulationData) addTopicCreatorWhitelist(actor Actor) {
+	s.topicCreatorsWhitelist.Upsert(actor, struct{}{})
+}
+
+// addTopicWorkerWhitelist adds a worker to a topic whitelist in the simulation data
+func (s *SimulationData) addTopicWorkerWhitelist(topicId uint64, worker Actor) {
+	s.topicWorkersWhitelist.Upsert(TopicWhitelistEntry{
+		TopicId: topicId,
+		Actor:   worker,
+	}, struct{}{})
+}
+
+// addTopicReputerWhitelist adds a reputer to a topic whitelist in the simulation data
+func (s *SimulationData) addTopicReputerWhitelist(topicId uint64, reputer Actor) {
+	s.topicReputersWhitelist.Upsert(TopicWhitelistEntry{
+		TopicId: topicId,
+		Actor:   reputer,
+	}, struct{}{})
+}
+
+// enableTopicWorkersWhitelist enables a topic workers whitelist in the simulation data
+func (s *SimulationData) enableTopicWorkersWhitelist(topicId uint64) {
+	s.topicWorkersWhitelistEnabled.Upsert(topicId, struct{}{})
+}
+
+// enableTopicReputersWhitelist enables a topic reputers whitelist in the simulation data
+func (s *SimulationData) enableTopicReputersWhitelist(topicId uint64) {
+	s.topicReputersWhitelistEnabled.Upsert(topicId, struct{}{})
+}
+
+// removeAdminWhitelist removes an actor to the admin whitelist in the simulation data
+func (s *SimulationData) removeAdminWhitelist(actor Actor) {
+	s.adminWhitelist.Delete(actor)
+}
+
+// removeGlobalWhitelist removes an actor to the global whitelist in the simulation data
+func (s *SimulationData) removeGlobalWhitelist(actor Actor) {
+	s.globalWhitelist.Delete(actor)
+}
+
+// removeTopicCreatorWhitelist removes an actor to the topic creator whitelist in the simulation data
+func (s *SimulationData) removeTopicCreatorWhitelist(actor Actor) {
+	s.topicCreatorsWhitelist.Delete(actor)
+}
+
+// removeTopicWorkerWhitelist removes a worker to a topic whitelist in the simulation data
+func (s *SimulationData) removeTopicWorkerWhitelist(topicId uint64, worker Actor) {
+	s.topicWorkersWhitelist.Delete(TopicWhitelistEntry{
+		TopicId: topicId,
+		Actor:   worker,
+	})
+}
+
+// removeTopicReputerWhitelist removes a reputer to a topic whitelist in the simulation data
+func (s *SimulationData) removeTopicReputerWhitelist(topicId uint64, reputer Actor) {
+	s.topicReputersWhitelist.Delete(TopicWhitelistEntry{
+		TopicId: topicId,
+		Actor:   reputer,
+	})
+}
+
+// disableTopicWorkersWhitelist disables a topic workers whitelist in the simulation data
+func (s *SimulationData) disableTopicWorkersWhitelist(topicId uint64) {
+	s.topicWorkersWhitelistEnabled.Delete(topicId)
+}
+
+// disableTopicReputersWhitelist disables a topic reputers whitelist in the simulation data
+func (s *SimulationData) disableTopicReputersWhitelist(topicId uint64) {
+	s.topicReputersWhitelistEnabled.Delete(topicId)
+}
+
+// getTopics returns all the topics in the simulation data
+func (s *SimulationData) getTopics() []uint64 {
+	return s.topicCreators.GetKeys()
+}
+
+// pickRandomTopicId picks a random topic id in the simulation data
+func (s *SimulationData) pickRandomTopicId() (uint64, error) {
+	t, err := s.topicCreators.RandomKey()
+	if err != nil {
+		return 0, err
+	}
+	return *t, nil
+}
+
+// pickNRandomActors picks n random actors in the simulation data
+// panics if n is negative or less than the number of actors
+func (s *SimulationData) pickNRandomActors(m *testcommon.TestConfig, n int) []Actor {
+	if n < 0 || n > len(s.actors) {
+		panic("invalid number of actors")
+	}
+
+	shuffled := make([]Actor, n)
+	perm := m.Client.Rand.Perm(len(s.actors))
+	for i := range n {
+		shuffled[i] = s.actors[perm[i]]
+	}
+
+	return shuffled
 }
 
 // pickRandomRegisteredWorker picks a random worker that is currently registered
@@ -193,6 +324,59 @@ func pickPercentOf(rand *rand.Rand, stake cosmossdk_io_math.Int) cosmossdk_io_ma
 	}
 }
 
+func (s *SimulationData) pickRandomAdmin() (Actor, error) {
+	a, err := s.adminWhitelist.RandomKey()
+	if err != nil {
+		return Actor{}, err
+	}
+	return *a, nil
+}
+
+func (s *SimulationData) pickRandomTopicAdmin(m *testcommon.TestConfig, topicId uint64) (Actor, error) {
+	opt1, _ := s.adminWhitelist.RandomKey()
+	var opt2 *Actor
+	if opt, ok := s.topicCreators.Get(topicId); ok {
+		opt2 = &opt
+	}
+	actor, err := mayPickOneOfTwo(m.Client.Rand, opt1, opt2)
+	if err != nil {
+		return Actor{}, fmt.Errorf("no topic creator found")
+	}
+	return *actor, nil
+}
+
+func (s *SimulationData) pickRandomTopicCreator(m *testcommon.TestConfig) (Actor, error) {
+	opt1, _ := s.globalWhitelist.RandomKey()
+	opt2, _ := s.topicCreatorsWhitelist.RandomKey()
+	actor, err := mayPickOneOfTwo(m.Client.Rand, opt1, opt2)
+	if err != nil {
+		return Actor{}, fmt.Errorf("no topic creator found")
+	}
+	return *actor, nil
+}
+
+func mayPickOneOfTwo[T any](rand *rand.Rand, opt1, opt2 *T) (*T, error) {
+	if opt1 == nil && opt2 == nil {
+		return nil, fmt.Errorf("both options are nil")
+	}
+	if opt1 == nil {
+		return opt2, nil
+	}
+	if opt2 == nil {
+		return opt1, nil
+	}
+	// if neither are nil, pick one at random
+	if rand.Intn(2) == 0 {
+		return opt1, nil
+	}
+	return opt2, nil
+}
+
+func (s *SimulationData) hasTopic(topicId uint64) bool {
+	_, exists := s.topicCreators.Get(topicId)
+	return exists
+}
+
 // isWorkerRegisteredInTopic checks if a worker is registered in a topic
 func (s *SimulationData) isWorkerRegisteredInTopic(topicId uint64, actor Actor) bool {
 	_, exists := s.registeredWorkers.Get(Registration{
@@ -211,18 +395,58 @@ func (s *SimulationData) isReputerRegisteredInTopic(topicId uint64, actor Actor)
 	return exists
 }
 
-// isAnyWorkerRegisteredInTopic checks if any worker is registered in a topic
+// isActorInGlobalWhitelist checks if an actor is in the global whitelist
+func (s *SimulationData) isActorInGlobalWhitelist(actor Actor) bool {
+	_, exists := s.globalWhitelist.Get(actor)
+	return exists
+}
+
+// isWorkerWhitelistedInTopic checks if a worker is whitelisted in a topic
+func (s *SimulationData) isWorkerWhitelistedInTopic(topicId uint64, actor Actor) bool {
+	if _, exists := s.topicWorkersWhitelistEnabled.Get(topicId); !exists {
+		return true
+	}
+
+	_, exists := s.topicWorkersWhitelist.Get(TopicWhitelistEntry{
+		TopicId: topicId,
+		Actor:   actor,
+	})
+
+	return exists || s.isActorInGlobalWhitelist(actor)
+}
+
+// isReputerWhitelistedInTopic checks if a worker is whitelisted in a topic
+func (s *SimulationData) isReputerWhitelistedInTopic(topicId uint64, actor Actor) bool {
+	if _, exists := s.topicReputersWhitelistEnabled.Get(topicId); !exists {
+		return true
+	}
+
+	_, exists := s.topicReputersWhitelist.Get(TopicWhitelistEntry{
+		TopicId: topicId,
+		Actor:   actor,
+	})
+
+	return exists || s.isActorInGlobalWhitelist(actor)
+}
+
+// isAnyWorkerRegisteredInTopic checks if any worker is registered and whitelisted in a topic
 func (s *SimulationData) isAnyWorkerRegisteredInTopic(topicId uint64) bool {
 	workers, _ := s.registeredWorkers.Filter(func(reg Registration) bool {
-		return reg.TopicId == topicId
+		if reg.TopicId != topicId {
+			return false
+		}
+		return s.isWorkerWhitelistedInTopic(topicId, reg.Actor)
 	})
 	return len(workers) > 0
 }
 
-// isAnyReputerRegisteredInTopic checks if any reputer is registered in a topic
+// isAnyReputerRegisteredInTopic checks if any reputer is registered and whitelisted in a topic
 func (s *SimulationData) isAnyReputerRegisteredInTopic(topicId uint64) bool {
 	reputers, _ := s.registeredReputers.Filter(func(reg Registration) bool {
-		return reg.TopicId == topicId
+		if reg.TopicId != topicId {
+			return false
+		}
+		return s.isReputerWhitelistedInTopic(topicId, reg.Actor)
 	})
 	return len(reputers) > 0
 }
@@ -231,7 +455,10 @@ func (s *SimulationData) isAnyReputerRegisteredInTopic(topicId uint64) bool {
 // for determinism, the workers are sorted by their address
 func (s *SimulationData) getWorkersForTopic(topicId uint64) []Actor {
 	workers, _ := s.registeredWorkers.Filter(func(reg Registration) bool {
-		return reg.TopicId == topicId
+		if reg.TopicId != topicId {
+			return false
+		}
+		return s.isWorkerWhitelistedInTopic(topicId, reg.Actor)
 	})
 	ret := make([]Actor, len(workers))
 	for i, worker := range workers {
@@ -247,14 +474,20 @@ func (s *SimulationData) getWorkersForTopic(topicId uint64) []Actor {
 // for determinism, the reputers are sorted by their address
 func (s *SimulationData) getReputersForTopicWithStake(topicId uint64) []Actor {
 	reputerRegs, _ := s.reputerStakes.Filter(func(reg Registration) bool {
-		return reg.TopicId == topicId
+		if reg.TopicId != topicId {
+			return false
+		}
+		return s.isReputerWhitelistedInTopic(topicId, reg.Actor)
 	})
 	rmap := make(map[string]Actor)
 	for _, reputerReg := range reputerRegs {
 		rmap[reputerReg.Actor.addr] = reputerReg.Actor
 	}
 	reputerDels, _ := s.delegatorStakes.Filter(func(del Delegation) bool {
-		return del.TopicId == topicId
+		if del.TopicId != topicId {
+			return false
+		}
+		return s.isReputerWhitelistedInTopic(topicId, del.Reputer)
 	})
 	for _, del := range reputerDels {
 		rmap[del.Reputer.addr] = del.Reputer
