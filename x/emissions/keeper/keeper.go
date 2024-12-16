@@ -3177,8 +3177,10 @@ func (k *Keeper) SetInfererScoreEma(ctx context.Context, topicId TopicId, worker
 	return k.infererScoreEmas.Set(ctx, key, score)
 }
 
-func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
-	key := collections.Join(topicId, worker)
+// GetInfererScoreEma gets the EMA score for an inferer in a topic
+// If no prior score exists, initializes it using (1+kappa)*lowestEmaScore-kappa*last25thPercentile
+func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, inferer ActorId) (types.Score, error) {
+	key := collections.Join(topicId, inferer)
 	score, err := k.infererScoreEmas.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
 		return types.Score{

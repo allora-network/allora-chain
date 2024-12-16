@@ -236,3 +236,44 @@ func (k *Keeper) CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(
 	types.EmitNewActorEMAScoresSetEvent(ctx, types.ActorType_ACTOR_TYPE_REPUTER, emaScores, activeArr)
 	return nil
 }
+
+// helper function to calculate initial score for new participants
+func (k *Keeper) calculateInitialScore(
+	ctx context.Context,
+	topicId TopicId,
+	address ActorId,
+	lowestScore types.Score,
+	last25thPercentile alloraMath.Dec,
+) (types.Score, error) {
+	// Get kappa parameter from module params
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return types.Score{}, errors.Wrapf(err, "error getting module params")
+	}
+	kappa := params.NewParticipantScoreInitializationKappa
+
+	// Calculate initial score using formula: (1+kappa)*lowestScore-kappa*last25thPercentile
+	onePlusKappa, err := alloraMath.NewDecFromInt64(1).Add(kappa)
+	if err != nil {
+		return types.Score{}, errors.Wrapf(err, "error creating 1+kappa")
+	}
+	lowestScoreMul, err := lowestScore.Score.Mul(onePlusKappa)
+	if err != nil {
+		return types.Score{}, errors.Wrapf(err, "error multiplying lowest score by 1+kappa")
+	}
+	last25thPercentileMul, err := last25thPercentile.Mul(kappa)
+	if err != nil {
+		return types.Score{}, errors.Wrapf(err, "error multiplying last 25th percentile by kappa")
+	}
+	initialScore, err := lowestScoreMul.Sub(last25thPercentileMul)
+	if err != nil {
+		return types.Score{}, errors.Wrapf(err, "error calculating initial score")
+	}
+
+	return types.Score{
+		TopicId:     topicId,
+		Address:     address,
+		Score:       initialScore,
+		BlockHeight: 0,
+	}, nil
+}
