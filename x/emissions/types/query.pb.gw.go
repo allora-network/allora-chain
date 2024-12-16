@@ -1775,6 +1775,60 @@ func local_request_QueryService_GetLatestNetworkInferences_0(ctx context.Context
 
 }
 
+func request_QueryService_GetLatestNetworkInferencesOutlierResistant_0(ctx context.Context, marshaler runtime.Marshaler, client QueryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetLatestNetworkInferencesOutlierResistantRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["topic_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
+	}
+
+	protoReq.TopicId, err = runtime.Uint64(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
+	}
+
+	msg, err := client.GetLatestNetworkInferencesOutlierResistant(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QueryService_GetLatestNetworkInferencesOutlierResistant_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetLatestNetworkInferencesOutlierResistantRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["topic_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
+	}
+
+	protoReq.TopicId, err = runtime.Uint64(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
+	}
+
+	msg, err := server.GetLatestNetworkInferencesOutlierResistant(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 func request_QueryService_GetLatestAvailableNetworkInferences_0(ctx context.Context, marshaler runtime.Marshaler, client QueryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetLatestAvailableNetworkInferencesRequest
 	var metadata runtime.ServerMetadata
@@ -1825,6 +1879,60 @@ func local_request_QueryService_GetLatestAvailableNetworkInferences_0(ctx contex
 	}
 
 	msg, err := server.GetLatestAvailableNetworkInferences(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0(ctx context.Context, marshaler runtime.Marshaler, client QueryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetLatestAvailableNetworkInferencesOutlierResistantRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["topic_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
+	}
+
+	protoReq.TopicId, err = runtime.Uint64(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
+	}
+
+	msg, err := client.GetLatestAvailableNetworkInferencesOutlierResistant(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetLatestAvailableNetworkInferencesOutlierResistantRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["topic_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "topic_id")
+	}
+
+	protoReq.TopicId, err = runtime.Uint64(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "topic_id", err)
+	}
+
+	msg, err := server.GetLatestAvailableNetworkInferencesOutlierResistant(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -6646,6 +6754,29 @@ func RegisterQueryServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
+	mux.Handle("GET", pattern_QueryService_GetLatestNetworkInferencesOutlierResistant_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QueryService_GetLatestNetworkInferencesOutlierResistant_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QueryService_GetLatestNetworkInferencesOutlierResistant_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_QueryService_GetLatestAvailableNetworkInferences_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -6666,6 +6797,29 @@ func RegisterQueryServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 
 		forward_QueryService_GetLatestAvailableNetworkInferences_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -8791,6 +8945,26 @@ func RegisterQueryServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 
 	})
 
+	mux.Handle("GET", pattern_QueryService_GetLatestNetworkInferencesOutlierResistant_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QueryService_GetLatestNetworkInferencesOutlierResistant_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QueryService_GetLatestNetworkInferencesOutlierResistant_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_QueryService_GetLatestAvailableNetworkInferences_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -8808,6 +8982,26 @@ func RegisterQueryServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 
 		forward_QueryService_GetLatestAvailableNetworkInferences_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -10209,7 +10403,11 @@ var (
 
 	pattern_QueryService_GetLatestNetworkInferences_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v6", "latest_network_inferences", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
+	pattern_QueryService_GetLatestNetworkInferencesOutlierResistant_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v6", "latest_network_inferences_outlier_resistant", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+
 	pattern_QueryService_GetLatestAvailableNetworkInferences_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v6", "latest_available_network_inferences", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
+
+	pattern_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"emissions", "v6", "latest_available_network_inferences_outlier_resistant", "topic_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_QueryService_IsWorkerNonceUnfulfilled_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"emissions", "v6", "is_worker_nonce_unfulfilled", "topic_id", "block_height"}, "", runtime.AssumeColonVerbOpt(false)))
 
@@ -10401,7 +10599,11 @@ var (
 
 	forward_QueryService_GetLatestNetworkInferences_0 = runtime.ForwardResponseMessage
 
+	forward_QueryService_GetLatestNetworkInferencesOutlierResistant_0 = runtime.ForwardResponseMessage
+
 	forward_QueryService_GetLatestAvailableNetworkInferences_0 = runtime.ForwardResponseMessage
+
+	forward_QueryService_GetLatestAvailableNetworkInferencesOutlierResistant_0 = runtime.ForwardResponseMessage
 
 	forward_QueryService_IsWorkerNonceUnfulfilled_0 = runtime.ForwardResponseMessage
 

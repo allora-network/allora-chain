@@ -590,6 +590,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					},
 				},
 				{
+					RpcMethod: "GetLatestNetworkInferencesOutlierResistant",
+					Use:       "latest-network-inferences-outlier-resistant [topic_id]",
+					Short:     "Get the latest Network inferences and weights for a topic. Will return whatever information it has available removing outliers.",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "topic_id"},
+					},
+				},
+				{
 					RpcMethod: "GetNetworkLossBundleAtBlock",
 					Use:       "network-loss-bundle-at-block [topic_id] [block]",
 					Short:     "Get the network loss bundle for a topic at given block height",
