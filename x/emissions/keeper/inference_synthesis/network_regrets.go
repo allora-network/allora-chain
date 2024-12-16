@@ -421,6 +421,9 @@ func GetCalcSetNetworkRegrets(args GetCalcSetNetworkRegretsArgs) error {
 		if err != nil {
 			return errorsmod.Wrapf(err, "Error updating topic initial regret")
 		}
+
+		// For batch event emission
+		emissions.EmitNewTopicInitialRegretSetEvent(args.Ctx, args.TopicId, blockHeight, updatedTopicInitialRegret)
 	}
 
 	return nil
