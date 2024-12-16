@@ -51,3 +51,6 @@ dist/
 
 # fuzzer config
 test/fuzz/.config.json
+
+allora.log
+
