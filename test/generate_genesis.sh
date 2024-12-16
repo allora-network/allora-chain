@@ -25,7 +25,13 @@ INVESTORS_WALLET_TOKENS=$(echo '3.105*10^26' | bc | cut -f 1 -d '.') # 31.05% of
 TEAM_WALLET_NAME="team"
 TEAM_WALLET_TOKENS=$(echo '1.75*10^26' | bc | cut -f 1 -d '.') # 17.5% of total token supply of 1e27
 
-VALIDATOR_TOKENS=$(echo '(10^26 - 100*10^18)/3' | bc) # 100M allo - 100 allo
+# VALIDATOR_TOKENS=$(echo '(10^26 - 100*10^18)/3' | bc) # 100M allo - 100 allo
+# Calculate validator tokens
+VALIDATOR_TOKENS=$(echo '(10^26 - 100*10^18)/3' | bc) # 100M allo - 100 allo for staking
+VALIDATOR_SPENDING_TOKENS="100000000"  # extra for voting and other transactions
+VALIDATOR_TOTAL_TOKENS=$(echo "${VALIDATOR_TOKENS} + ${VALIDATOR_SPENDING_TOKENS}" | bc)
+echo "VALIDATOR_TOTAL_TOKENS: ${VALIDATOR_TOTAL_TOKENS}, VALIDATOR_TOKENS: ${VALIDATOR_TOKENS}, VALIDATOR_SPENDING_TOKENS: ${VALIDATOR_SPENDING_TOKENS}"
+
 COMMON_HOME_DIR="${COMMON_HOME_DIR:-$(pwd)}"
 
 allorad=$(which allorad)
@@ -49,10 +55,12 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     $allorad --home=$genesisHome keys add $valName \
         --keyring-backend $keyringBackend > $COMMON_HOME_DIR/$valName.account_info 2>&1
 
-    echo "Fund $valName account to genesis"
+    echo "Fund $valName account to genesis, VALIDATOR_TOKENS: ${VALIDATOR_TOKENS} ${DENOM} "
+    echo "$allorad --home=$genesisHome genesis add-genesis-account $valName ${VALIDATOR_TOKENS}${DENOM},${VALIDATOR_SPENDING_TOKENS}${DENOM} --keyring-backend $keyringBackend"
     $allorad --home=$genesisHome genesis add-genesis-account \
-        $valName ${VALIDATOR_TOKENS}${DENOM} \
+        $valName ${VALIDATOR_TOTAL_TOKENS}${DENOM} \
         --keyring-backend $keyringBackend
+
 done
 
 echo "Generate $UPSHOT_WALLET_NAME account"
@@ -115,6 +123,7 @@ for ((i=0; i<$VALIDATOR_NUMBER; i++)); do
     # Symlink keyring-test to have keys
     ln -sfr $genesisHome/keyring-test $valHome/keyring-test
 
+    echo "Generating gentx for $valName, VALIDATOR_TOKENS: ${VALIDATOR_TOKENS} ${DENOM} at $gentxDir/$valName.json"
     $allorad --home=$valHome genesis gentx $valName ${VALIDATOR_TOKENS}${DENOM} \
         --chain-id $CHAIN_ID --keyring-backend $keyringBackend \
         --moniker="$valName" \
