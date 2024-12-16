@@ -623,6 +623,8 @@ func validateMinExperiencedWorkerRegrets(i uint64) error {
 func validateInferenceOutlierDetectionThreshold(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
+	} else if i.IsNegative() {
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }
@@ -630,6 +632,8 @@ func validateInferenceOutlierDetectionThreshold(i alloraMath.Dec) error {
 func validateInferenceOutlierDetectionAlpha(i alloraMath.Dec) error {
 	if err := ValidateDec(i); err != nil {
 		return err
+	} else if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
 	}
 	return nil
 }
