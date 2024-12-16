@@ -18,6 +18,7 @@ import (
 	migrationV4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
 	migrationV5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
 	migrationV6 "github.com/allora-network/allora-chain/x/emissions/migrations/v6"
+	migrationV7 "github.com/allora-network/allora-chain/x/emissions/migrations/v7"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -35,7 +36,7 @@ var (
 )
 
 // ConsensusVersion defines the current module consensus version.
-const ConsensusVersion = 6
+const ConsensusVersion = 7
 
 type AppModule struct {
 	cdc    codec.Codec
@@ -107,6 +108,11 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		return migrationV6.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 5 to 6: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 6, func(ctx sdk.Context) error {
+		return migrationV7.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 6 to 7: %v", types.ModuleName, err))
 	}
 }
 

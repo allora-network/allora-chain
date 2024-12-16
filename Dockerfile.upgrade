@@ -2,10 +2,10 @@ FROM golang:1.22-bookworm AS builder
 
 ENV GO111MODULE=on
 ENV GOMODCACHE=/gocache
-ENV BASELINE_VERSION_TAG=v0.6.6
+ENV BASELINE_VERSION_TAG=v0.7.0
 # VERSION: Used to force the version on the binary, if generated from branch or different commit
-ENV VERSION=v0.6.6
-ENV UPGRADE_VERSION_TAG=v0.7.0
+# ENV VERSION=v0.7.0
+ENV UPGRADE_VERSION_TAG=v0.8.0
 ENV GIT_STASH_MESSAGE="Docker build"
 
 
