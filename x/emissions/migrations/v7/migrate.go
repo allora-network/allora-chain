@@ -1,6 +1,8 @@
 package v7
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -25,7 +27,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 	ctx.Logger().Info("MIGRATING PARAMS FROM VERSION 6 TO VERSION 7")
 	// This also flips on global and topic creator whitelists
-	if err := MigrateParams(store, cdc); err != nil {
+	if err := MigrateParams(ctx, store, cdc); err != nil {
 		ctx.Logger().Error("ERROR INVOKING MIGRATION HANDLER MigrateParams() FROM VERSION 6 TO VERSION 7")
 		return err
 	}
@@ -36,7 +38,7 @@ func MigrateStore(ctx sdk.Context, emissionsKeeper keeper.Keeper) error {
 
 // Migrate params for this new version
 // The changes are the addition of GlobalWhitelistEnabled, TopicCreatorWhitelistEnabled
-func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
+func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCodec) error {
 	oldParams := oldV6Types.Params{} //nolint: exhaustruct // empty struct used by cosmos-sdk Unmarshal below
 	oldParamsBytes := store.Get(emissionstypes.ParamsKey)
 	if oldParamsBytes == nil {
@@ -105,6 +107,7 @@ func MigrateParams(store storetypes.KVStore, cdc codec.BinaryCodec) error {
 		InferenceOutlierDetectionAlpha:     defaultParams.InferenceOutlierDetectionAlpha,
 	}
 
+	ctx.Logger().Info(fmt.Sprintf("MIGRATED PARAMS: %+v", newParams))
 	store.Delete(emissionstypes.ParamsKey)
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&newParams))
 	return nil
