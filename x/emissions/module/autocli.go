@@ -3,13 +3,14 @@ package module
 import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	statev6 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v6"
+	statev7 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v7"
 )
 
 // AutoCLIOptions implements the autocli.HasAutoCLIConfig interface.
 func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 	return &autocliv1.ModuleOptions{
 		Query: &autocliv1.ServiceCommandDescriptor{
-			Service: statev6.QueryService_ServiceDesc.ServiceName,
+			Service: statev7.QueryService_ServiceDesc.ServiceName,
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "GetParams",
