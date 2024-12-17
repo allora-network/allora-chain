@@ -125,7 +125,7 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&paramsOld))
 
 	// Run migration
-	err := v7.MigrateParams(store, cdc)
+	err := v7.MigrateParams(s.ctx, store, cdc)
 	s.Require().NoError(err)
 
 	// TO BE ADDED VIA DEFAULT PARAMS:
