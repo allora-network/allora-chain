@@ -5223,3 +5223,42 @@ func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
 		})
 	}
 }
+
+func (s *KeeperTestSuite) TestInitialEmaScores() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := s.CreateOneTopic(10800)
+
+	// Test Inferer Initial EMA Score
+	infererScore := alloraMath.MustNewDecFromString("100.0")
+	err := k.SetTopicInitialInfererEmaScore(ctx, topicId, infererScore)
+	s.Require().NoError(err)
+
+	retrievedInfererScore, err := k.GetTopicInitialInfererEmaScore(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(infererScore.Equal(retrievedInfererScore))
+
+	// Test Forecaster Initial EMA Score
+	forecasterScore := alloraMath.MustNewDecFromString("90.0")
+	err = k.SetTopicInitialForecasterEmaScore(ctx, topicId, forecasterScore)
+	s.Require().NoError(err)
+
+	retrievedForecasterScore, err := k.GetTopicInitialForecasterEmaScore(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(forecasterScore.Equal(retrievedForecasterScore))
+
+	// Test Reputer Initial EMA Score
+	reputerScore := alloraMath.MustNewDecFromString("95.0")
+	err = k.SetTopicInitialReputerEmaScore(ctx, topicId, reputerScore)
+	s.Require().NoError(err)
+
+	retrievedReputerScore, err := k.GetTopicInitialReputerEmaScore(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(reputerScore.Equal(retrievedReputerScore))
+
+	// Test Non-existent Topic
+	nonExistentTopicId := topicId + 1
+	zeroScore, err := k.GetTopicInitialInfererEmaScore(ctx, nonExistentTopicId)
+	s.Require().NoError(err)
+	s.Require().True(zeroScore.IsZero())
+}

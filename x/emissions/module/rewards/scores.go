@@ -1,6 +1,8 @@
 package rewards
 
 import (
+	"context"
+
 	"cosmossdk.io/errors"
 	alloraMath "github.com/allora-network/allora-chain/math"
 	"github.com/allora-network/allora-chain/x/emissions/keeper"
@@ -122,6 +124,8 @@ func GenerateReputerScores(
 	var instantScores []types.Score
 	var emaScores []types.Score
 	activeArr := make(map[string]bool)
+	var lowestEmaScore types.Score
+	first := true
 	for i, reputer := range reputers {
 		err := keeper.SetListeningCoefficient(
 			ctx,
@@ -149,6 +153,12 @@ func GenerateReputerScores(
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving reputer score ema")
 		}
 
+		// Track lowest EMA score
+		if first || emaScore.Score.Lt(lowestEmaScore.Score) {
+			lowestEmaScore = emaScore
+			first = false
+		}
+
 		activeArr[reputer] = true
 		instantScores = append(instantScores, instantScore)
 		emaScores = append(emaScores, emaScore)
@@ -162,6 +172,18 @@ func GenerateReputerScores(
 	err = keeper.SetPreviousTopicQuantileReputerScoreEma(ctx, topicId, topicInstantScoreQuantile)
 	if err != nil {
 		return nil, err
+	}
+
+	// Calculate initial EMA score
+	initialEmaScore, err := CalculateTopicInitialEmaScore(ctx, keeper, lowestEmaScore, topicInstantScoreQuantile)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error calculating initial EMA score")
+	}
+
+	// Store the initial EMA score
+	err = keeper.SetTopicInitialReputerEmaScore(ctx, topicId, initialEmaScore)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error setting initial reputer EMA score")
 	}
 
 	types.EmitNewReputerScoresSetEvent(ctx, instantScores)
@@ -203,6 +225,8 @@ func GenerateInferenceScores(
 		return []types.Score{}, errors.Wrapf(err, "Error getting topic")
 	}
 
+	var lowestEmaScore types.Score
+	first := true
 	for _, oneOutLoss := range networkLosses.OneOutInfererValues {
 		workerNewScore, err := oneOutLoss.Value.Sub(networkLosses.CombinedValue)
 		if err != nil {
@@ -224,6 +248,13 @@ func GenerateInferenceScores(
 		if err != nil {
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving inferer score ema")
 		}
+
+		// Track lowest EMA score
+		if first || emaScore.Score.Lt(lowestEmaScore.Score) {
+			lowestEmaScore = emaScore
+			first = false
+		}
+
 		activeArr[oneOutLoss.Worker] = true
 		instantScores = append(instantScores, instantScore)
 		emaScores = append(emaScores, emaScore)
@@ -237,6 +268,18 @@ func GenerateInferenceScores(
 	err = keeper.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, topicInstantScoreQuantile)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error setting previous topic quantile inferer score ema")
+	}
+
+	// Calculate initial EMA score
+	initialEmaScore, err := CalculateTopicInitialEmaScore(ctx, keeper, lowestEmaScore, topicInstantScoreQuantile)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error calculating initial EMA score")
+	}
+
+	// Store the initial EMA score
+	err = keeper.SetTopicInitialInfererEmaScore(ctx, topicId, initialEmaScore)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error setting initial inferer EMA score")
 	}
 
 	types.EmitNewInfererScoresSetEvent(ctx, instantScores)
@@ -295,6 +338,8 @@ func GenerateForecastScores(
 		return []types.Score{}, errors.Wrapf(err, "Error getting fUniqueAgg")
 	}
 
+	var lowestEmaScore types.Score
+	first := true
 	for i, oneInNaiveLoss := range networkLosses.OneInForecasterValues {
 		// Get worker score for one in loss
 		workerScoreOneIn, err := networkLosses.NaiveValue.Sub(oneInNaiveLoss.Value)
@@ -324,6 +369,12 @@ func GenerateForecastScores(
 			return []types.Score{}, errors.Wrapf(err, "Error calculating and saving forecaster score ema")
 		}
 
+		// Track lowest EMA score
+		if first || emaScore.Score.Lt(lowestEmaScore.Score) {
+			lowestEmaScore = emaScore
+			first = false
+		}
+
 		activeArr[oneInNaiveLoss.Worker] = true
 		instantScores = append(instantScores, instantScore)
 		emaScores = append(emaScores, emaScore)
@@ -337,6 +388,18 @@ func GenerateForecastScores(
 	err = keeper.SetPreviousTopicQuantileForecasterScoreEma(ctx, topicId, topicInstantScoreQuantile)
 	if err != nil {
 		return nil, err
+	}
+
+	// Calculate initial EMA score
+	initialEmaScore, err := CalculateTopicInitialEmaScore(ctx, keeper, lowestEmaScore, topicInstantScoreQuantile)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error calculating initial EMA score")
+	}
+
+	// Store the initial EMA score
+	err = keeper.SetTopicInitialForecasterEmaScore(ctx, topicId, initialEmaScore)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error setting initial forecaster EMA score")
 	}
 
 	// Emit forecaster performance scores
@@ -482,4 +545,39 @@ func EnsureAllWorkersPresentWithheld(
 	}
 
 	return values
+}
+
+// CalculateTopicInitialEmaScore calculates the initial EMA score for a topic
+func CalculateTopicInitialEmaScore(
+	ctx context.Context,
+	keeper keeper.Keeper,
+	lowestScore types.Score,
+	last25thPercentile alloraMath.Dec,
+) (alloraMath.Dec, error) {
+	// Get kappa parameter from module params
+	params, err := keeper.GetParams(ctx)
+	if err != nil {
+		return alloraMath.Dec{}, errors.Wrapf(err, "error getting module params")
+	}
+	kappa := params.NewParticipantScoreInitializationKappa
+
+	// Calculate initial score using formula: (1+kappa)*lowestScore-kappa*last25thPercentile
+	onePlusKappa, err := alloraMath.NewDecFromInt64(1).Add(kappa)
+	if err != nil {
+		return alloraMath.Dec{}, errors.Wrapf(err, "error creating 1+kappa")
+	}
+	lowestScoreMul, err := lowestScore.Score.Mul(onePlusKappa)
+	if err != nil {
+		return alloraMath.Dec{}, errors.Wrapf(err, "error multiplying lowest score by 1+kappa")
+	}
+	last25thPercentileMul, err := last25thPercentile.Mul(kappa)
+	if err != nil {
+		return alloraMath.Dec{}, errors.Wrapf(err, "error multiplying last 25th percentile by kappa")
+	}
+	initialScore, err := lowestScoreMul.Sub(last25thPercentileMul)
+	if err != nil {
+		return alloraMath.Dec{}, errors.Wrapf(err, "error calculating initial score")
+	}
+
+	return initialScore, nil
 }

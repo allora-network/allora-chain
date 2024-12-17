@@ -16,55 +16,56 @@ import (
 )
 
 var (
-	md_Params                                           protoreflect.MessageDescriptor
-	fd_Params_version                                   protoreflect.FieldDescriptor
-	fd_Params_max_serialized_msg_length                 protoreflect.FieldDescriptor
-	fd_Params_min_topic_weight                          protoreflect.FieldDescriptor
-	fd_Params_required_minimum_stake                    protoreflect.FieldDescriptor
-	fd_Params_remove_stake_delay_window                 protoreflect.FieldDescriptor
-	fd_Params_min_epoch_length                          protoreflect.FieldDescriptor
-	fd_Params_beta_entropy                              protoreflect.FieldDescriptor
-	fd_Params_learning_rate                             protoreflect.FieldDescriptor
-	fd_Params_max_gradient_threshold                    protoreflect.FieldDescriptor
-	fd_Params_min_stake_fraction                        protoreflect.FieldDescriptor
-	fd_Params_max_unfulfilled_worker_requests           protoreflect.FieldDescriptor
-	fd_Params_max_unfulfilled_reputer_requests          protoreflect.FieldDescriptor
-	fd_Params_topic_reward_stake_importance             protoreflect.FieldDescriptor
-	fd_Params_topic_reward_fee_revenue_importance       protoreflect.FieldDescriptor
-	fd_Params_topic_reward_alpha                        protoreflect.FieldDescriptor
-	fd_Params_task_reward_alpha                         protoreflect.FieldDescriptor
-	fd_Params_validators_vs_allora_percent_reward       protoreflect.FieldDescriptor
-	fd_Params_max_samples_to_scale_scores               protoreflect.FieldDescriptor
-	fd_Params_max_top_inferers_to_reward                protoreflect.FieldDescriptor
-	fd_Params_max_top_forecasters_to_reward             protoreflect.FieldDescriptor
-	fd_Params_max_top_reputers_to_reward                protoreflect.FieldDescriptor
-	fd_Params_create_topic_fee                          protoreflect.FieldDescriptor
-	fd_Params_gradient_descent_max_iters                protoreflect.FieldDescriptor
-	fd_Params_registration_fee                          protoreflect.FieldDescriptor
-	fd_Params_default_page_limit                        protoreflect.FieldDescriptor
-	fd_Params_max_page_limit                            protoreflect.FieldDescriptor
-	fd_Params_min_epoch_length_record_limit             protoreflect.FieldDescriptor
-	fd_Params_blocks_per_month                          protoreflect.FieldDescriptor
-	fd_Params_p_reward_inference                        protoreflect.FieldDescriptor
-	fd_Params_p_reward_forecast                         protoreflect.FieldDescriptor
-	fd_Params_p_reward_reputer                          protoreflect.FieldDescriptor
-	fd_Params_c_reward_inference                        protoreflect.FieldDescriptor
-	fd_Params_c_reward_forecast                         protoreflect.FieldDescriptor
-	fd_Params_c_norm                                    protoreflect.FieldDescriptor
-	fd_Params_epsilon_reputer                           protoreflect.FieldDescriptor
-	fd_Params_half_max_process_stake_removals_end_block protoreflect.FieldDescriptor
-	fd_Params_epsilon_safe_div                          protoreflect.FieldDescriptor
-	fd_Params_data_sending_fee                          protoreflect.FieldDescriptor
-	fd_Params_max_elements_per_forecast                 protoreflect.FieldDescriptor
-	fd_Params_max_active_topics_per_block               protoreflect.FieldDescriptor
-	fd_Params_max_string_length                         protoreflect.FieldDescriptor
-	fd_Params_initial_regret_quantile                   protoreflect.FieldDescriptor
-	fd_Params_p_norm_safe_div                           protoreflect.FieldDescriptor
-	fd_Params_global_whitelist_enabled                  protoreflect.FieldDescriptor
-	fd_Params_topic_creator_whitelist_enabled           protoreflect.FieldDescriptor
-	fd_Params_min_experienced_worker_regrets            protoreflect.FieldDescriptor
-	fd_Params_inference_outlier_detection_threshold     protoreflect.FieldDescriptor
-	fd_Params_inference_outlier_detection_alpha         protoreflect.FieldDescriptor
+	md_Params                                            protoreflect.MessageDescriptor
+	fd_Params_version                                    protoreflect.FieldDescriptor
+	fd_Params_max_serialized_msg_length                  protoreflect.FieldDescriptor
+	fd_Params_min_topic_weight                           protoreflect.FieldDescriptor
+	fd_Params_required_minimum_stake                     protoreflect.FieldDescriptor
+	fd_Params_remove_stake_delay_window                  protoreflect.FieldDescriptor
+	fd_Params_min_epoch_length                           protoreflect.FieldDescriptor
+	fd_Params_beta_entropy                               protoreflect.FieldDescriptor
+	fd_Params_learning_rate                              protoreflect.FieldDescriptor
+	fd_Params_max_gradient_threshold                     protoreflect.FieldDescriptor
+	fd_Params_min_stake_fraction                         protoreflect.FieldDescriptor
+	fd_Params_max_unfulfilled_worker_requests            protoreflect.FieldDescriptor
+	fd_Params_max_unfulfilled_reputer_requests           protoreflect.FieldDescriptor
+	fd_Params_topic_reward_stake_importance              protoreflect.FieldDescriptor
+	fd_Params_topic_reward_fee_revenue_importance        protoreflect.FieldDescriptor
+	fd_Params_topic_reward_alpha                         protoreflect.FieldDescriptor
+	fd_Params_task_reward_alpha                          protoreflect.FieldDescriptor
+	fd_Params_validators_vs_allora_percent_reward        protoreflect.FieldDescriptor
+	fd_Params_max_samples_to_scale_scores                protoreflect.FieldDescriptor
+	fd_Params_max_top_inferers_to_reward                 protoreflect.FieldDescriptor
+	fd_Params_max_top_forecasters_to_reward              protoreflect.FieldDescriptor
+	fd_Params_max_top_reputers_to_reward                 protoreflect.FieldDescriptor
+	fd_Params_create_topic_fee                           protoreflect.FieldDescriptor
+	fd_Params_gradient_descent_max_iters                 protoreflect.FieldDescriptor
+	fd_Params_registration_fee                           protoreflect.FieldDescriptor
+	fd_Params_default_page_limit                         protoreflect.FieldDescriptor
+	fd_Params_max_page_limit                             protoreflect.FieldDescriptor
+	fd_Params_min_epoch_length_record_limit              protoreflect.FieldDescriptor
+	fd_Params_blocks_per_month                           protoreflect.FieldDescriptor
+	fd_Params_p_reward_inference                         protoreflect.FieldDescriptor
+	fd_Params_p_reward_forecast                          protoreflect.FieldDescriptor
+	fd_Params_p_reward_reputer                           protoreflect.FieldDescriptor
+	fd_Params_c_reward_inference                         protoreflect.FieldDescriptor
+	fd_Params_c_reward_forecast                          protoreflect.FieldDescriptor
+	fd_Params_c_norm                                     protoreflect.FieldDescriptor
+	fd_Params_epsilon_reputer                            protoreflect.FieldDescriptor
+	fd_Params_half_max_process_stake_removals_end_block  protoreflect.FieldDescriptor
+	fd_Params_epsilon_safe_div                           protoreflect.FieldDescriptor
+	fd_Params_data_sending_fee                           protoreflect.FieldDescriptor
+	fd_Params_max_elements_per_forecast                  protoreflect.FieldDescriptor
+	fd_Params_max_active_topics_per_block                protoreflect.FieldDescriptor
+	fd_Params_max_string_length                          protoreflect.FieldDescriptor
+	fd_Params_initial_regret_quantile                    protoreflect.FieldDescriptor
+	fd_Params_p_norm_safe_div                            protoreflect.FieldDescriptor
+	fd_Params_global_whitelist_enabled                   protoreflect.FieldDescriptor
+	fd_Params_topic_creator_whitelist_enabled            protoreflect.FieldDescriptor
+	fd_Params_min_experienced_worker_regrets             protoreflect.FieldDescriptor
+	fd_Params_inference_outlier_detection_threshold      protoreflect.FieldDescriptor
+	fd_Params_inference_outlier_detection_alpha          protoreflect.FieldDescriptor
+	fd_Params_new_participant_score_initialization_kappa protoreflect.FieldDescriptor
 )
 
 func init() {
@@ -118,6 +119,7 @@ func init() {
 	fd_Params_min_experienced_worker_regrets = md_Params.Fields().ByName("min_experienced_worker_regrets")
 	fd_Params_inference_outlier_detection_threshold = md_Params.Fields().ByName("inference_outlier_detection_threshold")
 	fd_Params_inference_outlier_detection_alpha = md_Params.Fields().ByName("inference_outlier_detection_alpha")
+	fd_Params_new_participant_score_initialization_kappa = md_Params.Fields().ByName("new_participant_score_initialization_kappa")
 }
 
 var _ protoreflect.Message = (*fastReflection_Params)(nil)
@@ -473,6 +475,12 @@ func (x *fastReflection_Params) Range(f func(protoreflect.FieldDescriptor, proto
 			return
 		}
 	}
+	if x.NewParticipantScoreInitializationKappa != "" {
+		value := protoreflect.ValueOfString(x.NewParticipantScoreInitializationKappa)
+		if !f(fd_Params_new_participant_score_initialization_kappa, value) {
+			return
+		}
+	}
 }
 
 // Has reports whether a field is populated.
@@ -584,6 +592,8 @@ func (x *fastReflection_Params) Has(fd protoreflect.FieldDescriptor) bool {
 		return x.InferenceOutlierDetectionThreshold != ""
 	case "emissions.v7.Params.inference_outlier_detection_alpha":
 		return x.InferenceOutlierDetectionAlpha != ""
+	case "emissions.v7.Params.new_participant_score_initialization_kappa":
+		return x.NewParticipantScoreInitializationKappa != ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v7.Params"))
@@ -696,6 +706,8 @@ func (x *fastReflection_Params) Clear(fd protoreflect.FieldDescriptor) {
 		x.InferenceOutlierDetectionThreshold = ""
 	case "emissions.v7.Params.inference_outlier_detection_alpha":
 		x.InferenceOutlierDetectionAlpha = ""
+	case "emissions.v7.Params.new_participant_score_initialization_kappa":
+		x.NewParticipantScoreInitializationKappa = ""
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v7.Params"))
@@ -856,6 +868,9 @@ func (x *fastReflection_Params) Get(descriptor protoreflect.FieldDescriptor) pro
 	case "emissions.v7.Params.inference_outlier_detection_alpha":
 		value := x.InferenceOutlierDetectionAlpha
 		return protoreflect.ValueOfString(value)
+	case "emissions.v7.Params.new_participant_score_initialization_kappa":
+		value := x.NewParticipantScoreInitializationKappa
+		return protoreflect.ValueOfString(value)
 	default:
 		if descriptor.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v7.Params"))
@@ -972,6 +987,8 @@ func (x *fastReflection_Params) Set(fd protoreflect.FieldDescriptor, value proto
 		x.InferenceOutlierDetectionThreshold = value.Interface().(string)
 	case "emissions.v7.Params.inference_outlier_detection_alpha":
 		x.InferenceOutlierDetectionAlpha = value.Interface().(string)
+	case "emissions.v7.Params.new_participant_score_initialization_kappa":
+		x.NewParticipantScoreInitializationKappa = value.Interface().(string)
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v7.Params"))
@@ -1088,6 +1105,8 @@ func (x *fastReflection_Params) Mutable(fd protoreflect.FieldDescriptor) protore
 		panic(fmt.Errorf("field inference_outlier_detection_threshold of message emissions.v7.Params is not mutable"))
 	case "emissions.v7.Params.inference_outlier_detection_alpha":
 		panic(fmt.Errorf("field inference_outlier_detection_alpha of message emissions.v7.Params is not mutable"))
+	case "emissions.v7.Params.new_participant_score_initialization_kappa":
+		panic(fmt.Errorf("field new_participant_score_initialization_kappa of message emissions.v7.Params is not mutable"))
 	default:
 		if fd.IsExtension() {
 			panic(fmt.Errorf("proto3 declared messages do not support extensions: emissions.v7.Params"))
@@ -1196,6 +1215,8 @@ func (x *fastReflection_Params) NewField(fd protoreflect.FieldDescriptor) protor
 	case "emissions.v7.Params.inference_outlier_detection_threshold":
 		return protoreflect.ValueOfString("")
 	case "emissions.v7.Params.inference_outlier_detection_alpha":
+		return protoreflect.ValueOfString("")
+	case "emissions.v7.Params.new_participant_score_initialization_kappa":
 		return protoreflect.ValueOfString("")
 	default:
 		if fd.IsExtension() {
@@ -1437,6 +1458,10 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if l > 0 {
 			n += 2 + l + runtime.Sov(uint64(l))
 		}
+		l = len(x.NewParticipantScoreInitializationKappa)
+		if l > 0 {
+			n += 2 + l + runtime.Sov(uint64(l))
+		}
 		if x.unknownFields != nil {
 			n += len(x.unknownFields)
 		}
@@ -1465,6 +1490,15 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 		if x.unknownFields != nil {
 			i -= len(x.unknownFields)
 			copy(dAtA[i:], x.unknownFields)
+		}
+		if len(x.NewParticipantScoreInitializationKappa) > 0 {
+			i -= len(x.NewParticipantScoreInitializationKappa)
+			copy(dAtA[i:], x.NewParticipantScoreInitializationKappa)
+			i = runtime.EncodeVarint(dAtA, i, uint64(len(x.NewParticipantScoreInitializationKappa)))
+			i--
+			dAtA[i] = 0x3
+			i--
+			dAtA[i] = 0xba
 		}
 		if len(x.InferenceOutlierDetectionAlpha) > 0 {
 			i -= len(x.InferenceOutlierDetectionAlpha)
@@ -3154,6 +3188,38 @@ func (x *fastReflection_Params) ProtoMethods() *protoiface.Methods {
 				}
 				x.InferenceOutlierDetectionAlpha = string(dAtA[iNdEx:postIndex])
 				iNdEx = postIndex
+			case 55:
+				if wireType != 2 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, fmt.Errorf("proto: wrong wireType = %d for field NewParticipantScoreInitializationKappa", wireType)
+				}
+				var stringLen uint64
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrIntOverflow
+					}
+					if iNdEx >= l {
+						return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					stringLen |= uint64(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				intStringLen := int(stringLen)
+				if intStringLen < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				postIndex := iNdEx + intStringLen
+				if postIndex < 0 {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, runtime.ErrInvalidLength
+				}
+				if postIndex > l {
+					return protoiface.UnmarshalOutput{NoUnkeyedLiterals: input.NoUnkeyedLiterals, Flags: input.Flags}, io.ErrUnexpectedEOF
+				}
+				x.NewParticipantScoreInitializationKappa = string(dAtA[iNdEx:postIndex])
+				iNdEx = postIndex
 			default:
 				iNdEx = preIndex
 				skippy, err := runtime.Skip(dAtA[iNdEx:])
@@ -3273,8 +3339,9 @@ type Params struct {
 	TopicCreatorWhitelistEnabled bool   `protobuf:"varint,51,opt,name=topic_creator_whitelist_enabled,json=topicCreatorWhitelistEnabled,proto3" json:"topic_creator_whitelist_enabled,omitempty"` // topic creator whitelist enabled => only topic creator whitelisted actors can create topics
 	MinExperiencedWorkerRegrets  uint64 `protobuf:"varint,52,opt,name=min_experienced_worker_regrets,json=minExperiencedWorkerRegrets,proto3" json:"min_experienced_worker_regrets,omitempty"`    // minimum number of experienced workers required to use their regrets
 	// for calculating the topic initial regret
-	InferenceOutlierDetectionThreshold string `protobuf:"bytes,53,opt,name=inference_outlier_detection_threshold,json=inferenceOutlierDetectionThreshold,proto3" json:"inference_outlier_detection_threshold,omitempty"`
-	InferenceOutlierDetectionAlpha     string `protobuf:"bytes,54,opt,name=inference_outlier_detection_alpha,json=inferenceOutlierDetectionAlpha,proto3" json:"inference_outlier_detection_alpha,omitempty"`
+	InferenceOutlierDetectionThreshold     string `protobuf:"bytes,53,opt,name=inference_outlier_detection_threshold,json=inferenceOutlierDetectionThreshold,proto3" json:"inference_outlier_detection_threshold,omitempty"`
+	InferenceOutlierDetectionAlpha         string `protobuf:"bytes,54,opt,name=inference_outlier_detection_alpha,json=inferenceOutlierDetectionAlpha,proto3" json:"inference_outlier_detection_alpha,omitempty"`
+	NewParticipantScoreInitializationKappa string `protobuf:"bytes,55,opt,name=new_participant_score_initialization_kappa,json=newParticipantScoreInitializationKappa,proto3" json:"new_participant_score_initialization_kappa,omitempty"`
 }
 
 func (x *Params) Reset() {
@@ -3633,6 +3700,13 @@ func (x *Params) GetInferenceOutlierDetectionAlpha() string {
 	return ""
 }
 
+func (x *Params) GetNewParticipantScoreInitializationKappa() string {
+	if x != nil {
+		return x.NewParticipantScoreInitializationKappa
+	}
+	return ""
+}
+
 var File_emissions_v7_params_proto protoreflect.FileDescriptor
 
 var file_emissions_v7_params_proto_rawDesc = []byte{
@@ -3642,7 +3716,7 @@ var file_emissions_v7_params_proto_rawDesc = []byte{
 	0x2f, 0x61, 0x6d, 0x69, 0x6e, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x19, 0x63, 0x6f,
 	0x73, 0x6d, 0x6f, 0x73, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x63, 0x6f, 0x73, 0x6d, 0x6f,
 	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x14, 0x67, 0x6f, 0x67, 0x6f, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xff, 0x20,
+	0x74, 0x6f, 0x2f, 0x67, 0x6f, 0x67, 0x6f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x95, 0x22,
 	0x0a, 0x06, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73,
 	0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69,
 	0x6f, 0x6e, 0x12, 0x39, 0x0a, 0x19, 0x6d, 0x61, 0x78, 0x5f, 0x73, 0x65, 0x72, 0x69, 0x61, 0x6c,
@@ -3895,31 +3969,41 @@ var file_emissions_v7_params_proto_rawDesc = []byte{
 	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74,
 	0x68, 0x2e, 0x44, 0x65, 0x63, 0x52, 0x1e, 0x69, 0x6e, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
 	0x4f, 0x75, 0x74, 0x6c, 0x69, 0x65, 0x72, 0x44, 0x65, 0x74, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e,
-	0x41, 0x6c, 0x70, 0x68, 0x61, 0x4a, 0x04, 0x08, 0x04, 0x10, 0x05, 0x4a, 0x04, 0x08, 0x1a, 0x10,
-	0x1b, 0x4a, 0x04, 0x08, 0x1b, 0x10, 0x1c, 0x4a, 0x04, 0x08, 0x27, 0x10, 0x28, 0x4a, 0x04, 0x08,
-	0x29, 0x10, 0x2a, 0x52, 0x14, 0x6d, 0x61, 0x78, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x73, 0x5f,
-	0x70, 0x65, 0x72, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x52, 0x1b, 0x6d, 0x69, 0x6e, 0x5f, 0x65,
-	0x66, 0x66, 0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x72,
-	0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x23, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x74, 0x72,
-	0x69, 0x65, 0x73, 0x5f, 0x74, 0x6f, 0x5f, 0x66, 0x75, 0x6c, 0x66, 0x69, 0x6c, 0x5f, 0x6e, 0x6f,
-	0x6e, 0x63, 0x65, 0x73, 0x5f, 0x77, 0x6f, 0x72, 0x6b, 0x65, 0x72, 0x52, 0x1c, 0x74, 0x6f, 0x70,
-	0x69, 0x63, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x5f, 0x64,
-	0x65, 0x63, 0x61, 0x79, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x52, 0x24, 0x6d, 0x61, 0x78, 0x5f, 0x72,
-	0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x5f, 0x74, 0x6f, 0x5f, 0x66, 0x75, 0x6c, 0x66, 0x69, 0x6c,
-	0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x73, 0x5f, 0x72, 0x65, 0x70, 0x75, 0x74, 0x65, 0x72, 0x42,
-	0xc1, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2e, 0x76, 0x37, 0x42, 0x0b, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x50, 0x72, 0x6f, 0x74,
-	0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61,
-	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x37, 0x3b, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f,
-	0x6e, 0x73, 0x76, 0x37, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58, 0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x37, 0xca, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x37, 0xe2, 0x02, 0x18, 0x45, 0x6d, 0x69, 0x73, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x37, 0x5c, 0x47, 0x50, 0x42, 0x4d, 0x65, 0x74, 0x61, 0x64,
-	0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a,
-	0x3a, 0x56, 0x37, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x41, 0x6c, 0x70, 0x68, 0x61, 0x12, 0x93, 0x01, 0x0a, 0x2a, 0x6e, 0x65, 0x77, 0x5f, 0x70, 0x61,
+	0x72, 0x74, 0x69, 0x63, 0x69, 0x70, 0x61, 0x6e, 0x74, 0x5f, 0x73, 0x63, 0x6f, 0x72, 0x65, 0x5f,
+	0x69, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x69, 0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x6b,
+	0x61, 0x70, 0x70, 0x61, 0x18, 0x37, 0x20, 0x01, 0x28, 0x09, 0x42, 0x37, 0xc8, 0xde, 0x1f, 0x00,
+	0xda, 0xde, 0x1f, 0x2f, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61,
+	0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c,
+	0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69, 0x6e, 0x2f, 0x6d, 0x61, 0x74, 0x68, 0x2e,
+	0x44, 0x65, 0x63, 0x52, 0x26, 0x6e, 0x65, 0x77, 0x50, 0x61, 0x72, 0x74, 0x69, 0x63, 0x69, 0x70,
+	0x61, 0x6e, 0x74, 0x53, 0x63, 0x6f, 0x72, 0x65, 0x49, 0x6e, 0x69, 0x74, 0x69, 0x61, 0x6c, 0x69,
+	0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4b, 0x61, 0x70, 0x70, 0x61, 0x4a, 0x04, 0x08, 0x04, 0x10,
+	0x05, 0x4a, 0x04, 0x08, 0x1a, 0x10, 0x1b, 0x4a, 0x04, 0x08, 0x1b, 0x10, 0x1c, 0x4a, 0x04, 0x08,
+	0x27, 0x10, 0x28, 0x4a, 0x04, 0x08, 0x29, 0x10, 0x2a, 0x52, 0x14, 0x6d, 0x61, 0x78, 0x5f, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x73, 0x5f, 0x70, 0x65, 0x72, 0x5f, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x52,
+	0x1b, 0x6d, 0x69, 0x6e, 0x5f, 0x65, 0x66, 0x66, 0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x74,
+	0x6f, 0x70, 0x69, 0x63, 0x5f, 0x72, 0x65, 0x76, 0x65, 0x6e, 0x75, 0x65, 0x52, 0x23, 0x6d, 0x61,
+	0x78, 0x5f, 0x72, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x5f, 0x74, 0x6f, 0x5f, 0x66, 0x75, 0x6c,
+	0x66, 0x69, 0x6c, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x73, 0x5f, 0x77, 0x6f, 0x72, 0x6b, 0x65,
+	0x72, 0x52, 0x1c, 0x74, 0x6f, 0x70, 0x69, 0x63, 0x5f, 0x66, 0x65, 0x65, 0x5f, 0x72, 0x65, 0x76,
+	0x65, 0x6e, 0x75, 0x65, 0x5f, 0x64, 0x65, 0x63, 0x61, 0x79, 0x5f, 0x72, 0x61, 0x74, 0x65, 0x52,
+	0x24, 0x6d, 0x61, 0x78, 0x5f, 0x72, 0x65, 0x74, 0x72, 0x69, 0x65, 0x73, 0x5f, 0x74, 0x6f, 0x5f,
+	0x66, 0x75, 0x6c, 0x66, 0x69, 0x6c, 0x5f, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x73, 0x5f, 0x72, 0x65,
+	0x70, 0x75, 0x74, 0x65, 0x72, 0x42, 0xc1, 0x01, 0x0a, 0x10, 0x63, 0x6f, 0x6d, 0x2e, 0x65, 0x6d,
+	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x76, 0x37, 0x42, 0x0b, 0x50, 0x61, 0x72, 0x61,
+	0x6d, 0x73, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x50, 0x01, 0x5a, 0x4f, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x6e, 0x65, 0x74,
+	0x77, 0x6f, 0x72, 0x6b, 0x2f, 0x61, 0x6c, 0x6c, 0x6f, 0x72, 0x61, 0x2d, 0x63, 0x68, 0x61, 0x69,
+	0x6e, 0x2f, 0x78, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x61, 0x70,
+	0x69, 0x2f, 0x65, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x76, 0x37, 0x3b, 0x65,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x76, 0x37, 0xa2, 0x02, 0x03, 0x45, 0x58, 0x58,
+	0xaa, 0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x56, 0x37, 0xca,
+	0x02, 0x0c, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x37, 0xe2, 0x02,
+	0x18, 0x45, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x5c, 0x56, 0x37, 0x5c, 0x47, 0x50,
+	0x42, 0x4d, 0x65, 0x74, 0x61, 0x64, 0x61, 0x74, 0x61, 0xea, 0x02, 0x0d, 0x45, 0x6d, 0x69, 0x73,
+	0x73, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x3a, 0x56, 0x37, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (

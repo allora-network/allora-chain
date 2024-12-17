@@ -246,6 +246,11 @@ type Keeper struct {
 
 	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
+
+	// Initial EMA scores for inferers, forecasters, and reputers
+	initialInfererEmaScore    collections.Map[TopicId, alloraMath.Dec]
+	initialForecasterEmaScore collections.Map[TopicId, alloraMath.Dec]
+	initialReputerEmaScore    collections.Map[TopicId, alloraMath.Dec]
 }
 
 func NewKeeper(
@@ -346,6 +351,9 @@ func NewKeeper(
 		rewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
 		lastMedianInferences:                      collections.NewMap(sb, types.LastMedianInferencesKey, "last_median_inferences", collections.Uint64Key, alloraMath.DecValue),
 		madInferences:                             collections.NewMap(sb, types.MadInferencesKey, "mad_inferences", collections.Uint64Key, alloraMath.DecValue),
+		initialInfererEmaScore:                    collections.NewMap(sb, types.InitialInfererEmaScoreKey, "initial_inferer_ema_score", collections.Uint64Key, alloraMath.DecValue),
+		initialForecasterEmaScore:                 collections.NewMap(sb, types.InitialForecasterEmaScoreKey, "initial_forecaster_ema_score", collections.Uint64Key, alloraMath.DecValue),
+		initialReputerEmaScore:                    collections.NewMap(sb, types.InitialReputerEmaScoreKey, "initial_reputer_ema_score", collections.Uint64Key, alloraMath.DecValue),
 	}
 
 	schema, err := sb.Build()
@@ -1301,6 +1309,21 @@ func (k *Keeper) AppendInference(
 		return k.InsertInference(ctx, topic.Id, *inference)
 	}
 
+	// Check if the inferer is new
+	// If new, set his score to the topic initial EMA score
+	if previousEmaScore.BlockHeight == 0 {
+		initialEmaScore, err := k.GetTopicInitialInfererEmaScore(ctx, topic.Id)
+		if err != nil {
+			return errorsmod.Wrap(err, "error getting topic initial ema score")
+		}
+		return k.SetInfererScoreEma(ctx, topic.Id, inference.Inferer, types.Score{
+			TopicId:     topic.Id,
+			Address:     inference.Inferer,
+			BlockHeight: nonceBlockHeight,
+			Score:       initialEmaScore,
+		})
+	}
+
 	// Else ...
 	// Checks if the inferer's previous EMA score is greater than the lowest EMA score
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -1442,6 +1465,21 @@ func (k *Keeper) AppendForecast(
 			return errorsmod.Wrap(err, "error adding active forecaster")
 		}
 		return k.InsertForecast(ctx, topic.Id, *forecast)
+	}
+
+	// Check if the forecaster is new
+	// If new, set his score to the topic initial EMA score
+	if previousEmaScore.BlockHeight == 0 {
+		initialEmaScore, err := k.GetTopicInitialForecasterEmaScore(ctx, topic.Id)
+		if err != nil {
+			return errorsmod.Wrap(err, "error getting topic initial ema score")
+		}
+		return k.SetForecasterScoreEma(ctx, topic.Id, forecast.Forecaster, types.Score{
+			TopicId:     topic.Id,
+			Address:     forecast.Forecaster,
+			BlockHeight: nonceBlockHeight,
+			Score:       initialEmaScore,
+		})
 	}
 
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -1635,6 +1673,21 @@ func (k *Keeper) AppendReputerLoss(
 			return errorsmod.Wrap(err, "error adding active reputer")
 		}
 		return k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
+	}
+
+	// Check if the reputer is new
+	// If new, set his score to the topic initial EMA score
+	if previousEmaScore.BlockHeight == 0 {
+		initialEmaScore, err := k.GetTopicInitialReputerEmaScore(ctx, topic.Id)
+		if err != nil {
+			return errorsmod.Wrap(err, "error getting topic initial ema score")
+		}
+		return k.SetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer, types.Score{
+			TopicId:     topic.Id,
+			Address:     reputerLoss.ValueBundle.Reputer,
+			BlockHeight: nonceBlockHeight,
+			Score:       initialEmaScore,
+		})
 	}
 
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -3177,10 +3230,8 @@ func (k *Keeper) SetInfererScoreEma(ctx context.Context, topicId TopicId, worker
 	return k.infererScoreEmas.Set(ctx, key, score)
 }
 
-// GetInfererScoreEma gets the EMA score for an inferer in a topic
-// If no prior score exists, initializes it using (1+kappa)*lowestEmaScore-kappa*last25thPercentile
-func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, inferer ActorId) (types.Score, error) {
-	key := collections.Join(topicId, inferer)
+func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
+	key := collections.Join(topicId, worker)
 	score, err := k.infererScoreEmas.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
 		return types.Score{
@@ -4230,4 +4281,58 @@ func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission cosm
 		return errorsmod.Wrap(types.ErrInvalidValue, "current block emission reward cannot be negative")
 	}
 	return k.rewardCurrentBlockEmission.Set(ctx, emission)
+}
+
+func (k *Keeper) GetTopicInitialInfererEmaScore(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	score, err := k.initialInfererEmaScore.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	}
+	return score, err
+}
+
+func (k *Keeper) SetTopicInitialInfererEmaScore(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateDec(score); err != nil {
+		return errorsmod.Wrap(err, "score validation failed")
+	}
+	return k.initialInfererEmaScore.Set(ctx, topicId, score)
+}
+
+func (k *Keeper) GetTopicInitialForecasterEmaScore(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	score, err := k.initialForecasterEmaScore.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	}
+	return score, err
+}
+
+func (k *Keeper) SetTopicInitialForecasterEmaScore(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateDec(score); err != nil {
+		return errorsmod.Wrap(err, "score validation failed")
+	}
+	return k.initialForecasterEmaScore.Set(ctx, topicId, score)
+}
+
+func (k *Keeper) GetTopicInitialReputerEmaScore(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	score, err := k.initialReputerEmaScore.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	}
+	return score, err
+}
+
+func (k *Keeper) SetTopicInitialReputerEmaScore(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateDec(score); err != nil {
+		return errorsmod.Wrap(err, "score validation failed")
+	}
+	return k.initialReputerEmaScore.Set(ctx, topicId, score)
 }

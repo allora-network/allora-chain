@@ -105,4 +105,7 @@ var (
 	TopicReputerWhitelistEnabledKey                   = collections.NewPrefix(90)
 	LastMedianInferencesKey                           = collections.NewPrefix(91)
 	MadInferencesKey                                  = collections.NewPrefix(92)
+	InitialInfererEmaScoreKey                         = collections.NewPrefix(93)
+	InitialForecasterEmaScoreKey                      = collections.NewPrefix(94)
+	InitialReputerEmaScoreKey                         = collections.NewPrefix(95)
 )
