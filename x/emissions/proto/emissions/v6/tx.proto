@@ -209,14 +209,6 @@ message OptionalParams {
   repeated bool global_whitelist_enabled = 50;
   repeated bool topic_creator_whitelist_enabled = 51;
   repeated uint64 min_experienced_worker_regrets = 52;
-  repeated string inference_outlier_detection_threshold = 53 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
-  repeated string inference_outlier_detection_alpha = 54 [
-    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
-    (gogoproto.nullable) = false
-  ];
 }
 
 message UpdateParamsRequest {
