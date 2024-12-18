@@ -53,7 +53,7 @@ type Actor struct {
 }
 
 // stringer for actor
-func (a Actor) String() string {
+func (an Actor) String() string {
 	return a.name
 }
 
