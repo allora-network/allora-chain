@@ -131,6 +131,7 @@ func (s *QueryServerTestSuite) TestGetWorkerInferenceScoresAtBlock() {
 	maxNumScores := 5
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
+	params.MaxTopInferersToReward = 1
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 

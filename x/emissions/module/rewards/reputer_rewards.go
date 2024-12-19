@@ -83,22 +83,21 @@ func GetReputerTaskEntropy(
 	if len(emaRewardFractions) == 0 {
 		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "invalid reward fractions after EMA")
 	}
-	// Calculate modified reward fractions and persist for next round
-	numberRatio, err := NumberRatio(emaRewardFractions)
-	if err != nil {
-		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate reputer number ratio")
-	}
-	modifiedRewardFractions, err := ModifiedRewardFractions(emaRewardFractions)
-	if err != nil {
-		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate modified reward fractions")
-	}
 	for i, reputer := range reputers {
-		err := k.SetPreviousReputerRewardFraction(ctx, topicId, reputer, modifiedRewardFractions[i])
+		err := k.SetPreviousReputerRewardFraction(ctx, topicId, reputer, emaRewardFractions[i])
 		if err != nil {
 			return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous reputer reward fraction")
 		}
 	}
-
+	// Calculate modified reward fractions and persist for next round
+	modifiedRewardFractions, err := ModifiedRewardFractions(emaRewardFractions)
+	if err != nil {
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate modified reward fractions")
+	}
+	numberRatio, err := NumberRatio(modifiedRewardFractions)
+	if err != nil {
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate reputer number ratio")
+	}
 	if numReputers > 1 {
 		entropy, err = Entropy(
 			modifiedRewardFractions,

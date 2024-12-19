@@ -435,12 +435,7 @@ func GetAllReputersOutput(
 	stakes []alloraMath.Dec,
 	initialCoefficients []alloraMath.Dec,
 	numReputers int64,
-	learningRate alloraMath.Dec,
-	gradientDescentMaxIters uint64,
-	epsilonReputer alloraMath.Dec,
-	epsilon alloraMath.Dec,
-	minStakeFraction alloraMath.Dec,
-	maxGradientThreshold alloraMath.Dec,
+	params types.Params,
 ) ([]alloraMath.Dec, []alloraMath.Dec, error) {
 	coefficients := make([]alloraMath.Dec, len(initialCoefficients))
 	copy(coefficients, initialCoefficients)
@@ -448,10 +443,8 @@ func GetAllReputersOutput(
 	oldCoefficients := make([]alloraMath.Dec, numReputers)
 	var i uint64 = 0
 	var maxGradient = alloraMath.OneDec()
-	// finalScores := make([]alloraMath.Dec, numReputers)
 	newScores := make([]alloraMath.Dec, numReputers)
-
-	for maxGradient.Gte(maxGradientThreshold) && i < gradientDescentMaxIters {
+	for maxGradient.Gte(params.MaxGradientThreshold) && i < params.GradientDescentMaxIters {
 		copy(oldCoefficients, coefficients)
 		gradient := make([]alloraMath.Dec, numReputers)
 
@@ -463,7 +456,7 @@ func GetAllReputersOutput(
 			coeffs := make([]alloraMath.Dec, len(coefficients))
 			copy(coeffs, coefficients)
 
-			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, epsilonReputer, epsilon)
+			scores, err := GetAllConsensusScores(allLosses, stakes, coeffs, numReputers, params.EpsilonReputer, params.EpsilonSafeDiv)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
@@ -474,7 +467,7 @@ func GetAllReputersOutput(
 				return nil, nil, err
 			}
 
-			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, epsilonReputer, epsilon)
+			scores2, err := GetAllConsensusScores(allLosses, stakes, coeffs2, numReputers, params.EpsilonReputer, params.EpsilonSafeDiv)
 			if err != nil {
 				return nil, nil, errors.Wrapf(err, "error in GetAllConsensusScores")
 			}
@@ -503,7 +496,7 @@ func GetAllReputersOutput(
 
 		newCoefficients := make([]alloraMath.Dec, len(coefficients))
 		for j := range coefficients {
-			learningRateTimesGradient, err := learningRate.Mul(gradient[j])
+			learningRateTimesGradient, err := params.LearningRate.Mul(gradient[j])
 			if err != nil {
 				return nil, nil, err
 			}
@@ -548,13 +541,13 @@ func GetAllReputersOutput(
 		if err != nil {
 			return nil, nil, err
 		}
-		if listenedStakeFraction.Lt(minStakeFraction) {
+		if listenedStakeFraction.Lt(params.MinStakeFraction) {
 			for l := range newCoefficients {
 				coeffDiff, err := newCoefficients[l].Sub(oldCoefficients[l])
 				if err != nil {
 					return nil, nil, err
 				}
-				listenedDiff, err := minStakeFraction.Sub(listenedStakeFractionOld)
+				listenedDiff, err := params.MinStakeFraction.Sub(listenedStakeFractionOld)
 				if err != nil {
 					return nil, nil, err
 				}
@@ -563,7 +556,7 @@ func GetAllReputersOutput(
 					return nil, nil, err
 				}
 				if stakedFracDiff.IsZero() {
-					i = gradientDescentMaxIters
+					i = params.GradientDescentMaxIters
 				} else {
 					coeffDiffTimesListenedDiff, err := coeffDiff.Mul(listenedDiff)
 					if err != nil {
@@ -586,7 +579,7 @@ func GetAllReputersOutput(
 		if err != nil {
 			return nil, nil, err
 		}
-		maxGradient, err = maxAbsDiffCoeff.Quo(learningRate)
+		maxGradient, err = maxAbsDiffCoeff.Quo(params.LearningRate)
 		if err != nil {
 			return nil, nil, err
 		}

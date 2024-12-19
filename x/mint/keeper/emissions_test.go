@@ -65,12 +65,15 @@ func (s *MintKeeperTestSuite) TestNumberLockedTokensBeforeVest() {
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
-	result, _, _, _ := keeper.GetLockedVestingTokens(
+	monthsUnlocked := cosmosMath.NewIntFromUint64(uint64(2))
+	result, _, _, _, updatedMonthsUnlocked := keeper.GetLockedVestingTokens(
 		bpm,
 		cosmosMath.NewIntFromUint64(bpm*2),
 		defaultParams,
+		monthsUnlocked.ToLegacyDec(),
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
+	s.Require().Equal(monthsUnlocked, updatedMonthsUnlocked)
 }
 
 func (s *MintKeeperTestSuite) TestNumberLockedTokensDuringVest() {
@@ -91,12 +94,15 @@ func (s *MintKeeperTestSuite) TestNumberLockedTokensDuringVest() {
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
-	result, _, _, _ := keeper.GetLockedVestingTokens(
+	monthsUnlocked := cosmosMath.NewIntFromUint64(uint64(13))
+	result, _, _, _, updatedMonthsUnlocked := keeper.GetLockedVestingTokens(
 		bpm,
 		cosmosMath.NewIntFromUint64(bpm*13+1),
 		defaultParams,
+		monthsUnlocked.ToLegacyDec(),
 	)
 	s.Require().True(result.Equal(expectedLocked), "expected %s, got %s", expectedLocked, result)
+	s.Require().Equal(monthsUnlocked, updatedMonthsUnlocked)
 }
 
 func (s *MintKeeperTestSuite) TestNumberLockedTokensAfterVest() {
@@ -104,12 +110,16 @@ func (s *MintKeeperTestSuite) TestNumberLockedTokensAfterVest() {
 	s.emissionsKeeper.EXPECT().GetParamsBlocksPerMonth(s.ctx).Return(uint64(525960), nil)
 	bpm, err := s.emissionsKeeper.GetParamsBlocksPerMonth(s.ctx)
 	s.Require().NoError(err)
-	result, _, _, _ := keeper.GetLockedVestingTokens(
+	monthsUnlocked := cosmosMath.NewIntFromUint64(uint64(40))
+	result, _, _, _, updatedMonthsUnlocked := keeper.GetLockedVestingTokens(
 		bpm,
 		cosmosMath.NewIntFromUint64(bpm*40),
 		defaultParams,
+		monthsUnlocked.ToLegacyDec(),
 	)
 	s.Require().True(result.Equal(cosmosMath.ZeroInt()))
+	thirtySixMonths := cosmosMath.NewIntFromUint64(uint64(36))
+	s.Require().Equal(thirtySixMonths, updatedMonthsUnlocked)
 }
 
 func (s *MintKeeperTestSuite) TestTargetRewardEmissionPerUnitStakedTokenSimple() {
@@ -256,11 +266,18 @@ func (s *MintKeeperTestSuite) TestGetLockedVestingTokens() {
 	teamAccumulated := alloraMath.ZeroDec()
 	for i := 0; i < 96; i++ {
 		epoch := s.epochGet[i]
-		result, resultPreseed, resultSeed, resultTeam := keeper.GetLockedVestingTokens(
+		monthsUnlocked := cosmosMath.NewIntFromUint64(uint64(i))
+		result, resultPreseed, resultSeed, resultTeam, updatedMonthsUnlocked := keeper.GetLockedVestingTokens(
 			blocksPerMonth,
 			cosmosMath.NewIntFromUint64(blocksPerMonth*uint64(i)),
 			types.DefaultParams(),
+			monthsUnlocked.ToLegacyDec(),
 		)
+		if i > 36 {
+			s.Require().True(updatedMonthsUnlocked.Equal(cosmosMath.NewIntFromUint64(uint64(36))))
+		} else {
+			s.Require().True(monthsUnlocked.Equal(updatedMonthsUnlocked), "expected %s, got %s", monthsUnlocked, updatedMonthsUnlocked)
+		}
 		resultPreseedDec, err := alloraMath.NewDecFromSdkInt(resultPreseed)
 		s.Require().NoError(err)
 		resultSeedDec, err := alloraMath.NewDecFromSdkInt(resultSeed)

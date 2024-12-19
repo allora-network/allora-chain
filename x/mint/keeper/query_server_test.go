@@ -25,7 +25,7 @@ type MintTestSuite struct {
 	suite.Suite
 
 	ctx         sdk.Context
-	queryClient types.QueryClient
+	queryClient types.QueryServiceClient
 	mintKeeper  keeper.Keeper
 }
 
@@ -58,13 +58,13 @@ func (suite *MintTestSuite) SetupTest() {
 	err := suite.mintKeeper.Params.Set(suite.ctx, types.DefaultParams())
 	suite.Require().NoError(err)
 	queryHelper := baseapp.NewQueryServerTestHelper(testCtx.Ctx, encCfg.InterfaceRegistry)
-	types.RegisterQueryServer(queryHelper, keeper.NewQueryServerImpl(suite.mintKeeper))
+	types.RegisterQueryServiceServer(queryHelper, keeper.NewQueryServerImpl(suite.mintKeeper))
 
-	suite.queryClient = types.NewQueryClient(queryHelper)
+	suite.queryClient = types.NewQueryServiceClient(queryHelper)
 }
 
 func (suite *MintTestSuite) TestGRPCParams() {
-	params, err := suite.queryClient.Params(gocontext.Background(), &types.QueryParamsRequest{})
+	params, err := suite.queryClient.Params(gocontext.Background(), &types.QueryServiceParamsRequest{})
 	suite.Require().NoError(err)
 	kparams, err := suite.mintKeeper.Params.Get(suite.ctx)
 	suite.Require().NoError(err)

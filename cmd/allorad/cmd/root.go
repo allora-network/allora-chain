@@ -111,14 +111,14 @@ func NewRootCmd() *cobra.Command {
 		},
 	}
 
-	// Since the IBC modules don't support dependency injection, we need to
+	// Since some legacy (i.e. IBC) modules don't support dependency injection, we need to
 	// manually register the modules on the client side.
 	// This needs to be removed after IBC supports App Wiring.
-	ibcModules := app.RegisterIBC(clientCtx.InterfaceRegistry)
-	sortedModuleKeys := alloraMath.GetSortedKeys(ibcModules)
+	legacyModules := app.RegisterLegacyModules(clientCtx.InterfaceRegistry)
+	sortedModuleKeys := alloraMath.GetSortedKeys(legacyModules)
 	for _, name := range sortedModuleKeys {
-		moduleBasicManager[name] = module.CoreAppModuleBasicAdaptor(name, ibcModules[name])
-		autoCliOpts.Modules[name] = ibcModules[name]
+		moduleBasicManager[name] = module.CoreAppModuleBasicAdaptor(name, legacyModules[name])
+		autoCliOpts.Modules[name] = legacyModules[name]
 	}
 
 	initRootCmd(rootCmd, clientCtx.TxConfig, moduleBasicManager)

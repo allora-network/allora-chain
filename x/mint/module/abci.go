@@ -19,6 +19,10 @@ func BeginBlocker(ctx context.Context, k keeper.Keeper) error {
 	if err != nil {
 		return err
 	}
+	// if emissions are not enabled, do nothing
+	if !moduleParams.EmissionEnabled {
+		return nil
+	}
 	// Get the balance of the "ecosystem" module account
 	ecosystemBalance, err := k.GetEcosystemBalance(ctx, moduleParams.MintDenom)
 	if err != nil {

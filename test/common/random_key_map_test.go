@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	testcommon "github.com/allora-network/allora-chain/test/common"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRandomKeyMap_Upsert(t *testing.T) {
@@ -269,5 +270,24 @@ func TestRandomKeyMap_Filter(t *testing.T) {
 	actualLenValues = len(filteredValues)
 	if actualLenKeys != expectedLen || actualLenValues != expectedLen {
 		t.Errorf("Expected filtered slice length to be %d, but got %d, %d", expectedLen, actualLenKeys, actualLenValues)
+	}
+}
+
+func TestRandomKeyMap_GetKeys(t *testing.T) {
+	testCases := [][]int{
+		{},
+		{1},
+		{1, 2, 3, 4, 5},
+	}
+
+	for _, keys := range testCases {
+		r := rand.New(rand.NewSource(42))
+		rkm := testcommon.NewRandomKeyMap[int, string](r)
+		// Insert some elements into the map
+		for _, key := range keys {
+			rkm.Upsert(key, "nevermind")
+		}
+
+		assert.Equal(t, keys, rkm.GetKeys())
 	}
 }

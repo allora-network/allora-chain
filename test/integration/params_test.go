@@ -25,7 +25,7 @@ func GetEmissionsParams(m testCommon.TestConfig) emissionstypes.Params {
 // get the mint params from outside the chain
 func GetMintParams(m testCommon.TestConfig) minttypes.Params {
 	ctx := context.Background()
-	paramsReq := &minttypes.QueryParamsRequest{}
+	paramsReq := &minttypes.QueryServiceParamsRequest{}
 	p, err := m.Client.QueryMint().Params(
 		ctx,
 		paramsReq,

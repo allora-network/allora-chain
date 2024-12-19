@@ -10,9 +10,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-var _ types.QueryServer = queryServer{} //nolint: exhaustruct
+var _ types.QueryServiceServer = queryServer{} //nolint: exhaustruct
 
-func NewQueryServerImpl(k Keeper) types.QueryServer {
+func NewQueryServerImpl(k Keeper) types.QueryServiceServer {
 	return queryServer{k}
 }
 
@@ -21,18 +21,18 @@ type queryServer struct {
 }
 
 // Params returns params of the mint module.
-func (q queryServer) Params(ctx context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+func (q queryServer) Params(ctx context.Context, _ *types.QueryServiceParamsRequest) (*types.QueryServiceParamsResponse, error) {
 	params, err := q.k.Params.Get(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.QueryParamsResponse{Params: params}, nil
+	return &types.QueryServiceParamsResponse{Params: params}, nil
 }
 
 // Inflation returns the annual inflation rate of the mint module.
 // note this is the _current_ inflation rate, could change at any time
-func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationRequest) (*types.QueryInflationResponse, error) {
+func (q queryServer) Inflation(ctx context.Context, _ *types.QueryServiceInflationRequest) (*types.QueryServiceInflationResponse, error) {
 	// as a crude approximation we take the last blockEmission
 	// multiply by the amount of blocks in a year,
 	// then use that relative to the current circulating supply as "inflation"
@@ -54,12 +54,13 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 		Mul(math.NewIntFromUint64(blocksPerMonth)).
 		Mul(math.NewInt(12)).
 		ToLegacyDec()
-	circulatingSupply, _, _, _, err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeight, blocksPerMonth)
+	monthsUnlocked := q.k.GetMonthsAlreadyUnlocked(ctx)
+	circulatingSupply, _, _, _, _, err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeight, blocksPerMonth, monthsUnlocked)
 	if err != nil {
 		return nil, err
 	}
 	inflation := EmissionPerYearAtCurrentBlockEmissionRate.QuoInt(circulatingSupply).MulInt64(100)
-	ret := types.QueryInflationResponse{
+	ret := types.QueryServiceInflationResponse{
 		Inflation: inflation,
 	}
 	return &ret, nil
@@ -67,7 +68,7 @@ func (q queryServer) Inflation(ctx context.Context, _ *types.QueryInflationReque
 
 // mint and inflation emission rate endpoint
 // nice way to access live chain data
-func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInfoRequest) (*types.QueryEmissionInfoResponse, error) {
+func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryServiceEmissionInfoRequest) (*types.QueryServiceEmissionInfoResponse, error) {
 	moduleParams, err := q.k.Params.Get(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get module params")
@@ -103,16 +104,20 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get number of staked tokens")
 	}
+	monthsAlreadyUnlocked := q.k.GetMonthsAlreadyUnlocked(ctx)
 	_, lockedVestingTokensPreseed,
-		lockedVestingTokensSeed, lockedVestingTokensTeam := GetLockedVestingTokens(
+		lockedVestingTokensSeed, lockedVestingTokensTeam, _ := GetLockedVestingTokens(
 		blocksPerMonth,
 		math.NewIntFromUint64(blockHeight),
-		moduleParams)
+		moduleParams,
+		monthsAlreadyUnlocked.ToLegacyDec(),
+	)
 	circulatingSupply,
 		totalSupply,
 		lockedVestingTokensTotal,
 		ecosystemLocked,
-		err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeight, blocksPerMonth)
+		updatedMonthsUnlocked,
+		err := GetCirculatingSupply(ctx, q.k, moduleParams, blockHeight, blocksPerMonth, monthsAlreadyUnlocked)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get circulating supply")
 	}
@@ -169,7 +174,7 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 	validatorCut := vPercent.Mul(blockEmission.ToLegacyDec()).TruncateInt()
 	alloraRewardsCut := blockEmission.Sub(validatorCut)
 
-	return &types.QueryEmissionInfoResponse{
+	return &types.QueryServiceEmissionInfoResponse{
 		Params:                                   moduleParams,
 		EcosystemBalance:                         ecosystemBalance,
 		PreviousBlockEmission:                    previousBlockEmission,
@@ -196,5 +201,7 @@ func (q queryServer) EmissionInfo(ctx context.Context, _ *types.QueryEmissionInf
 		ValidatorCut:                             validatorCut,
 		AlloraRewardsCut:                         alloraRewardsCut,
 		PreviousRewardEmissionPerUnitStakedToken: previousRewardEmissionPerUnitStakedToken,
+		MonthsAlreadyUnlocked:                    monthsAlreadyUnlocked,
+		UpdatedMonthsUnlocked:                    updatedMonthsUnlocked,
 	}, nil
 }

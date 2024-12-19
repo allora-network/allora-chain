@@ -10,7 +10,7 @@ import (
 
 func TestDefaultParams(t *testing.T) {
 	expectedParams := Params{
-		Version:                             "v2",
+		Version:                             "v7",
 		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),
 		RequiredMinimumStake:                cosmosMath.NewInt(10000),
 		RemoveStakeDelayWindow:              int64((60 * 60 * 24 * 7 * 3) / 3),
@@ -40,9 +40,9 @@ func TestDefaultParams(t *testing.T) {
 		MinEpochLengthRecordLimit:           int64(3),
 		MaxSerializedMsgLength:              int64(1000 * 1000),
 		BlocksPerMonth:                      uint64(864000),
-		PRewardInference:                    alloraMath.NewDecFromInt64(1),
+		PRewardInference:                    alloraMath.NewDecFromInt64(3),
 		PRewardForecast:                     alloraMath.NewDecFromInt64(3),
-		PRewardReputer:                      alloraMath.NewDecFromInt64(3),
+		PRewardReputer:                      alloraMath.NewDecFromInt64(1),
 		CRewardInference:                    alloraMath.MustNewDecFromString("0.75"),
 		CRewardForecast:                     alloraMath.MustNewDecFromString("0.75"),
 		CNorm:                               alloraMath.MustNewDecFromString("0.75"),
@@ -53,6 +53,16 @@ func TestDefaultParams(t *testing.T) {
 		MaxStringLength:                     uint64(255),
 		InitialRegretQuantile:               alloraMath.MustNewDecFromString("0.25"),
 		PNormSafeDiv:                        alloraMath.MustNewDecFromString("8.25"),
+		GlobalWhitelistEnabled:              true,
+		TopicCreatorWhitelistEnabled:        true,
+		MinExperiencedWorkerRegrets:         uint64(10),
+		InferenceOutlierDetectionThreshold:  alloraMath.MustNewDecFromString("11"),
+		InferenceOutlierDetectionAlpha:      alloraMath.MustNewDecFromString("0.2"),
+		LambdaInitialScore:                  alloraMath.MustNewDecFromString("2"),
+		GlobalWorkerWhitelistEnabled:        true,
+		GlobalReputerWhitelistEnabled:       true,
+		GlobalAdminWhitelistAppended:        true,
+		MaxWhitelistInputArrayLength:        uint64(2000),
 	}
 
 	params := DefaultParams()

@@ -373,6 +373,15 @@ message CancelRemoveDelegateStakeRequest {
 
 message CancelRemoveDelegateStakeResponse {}
 
+message RewardDelegateStakeRequest {
+  option (cosmos.msg.v1.signer) = "sender";
+  string sender = 1;
+  uint64 topic_id = 2;
+  string reputer = 3;
+}
+
+message RewardDelegateStakeResponse {}
+
 // Inferences are requested by consumers who fund topics by sending ALLO to
 // ecosystem account via TopicFund messages
 message FundTopicRequest {
@@ -408,12 +417,3 @@ message RemoveFromWhitelistAdminRequest {
 }
 
 message RemoveFromWhitelistAdminResponse {}
-
-message RewardDelegateStakeResponse {}
-
-message RewardDelegateStakeRequest {
-  option (cosmos.msg.v1.signer) = "sender";
-  string sender = 1;
-  uint64 topic_id = 2;
-  string reputer = 3;
-}

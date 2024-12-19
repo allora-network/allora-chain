@@ -16,10 +16,6 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 	defer metrics.RecordMetrics("InsertReputerPayload", time.Now(), &err)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	err = ms.k.ValidateStringIsBech32(msg.Sender)
-	if err != nil {
-		return nil, err
-	}
 
 	blockHeight := sdkCtx.BlockHeight()
 	err = msg.ReputerValueBundle.Validate()
@@ -28,9 +24,16 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 			"Reputer invalid data for block: %d", blockHeight)
 	}
 
+	canSubmit, err := ms.k.CanSubmitReputerPayload(ctx, msg.ReputerValueBundle.ValueBundle.TopicId, msg.ReputerValueBundle.ValueBundle.Reputer)
+	if err != nil {
+		return nil, err
+	} else if !canSubmit {
+		return nil, types.ErrNotPermittedToSubmitReputerPayload
+	}
+
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+		return nil, errorsmod.Wrapf(err, "Error getting params for reputer: %v", &msg.ReputerValueBundle.ValueBundle.Reputer)
 	}
 	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
 	if err != nil {
@@ -63,7 +66,7 @@ func (ms msgServer) InsertReputerPayload(ctx context.Context, msg *types.InsertR
 		return nil, errorsmod.Wrapf(
 			types.ErrReputerNonceWindowNotAvailable,
 			"Reputer window not open for topic: %d, current block %d, start window: %d, end window: %d",
-			topicId, blockHeight, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag*2,
+			topicId, blockHeight, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag, nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength*2,
 		)
 	}
 

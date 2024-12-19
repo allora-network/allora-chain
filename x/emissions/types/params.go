@@ -12,7 +12,7 @@ import (
 // DefaultParams returns default module parameters.
 func DefaultParams() Params {
 	return Params{
-		Version:                             "v2",                                         // version of the protocol should be in lockstep with github release tag version
+		Version:                             "v7",                                         // version of the protocol should be in lockstep with github release tag version
 		MinTopicWeight:                      alloraMath.MustNewDecFromString("100"),       // total weight for a topic < this => don't run inference solicatation or loss update
 		RequiredMinimumStake:                cosmosMath.NewInt(10000),                     // minimum stake required to be a worker or reputer
 		RemoveStakeDelayWindow:              int64((60 * 60 * 24 * 7 * 3) / 3),            // ~approx 3 weeks assuming 3 second block time, number of blocks to wait before finalizing a stake withdrawal
@@ -42,9 +42,9 @@ func DefaultParams() Params {
 		MinEpochLengthRecordLimit:           int64(3),                                     // minimum number of epochs to keep records for a topic
 		MaxSerializedMsgLength:              int64(1000 * 1000),                           // maximum size of data to msg and query server in bytes
 		BlocksPerMonth:                      uint64(864000),                               // ~3 seconds block time, assuming 30 days in a month 60 * 60 * 24 * 30 / 3
-		PRewardInference:                    alloraMath.NewDecFromInt64(1),                // fiducial value for rewards calculation
+		PRewardInference:                    alloraMath.NewDecFromInt64(3),                // fiducial value for rewards calculation
 		PRewardForecast:                     alloraMath.NewDecFromInt64(3),                // fiducial value for rewards calculation
-		PRewardReputer:                      alloraMath.NewDecFromInt64(3),                // fiducial value for rewards calculation
+		PRewardReputer:                      alloraMath.NewDecFromInt64(1),                // fiducial value for rewards calculation
 		CRewardInference:                    alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
 		CRewardForecast:                     alloraMath.MustNewDecFromString("0.75"),      // fiducial value for rewards calculation
 		CNorm:                               alloraMath.MustNewDecFromString("0.75"),      // fiducial value for inference synthesis
@@ -55,6 +55,16 @@ func DefaultParams() Params {
 		MaxStringLength:                     uint64(255),                                  // maximum length of strings uploaded to the chain
 		InitialRegretQuantile:               alloraMath.MustNewDecFromString("0.25"),      // quantile value for getting initial regret during network regret calculation
 		PNormSafeDiv:                        alloraMath.MustNewDecFromString("8.25"),      // pnorm divide value to calculate offset with cnorm
+		GlobalWhitelistEnabled:              true,                                         // global whitelist enabled => all global whitelisted actors can create topics and participate in all topics as workers and reputers
+		TopicCreatorWhitelistEnabled:        true,                                         // topic creator whitelist enabled => all topic creator whitelisted actors can create topics
+		MinExperiencedWorkerRegrets:         uint64(10),                                   // minimum number of experienced workers required to use their regrets for calculating the topic initial regret
+		InferenceOutlierDetectionThreshold:  alloraMath.MustNewDecFromString("11"),        // threshold for inference outlier detection
+		InferenceOutlierDetectionAlpha:      alloraMath.MustNewDecFromString("0.2"),       // alpha for inference outlier detection
+		LambdaInitialScore:                  alloraMath.MustNewDecFromString("2"),         // lambda for new participant score initialization
+		GlobalWorkerWhitelistEnabled:        true,                                         // global worker whitelist enabled => the global worker whitelist determines which workers can participate in all topics
+		GlobalReputerWhitelistEnabled:       true,                                         // global reputer whitelist enabled => the global reputer whitelist determines which reputers can participate in all topics
+		GlobalAdminWhitelistAppended:        true,                                         // global admins enabled => the global admins whitelist determines which admins can create topics and participate in all topics as workers and reputers
+		MaxWhitelistInputArrayLength:        uint64(2000),                                 // maximum length of input arrays for whitelist operations
 	}
 }
 
@@ -188,6 +198,18 @@ func (p Params) Validate() error {
 	}
 	if err := validatePNormSafeDiv(p.PNormSafeDiv); err != nil {
 		return errorsmod.Wrap(err, "params validation failure: pnorm safe div")
+	}
+	if err := validateMinExperiencedWorkerRegrets(p.MinExperiencedWorkerRegrets); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: min experienced worker regrets")
+	}
+	if err := validateInferenceOutlierDetectionThreshold(p.InferenceOutlierDetectionThreshold); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: inference outlier detection threshold")
+	}
+	if err := validateInferenceOutlierDetectionAlpha(p.InferenceOutlierDetectionAlpha); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: inference outlier detection alpha")
+	}
+	if err := validateLambdaInitialScore(p.LambdaInitialScore); err != nil {
+		return errorsmod.Wrap(err, "params validation failure: lambda initial score")
 	}
 	return nil
 }
@@ -597,6 +619,38 @@ func isAlloraDecZeroOrLessThanOne(a alloraMath.Dec) bool {
 func validateDataSendingFee(i cosmosMath.Int) error {
 	if err := ValidateSdkIntRepresentingMonetaryValue(i); err != nil {
 		return errorsmod.Wrap(err, ErrValidationMustBeGreaterthanZero.Error())
+	}
+	return nil
+}
+
+// No validation needed as it is a uint
+func validateMinExperiencedWorkerRegrets(i uint64) error {
+	return nil
+}
+
+func validateInferenceOutlierDetectionThreshold(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	} else if i.IsNegative() {
+		return ErrValidationMustBeGreaterthanZero
+	}
+	return nil
+}
+
+func validateInferenceOutlierDetectionAlpha(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	} else if !isAlloraDecBetweenZeroAndOneInclusive(i) {
+		return ErrValidationMustBeBetweenZeroAndOne
+	}
+	return nil
+}
+
+func validateLambdaInitialScore(i alloraMath.Dec) error {
+	if err := ValidateDec(i); err != nil {
+		return err
+	} else if i.IsNegative() {
+		return ErrValidationMustBeGreaterthanZero
 	}
 	return nil
 }

@@ -38,7 +38,7 @@ type Client struct {
 	QueryBanks         []banktypes.QueryClient             // query clients for bank
 	QueryDistributions []distributiontypes.QueryClient     // query clients for distribution
 	QueryEmissionses   []emissionstypes.QueryServiceClient // query clients for emissions
-	QueryMints         []minttypes.QueryClient             // query clients for mint
+	QueryMints         []minttypes.QueryServiceClient      // query clients for mint
 	QueryGovs          []govtypesv1.QueryClient            // query clients for gov
 	QueryUpgrades      []upgradetypes.QueryClient          // query clients for upgrades
 	RpcCounterSeed     int64                               // if round-robin which RPC to use next, if random, seed to use
@@ -65,7 +65,7 @@ func NewClient(
 	queryBanks := make([]banktypes.QueryClient, len(nodeRpcAddresses))
 	queryDistributions := make([]distributiontypes.QueryClient, len(nodeRpcAddresses))
 	queryEmissionses := make([]emissionstypes.QueryServiceClient, len(nodeRpcAddresses))
-	queryMints := make([]minttypes.QueryClient, len(nodeRpcAddresses))
+	queryMints := make([]minttypes.QueryServiceClient, len(nodeRpcAddresses))
 	queryGovs := make([]govtypesv1.QueryClient, len(nodeRpcAddresses))
 	queryUpgrades := make([]upgradetypes.QueryClient, len(nodeRpcAddresses))
 
@@ -81,6 +81,7 @@ func NewClient(
 			cosmosclient.WithHome(alloraHomeDir),
 			cosmosclient.WithGas("auto"),
 			cosmosclient.WithGasAdjustment(1.2),
+			cosmosclient.WithFees("10000000uallo"),
 		)
 		require.NoError(t, err)
 		ccCtx := cosmosClient.Context()
@@ -90,7 +91,7 @@ func NewClient(
 		queryBanks[i] = banktypes.NewQueryClient(ccCtx)
 		queryDistributions[i] = distributiontypes.NewQueryClient(ccCtx)
 		queryEmissionses[i] = emissionstypes.NewQueryServiceClient(ccCtx)
-		queryMints[i] = minttypes.NewQueryClient(ccCtx)
+		queryMints[i] = minttypes.NewQueryServiceClient(ccCtx)
 		queryGovs[i] = govtypesv1.NewQueryClient(ccCtx)
 		queryUpgrades[i] = upgradetypes.NewQueryClient(ccCtx)
 
@@ -160,7 +161,7 @@ func (c *Client) QueryEmissions() emissionstypes.QueryServiceClient {
 	return c.QueryEmissionses[c.getNextClientNumber()]
 }
 
-func (c *Client) QueryMint() minttypes.QueryClient {
+func (c *Client) QueryMint() minttypes.QueryServiceClient {
 	return c.QueryMints[c.getNextClientNumber()]
 }
 

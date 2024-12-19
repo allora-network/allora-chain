@@ -11,6 +11,7 @@ var (
 	PreviousRewardEmissionPerUnitStakedTokenKey = collections.NewPrefix(139)
 	PreviousBlockEmissionKey                    = collections.NewPrefix(140)
 	EcosystemTokensMintedKey                    = collections.NewPrefix(141)
+	MonthsUnlockedKey                           = collections.NewPrefix(142)
 )
 
 const (

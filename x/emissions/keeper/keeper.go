@@ -12,6 +12,7 @@ import (
 	cosmosMath "cosmossdk.io/math"
 	"github.com/allora-network/allora-chain/app/params"
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/utils/fn"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -182,6 +183,12 @@ type Keeper struct {
 	// Current block emission, set by mint module
 	rewardCurrentBlockEmission collections.Item[cosmosMath.Int]
 
+	// Last median per topic
+	lastMedianInferences collections.Map[TopicId, alloraMath.Dec]
+
+	// MAD (Median Absolute Deviation) per topic
+	madInferences collections.Map[TopicId, alloraMath.Dec]
+
 	/// NONCES
 
 	// map of open worker nonce windows for topics on particular block heights
@@ -223,12 +230,36 @@ type Keeper struct {
 
 	/// WHITELISTS
 
+	// can change parameters and decide who can be included in any whitelist
 	whitelistAdmins collections.KeySet[ActorId]
+	// actors who can create topics and participate in all topics as workers and reputers
+	globalWhitelist collections.KeySet[ActorId]
+	// global workers can participate in all topics as workers
+	globalWorkerWhitelist collections.KeySet[ActorId]
+	// global reputers can participate in all topics as reputers
+	globalReputerWhitelist collections.KeySet[ActorId]
+	// global admins can add global workers, global reputers, topic actors, topic reputers
+	globalAdminWhitelist collections.KeySet[ActorId]
+	// whitelist of actors who can create topics
+	topicCreatorWhitelist collections.KeySet[ActorId]
+	// map from topic id to whitelist of workers
+	topicWorkerWhitelist collections.KeySet[collections.Pair[TopicId, ActorId]]
+	// map from topic id to whitelist of reputers
+	topicReputerWhitelist collections.KeySet[collections.Pair[TopicId, ActorId]]
+	// map from topic id to whether the whitelist is enabled for topic workers
+	topicWorkerWhitelistEnabled collections.KeySet[TopicId]
+	// map from topic id to whether the whitelist is enabled for topic reputers
+	topicReputerWhitelistEnabled collections.KeySet[TopicId]
 
 	/// RECORD COMMITS
 
 	topicLastWorkerCommit  collections.Map[TopicId, types.TimestampedActorNonce]
 	topicLastReputerCommit collections.Map[TopicId, types.TimestampedActorNonce]
+
+	// Initial EMA scores for inferers, forecasters, and reputers
+	initialInfererEmaScore    collections.Map[TopicId, alloraMath.Dec]
+	initialForecasterEmaScore collections.Map[TopicId, alloraMath.Dec]
+	initialReputerEmaScore    collections.Map[TopicId, alloraMath.Dec]
 }
 
 func NewKeeper(
@@ -290,6 +321,15 @@ func NewKeeper(
 		latestOneOutForecasterInfererNetworkRegrets:    collections.NewMap(sb, types.LatestOneOutForecasterInfererNetworkRegretsKey, "latest_one_out_forecaster_inferer_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
 		latestOneOutForecasterForecasterNetworkRegrets: collections.NewMap(sb, types.LatestOneOutForecasterForecasterNetworkRegretsKey, "latest_one_out_forecaster_forecaster_network_regrets", collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey), codec.CollValue[types.TimestampedValue](cdc)),
 		whitelistAdmins:                           collections.NewKeySet(sb, types.WhitelistAdminsKey, "whitelist_admins", collections.StringKey),
+		globalWhitelist:                           collections.NewKeySet(sb, types.GlobalWhitelistKey, "global_whitelist", collections.StringKey),
+		globalWorkerWhitelist:                     collections.NewKeySet(sb, types.GlobalWorkerWhitelistKey, "global_worker_whitelist", collections.StringKey),
+		globalReputerWhitelist:                    collections.NewKeySet(sb, types.GlobalReputerWhitelistKey, "global_reputer_whitelist", collections.StringKey),
+		globalAdminWhitelist:                      collections.NewKeySet(sb, types.GlobalAdminWhitelistKey, "global_admin_whitelist", collections.StringKey),
+		topicCreatorWhitelist:                     collections.NewKeySet(sb, types.TopicCreatorWhitelistKey, "topic_creator_whitelist", collections.StringKey),
+		topicWorkerWhitelist:                      collections.NewKeySet(sb, types.TopicWorkerWhitelistKey, "topic_worker_whitelist", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		topicReputerWhitelist:                     collections.NewKeySet(sb, types.TopicReputerWhitelistKey, "topic_reputer_whitelist", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey)),
+		topicWorkerWhitelistEnabled:               collections.NewKeySet(sb, types.TopicWorkerWhitelistEnabledKey, "topic_worker_whitelist_enabled", collections.Uint64Key),
+		topicReputerWhitelistEnabled:              collections.NewKeySet(sb, types.TopicReputerWhitelistEnabledKey, "topic_reputer_whitelist_enabled", collections.Uint64Key),
 		infererScoresByBlock:                      collections.NewMap(sb, types.InferenceScoresKey, "inferer_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		forecasterScoresByBlock:                   collections.NewMap(sb, types.ForecastScoresKey, "forecaster_scores_by_block", collections.PairKeyCodec(collections.Uint64Key, collections.Int64Key), codec.CollValue[types.Scores](cdc)),
 		infererScoreEmas:                          collections.NewMap(sb, types.InfererScoreEmasKey, "latest_inferer_scores_by_worker", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), codec.CollValue[types.Score](cdc)),
@@ -321,6 +361,11 @@ func NewKeeper(
 		lowestReputerScoreEma:                     collections.NewMap(sb, types.LowestReputerScoreEmaKey, "lowest_reputer_score_ema", collections.Uint64Key, codec.CollValue[types.Score](cdc)),
 		totalSumPreviousTopicWeights:              collections.NewItem(sb, types.TotalSumPreviousTopicWeightsKey, "total_sum_previous_topic_weights", alloraMath.DecValue),
 		rewardCurrentBlockEmission:                collections.NewItem(sb, types.RewardCurrentBlockEmissionKey, "reward_current_block_emission", sdk.IntValue),
+		lastMedianInferences:                      collections.NewMap(sb, types.LastMedianInferencesKey, "last_median_inferences", collections.Uint64Key, alloraMath.DecValue),
+		madInferences:                             collections.NewMap(sb, types.MadInferencesKey, "mad_inferences", collections.Uint64Key, alloraMath.DecValue),
+		initialInfererEmaScore:                    collections.NewMap(sb, types.InitialInfererEmaScoreKey, "initial_inferer_ema_score", collections.Uint64Key, alloraMath.DecValue),
+		initialForecasterEmaScore:                 collections.NewMap(sb, types.InitialForecasterEmaScoreKey, "initial_forecaster_ema_score", collections.Uint64Key, alloraMath.DecValue),
+		initialReputerEmaScore:                    collections.NewMap(sb, types.InitialReputerEmaScoreKey, "initial_reputer_ema_score", collections.Uint64Key, alloraMath.DecValue),
 	}
 
 	schema, err := sb.Build()
@@ -582,10 +627,9 @@ func (k *Keeper) AddReputerNonce(ctx context.Context, topicId TopicId, nonce *ty
 
 func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId) (types.Nonces, error) {
 	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Nonces{Nonces: []*types.Nonce{}}, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Nonces{Nonces: []*types.Nonce{}}, nil
+	} else if err != nil {
 		return types.Nonces{Nonces: []*types.Nonce{}}, errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 	return nonces, nil
@@ -593,10 +637,9 @@ func (k *Keeper) GetUnfulfilledWorkerNonces(ctx context.Context, topicId TopicId
 
 func (k *Keeper) GetUnfulfilledReputerNonces(ctx context.Context, topicId TopicId) (types.ReputerRequestNonces, error) {
 	nonces, err := k.unfulfilledReputerNonces.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.ReputerRequestNonces{Nonces: []*types.ReputerRequestNonce{}}, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.ReputerRequestNonces{Nonces: []*types.ReputerRequestNonce{}}, nil
+	} else if err != nil {
 		return types.ReputerRequestNonces{Nonces: []*types.ReputerRequestNonce{}}, errorsmod.Wrap(err, "error getting unfulfilled reputer nonces")
 	}
 	return nonces, nil
@@ -681,20 +724,20 @@ func (k *Keeper) GetInfererNetworkRegret(
 	regret types.TimestampedValue, noPrior bool, err error) {
 	key := collections.Join(topicId, worker)
 	regret, err = k.latestInfererNetworkRegrets.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			topic, err := k.GetTopic(ctx, topicId)
-			if err != nil {
-				return types.TimestampedValue{
-					BlockHeight: 0,
-					Value:       alloraMath.ZeroDec(),
-				}, false, errorsmod.Wrap(err, "error getting topic")
-			}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
 			return types.TimestampedValue{
 				BlockHeight: 0,
-				Value:       topic.InitialRegret,
-			}, true, nil
+				Value:       alloraMath.ZeroDec(),
+			}, false, errorsmod.Wrap(err, "error getting topic")
 		}
+		return types.TimestampedValue{
+			BlockHeight: 0,
+			Value:       topic.InitialRegret,
+		}, true, nil
+	} else if err != nil {
 		return types.TimestampedValue{
 			BlockHeight: 0,
 			Value:       alloraMath.ZeroDec(),
@@ -729,19 +772,20 @@ func (k *Keeper) GetForecasterNetworkRegret(
 	regret types.TimestampedValue, noPrior bool, err error) {
 	key := collections.Join(topicId, worker)
 	regret, err = k.latestForecasterNetworkRegrets.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			topic, err := k.GetTopic(ctx, topicId)
-			if err != nil {
-				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
-			}
-			return types.TimestampedValue{
-				BlockHeight: 0,
-				Value:       topic.InitialRegret,
-			}, true, nil
+
+	if errors.Is(err, collections.ErrNotFound) {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
+		return types.TimestampedValue{
+			BlockHeight: 0,
+			Value:       topic.InitialRegret,
+		}, true, nil
+	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting forecaster network regret")
 	}
+
 	return regret, false, nil
 }
 
@@ -775,17 +819,16 @@ func (k *Keeper) GetOneInForecasterNetworkRegret(
 	regret types.TimestampedValue, noPrior bool, err error) {
 	key := collections.Join3(topicId, oneInForecaster, inferer)
 	regret, err = k.latestOneInForecasterNetworkRegrets.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			topic, err := k.GetTopic(ctx, topicId)
-			if err != nil {
-				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
-			}
-			return types.TimestampedValue{
-				BlockHeight: 0,
-				Value:       topic.InitialRegret,
-			}, true, nil
+	if errors.Is(err, collections.ErrNotFound) {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
+		return types.TimestampedValue{
+			BlockHeight: 0,
+			Value:       topic.InitialRegret,
+		}, true, nil
+	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one in forecaster network regret")
 	}
 	return regret, false, nil
@@ -814,17 +857,17 @@ func (k *Keeper) GetNaiveInfererNetworkRegret(ctx context.Context, topicId Topic
 	regret types.TimestampedValue, noPrior bool, err error) {
 	key := collections.Join(topicId, inferer)
 	regret, err = k.latestNaiveInfererNetworkRegrets.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			topic, err := k.GetTopic(ctx, topicId)
-			if err != nil {
-				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
-			}
-			return types.TimestampedValue{
-				BlockHeight: 0,
-				Value:       topic.InitialRegret,
-			}, true, nil
+
+	if errors.Is(err, collections.ErrNotFound) {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
+		return types.TimestampedValue{
+			BlockHeight: 0,
+			Value:       topic.InitialRegret,
+		}, true, nil
+	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting naive inferer network regret")
 	}
 	return regret, false, nil
@@ -860,17 +903,17 @@ func (k *Keeper) GetOneOutInfererInfererNetworkRegret(
 	regret types.TimestampedValue, noPrior bool, err error) {
 	key := collections.Join3(topicId, oneOutInferer, inferer)
 	regret, err = k.latestOneOutInfererInfererNetworkRegrets.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			topic, err := k.GetTopic(ctx, topicId)
-			if err != nil {
-				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
-			}
-			return types.TimestampedValue{
-				BlockHeight: 0,
-				Value:       topic.InitialRegret,
-			}, true, nil
+
+	if errors.Is(err, collections.ErrNotFound) {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
+		return types.TimestampedValue{
+			BlockHeight: 0,
+			Value:       topic.InitialRegret,
+		}, true, nil
+	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out inferer inferer network regret")
 	}
 	return regret, false, nil
@@ -906,17 +949,17 @@ func (k *Keeper) GetOneOutInfererForecasterNetworkRegret(
 	regret types.TimestampedValue, noPrior bool, err error) {
 	key := collections.Join3(topicId, oneOutInferer, forecaster)
 	regret, err = k.latestOneOutInfererForecasterNetworkRegrets.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			topic, err := k.GetTopic(ctx, topicId)
-			if err != nil {
-				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
-			}
-			return types.TimestampedValue{
-				BlockHeight: 0,
-				Value:       topic.InitialRegret,
-			}, true, nil
+
+	if errors.Is(err, collections.ErrNotFound) {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
+		return types.TimestampedValue{
+			BlockHeight: 0,
+			Value:       topic.InitialRegret,
+		}, true, nil
+	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out inferer forecaster network regret")
 	}
 	return regret, false, nil
@@ -952,17 +995,17 @@ func (k *Keeper) GetOneOutForecasterInfererNetworkRegret(
 	regret types.TimestampedValue, noPrior bool, err error) {
 	key := collections.Join3(topicId, oneOutForecaster, inferer)
 	regret, err = k.latestOneOutForecasterInfererNetworkRegrets.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			topic, err := k.GetTopic(ctx, topicId)
-			if err != nil {
-				return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
-			}
-			return types.TimestampedValue{
-				BlockHeight: 0,
-				Value:       topic.InitialRegret,
-			}, true, nil
+
+	if errors.Is(err, collections.ErrNotFound) {
+		topic, err := k.GetTopic(ctx, topicId)
+		if err != nil {
+			return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting topic")
 		}
+		return types.TimestampedValue{
+			BlockHeight: 0,
+			Value:       topic.InitialRegret,
+		}, true, nil
+	} else if err != nil {
 		return types.TimestampedValue{}, false, errorsmod.Wrap(err, "error getting one out forecaster inferer network regret")
 	}
 	return regret, false, nil
@@ -1035,7 +1078,57 @@ func (k Keeper) GetParams(ctx context.Context) (types.Params, error) {
 
 /// INFERENCES, FORECASTS
 
-func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Inferences, error) {
+// Remove the inferences that are outliers
+func (k *Keeper) FilterOutlierResistantInferences(ctx context.Context, topicId TopicId, inferences types.Inferences) (types.Inferences, error) {
+	lastMedian, err := k.GetLastMedianInferences(ctx, topicId)
+	if err != nil {
+		return types.Inferences{}, errorsmod.Wrap(err, "error getting last median inferences")
+	}
+	if lastMedian.IsZero() {
+		return inferences, nil
+	}
+	mad, err := k.GetMadInferences(ctx, topicId)
+	if err != nil {
+		return types.Inferences{}, errorsmod.Wrap(err, "error getting mad inferences")
+	}
+	if mad.IsZero() {
+		return inferences, nil
+	}
+
+	filteredInferences := types.Inferences{
+		Inferences: []*types.Inference{},
+	}
+
+	params, err := k.GetParams(ctx)
+	if err != nil {
+		return types.Inferences{}, errorsmod.Wrap(err, "error getting params")
+	}
+	outlierThresholdMultiplier := params.InferenceOutlierDetectionThreshold
+	for _, inf := range inferences.Inferences {
+		// Calculate absolute difference from median
+		diff, err := inf.Value.Sub(lastMedian)
+		if err != nil {
+			return types.Inferences{}, errorsmod.Wrap(err, "error getting difference from median")
+		}
+		absDiff, err := diff.Abs()
+		if err != nil {
+			return types.Inferences{}, errorsmod.Wrap(err, "error getting absolute difference")
+		}
+
+		thresholdMad, err := outlierThresholdMultiplier.Mul(mad)
+		if err != nil {
+			return types.Inferences{}, errorsmod.Wrap(err, "error getting threshold mad")
+		}
+		// Check if within threshold
+		if absDiff.Lte(thresholdMad) {
+			filteredInferences.Inferences = append(filteredInferences.Inferences, inf)
+		}
+	}
+
+	return filteredInferences, nil
+}
+
+func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight, outlierResistant bool) (*types.Inferences, error) {
 	key := collections.Join(topicId, block)
 	inferences, err := k.allInferences.Get(ctx, key)
 	if errors.Is(err, collections.ErrNotFound) {
@@ -1043,11 +1136,19 @@ func (k *Keeper) GetInferencesAtBlock(ctx context.Context, topicId TopicId, bloc
 	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting inferences at block")
 	}
+
+	if outlierResistant {
+		filteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, inferences)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "error filtering outlier resistant inferences")
+		}
+		return &filteredInferences, nil
+	}
 	return &inferences, nil
 }
 
 // GetLatestTopicInferences retrieves the latest topic inferences and its block height.
-func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId) (*types.Inferences, BlockHeight, error) {
+func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId, outlierResistant bool) (*types.Inferences, BlockHeight, error) {
 	rng := collections.NewPrefixedPairRange[TopicId, BlockHeight](topicId).Descending()
 
 	iter, err := k.allInferences.Iterate(ctx, rng)
@@ -1056,17 +1157,102 @@ func (k *Keeper) GetLatestTopicInferences(ctx context.Context, topicId TopicId) 
 	}
 	defer iter.Close()
 
+	inferences := &types.Inferences{
+		Inferences: make([]*types.Inference, 0),
+	}
+	var blockHeight int64 = 0
+
 	if iter.Valid() {
 		keyValue, err := iter.KeyValue()
 		if err != nil {
 			return nil, 0, errorsmod.Wrap(err, "error getting key value")
 		}
-		return &keyValue.Value, keyValue.Key.K2(), nil
+		inferences = &keyValue.Value
+		blockHeight = keyValue.Key.K2()
+
+		if outlierResistant {
+			filteredInferences, err := k.FilterOutlierResistantInferences(ctx, topicId, *inferences)
+			if err != nil {
+				return nil, 0, errorsmod.Wrap(err, "error filtering outlier resistant inferences")
+			}
+			inferences = &filteredInferences
+		}
 	}
 
-	return &types.Inferences{
-		Inferences: make([]*types.Inference, 0),
-	}, 0, nil
+	return inferences, blockHeight, nil
+}
+
+// UpdateNetworkInferencesOutlierMetrics recalculates the network inferences outlier metrics
+// (MAD and median) for a given topic and with inferences from the given block height
+func (k *Keeper) UpdateNetworkInferencesOutlierMetrics(
+	ctx sdk.Context,
+	topicId TopicId,
+	inferenceBlockHeight BlockHeight,
+) error {
+	// Get all inferences at the block height
+	inferences, err := k.GetInferencesAtBlock(ctx, topicId, inferenceBlockHeight, false)
+	if err != nil {
+		return errorsmod.Wrap(err, "while getting inferences")
+	}
+	if len(inferences.Inferences) == 0 {
+		// If there are no inferences, do not update the metrics
+		ctx.Logger().Info("no inferences found, skipping update of outlier metrics, topicId: ", topicId)
+		return nil
+	}
+
+	// Create an array of the values
+	values := fn.Map(inferences.Inferences[:], func(inf *types.Inference) alloraMath.Dec { return inf.Value })
+
+	// Calculate MAD (median absolute deviation)
+	mad, median, err := alloraMath.MedianAbsoluteDeviation(values)
+	if err != nil {
+		return errorsmod.Wrap(err, "while calculating MAD")
+	}
+	// Validate mad and median
+	if err := types.ValidateDec(mad); err != nil {
+		return errorsmod.Wrap(err, "mad is not valid")
+	}
+	if err := types.ValidateDec(median); err != nil {
+		return errorsmod.Wrap(err, "median is not valid")
+	}
+
+	var newMad alloraMath.Dec
+	// Get current mad
+	previousMad, err := k.GetMadInferences(ctx, topicId)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting last mad")
+	}
+	if previousMad.IsZero() {
+		// if zero, set to current mad
+		newMad = mad
+	} else {
+		// Get alpha from params
+		params, err := k.GetParams(ctx)
+		if err != nil {
+			return errorsmod.Wrap(err, "error getting params")
+		}
+		alpha := params.InferenceOutlierDetectionAlpha
+
+		// Calculate EMA of MAD
+		newMad, err = alloraMath.CalcEma(alpha, mad, previousMad, false)
+		if err != nil {
+			return errorsmod.Wrap(err, "error calculating ema of mad")
+		}
+	}
+
+	// Set last mad inferences
+	err = k.SetMadInferences(ctx, topicId, newMad)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting last mad inferences")
+	}
+
+	// Set last median inferences
+	err = k.SetLastMedianInferences(ctx, topicId, median)
+	if err != nil {
+		return errorsmod.Wrap(err, "error setting last median inferences")
+	}
+
+	return nil
 }
 
 func (k *Keeper) GetForecastsAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.Forecasts, error) {
@@ -1096,19 +1282,7 @@ func (k *Keeper) AppendInference(
 		return errors.New("inference already submitted")
 	}
 
-	workerAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting active inferers for topic")
-	}
-	// If there are less than maxTopInferersToReward, add the current inferer
-	if uint64(len(workerAddresses)) < maxTopInferersToReward {
-		err := k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
-		if err != nil {
-			return errorsmod.Wrap(err, "error adding active inferer")
-		}
-		return k.InsertInference(ctx, topic.Id, *inference)
-	}
-
+	// Get previous EMA score for the current inferer
 	previousEmaScore, err := k.GetInfererScoreEma(ctx, topic.Id, inference.Inferer)
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting inferer score ema")
@@ -1118,21 +1292,61 @@ func (k *Keeper) AppendInference(
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
-	lowestEmaScore, found, err := k.GetLowestInfererScoreEma(ctx, topic.Id)
+	// Penalise the inferer if needed
+	previousEmaScore, err = k.ApplyLivenessPenaltyToInferer(ctx, topic, nonceBlockHeight, previousEmaScore)
 	if err != nil {
-		return errorsmod.Wrap(err, "error getting lowest inferer score ema")
-		// If there are no lowest inferer score ema, calculate it
-	} else if !found {
-		lowestEmaScore, err = GetLowestScoreFromAllInferers(ctx, k, topic.Id, workerAddresses)
+		return errorsmod.Wrap(err, "error trying to penalise inferer")
+	}
+
+	// Check if the inferer is new and set initial EMA score
+	if previousEmaScore.BlockHeight == 0 {
+		initialEmaScore, err := k.GetTopicInitialInfererEmaScore(ctx, topic.Id)
 		if err != nil {
-			return errorsmod.Wrap(err, "error getting lowest score from all inferers")
+			return errorsmod.Wrap(err, "error getting topic initial ema score")
 		}
-		err = k.SetLowestInfererScoreEma(ctx, topic.Id, lowestEmaScore)
+		previousEmaScore = types.Score{
+			TopicId:     topic.Id,
+			Address:     inference.Inferer,
+			BlockHeight: nonceBlockHeight,
+			Score:       initialEmaScore,
+		}
+		err = k.SetInfererScoreEma(ctx, topic.Id, inference.Inferer, previousEmaScore)
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting lowest inferer score ema")
+			return errorsmod.Wrap(err, "error setting initial inferer score ema")
 		}
 	}
 
+	// Get lowest inferer score ema for the topic
+	lowestEmaScore, _, err := k.GetLowestInfererScoreEma(ctx, topic.Id)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting lowest inferer score ema")
+	}
+
+	// Get active inferers for topic
+	workerAddresses, err := k.GetActiveInferersForTopic(ctx, topic.Id)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting active inferers for topic")
+	}
+
+	// If there are less than maxTopInferersToReward, add the current inferer, update the lowest inferer score ema if needed, and return
+	if uint64(len(workerAddresses)) < maxTopInferersToReward {
+		// Update lowest inferer score ema if needed
+		if uint64(len(workerAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
+			err = k.SetLowestInfererScoreEma(ctx, topic.Id, previousEmaScore)
+			if err != nil {
+				return errorsmod.Wrap(err, "error setting lowest inferer score ema")
+			}
+		}
+
+		err = k.AddActiveInferer(ctx, topic.Id, inference.Inferer)
+		if err != nil {
+			return errorsmod.Wrap(err, "error adding active inferer")
+		}
+		return k.InsertInference(ctx, topic.Id, *inference)
+	}
+
+	// Else ...
+	// Checks if the inferer's previous EMA score is greater than the lowest EMA score
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
 		// Update EMA score for the lowest score inferer, who is not the current inferer
 		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(
@@ -1144,6 +1358,16 @@ func (k *Keeper) AppendInference(
 		if err != nil {
 			return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
 		}
+
+		// Check if the inferer with lowest score is active before removing it, because remove will not fail if the inferer is not active
+		isActive, err := k.IsActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
+		if err != nil {
+			return errorsmod.Wrap(err, "error checking if inferer is active")
+		}
+		if !isActive {
+			return errors.New("inferer with lowest score is not active")
+		}
+
 		// Remove inferer with lowest score
 		err = k.RemoveActiveInferer(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
@@ -1167,9 +1391,11 @@ func (k *Keeper) AppendInference(
 		return k.InsertInference(ctx, topic.Id, *inference)
 	} else {
 		// Update EMA score for the current inferer, who is the lowest score inferer
-		err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
-		if err != nil {
-			return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
+		if previousEmaScore.BlockHeight != 0 { // Only update if not a new inferer
+			err = k.CalcAndSaveInfererScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
+			if err != nil {
+				return errorsmod.Wrap(err, "error calculating and saving inferer score ema with last saved topic quantile")
+			}
 		}
 	}
 	return nil
@@ -1229,19 +1455,6 @@ func (k *Keeper) AppendForecast(
 		return errors.New("forecast already submitted")
 	}
 
-	forecasterAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting active forecasters for topic")
-	}
-	// If there are less than maxTopForecastersToReward, add the current forecaster
-	if uint64(len(forecasterAddresses)) < maxTopForecastersToReward {
-		err := k.AddActiveForecaster(ctx, topic.Id, forecast.Forecaster)
-		if err != nil {
-			return errorsmod.Wrap(err, "error adding active forecaster")
-		}
-		return k.InsertForecast(ctx, topic.Id, *forecast)
-	}
-
 	previousEmaScore, err := k.GetForecasterScoreEma(ctx, topic.Id, forecast.Forecaster)
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting forecaster score ema")
@@ -1251,18 +1464,53 @@ func (k *Keeper) AppendForecast(
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
-	lowestEmaScore, found, err := k.GetLowestForecasterScoreEma(ctx, topic.Id)
+	// Penalise the forecaster if needed
+	previousEmaScore, err = k.ApplyLivenessPenaltyToForecaster(ctx, topic, nonceBlockHeight, previousEmaScore)
+	if err != nil {
+		return errorsmod.Wrap(err, "error trying to penalise forecaster")
+	}
+
+	// Check if the forecaster is new and set initial EMA score
+	if previousEmaScore.BlockHeight == 0 {
+		initialEmaScore, err := k.GetTopicInitialForecasterEmaScore(ctx, topic.Id)
+		if err != nil {
+			return errorsmod.Wrap(err, "error getting topic initial ema score")
+		}
+		err = k.SetForecasterScoreEma(ctx, topic.Id, forecast.Forecaster, types.Score{
+			TopicId:     topic.Id,
+			Address:     forecast.Forecaster,
+			BlockHeight: nonceBlockHeight,
+			Score:       initialEmaScore,
+		})
+		if err != nil {
+			return errorsmod.Wrap(err, "error setting forecaster score ema")
+		}
+	}
+
+	lowestEmaScore, _, err := k.GetLowestForecasterScoreEma(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting lowest forecaster score ema")
-	} else if !found {
-		lowestEmaScore, err = GetLowestScoreFromAllForecasters(ctx, k, topic.Id, forecasterAddresses)
-		if err != nil {
-			return errorsmod.Wrap(err, "error getting lowest score from all forecasters")
+	}
+
+	forecasterAddresses, err := k.GetActiveForecastersForTopic(ctx, topic.Id)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting active forecasters for topic")
+	}
+
+	// If there are less than maxTopForecastersToReward, add the current forecaster
+	if uint64(len(forecasterAddresses)) < maxTopForecastersToReward {
+		if uint64(len(forecasterAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
+			err = k.SetLowestForecasterScoreEma(ctx, topic.Id, previousEmaScore)
+			if err != nil {
+				return errorsmod.Wrap(err, "error setting lowest forecaster score ema")
+			}
 		}
-		err = k.SetLowestForecasterScoreEma(ctx, topic.Id, lowestEmaScore)
+
+		err = k.AddActiveForecaster(ctx, topic.Id, forecast.Forecaster)
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting lowest forecaster score ema")
+			return errorsmod.Wrap(err, "error adding active forecaster")
 		}
+		return k.InsertForecast(ctx, topic.Id, *forecast)
 	}
 
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -1276,6 +1524,16 @@ func (k *Keeper) AppendForecast(
 		if err != nil {
 			return errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
 		}
+
+		// Check if the forecaster with lowest score is active before removing it, because remove will not fail if the forecaster is not active
+		isActive, err := k.IsActiveForecaster(ctx, topic.Id, lowestEmaScore.Address)
+		if err != nil {
+			return errorsmod.Wrap(err, "error checking if forecaster is active")
+		}
+		if !isActive {
+			return errors.New("forecaster with lowest score is not active")
+		}
+
 		// Remove forecaster with lowest score
 		err = k.RemoveActiveForecaster(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
@@ -1299,9 +1557,11 @@ func (k *Keeper) AppendForecast(
 		return k.InsertForecast(ctx, topic.Id, *forecast)
 	} else {
 		// Update EMA score for the current forecaster, who is the lowest score forecaster
-		err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
-		if err != nil {
-			return errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
+		if previousEmaScore.BlockHeight != 0 {
+			err = k.CalcAndSaveForecasterScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
+			if err != nil {
+				return errorsmod.Wrap(err, "error calculating and saving forecaster score ema with last saved topic quantile")
+			}
 		}
 	}
 	return nil
@@ -1368,10 +1628,9 @@ func (k *Keeper) GetWorkerLatestForecastByTopicId(
 // GetTopicRewardNonce retrieves the reward nonce for a given topic ID.
 func (k *Keeper) GetTopicRewardNonce(ctx context.Context, topicId TopicId) (BlockHeight, error) {
 	nonce, err := k.topicRewardNonce.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return 0, nil // Return 0 if not found
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return 0, nil // Return 0 if not found
+	} else if err != nil {
 		return 0, errorsmod.Wrap(err, "error getting topic reward nonce")
 	}
 	return nonce, nil
@@ -1415,19 +1674,6 @@ func (k *Keeper) AppendReputerLoss(
 		return errors.New("reputer loss already submitted")
 	}
 
-	reputerAddresses, err := k.GetActiveReputersForTopic(ctx, topic.Id)
-	if err != nil {
-		return errorsmod.Wrap(err, "error getting active reputers for topic")
-	}
-	// If there are less than maxTopReputersToReward, add the current reputer
-	if uint64(len(reputerAddresses)) < moduleParams.MaxTopReputersToReward {
-		err := k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
-		if err != nil {
-			return errorsmod.Wrap(err, "error adding active reputer")
-		}
-		return k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
-	}
-
 	previousEmaScore, err := k.GetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting reputer score ema")
@@ -1437,18 +1683,52 @@ func (k *Keeper) AppendReputerLoss(
 		return types.ErrCantUpdateEmaMoreThanOncePerWindow
 	}
 
-	lowestEmaScore, found, err := k.GetLowestReputerScoreEma(ctx, topic.Id)
+	// Penalise the reputer if needed
+	previousEmaScore, err = k.ApplyLivenessPenaltyToReputer(ctx, topic, nonceBlockHeight, previousEmaScore)
+	if err != nil {
+		return errorsmod.Wrap(err, "error trying to penalise reputer")
+	}
+
+	// Check if the reputer is new and set initial EMA score
+	if previousEmaScore.BlockHeight == 0 {
+		initialEmaScore, err := k.GetTopicInitialReputerEmaScore(ctx, topic.Id)
+		if err != nil {
+			return errorsmod.Wrap(err, "error getting topic initial ema score")
+		}
+		err = k.SetReputerScoreEma(ctx, topic.Id, reputerLoss.ValueBundle.Reputer, types.Score{
+			TopicId:     topic.Id,
+			Address:     reputerLoss.ValueBundle.Reputer,
+			BlockHeight: nonceBlockHeight,
+			Score:       initialEmaScore,
+		})
+		if err != nil {
+			return errorsmod.Wrap(err, "error setting initial reputer score ema")
+		}
+	}
+
+	lowestEmaScore, _, err := k.GetLowestReputerScoreEma(ctx, topic.Id)
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting lowest reputer score ema")
-	} else if !found {
-		lowestEmaScore, err = GetLowestScoreFromAllReputers(ctx, k, topic.Id, reputerAddresses)
-		if err != nil {
-			return errorsmod.Wrap(err, "error getting lowest score from all reputers")
+	}
+
+	reputerAddresses, err := k.GetActiveReputersForTopic(ctx, topic.Id)
+	if err != nil {
+		return errorsmod.Wrap(err, "error getting active reputers for topic")
+	}
+	// If there are less than maxTopReputersToReward, add the current reputer
+	if uint64(len(reputerAddresses)) < moduleParams.MaxTopReputersToReward {
+		if uint64(len(reputerAddresses)) == 0 || lowestEmaScore.Score.Gt(previousEmaScore.Score) {
+			err = k.SetLowestReputerScoreEma(ctx, topic.Id, previousEmaScore)
+			if err != nil {
+				return errorsmod.Wrap(err, "error setting lowest reputer score ema")
+			}
 		}
-		err = k.SetLowestReputerScoreEma(ctx, topic.Id, lowestEmaScore)
+
+		err = k.AddActiveReputer(ctx, topic.Id, reputerLoss.ValueBundle.Reputer)
 		if err != nil {
-			return errorsmod.Wrap(err, "error setting lowest reputer score ema")
+			return errorsmod.Wrap(err, "error adding active reputer")
 		}
+		return k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
 	}
 
 	if previousEmaScore.Score.Gt(lowestEmaScore.Score) {
@@ -1462,6 +1742,16 @@ func (k *Keeper) AppendReputerLoss(
 		if err != nil {
 			return errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
 		}
+
+		// Check if the reputer with lowest score is active before removing it, because remove will not fail if the reputer is not active
+		isActive, err := k.IsActiveReputer(ctx, topic.Id, lowestEmaScore.Address)
+		if err != nil {
+			return errorsmod.Wrap(err, "error checking if reputer is active")
+		}
+		if !isActive {
+			return errors.New("reputer with lowest score is not active")
+		}
+
 		// Remove reputer with lowest score
 		err = k.RemoveActiveReputer(ctx, topic.Id, lowestEmaScore.Address)
 		if err != nil {
@@ -1485,9 +1775,11 @@ func (k *Keeper) AppendReputerLoss(
 		return k.InsertReputerLoss(ctx, topic.Id, *reputerLoss)
 	} else {
 		// Update EMA score for the current reputer, who is the lowest score reputer
-		err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
-		if err != nil {
-			return errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
+		if previousEmaScore.BlockHeight != 0 {
+			err = k.CalcAndSaveReputerScoreEmaWithLastSavedTopicQuantile(ctx, topic, nonceBlockHeight, previousEmaScore)
+			if err != nil {
+				return errorsmod.Wrap(err, "error calculating and saving reputer score ema with last saved topic quantile")
+			}
 		}
 	}
 	return nil
@@ -1561,10 +1853,10 @@ func (k *Keeper) InsertActiveReputerLosses(
 func (k *Keeper) GetReputerLossBundlesAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ReputerValueBundles, error) {
 	key := collections.Join(topicId, block)
 	reputerLossBundles, err := k.allLossBundles.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return &types.ReputerValueBundles{ReputerValueBundles: []*types.ReputerValueBundle{}}, nil
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return &types.ReputerValueBundles{ReputerValueBundles: []*types.ReputerValueBundle{}}, nil
+	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting reputer loss bundles at block")
 	}
 	return &reputerLossBundles, nil
@@ -1594,27 +1886,27 @@ func (k *Keeper) InsertNetworkLossBundleAtBlock(
 func (k *Keeper) GetNetworkLossBundleAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (*types.ValueBundle, error) {
 	key := collections.Join(topicId, block)
 	lossBundle, err := k.networkLossBundles.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return &types.ValueBundle{
-				TopicId: topicId,
-				ReputerRequestNonce: &types.ReputerRequestNonce{
-					ReputerNonce: &types.Nonce{
-						BlockHeight: 0,
-					},
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return &types.ValueBundle{
+			TopicId: topicId,
+			ReputerRequestNonce: &types.ReputerRequestNonce{
+				ReputerNonce: &types.Nonce{
+					BlockHeight: 0,
 				},
-				Reputer:                       "",
-				ExtraData:                     nil,
-				CombinedValue:                 alloraMath.ZeroDec(),
-				InfererValues:                 nil,
-				ForecasterValues:              nil,
-				NaiveValue:                    alloraMath.ZeroDec(),
-				OneOutInfererValues:           nil,
-				OneOutForecasterValues:        nil,
-				OneInForecasterValues:         nil,
-				OneOutInfererForecasterValues: nil,
-			}, nil
-		}
+			},
+			Reputer:                       "",
+			ExtraData:                     nil,
+			CombinedValue:                 alloraMath.ZeroDec(),
+			InfererValues:                 nil,
+			ForecasterValues:              nil,
+			NaiveValue:                    alloraMath.ZeroDec(),
+			OneOutInfererValues:           nil,
+			OneOutForecasterValues:        nil,
+			OneInForecasterValues:         nil,
+			OneOutInfererForecasterValues: nil,
+		}, nil
+	} else if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting network loss bundle at block")
 	}
 	return &lossBundle, nil
@@ -2023,10 +2315,9 @@ func (k *Keeper) RemoveDelegateStake(
 // Gets the total sum of all stake in the network across all topics
 func (k Keeper) GetTotalStake(ctx context.Context) (cosmosMath.Int, error) {
 	ret, err := k.totalStake.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewInt(0), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.NewInt(0), nil
+	} else if err != nil {
 		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting total stake")
 	}
 	return ret, nil
@@ -2046,10 +2337,9 @@ func (k *Keeper) SetTotalStake(ctx context.Context, totalStake cosmosMath.Int) e
 // Gets the stake in the network for a given topic
 func (k *Keeper) GetTopicStake(ctx context.Context, topicId TopicId) (cosmosMath.Int, error) {
 	ret, err := k.topicStake.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewInt(0), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.NewInt(0), nil
+	} else if err != nil {
 		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting topic stake")
 	}
 	return ret, nil
@@ -2074,10 +2364,9 @@ func (k *Keeper) SetTopicStake(ctx context.Context, topicId TopicId, stake cosmo
 func (k *Keeper) GetStakeReputerAuthority(ctx context.Context, topicId TopicId, reputer ActorId) (cosmosMath.Int, error) {
 	key := collections.Join(topicId, reputer)
 	stake, err := k.stakeReputerAuthority.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewInt(0), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.NewInt(0), nil
+	} else if err != nil {
 		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting stake reputer authority")
 	}
 	return stake, nil
@@ -2106,10 +2395,9 @@ func (k *Keeper) SetStakeReputerAuthority(ctx context.Context, topicId TopicId, 
 func (k *Keeper) GetStakeFromDelegatorInTopic(ctx context.Context, topicId TopicId, delegator ActorId) (cosmosMath.Int, error) {
 	key := collections.Join(topicId, delegator)
 	stake, err := k.stakeSumFromDelegator.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewInt(0), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.NewInt(0), nil
+	} else if err != nil {
 		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting stake from delegator in topic")
 	}
 	return stake, nil
@@ -2137,10 +2425,9 @@ func (k *Keeper) SetStakeFromDelegator(ctx context.Context, topicId TopicId, del
 func (k *Keeper) GetDelegateStakePlacement(ctx context.Context, topicId TopicId, delegator ActorId, target ActorId) (types.DelegatorInfo, error) {
 	key := collections.Join3(topicId, delegator, target)
 	stake, err := k.delegatedStakes.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.DelegatorInfo{Amount: alloraMath.NewDecFromInt64(0), RewardDebt: alloraMath.NewDecFromInt64(0)}, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.DelegatorInfo{Amount: alloraMath.NewDecFromInt64(0), RewardDebt: alloraMath.NewDecFromInt64(0)}, nil
+	} else if err != nil {
 		return types.DelegatorInfo{}, errorsmod.Wrap(err, "error getting delegate stake placement")
 	}
 	return stake, nil
@@ -2171,10 +2458,9 @@ func (k *Keeper) SetDelegateStakePlacement(ctx context.Context, topicId TopicId,
 func (k *Keeper) GetDelegateRewardPerShare(ctx context.Context, topicId TopicId, reputer ActorId) (alloraMath.Dec, error) {
 	key := collections.Join(topicId, reputer)
 	share, err := k.delegateRewardPerShare.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.NewDecFromInt64(0), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.NewDecFromInt64(0), nil
+	} else if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting delegate reward per share")
 	}
 	return share, nil
@@ -2202,10 +2488,9 @@ func (k *Keeper) SetDelegateRewardPerShare(ctx context.Context, topicId TopicId,
 func (k *Keeper) GetDelegateStakeUponReputer(ctx context.Context, topicId TopicId, target ActorId) (cosmosMath.Int, error) {
 	key := collections.Join(topicId, target)
 	stake, err := k.stakeFromDelegatorsUponReputer.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.NewInt(0), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.NewInt(0), nil
+	} else if err != nil {
 		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting delegate stake upon reputer")
 	}
 	return stake, nil
@@ -2570,10 +2855,9 @@ func (k *Keeper) GetWorkerInfo(ctx sdk.Context, workerKey ActorId) (types.Offcha
 // Returns ((0,0), true) if there was no prior topic weight set, else ((x,y), false) where x,y!=0
 func (k *Keeper) GetPreviousTopicWeight(ctx context.Context, topicId TopicId) (topicWeight alloraMath.Dec, noPrior bool, err error) {
 	topicWeight, err = k.previousTopicWeight.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), true, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), true, nil
+	} else if err != nil {
 		return alloraMath.ZeroDec(), false, errorsmod.Wrap(err, "error getting previous topic weight")
 	}
 	return topicWeight, false, nil
@@ -2594,6 +2878,42 @@ func (k *Keeper) SetPreviousTopicWeight(ctx context.Context, topicId TopicId, we
 	}
 	// Then update the previous weight
 	return k.previousTopicWeight.Set(ctx, topicId, weight)
+}
+
+// Getter and setter for lastMedianInferences
+func (k *Keeper) GetLastMedianInferences(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	medianInferences, err := k.lastMedianInferences.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	} else if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrap(err, "error getting last median inferences")
+	}
+	return medianInferences, nil
+}
+
+func (k *Keeper) SetLastMedianInferences(ctx context.Context, topicId TopicId, medianInferences alloraMath.Dec) error {
+	if err := types.ValidateDec(medianInferences); err != nil {
+		return errorsmod.Wrap(err, "median inferences validation failed")
+	}
+	return k.lastMedianInferences.Set(ctx, topicId, medianInferences)
+}
+
+// Getter and setter for madInferences
+func (k *Keeper) GetMadInferences(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	madInferences, err := k.madInferences.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	} else if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrap(err, "error getting last mad inferences")
+	}
+	return madInferences, nil
+}
+
+func (k *Keeper) SetMadInferences(ctx context.Context, topicId TopicId, madInferences alloraMath.Dec) error {
+	if err := types.ValidateDec(madInferences); err != nil {
+		return errorsmod.Wrap(err, "mad inferences validation failed")
+	}
+	return k.madInferences.Set(ctx, topicId, madInferences)
 }
 
 // UpdateTotalSumPreviousTopicWeights updates the total sum of previous topic weights
@@ -2628,10 +2948,9 @@ func (k *Keeper) UpdateTotalSumPreviousTopicWeights(ctx context.Context, topicId
 // Get the total sum of previous topic weights
 func (k *Keeper) GetTotalSumPreviousTopicWeights(ctx context.Context) (alloraMath.Dec, error) {
 	sumPreviousWeights, err := k.totalSumPreviousTopicWeights.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	} else if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting topic fee revenue")
 	}
 
@@ -2656,7 +2975,13 @@ func (k *Keeper) IncrementTopicId(ctx context.Context) (TopicId, error) {
 
 // Gets topic by topicId
 func (k *Keeper) GetTopic(ctx context.Context, topicId TopicId) (types.Topic, error) {
-	return k.topics.Get(ctx, topicId)
+	topic, err := k.topics.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Topic{}, types.ErrTopicDoesNotExist
+	} else if err != nil {
+		return types.Topic{}, err
+	}
+	return topic, nil
 }
 
 // Sets a topic config on a topicId
@@ -2778,10 +3103,9 @@ func (k *Keeper) SetBlockToLowestActiveTopicWeight(
 // Get the amount of fee revenue collected by a topic
 func (k *Keeper) GetTopicFeeRevenue(ctx context.Context, topicId TopicId) (cosmosMath.Int, error) {
 	feeRev, err := k.topicFeeRevenue.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.ZeroInt(), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.ZeroInt(), nil
+	} else if err != nil {
 		return cosmosMath.ZeroInt(), errorsmod.Wrap(err, "error getting topic fee revenue")
 	}
 	return feeRev, nil
@@ -2829,10 +3153,9 @@ func calculateBlocksPerWeek(ctx sdk.Context, k Keeper) (alloraMath.Dec, error) {
 // return the last time we dripped the fee revenue for a topic
 func (k *Keeper) GetLastDripBlock(ctx context.Context, topicId TopicId) (BlockHeight, error) {
 	bh, err := k.lastDripBlock.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return 0, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return 0, nil
+	} else if err != nil {
 		return 0, errorsmod.Wrap(err, "error getting last drip block")
 	}
 	return bh, nil
@@ -2953,15 +3276,14 @@ func (k *Keeper) SetInfererScoreEma(ctx context.Context, topicId TopicId, worker
 func (k *Keeper) GetInfererScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
 	score, err := k.infererScoreEmas.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{
-				BlockHeight: 0,
-				Address:     worker,
-				TopicId:     topicId,
-				Score:       alloraMath.ZeroDec(),
-			}, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     worker,
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, nil
+	} else if err != nil {
 		return types.Score{}, errorsmod.Wrap(err, "error getting inferer score ema")
 	}
 	return score, nil
@@ -2984,15 +3306,14 @@ func (k *Keeper) SetForecasterScoreEma(ctx context.Context, topicId TopicId, wor
 func (k *Keeper) GetForecasterScoreEma(ctx context.Context, topicId TopicId, worker ActorId) (types.Score, error) {
 	key := collections.Join(topicId, worker)
 	score, err := k.forecasterScoreEmas.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{
-				BlockHeight: 0,
-				Address:     worker,
-				TopicId:     topicId,
-				Score:       alloraMath.ZeroDec(),
-			}, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     worker,
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, nil
+	} else if err != nil {
 		return types.Score{}, errorsmod.Wrap(err, "error getting forecaster score ema")
 	}
 	return score, nil
@@ -3016,15 +3337,15 @@ func (k *Keeper) SetReputerScoreEma(ctx context.Context, topicId TopicId, repute
 func (k *Keeper) GetReputerScoreEma(ctx context.Context, topicId TopicId, reputer ActorId) (types.Score, error) {
 	key := collections.Join(topicId, reputer)
 	score, err := k.reputerScoreEmas.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{
-				BlockHeight: 0,
-				Address:     reputer,
-				TopicId:     topicId,
-				Score:       alloraMath.ZeroDec(),
-			}, nil
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     reputer,
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, nil
+	} else if err != nil {
 		return types.Score{
 			BlockHeight: 0,
 			Address:     reputer,
@@ -3052,7 +3373,8 @@ func (k *Keeper) InsertWorkerInferenceScore(ctx context.Context, topicId TopicId
 	if err != nil {
 		return errorsmod.Wrapf(err, "Error getting params")
 	}
-	maxNumScores := moduleParams.MaxSamplesToScaleScores
+
+	maxNumScores := moduleParams.MaxSamplesToScaleScores * moduleParams.MaxTopInferersToReward
 
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
@@ -3083,10 +3405,10 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting params")
 	}
-	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
-	scores := make([]*types.Score, 0, maxNumTimeSteps)
+	maxNumScores := moduleParams.MaxSamplesToScaleScores * moduleParams.MaxTopInferersToReward
 
+	scores := make([]*types.Score, 0, maxNumScores)
 	for iter.Valid() {
 		existingScores, err := iter.KeyValue()
 		if err != nil {
@@ -3094,13 +3416,13 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 		}
 
 		for _, score := range existingScores.Value.Scores {
-			if uint64(len(scores)) < maxNumTimeSteps {
+			if uint64(len(scores)) < maxNumScores {
 				scores = append(scores, score)
 			} else {
 				break
 			}
 		}
-		if uint64(len(scores)) >= maxNumTimeSteps {
+		if uint64(len(scores)) >= maxNumScores {
 			break
 		}
 		iter.Next()
@@ -3112,12 +3434,12 @@ func (k *Keeper) GetInferenceScoresUntilBlock(ctx context.Context, topicId Topic
 func (k *Keeper) GetWorkerInferenceScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
 	key := collections.Join(topicId, block)
 	scores, err := k.infererScoresByBlock.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Scores{
-				Scores: []*types.Score{},
-			}, nil
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Scores{
+			Scores: []*types.Score{},
+		}, nil
+	} else if err != nil {
 		return types.Scores{}, errorsmod.Wrap(err, "error getting worker inference scores at block")
 	}
 	return scores, nil
@@ -3140,7 +3462,8 @@ func (k *Keeper) InsertWorkerForecastScore(ctx context.Context, topicId TopicId,
 	if err != nil {
 		return errorsmod.Wrap(err, "error getting params")
 	}
-	maxNumScores := moduleParams.MaxSamplesToScaleScores
+
+	maxNumScores := moduleParams.MaxSamplesToScaleScores * moduleParams.MaxTopForecastersToReward
 
 	lenScores := uint64(len(scores.Scores))
 	if lenScores > maxNumScores {
@@ -3171,10 +3494,10 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "error getting params")
 	}
-	maxNumTimeSteps := moduleParams.MaxSamplesToScaleScores
 
-	scores := make([]*types.Score, 0, maxNumTimeSteps)
+	maxNumScores := moduleParams.MaxSamplesToScaleScores * moduleParams.MaxTopForecastersToReward
 
+	scores := make([]*types.Score, 0, maxNumScores)
 	for iter.Valid() {
 		existingScores, err := iter.KeyValue()
 		if err != nil {
@@ -3182,13 +3505,13 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 		}
 
 		for _, score := range existingScores.Value.Scores {
-			if uint64(len(scores)) < maxNumTimeSteps {
+			if uint64(len(scores)) < maxNumScores {
 				scores = append(scores, score)
 			} else {
 				break
 			}
 		}
-		if uint64(len(scores)) >= maxNumTimeSteps {
+		if uint64(len(scores)) >= maxNumScores {
 			break
 		}
 		iter.Next()
@@ -3200,10 +3523,10 @@ func (k *Keeper) GetForecastScoresUntilBlock(ctx context.Context, topicId TopicI
 func (k *Keeper) GetWorkerForecastScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
 	key := collections.Join(topicId, block)
 	scores, err := k.forecasterScoresByBlock.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Scores{Scores: []*types.Score{}}, nil
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Scores{Scores: []*types.Score{}}, nil
+	} else if err != nil {
 		return types.Scores{}, errorsmod.Wrap(err, "error getting worker forecast scores at block")
 	}
 	return scores, nil
@@ -3244,10 +3567,10 @@ func (k *Keeper) InsertReputerScore(ctx context.Context, topicId TopicId, blockH
 func (k *Keeper) GetReputersScoresAtBlock(ctx context.Context, topicId TopicId, block BlockHeight) (types.Scores, error) {
 	key := collections.Join(topicId, block)
 	scores, err := k.reputerScoresByBlock.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Scores{Scores: []*types.Score{}}, nil
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Scores{Scores: []*types.Score{}}, nil
+	} else if err != nil {
 		return types.Scores{}, errorsmod.Wrap(err, "error getting reputers scores at block")
 	}
 	return scores, nil
@@ -3270,11 +3593,10 @@ func (k *Keeper) SetListeningCoefficient(ctx context.Context, topicId TopicId, r
 func (k *Keeper) GetListeningCoefficient(ctx context.Context, topicId TopicId, reputer ActorId) (types.ListeningCoefficient, error) {
 	key := collections.Join(topicId, reputer)
 	coef, err := k.reputerListeningCoefficient.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			// Return a default value
-			return types.ListeningCoefficient{Coefficient: alloraMath.NewDecFromInt64(1)}, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		// Return a default value
+		return types.ListeningCoefficient{Coefficient: alloraMath.NewDecFromInt64(1)}, nil
+	} else if err != nil {
 		return types.ListeningCoefficient{}, errorsmod.Wrap(err, "error getting listening coefficient")
 	}
 	return coef, nil
@@ -3294,10 +3616,9 @@ func (k *Keeper) SetPreviousTopicQuantileInfererScoreEma(ctx context.Context, to
 // Returns previous inferer score ema at topic quantile, or 0 if not yet seen
 func (k *Keeper) GetPreviousTopicQuantileInfererScoreEma(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
 	score, err := k.previousTopicQuantileInfererScoreEma.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	} else if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting previous topic quantile inferer score ema")
 	}
 	return score, nil
@@ -3317,10 +3638,9 @@ func (k *Keeper) SetPreviousTopicQuantileForecasterScoreEma(ctx context.Context,
 // Returns previous forecaster score ema at topic quantile, or 0 if not yet seen
 func (k *Keeper) GetPreviousTopicQuantileForecasterScoreEma(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
 	score, err := k.previousTopicQuantileForecasterScoreEma.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	} else if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting previous topic quantile forecaster score ema")
 	}
 	return score, nil
@@ -3340,10 +3660,9 @@ func (k *Keeper) SetPreviousTopicQuantileReputerScoreEma(ctx context.Context, to
 // Returns previous reputer score ema at topic quantile, or 0 if not yet seen
 func (k *Keeper) GetPreviousTopicQuantileReputerScoreEma(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
 	score, err := k.previousTopicQuantileReputerScoreEma.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	} else if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting previous topic quantile reputer score ema")
 	}
 	return score, nil
@@ -3358,10 +3677,9 @@ func (k *Keeper) GetPreviousReputerRewardFraction(
 	previousReputerRewardFraction alloraMath.Dec, noPrior bool, err error) {
 	key := collections.Join(topicId, reputer)
 	previousReputerRewardFraction, err = k.previousReputerRewardFraction.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), true, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), true, nil
+	} else if err != nil {
 		return alloraMath.Dec{}, false, errorsmod.Wrap(err, "error getting previous reputer reward fraction")
 	}
 	return previousReputerRewardFraction, false, nil
@@ -3388,10 +3706,9 @@ func (k *Keeper) GetPreviousInferenceRewardFraction(ctx context.Context, topicId
 	previousInferenceRewardFraction alloraMath.Dec, noPrior bool, err error) {
 	key := collections.Join(topicId, worker)
 	previousInferenceRewardFraction, err = k.previousInferenceRewardFraction.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), true, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), true, nil
+	} else if err != nil {
 		return alloraMath.Dec{}, false, errorsmod.Wrap(err, "error getting previous inference reward fraction")
 	}
 	return previousInferenceRewardFraction, false, nil
@@ -3418,10 +3735,9 @@ func (k *Keeper) GetPreviousForecastRewardFraction(ctx context.Context, topicId 
 	previousForecastRewardFraction alloraMath.Dec, noPrior bool, err error) {
 	key := collections.Join(topicId, worker)
 	previousForecastRewardFraction, err = k.previousForecastRewardFraction.Get(ctx, key)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), true, nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), true, nil
+	} else if err != nil {
 		return alloraMath.Dec{}, false, errorsmod.Wrap(err, "error getting previous forecast reward fraction")
 	}
 	return previousForecastRewardFraction, false, nil
@@ -3454,23 +3770,6 @@ func (k *Keeper) SetPreviousPercentageRewardToStakedReputers(
 
 func (k Keeper) GetPreviousPercentageRewardToStakedReputers(ctx context.Context) (alloraMath.Dec, error) {
 	return k.previousPercentageRewardToStakedReputers.Get(ctx)
-}
-
-/// WHITELISTS
-
-func (k Keeper) IsWhitelistAdmin(ctx context.Context, admin ActorId) (bool, error) {
-	return k.whitelistAdmins.Has(ctx, admin)
-}
-
-func (k *Keeper) AddWhitelistAdmin(ctx context.Context, admin ActorId) error {
-	if err := types.ValidateBech32(admin); err != nil {
-		return errorsmod.Wrap(err, "error validating admin id")
-	}
-	return k.whitelistAdmins.Set(ctx, admin)
-}
-
-func (k *Keeper) RemoveWhitelistAdmin(ctx context.Context, admin ActorId) error {
-	return k.whitelistAdmins.Remove(ctx, admin)
 }
 
 /// BANK KEEPER WRAPPERS
@@ -3596,10 +3895,9 @@ func (k *Keeper) PruneWorkerNonces(ctx context.Context, topicId uint64, blockHei
 		return errorsmod.Wrap(err, "error validating topic id")
 	}
 	nonces, err := k.unfulfilledWorkerNonces.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return errorsmod.Wrapf(err, "no nonces found to prune for topic %d", topicId)
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return errorsmod.Wrapf(err, "no nonces found to prune for topic %d", topicId)
+	} else if err != nil {
 		return errorsmod.Wrap(err, "error getting unfulfilled worker nonces")
 	}
 
@@ -3657,14 +3955,17 @@ func (k *Keeper) PruneReputerNonces(ctx context.Context, topicId uint64, blockHe
 }
 
 // Return true if the nonce is within the worker submission window for the topic
+// Inclusive of the start block height and exclusive of the end block height
 func (k *Keeper) BlockWithinWorkerSubmissionWindowOfNonce(topic types.Topic, nonce types.Nonce, blockHeight int64) bool {
 	return nonce.BlockHeight <= blockHeight && blockHeight < topic.WorkerSubmissionWindow+nonce.BlockHeight
 }
 
 // Return true if the nonce is within the worker submission window for the topic
+// Inclusive of the start block height and of the end block height
 func (k *Keeper) BlockWithinReputerSubmissionWindowOfNonce(topic types.Topic, nonce types.ReputerRequestNonce, blockHeight int64) bool {
+	extraLag := topic.GroundTruthLag % topic.EpochLength
 	return nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag <= blockHeight &&
-		blockHeight <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag*2
+		blockHeight <= nonce.ReputerNonce.BlockHeight+topic.GroundTruthLag+topic.EpochLength+extraLag
 }
 
 func (k *Keeper) ValidateStringIsBech32(actor ActorId) error {
@@ -3737,10 +4038,9 @@ func (k *Keeper) SetPreviousForecasterScoreRatio(ctx context.Context, topicId To
 
 func (k *Keeper) GetPreviousForecasterScoreRatio(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
 	forecastTau, err := k.previousForecasterScoreRatio.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return alloraMath.ZeroDec(), nil
-		}
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	} else if err != nil {
 		return alloraMath.Dec{}, errorsmod.Wrap(err, "error getting previous forecaster score ratio")
 	}
 	return forecastTau, nil
@@ -3836,15 +4136,15 @@ func (k *Keeper) SetLowestInfererScoreEma(ctx context.Context, topicId TopicId, 
 // GetLowestInfererScoreEma gets the lowest inferer score EMA for a topic
 func (k *Keeper) GetLowestInfererScoreEma(ctx context.Context, topicId TopicId) (types.Score, bool, error) {
 	lowestScore, err := k.lowestInfererScoreEma.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{
-				BlockHeight: 0,
-				Address:     "",
-				TopicId:     topicId,
-				Score:       alloraMath.ZeroDec(),
-			}, false, nil
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, nil
+	} else if err != nil {
 		return types.Score{
 			BlockHeight: 0,
 			Address:     "",
@@ -3869,15 +4169,15 @@ func (k *Keeper) SetLowestForecasterScoreEma(ctx context.Context, topicId TopicI
 // GetLowestForecasterScoreEma gets the lowest forecaster score EMA for a topic
 func (k *Keeper) GetLowestForecasterScoreEma(ctx context.Context, topicId TopicId) (types.Score, bool, error) {
 	lowestScore, err := k.lowestForecasterScoreEma.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{
-				BlockHeight: 0,
-				Address:     "",
-				TopicId:     topicId,
-				Score:       alloraMath.ZeroDec(),
-			}, false, nil
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, nil
+	} else if err != nil {
 		return types.Score{
 			BlockHeight: 0,
 			Address:     "",
@@ -3987,15 +4287,15 @@ func (k *Keeper) SetLowestReputerScoreEma(ctx context.Context, topicId TopicId, 
 // GetLowestReputerScoreEma gets the lowest reputer score EMA for a topic
 func (k *Keeper) GetLowestReputerScoreEma(ctx context.Context, topicId TopicId) (types.Score, bool, error) {
 	lowestScore, err := k.lowestReputerScoreEma.Get(ctx, topicId)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return types.Score{
-				BlockHeight: 0,
-				Address:     "",
-				TopicId:     topicId,
-				Score:       alloraMath.ZeroDec(),
-			}, false, nil
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return types.Score{
+			BlockHeight: 0,
+			Address:     "",
+			TopicId:     topicId,
+			Score:       alloraMath.ZeroDec(),
+		}, false, nil
+	} else if err != nil {
 		return types.Score{
 			BlockHeight: 0,
 			Address:     "",
@@ -4009,10 +4309,10 @@ func (k *Keeper) GetLowestReputerScoreEma(ctx context.Context, topicId TopicId) 
 // GetRewardCurrentBlockEmission retrieves the current block emission reward.
 func (k *Keeper) GetRewardCurrentBlockEmission(ctx context.Context) (cosmosMath.Int, error) {
 	emission, err := k.rewardCurrentBlockEmission.Get(ctx)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return cosmosMath.ZeroInt(), nil // Return zero if not found
-		}
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return cosmosMath.ZeroInt(), nil // Return zero if not found
+	} else if err != nil {
 		return cosmosMath.Int{}, errorsmod.Wrap(err, "error getting current block emission reward")
 	}
 	return emission, nil
@@ -4024,4 +4324,58 @@ func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission cosm
 		return errorsmod.Wrap(types.ErrInvalidValue, "current block emission reward cannot be negative")
 	}
 	return k.rewardCurrentBlockEmission.Set(ctx, emission)
+}
+
+func (k *Keeper) GetTopicInitialInfererEmaScore(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	score, err := k.initialInfererEmaScore.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	}
+	return score, err
+}
+
+func (k *Keeper) SetTopicInitialInfererEmaScore(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateDec(score); err != nil {
+		return errorsmod.Wrap(err, "score validation failed")
+	}
+	return k.initialInfererEmaScore.Set(ctx, topicId, score)
+}
+
+func (k *Keeper) GetTopicInitialForecasterEmaScore(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	score, err := k.initialForecasterEmaScore.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	}
+	return score, err
+}
+
+func (k *Keeper) SetTopicInitialForecasterEmaScore(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateDec(score); err != nil {
+		return errorsmod.Wrap(err, "score validation failed")
+	}
+	return k.initialForecasterEmaScore.Set(ctx, topicId, score)
+}
+
+func (k *Keeper) GetTopicInitialReputerEmaScore(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	score, err := k.initialReputerEmaScore.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	}
+	return score, err
+}
+
+func (k *Keeper) SetTopicInitialReputerEmaScore(ctx context.Context, topicId TopicId, score alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateDec(score); err != nil {
+		return errorsmod.Wrap(err, "score validation failed")
+	}
+	return k.initialReputerEmaScore.Set(ctx, topicId, score)
 }

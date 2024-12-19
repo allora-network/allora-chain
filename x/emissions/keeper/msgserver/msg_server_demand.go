@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"cosmossdk.io/errors"
 	"github.com/allora-network/allora-chain/x/emissions/metrics"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"google.golang.org/grpc/codes"
@@ -12,6 +13,10 @@ import (
 
 func (ms msgServer) FundTopic(ctx context.Context, msg *types.FundTopicRequest) (_ *types.FundTopicResponse, err error) {
 	defer metrics.RecordMetrics("FundTopic", time.Now(), &err)
+
+	if err := types.ValidateSdkIntRepresentingMonetaryValue(msg.Amount); err != nil {
+		return nil, errors.Wrap(err, "amount is not valid")
+	}
 
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {

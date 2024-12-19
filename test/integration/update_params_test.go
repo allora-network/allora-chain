@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"context"
+	"fmt"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
 	testCommon "github.com/allora-network/allora-chain/test/common"
@@ -27,8 +28,8 @@ func checkIfAdmin(m testCommon.TestConfig, address string) bool {
 func UpdateParamsChecks(m testCommon.TestConfig) {
 	ctx := context.Background()
 	// Ensure Alice is in the whitelist and Bob is not
-	require.True(m.T, checkIfAdmin(m, m.AliceAddr))
-	require.False(m.T, checkIfAdmin(m, m.BobAddr))
+	require.True(m.T, checkIfAdmin(m, m.AliceAddr), fmt.Sprintf("Alice %s should be a whitelist admin", m.AliceAddr))
+	require.False(m.T, checkIfAdmin(m, m.BobAddr), fmt.Sprintf("Bob %s should not be a whitelist admin", m.BobAddr))
 
 	// Keep old params to revert back to
 	oldParams := GetEmissionsParams(m)
@@ -85,6 +86,16 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			MaxStringLength:                     nil,
 			InitialRegretQuantile:               nil,
 			PNormSafeDiv:                        nil,
+			GlobalWhitelistEnabled:              nil,
+			TopicCreatorWhitelistEnabled:        nil,
+			MinExperiencedWorkerRegrets:         nil,
+			InferenceOutlierDetectionThreshold:  nil,
+			InferenceOutlierDetectionAlpha:      nil,
+			LambdaInitialScore:                  nil,
+			GlobalWorkerWhitelistEnabled:        nil,
+			GlobalReputerWhitelistEnabled:       nil,
+			GlobalAdminWhitelistAppended:        nil,
+			MaxWhitelistInputArrayLength:        nil,
 		},
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, updateParamRequest)
@@ -141,12 +152,22 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			MaxStringLength:                     nil,
 			InitialRegretQuantile:               nil,
 			PNormSafeDiv:                        nil,
+			GlobalWhitelistEnabled:              nil,
+			TopicCreatorWhitelistEnabled:        nil,
+			MinExperiencedWorkerRegrets:         nil,
+			InferenceOutlierDetectionThreshold:  nil,
+			InferenceOutlierDetectionAlpha:      nil,
+			LambdaInitialScore:                  nil,
+			GlobalWorkerWhitelistEnabled:        nil,
+			GlobalReputerWhitelistEnabled:       nil,
+			GlobalAdminWhitelistAppended:        nil,
+			MaxWhitelistInputArrayLength:        nil,
 		},
 	}
 	_, err = m.Client.BroadcastTx(ctx, m.BobAcc, updateParamRequest)
 	require.Error(m.T, err)
 	// Check that error is due to Bob not being a whitelist admin
-	require.Contains(m.T, err.Error(), "not whitelist admin")
+	require.Contains(m.T, err.Error(), "not permitted to update params")
 
 	// Check that the epsilon was updated by Alice successfully
 	updatedParams := GetEmissionsParams(m)
@@ -201,6 +222,16 @@ func UpdateParamsChecks(m testCommon.TestConfig) {
 			MaxStringLength:                     nil,
 			InitialRegretQuantile:               nil,
 			PNormSafeDiv:                        nil,
+			GlobalWhitelistEnabled:              nil,
+			TopicCreatorWhitelistEnabled:        nil,
+			MinExperiencedWorkerRegrets:         nil,
+			InferenceOutlierDetectionThreshold:  nil,
+			InferenceOutlierDetectionAlpha:      nil,
+			LambdaInitialScore:                  nil,
+			GlobalWorkerWhitelistEnabled:        nil,
+			GlobalReputerWhitelistEnabled:       nil,
+			GlobalAdminWhitelistAppended:        nil,
+			MaxWhitelistInputArrayLength:        nil,
 		},
 	}
 	txResp, err = m.Client.BroadcastTx(ctx, m.AliceAcc, updateParamRequest)

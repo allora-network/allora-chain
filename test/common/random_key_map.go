@@ -10,6 +10,8 @@ type ValueIndex[V any] struct {
 	i int
 }
 
+// RandomKeyMap is a map that is O(1) for insertion, deletion, and random key selection
+// Note that because rand.Rand is not safe for concurrent use, neither is RandomKeyMap
 type RandomKeyMap[K comparable, V any] struct {
 	rand *rand.Rand
 	m    map[K]ValueIndex[V]
@@ -18,11 +20,13 @@ type RandomKeyMap[K comparable, V any] struct {
 
 // RandomKeyMap is a map that is O(1) for insertion, deletion, and random key selection
 func NewRandomKeyMap[K comparable, V any](r *rand.Rand) *RandomKeyMap[K, V] {
-	return &RandomKeyMap[K, V]{
+	m := make(map[K]ValueIndex[V])
+	ret := RandomKeyMap[K, V]{
 		rand: r,
-		m:    make(map[K]ValueIndex[V]),
+		m:    m,
 		s:    []K{},
 	}
+	return &ret
 }
 
 // Get returns an element from the map
@@ -38,6 +42,13 @@ func (rkm *RandomKeyMap[K, V]) GetAll() []V {
 		values[i] = rkm.m[k].v
 	}
 	return values
+}
+
+// GetKeys returns all keys from the map
+func (rkm *RandomKeyMap[K, V]) GetKeys() []K {
+	keys := make([]K, len(rkm.s))
+	copy(keys, rkm.s)
+	return keys
 }
 
 // Filter returns all elements from the map that satisfy the predicate

@@ -666,6 +666,8 @@ func CreateTopic(ctx context.Context, msgServer types.MsgServiceServer, creator 
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	res, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
 	if err != nil {

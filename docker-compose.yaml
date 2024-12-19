@@ -2,7 +2,7 @@
 services:
   node:
     container_name: sample_validator
-    image: "alloranetwork/allora-chain:v0.5.0-docker-upgrade" # docker image without cosmovisor. use vx.x.x-docker-upgrade for upgrade image
+    image: "alloranetwork/allora-chain:v0.6.0-docker-upgrade" # docker image without cosmovisor. use vx.x.x-docker-upgrade for upgrade image
     environment:
       - NETWORK=allora-testnet-1
       - MONIKER=sample_validator

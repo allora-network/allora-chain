@@ -55,7 +55,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-## [Unreleased]
+# [Unreleased]
+
+## v0.8.0
+
+### Added
+
+* [#694](https://github.com/allora-network/allora-chain/pull/694) Make fuzzer whitelist aware
+* [#708](https://github.com/allora-network/allora-chain/pull/708) Add Emission Enabled bolean flag to Mint Module
+* [#703](https://github.com/allora-network/allora-chain/pull/703) Add outlier detection to inferences
+* [#714](https://github.com/allora-network/allora-chain/pull/714) Add initialization of actors' EMA scores
+* [#716](https://github.com/allora-network/allora-chain/pull/716) Add global workers, reputers, admins + bulk operations
+* [#712](https://github.com/allora-network/allora-chain/pull/712) Apply sortition penalties based on liveness
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+* [#702](https://github.com/allora-network/allora-chain/pull/702) Adjust score normalization to consider more scores samples
+* [#699](https://github.com/allora-network/allora-chain/pull/699) Make install script manage new release assets naming
+* [#704](https://github.com/allora-network/allora-chain/pull/704) Correct Discrepancies with Whitepaper modified reward fractions vs plain EMA
+* [#700](https://github.com/allora-network/allora-chain/pull/700) Allow clients to unmarshall old transactions
+* [#711](https://github.com/allora-network/allora-chain/pull/711) Set research-approved default module param values
+* [#713](https://github.com/allora-network/allora-chain/pull/713) Proto generation keeps codec.go files
+
+### Security
+
+# [Released]
+
+## v0.7.0
+
+### Added
+
+* [#634](https://github.com/allora-network/allora-chain/pull/634) Add events for listening coefficients and the computationally cheapest regrets
+* [#678](https://github.com/allora-network/allora-chain/pull/678) Add optimistic execution + update CometBFT to v0.38.15
+* [#663](https://github.com/allora-network/allora-chain/pull/663) Add whitelists for admins, topic creators, workers, and reputers. Create x/emissions v6 migration and chain upgrade v0.7.0
+* [#654](https://github.com/allora-network/allora-chain/pull/654) Reorganize Linter Folder, add linter to check fuzzer state transition probabilities add to 100 percent. (Integrated as part of #653)
+* [#685](https://github.com/allora-network/allora-chain/pull/685) Add burner permission to gov module
+* [#627](https://github.com/allora-network/allora-chain/pull/627) Add fee market and fee grant module
+* [#689](https://github.com/allora-network/allora-chain/pull/689) Add the `CircuitBreakerDecorator` to the `AnteHandler`
+* [#697](https://github.com/allora-network/allora-chain/pull/697) Add upgrade guide to contributing.md
+* [#694](https://github.com/allora-network/allora-chain/pull/694) Make fuzzer whitelist aware
+
+### Changed
+
+* [#670](https://github.com/allora-network/allora-chain/pull/670) Adjust topic initial regret initialization 
+* [#652](https://github.com/allora-network/allora-chain/pull/652) Reduce code duplication, set local_testnet_upgrade_l1.sh using environment variables with local_testnet_l1.sh instead
+* [#650](https://github.com/allora-network/allora-chain/pull/650) Make fuzzer setup run through every state transition once before fuzzing starts
+* [#651](https://github.com/allora-network/allora-chain/pull/651) Refactor: Fuzzer rename invariants test to fuzz test
+* [#653](https://github.com/allora-network/allora-chain/pull/653) Fuzzer Bugfixes, Allow User to Set Fuzzer Transition Probability Distribution
+* [#686](https://github.com/allora-network/allora-chain/pull/686) CLI query commands alignment
+* [#691](https://github.com/allora-network/allora-chain/pull/691/files) Fix number of inferers considered in the reward cycle
+* [#693](https://github.com/allora-network/allora-chain/pull/693) Migration test updates
+
+### Deprecated
+
+### Removed
+
+* [#680](https://github.com/allora-network/allora-chain/pull/680) Remove custom ProposalHandler
+
+### Fixed
+
+* [#683](https://github.com/allora-network/allora-chain/pull/683) Added new strategy for reputer listening coefficients
+* [#668](https://github.com/allora-network/allora-chain/pull/668) Add stake nil amount validation + added tests + fixed other tests
+* [#687](https://github.com/allora-network/allora-chain/pull/687) Fix reputer nonce submission boundaries
+* [#690](https://github.com/allora-network/allora-chain/pull/690) Make investor token unlock amounts strictly monotonically increasing
+* [#695](https://github.com/allora-network/allora-chain/pull/695) Mint module GenesisState, proto, and v3 no-op migration (follow-on PR to 690)
+* [#698](https://github.com/allora-network/allora-chain/pull/698) Added docs to CONTRIBUTING.md; Fix `x/mint` version for query autocli; Fix `x/emissions` v6 migration such that `x/gov` actually gets burner permissions; Add props to whitelist-related return protos to ensure 
+
+### Security
+
+* [#682](https://github.com/allora-network/allora-chain/pull/682) Ensure IBC `MsgTransfer` funds are received
 
 ## v0.6.0
 
@@ -69,6 +143,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#538](https://github.com/allora-network/allora-chain/pull/538) Refactor Inference Synthesis to use Functions instead of "Builder Pattern"
 * [#625](https://github.com/allora-network/allora-chain/pull/625) Determine what percentage of rewards to pay to each topic based on time-based accumulation rather than instantaneously.
+* [#684](https://github.com/allora-network/allora-chain/pull/684) Avoid duplication of ABCI methods ordering. 
 
 ### Fixed
 
@@ -79,14 +154,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * [612](https://github.com/allora-network/allora-chain/pull/612) Load testnet state into local fork via in-place-testnet command 
+* [688](https://github.com/allora-network/allora-chain/pull/688) Add the `evidence` module.
 
 ### Security
 
 * [#603](https://github.com/allora-network/allora-chain/pull/603) Validate all Values for Correctness Prior to Storing them in the Keeper
 * [#620](https://github.com/allora-network/allora-chain/pull/620) Add a static analyzer to detect non-deferred `.Close()` calls, improve migration error handling
 * [#622](https://github.com/allora-network/allora-chain/pull/622) Add telemetry metrics on queries/txs
-
-## [Released]
 
 ## v0.5.0
 

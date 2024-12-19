@@ -33,6 +33,7 @@ type Keeper struct {
 	PreviousRewardEmissionPerUnitStakedToken collections.Item[math.LegacyDec]
 	PreviousBlockEmission                    collections.Item[math.Int]
 	EcosystemTokensMinted                    collections.Item[math.Int]
+	MonthsUnlocked                           collections.Item[math.Int]
 }
 
 // NewKeeper creates a new mint Keeper instance
@@ -64,6 +65,7 @@ func NewKeeper(
 		PreviousRewardEmissionPerUnitStakedToken: collections.NewItem(sb, types.PreviousRewardEmissionPerUnitStakedTokenKey, "previousrewardsemissionsperunitstakedtoken", alloraMath.LegacyDecValue),
 		PreviousBlockEmission:                    collections.NewItem(sb, types.PreviousBlockEmissionKey, "previousblockemission", sdk.IntValue),
 		EcosystemTokensMinted:                    collections.NewItem(sb, types.EcosystemTokensMintedKey, "ecosystemtokensminted", sdk.IntValue),
+		MonthsUnlocked:                           collections.NewItem(sb, types.MonthsUnlockedKey, "monthsunlocked", sdk.IntValue),
 	}
 
 	schema, err := sb.Build()
@@ -99,6 +101,18 @@ func (k Keeper) AddEcosystemTokensMinted(ctx context.Context, minted math.Int) e
 	}
 	newTotal := curr.Add(minted)
 	return k.EcosystemTokensMinted.Set(ctx, newTotal)
+}
+
+// Setter for the number of months unlocked
+// this function coerces values to be between 0 and 36
+func (k Keeper) SetMonthsAlreadyUnlocked(ctx context.Context, months math.Int) error {
+	if months.IsNegative() {
+		months = math.ZeroInt()
+	}
+	if months.GT(math.NewInt(36)) {
+		months = math.NewInt(36)
+	}
+	return k.MonthsUnlocked.Set(ctx, months)
 }
 
 /// STAKING KEEPER RELATED FUNCTIONS
@@ -252,4 +266,24 @@ func (k Keeper) GetEmissionsKeeperTotalStake(ctx context.Context) (math.Int, err
 // wrapper for interface compatibility for unit testing
 func (k Keeper) SetRewardCurrentBlockEmission(ctx context.Context, emission math.Int) error {
 	return k.emissionsKeeper.SetRewardCurrentBlockEmission(ctx, emission)
+}
+
+// Getter for the number of months unlocked
+// this Getter coerces values to be between 0 and 36
+// rather than throwing errors for invalid values stored in the keeper
+func (k Keeper) GetMonthsAlreadyUnlocked(ctx context.Context) math.Int {
+	// 36 months is the maximum number of months that can be unlocked,
+	// since tokens are on a three year vesting cycle
+	thirtySix := math.NewInt(36)
+	val, err := k.MonthsUnlocked.Get(ctx)
+	if err != nil {
+		return math.ZeroInt()
+	}
+	if val.IsNegative() {
+		return math.ZeroInt()
+	}
+	if val.GT(thirtySix) {
+		return thirtySix
+	}
+	return val
 }

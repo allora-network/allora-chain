@@ -25,6 +25,8 @@ func createNewTopic(s *RewardsTestSuite) uint64 {
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		AllowNegative:            false,
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -224,6 +226,15 @@ func (s *RewardsTestSuite) TestGetWorkersRewardFractionsFromCsv() {
 	forecaster1 := s.addrsStr[6]
 	forecaster2 := s.addrsStr[7]
 	forecasterAddresses := []string{forecaster0, forecaster1, forecaster2}
+
+	// CSV values were generated considering just max scores = 10
+	// The actual implementation considers max scores = 10 * max actors to reward
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+	params.MaxTopInferersToReward = 1
+	params.MaxTopForecastersToReward = 1
+	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	s.Require().NoError(err)
 
 	// Add scores from previous epochs
 	infererLastScores := make([]types.Score, 0)

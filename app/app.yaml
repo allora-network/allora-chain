@@ -3,16 +3,64 @@ modules:
     config:
       "@type": cosmos.app.runtime.v1alpha1.Module
       app_name: AlloraApp
-      # During begin block slashing happens after distr.BeginBlocker so that
-      # there is nothing left over in the validator fee pool, so as to keep the CanWithdrawInvariant invariant.
-      # NOTE: staking module is required if HistoricalEntries param > 0
-      # order of emissions must come before distribution for reputers + workers take their rewards cut before validators cut
+
+      # Only modules providing a PreBlock func are listed here.
       pre_blockers: [ upgrade ]
-      begin_blockers: [capability, distribution, slashing, staking, upgrade, mint, ibc, transfer, genutil, authz, interchainaccounts, feeibc]
-      end_blockers: [gov, staking, ibc, transfer, capability, genutil, authz, interchainaccounts, feeibc, emissions]
-      # NOTE: The genutils module must occur after staking so that pools are properly initialized with tokens from genesis accounts.
-      # NOTE: The genutils module must also occur after auth so that it can access the params from auth.
-      init_genesis: [capability, auth, bank, distribution, staking, slashing, gov, mint, ibc, genutil, authz, transfer, interchainaccounts, feeibc, params, upgrade, consensus, circuit, emissions, allorastaking, allorarequests, allorarewards, allorapendingrewards, ecosystem]
+
+      # Only modules providing an BeginBlock func are listed here.
+      begin_blockers:
+        # capability must come before any modules using capabilities (e.g. IBC)
+        - capability
+        # During begin block slashing happens after distribution so that there is nothing left over in the validator fee
+        # pool, so as to keep the CanWithdrawInvariant invariant.
+        - distribution
+        - slashing
+        - evidence
+        # staking module is required if HistoricalEntries param > 0
+        - staking
+        - mint
+        - feemarket
+        - ibc
+        - authz
+
+      # Only modules providing an EndBlock func are listed here.
+      end_blockers:
+        - gov
+        - feemarket
+        # staking must come after gov.
+        - staking
+        - emissions
+        - feegrant
+
+      # Only modules providing an InitGenesis func are listed here.
+      init_genesis:
+        # capability must come before any modules using capabilities (e.g. IBC)
+        - capability
+        - auth
+        - bank
+        - distribution
+        - staking
+        - slashing
+        - gov
+        - mint
+        - ibc
+        # The genutil module must occur:
+        # - after staking so that pools are properly initialized with tokens from genesis accounts;
+        # - after auth so that it can access the params from auth;
+        - genutil
+        - evidence
+        - authz
+        - feegrant
+        - transfer
+        - interchainaccounts
+        - feeibc
+        - upgrade
+        - consensus
+        - circuit
+        # feemarket must be after genutil to allow genesis transactions with 0fees
+        - feemarket
+        - emissions
+
       override_store_keys:
         - module_name: auth
           kv_store_key: acc
@@ -29,7 +77,6 @@ modules:
         - account: not_bonded_tokens_pool
           permissions: [burner, staking]
         - account : allorastaking
-        - account : allorarequests
         - account : distribution
         - account : allorarewards
         - account : allorapendingrewards
@@ -39,6 +86,9 @@ modules:
         - account: feeibc
         - account: interchainaccounts
         - account: gov
+          permissions: [burner]
+        - account: feemarket-fee-collector
+        - account: feemarket
   - name: gov
     config:
       "@type": cosmos.gov.module.v1.Module
@@ -46,7 +96,7 @@ modules:
     config:
       "@type": cosmos.bank.module.v1.Module
       blocked_module_accounts_override:
-        [auth, bonded_tokens_pool, not_bonded_tokens_pool, allorastaking, allorarequests, allorarewards, allorapendingrewards, distribution]
+        [auth, bonded_tokens_pool, not_bonded_tokens_pool, allorastaking, allorarewards, allorapendingrewards, distribution]
   - name: circuit
     config:
       "@type": cosmos.circuit.module.v1.Module
@@ -83,3 +133,9 @@ modules:
   - name: slashing
     config:
       "@type": cosmos.slashing.module.v1.Module
+  - name: feegrant
+    config:
+      "@type": cosmos.feegrant.module.v1.Module
+  - name: evidence
+    config:
+      "@type": cosmos.evidence.module.v1.Module

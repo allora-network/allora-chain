@@ -38,8 +38,8 @@ ADD https://github.com/cosmos/cosmos-sdk/releases/download/cosmovisor/${COSMOVIS
 RUN tar -xvf /tmp/cosmovisor.tar.gz -C /usr/local/bin/ && \
     chmod +x /usr/local/bin/cosmovisor
 
-ARG ALLORAD_CURRENT_VERSION="v0.4.0"
-ARG ALLORAD_UPGRADE_VERSION="v0.5.0"
+ARG ALLORAD_CURRENT_VERSION="v0.5.0"
+ARG ALLORAD_UPGRADE_VERSION="v0.6.0"
 
 RUN mkdir -p ${INITIAL_COSMOVISOR_DIR}/genesis/bin && \
     curl -Lo ${INITIAL_COSMOVISOR_DIR}/genesis/bin/allorad https://github.com/allora-network/allora-chain/releases/download/${ALLORAD_CURRENT_VERSION}/allorad_linux_amd64 && \

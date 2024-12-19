@@ -186,14 +186,14 @@ func FilterUnacceptedWorkersFromReputerValueBundle(
 	reputerValueBundle *types.ReputerValueBundle,
 ) (*types.ReputerValueBundle, error) {
 	// Get the accepted inferers of the associated worker response payload
-	inferences, err := k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight)
-	if err != nil {
-		if errors.Is(err, collections.ErrNotFound) {
-			return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "no inferences found at block height")
-		} else {
-			return nil, err
-		}
+	inferences, err := k.GetInferencesAtBlock(ctx, topicId, reputerRequestNonce.ReputerNonce.BlockHeight, false)
+
+	if errors.Is(err, collections.ErrNotFound) {
+		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "no inferences found at block height")
+	} else if err != nil {
+		return nil, err
 	}
+
 	acceptedInferersOfBatch := make(map[string]bool)
 	for _, inference := range inferences.Inferences {
 		acceptedInferersOfBatch[inference.Inferer] = true

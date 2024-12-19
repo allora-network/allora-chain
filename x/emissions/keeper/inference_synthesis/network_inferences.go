@@ -28,9 +28,11 @@ func GetNetworkInferences(
 	k emissionskeeper.Keeper,
 	topicId TopicId,
 	inferencesNonce *BlockHeight,
+	outlierResistant bool,
 ) (*GetNetworkInferencesResult, error) {
 	// Retrieve the requested inferences (either latest or specified, depending on inferencesNonce)
-	inferences, inferenceBlockHeight, err := getRequestedInferences(ctx, k, topicId, inferencesNonce)
+	// If outlierResistant is true, outliers will be filtered out before calculating the network inference
+	inferences, inferenceBlockHeight, err := getRequestedInferences(ctx, k, topicId, inferencesNonce, outlierResistant)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "while getting inferences")
 	}
@@ -62,9 +64,10 @@ func getRequestedInferences(
 	k emissionskeeper.Keeper,
 	topicId TopicId,
 	inferencesNonce *BlockHeight,
+	outlierResistant bool,
 ) (*emissions.Inferences, int64, error) {
 	if inferencesNonce == nil {
-		inferences, inferenceBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId)
+		inferences, inferenceBlockHeight, err := k.GetLatestTopicInferences(ctx, topicId, outlierResistant)
 		if err != nil {
 			return nil, 0, err
 		} else if len(inferences.Inferences) == 0 {
@@ -72,7 +75,7 @@ func getRequestedInferences(
 		}
 		return inferences, inferenceBlockHeight, nil
 	} else {
-		inferences, err := k.GetInferencesAtBlock(ctx, topicId, *inferencesNonce)
+		inferences, err := k.GetInferencesAtBlock(ctx, topicId, *inferencesNonce, outlierResistant)
 		if err != nil {
 			return nil, 0, err
 		} else if len(inferences.Inferences) == 0 {

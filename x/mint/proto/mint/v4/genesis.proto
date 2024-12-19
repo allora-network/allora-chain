@@ -1,0 +1,49 @@
+syntax = "proto3";
+package mint.v4;
+
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "mint/v1beta1/types.proto";
+
+option go_package = "github.com/allora-network/allora-chain/x/mint/types";
+
+// GenesisState defines the mint module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  mint.v1beta1.Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // previous target emission rewards per unit staked token
+  string previous_reward_emission_per_unit_staked_token = 2 [
+    (cosmos_proto.scalar) = "cosmos.LegacyDec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  string previous_block_emission = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // number of tokens minted into the ecosystem treasury
+  string ecosystem_tokens_minted = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // number of months already unlocked for investor token vesting purposes
+  string months_unlocked = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}

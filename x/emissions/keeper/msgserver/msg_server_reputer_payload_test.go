@@ -155,7 +155,7 @@ func (s *MsgServerTestSuite) constructAndInsertReputerPayload(
 	return err
 }
 
-func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
+func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindowAndWhitelistCheck() {
 	ctx := s.ctx
 	require := s.Require()
 	keeper := s.emissionsKeeper
@@ -192,9 +192,22 @@ func (s *MsgServerTestSuite) TestMsgInsertReputerPayloadFailsEarlyWindow() {
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyHex, &reputerValueBundle)
 	require.ErrorIs(err, types.ErrReputerNonceWindowNotAvailable)
 
-	// Valid reputer nonce window, end
+	// Remove reputer from whitelist
+	err = keeper.RemoveFromGlobalWhitelist(ctx, reputerAddr.String())
+	require.NoError(err)
+	err = keeper.RemoveFromTopicReputerWhitelist(ctx, topicId, reputerAddr.String())
+	require.NoError(err)
+
 	newBlockheight = block + topic.GroundTruthLag*2
 	s.ctx = sdk.UnwrapSDKContext(s.ctx).WithBlockHeight(newBlockheight)
+	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyHex, &reputerValueBundle)
+	require.ErrorIs(err, types.ErrNotPermittedToSubmitReputerPayload)
+
+	// Add reputer to whitelist so they could submit payload again
+	err = keeper.AddToTopicReputerWhitelist(ctx, topicId, reputerAddr.String())
+	require.NoError(err)
+
+	// Valid reputer nonce window, end
 	err = s.constructAndInsertReputerPayload(reputerAddr, reputerPrivateKey, reputerPublicKeyHex, &reputerValueBundle)
 	require.NoError(err)
 }

@@ -681,8 +681,8 @@ func (msg *RemoveRegistrationRequest) Validate() error {
 // In some cases, such as cancel or reward operations, zero amounts are valid, as they indicate no specific stake or value transfer is expected.
 // In other cases, such as adding or removing stakes, the amount must be positive because a zero value doesn't make sense in the context of increasing or decreasing a stake.
 func stakeValidateHelper(addr []string, amount cosmosMath.Int, allowZeroAmount bool) error {
-	if amount.IsNegative() {
-		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "amount must be non-negative: %s", amount.String())
+	if err := ValidateSdkIntRepresentingMonetaryValue(amount); err != nil {
+		return errors.Wrap(sdkerrors.ErrInvalidCoins, "amount is not valid")
 	}
 	if !allowZeroAmount && amount.IsZero() {
 		return errors.Wrapf(sdkerrors.ErrInvalidCoins, "amount must be positive: %s", amount.String())

@@ -6,6 +6,11 @@ import (
 	"fmt"
 
 	"cosmossdk.io/core/appmodule"
+	v2 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v2"
+	v3 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v3"
+	v4 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v4"
+	v5 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v5"
+	v6 "github.com/allora-network/allora-chain/x/emissions/api/emissions/v6"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/msgserver"
 	"github.com/allora-network/allora-chain/x/emissions/keeper/queryserver"
@@ -13,6 +18,8 @@ import (
 	migrationV3 "github.com/allora-network/allora-chain/x/emissions/migrations/v3"
 	migrationV4 "github.com/allora-network/allora-chain/x/emissions/migrations/v4"
 	migrationV5 "github.com/allora-network/allora-chain/x/emissions/migrations/v5"
+	migrationV6 "github.com/allora-network/allora-chain/x/emissions/migrations/v6"
+	migrationV7 "github.com/allora-network/allora-chain/x/emissions/migrations/v7"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -30,7 +37,7 @@ var (
 )
 
 // ConsensusVersion defines the current module consensus version.
-const ConsensusVersion = 5
+const ConsensusVersion = 7
 
 type AppModule struct {
 	cdc    codec.Codec
@@ -50,8 +57,11 @@ func (AppModule) Name() string { return types.ModuleName }
 
 // RegisterLegacyAminoCodec registers the state module's types on the LegacyAmino codec.
 func (AppModule) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	// TODO: Implement full Amino codec registration if needed in the future
-	// types.RegisterLegacyAminoCodec(cdc)
+	v2.RegisterTypes(cdc)
+	v3.RegisterTypes(cdc)
+	v4.RegisterTypes(cdc)
+	v5.RegisterTypes(cdc)
+	v6.RegisterTypes(cdc)
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the state module.
@@ -64,6 +74,11 @@ func (AppModule) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwrunt
 // RegisterInterfaces registers interfaces and implementations of the state module.
 func (AppModule) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	types.RegisterInterfaces(registry)
+	v2.RegisterInterfaces(registry)
+	v3.RegisterInterfaces(registry)
+	v4.RegisterInterfaces(registry)
+	v5.RegisterInterfaces(registry)
+	v6.RegisterInterfaces(registry)
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
@@ -93,6 +108,16 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 		return migrationV5.MigrateStore(ctx, am.keeper)
 	}); err != nil {
 		panic(fmt.Sprintf("failed to migrate x/%s from version 4 to 5: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 5, func(ctx sdk.Context) error {
+		return migrationV6.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 5 to 6: %v", types.ModuleName, err))
+	}
+	if err := cfg.RegisterMigration(types.ModuleName, 6, func(ctx sdk.Context) error {
+		return migrationV7.MigrateStore(ctx, am.keeper)
+	}); err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 6 to 7: %v", types.ModuleName, err))
 	}
 }
 

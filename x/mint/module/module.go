@@ -9,7 +9,9 @@ import (
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
 	modulev1 "github.com/allora-network/allora-chain/x/mint/api/mint/module/v1"
+	v1beta1 "github.com/allora-network/allora-chain/x/mint/api/mint/v1beta1"
 	"github.com/allora-network/allora-chain/x/mint/keeper"
+	migrationsV5 "github.com/allora-network/allora-chain/x/mint/migrations/v5"
 	"github.com/allora-network/allora-chain/x/mint/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -21,7 +23,7 @@ import (
 )
 
 // ConsensusVersion defines the current x/mint module consensus version.
-const ConsensusVersion = 2
+const ConsensusVersion = 5
 
 var (
 	_ module.AppModuleBasic = AppModule{} //nolint:exhaustruct
@@ -50,6 +52,7 @@ func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 // RegisterInterfaces registers the module's interface types
 func (b AppModuleBasic) RegisterInterfaces(r cdctypes.InterfaceRegistry) {
 	types.RegisterInterfaces(r)
+	v1beta1.RegisterInterfaces(r)
 }
 
 // DefaultGenesis returns default genesis state as raw bytes for the mint
@@ -70,7 +73,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the mint module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *gwruntime.ServeMux) {
-	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
+	if err := types.RegisterQueryServiceHandlerClient(context.Background(), mux, types.NewQueryServiceClient(clientCtx)); err != nil {
 		panic(err)
 	}
 }
@@ -107,7 +110,38 @@ func (am AppModule) IsAppModule() {}
 // module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServiceServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
-	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServerImpl(am.keeper))
+	types.RegisterQueryServiceServer(cfg.QueryServer(), keeper.NewQueryServerImpl(am.keeper))
+
+	// we don't have any data to migrate, so the migration itself is a no-op,
+	// but it's good to print that we're doing a migration
+	err := cfg.RegisterMigration(types.ModuleName, 1, func(ctx sdk.Context) error {
+		ctx.Logger().Info(fmt.Sprintf("MIGRATING %s MODULE FROM VERSION 1 TO VERSION 2", types.ModuleName))
+		return nil
+	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 1 to 2: %v", types.ModuleName, err))
+	}
+	err = cfg.RegisterMigration(types.ModuleName, 2, func(ctx sdk.Context) error {
+		ctx.Logger().Info(fmt.Sprintf("MIGRATING %s MODULE FROM VERSION 2 TO VERSION 3", types.ModuleName))
+		return nil
+	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 2 to 3: %v", types.ModuleName, err))
+	}
+	err = cfg.RegisterMigration(types.ModuleName, 3, func(ctx sdk.Context) error {
+		ctx.Logger().Info(fmt.Sprintf("MIGRATING %s MODULE FROM VERSION 3 TO VERSION 4", types.ModuleName))
+		return nil
+	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 3 to 4: %v", types.ModuleName, err))
+	}
+	err = cfg.RegisterMigration(types.ModuleName, 4, func(ctx sdk.Context) error {
+		ctx.Logger().Info(fmt.Sprintf("MIGRATING %s MODULE FROM VERSION 4 TO VERSION 5", types.ModuleName))
+		return migrationsV5.MigrateStore(ctx, am.keeper)
+	})
+	if err != nil {
+		panic(fmt.Sprintf("failed to migrate x/%s from version 4 to 5: %v", types.ModuleName, err))
+	}
 }
 
 // InitGenesis performs genesis initialization for the mint module. It returns

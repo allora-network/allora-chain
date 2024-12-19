@@ -22,6 +22,13 @@ func (ms msgServer) AddStake(ctx context.Context, msg *types.AddStakeRequest) (_
 		return nil, err
 	}
 
+	canAddStake, err := ms.k.CanAddReputerStake(ctx, msg.TopicId, msg.Sender)
+	if err != nil {
+		return nil, err
+	} else if !canAddStake {
+		return nil, types.ErrNotPermittedToAddStake
+	}
+
 	// Check the topic exists
 	topicExists, err := ms.k.TopicExists(ctx, msg.TopicId)
 	if err != nil {

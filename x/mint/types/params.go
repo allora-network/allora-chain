@@ -14,6 +14,7 @@ import (
 func NewParams(
 	mintDenom string,
 	maxSupply math.Int,
+	emissionEnabled bool,
 	fEmission math.LegacyDec,
 	oneMonthSmoothingDegree math.LegacyDec,
 	ecosystemPercentOfTotalSupply math.LegacyDec,
@@ -27,6 +28,7 @@ func NewParams(
 	return Params{
 		MintDenom:                              mintDenom,
 		MaxSupply:                              maxSupply,
+		EmissionEnabled:                        emissionEnabled,
 		FEmission:                              fEmission,
 		OneMonthSmoothingDegree:                oneMonthSmoothingDegree,
 		EcosystemTreasuryPercentOfTotalSupply:  ecosystemPercentOfTotalSupply,
@@ -48,6 +50,7 @@ func DefaultParams() Params {
 	return Params{
 		MintDenom:                              sdk.DefaultBondDenom,
 		MaxSupply:                              maxSupply,                              // 1 billion allo * 1e18 (exponent) = 1e27 uallo
+		EmissionEnabled:                        true,                                   // We are allowed to pay out rewards and do emissions
 		FEmission:                              math.LegacyMustNewDecFromStr("0.025"),  // 0.025 per month
 		OneMonthSmoothingDegree:                math.LegacyMustNewDecFromStr("0.1"),    // 0.1 at 1 month cadence
 		EcosystemTreasuryPercentOfTotalSupply:  math.LegacyMustNewDecFromStr("0.3595"), // 35.95%
@@ -83,6 +86,11 @@ func (p Params) Validate() error {
 	if err := validateMaxSupply(p.MaxSupply); err != nil {
 		return err
 	}
+	// no validiation for boolean EmissionEnabled since
+	// it can only ever either be true or false and both are valid
+	// if err := validateABoolean(p.EmissionEnabled); err != nil {
+	// 	return err
+	// }
 	if err := validateAFractionValue(p.FEmission); err != nil {
 		return err
 	}

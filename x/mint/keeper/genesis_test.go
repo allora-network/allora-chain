@@ -70,6 +70,7 @@ func (s *GenesisTestSuite) TestImportExportGenesis() {
 	genesisState.Params = types.NewParams(
 		"testDenom",
 		maxSupply,
+		true,
 		defaultParams.FEmission,
 		defaultParams.OneMonthSmoothingDegree,
 		defaultParams.EcosystemTreasuryPercentOfTotalSupply,

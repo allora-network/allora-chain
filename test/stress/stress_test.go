@@ -19,9 +19,9 @@ func TestStressTestSuite(t *testing.T) {
 
 	t.Log(">>> Setting up connection to local node <<<")
 
-	seed := testCommon.LookupEnvInt(t, "SEED", 0)
-	rpcMode := testCommon.LookupRpcMode(t, "RPC_MODE", testCommon.SingleRpc)
-	rpcEndpoints := testCommon.LookupEnvStringArray("RPC_URLS", []string{"http://localhost:26657"})
+	seed := testCommon.LookupEnvIntWithDefault(t, "SEED", 0)
+	rpcMode := testCommon.LookupRpcModeWithDefault(t, "RPC_MODE", testCommon.SingleRpc)
+	rpcEndpoints := testCommon.LookupEnvStringArrayWithDefault(t, "RPC_URLS", []string{"http://localhost:26657"})
 
 	testConfig := testCommon.NewTestConfig(
 		t,
@@ -32,15 +32,15 @@ func TestStressTestSuite(t *testing.T) {
 	)
 
 	// Read env vars with defaults
-	reputersPerIteration := testCommon.LookupEnvInt(t, "REPUTERS_PER_ITERATION", 1)
-	maxReputersPerTopic := testCommon.LookupEnvInt(t, "MAX_REPUTERS_PER_TOPIC", 20)
-	workersPerIteration := testCommon.LookupEnvInt(t, "WORKERS_PER_ITERATION", 1)
-	maxWorkersPerTopic := testCommon.LookupEnvInt(t, "MAX_WORKERS_PER_TOPIC", 20)
-	topicsPerIteration := testCommon.LookupEnvInt(t, "TOPICS_PER_ITERATION", 1)
-	topicsMax := testCommon.LookupEnvInt(t, "TOPICS_MAX", 100)
-	maxIterations := testCommon.LookupEnvInt(t, "MAX_ITERATIONS", 1000)
-	epochLength := testCommon.LookupEnvInt(t, "EPOCH_LENGTH", 12)
-	doFinalReport := testCommon.LookupEnvBool(t, "FINAL_REPORT", false)
+	reputersPerIteration := testCommon.LookupEnvIntWithDefault(t, "REPUTERS_PER_ITERATION", 1)
+	maxReputersPerTopic := testCommon.LookupEnvIntWithDefault(t, "MAX_REPUTERS_PER_TOPIC", 20)
+	workersPerIteration := testCommon.LookupEnvIntWithDefault(t, "WORKERS_PER_ITERATION", 1)
+	maxWorkersPerTopic := testCommon.LookupEnvIntWithDefault(t, "MAX_WORKERS_PER_TOPIC", 20)
+	topicsPerIteration := testCommon.LookupEnvIntWithDefault(t, "TOPICS_PER_ITERATION", 1)
+	topicsMax := testCommon.LookupEnvIntWithDefault(t, "TOPICS_MAX", 100)
+	maxIterations := testCommon.LookupEnvIntWithDefault(t, "MAX_ITERATIONS", 1000)
+	epochLength := testCommon.LookupEnvIntWithDefault(t, "EPOCH_LENGTH", 12)
+	doFinalReport := testCommon.LookupEnvBoolWithDefault(t, "FINAL_REPORT", false)
 
 	t.Log("Reputers per iteration: ", reputersPerIteration)
 	t.Log("Max Reputers per topic: ", maxReputersPerTopic)

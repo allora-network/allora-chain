@@ -13,6 +13,17 @@ import (
 func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopicRequest) (_ *types.CreateNewTopicResponse, err error) {
 	defer metrics.RecordMetrics("CreateNewTopic", time.Now(), &err)
 
+	// Validate the address
+	if err := ms.k.ValidateStringIsBech32(msg.Creator); err != nil {
+		return nil, err
+	}
+	canCreate, err := ms.k.CanCreateTopic(ctx, msg.Creator)
+	if err != nil {
+		return nil, err
+	} else if !canCreate {
+		return nil, types.ErrNotPermittedToCreateTopic
+	}
+
 	params, err := ms.k.GetParams(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Creator)
@@ -64,6 +75,20 @@ func (ms msgServer) CreateNewTopic(ctx context.Context, msg *types.CreateNewTopi
 	}
 	if err := ms.k.SetTopic(ctx, topicId, topic); err != nil {
 		return nil, err
+	}
+
+	// Turn topic whitelist on by default so no one can squeeze in payloads before an admin notices or can act
+	if msg.EnableWorkerWhitelist {
+		err = ms.k.EnableTopicWorkerWhitelist(ctx, topicId)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if msg.EnableReputerWhitelist {
+		err = ms.k.EnableTopicReputerWhitelist(ctx, topicId)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = ms.k.AddTopicFeeRevenue(ctx, topicId, params.CreateTopicFee)

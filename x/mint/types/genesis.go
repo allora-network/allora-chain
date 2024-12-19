@@ -8,12 +8,14 @@ func NewGenesisState(
 	previousRewardEmissionPerUnitStakedToken math.LegacyDec,
 	previousBlockEmission math.Int,
 	ecosystemTokensMinted math.Int,
+	monthsUnlocked math.Int,
 ) *GenesisState {
 	return &GenesisState{
 		Params:                                   params,
 		PreviousRewardEmissionPerUnitStakedToken: previousRewardEmissionPerUnitStakedToken,
 		PreviousBlockEmission:                    previousBlockEmission,
 		EcosystemTokensMinted:                    ecosystemTokensMinted,
+		MonthsUnlocked:                           monthsUnlocked,
 	}
 }
 
@@ -24,6 +26,7 @@ func DefaultGenesisState() *GenesisState {
 		PreviousRewardEmissionPerUnitStakedToken: DefaultPreviousRewardEmissionPerUnitStakedToken(),
 		PreviousBlockEmission:                    DefaultPreviousBlockEmission(),
 		EcosystemTokensMinted:                    DefaultEcosystemTokensMinted(),
+		MonthsUnlocked:                           math.NewInt(0),
 	}
 }
 
@@ -40,6 +43,15 @@ func ValidateGenesis(data GenesisState) error {
 
 	if data.EcosystemTokensMinted.IsNegative() {
 		return ErrInvalidEcosystemTokensMinted
+	}
+
+	if data.MonthsUnlocked.IsNegative() {
+		return ErrInvalidMonthsUnlocked
+	}
+
+	thirtySix := math.NewInt(36)
+	if data.MonthsUnlocked.GT(thirtySix) {
+		return ErrInvalidMonthsUnlocked
 	}
 
 	return nil

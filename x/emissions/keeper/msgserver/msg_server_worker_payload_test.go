@@ -137,7 +137,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayload() {
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 
 	ctx = ctx.WithBlockHeight(blockHeight)
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
 
 	inference, err := s.emissionsKeeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerMsg.WorkerDataBundle.Worker)
@@ -160,6 +164,13 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilInference(
 	ctx = ctx.WithBlockHeight(blockHeight)
 
 	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	require.ErrorIs(err, types.ErrNotPermittedToSubmitWorkerPayload)
+
+	// Add worker to topic whitelist
+	err = s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err, "InsertWorkerPayload should not return an error after adding worker to whitelist")
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err)
 
 	forecasts, err := s.emissionsKeeper.GetWorkerLatestForecastByTopicId(ctx, topicId, workerMsg.WorkerDataBundle.Worker)
@@ -181,7 +192,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadNotFailsWithNilForecast()
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
 
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	// Add worker to topic whitelist
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err)
 
 	inferences, err := s.emissionsKeeper.GetWorkerLatestInferenceByTopicId(ctx, topicId, workerMsg.WorkerDataBundle.Worker)
@@ -204,7 +219,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithNilInferenceAndF
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	// END MODIFICATION
 
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	// Add worker to topic whitelist
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
 
@@ -220,27 +239,38 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithoutSignature() {
 	// workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	// END MODIFICATION
 
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	// Add worker to topic whitelist
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
 
 func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedTopicId() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
+	topicId := uint64(123)
 
 	workerPrivateKey := secp256k1.GenPrivKey()
 
 	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 
+	// Add worker to topic whitelist
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, topicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	err = s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
 	// BEGIN MODIFICATION
-	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = 123
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.TopicId = topicId
 	// END MODIFICATION
 
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, types.ErrInvalidTopicId)
 }
 
@@ -263,8 +293,12 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredInfe
 
 	_, err := msgServer.RemoveRegistration(ctx, unregisterMsg)
 	require.NoError(err)
-
 	// END MODIFICATION
+
+	// Add worker to topic whitelist
+	err = s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
@@ -327,6 +361,16 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 		MaxStringLength:                     nil,
 		InitialRegretQuantile:               nil,
 		PNormSafeDiv:                        nil,
+		GlobalWhitelistEnabled:              nil,
+		TopicCreatorWhitelistEnabled:        nil,
+		MinExperiencedWorkerRegrets:         nil,
+		InferenceOutlierDetectionThreshold:  nil,
+		InferenceOutlierDetectionAlpha:      nil,
+		LambdaInitialScore:                  nil,
+		GlobalWorkerWhitelistEnabled:        nil,
+		GlobalReputerWhitelistEnabled:       nil,
+		GlobalAdminWhitelistAppended:        nil,
+		MaxWhitelistInputArrayLength:        nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -362,6 +406,10 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 
 	ctx = ctx.WithBlockHeight(workerBlockHeight)
 
+	// Add worker to topic whitelist
+	err = s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
 
@@ -394,7 +442,8 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedForeca
 
 	// BEGIN MODIFICATION
 	originalTopicId := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId
-	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = 123
+	newTopicId := uint64(123)
+	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.TopicId = newTopicId
 	// END MODIFICATION
 
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
@@ -404,15 +453,21 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithMismatchedForeca
 	forecastsCount0 := s.getCountForecastsAtBlock(originalTopicId, blockHeight)
 	require.Equal(forecastsCount0, 0)
 
+	// Enable topic whitelists
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, originalTopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+	err = s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, newTopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
 	ctx = ctx.WithBlockHeight(blockHeight)
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, types.ErrInvalidTopicId)
 
 	forecastsCount1 := s.getCountForecastsAtBlock(originalTopicId, blockHeight)
 	require.Equal(forecastsCount1, 0)
 
 	// Also not added on the changed topicId
-	forecastsCountNew := s.getCountForecastsAtBlock(123, blockHeight)
+	forecastsCountNew := s.getCountForecastsAtBlock(newTopicId, blockHeight)
 	require.Equal(forecastsCountNew, 0)
 }
 
@@ -439,6 +494,10 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFailsWithUnregisteredFore
 	// END MODIFICATION
 
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
+
+	// Add worker to topic whitelist
+	err = s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
 
 	forecastsCount0 := s.getCountForecastsAtBlock(topicId, blockHeight)
 	require.Equal(forecastsCount0, 0)
@@ -470,11 +529,15 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadFiltersDuplicateForecastE
 	forecast.ForecastElements = append(forecast.ForecastElements, duplicateElement)
 	// END MODIFICATION
 
+	// Add worker to topic whitelist
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 
 	blockHeight := forecast.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error")
 
 	storedForecasts, err := s.emissionsKeeper.GetWorkerLatestForecastByTopicId(ctx, topicId, workerMsg.WorkerDataBundle.Worker)
@@ -705,6 +768,16 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 		MaxStringLength:                     nil,
 		InitialRegretQuantile:               nil,
 		PNormSafeDiv:                        nil,
+		GlobalWhitelistEnabled:              nil,
+		TopicCreatorWhitelistEnabled:        nil,
+		MinExperiencedWorkerRegrets:         nil,
+		InferenceOutlierDetectionThreshold:  nil,
+		InferenceOutlierDetectionAlpha:      nil,
+		LambdaInitialScore:                  nil,
+		GlobalWorkerWhitelistEnabled:        nil,
+		GlobalReputerWhitelistEnabled:       nil,
+		GlobalAdminWhitelistAppended:        nil,
+		MaxWhitelistInputArrayLength:        nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -739,6 +812,10 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 	blockHeight = blockHeight + workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
 
+	// Add worker to topic whitelist
+	err = s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
 	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.NoError(err, "InsertWorkerPayload should not return an error even if the forecast elements are below the threshold")
 
@@ -759,10 +836,15 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadInfererNotMatchSignature(
 
 	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Inference.Inferer = s.addrsStr[3]
+
+	// Add worker to topic whitelist
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 }
 
@@ -775,10 +857,15 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadForecasterNotMatchSignatu
 
 	workerMsg, _ := s.setUpMsgInsertWorkerPayload(workerPrivateKey)
 	workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.Forecaster = s.addrsStr[3]
+
+	// Add worker to topic whitelist
+	err := s.emissionsKeeper.AddToTopicWorkerWhitelist(ctx, workerMsg.WorkerDataBundle.TopicId, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 }
 
@@ -794,6 +881,11 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWorkerNotMatchSignature()
 	workerMsg = s.signMsgInsertWorkerPayload(workerMsg, workerPrivateKey)
 	blockHeight := workerMsg.WorkerDataBundle.InferenceForecastsBundle.Forecast.BlockHeight
 	ctx = ctx.WithBlockHeight(blockHeight)
-	_, err := msgServer.InsertWorkerPayload(ctx, &workerMsg)
+
+	// Add worker to topic whitelist
+	err := s.emissionsKeeper.AddToGlobalWhitelist(ctx, workerMsg.WorkerDataBundle.Worker)
+	require.NoError(err)
+
+	_, err = msgServer.InsertWorkerPayload(ctx, &workerMsg)
 	require.ErrorIs(err, sdkerrors.ErrUnauthorized)
 }

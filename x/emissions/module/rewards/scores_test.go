@@ -35,6 +35,8 @@ func (s *RewardsTestSuite) TestGetReputersScoresFromCsv() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -192,6 +194,8 @@ func (s *RewardsTestSuite) TestGetInferenceScores() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -250,6 +254,8 @@ func (s *RewardsTestSuite) TestGetInferenceScoresFromCsv() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -320,6 +326,8 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherInferenceScore() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -373,6 +381,8 @@ func (s *RewardsTestSuite) TestGetForecastScores() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -428,6 +438,8 @@ func (s *RewardsTestSuite) TestGetForecasterScoresFromCsv() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -497,6 +509,8 @@ func (s *RewardsTestSuite) TestHigherOneOutLossesHigherForecastScore() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
 	s.Require().NoError(err)
@@ -1365,6 +1379,7 @@ func generateWorkerDataBundles(s *RewardsTestSuite, blockHeight int64, topicId u
 	return inferences
 }
 
+/* to be rewritten in PROTO-3088
 func generateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
 	var newInferences []*types.WorkerDataBundle
 	worker1 := 13
@@ -1413,7 +1428,7 @@ func generateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 			TopicId:     topicId,
 			BlockHeight: blockHeight,
 			Inferer:     s.addrsStr[worker2],
-			Value:       alloraMath.MustNewDecFromString("0.01251"),
+			Value:       alloraMath.MustNewDecFromString("10000"),
 			ExtraData:   nil,
 			Proof:       "",
 		},
@@ -1448,7 +1463,9 @@ func generateMoreInferencesDataBundles(s *RewardsTestSuite, blockHeight int64, t
 
 	return newInferences
 }
+*/
 
+/* to be rewritten in PROTO-3088
 func generateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, topicId uint64) []*types.WorkerDataBundle {
 	var newForecasts []*types.WorkerDataBundle
 	worker1 := 13
@@ -1532,6 +1549,7 @@ func generateMoreForecastersDataBundles(s *RewardsTestSuite, blockHeight int64, 
 
 	return newForecasts
 }
+*/
 
 type TestWorkerValue struct {
 	Index int
@@ -1678,4 +1696,220 @@ func generateSimpleLossBundles(
 	}
 
 	return reputerValueBundles
+}
+
+func (s *RewardsTestSuite) TestGenerateReputerScoresWithZeroListeningCoefficients() {
+	// Create a new topic
+	newTopicMsg := &types.CreateNewTopicRequest{
+		Creator:                  s.addrs[0].String(),
+		Metadata:                 "test",
+		LossMethod:               "mse",
+		EpochLength:              10800,
+		GroundTruthLag:           10800,
+		WorkerSubmissionWindow:   10,
+		PNorm:                    alloraMath.NewDecFromInt64(3),
+		AlphaRegret:              alloraMath.MustNewDecFromString("0.1"),
+		AllowNegative:            true,
+		Epsilon:                  alloraMath.MustNewDecFromString("0.01"),
+		MeritSortitionAlpha:      alloraMath.MustNewDecFromString("0.1"),
+		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
+		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
+	}
+	res, err := s.msgServer.CreateNewTopic(s.ctx, newTopicMsg)
+	s.Require().NoError(err)
+	topicId := res.TopicId
+	block := int64(1003)
+
+	// Set up reputer with zero listening coefficient
+	reputer := s.addrsStr[13]
+	stake := cosmosMath.NewInt(1000000000)
+
+	// Mint tokens and add stake
+	addrBech, err := sdk.AccAddressFromBech32(reputer)
+	s.Require().NoError(err)
+	s.MintTokensToAddress(addrBech, stake)
+	err = s.emissionsKeeper.AddReputerStake(s.ctx, topicId, reputer, stake)
+	s.Require().NoError(err)
+
+	// Set zero listening coefficient
+	err = s.emissionsKeeper.SetListeningCoefficient(
+		s.ctx,
+		topicId,
+		reputer,
+		types.ListeningCoefficient{Coefficient: alloraMath.ZeroDec()},
+	)
+	s.Require().NoError(err)
+
+	// Create reported losses
+	reportedLosses := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			{
+				Pubkey: s.pubKeyHexStr[13],
+				ValueBundle: &types.ValueBundle{
+					TopicId: topicId,
+					ReputerRequestNonce: &types.ReputerRequestNonce{
+						ReputerNonce: &types.Nonce{BlockHeight: block},
+					},
+					Reputer:       reputer,
+					CombinedValue: alloraMath.MustNewDecFromString("3.8"),
+					NaiveValue:    alloraMath.MustNewDecFromString("3.8"),
+					InfererValues: []*types.WorkerAttributedValue{
+						{
+							Worker: s.addrsStr[5],
+							Value:  alloraMath.MustNewDecFromString("3.81"),
+						},
+						{
+							Worker: s.addrsStr[6],
+							Value:  alloraMath.MustNewDecFromString("3.82"),
+						},
+					},
+					ForecasterValues:              nil,
+					OneOutInfererValues:           nil,
+					OneOutForecasterValues:        nil,
+					OneInForecasterValues:         nil,
+					OneOutInfererForecasterValues: nil,
+					ExtraData:                     nil,
+				},
+			},
+		},
+	}
+
+	// Sign the value bundle
+	sig, err := signValueBundle(reportedLosses.ReputerValueBundles[0].ValueBundle, s.privKeys[13])
+	s.Require().NoError(err)
+	reportedLosses.ReputerValueBundles[0].Signature = sig
+
+	// Get params and set epsilon reputer
+	params := types.DefaultParams()
+	params.EpsilonReputer = alloraMath.MustNewDecFromString("0.1")
+	err = s.emissionsKeeper.SetParams(s.ctx, params)
+	s.Require().NoError(err)
+
+	// Generate scores
+	scores, err := rewards.GenerateReputerScores(
+		s.ctx,
+		s.emissionsKeeper,
+		topicId,
+		block,
+		reportedLosses,
+	)
+	s.Require().NoError(err)
+	s.Require().Len(scores, 1)
+
+	// Verify that the listening coefficient was updated to epsilon reputer value
+	coefficient, err := s.emissionsKeeper.GetListeningCoefficient(s.ctx, topicId, reputer)
+	s.Require().NoError(err)
+	s.Require().True(coefficient.Coefficient.Equal(params.EpsilonReputer))
+}
+
+func (s *RewardsTestSuite) TestCalculateTopicInitialEmaScore() {
+	// Setup test scores
+	scores := []types.Score{
+		{
+			TopicId:     1,
+			BlockHeight: 1000,
+			Address:     s.addrs[0].String(),
+			Score:       alloraMath.MustNewDecFromString("0.5"),
+		},
+		{
+			TopicId:     1,
+			BlockHeight: 1000,
+			Address:     s.addrs[1].String(),
+			Score:       alloraMath.MustNewDecFromString("0.3"),
+		},
+		{
+			TopicId:     1,
+			BlockHeight: 1000,
+			Address:     s.addrs[2].String(),
+			Score:       alloraMath.MustNewDecFromString("0.1"),
+		},
+		{
+			TopicId:     1,
+			BlockHeight: 1000,
+			Address:     s.addrs[3].String(),
+			Score:       alloraMath.MustNewDecFromString("0.4"),
+		},
+		{
+			TopicId:     1,
+			BlockHeight: 1000,
+			Address:     s.addrs[4].String(),
+			Score:       alloraMath.MustNewDecFromString("0.2"),
+		},
+	}
+
+	// Calculate initial EMA score
+	initialScore, err := rewards.CalculateTopicInitialEmaScore(s.ctx, s.emissionsKeeper, scores)
+	s.Require().NoError(err)
+
+	// Get lambda from params
+	params, err := s.emissionsKeeper.GetParams(s.ctx)
+	s.Require().NoError(err)
+	lambda := params.LambdaInitialScore
+
+	// Calculate expected score manually
+	// Standard deviation ≈ 0.1581139
+	stdDev := alloraMath.MustNewDecFromString("0.1581139")
+	lambdaStdDev, err := lambda.Mul(stdDev)
+	s.Require().NoError(err)
+
+	// Lowest score is 0.1
+	lowestScore := alloraMath.MustNewDecFromString("0.1")
+	expectedScore, err := lowestScore.Sub(lambdaStdDev)
+	s.Require().NoError(err)
+
+	// Verify result matches expected
+	diff, err := initialScore.Sub(expectedScore)
+	s.Require().NoError(err)
+	absDiff, err := diff.Abs()
+	s.Require().NoError(err)
+	s.Require().True(absDiff.Lt(alloraMath.MustNewDecFromString("0.000001")))
+}
+
+func (s *RewardsTestSuite) TestCalculateTopicInitialEmaScoreEdgeCases() {
+	testCases := []struct {
+		name          string
+		scores        []types.Score
+		expectedError bool
+		expectedScore string
+	}{
+		{
+			name:          "empty scores",
+			scores:        []types.Score{},
+			expectedError: false,
+			expectedScore: "0", // Returns zero when no scores
+		},
+		{
+			name: "single score",
+			scores: []types.Score{
+				{Score: alloraMath.MustNewDecFromString("0.5")}, // nolint:exhaustruct
+			},
+			expectedError: false,
+			expectedScore: "0.5", // With single score, no std dev calculation possible, returns the score
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			initialScore, err := rewards.CalculateTopicInitialEmaScore(s.ctx, s.emissionsKeeper, tc.scores)
+
+			if tc.expectedError {
+				s.Require().Error(err)
+				return
+			}
+
+			s.Require().NoError(err)
+			expectedScore := alloraMath.MustNewDecFromString(tc.expectedScore)
+			diff, err := initialScore.Sub(expectedScore)
+			s.Require().NoError(err)
+			absDiff, err := diff.Abs()
+			s.Require().NoError(err)
+			s.Require().True(
+				absDiff.Lt(alloraMath.MustNewDecFromString("0.000001")),
+				"Expected %s but got %s", expectedScore, initialScore,
+			)
+		})
+	}
 }

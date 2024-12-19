@@ -54,7 +54,13 @@ ldflags = -X github.com/cosmos/cosmos-sdk/version.Name=allora \
 ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
-BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+gcflags = all=-N -l
+
+ifeq ($(DEBUG),true)
+	BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)' -gcflags '$(gcflags)'
+else
+	BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
+endif
 BUILDDIR ?= $(CURDIR)/build
 
 ###########
@@ -81,17 +87,27 @@ build-local-edits:
 	mkdir -p $(BUILDDIR)/
 	go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/ github.com/allora-network/allora-chain/cmd/allorad
 
+build-all-platforms:
+	mkdir -p $(BUILDDIR)/
+	GOOS=linux GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=linux GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_linux_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=darwin GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_darwin_arm64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=amd64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
+	GOOS=windows GOARCH=arm64 GOWORK=off go build -mod=readonly  $(BUILD_FLAGS) -o $(BUILDDIR)/allorad_windows_amd64 github.com/allora-network/allora-chain/cmd/allorad
+
 lint:
 	@echo "--> Running linter"
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m
-	@go run ./cmd/check-defer-close .
+	@go run ./linter/check-defer-close .
+	@go run ./linter/fuzz-transitions
 
 build-maprange-linter:
 	@echo "--> Buiding maprange linter"
-	go build -o linter/bin/maprange.so -buildmode=plugin linter/maprange.go
+	cd linter/maprange && go build -o bin/maprange.so -buildmode=plugin maprange.go
 
 maprange: build-maprange-linter
 	@echo "--> Running maprange linter"
-	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m --config linter/.golangci-maprange.yml
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run --timeout=10m --config linter/maprange/.golangci-maprange.yml
 
 .PHONY: all install build lint build-maprange-linter maprange

@@ -29,6 +29,10 @@ func (k Keeper) InitGenesis(ctx context.Context, ak types.AccountKeeper, data *t
 		panic(err)
 	}
 
+	if err := k.SetMonthsAlreadyUnlocked(ctx, data.MonthsUnlocked); err != nil {
+		panic(err)
+	}
+
 	ak.GetModuleAccount(ctx, types.ModuleName)
 }
 
@@ -54,10 +58,13 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 		panic(err)
 	}
 
+	monthsUnlocked := k.GetMonthsAlreadyUnlocked(ctx)
+
 	return types.NewGenesisState(
 		params,
 		previousRewardEmissionPerUnitStakedToken,
 		previousBlockEmission,
 		ecosystemTokensMinted,
+		monthsUnlocked,
 	)
 }

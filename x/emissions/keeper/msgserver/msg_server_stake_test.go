@@ -43,13 +43,18 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 
 	reputerInitialBalance := types.DefaultParams().CreateTopicFee.Add(reputerInitialBalanceUint)
 
 	reputerInitialBalanceCoins := sdk.NewCoins(sdk.NewCoin(params.DefaultBondDenom, reputerInitialBalance))
 
-	err := s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, reputerInitialBalanceCoins)
+	err := s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, reputer)
+	require.NoError(err)
+
+	err = s.bankKeeper.MintCoins(ctx, types.AlloraStakingAccountName, reputerInitialBalanceCoins)
 	require.NoError(err, "Minting coins should not return an error")
 	err = s.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.AlloraStakingAccountName, reputerAddr, reputerInitialBalanceCoins)
 	require.NoError(err, "Sending coins should not return an error")
@@ -90,7 +95,7 @@ func (s *MsgServerTestSuite) commonStakingSetup(
 	return topicId
 }
 
-func (s *MsgServerTestSuite) TestMsgAddStake() {
+func (s *MsgServerTestSuite) TestMsgAddStakeWithWhitelistCheck() {
 	ctx := s.ctx
 	require := s.Require()
 
@@ -119,7 +124,23 @@ func (s *MsgServerTestSuite) TestMsgAddStake() {
 	require.NoError(err)
 	require.Equal(cosmosMath.ZeroInt(), topicStake, "Stake amount mismatch")
 
+	// Remove sender from whitelist
+	err = s.emissionsKeeper.RemoveFromTopicReputerWhitelist(ctx, topicId, reputer)
+	require.NoError(err)
+	err = s.emissionsKeeper.RemoveFromGlobalWhitelist(ctx, reputer)
+	require.NoError(err)
+
+	// Should now fail
 	response, err := s.msgServer.AddStake(ctx, addStakeMsg)
+	require.ErrorIs(err, types.ErrNotPermittedToAddStake)
+	require.Nil(response)
+
+	// Add sender back to whitelist
+	err = s.emissionsKeeper.AddToTopicReputerWhitelist(ctx, topicId, reputer)
+	require.NoError(err)
+
+	// Should now succeed
+	response, err = s.msgServer.AddStake(ctx, addStakeMsg)
 	require.NoError(err, "AddStake should not return an error")
 	require.NotNil(response)
 
@@ -130,6 +151,31 @@ func (s *MsgServerTestSuite) TestMsgAddStake() {
 	topicStake, err = s.emissionsKeeper.GetTopicStake(ctx, topicId)
 	require.NoError(err)
 	require.Equal(stakeAmount, topicStake, "Stake amount mismatch")
+}
+
+func (s *MsgServerTestSuite) TestMsgAddStakeNil() {
+	ctx := s.ctx
+	require := s.Require()
+
+	reputer := s.addrsStr[0]
+	reputerAddr := s.addrs[0]
+	worker := s.addrsStr[1]
+	workerAddr := s.addrs[1]
+	stakeAmount := cosmosMath.NewInt(10)
+	moduleParams, err := s.emissionsKeeper.GetParams(ctx)
+	require.NoError(err)
+	registrationInitialBalance := moduleParams.RegistrationFee.Add(stakeAmount)
+
+	topicId := s.commonStakingSetup(ctx, reputer, reputerAddr, worker, workerAddr, registrationInitialBalance)
+
+	addStakeMsg := &types.AddStakeRequest{
+		Sender:  reputer,
+		TopicId: topicId,
+		Amount:  cosmosMath.Int{},
+	}
+
+	_, err = s.msgServer.AddStake(ctx, addStakeMsg)
+	require.ErrorIs(err, sdkerrors.ErrInvalidCoins)
 }
 
 func (s *MsgServerTestSuite) TestStartRemoveStake() {
@@ -464,6 +510,21 @@ func (s *MsgServerTestSuite) TestStartRemoveStakeNegative() {
 	require.ErrorIs(err, sdkerrors.ErrInvalidCoins)
 }
 
+func (s *MsgServerTestSuite) TestStartRemoveStakeNil() {
+	ctx := s.ctx
+	require := s.Require()
+	senderAddr := s.addrs[0]
+
+	msg := &types.RemoveStakeRequest{
+		Sender:  senderAddr.String(),
+		TopicId: uint64(123),
+		Amount:  cosmosMath.Int{},
+	}
+
+	_, err := s.msgServer.RemoveStake(ctx, msg)
+	require.ErrorIs(err, sdkerrors.ErrInvalidCoins)
+}
+
 func (s *MsgServerTestSuite) TestDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
@@ -515,6 +576,35 @@ func (s *MsgServerTestSuite) TestDelegateStake() {
 	require.Equal(stakeAmount, amountInt)
 }
 
+func (s *MsgServerTestSuite) TestDelegateStakeNil() {
+	ctx := s.ctx
+	require := s.Require()
+	keeper := s.emissionsKeeper
+
+	delegatorAddr := s.addrs[0]
+	delegator := s.addrsStr[0]
+	reputer := s.addrsStr[1]
+	topic := s.CreateOneTopic()
+	s.MintTokensToAddress(delegatorAddr, cosmosMath.NewInt(1000))
+
+	reputerInfo := types.OffchainNode{
+		Owner:       s.addrsStr[7],
+		NodeAddress: reputer,
+	}
+
+	err := keeper.InsertReputer(ctx, topic.Id, reputer, reputerInfo)
+	require.NoError(err)
+
+	msg := &types.DelegateStakeRequest{
+		Sender:  delegator,
+		TopicId: topic.Id,
+		Reputer: reputer,
+		Amount:  cosmosMath.Int{},
+	}
+	_, err = s.msgServer.DelegateStake(ctx, msg)
+	require.ErrorIs(err, sdkerrors.ErrInvalidCoins)
+}
+
 func (s *MsgServerTestSuite) TestReputerCantSelfDelegateStake() {
 	ctx := s.ctx
 	require := s.Require()
@@ -543,7 +633,7 @@ func (s *MsgServerTestSuite) TestReputerCantSelfDelegateStake() {
 
 	// Perform the stake delegation
 	_, err = s.msgServer.DelegateStake(ctx, msg)
-	require.Error(err, types.ErrCantSelfDelegate)
+	require.ErrorIs(err, sdkerrors.ErrInvalidRequest)
 }
 
 func (s *MsgServerTestSuite) TestDelegateeCantWithdrawDelegatedStake() {
@@ -722,7 +812,7 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeError() {
 
 	// Perform the stake removal initiation
 	_, err = s.msgServer.RemoveDelegateStake(ctx, msg2)
-	require.Error(err, types.ErrInsufficientStakeToRemove)
+	require.ErrorIs(err, types.ErrInsufficientDelegateStakeToRemove)
 }
 
 func (s *MsgServerTestSuite) TestConfirmRemoveDelegateStake() {
@@ -999,7 +1089,18 @@ func (s *MsgServerTestSuite) TestStartRemoveDelegateStakeNegative() {
 
 	// Perform the stake removal initiation
 	_, err = s.msgServer.RemoveDelegateStake(ctx, msg2)
-	require.Error(err, types.ErrInvalidValue)
+	require.ErrorIs(err, sdkerrors.ErrInvalidCoins)
+
+	msg2 = &types.RemoveDelegateStakeRequest{
+		Sender:  delegator,
+		Reputer: reputer,
+		TopicId: topic.Id,
+		Amount:  cosmosMath.Int{},
+	}
+
+	// Perform the stake removal initiation
+	_, err = s.msgServer.RemoveDelegateStake(ctx, msg2)
+	require.ErrorIs(err, sdkerrors.ErrInvalidCoins)
 }
 
 func (s *MsgServerTestSuite) TestRemoveDelegateStakeMultipleReputersSameDelegator() {

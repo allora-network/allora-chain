@@ -21,7 +21,17 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	err = ms.k.ValidateStringIsBech32(msg.Sender)
 	if err != nil {
-		return nil, err
+		return nil, errorsmod.Wrapf(err, "Error validating sender address")
+	}
+	err = ms.k.ValidateStringIsBech32(msg.WorkerDataBundle.Worker)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error validating worker address")
+	}
+	canSubmit, err := ms.k.CanSubmitWorkerPayload(ctx, msg.WorkerDataBundle.TopicId, msg.WorkerDataBundle.Worker)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "Error checking if worker can submit payload")
+	} else if !canSubmit {
+		return nil, errorsmod.Wrapf(types.ErrNotPermittedToSubmitWorkerPayload, "Worker is not permitted to submit payload")
 	}
 
 	blockHeight := sdkCtx.BlockHeight()
@@ -33,7 +43,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 
 	moduleParams, err := ms.k.GetParams(ctx)
 	if err != nil {
-		return nil, errorsmod.Wrapf(err, "Error getting params for sender: %v", &msg.Sender)
+		return nil, errorsmod.Wrapf(err, "Error getting params")
 	}
 	err = checkInputLength(moduleParams.MaxSerializedMsgLength, msg)
 	if err != nil {
@@ -54,6 +64,7 @@ func (ms msgServer) InsertWorkerPayload(ctx context.Context, msg *types.InsertWo
 		return nil, types.ErrUnfulfilledNonceNotFound
 	}
 
+	// Note: this is exclusive of the end block height
 	if !ms.k.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
 		return nil, errorsmod.Wrapf(
 			types.ErrWorkerNonceWindowNotAvailable,

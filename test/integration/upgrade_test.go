@@ -6,7 +6,7 @@ import (
 	"time"
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
-	"github.com/allora-network/allora-chain/app/upgrades/v0_6_0"
+	v0_8_0 "github.com/allora-network/allora-chain/app/upgrades/v0_8_0"
 	testCommon "github.com/allora-network/allora-chain/test/common"
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -57,7 +57,7 @@ func voteOnProposal(m testCommon.TestConfig, proposalId uint64) {
 // propose an upgrade to the v0.5.0 software version
 func proposeUpgrade(m testCommon.TestConfig) (proposalId uint64, proposalHeight int64) {
 	ctx := context.Background()
-	name := v0_6_0.UpgradeName
+	name := v0_8_0.UpgradeName
 	summary := "Upgrade to " + name + " software version"
 
 	currHeight, err := m.Client.BlockHeight(ctx)
@@ -129,6 +129,7 @@ func getEmissionsVersion(m testCommon.TestConfig) uint64 {
 		ModuleName: "emissions",
 	}
 	moduleVersions, err := m.Client.QueryUpgrade().ModuleVersions(ctx, queryModuleVersionsRequest)
+	m.T.Logf("Module Versions: %+v", moduleVersions)
 	require.NoError(m.T, err)
 	require.NotNil(m.T, moduleVersions)
 	require.Len(m.T, moduleVersions.ModuleVersions, 1)
@@ -161,10 +162,10 @@ func getAppliedVersionHeight(m testCommon.TestConfig, version string) int64 {
 }
 
 func UpgradeChecks(m testCommon.TestConfig) {
-	versionName := v0_6_0.UpgradeName
+	versionName := v0_8_0.UpgradeName
 	m.T.Log("--- Getting Emissions Module Version Before Upgrade ---")
 	emissionsVersionBefore := getEmissionsVersion(m)
-	m.T.Logf("--- Propose Upgrade to %s software version from v0 ---", versionName)
+	m.T.Logf("--- Propose Upgrade to %s software version from v0 (%d) ---", versionName, emissionsVersionBefore)
 	proposalId, proposalHeight := proposeUpgrade(m)
 	m.T.Logf("--- Vote on Upgrade Proposal %d ---", proposalId)
 	voteOnProposal(m, proposalId)
@@ -175,8 +176,8 @@ func UpgradeChecks(m testCommon.TestConfig) {
 	m.T.Log("--- Getting Emissions Module Version After Upgrade ---")
 	emissionsVersionAfter := getEmissionsVersion(m)
 	m.T.Log("--- Checking Emissions Module Version Has Been Upgraded ---")
-	require.Equal(m.T, emissionsVersionAfter, emissionsVersionBefore)
+	require.Greater(m.T, emissionsVersionAfter, emissionsVersionBefore)
 	height := getAppliedVersionHeight(m, versionName)
 	m.T.Log("--- Checking upgrade has been applied at the proposed height ---")
-	require.Equal(m.T, proposalHeight, height)
+	require.Equal(m.T, height, proposalHeight)
 }

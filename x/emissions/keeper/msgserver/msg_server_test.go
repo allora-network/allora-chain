@@ -139,6 +139,12 @@ func (s *MsgServerTestSuite) SetupTest() {
 	for _, addr := range s.addrsStr {
 		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
 		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.AddToGlobalWhitelist(ctx, addr)
+		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, addr)
+		s.Require().NoError(err)
 	}
 }
 
@@ -198,6 +204,8 @@ func (s *MsgServerTestSuite) CreateCustomEpochTopic(epochLen int64) types.Topic 
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 
 	s.MintTokensToAddress(s.addrs[creator], types.DefaultParams().CreateTopicFee)
@@ -249,6 +257,8 @@ func (s *MsgServerTestSuite) TestCreateSeveralTopics() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 
 	creatorInitialBalance := types.DefaultParams().CreateTopicFee.Mul(cosmosMath.NewInt(3))

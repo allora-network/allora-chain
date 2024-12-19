@@ -24,7 +24,7 @@ Binary can be Installed for Linux or Mac (check releases for Windows)
 Specify a version to install if desired. 
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash -s -- v0.0.8
+curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash -s -- v0.7.0
 ```
 
 Ensure `~/.local/bin` is in your PATH.
@@ -252,7 +252,7 @@ INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
 To run upgrade tests, execute the following commands:
 
 ```bash
-bash test/local_testnet_upgrade_l1.sh
+DO_UPGRADE="true" UPGRADE_VERSION="v0.6.0" bash test/local_testnet_l1.sh
 UPGRADE=TRUE go test -timeout 10m ./test/integration/ -v
 ```
 
@@ -266,3 +266,69 @@ STRESS_TEST=true RPC_MODE="RandomBasedOnDeterministicSeed" RPC_URLS="http://loca
 ```
 
 options for RPC Modes include "RandomBasedOnDeterministicSeed" "RoundRobin" and "SingleRpc"
+
+## Remote debugging using Delve and Cursor
+
+1- Install Delve (dlv) at the server and at your computer:
+
+```bash
+go install github.com/go-delve/delve/cmd/dlv@latest
+```
+
+2- Configure Delve at Cursor
+
+- Go to settings and search for "Delve"
+- Click on "Edit in settings.json"
+- Add this to the file: 
+  ```json
+  "go.delveConfig": {
+    "dlvPath": "<absolute path to dlv binary>"
+  }
+  ```
+
+3- Build allorad with debug option:
+
+```bash
+DEBUG=on make build-all-platforms
+```
+
+4- Install the new binary on the server and restart the service
+
+5- Get the PID of `allorad` (Make sure you get the PID of `allorad`, not `cosmovisor`).
+
+6- Run dlv at the server and attach it to `allorad` using the PID:
+
+```bash
+dlv --listen=:2345 --headless=true --api-version=2 --accept-multiclient attach <PID>
+```
+
+7- Make sure you can access that port on the server from your computer. You can do it using port forward, for example:
+
+```bash
+ssh -NL 2345:localhost:2345 user@remote.ip
+```
+
+8- At your computer, edit `.vscode/launch.json` file and set the correct value for `host` and `port`: 
+
+```json
+{
+  "name": "Remote Debug",
+  "type": "go",
+  "debugAdapter": "dlv-dap",
+  "request": "attach",
+  "mode": "remote",
+  "port": 2345,
+  "host": "127.0.0.1",
+}
+```
+
+9- At Cursor, go to the debug pannel, pick "Remote Debug" configuration and start debugging.
+
+
+### References
+
+- https://github.com/go-delve/delve/blob/master/Documentation/faq.md#remote
+- https://www.jetbrains.com/help/go/attach-to-running-go-processes-with-debugger.html#attach-to-a-process-on-a-remote-machine
+
+
+

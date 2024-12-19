@@ -48,3 +48,9 @@ dist/
 .omega.json
 *.sublime-project
 *.sublime-workspace
+
+# fuzzer config
+test/fuzz/.config.json
+
+allora.log
+

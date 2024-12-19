@@ -90,6 +90,7 @@ func EndBlocker(ctx context.Context, am AppModule) error {
 				}
 				for _, nonce := range nonces.Nonces {
 					// Skip rest of logic if the worker submission window is still open (i.e. don't close the window yet)
+					// Note: worker window exclusive of the end block height so we ensure the window is closed at this point.
 					if am.keeper.BlockWithinWorkerSubmissionWindowOfNonce(topic, *nonce, blockHeight) {
 						sdkCtx.Logger().Debug(fmt.Sprintf("ABCI EndBlocker %d: Worker window still open for topic: %d, nonce: %v", blockHeight, topicId, nonce))
 						continue

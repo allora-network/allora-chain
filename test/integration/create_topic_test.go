@@ -9,6 +9,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func addTopicCreator(m testCommon.TestConfig, address string) {
+	ctx := context.Background()
+	addTopicCreatorRequest := &emissionstypes.AddToTopicCreatorWhitelistRequest{
+		Sender:  m.AliceAddr,
+		Address: address,
+	}
+	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, addTopicCreatorRequest)
+	require.NoError(m.T, err)
+	_, err = m.Client.WaitForTx(ctx, txResp.TxHash)
+	require.NoError(m.T, err)
+	addTopicCreatorResponse := &emissionstypes.AddToTopicCreatorWhitelistResponse{}
+	err = txResp.Decode(addTopicCreatorResponse)
+	require.NoError(m.T, err)
+}
+
 // test that we can create topics and that the resultant topics are what we asked for
 func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 	ctx := context.Background()
@@ -16,6 +31,10 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		ctx,
 		&emissionstypes.GetNextTopicIdRequest{},
 	)
+
+	// Allow Alice to create topics
+	addTopicCreator(m, m.AliceAddr)
+
 	require.NoError(m.T, err)
 	require.Positive(m.T, topicIdStart.NextTopicId)
 	require.NoError(m.T, err)
@@ -34,6 +53,8 @@ func CreateTopic(m testCommon.TestConfig) (topicId uint64) {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 	txResp, err := m.Client.BroadcastTx(ctx, m.AliceAcc, createTopicRequest)
 	require.NoError(m.T, err)

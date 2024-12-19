@@ -9,7 +9,7 @@ import (
 
 /// Topics tests
 
-func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
+func (s *MsgServerTestSuite) TestMsgCreateNewTopicAndWhitelistCheck() {
 	ctx, msgServer := s.ctx, s.msgServer
 	require := s.Require()
 
@@ -32,14 +32,30 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
 
-	// s.PrepareForCreateTopic(newTopicMsg.Creator)
-	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	// Should fail if sender is not whitelisted
+	err := s.emissionsKeeper.RemoveFromTopicCreatorWhitelist(ctx, sender)
 	require.NoError(err)
-	s.Require().NotNil(result)
+	err = s.emissionsKeeper.RemoveFromGlobalWhitelist(ctx, sender)
+	require.NoError(err)
+
+	result, err := msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.ErrorIs(err, types.ErrNotPermittedToCreateTopic)
+	require.Nil(result)
+
+	// Add sender to whitelist
+	err = s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, sender)
+	require.NoError(err)
+
+	// Should now succeed
+	result, err = msgServer.CreateNewTopic(ctx, newTopicMsg)
+	require.NoError(err)
+	require.NotNil(result)
 
 	activeTopics, err := s.emissionsKeeper.GetActiveTopicIdsAtBlock(s.ctx, 10800)
 	require.NoError(err)
@@ -51,6 +67,14 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopic() {
 		}
 	}
 	require.False(found, "Added topic found in active topics")
+
+	enabled, err := s.emissionsKeeper.IsTopicWorkerWhitelistEnabled(s.ctx, result.TopicId)
+	require.NoError(err)
+	require.True(enabled, "Topic worker whitelist should be enabled")
+
+	enabled, err = s.emissionsKeeper.IsTopicReputerWhitelistEnabled(s.ctx, result.TopicId)
+	require.NoError(err)
+	require.True(enabled, "Topic reputer whitelist should be enabled")
 }
 
 func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
@@ -76,6 +100,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicWithEpsilonZeroFails() {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
@@ -125,6 +151,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicTooLongMetadataFails() {
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		Metadata:                 strings.Repeat("a", 257),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)
@@ -157,6 +185,8 @@ func (s *MsgServerTestSuite) TestMsgCreateNewTopicTooLongLossMethodFails() {
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		LossMethod:               strings.Repeat("a", 257),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 
 	s.MintTokensToAddress(senderAddr, types.DefaultParams().CreateTopicFee)

@@ -11,4 +11,5 @@ var (
 	ErrNegativeCirculatingSupply                       = errors.Register(ModuleName, 6, "circulating supply cannot be negative")
 	ErrNotFound                                        = errors.Register(ModuleName, 7, "not found")
 	ErrUnauthorized                                    = errors.Register(ModuleName, 8, "unauthorized message signer")
+	ErrInvalidMonthsUnlocked                           = errors.Register(ModuleName, 9, "invalid months unlocked")
 )

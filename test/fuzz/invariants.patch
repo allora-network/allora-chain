@@ -1,0 +1,58 @@
+diff --git a/x/emissions/module/abci.go b/x/emissions/module/abci.go
+index 8ff85b13..88779b6e 100644
+--- a/x/emissions/module/abci.go
++++ b/x/emissions/module/abci.go
+@@ -6,6 +6,7 @@ import (
+ 	"time"
+ 
+ 	"cosmossdk.io/errors"
++	emissionskeeper "github.com/allora-network/allora-chain/x/emissions/keeper"
+ 	allorautils "github.com/allora-network/allora-chain/x/emissions/keeper/actor_utils"
+ 	"github.com/allora-network/allora-chain/x/emissions/module/rewards"
+ 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+@@ -17,6 +18,10 @@ func EndBlocker(ctx context.Context, am AppModule) error {
+ 	defer telemetry.ModuleMeasureSince(emissionstypes.ModuleName, time.Now(), telemetry.MetricKeyEndBlocker)
+ 
+ 	sdkCtx := sdk.UnwrapSDKContext(ctx)
++	invariantMessage, invariantFailed := emissionskeeper.AllInvariants(am.keeper)(sdkCtx)
++	if invariantFailed {
++		panic(fmt.Sprintf("Invariants broken: %s", invariantMessage))
++	}
+ 	blockHeight := sdkCtx.BlockHeight()
+ 	sdkCtx.Logger().Debug(
+ 		fmt.Sprintf("\n ---------------- Emissions EndBlock %d ------------------- \n",
+diff --git a/x/emissions/module/module.go b/x/emissions/module/module.go
+index f8ddae02..0a8cc692 100644
+--- a/x/emissions/module/module.go
++++ b/x/emissions/module/module.go
+@@ -22,6 +22,15 @@ import (
+ 	gwruntime "github.com/grpc-ecosystem/grpc-gateway/runtime"
+ )
+ 
++var (
++	_ module.HasInvariants = AppModule{} //nolint: exhaustruct
++)
++
++// RegisterInvariants registers the emissions module invariants.
++func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
++	keeper.RegisterInvariants(ir, &am.keeper)
++}
++
+ var (
+ 	_ module.AppModuleBasic   = AppModule{} // nolint: exhaustruct
+ 	_ module.HasGenesis       = AppModule{} // nolint: exhaustruct
+@@ -135,14 +144,6 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
+ 
+ // EndBlock returns the end blocker for the emissions module.
+ func (am AppModule) EndBlock(ctx context.Context) error {
+-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+-	defer func() {
+-		if r := recover(); r != nil {
+-			err := fmt.Errorf("error: %v", r)
+-			sdkCtx.Logger().Error("Recover panic in EndBlocker", err)
+-		}
+-	}()
+-
+ 	err := EndBlocker(ctx, am)
+ 	if err != nil {
+ 		sdkCtx := sdk.UnwrapSDKContext(ctx)

@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cometbft/cometbft/crypto/secp256k1"
-
 	"cosmossdk.io/collections"
 	cosmosAddress "cosmossdk.io/core/address"
 	"cosmossdk.io/core/header"
@@ -22,6 +20,7 @@ import (
 	"github.com/allora-network/allora-chain/x/emissions/module"
 	"github.com/allora-network/allora-chain/x/emissions/types"
 	minttypes "github.com/allora-network/allora-chain/x/mint/types"
+	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -129,6 +128,12 @@ func (s *KeeperTestSuite) SetupTest() {
 	for _, addr := range s.addrsStr {
 		err := s.emissionsKeeper.AddWhitelistAdmin(ctx, addr)
 		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.AddToGlobalWhitelist(ctx, addr)
+		s.Require().NoError(err)
+
+		err = s.emissionsKeeper.AddToTopicCreatorWhitelist(ctx, addr)
+		s.Require().NoError(err)
 	}
 }
 
@@ -202,6 +207,8 @@ func (s *KeeperTestSuite) CreateOneTopic(epochLen int64) uint64 {
 		ActiveInfererQuantile:    alloraMath.MustNewDecFromString("0.2"),
 		ActiveForecasterQuantile: alloraMath.MustNewDecFromString("0.2"),
 		ActiveReputerQuantile:    alloraMath.MustNewDecFromString("0.2"),
+		EnableWorkerWhitelist:    true,
+		EnableReputerWhitelist:   true,
 	}
 
 	s.MintTokensToAddress(s.addrs[0], types.DefaultParams().CreateTopicFee)
@@ -1104,9 +1111,62 @@ func (s *KeeperTestSuite) TestGetInferencesAtBlock() {
 	s.Require().NoError(err)
 
 	// Retrieve inferences
-	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block)
+	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block, false)
 	s.Require().NoError(err)
 	s.Require().Equal(&expectedInferences, actualInferences)
+}
+
+func (s *KeeperTestSuite) TestGetInferencesAtBlockOutlierResistant() {
+	ctx := s.ctx
+	keeper := s.emissionsKeeper
+	topicId := uint64(1)
+	block := types.BlockHeight(100)
+	// Force setting values of MAD and last_median to 10
+	err := keeper.SetLastMedianInferences(ctx, topicId, alloraMath.NewDecFromInt64(150))
+	s.Require().NoError(err)
+	err = keeper.SetMadInferences(ctx, topicId, alloraMath.NewDecFromInt64(10))
+	s.Require().NoError(err)
+
+	// Create a set of inferences with a high value to test outlier resistant filtering
+	expectedInferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{
+				TopicId:     topicId,
+				BlockHeight: block,
+				Value:       alloraMath.NewDecFromInt64(100), // Assuming NewDecFromInt64 exists and is appropriate
+				Inferer:     "allo10es2a97cr7u2m3aa08tcu7yd0d300thdct45ve",
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: block,
+				Value:       alloraMath.NewDecFromInt64(200),
+				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: block,
+				Value:       alloraMath.NewDecFromInt64(10000),
+				Inferer:     "allo1snm6pxg7p9jetmkhz0jz9ku3vdzmszegy9q5lh",
+			},
+		},
+	}
+
+	// Insert directly as active inferences
+	nonce := types.Nonce{BlockHeight: block}
+	err = keeper.InsertActiveInferences(ctx, topicId, nonce.BlockHeight, expectedInferences)
+	s.Require().NoError(err)
+
+	// Confirm the non-or keeps all inferences
+	actualInferences, err := keeper.GetInferencesAtBlock(ctx, topicId, block, false)
+	s.Require().NoError(err)
+	s.Require().Len(actualInferences.Inferences, 3)
+
+	actualInferences, err = keeper.GetInferencesAtBlock(ctx, topicId, block, true)
+	s.Require().NoError(err)
+	s.Require().Len(actualInferences.Inferences, 2)
+	s.Require().Equal(alloraMath.NewDecFromInt64(100), actualInferences.Inferences[0].Value)
+	s.Require().Equal(alloraMath.NewDecFromInt64(200), actualInferences.Inferences[1].Value)
+
 }
 
 func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
@@ -1116,7 +1176,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	topicId := uint64(1)
 
 	// Initially, there should be no inferences, so we expect an empty result
-	emptyInferences, emptyBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId)
+	emptyInferences, emptyBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId, false)
 	s.Require().NoError(err, "Retrieving latest inferences when none exist should not result in an error")
 	s.Require().Equal(&types.Inferences{Inferences: []*types.Inference{}}, emptyInferences, "Expected no inferences initially")
 	s.Require().Equal(types.BlockHeight(0), emptyBlockHeight, "Expected block height to be zero initially")
@@ -1156,7 +1216,7 @@ func (s *KeeperTestSuite) TestGetLatestTopicInferences() {
 	s.Require().NoError(err, "Inserting second set of inferences should not fail")
 
 	// Retrieve the latest inferences
-	latestInferences, latestBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId)
+	latestInferences, latestBlockHeight, err := keeper.GetLatestTopicInferences(ctx, topicId, false)
 	s.Require().NoError(err, "Retrieving latest inferences should not fail")
 	s.Require().Equal(&inferences2, latestInferences, "Latest inferences should match the second inserted set")
 	s.Require().Equal(blockHeight2, latestBlockHeight, "Latest block height should match the second inserted set")
@@ -2466,7 +2526,7 @@ func (s *KeeperTestSuite) TestGetTopic() {
 
 	topicId := uint64(1)
 	_, err := keeper.GetTopic(ctx, topicId)
-	s.Require().Error(err, "Retrieving a non-existent topic should result in an error")
+	s.Require().ErrorIs(err, types.ErrTopicDoesNotExist, "Retrieving a non-existent topic should result in an error")
 
 	newTopic := s.mockTopic()
 
@@ -2634,6 +2694,7 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore() {
 	maxNumScores := 5
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
+	params.MaxTopInferersToReward = 1
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
@@ -2659,6 +2720,7 @@ func (s *KeeperTestSuite) TestInsertWorkerInferenceScore2() {
 	maxNumScores := 5
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
+	params.MaxTopInferersToReward = 1
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
@@ -2732,6 +2794,7 @@ func (s *KeeperTestSuite) TestInsertWorkerForecastScore() {
 	maxNumScores := 5
 	params := types.DefaultParams()
 	params.MaxSamplesToScaleScores = uint64(maxNumScores)
+	params.MaxTopForecastersToReward = 1
 	err := keeper.SetParams(ctx, params)
 	s.Require().NoError(err, "Setting parameters should not fail")
 
@@ -3047,32 +3110,6 @@ func (s *KeeperTestSuite) TestSetGetPreviousPercentageRewardToStakedReputers() {
 	s.Require().Equal(previousPercentageReward, fetchedPercentageReward, "The fetched percentage reward should match the set value")
 }
 
-/// WHITELISTS
-
-func (s *KeeperTestSuite) TestWhitelistAdminOperations() {
-	ctx := s.ctx
-	keeper := s.emissionsKeeper
-	adminAddress := "allo1wmvlvr82nlnu2y6hewgjwex30spyqgzvjhc80h"
-
-	// Test Adding to whitelist
-	err := keeper.AddWhitelistAdmin(ctx, adminAddress)
-	s.Require().NoError(err, "Adding whitelist admin should not fail")
-
-	// Test Checking whitelist
-	isAdmin, err := keeper.IsWhitelistAdmin(ctx, adminAddress)
-	s.Require().NoError(err, "Checking if address is an admin should not fail")
-	s.Require().True(isAdmin, "Address should be an admin after being added")
-
-	// Test Removing from whitelist
-	err = keeper.RemoveWhitelistAdmin(ctx, adminAddress)
-	s.Require().NoError(err, "Removing whitelist admin should not fail")
-
-	// Verify removal
-	isAdmin, err = keeper.IsWhitelistAdmin(ctx, adminAddress)
-	s.Require().NoError(err, "Checking admin status after removal should not fail")
-	s.Require().False(isAdmin, "Address should not be an admin after being removed")
-}
-
 /// TOPIC REWARD NONCE
 
 func (s *KeeperTestSuite) TestGetSetDeleteTopicRewardNonce() {
@@ -3243,7 +3280,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().NoError(err, "InsertNetworkLossBundleAtBlock should not return an error")
 
 	// Check if the records are set
-	_, err = s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
+	_, err = s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block, false)
 	s.Require().NoError(err, "Getting inferences should not fail")
 	_, err = s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
 	s.Require().NoError(err, "Getting forecasts should not fail")
@@ -3258,7 +3295,7 @@ func (s *KeeperTestSuite) TestPruneRecordsAfterRewards() {
 	s.Require().NoError(err, "Pruning records after rewards should not fail")
 
 	// Check if the records are pruned
-	inferences, err := s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block)
+	inferences, err := s.emissionsKeeper.GetInferencesAtBlock(s.ctx, topicId, block, false)
 	s.Require().NoError(err, "Getting inferences should not fail")
 	s.Require().Empty(inferences.Inferences, "Must be pruned")
 	forecasts, err := s.emissionsKeeper.GetForecastsAtBlock(s.ctx, topicId, block)
@@ -3786,6 +3823,119 @@ func (s *KeeperTestSuite) TestAppendInference() {
 	s.Require().Equal(updateAttemptForWorker2.BlockHeight, updatedWorker2Score.BlockHeight, "unchanged height")
 }
 
+func getNewAddress() string {
+	addr := sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address())
+	return addr.String()
+}
+
+func (s *KeeperTestSuite) TestAppendInferenceWithResetActiveWorkers() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	// Topic IDs
+	topicId := s.CreateOneTopic(10801)
+	nonce := types.Nonce{BlockHeight: 10}
+	blockHeightInferences := int64(10)
+
+	// Set previous topic quantile inferer score ema
+	err := k.SetPreviousTopicQuantileInfererScoreEma(ctx, topicId, alloraMath.MustNewDecFromString("1000"))
+	s.Require().NoError(err)
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	worker1 := getNewAddress()
+	worker2 := getNewAddress()
+	worker3 := getNewAddress()
+	worker4 := getNewAddress()
+	worker5 := getNewAddress()
+	worker6 := getNewAddress()
+	// score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(91)}
+	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(92)}
+	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(93)}
+	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(94)}
+	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(95)}
+	score6 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker6, Score: alloraMath.NewDecFromInt64(96)}
+	// err = k.SetInfererScoreEma(ctx, topicId, worker1, score1)
+	// s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker2, score2)
+	s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker3, score3)
+	s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker4, score4)
+	s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker5, score5)
+	s.Require().NoError(err)
+	err = k.SetInfererScoreEma(ctx, topicId, worker6, score6)
+	s.Require().NoError(err)
+
+	// Ensure that the number of top inferers is capped at the max top inferers to reward
+	// New high-score entrant should replace earlier low-score entrant
+	params := types.DefaultParams()
+	params.MaxTopInferersToReward = 4
+	err = k.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	allInferences := types.Inferences{
+		Inferences: []*types.Inference{
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker1, Value: alloraMath.MustNewDecFromString("0.11")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.12")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.13")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.14")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.15")},
+		},
+	}
+	for _, inference := range allInferences.Inferences {
+		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		s.Require().NoError(err)
+	}
+
+	activeInferers, err := k.GetActiveInferersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
+
+	lowestEmaScore, found, err := k.GetLowestInfererScoreEma(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lowestEmaScore.Address, worker2)
+
+	err = k.ResetActiveWorkersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(activeInferers)
+
+	lowestEmaScore, found, err = k.GetLowestInfererScoreEma(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lowestEmaScore.Address, worker2)
+
+	blockHeightInferences = blockHeightInferences + topic.EpochLength
+	allInferences = types.Inferences{
+		Inferences: []*types.Inference{
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker2, Value: alloraMath.MustNewDecFromString("0.22")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker3, Value: alloraMath.MustNewDecFromString("0.23")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker4, Value: alloraMath.MustNewDecFromString("0.24")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker5, Value: alloraMath.MustNewDecFromString("0.25")},
+			{TopicId: topicId, BlockHeight: blockHeightInferences, Inferer: worker6, Value: alloraMath.MustNewDecFromString("0.26")},
+		},
+	}
+	nonce.BlockHeight++
+	for _, inference := range allInferences.Inferences {
+		err = k.AppendInference(ctx, topic, nonce.BlockHeight, inference, params.MaxTopInferersToReward)
+		s.Require().NoError(err)
+	}
+
+	activeInferers, err = k.GetActiveInferersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopInferersToReward, uint64(len(activeInferers)))
+
+	lowestEmaScore, found, err = k.GetLowestInfererScoreEma(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(found)
+	s.Require().Equal(lowestEmaScore.Address, worker3)
+}
+
 func mockUninitializedParams() types.Params {
 	return types.Params{
 		Version:                             "v2",
@@ -3831,6 +3981,16 @@ func mockUninitializedParams() types.Params {
 		MaxStringLength:                     uint64(0),
 		InitialRegretQuantile:               alloraMath.ZeroDec(),
 		PNormSafeDiv:                        alloraMath.ZeroDec(),
+		GlobalWhitelistEnabled:              true,
+		TopicCreatorWhitelistEnabled:        true,
+		MinExperiencedWorkerRegrets:         uint64(10),
+		InferenceOutlierDetectionThreshold:  alloraMath.MustNewDecFromString("11"),
+		InferenceOutlierDetectionAlpha:      alloraMath.MustNewDecFromString("0.2"),
+		LambdaInitialScore:                  alloraMath.MustNewDecFromString("2"),
+		GlobalWorkerWhitelistEnabled:        true,
+		GlobalReputerWhitelistEnabled:       true,
+		GlobalAdminWhitelistAppended:        true,
+		MaxWhitelistInputArrayLength:        uint64(10),
 	}
 }
 
@@ -3964,6 +4124,154 @@ func (s *KeeperTestSuite) TestAppendForecast() {
 	// MaxTopInferersToReward is 4, so this should not be added
 	err = k.AppendForecast(ctx, topic, nonce.BlockHeight, &newForecast2, params.MaxTopForecastersToReward)
 	s.Require().NoError(err)
+
+	activeForecasters, err = k.GetActiveForecastersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopForecastersToReward, uint64(len(activeForecasters)))
+}
+
+func (s *KeeperTestSuite) TestAppendForecastWithResetActiveForecasters() {
+
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := s.CreateOneTopic(10800)
+	nonce := types.Nonce{BlockHeight: 10}
+	blockHeightInferences := int64(10)
+
+	worker1 := s.addrsStr[0]
+	worker2 := s.addrsStr[1]
+	worker3 := s.addrsStr[2]
+	worker4 := s.addrsStr[3]
+	worker5 := s.addrsStr[4]
+
+	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker1, Score: alloraMath.NewDecFromInt64(95)}
+	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker2, Score: alloraMath.NewDecFromInt64(90)}
+	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker3, Score: alloraMath.NewDecFromInt64(99)}
+	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker4, Score: alloraMath.NewDecFromInt64(91)}
+	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: worker5, Score: alloraMath.NewDecFromInt64(96)}
+	err := k.SetForecasterScoreEma(ctx, topicId, worker1, score1)
+	s.Require().NoError(err)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker2, score2)
+	s.Require().NoError(err)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker3, score3)
+	s.Require().NoError(err)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker4, score4)
+	s.Require().NoError(err)
+	err = k.SetForecasterScoreEma(ctx, topicId, worker5, score5)
+	s.Require().NoError(err)
+
+	params := mockUninitializedParams()
+	params.MaxTopForecastersToReward = 4
+	err = k.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	allForecasts := types.Forecasts{
+		Forecasts: []*types.Forecast{
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeightInferences,
+				Forecaster:  worker1,
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: worker1,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+					{
+						Inferer: worker2,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+				},
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeightInferences,
+				Forecaster:  worker2,
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: worker1,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+					{
+						Inferer: worker2,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+				},
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeightInferences,
+				Forecaster:  worker3,
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: worker1,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+					{
+						Inferer: worker2,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+				},
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeightInferences,
+				Forecaster:  worker4,
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: worker1,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+					{
+						Inferer: worker2,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+				},
+			},
+			{
+				TopicId:     topicId,
+				BlockHeight: blockHeightInferences,
+				Forecaster:  worker5,
+				ForecastElements: []*types.ForecastElement{
+					{
+						Inferer: worker1,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+					{
+						Inferer: worker2,
+						Value:   alloraMath.MustNewDecFromString("0.52"),
+					},
+				},
+			},
+		},
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	for _, forecast := range allForecasts.Forecasts {
+		err = k.AppendForecast(ctx, topic, nonce.BlockHeight, forecast, params.MaxTopForecastersToReward)
+		s.Require().NoError(err)
+	}
+
+	activeForecasters, err := k.GetActiveForecastersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopForecastersToReward, uint64(len(activeForecasters)))
+
+	// Reset active forecasters
+	err = k.ResetActiveWorkersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	activeForecasters, err = k.GetActiveForecastersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(activeForecasters)
+
+	topic, err = k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	nonce.BlockHeight++
+	for _, forecast := range allForecasts.Forecasts {
+		err = k.AppendForecast(ctx, topic, nonce.BlockHeight, forecast, params.MaxTopForecastersToReward)
+		s.Require().NoError(err)
+	}
 
 	activeForecasters, err = k.GetActiveForecastersForTopic(ctx, topicId)
 	s.Require().NoError(err)
@@ -4132,6 +4440,183 @@ func (s *KeeperTestSuite) TestAppendReputerLoss() {
 	}
 	err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, &reputerValueBundle5)
 	s.Require().NoError(err)
+	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
+}
+
+func (s *KeeperTestSuite) TestAppendReputerLossWithResetActiveReputers() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := s.CreateOneTopic(10800)
+	blockHeight := int64(10)
+	nonce := types.Nonce{BlockHeight: blockHeight}
+	reputerRequestNonce := &types.ReputerRequestNonce{
+		ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
+	}
+
+	reputer1 := s.addrsStr[0]
+	reputer2 := s.addrsStr[1]
+	reputer3 := s.addrsStr[2]
+	reputer4 := s.addrsStr[3]
+	reputer5 := s.addrsStr[4]
+
+	score1 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer1, Score: alloraMath.NewDecFromInt64(95)}
+	score2 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer2, Score: alloraMath.NewDecFromInt64(90)}
+	score3 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer3, Score: alloraMath.NewDecFromInt64(99)}
+	score4 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer4, Score: alloraMath.NewDecFromInt64(91)}
+	score5 := types.Score{TopicId: topicId, BlockHeight: 2, Address: reputer5, Score: alloraMath.NewDecFromInt64(96)}
+	err := k.SetReputerScoreEma(ctx, topicId, reputer1, score1)
+	s.Require().NoError(err)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer2, score2)
+	s.Require().NoError(err)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer3, score3)
+	s.Require().NoError(err)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer4, score4)
+	s.Require().NoError(err)
+	err = k.SetReputerScoreEma(ctx, topicId, reputer5, score5)
+	s.Require().NoError(err)
+
+	params := types.DefaultParams()
+	params.MaxTopReputersToReward = 4
+	err = k.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	valueBundleReputer1 := types.ValueBundle{
+		Reputer:                       reputer1,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".0000117005278862668"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}
+	signature := s.signValueBundle(&valueBundleReputer1, s.privKeys[0])
+	reputerValueBundle1 := types.ReputerValueBundle{
+		ValueBundle: &valueBundleReputer1,
+		Signature:   signature,
+		Pubkey:      s.pubKeyHexStr[0],
+	}
+	valueBundleReputer2 := types.ValueBundle{
+		Reputer:                       reputer2,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".00000962701954026944"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}
+	signature = s.signValueBundle(&valueBundleReputer2, s.privKeys[1])
+	reputerValueBundle2 := types.ReputerValueBundle{
+		ValueBundle: &valueBundleReputer2,
+		Signature:   signature,
+		Pubkey:      s.pubKeyHexStr[1],
+	}
+	valueBundleReputer3 := types.ValueBundle{
+		Reputer:                       reputer3,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}
+	signature = s.signValueBundle(&valueBundleReputer3, s.privKeys[2])
+	reputerValueBundle3 := types.ReputerValueBundle{
+		ValueBundle: &valueBundleReputer3,
+		Signature:   signature,
+		Pubkey:      s.pubKeyHexStr[2],
+	}
+	valueBundleReputer4 := types.ValueBundle{
+		Reputer:                       reputer4,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}
+	signature = s.signValueBundle(&valueBundleReputer4, s.privKeys[3])
+	reputerValueBundle4 := types.ReputerValueBundle{
+		ValueBundle: &valueBundleReputer4,
+		Signature:   signature,
+		Pubkey:      s.pubKeyHexStr[3],
+	}
+	valueBundleReputer5 := types.ValueBundle{
+		Reputer:                       reputer5,
+		CombinedValue:                 alloraMath.MustNewDecFromString(".0000256948644008351"),
+		ReputerRequestNonce:           reputerRequestNonce,
+		TopicId:                       topicId,
+		ExtraData:                     nil,
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.0"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}
+	signature = s.signValueBundle(&valueBundleReputer5, s.privKeys[4])
+	reputerValueBundle5 := types.ReputerValueBundle{
+		ValueBundle: &valueBundleReputer5,
+		Signature:   signature,
+		Pubkey:      s.pubKeyHexStr[4],
+	}
+
+	allReputerLosses := types.ReputerValueBundles{
+		ReputerValueBundles: []*types.ReputerValueBundle{
+			&reputerValueBundle1,
+			&reputerValueBundle2,
+			&reputerValueBundle3,
+			&reputerValueBundle4,
+			&reputerValueBundle5,
+		},
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+	for _, reputerValueBundle := range allReputerLosses.ReputerValueBundles {
+		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
+		s.Require().NoError(err)
+	}
+
+	activeReputers, err := k.GetActiveReputersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
+
+	err = k.ResetActiveReputersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Empty(activeReputers)
+
+	nonce.BlockHeight++
+	for _, reputerValueBundle := range allReputerLosses.ReputerValueBundles {
+		err = k.AppendReputerLoss(ctx, topic, params, nonce.BlockHeight, reputerValueBundle)
+		s.Require().NoError(err)
+	}
+
 	activeReputers, err = k.GetActiveReputersForTopic(ctx, topicId)
 	s.Require().NoError(err)
 	s.Require().Equal(params.MaxTopReputersToReward, uint64(len(activeReputers)))
@@ -4522,4 +5007,357 @@ func (s *KeeperTestSuite) TestGetCountForecasterInclusionsInTopic() {
 	count, err = k.GetCountForecasterInclusionsInTopic(ctx, topicId, forecaster2)
 	require.NoError(err)
 	require.Equal(uint64(1), count)
+}
+
+func (s *KeeperTestSuite) TestScoreLimiting() {
+	k := s.emissionsKeeper
+	ctx := s.ctx
+	topicId := s.CreateOneTopic(10800)
+	blockHeight := int64(10)
+
+	params := types.DefaultParams()
+	params.MaxTopInferersToReward = 2
+	params.MaxSamplesToScaleScores = 3
+	err := k.SetParams(ctx, params)
+	s.Require().NoError(err)
+
+	for i := 0; i < 8; i++ {
+		score := types.Score{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Address:     s.addrsStr[i],
+			Score:       alloraMath.NewDecFromInt64(int64(90 + i)),
+		}
+		err := k.InsertWorkerInferenceScore(ctx, topicId, blockHeight, score)
+		s.Require().NoError(err)
+	}
+
+	scores, err := k.GetWorkerInferenceScoresAtBlock(ctx, topicId, blockHeight)
+	s.Require().NoError(err)
+	s.Require().Len(scores.Scores, 6, "Should keep MaxSamplesToScaleScores * MaxTopInferersToReward scores")
+
+	for i, score := range scores.Scores {
+		expectedWorker := s.addrsStr[i+2]
+		s.Require().Equal(expectedWorker, score.Address)
+	}
+}
+
+func (s *KeeperTestSuite) TestUpdateNetworkInferencesOutlierMetrics() {
+	// Create one topic
+	topicId := s.CreateOneTopic(10800)
+	blockHeight := int64(1)
+
+	// Create specific inferences for testing
+	inferences := []*types.Inference{
+		{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.NewDecFromInt64(10),
+			Inferer:     s.addrsStr[0],
+		},
+		{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.NewDecFromInt64(11),
+			Inferer:     s.addrsStr[1],
+		},
+		{
+			TopicId:     topicId,
+			BlockHeight: blockHeight,
+			Value:       alloraMath.NewDecFromInt64(12),
+			Inferer:     s.addrsStr[2],
+		},
+	}
+
+	inferencesWrapper := types.Inferences{Inferences: inferences}
+	err := s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, blockHeight, inferencesWrapper)
+	s.Require().NoError(err)
+	// Test the update function
+	err = s.emissionsKeeper.UpdateNetworkInferencesOutlierMetrics(s.ctx, topicId, blockHeight)
+	s.Require().NoError(err)
+
+	// Verify results
+	mad, err := s.emissionsKeeper.GetMadInferences(s.ctx, topicId)
+	s.Require().NoError(err)
+	median, err := s.emissionsKeeper.GetLastMedianInferences(s.ctx, topicId)
+	s.Require().NoError(err)
+	// Verify expected values
+	s.Require().Equal(alloraMath.NewDecFromInt64(1), mad)
+	s.Require().Equal(alloraMath.NewDecFromInt64(11), median)
+
+	// Modify a copy of the previous inferences and run it again
+	inferencesWrapper.Inferences[0].Value = alloraMath.NewDecFromInt64(100)
+	inferencesWrapper.Inferences[1].Value = alloraMath.NewDecFromInt64(50)
+	err = s.emissionsKeeper.InsertActiveInferences(s.ctx, topicId, blockHeight, inferencesWrapper)
+	s.Require().NoError(err)
+
+	err = s.emissionsKeeper.UpdateNetworkInferencesOutlierMetrics(s.ctx, topicId, blockHeight)
+	s.Require().NoError(err)
+
+	mad, err = s.emissionsKeeper.GetMadInferences(s.ctx, topicId)
+	s.Require().NoError(err)
+	median, err = s.emissionsKeeper.GetLastMedianInferences(s.ctx, topicId)
+	s.Require().NoError(err)
+
+	s.Require().Equal(alloraMath.MustNewDecFromString("8.4"), mad)
+	s.Require().Equal(alloraMath.NewDecFromInt64(50), median)
+}
+
+func (s *KeeperTestSuite) TestFilterOutlierResistantInferences() {
+	topicId := s.CreateOneTopic(10800)
+
+	// Ensure param is set to 11
+	params := types.DefaultParams()
+	params.InferenceOutlierDetectionThreshold = alloraMath.MustNewDecFromString("11")
+
+	// Set the maximum number of unfulfilled worker nonces via the SetParams method
+	err := s.emissionsKeeper.SetParams(s.ctx, params)
+	s.Require().NoError(err, "Error retrieving nonces after addition")
+
+	testCases := []struct {
+		name          string
+		setupMetrics  func()
+		inferences    types.Inferences
+		expectedCount int
+		expectedVals  []alloraMath.Dec
+	}{
+		{
+			name: "filter with median=10, mad=1",
+			setupMetrics: func() {
+				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(10))
+				s.Require().NoError(err)
+				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(1))
+				s.Require().NoError(err)
+			},
+			inferences: types.Inferences{
+				Inferences: []*types.Inference{
+					{Value: alloraMath.NewDecFromInt64(9)},  // within bounds (|-1| < 11*1)
+					{Value: alloraMath.NewDecFromInt64(11)}, // within bounds (|1| < 11*1)
+					{Value: alloraMath.NewDecFromInt64(25)}, // outlier (|15| > 11*1)
+					{Value: alloraMath.NewDecFromInt64(-5)}, // outlier (|-15| > 11*1)
+					{Value: alloraMath.NewDecFromInt64(10)}, // within bounds (|0| < 11*1)
+				},
+			},
+			expectedCount: 3,
+			expectedVals: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(9),
+				alloraMath.NewDecFromInt64(11),
+				alloraMath.NewDecFromInt64(10),
+			},
+		},
+		{
+			name: "filter with median=100, mad=10",
+			setupMetrics: func() {
+				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(100))
+				s.Require().NoError(err)
+				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(10))
+				s.Require().NoError(err)
+			},
+			inferences: types.Inferences{
+				Inferences: []*types.Inference{
+					{Value: alloraMath.NewDecFromInt64(80)},  // within bounds (|-20| < 11*10)
+					{Value: alloraMath.NewDecFromInt64(120)}, // within bounds (|20| < 11*10)
+					{Value: alloraMath.NewDecFromInt64(250)}, // outlier (|150| > 11*10)
+					{Value: alloraMath.NewDecFromInt64(-50)}, // outlier (|-150| > 11*10)
+					{Value: alloraMath.NewDecFromInt64(100)}, // within bounds (|0| < 11*10)
+				},
+			},
+			expectedCount: 3,
+			expectedVals: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(80),
+				alloraMath.NewDecFromInt64(120),
+				alloraMath.NewDecFromInt64(100),
+			},
+		},
+		{
+			name: "zero mad - should return all inferences",
+			setupMetrics: func() {
+				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(10))
+				s.Require().NoError(err)
+				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.ZeroDec())
+				s.Require().NoError(err)
+			},
+			inferences: types.Inferences{
+				Inferences: []*types.Inference{
+					{Value: alloraMath.NewDecFromInt64(10)},
+					{Value: alloraMath.NewDecFromInt64(11)},
+				},
+			},
+			expectedCount: 2,
+			expectedVals: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(10),
+				alloraMath.NewDecFromInt64(11),
+			},
+		},
+		{
+			name: "zero last_median - should return all inferences",
+			setupMetrics: func() {
+				err := s.emissionsKeeper.SetLastMedianInferences(s.ctx, topicId, alloraMath.ZeroDec())
+				s.Require().NoError(err)
+				err = s.emissionsKeeper.SetMadInferences(s.ctx, topicId, alloraMath.NewDecFromInt64(1))
+				s.Require().NoError(err)
+			},
+			inferences: types.Inferences{
+				Inferences: []*types.Inference{
+					{Value: alloraMath.NewDecFromInt64(5)},  // within bounds (|5| < 11*1)
+					{Value: alloraMath.NewDecFromInt64(-5)}, // within bounds (|-5| < 11*1)
+					{Value: alloraMath.NewDecFromInt64(15)}, // outlier (|15| > 11*1)
+				},
+			},
+			expectedCount: 3,
+			expectedVals: []alloraMath.Dec{
+				alloraMath.NewDecFromInt64(5),
+				alloraMath.NewDecFromInt64(-5),
+				alloraMath.NewDecFromInt64(15),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.Run(tc.name, func() {
+			tc.setupMetrics()
+
+			filtered, err := s.emissionsKeeper.FilterOutlierResistantInferences(s.ctx, topicId, tc.inferences)
+			s.Require().NoError(err)
+
+			s.Require().Len(filtered.Inferences, tc.expectedCount)
+
+			for i, inf := range filtered.Inferences {
+				s.Require().Equal(tc.expectedVals[i], inf.Value)
+			}
+		})
+	}
+}
+
+func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendInference() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := s.CreateOneTopic(10800)
+	worker := s.addrsStr[0]
+	blockHeight := int64(10)
+
+	// Set initial EMA score for the topic
+	initialScore := alloraMath.MustNewDecFromString("95.5")
+	err := k.SetTopicInitialInfererEmaScore(ctx, topicId, initialScore)
+	s.Require().NoError(err)
+
+	// Create and append a new inference
+	inference := &types.Inference{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Value:       alloraMath.MustNewDecFromString("0.52"),
+		Inferer:     worker,
+		ExtraData:   nil,
+		Proof:       "",
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Append the inference
+	err = k.AppendInference(ctx, topic, blockHeight, inference, 4)
+	s.Require().NoError(err)
+
+	// Verify the worker received the initial EMA score
+	score, err := k.GetInfererScoreEma(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(initialScore, score.Score)
+	s.Require().Equal(blockHeight, score.BlockHeight)
+	s.Require().Equal(worker, score.Address)
+	s.Require().Equal(topicId, score.TopicId)
+}
+
+func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendForecast() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := s.CreateOneTopic(10800)
+	worker := s.addrsStr[0]
+	blockHeight := int64(10)
+
+	// Set initial EMA score for the topic
+	initialScore := alloraMath.MustNewDecFromString("92.5")
+	err := k.SetTopicInitialForecasterEmaScore(ctx, topicId, initialScore)
+	s.Require().NoError(err)
+
+	// Create and append a new forecast
+	forecast := &types.Forecast{
+		TopicId:     topicId,
+		BlockHeight: blockHeight,
+		Forecaster:  worker,
+		ForecastElements: []*types.ForecastElement{
+			{
+				Inferer: s.addrsStr[1],
+				Value:   alloraMath.MustNewDecFromString("0.52"),
+			},
+		},
+		ExtraData: nil,
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	// Append the forecast
+	err = k.AppendForecast(ctx, topic, blockHeight, forecast, 4)
+	s.Require().NoError(err)
+
+	// Verify the worker received the initial EMA score
+	score, err := k.GetForecasterScoreEma(ctx, topicId, worker)
+	s.Require().NoError(err)
+	s.Require().Equal(initialScore, score.Score)
+	s.Require().Equal(blockHeight, score.BlockHeight)
+	s.Require().Equal(worker, score.Address)
+	s.Require().Equal(topicId, score.TopicId)
+}
+
+func (s *KeeperTestSuite) TestInitialEmaScoreSettingInAppendReputer() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := s.CreateOneTopic(10800)
+	reputer := s.addrsStr[0]
+	blockHeight := int64(10)
+
+	// Set initial EMA score for the topic
+	initialScore := alloraMath.MustNewDecFromString("97.5")
+	err := k.SetTopicInitialReputerEmaScore(ctx, topicId, initialScore)
+	s.Require().NoError(err)
+
+	// Create and append a new reputer value bundle
+	valueBundle := &types.ValueBundle{
+		TopicId: topicId,
+		ReputerRequestNonce: &types.ReputerRequestNonce{
+			ReputerNonce: &types.Nonce{BlockHeight: blockHeight},
+		},
+		Reputer:                       reputer,
+		ExtraData:                     nil,
+		CombinedValue:                 alloraMath.MustNewDecFromString("0.52"),
+		InfererValues:                 nil,
+		ForecasterValues:              nil,
+		NaiveValue:                    alloraMath.MustNewDecFromString("0.52"),
+		OneOutInfererValues:           nil,
+		OneOutForecasterValues:        nil,
+		OneInForecasterValues:         nil,
+		OneOutInfererForecasterValues: nil,
+	}
+	signature := s.signValueBundle(valueBundle, s.privKeys[0])
+	reputerValueBundle := &types.ReputerValueBundle{
+		ValueBundle: valueBundle,
+		Signature:   signature,
+		Pubkey:      s.pubKeyHexStr[0],
+	}
+
+	topic, err := k.GetTopic(ctx, topicId)
+	s.Require().NoError(err)
+
+	params := types.DefaultParams()
+	// Append the reputer value bundle
+	err = k.AppendReputerLoss(ctx, topic, params, blockHeight, reputerValueBundle)
+	s.Require().NoError(err)
+
+	// Verify the reputer received the initial EMA score
+	score, err := k.GetReputerScoreEma(ctx, topicId, reputer)
+	s.Require().NoError(err)
+	s.Require().Equal(initialScore, score.Score)
+	s.Require().Equal(blockHeight, score.BlockHeight)
+	s.Require().Equal(reputer, score.Address)
+	s.Require().Equal(topicId, score.TopicId)
 }

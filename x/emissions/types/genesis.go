@@ -70,6 +70,9 @@ func NewGenesisState() *GenesisState {
 		PreviousTopicQuantileInfererScoreEma:           []*TopicIdAndDec{},
 		PreviousTopicQuantileForecasterScoreEma:        []*TopicIdAndDec{},
 		PreviousTopicQuantileReputerScoreEma:           []*TopicIdAndDec{},
+		InitialInfererEmaScore:                         []*TopicIdAndDec{},
+		InitialForecasterEmaScore:                      []*TopicIdAndDec{},
+		InitialReputerEmaScore:                         []*TopicIdAndDec{},
 		ActiveInferers:                                 []*TopicAndActorId{},
 		ActiveForecasters:                              []*TopicAndActorId{},
 		ActiveReputers:                                 []*TopicAndActorId{},
@@ -81,6 +84,18 @@ func NewGenesisState() *GenesisState {
 		CountForecasterInclusionsInTopicActiveSet:      []*TopicIdActorIdUint64{},
 		TotalSumPreviousTopicWeights:                   alloraMath.ZeroDec(),
 		RewardCurrentBlockEmission:                     cosmosMath.ZeroInt(),
+		WhitelistAdmins:                                []string{},
+		GlobalWhitelist:                                []string{},
+		GlobalWorkerWhitelist:                          []string{},
+		GlobalReputerWhitelist:                         []string{},
+		GlobalAdminWhitelist:                           []string{},
+		TopicCreatorWhitelist:                          []string{},
+		TopicWorkerWhitelist:                           []*TopicAndActorId{},
+		TopicReputerWhitelist:                          []*TopicAndActorId{},
+		TopicWorkerWhitelistEnabled:                    []uint64{},
+		TopicReputerWhitelistEnabled:                   []uint64{},
+		LastMedianInferences:                           []*TopicIdAndDec{},
+		MadInferences:                                  []*TopicIdAndDec{},
 	}
 }
 

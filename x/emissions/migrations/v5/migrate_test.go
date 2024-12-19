@@ -177,7 +177,9 @@ func (s *EmissionsV5MigrationTestSuite) TestMigrateParams() {
 	s.Require().Equal(paramsExpected.MaxStringLength, params.MaxStringLength)
 	s.Require().Equal(paramsExpected.InitialRegretQuantile, params.InitialRegretQuantile)
 	s.Require().Equal(paramsExpected.PNormSafeDiv, params.PNormSafeDiv)
-	s.Require().Equal(paramsExpected, params)
+	// Commented out because more params were added since x/emissions/v5
+	// yet this migration won't be ran again
+	// s.Require().Equal(paramsExpected, params)
 }
 
 // in this test, we check that an already migrated topic, that only initialRegret

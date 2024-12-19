@@ -182,29 +182,29 @@ func getInferenceOrForecastTaskEntropy(
 	if len(emaRewardFractions) == 0 {
 		return alloraMath.Dec{}, errors.Wrapf(types.ErrInvalidReward, "invalid reward fractions after EMA calculation")
 	}
-	// Calculate modified reward fractions and persist for next round
-	numberRatio, err := NumberRatio(emaRewardFractions)
-	if err != nil {
-		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate number ratio")
-	}
-	modifiedRewardFractions, err := ModifiedRewardFractions(emaRewardFractions)
-	if err != nil {
-		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate modified reward fractions")
-	}
 	if which == taskInference {
 		for i, worker := range workers {
-			err := k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, modifiedRewardFractions[i])
+			err := k.SetPreviousInferenceRewardFraction(ctx, topicId, worker, emaRewardFractions[i])
 			if err != nil {
 				return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous inference reward fraction")
 			}
 		}
 	} else { // taskForecast
 		for i, worker := range workers {
-			err := k.SetPreviousForecastRewardFraction(ctx, topicId, worker, modifiedRewardFractions[i])
+			err := k.SetPreviousForecastRewardFraction(ctx, topicId, worker, emaRewardFractions[i])
 			if err != nil {
 				return alloraMath.Dec{}, errors.Wrapf(err, "failed to set previous forecast reward fraction")
 			}
 		}
+	}
+	// Calculate modified reward fractions and persist for next round
+	modifiedRewardFractions, err := ModifiedRewardFractions(emaRewardFractions)
+	if err != nil {
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate modified reward fractions")
+	}
+	numberRatio, err := NumberRatio(modifiedRewardFractions)
+	if err != nil {
+		return alloraMath.Dec{}, errors.Wrapf(err, "failed to calculate number ratio")
 	}
 
 	if numWorkers > 1 {
