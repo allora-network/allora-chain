@@ -4,7 +4,7 @@
 APP_NAME="allorad"
 
 # Check for a version argument, otherwise set a default version
-VERSION=${1:-"v0.2.8"}
+VERSION=${1:-"v0.7.0"}
 
 # Define the base URL using the specified or default version
 BASE_URL="https://github.com/allora-network/allora-chain/releases/download/$VERSION"
@@ -27,7 +27,7 @@ case $ARCH in
 esac
 
 # Construct the download URL
-URL="${BASE_URL}/${APP_NAME}_${OS}_${ARCH}"
+URL="${BASE_URL}/allora-chain_${VERSION#v}_${OS}_${ARCH}"
 
 # Define the target directory
 TARGET_DIR="$HOME/.local/bin"
