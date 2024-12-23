@@ -322,7 +322,7 @@ func (qs queryServer) getLatestAvailableNetworkInferencesBase(
 	}, nil
 }
 
-// Original function converts result to response
+// Gets the latest available network inferences with data from the last reputer commit
 func (qs queryServer) GetLatestAvailableNetworkInferences(
 	ctx context.Context,
 	req *emissionstypes.GetLatestAvailableNetworkInferencesRequest,
