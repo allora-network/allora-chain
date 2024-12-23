@@ -274,11 +274,6 @@ func (qs queryServer) getLatestAvailableNetworkInferencesBase(
 ) (out *NetworkInferencesResult, err error) {
 	defer metrics.RecordMetrics("GetLatestAvailableNetworkInferences", time.Now(), &err)
 
-	lastWorkerCommit, err := qs.k.GetWorkerTopicLastCommit(params.ctx, params.topicId)
-	if err != nil {
-		return nil, err
-	}
-
 	lastReputerCommit, err := qs.k.GetReputerTopicLastCommit(params.ctx, params.topicId)
 	if err != nil {
 		return nil, err
@@ -288,7 +283,7 @@ func (qs queryServer) getLatestAvailableNetworkInferencesBase(
 		sdk.UnwrapSDKContext(params.ctx),
 		qs.k,
 		params.topicId,
-		&lastWorkerCommit.Nonce.BlockHeight,
+		&lastReputerCommit.Nonce.BlockHeight,
 		params.outlierResistant,
 	)
 	if err != nil {
@@ -320,8 +315,8 @@ func (qs queryServer) getLatestAvailableNetworkInferencesBase(
 		networkInferences:                result.NetworkInferences,
 		infererWeights:                   synth.ConvertWeightsToArrays(inferers, result.InfererToWeight),
 		forecasterWeights:                synth.ConvertWeightsToArrays(forecasters, result.ForecasterToWeight),
-		inferenceBlockHeight:             lastWorkerCommit.Nonce.BlockHeight,
-		lossBlockHeight:                  lastReputerCommit.Nonce.BlockHeight,
+		inferenceBlockHeight:             lastReputerCommit.Nonce.BlockHeight,
+		lossBlockHeight:                  result.LossBlockHeight,
 		confidenceIntervalRawPercentiles: ciRawPercentiles,
 		confidenceIntervalValues:         ciValues,
 	}, nil
