@@ -361,3 +361,357 @@ func removeFromTopicReputerWhitelist(
 	}
 	return false
 }
+
+func addToGlobalWorkerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.AddToGlobalWorkerWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+		},
+		&emissionstypes.AddToGlobalWorkerWhitelistResponse{},
+		fmt.Sprintf("adding '%s' to global worker whitelist", subject),
+		fmt.Sprintf("failed to add '%s' to global worker whitelist", subject),
+		fmt.Sprintf("added '%s' to global worker whitelist", subject),
+	) {
+		data.addGlobalWorkerWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func removeFromGlobalWorkerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.RemoveFromGlobalWorkerWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+		},
+		&emissionstypes.RemoveFromGlobalWorkerWhitelistResponse{},
+		fmt.Sprintf("removing '%s' from global worker whitelist", subject),
+		fmt.Sprintf("failed to remove '%s' from global worker whitelist", subject),
+		fmt.Sprintf("removed '%s' from global worker whitelist", subject),
+	) {
+		data.removeGlobalWorkerWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func addToGlobalReputerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.AddToGlobalReputerWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+		},
+		&emissionstypes.AddToGlobalReputerWhitelistResponse{},
+		fmt.Sprintf("adding '%s' to global reputer whitelist", subject),
+		fmt.Sprintf("failed to add '%s' to global reputer whitelist", subject),
+		fmt.Sprintf("added '%s' to global reputer whitelist", subject),
+	) {
+		data.addGlobalReputerWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func removeFromGlobalReputerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.RemoveFromGlobalReputerWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+		},
+		&emissionstypes.RemoveFromGlobalReputerWhitelistResponse{},
+		fmt.Sprintf("removing '%s' from global reputer whitelist", subject),
+		fmt.Sprintf("failed to remove '%s' from global reputer whitelist", subject),
+		fmt.Sprintf("removed '%s' from global reputer whitelist", subject),
+	) {
+		data.removeGlobalReputerWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func addToGlobalAdminWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.AddToGlobalAdminWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+		},
+		&emissionstypes.AddToGlobalAdminWhitelistResponse{},
+		fmt.Sprintf("adding '%s' to global admin whitelist", subject),
+		fmt.Sprintf("failed to add '%s' to global admin whitelist", subject),
+		fmt.Sprintf("added '%s' to global admin whitelist", subject),
+	) {
+		data.addGlobalAdminWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func removeFromGlobalAdminWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.RemoveFromGlobalAdminWhitelistRequest{
+			Sender:  sender.addr,
+			Address: subject.addr,
+		},
+		&emissionstypes.RemoveFromGlobalAdminWhitelistResponse{},
+		fmt.Sprintf("removing '%s' from global admin whitelist", subject),
+		fmt.Sprintf("failed to remove '%s' from global admin whitelist", subject),
+		fmt.Sprintf("removed '%s' from global admin whitelist", subject),
+	) {
+		data.removeGlobalAdminWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func bulkAddToGlobalWorkerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkAddToGlobalWorkerWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+		},
+		&emissionstypes.BulkAddToGlobalWorkerWhitelistResponse{},
+		fmt.Sprintf("bulk adding '%s' to global worker whitelist", subject),
+		fmt.Sprintf("failed to bulk add '%s' to global worker whitelist", subject),
+		fmt.Sprintf("bulk added '%s' to global worker whitelist", subject),
+	) {
+		data.addGlobalWorkerWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func bulkRemoveFromGlobalWorkerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkRemoveFromGlobalWorkerWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+		},
+		&emissionstypes.BulkRemoveFromGlobalWorkerWhitelistResponse{},
+		fmt.Sprintf("bulk removing '%s' from global worker whitelist", subject),
+		fmt.Sprintf("failed to bulk remove '%s' from global worker whitelist", subject),
+		fmt.Sprintf("bulk removed '%s' from global worker whitelist", subject),
+	) {
+		data.removeGlobalWorkerWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func bulkAddToGlobalReputerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkAddToGlobalReputerWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+		},
+		&emissionstypes.BulkAddToGlobalReputerWhitelistResponse{},
+		fmt.Sprintf("bulk adding '%s' to global reputer whitelist", subject),
+		fmt.Sprintf("failed to bulk add '%s' to global reputer whitelist", subject),
+		fmt.Sprintf("bulk added '%s' to global reputer whitelist", subject),
+	) {
+		data.addGlobalReputerWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func bulkRemoveFromGlobalReputerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	_ uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkRemoveFromGlobalReputerWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+		},
+		&emissionstypes.BulkRemoveFromGlobalReputerWhitelistResponse{},
+		fmt.Sprintf("bulk removing '%s' from global reputer whitelist", subject),
+		fmt.Sprintf("failed to bulk remove '%s' from global reputer whitelist", subject),
+		fmt.Sprintf("bulk removed '%s' from global reputer whitelist", subject),
+	) {
+		data.removeGlobalReputerWhitelist(subject)
+		return true
+	}
+	return false
+}
+
+func bulkAddToTopicWorkerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkAddToTopicWorkerWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+			TopicId:   topicId,
+		},
+		&emissionstypes.BulkAddToTopicWorkerWhitelistResponse{},
+		fmt.Sprintf("bulk adding '%s' from topic '%d' worker whitelist", subject, topicId),
+		fmt.Sprintf("failed to bulk add '%s' from topic '%d' worker whitelist", subject, topicId),
+		fmt.Sprintf("bulk added '%s' from topic '%d' worker whitelist", subject, topicId),
+	) {
+		data.addTopicWorkerWhitelist(topicId, subject)
+		return true
+	}
+	return false
+}
+
+func bulkRemoveFromTopicWorkerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkRemoveFromTopicWorkerWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+			TopicId:   topicId,
+		},
+		&emissionstypes.BulkRemoveFromTopicWorkerWhitelistResponse{},
+		fmt.Sprintf("bulk removing '%s' from topic '%d' worker whitelist", subject, topicId),
+		fmt.Sprintf("failed to bulk remove '%s' from topic '%d' worker whitelist", subject, topicId),
+		fmt.Sprintf("bulk removed '%s' from topic '%d' worker whitelist", subject, topicId),
+	) {
+		data.removeTopicWorkerWhitelist(topicId, subject)
+		return true
+	}
+	return false
+}
+
+func bulkAddToTopicReputerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkAddToTopicReputerWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+			TopicId:   topicId,
+		},
+		&emissionstypes.BulkAddToTopicReputerWhitelistResponse{},
+		fmt.Sprintf("bulk adding '%s' to topic '%d' reputer whitelist", subject, topicId),
+		fmt.Sprintf("failed to bulk add '%s' to topic '%d' reputer whitelist", subject, topicId),
+		fmt.Sprintf("bulk added '%s' to topic '%d' reputer whitelist", subject, topicId),
+	) {
+		data.addTopicReputerWhitelist(topicId, subject)
+		return true
+	}
+	return false
+}
+
+func bulkRemoveFromTopicReputerWhitelist(
+	m *testcommon.TestConfig,
+	sender Actor,
+	subject Actor,
+	_ *cosmossdk_io_math.Int,
+	topicId uint64,
+	data *SimulationData,
+	iteration int,
+) bool {
+	if broadcastTxAndWait(m, iteration, data.failOnErr, sender,
+		&emissionstypes.BulkRemoveFromTopicReputerWhitelistRequest{
+			Sender:    sender.addr,
+			Addresses: []string{subject.addr},
+			TopicId:   topicId,
+		},
+		&emissionstypes.BulkRemoveFromTopicReputerWhitelistResponse{},
+		fmt.Sprintf("bulk removing '%s' from topic '%d' reputer whitelist", subject, topicId),
+		fmt.Sprintf("failed to bulk remove '%s' from topic '%d' reputer whitelist", subject, topicId),
+		fmt.Sprintf("bulk removed '%s' from topic '%d' reputer whitelist", subject, topicId),
+	) {
+		data.removeTopicReputerWhitelist(topicId, subject)
+		return true
+	}
+	return false
+}

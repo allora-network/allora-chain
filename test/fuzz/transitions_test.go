@@ -194,6 +194,76 @@ func allTransitions(f *fuzzcommon.FuzzConfig) []StateTransition {
 		weight: transitionWeights.RemoveFromTopicReputerWhitelist,
 		follow: nil, followWeight: 0,
 	}
+	transitionAddToGlobalWorkerWhitelist := StateTransition{
+		name: "addToGlobalWorkerWhitelist", f: addToGlobalWorkerWhitelist,
+		weight: transitionWeights.AddToGlobalWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromGlobalWorkerWhitelist := StateTransition{
+		name: "removeFromGlobalWorkerWhitelist", f: removeFromGlobalWorkerWhitelist,
+		weight: transitionWeights.RemoveFromGlobalWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionAddToGlobalReputerWhitelist := StateTransition{
+		name: "addToGlobalReputerWhitelist", f: addToGlobalReputerWhitelist,
+		weight: transitionWeights.AddToGlobalReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromGlobalReputerWhitelist := StateTransition{
+		name: "removeFromGlobalReputerWhitelist", f: removeFromGlobalReputerWhitelist,
+		weight: transitionWeights.RemoveFromGlobalReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionAddToGlobalAdminWhitelist := StateTransition{
+		name: "addToGlobalAdminWhitelist", f: addToGlobalAdminWhitelist,
+		weight: transitionWeights.AddToGlobalAdminWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionRemoveFromGlobalAdminWhitelist := StateTransition{
+		name: "removeFromGlobalAdminWhitelist", f: removeFromGlobalAdminWhitelist,
+		weight: transitionWeights.RemoveFromGlobalAdminWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkAddToGlobalWorkerWhitelist := StateTransition{
+		name: "bulkAddToGlobalWorkerWhitelist", f: bulkAddToGlobalWorkerWhitelist,
+		weight: transitionWeights.BulkAddToGlobalWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkRemoveFromGlobalWorkerWhitelist := StateTransition{
+		name: "bulkRemoveFromGlobalWorkerWhitelist", f: bulkRemoveFromGlobalWorkerWhitelist,
+		weight: transitionWeights.BulkRemoveFromGlobalWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkAddToGlobalReputerWhitelist := StateTransition{
+		name: "bulkAddToGlobalReputerWhitelist", f: bulkAddToGlobalReputerWhitelist,
+		weight: transitionWeights.BulkAddToGlobalReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkRemoveFromGlobalReputerWhitelist := StateTransition{
+		name: "bulkRemoveFromGlobalReputerWhitelist", f: bulkRemoveFromGlobalReputerWhitelist,
+		weight: transitionWeights.BulkRemoveFromGlobalReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkAddToTopicWorkerWhitelist := StateTransition{
+		name: "bulkAddToTopicWorkerWhitelist", f: bulkAddToTopicWorkerWhitelist,
+		weight: transitionWeights.BulkAddToTopicWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkRemoveFromTopicWorkerWhitelist := StateTransition{
+		name: "bulkRemoveFromTopicWorkerWhitelist", f: bulkRemoveFromTopicWorkerWhitelist,
+		weight: transitionWeights.BulkRemoveFromTopicWorkerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkAddToTopicReputerWhitelist := StateTransition{
+		name: "bulkAddToTopicReputerWhitelist", f: bulkAddToTopicReputerWhitelist,
+		weight: transitionWeights.BulkAddToTopicReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
+	transitionBulkRemoveFromTopicReputerWhitelist := StateTransition{
+		name: "bulkRemoveFromTopicReputerWhitelist", f: bulkRemoveFromTopicReputerWhitelist,
+		weight: transitionWeights.BulkRemoveFromTopicReputerWhitelist,
+		follow: nil, followWeight: 0,
+	}
 
 	return []StateTransition{
 		transitionCreateTopic,
@@ -224,6 +294,20 @@ func allTransitions(f *fuzzcommon.FuzzConfig) []StateTransition {
 		transitionRemoveFromTopicWorkerWhitelist,
 		transitionAddToTopicReputerWhitelist,
 		transitionRemoveFromTopicReputerWhitelist,
+		transitionAddToGlobalWorkerWhitelist,
+		transitionRemoveFromGlobalWorkerWhitelist,
+		transitionAddToGlobalReputerWhitelist,
+		transitionRemoveFromGlobalReputerWhitelist,
+		transitionAddToGlobalAdminWhitelist,
+		transitionRemoveFromGlobalAdminWhitelist,
+		transitionBulkAddToGlobalWorkerWhitelist,
+		transitionBulkRemoveFromGlobalWorkerWhitelist,
+		transitionBulkAddToGlobalReputerWhitelist,
+		transitionBulkRemoveFromGlobalReputerWhitelist,
+		transitionBulkAddToTopicWorkerWhitelist,
+		transitionBulkRemoveFromTopicWorkerWhitelist,
+		transitionBulkAddToTopicReputerWhitelist,
+		transitionBulkRemoveFromTopicReputerWhitelist,
 	}
 }
 
