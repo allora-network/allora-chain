@@ -365,6 +365,16 @@ func (s *SimulationData) pickRandomAdmin() (Actor, error) {
 	return *a, nil
 }
 
+func (s *SimulationData) pickRandomGlobalAdmin(m *testcommon.TestConfig) (Actor, error) {
+	opt1, _ := s.adminWhitelist.RandomKey()
+	opt2, _ := s.globalAdminWhitelist.RandomKey()
+	actor, err := mayPickOneOfTwo(m.Client.Rand, opt1, opt2)
+	if err != nil {
+		return Actor{}, fmt.Errorf("no global admin found")
+	}
+	return *actor, nil
+}
+
 func (s *SimulationData) pickRandomTopicAdmin(m *testcommon.TestConfig, topicId uint64) (Actor, error) {
 	opt1, _ := s.adminWhitelist.RandomKey()
 	var opt2 *Actor
@@ -373,7 +383,7 @@ func (s *SimulationData) pickRandomTopicAdmin(m *testcommon.TestConfig, topicId 
 	}
 	actor, err := mayPickOneOfTwo(m.Client.Rand, opt1, opt2)
 	if err != nil {
-		return Actor{}, fmt.Errorf("no topic creator found")
+		return Actor{}, fmt.Errorf("no topic admin found")
 	}
 	return *actor, nil
 }
@@ -434,6 +444,18 @@ func (s *SimulationData) isActorInGlobalWhitelist(actor Actor) bool {
 	return exists
 }
 
+// isActorInGlobalWorkerWhitelist checks if an actor is in the global worker whitelist
+func (s *SimulationData) isActorInGlobalWorkerWhitelist(actor Actor) bool {
+	_, exists := s.globalWorkerWhitelist.Get(actor)
+	return exists
+}
+
+// isActorInGlobalReputerWhitelist checks if an actor is in the global reputer whitelist
+func (s *SimulationData) isActorInGlobalReputerWhitelist(actor Actor) bool {
+	_, exists := s.globalReputerWhitelist.Get(actor)
+	return exists
+}
+
 // isWorkerWhitelistedInTopic checks if a worker is whitelisted in a topic
 func (s *SimulationData) isWorkerWhitelistedInTopic(topicId uint64, actor Actor) bool {
 	if _, exists := s.topicWorkersWhitelistEnabled.Get(topicId); !exists {
@@ -445,7 +467,7 @@ func (s *SimulationData) isWorkerWhitelistedInTopic(topicId uint64, actor Actor)
 		Actor:   actor,
 	})
 
-	return exists || s.isActorInGlobalWhitelist(actor)
+	return exists || s.isActorInGlobalWhitelist(actor) || s.isActorInGlobalWorkerWhitelist(actor)
 }
 
 // isReputerWhitelistedInTopic checks if a worker is whitelisted in a topic
@@ -459,7 +481,7 @@ func (s *SimulationData) isReputerWhitelistedInTopic(topicId uint64, actor Actor
 		Actor:   actor,
 	})
 
-	return exists || s.isActorInGlobalWhitelist(actor)
+	return exists || s.isActorInGlobalWhitelist(actor) || s.isActorInGlobalReputerWhitelist(actor)
 }
 
 // isAnyWorkerRegisteredInTopic checks if any worker is registered and whitelisted in a topic

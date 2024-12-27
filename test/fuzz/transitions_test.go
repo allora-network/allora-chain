@@ -555,8 +555,23 @@ func pickActorAndTopicIdForStateTransition(
 		"addToGlobalWhitelist",
 		"removeFromGlobalWhitelist",
 		"addToTopicCreatorWhitelist",
-		"removeFromTopicCreatorWhitelist":
+		"removeFromTopicCreatorWhitelist",
+		"addToGlobalAdminWhitelist",
+		"removeFromGlobalAdminWhitelist":
 		admin, err := data.pickRandomAdmin()
+		if err != nil {
+			return false, UnusedActor, UnusedActor, nil, 0
+		}
+		return true, admin, pickRandomActor(m, data), nil, 0
+	case "addToGlobalWorkerWhitelist",
+		"removeFromGlobalWorkerWhitelist",
+		"addToGlobalReputerWhitelist",
+		"removeFromGlobalReputerWhitelist",
+		"bulkAddToGlobalWorkerWhitelist",
+		"bulkRemoveFromGlobalWorkerWhitelist",
+		"bulkAddToGlobalReputerWhitelist",
+		"bulkRemoveFromGlobalReputerWhitelist":
+		admin, err := data.pickRandomGlobalAdmin(m)
 		if err != nil {
 			return false, UnusedActor, UnusedActor, nil, 0
 		}
@@ -575,18 +590,13 @@ func pickActorAndTopicIdForStateTransition(
 		}
 		return true, admin, UnusedActor, nil, topicId
 	case "addToTopicWorkerWhitelist",
-		"removeFromTopicWorkerWhitelist":
-		topicId, err := data.pickRandomTopicId()
-		if err != nil {
-			return false, UnusedActor, UnusedActor, nil, 0
-		}
-		admin, err := data.pickRandomTopicAdmin(m, topicId)
-		if err != nil {
-			return false, UnusedActor, UnusedActor, nil, 0
-		}
-		return true, admin, pickRandomActor(m, data), nil, topicId
-	case "addToTopicReputerWhitelist",
-		"removeFromTopicReputerWhitelist":
+		"removeFromTopicWorkerWhitelist",
+		"addToTopicReputerWhitelist",
+		"removeFromTopicReputerWhitelist",
+		"bulkAddToTopicWorkerWhitelist",
+		"bulkRemoveFromTopicWorkerWhitelist",
+		"bulkAddToTopicReputerWhitelist",
+		"bulkRemoveFromTopicReputerWhitelist":
 		topicId, err := data.pickRandomTopicId()
 		if err != nil {
 			return false, UnusedActor, UnusedActor, nil, 0
