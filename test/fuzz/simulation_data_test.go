@@ -27,6 +27,9 @@ type SimulationData struct {
 	adminWhitelist                *testcommon.RandomKeyMap[Actor, struct{}]
 	globalWhitelist               *testcommon.RandomKeyMap[Actor, struct{}]
 	topicCreatorsWhitelist        *testcommon.RandomKeyMap[Actor, struct{}]
+	globalWorkerWhitelist         *testcommon.RandomKeyMap[Actor, struct{}]
+	globalReputerWhitelist        *testcommon.RandomKeyMap[Actor, struct{}]
+	globalAdminWhitelist          *testcommon.RandomKeyMap[Actor, struct{}]
 	topicWorkersWhitelistEnabled  *testcommon.RandomKeyMap[uint64, struct{}]
 	topicReputersWhitelistEnabled *testcommon.RandomKeyMap[uint64, struct{}]
 	topicWorkersWhitelist         *testcommon.RandomKeyMap[TopicWhitelistEntry, struct{}]
@@ -154,6 +157,21 @@ func (s *SimulationData) addTopicCreatorWhitelist(actor Actor) {
 	s.topicCreatorsWhitelist.Upsert(actor, struct{}{})
 }
 
+// addGlobalWorkerWhitelist adds an actor to the global worker whitelist in the simulation data
+func (s *SimulationData) addGlobalWorkerWhitelist(actor Actor) {
+	s.globalWorkerWhitelist.Upsert(actor, struct{}{})
+}
+
+// addGlobalReputerWhitelist adds an actor to the global reputer whitelist in the simulation data
+func (s *SimulationData) addGlobalReputerWhitelist(actor Actor) {
+	s.globalReputerWhitelist.Upsert(actor, struct{}{})
+}
+
+// addGlobalAdminWhitelist adds an actor to the global admin whitelist in the simulation data
+func (s *SimulationData) addGlobalAdminWhitelist(actor Actor) {
+	s.globalAdminWhitelist.Upsert(actor, struct{}{})
+}
+
 // addTopicWorkerWhitelist adds a worker to a topic whitelist in the simulation data
 func (s *SimulationData) addTopicWorkerWhitelist(topicId uint64, worker Actor) {
 	s.topicWorkersWhitelist.Upsert(TopicWhitelistEntry{
@@ -193,6 +211,21 @@ func (s *SimulationData) removeGlobalWhitelist(actor Actor) {
 // removeTopicCreatorWhitelist removes an actor to the topic creator whitelist in the simulation data
 func (s *SimulationData) removeTopicCreatorWhitelist(actor Actor) {
 	s.topicCreatorsWhitelist.Delete(actor)
+}
+
+// removeGlobalWorkerWhitelist adds an actor fron the global worker whitelist in the simulation data
+func (s *SimulationData) removeGlobalWorkerWhitelist(actor Actor) {
+	s.globalWorkerWhitelist.Delete(actor)
+}
+
+// removeGlobalReputerWhitelist adds an actor fron the global reputer whitelist in the simulation data
+func (s *SimulationData) removeGlobalReputerWhitelist(actor Actor) {
+	s.globalReputerWhitelist.Delete(actor)
+}
+
+// removeGlobalAdminWhitelist adds an actor fron the global admin whitelist in the simulation data
+func (s *SimulationData) removeGlobalAdminWhitelist(actor Actor) {
+	s.globalAdminWhitelist.Delete(actor)
 }
 
 // removeTopicWorkerWhitelist removes a worker to a topic whitelist in the simulation data

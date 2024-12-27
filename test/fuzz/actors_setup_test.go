@@ -61,6 +61,9 @@ func simulateSetUp(
 	adminWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
 	globalWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
 	topicCreatorsWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
+	globalWorkerWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
+	globalReputerWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
+	globalAdminWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
 	topicWorkersWhitelistEnabledMapRand := rand.New(rand.NewSource(int64(seed)))
 	topicReputersWhitelistEnabledMapRand := rand.New(rand.NewSource(int64(seed)))
 	topicWorkersWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
@@ -74,6 +77,9 @@ func simulateSetUp(
 	adminWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](adminWhitelistMapRand)
 	globalWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](globalWhitelistMapRand)
 	topicCreatorsWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](topicCreatorsWhitelistMapRand)
+	globalWorkerWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](globalWorkerWhitelistMapRand)
+	globalReputerWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](globalReputerWhitelistMapRand)
+	globalAdminWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](globalAdminWhitelistMapRand)
 	topicWorkersWhitelistEnabled := testcommon.NewRandomKeyMap[uint64, struct{}](topicWorkersWhitelistEnabledMapRand)
 	topicReputersWhitelistEnabled := testcommon.NewRandomKeyMap[uint64, struct{}](topicReputersWhitelistEnabledMapRand)
 	topicWorkersWhitelist := testcommon.NewRandomKeyMap[TopicWhitelistEntry, struct{}](topicWorkersWhitelistMapRand)
@@ -106,6 +112,9 @@ func simulateSetUp(
 		adminWhitelist:                adminWhitelist,
 		globalWhitelist:               globalWhitelist,
 		topicCreatorsWhitelist:        topicCreatorsWhitelist,
+		globalWorkerWhitelist:         globalWorkerWhitelist,
+		globalReputerWhitelist:        globalReputerWhitelist,
+		globalAdminWhitelist:          globalAdminWhitelist,
 		topicWorkersWhitelistEnabled:  topicWorkersWhitelistEnabled,
 		topicReputersWhitelistEnabled: topicReputersWhitelistEnabled,
 		topicWorkersWhitelist:         topicWorkersWhitelist,
