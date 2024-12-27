@@ -730,6 +730,26 @@ func simulateAutomaticInitialState(
 	iterationCount = startAddToAdminWhitelist(m, data, faucet, startDelegators[:1], iterationCount)
 	iterationCount = startAddToGlobalWhitelist(m, data, faucet, startDelegators[:1], iterationCount)
 	iterationCount = startAddToTopicCreatorWhitelist(m, data, faucet, startDelegators[:1], iterationCount)
+	require.True(m.T, addToGlobalWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, removeFromGlobalWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, addToGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, removeFromGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, addToGlobalAdminWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, removeFromGlobalAdminWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkAddToGlobalWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkRemoveFromGlobalWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkAddToGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkRemoveFromGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
 
 	// create two topics with both reputers and workers whitelist enabled
 	success := createTopic(m, startDelegators[0], UnusedActor, nil, 0, data, iterationCount)
@@ -755,6 +775,16 @@ func simulateAutomaticInitialState(
 	// put reputers & workers in topic whitelists
 	iterationCount = startAddToTopicWorkerWhitelist(m, data, faucet, startWorkers, listTopics, iterationCount)
 	iterationCount = startAddToTopicReputerWhitelist(m, data, faucet, startReputers, listTopics, iterationCount)
+
+	// bulk add/remove from topic whitelists
+	require.True(m.T, bulkAddToTopicWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, listTopics[0], data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkRemoveFromTopicWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, listTopics[0], data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkAddToTopicReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, listTopics[0], data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkRemoveFromTopicReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, listTopics[0], data, iterationCount))
+	iterationCount++
 
 	// register all 4 reputers on both topics
 	iterationCount = startRegisterReputers(m, data, startReputers, listTopics, iterationCount)
