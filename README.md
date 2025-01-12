@@ -322,7 +322,7 @@ ssh -NL 2345:localhost:2345 user@remote.ip
 }
 ```
 
-9- At Cursor, go to the debug pannel, pick "Remote Debug" configuration and start debugging.
+9- At Cursor, go to the debug panel, pick "Remote Debug" configuration and start debugging.
 
 
 ### References
