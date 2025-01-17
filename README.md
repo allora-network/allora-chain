@@ -10,9 +10,44 @@
 ![Go!](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)
 ![Apache License](https://img.shields.io/badge/Apache%20License-D22128?style=for-the-badge&logo=Apache&logoColor=white)
 
-The [Allora Network](https://www.allora.network/) is a state-of-the-art protocol that uses decentralized AI and machine learning (ML) to build, extract, and deploy predictions among its participants. It offers actors who wish to use AI predictions a formalized way to obtain the output of state-of-the-art ML models on-chain and to pay the operators of AI/ML nodes who create these predictions. That way, Allora bridges the information gap between data owners, data processors, AI/ML predictors, market analysts, and the end-users or consumers who have the means to execute on these insights.
+## Table of Contents
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+- [Documentation](#documentation)
+- [Installation](#allorad-install)
+- [Local Network](#run-a-local-network)
+- [Fork Network](#run-a-fork-of-testnetmainnet-state)
+- [Node Operation](#run-a-node-with-script)
+- [Validator Operation](#run-a-node-with-statesync-enabled)
+- [Testing](#run-integration-tests)
+  - [Integration Tests](#run-integration-tests)
+  - [Upgrade Tests](#run-upgrade-tests)
+  - [Stress Tests](#run-stress-tests)
+- [Remote Debugging](#remote-debugging)
+- [Development](#development)
+- [Contributing](#contributing)
 
-The AI/ML agents within the Allora Network use their data and algorithms to broadcast their predictions across a peer-to-peer network, and they ingest these predictions to assess the predictions from all other agents. The network consensus mechanism combines these predictions and assessments, and distributes rewards to the agents according to the quality of their predictions and assessments. This carefully designed incentive mechanism enables Allora to continually learn and improve, adjusting to the market as it evolves.
+## Overview
+The [Allora Network](https://www.allora.network/) is a state-of-the-art protocol that uses decentralized AI and machine learning (ML) to build, extract, and deploy predictions among its participants. It offers actors who wish to use AI predictions a formalized way to obtain the output of state-of-the-art ML models on-chain and to pay the operators of AI/ML nodes who create these predictions.
+
+### Key Features
+- Decentralized AI/ML predictions
+- On-chain model outputs
+- Peer-to-peer prediction broadcasting
+- Quality-based reward distribution
+- Continuous learning and improvement
+
+## Quick Start
+```bash
+# Install Allorad
+curl -sSL https://raw.githubusercontent.com/allora-network/allora-chain/main/install.sh | bash
+
+# Initialize local node
+make init
+
+# Start the node
+allorad start
+```
 
 ## Documentation
 For the latest documentation, please go to https://docs.allora.network/
@@ -267,68 +302,71 @@ STRESS_TEST=true RPC_MODE="RandomBasedOnDeterministicSeed" RPC_URLS="http://loca
 
 options for RPC Modes include "RandomBasedOnDeterministicSeed" "RoundRobin" and "SingleRpc"
 
-## Remote debugging using Delve and Cursor
+## Remote Debugging
+For remote debugging with Delve and Cursor, follow these steps:
 
-1- Install Delve (dlv) at the server and at your computer:
-
+1. Install Delve:
 ```bash
 go install github.com/go-delve/delve/cmd/dlv@latest
 ```
 
-2- Configure Delve at Cursor
-
-- Go to settings and search for "Delve"
-- Click on "Edit in settings.json"
-- Add this to the file: 
-  ```json
-  "go.delveConfig": {
-    "dlvPath": "<absolute path to dlv binary>"
-  }
-  ```
-
-3- Build allorad with debug option:
-
+2. Configure Delve in your IDE settings
+3. Build allorad with debug flags:
 ```bash
 DEBUG=on make build-all-platforms
 ```
 
-4- Install the new binary on the server and restart the service
+For more detailed debugging instructions, see:
+- [Delve Documentation](https://github.com/go-delve/delve/tree/master/Documentation)
+- [Remote Debugging Guide](https://github.com/go-delve/delve/blob/master/Documentation/usage/remote_debugging.md)
+- [IDE Integration Guide](https://github.com/go-delve/delve/blob/master/Documentation/installation/README.md#editor-support)
 
-5- Get the PID of `allorad` (Make sure you get the PID of `allorad`, not `cosmovisor`).
+## Development
 
-6- Run dlv at the server and attach it to `allorad` using the PID:
+### Running Tests
+We have several test suites available:
 
+#### Integration Tests
 ```bash
-dlv --listen=:2345 --headless=true --api-version=2 --accept-multiclient attach <PID>
+bash test/local_testnet_l1.sh
+INTEGRATION=TRUE go test -timeout 10m ./test/integration/ -v
 ```
 
-7- Make sure you can access that port on the server from your computer. You can do it using port forward, for example:
-
+#### Upgrade Tests
 ```bash
-ssh -NL 2345:localhost:2345 user@remote.ip
+DO_UPGRADE="true" UPGRADE_VERSION="v0.6.0" bash test/local_testnet_l1.sh
+UPGRADE=TRUE go test -timeout 10m ./test/integration/ -v
 ```
 
-8- At your computer, edit `.vscode/launch.json` file and set the correct value for `host` and `port`: 
-
-```json
-{
-  "name": "Remote Debug",
-  "type": "go",
-  "debugAdapter": "dlv-dap",
-  "request": "attach",
-  "mode": "remote",
-  "port": 2345,
-  "host": "127.0.0.1",
-}
+#### Stress Tests
+```bash
+bash test/local_testnet_l1.sh
+STRESS_TEST=true RPC_MODE="RandomBasedOnDeterministicSeed" \
+  RPC_URLS="http://localhost:26657,http://localhost:26658,http://localhost:26659" \
+  SEED=1 MAX_REPUTERS_PER_TOPIC=2 REPUTERS_PER_ITERATION=2 \
+  EPOCH_LENGTH=12 FINAL_REPORT=TRUE MAX_WORKERS_PER_TOPIC=2 \
+  WORKERS_PER_ITERATION=1 TOPICS_MAX=2 TOPICS_PER_ITERATION=1 \
+  MAX_ITERATIONS=2 go test -v -timeout 0 -test.run TestStressTestSuite ./test/stress
 ```
 
-9- At Cursor, go to the debug pannel, pick "Remote Debug" configuration and start debugging.
+### Debugging
+For remote debugging instructions using Delve and Cursor, see our [debugging guide](#remote-debugging-using-delve-and-cursor).
 
+## Contributing
+We welcome contributions to the Allora Network! Here's how you can contribute:
 
-### References
+1. Fork the repository
+2. Create a new branch for your feature
+3. Commit your changes
+4. Submit a pull request
 
-- https://github.com/go-delve/delve/blob/master/Documentation/faq.md#remote
-- https://www.jetbrains.com/help/go/attach-to-running-go-processes-with-debugger.html#attach-to-a-process-on-a-remote-machine
+Please ensure your PR:
+- Follows our coding standards
+- Includes appropriate tests
+- Updates documentation as needed
+- Has a clear description of the changes
+
+For more detailed information, please read our [Contributing Guidelines](CONTRIBUTING.md).
 
 
 
