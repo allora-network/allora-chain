@@ -57,6 +57,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+* [#736](https://github.com/allora-network/allora-chain/pull/736) Fix topic low-weight inactive topic weight vulnerability
+
+
+### Security
+
+
 ## v0.8.0
 
 ### Added
