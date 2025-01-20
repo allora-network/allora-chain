@@ -74,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * [#757](https://github.com/allora-network/allora-chain/pull/757) Incoming value limiting
 * [#761](https://github.com/allora-network/allora-chain/pull/761) Fix close worker nonce boundaries
+* [#760](https://github.com/allora-network/allora-chain/pull/760) Fix topic low-weight inactive topic weight vulnerability
 
 ### Security
 
