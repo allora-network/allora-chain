@@ -21,7 +21,7 @@ type MockEmissionsKeeperMockRecorder struct {
 	mock *MockEmissionsKeeper
 }
 
-// NewEmissionsEmissionsKeeper creates a new mock instance.
+// NewMockEmissionsKeeper creates a new mock instance.
 func NewMockEmissionsKeeper(ctrl *gomock.Controller) *MockEmissionsKeeper {
 	mock := &MockEmissionsKeeper{ctrl: ctrl}
 	mock.recorder = &MockEmissionsKeeperMockRecorder{mock}
