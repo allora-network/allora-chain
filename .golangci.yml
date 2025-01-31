@@ -57,7 +57,7 @@ linters-settings:
   gosec:
     config:
       G101:
-        pattern: "(?i)passwd|pass|password|pwd|secret|private_key|token|pw|apiKey|bearer|cred|mneumonic|seed|seedphrase|entropy"
+        pattern: "(?i)passwd|pass|password|pwd|secret|private_key|token|pw|apiKey|bearer|cred|mnemonic|seed|seedphrase|entropy"
         ignore_entropy: false
         # Maximum allowed entropy of the string.
         entropy_threshold: "80.0"
