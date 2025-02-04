@@ -1277,7 +1277,7 @@ func (k *Keeper) AppendInference(
 	inference *types.Inference,
 	maxTopInferersToReward uint64,
 ) error {
-	// Check if the inferers already submited the inference
+	// Check if the inferers already submitted the inference
 	isActive, err := k.IsActiveInferer(ctx, topic.Id, inference.Inferer)
 	if err != nil {
 		return errorsmod.Wrap(err, "error checking if worker already submitted inference")
