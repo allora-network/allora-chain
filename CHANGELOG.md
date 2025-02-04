@@ -57,6 +57,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+* [#738](https://github.com/allora-network/allora-chain/pull/738) Sealing the sdk config
+
 ## v0.8.0
 
 ### Added
