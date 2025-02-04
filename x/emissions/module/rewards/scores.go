@@ -120,7 +120,7 @@ func GenerateReputerScores(
 		return []types.Score{}, errors.Wrapf(err, "Error getting GetAllReputersOutput")
 	}
 
-	// Insert new coeffients and scores
+	// Insert new coefficients and scores
 	var instantScores []types.Score
 	var emaScores []types.Score
 	activeArr := make(map[string]bool)
