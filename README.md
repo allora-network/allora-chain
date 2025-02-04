@@ -101,7 +101,7 @@ Here is a [guide](https://blog.cosmos.network/cosmos-sdk-state-sync-guide-99e4cf
 
 To use statesync, you need:
 
-1. Peers with state snapshots enabled. Allora [peers](https://github.com/allora-network/networks/blob/main/testnet-1/peers.txt) have enabled snapshots for every 1000 blocks.
+1. Peers with state snapshots enabled. Allora [peers](https://github.com/allora-network/networks/blob/main/allora-testnet-1/peers.txt) have enabled snapshots for every 1000 blocks.
 2. 2 RPC endpoints, you can use any synced full nodes for this purpose.
 
 **NOTE:** To enable state snapshots, you just need to pass `--state-sync.snapshot-keep-recent=X` and `--state-sync.snapshot-interval=Y` to the `allorad start` command.
