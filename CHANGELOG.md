@@ -54,7 +54,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
-
 # [Unreleased]
 
 ### Added
@@ -69,9 +68,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+# v0.8.2
+
+### Added
+
+* [#732](https://github.com/allora-network/allora-chain/pull/732) Update fuzzer with new whitelists tx
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
 * [#738](https://github.com/allora-network/allora-chain/pull/738) Sealing the sdk config
 
-## v0.8.0
+
+## v0.8.1
+
+### Added
+
+### Changed
+
+* [728](https://github.com/allora-network/allora-chain/pull/728) Remove unneccessary directories in go releaser CI build flow
+* Update goreleaser.yml and disk cleanup [890617c](https://github.com/allora-network/allora-chain/commit/890617c28658371b8360b7474370c301d345d2f7) [cb2c1c5](https://github.com/allora-network/allora-chain/commit/cb2c1c528ade3b932e171b9b51ac4836835938eb)
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v0.8.0
 
 ### Added
 
