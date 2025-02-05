@@ -85,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 * [#738](https://github.com/allora-network/allora-chain/pull/738) Sealing the sdk config
-
+* [#744](https://github.com/allora-network/allora-chain/pull/744) Patch - Update CometBFT v0.38.17
 
 ## v0.8.1
 
