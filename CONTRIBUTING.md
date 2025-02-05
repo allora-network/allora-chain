@@ -92,6 +92,15 @@ Upgrades will typically involve changing something about at least one of the cha
 7. Create the upgrade handler for the chain at `app/upgrades/vA_B_C/upgrades.go`
 8. Add the upgrade handler you created above to `app/upgrades.go`
 
+## Checklist for adding a fuzzer transition (i.e. a transaction message)
+
+1. Make the transition weight configurable through `test/fuzz/common/fuzz_config.go` and provide a default value in `test/fuzz/.config.json.example`, making sure the sum of all the weights is equal to 100;
+2. If the transition management requires to be aware of a specific state, add it in `test/fuzz/simulation_data_test.go#SimulationData`;
+3. Implement the transition as a func matching the `test/fuzz/transitions_test.go#StateTransitionFunc` signature, and make it available to the fuzzer in `test/fuzz/transitions_test.go#allTransitions`;
+4. If the transition values cannot be random and depends on the actual state, add the related logic in `test/fuzz/transitions_test.go#pickActorAndTopicIdForStateTransition`;
+5. Some additional checks on the transition can be added if needed in `test/fuzz/transitions_test.go#canTransitionOccur` and `test/fuzz/transitions_test.go#isValidTransition`;
+6. Make sure the transition is executed at least once in the setup phase: `test/fuzz/actor_setup_test.go#simulateAutomaticInitialState`;
+
 ## Secondary Limitations To Keep In Mind
 
 #### Network Requests to External Services

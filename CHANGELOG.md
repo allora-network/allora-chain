@@ -82,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * [#716](https://github.com/allora-network/allora-chain/pull/716) Add global workers, reputers, admins + bulk operations
 * [#712](https://github.com/allora-network/allora-chain/pull/712) Apply sortition penalties based on liveness
 * [#720](https://github.com/allora-network/allora-chain/pull/720) Add initial ema score generation queries and events
+* [#732](https://github.com/allora-network/allora-chain/pull/732) Add whitelists transitions to fuzzer
 
 ### Changed
 

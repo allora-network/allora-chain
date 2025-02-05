@@ -27,6 +27,9 @@ type SimulationData struct {
 	adminWhitelist                *testcommon.RandomKeyMap[Actor, struct{}]
 	globalWhitelist               *testcommon.RandomKeyMap[Actor, struct{}]
 	topicCreatorsWhitelist        *testcommon.RandomKeyMap[Actor, struct{}]
+	globalWorkerWhitelist         *testcommon.RandomKeyMap[Actor, struct{}]
+	globalReputerWhitelist        *testcommon.RandomKeyMap[Actor, struct{}]
+	globalAdminWhitelist          *testcommon.RandomKeyMap[Actor, struct{}]
 	topicWorkersWhitelistEnabled  *testcommon.RandomKeyMap[uint64, struct{}]
 	topicReputersWhitelistEnabled *testcommon.RandomKeyMap[uint64, struct{}]
 	topicWorkersWhitelist         *testcommon.RandomKeyMap[TopicWhitelistEntry, struct{}]
@@ -154,6 +157,21 @@ func (s *SimulationData) addTopicCreatorWhitelist(actor Actor) {
 	s.topicCreatorsWhitelist.Upsert(actor, struct{}{})
 }
 
+// addGlobalWorkerWhitelist adds an actor to the global worker whitelist in the simulation data
+func (s *SimulationData) addGlobalWorkerWhitelist(actor Actor) {
+	s.globalWorkerWhitelist.Upsert(actor, struct{}{})
+}
+
+// addGlobalReputerWhitelist adds an actor to the global reputer whitelist in the simulation data
+func (s *SimulationData) addGlobalReputerWhitelist(actor Actor) {
+	s.globalReputerWhitelist.Upsert(actor, struct{}{})
+}
+
+// addGlobalAdminWhitelist adds an actor to the global admin whitelist in the simulation data
+func (s *SimulationData) addGlobalAdminWhitelist(actor Actor) {
+	s.globalAdminWhitelist.Upsert(actor, struct{}{})
+}
+
 // addTopicWorkerWhitelist adds a worker to a topic whitelist in the simulation data
 func (s *SimulationData) addTopicWorkerWhitelist(topicId uint64, worker Actor) {
 	s.topicWorkersWhitelist.Upsert(TopicWhitelistEntry{
@@ -193,6 +211,21 @@ func (s *SimulationData) removeGlobalWhitelist(actor Actor) {
 // removeTopicCreatorWhitelist removes an actor to the topic creator whitelist in the simulation data
 func (s *SimulationData) removeTopicCreatorWhitelist(actor Actor) {
 	s.topicCreatorsWhitelist.Delete(actor)
+}
+
+// removeGlobalWorkerWhitelist adds an actor fron the global worker whitelist in the simulation data
+func (s *SimulationData) removeGlobalWorkerWhitelist(actor Actor) {
+	s.globalWorkerWhitelist.Delete(actor)
+}
+
+// removeGlobalReputerWhitelist adds an actor fron the global reputer whitelist in the simulation data
+func (s *SimulationData) removeGlobalReputerWhitelist(actor Actor) {
+	s.globalReputerWhitelist.Delete(actor)
+}
+
+// removeGlobalAdminWhitelist adds an actor fron the global admin whitelist in the simulation data
+func (s *SimulationData) removeGlobalAdminWhitelist(actor Actor) {
+	s.globalAdminWhitelist.Delete(actor)
 }
 
 // removeTopicWorkerWhitelist removes a worker to a topic whitelist in the simulation data
@@ -332,6 +365,16 @@ func (s *SimulationData) pickRandomAdmin() (Actor, error) {
 	return *a, nil
 }
 
+func (s *SimulationData) pickRandomGlobalAdmin(m *testcommon.TestConfig) (Actor, error) {
+	opt1, _ := s.adminWhitelist.RandomKey()
+	opt2, _ := s.globalAdminWhitelist.RandomKey()
+	actor, err := mayPickOneOfTwo(m.Client.Rand, opt1, opt2)
+	if err != nil {
+		return Actor{}, fmt.Errorf("no global admin found")
+	}
+	return *actor, nil
+}
+
 func (s *SimulationData) pickRandomTopicAdmin(m *testcommon.TestConfig, topicId uint64) (Actor, error) {
 	opt1, _ := s.adminWhitelist.RandomKey()
 	var opt2 *Actor
@@ -340,7 +383,7 @@ func (s *SimulationData) pickRandomTopicAdmin(m *testcommon.TestConfig, topicId 
 	}
 	actor, err := mayPickOneOfTwo(m.Client.Rand, opt1, opt2)
 	if err != nil {
-		return Actor{}, fmt.Errorf("no topic creator found")
+		return Actor{}, fmt.Errorf("no topic admin found")
 	}
 	return *actor, nil
 }
@@ -401,6 +444,18 @@ func (s *SimulationData) isActorInGlobalWhitelist(actor Actor) bool {
 	return exists
 }
 
+// isActorInGlobalWorkerWhitelist checks if an actor is in the global worker whitelist
+func (s *SimulationData) isActorInGlobalWorkerWhitelist(actor Actor) bool {
+	_, exists := s.globalWorkerWhitelist.Get(actor)
+	return exists
+}
+
+// isActorInGlobalReputerWhitelist checks if an actor is in the global reputer whitelist
+func (s *SimulationData) isActorInGlobalReputerWhitelist(actor Actor) bool {
+	_, exists := s.globalReputerWhitelist.Get(actor)
+	return exists
+}
+
 // isWorkerWhitelistedInTopic checks if a worker is whitelisted in a topic
 func (s *SimulationData) isWorkerWhitelistedInTopic(topicId uint64, actor Actor) bool {
 	if _, exists := s.topicWorkersWhitelistEnabled.Get(topicId); !exists {
@@ -412,7 +467,7 @@ func (s *SimulationData) isWorkerWhitelistedInTopic(topicId uint64, actor Actor)
 		Actor:   actor,
 	})
 
-	return exists || s.isActorInGlobalWhitelist(actor)
+	return exists || s.isActorInGlobalWhitelist(actor) || s.isActorInGlobalWorkerWhitelist(actor)
 }
 
 // isReputerWhitelistedInTopic checks if a worker is whitelisted in a topic
@@ -426,7 +481,7 @@ func (s *SimulationData) isReputerWhitelistedInTopic(topicId uint64, actor Actor
 		Actor:   actor,
 	})
 
-	return exists || s.isActorInGlobalWhitelist(actor)
+	return exists || s.isActorInGlobalWhitelist(actor) || s.isActorInGlobalReputerWhitelist(actor)
 }
 
 // isAnyWorkerRegisteredInTopic checks if any worker is registered and whitelisted in a topic

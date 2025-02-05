@@ -61,6 +61,9 @@ func simulateSetUp(
 	adminWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
 	globalWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
 	topicCreatorsWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
+	globalWorkerWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
+	globalReputerWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
+	globalAdminWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
 	topicWorkersWhitelistEnabledMapRand := rand.New(rand.NewSource(int64(seed)))
 	topicReputersWhitelistEnabledMapRand := rand.New(rand.NewSource(int64(seed)))
 	topicWorkersWhitelistMapRand := rand.New(rand.NewSource(int64(seed)))
@@ -74,6 +77,9 @@ func simulateSetUp(
 	adminWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](adminWhitelistMapRand)
 	globalWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](globalWhitelistMapRand)
 	topicCreatorsWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](topicCreatorsWhitelistMapRand)
+	globalWorkerWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](globalWorkerWhitelistMapRand)
+	globalReputerWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](globalReputerWhitelistMapRand)
+	globalAdminWhitelist := testcommon.NewRandomKeyMap[Actor, struct{}](globalAdminWhitelistMapRand)
 	topicWorkersWhitelistEnabled := testcommon.NewRandomKeyMap[uint64, struct{}](topicWorkersWhitelistEnabledMapRand)
 	topicReputersWhitelistEnabled := testcommon.NewRandomKeyMap[uint64, struct{}](topicReputersWhitelistEnabledMapRand)
 	topicWorkersWhitelist := testcommon.NewRandomKeyMap[TopicWhitelistEntry, struct{}](topicWorkersWhitelistMapRand)
@@ -106,6 +112,9 @@ func simulateSetUp(
 		adminWhitelist:                adminWhitelist,
 		globalWhitelist:               globalWhitelist,
 		topicCreatorsWhitelist:        topicCreatorsWhitelist,
+		globalWorkerWhitelist:         globalWorkerWhitelist,
+		globalReputerWhitelist:        globalReputerWhitelist,
+		globalAdminWhitelist:          globalAdminWhitelist,
 		topicWorkersWhitelistEnabled:  topicWorkersWhitelistEnabled,
 		topicReputersWhitelistEnabled: topicReputersWhitelistEnabled,
 		topicWorkersWhitelist:         topicWorkersWhitelist,
@@ -721,6 +730,26 @@ func simulateAutomaticInitialState(
 	iterationCount = startAddToAdminWhitelist(m, data, faucet, startDelegators[:1], iterationCount)
 	iterationCount = startAddToGlobalWhitelist(m, data, faucet, startDelegators[:1], iterationCount)
 	iterationCount = startAddToTopicCreatorWhitelist(m, data, faucet, startDelegators[:1], iterationCount)
+	require.True(m.T, addToGlobalWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, removeFromGlobalWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, addToGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, removeFromGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, addToGlobalAdminWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, removeFromGlobalAdminWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkAddToGlobalWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkRemoveFromGlobalWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkAddToGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkRemoveFromGlobalReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, 0, data, iterationCount))
+	iterationCount++
 
 	// create two topics with both reputers and workers whitelist enabled
 	success := createTopic(m, startDelegators[0], UnusedActor, nil, 0, data, iterationCount)
@@ -746,6 +775,16 @@ func simulateAutomaticInitialState(
 	// put reputers & workers in topic whitelists
 	iterationCount = startAddToTopicWorkerWhitelist(m, data, faucet, startWorkers, listTopics, iterationCount)
 	iterationCount = startAddToTopicReputerWhitelist(m, data, faucet, startReputers, listTopics, iterationCount)
+
+	// bulk add/remove from topic whitelists
+	require.True(m.T, bulkAddToTopicWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, listTopics[0], data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkRemoveFromTopicWorkerWhitelist(m, faucet, pickRandomActor(m, data), nil, listTopics[0], data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkAddToTopicReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, listTopics[0], data, iterationCount))
+	iterationCount++
+	require.True(m.T, bulkRemoveFromTopicReputerWhitelist(m, faucet, pickRandomActor(m, data), nil, listTopics[0], data, iterationCount))
+	iterationCount++
 
 	// register all 4 reputers on both topics
 	iterationCount = startRegisterReputers(m, data, startReputers, listTopics, iterationCount)

@@ -47,6 +47,19 @@ Note that in all modes, the counter for the output will only count successful st
 
 The `transitionWeights` option in the config.json controls the distribution of how likely it will be to pick a specific transition during a fuzz run, based on a scale of 1-100. E.g. if you set the createTopic transitionWeight to 20, then any given transition will have a 20% chance of being a createTopic call. See the `.config.json.example` file for a recommended sane default distribution. These weights must add up to 100% in order for the fuzzer to run.
 
+## Disabling whitelists
+
+In order to _turn off_ transitions related to whitelists, you can set 0 weights to the corresponding transitions in the config, however only actors set in whitelists at initial setup will be allowed to perform some actions.
+To solve this issue and consider all the actors as whitelisted, you can update the initial setup configuration by specifying the number of actors to be present in global whitelists, by setting these values to the total number of actors it'll result in the same behaviour as whitelists disabled:
+
+```json
+"initialSetup": {
+    "numAdminWhitelist": 12,
+    "numGlobalWhitelist": 12,
+    "numTopicCreatorWhitelist": 12
+}
+```
+
 # Output
 
 The output of the simulator contains a count of every attempted state transition will look something like this:
