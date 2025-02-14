@@ -223,6 +223,14 @@ type Keeper struct {
 	// map of (topicId, oneOutForecaster, forecaster) -> regret
 	latestOneOutForecasterForecasterNetworkRegrets collections.Map[collections.Triple[TopicId, ActorId, ActorId], types.TimestampedValue]
 
+	// WEIGHTS
+
+	// The latest stdnorm of regrets for a topic
+	latestRegretStdNorm collections.Map[TopicId, alloraMath.Dec]
+	// The latest weights for a topic
+	latestInfererWeights    collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
+	latestForecasterWeights collections.Map[collections.Pair[TopicId, ActorId], alloraMath.Dec]
+
 	/// INCLUSIONS
 
 	countInfererInclusionsInTopicActiveSet    collections.Map[collections.Pair[TopicId, ActorId], uint64]
@@ -366,6 +374,9 @@ func NewKeeper(
 		initialInfererEmaScore:                    collections.NewMap(sb, types.InitialInfererEmaScoreKey, "initial_inferer_ema_score", collections.Uint64Key, alloraMath.DecValue),
 		initialForecasterEmaScore:                 collections.NewMap(sb, types.InitialForecasterEmaScoreKey, "initial_forecaster_ema_score", collections.Uint64Key, alloraMath.DecValue),
 		initialReputerEmaScore:                    collections.NewMap(sb, types.InitialReputerEmaScoreKey, "initial_reputer_ema_score", collections.Uint64Key, alloraMath.DecValue),
+		latestRegretStdNorm:                       collections.NewMap(sb, types.LatestRegretStdNormKey, "latest_regret_stdnorm", collections.Uint64Key, alloraMath.DecValue),
+		latestInfererWeights:                      collections.NewMap(sb, types.LatestInfererWeightsKey, "latest_inferer_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
+		latestForecasterWeights:                   collections.NewMap(sb, types.LatestForecasterWeightsKey, "latest_forecaster_weights", collections.PairKeyCodec(collections.Uint64Key, collections.StringKey), alloraMath.DecValue),
 	}
 
 	schema, err := sb.Build()
@@ -4408,4 +4419,69 @@ func (k *Keeper) SetTopicInitialReputerEmaScore(ctx context.Context, topicId Top
 		return errorsmod.Wrap(err, "score validation failed")
 	}
 	return k.initialReputerEmaScore.Set(ctx, topicId, score)
+}
+
+// WEIGHTS
+
+// GetLatestRegretStdNorm returns the latest regret standard norm for a topic
+func (k Keeper) GetLatestRegretStdNorm(ctx context.Context, topicId TopicId) (alloraMath.Dec, error) {
+	regretStdNorm, err := k.latestRegretStdNorm.Get(ctx, topicId)
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	}
+	return regretStdNorm, err
+}
+
+// SetLatestRegretStdNorm sets the latest regret standard norm for a topic
+func (k Keeper) SetLatestRegretStdNorm(ctx context.Context, topicId TopicId, regretStdNorm alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateDec(regretStdNorm); err != nil {
+		return errorsmod.Wrap(err, "regret standard norm validation failed")
+	}
+	if regretStdNorm.IsZero() {
+		return errorsmod.Wrap(types.ErrInvalidValue, "regret standard norm cannot be zero")
+	}
+	return k.latestRegretStdNorm.Set(ctx, topicId, regretStdNorm)
+}
+
+// GetLatestInfererWeight returns the latest inferer weight for a topic and worker
+func (k Keeper) GetLatestInfererWeight(ctx context.Context, topicId TopicId, worker ActorId) (alloraMath.Dec, error) {
+	weight, err := k.latestInfererWeights.Get(ctx, collections.Join(topicId, worker))
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	}
+	return weight, err
+}
+
+// SetLatestInfererWeight sets the latest inferer weight for a topic and worker
+func (k Keeper) SetLatestInfererWeight(ctx context.Context, topicId TopicId, worker ActorId, weight alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrap(err, "worker address validation failed")
+	}
+	return k.latestInfererWeights.Set(ctx, collections.Join(topicId, worker), weight)
+}
+
+// GetLatestForecasterWeight returns the latest forecaster weight for a topic and worker
+func (k Keeper) GetLatestForecasterWeight(ctx context.Context, topicId TopicId, worker ActorId) (alloraMath.Dec, error) {
+	weight, err := k.latestForecasterWeights.Get(ctx, collections.Join(topicId, worker))
+	if errors.Is(err, collections.ErrNotFound) {
+		return alloraMath.ZeroDec(), nil
+	}
+	return weight, err
+}
+
+// SetLatestForecasterWeight sets the latest forecaster weight for a topic and worker
+func (k Keeper) SetLatestForecasterWeight(ctx context.Context, topicId TopicId, worker ActorId, weight alloraMath.Dec) error {
+	if err := types.ValidateTopicId(topicId); err != nil {
+		return errorsmod.Wrap(err, "topic id validation failed")
+	}
+	if err := types.ValidateBech32(worker); err != nil {
+		return errorsmod.Wrap(err, "worker address validation failed")
+	}
+	return k.latestForecasterWeights.Set(ctx, collections.Join(topicId, worker), weight)
 }

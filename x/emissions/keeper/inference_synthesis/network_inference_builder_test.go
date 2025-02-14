@@ -58,13 +58,15 @@ func (s *InferenceSynthesisTestSuite) SetupTest() {
 	key := storetypes.NewKVStoreKey("emissions")
 	storeService := runtime.NewKVStoreService(key)
 	testCtx := testutil.DefaultContextWithDB(s.T(), key, storetypes.NewTransientStoreKey("transient_test"))
+	// Set logger to show logs from the rewards module too
+	logger := log.NewTestLogger(s.T()).With("module", "inference_synthesis")
 	ctx := testCtx.Ctx.WithHeaderInfo(header.Info{
 		Height:  1,
 		Hash:    []byte("1"),
 		AppHash: []byte("1"),
 		ChainID: "localnet",
 		Time:    time.Now(),
-	})
+	}).WithLogger(logger)
 	encCfg := moduletestutil.MakeTestEncodingConfig(auth.AppModuleBasic{}, bank.AppModuleBasic{}, module.AppModule{})
 	addressCodec := address.NewBech32Codec(params.Bech32PrefixAccAddr)
 

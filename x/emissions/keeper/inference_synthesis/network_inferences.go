@@ -268,6 +268,13 @@ func GetCalcNetworkInferenceArgs(
 		forecasterToRegret[forecaster] = &regret.Value
 	}
 
+	// Get the latest regret stdnorm from the keeper. If zero, it will recalculate with provided data.
+	stdDevPlusEpsilon, err := k.GetLatestRegretStdNorm(ctx, topicId)
+	if err != nil {
+		return CalcNetworkInferencesArgs{}, errorsmod.Wrap(err, "CalcNetworkInferences() error getting latest regret stdnorm")
+	}
+	logger.Info(fmt.Sprintf("GetCalcNetworkInferenceArgs: StdDevPlusEpsilon: %v", stdDevPlusEpsilon))
+
 	forecastImpliedInferencesByWorker, _, _, err := CalcForecastImpliedInferences(
 		CalcForecastImpliedInferencesArgs{
 			Logger:               logger,
@@ -283,6 +290,7 @@ func GetCalcNetworkInferenceArgs(
 			EpsilonTopic:         topic.Epsilon,
 			PNorm:                topic.PNorm,
 			CNorm:                moduleParams.CNorm,
+			StdDevPlusEpsilon:    stdDevPlusEpsilon,
 		},
 	)
 	if err != nil {
@@ -307,6 +315,7 @@ func GetCalcNetworkInferenceArgs(
 		EpsilonSafeDiv:                       moduleParams.EpsilonSafeDiv,
 		PNorm:                                topic.PNorm,
 		CNorm:                                moduleParams.CNorm,
+		StdDevPlusEpsilon:                    stdDevPlusEpsilon,
 	}
 
 	// If there are forecast-implied inferences, add forecasters info

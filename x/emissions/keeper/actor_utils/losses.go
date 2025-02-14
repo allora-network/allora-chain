@@ -127,7 +127,7 @@ func CloseReputerNonce(
 
 	types.EmitNewNetworkLossSetEvent(ctx, topic.Id, nonce.BlockHeight, networkLossBundle)
 
-	err = synth.GetCalcSetNetworkRegrets(
+	regrets, err := synth.GetCalcSetNetworkRegrets(
 		synth.GetCalcSetNetworkRegretsArgs{
 			Ctx:                   ctx,
 			K:                     *k,
@@ -141,6 +141,74 @@ func CloseReputerNonce(
 			InitialRegretQuantile: params.InitialRegretQuantile,
 			PNormSafeDiv:          params.PNormSafeDiv,
 		})
+	if err != nil {
+		return err
+	}
+
+	// 0 get inferer and forecaster regrets
+	infererRegrets := regrets.InfererRegrets
+	inferers := make([]synth.Worker, 0)
+	for inferer := range infererRegrets {
+		inferers = append(inferers, inferer)
+	}
+	forecasterRegrets := regrets.ForecasterRegrets
+	forecasters := make([]synth.Worker, 0)
+	for forecaster := range forecasterRegrets {
+		forecasters = append(forecasters, forecaster)
+	}
+
+	// 2. Calculate the regret_stdnorm based on the previous weights. If not, apply stddev.
+	stdDevPlusEpsilon, err := synth.CalcStdDevForWeights(synth.CalcStdDevForWeightsArgs{
+		Ctx:                 ctx,
+		K:                   k,
+		Logger:              ctx.Logger(),
+		TopicId:             topic.Id,
+		Inferers:            inferers,
+		Forecasters:         forecasters,
+		InfererToRegret:     infererRegrets,
+		ForecasterToRegret:  forecasterRegrets,
+		NegligibleThreshold: params.MinWeightThresholdForStdnorm,
+		EpsilonTopic:        topic.Epsilon,
+	})
+	if err != nil {
+		return err
+	}
+	ctx.Logger().Info("CloseReputerNonce: stdDevPlusEpsilon", "stdDevPlusEpsilon", stdDevPlusEpsilon)
+	// 2.b ... and store it.
+	err = k.SetLatestRegretStdNorm(ctx, topic.Id, stdDevPlusEpsilon)
+	if err != nil {
+		return err
+	}
+
+	// 3. Calculate the new weights
+	newWeights, err := synth.CalcWeightsGivenWorkers(
+		synth.CalcWeightsGivenWorkersArgs{
+			Logger:             ctx.Logger(),
+			Inferers:           inferers,
+			Forecasters:        forecasters,
+			InfererToRegret:    infererRegrets,
+			ForecasterToRegret: forecasterRegrets,
+			EpsilonTopic:       topic.Epsilon,
+			PNorm:              topic.PNorm,
+			CNorm:              params.CNorm,
+			StdDevPlusEpsilon:  stdDevPlusEpsilon,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	// 4. Normalize weights!
+	err = newWeights.NormalizeWeights()
+	if err != nil {
+		return err
+	}
+
+	// 5. Clean previous weights for this topic
+	// TODO and TBD
+
+	// 6. Store the new weights
+	err = synth.StoreLatestNormalizedWeights(ctx, *k, topic.Id, newWeights)
 	if err != nil {
 		return err
 	}

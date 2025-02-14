@@ -8,27 +8,117 @@ import (
 	errorsmod "cosmossdk.io/errors"
 
 	alloraMath "github.com/allora-network/allora-chain/math"
+	"github.com/allora-network/allora-chain/x/emissions/keeper"
 	emissionstypes "github.com/allora-network/allora-chain/x/emissions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // args for calcWeightsGivenWorkers function
-type calcWeightsGivenWorkersArgs struct {
-	logger             log.Logger
-	inferers           []Worker
-	forecasters        []Worker
-	infererToRegret    map[Worker]*alloraMath.Dec
-	forecasterToRegret map[Worker]*alloraMath.Dec
-	epsilonTopic       alloraMath.Dec
-	pNorm              alloraMath.Dec
-	cNorm              alloraMath.Dec
+type CalcWeightsGivenWorkersArgs struct {
+	Logger             log.Logger
+	Inferers           []Worker
+	Forecasters        []Worker
+	InfererToRegret    map[Worker]*alloraMath.Dec
+	ForecasterToRegret map[Worker]*alloraMath.Dec
+	EpsilonTopic       alloraMath.Dec
+	PNorm              alloraMath.Dec
+	CNorm              alloraMath.Dec
+	StdDevPlusEpsilon  alloraMath.Dec
 }
 
-// Given the current set of inferers and forecasters, calculate their
-// weights using the current regrets
-func calcWeightsGivenWorkers(args calcWeightsGivenWorkersArgs) (RegretInformedWeights, error) {
+type CalcStdDevForWeightsArgs struct {
+	Ctx                 sdk.Context
+	K                   *keeper.Keeper
+	Logger              log.Logger
+	TopicId             uint64
+	Inferers            []Worker
+	Forecasters         []Worker
+	InfererToRegret     map[Worker]*alloraMath.Dec
+	ForecasterToRegret  map[Worker]*alloraMath.Dec
+	NegligibleThreshold alloraMath.Dec
+	EpsilonTopic        alloraMath.Dec
+}
+
+// Calculates the standard deviation of the regrets provided plus epsilon
+// It uses previous epoch's weights to filter the regrets of workers that had a negligible weight
+// If there are less than 2 non-negligible weights, it uses all regrets.
+func CalcStdDevForWeights(args CalcStdDevForWeightsArgs) (alloraMath.Dec, error) {
+	// Combine all weights and regrets
+	var filteredRegrets []alloraMath.Dec
+	nonNegligibleCount := 0
+
+	// Count non-negligible weights and gather corresponding regrets
+	for _, worker := range args.Inferers {
+		weight, err := args.K.GetLatestInfererWeight(args.Ctx, args.TopicId, worker)
+		if err != nil {
+			continue
+		}
+		if weight.Gt(args.NegligibleThreshold) {
+			nonNegligibleCount++
+			if regret, ok := args.InfererToRegret[worker]; ok {
+				filteredRegrets = append(filteredRegrets, *regret)
+			}
+		}
+	}
+	for _, worker := range args.Forecasters {
+		weight, err := args.K.GetLatestForecasterWeight(args.Ctx, args.TopicId, worker)
+		if err != nil {
+			continue
+		}
+		if weight.Gt(args.NegligibleThreshold) {
+			nonNegligibleCount++
+			if regret, ok := args.ForecasterToRegret[worker]; ok {
+				filteredRegrets = append(filteredRegrets, *regret)
+			}
+		}
+	}
+
+	// If fewer than 2 non-negligible weights, use all regrets
+	if nonNegligibleCount < 2 {
+		regrets, _, _, err := GatherWorkerRegrets(
+			args.Logger,
+			args.Inferers,
+			args.Forecasters,
+			args.InfererToRegret,
+			args.ForecasterToRegret,
+		)
+		if err != nil {
+			return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error gathering worker regrets")
+		}
+		args.Logger.Debug("calcStdDevForWeights() using all regrets")
+		return CalcStdDevPlusEpsilon(regrets, args.EpsilonTopic)
+	}
+	args.Logger.Debug("calcStdDevForWeights() using filtered regrets")
+	return CalcStdDevPlusEpsilon(filteredRegrets, args.EpsilonTopic)
+}
+
+// Calculates the standard deviation of the regrets provided plus epsilon
+func CalcStdDevPlusEpsilon(regrets []alloraMath.Dec, epsilonTopic alloraMath.Dec) (alloraMath.Dec, error) {
+	// Calc std dev of regrets + epsilon
+	// σ(R_ijk) + ε
+	stdDevRegrets, err := alloraMath.StdDev(regrets)
+	if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
+	}
+	// Add epsilon to standard deviation
+	absStdDevRegrets, err := stdDevRegrets.Abs()
+	if err != nil {
+		return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error calculating absolute value of standard deviation")
+	}
+	return absStdDevRegrets.Add(epsilonTopic)
+}
+
+// Gather regrets from workers and forecasters.
+func GatherWorkerRegrets(
+	logger log.Logger,
+	inferers []Worker,
+	forecasters []Worker,
+	infererToRegret map[Worker]*alloraMath.Dec,
+	forecasterToRegret map[Worker]*alloraMath.Dec,
+) ([]alloraMath.Dec, []alloraMath.Dec, []alloraMath.Dec, error) {
 	var regrets []alloraMath.Dec
-	infererRegrets := getInfererRegretsSlice(args.logger, args.inferers, args.infererToRegret)
-	forecasterRegrets := getForecasterRegretsSlice(args.logger, args.forecasters, args.forecasterToRegret)
+	infererRegrets := getInfererRegretsSlice(logger, inferers, infererToRegret)
+	forecasterRegrets := getForecasterRegretsSlice(logger, forecasters, forecasterToRegret)
 
 	if len(infererRegrets) > 0 {
 		regrets = append(regrets, infererRegrets...)
@@ -37,33 +127,51 @@ func calcWeightsGivenWorkers(args calcWeightsGivenWorkersArgs) (RegretInformedWe
 		regrets = append(regrets, forecasterRegrets...)
 	}
 	if len(regrets) == 0 {
-		return RegretInformedWeights{}, errorsmod.Wrapf(emissionstypes.ErrEmptyArray, "No regrets to calculate weights")
+		return nil, nil, nil, errorsmod.Wrapf(emissionstypes.ErrEmptyArray, "No regrets to calculate weights")
 	}
 
-	// Calc std dev of regrets + epsilon
-	// σ(R_ijk) + ε
-	stdDevRegrets, err := alloraMath.StdDev(regrets)
+	return regrets, infererRegrets, forecasterRegrets, nil
+}
+
+// Given the current set of inferers and forecasters, calculate their
+// weights using the current regrets
+func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWeights, error) {
+	// Gather regrets from forecasters and inferers
+	regrets, _, forecasterRegrets, err := GatherWorkerRegrets(
+		args.Logger,
+		args.Inferers,
+		args.Forecasters,
+		args.InfererToRegret,
+		args.ForecasterToRegret,
+	)
 	if err != nil {
-		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating standard deviation of regrets")
+		return RegretInformedWeights{}, err
 	}
-	// Add epsilon to standard deviation
-	absStdDevRegrets, err := stdDevRegrets.Abs()
-	if err != nil {
-		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating absolute value of standard deviation")
+
+	var stdDevRegretsPlusEpsilon alloraMath.Dec
+	if args.StdDevPlusEpsilon.Gt(alloraMath.ZeroDec()) {
+		stdDevRegretsPlusEpsilon = args.StdDevPlusEpsilon
+	} else {
+		args.Logger.Debug("CalcWeightsGivenWorkers(): stdDevRegretsPlusEpsilon is not provided, calculating it")
+		// Calc std dev of regrets + epsilon
+		// σ(R_ijk) + ε
+		var err error
+		stdDevRegretsPlusEpsilon, err = CalcStdDevPlusEpsilon(regrets, args.EpsilonTopic)
+		if err != nil {
+			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation")
+		}
 	}
-	stdDevRegretsPlusEpsilon, err := absStdDevRegrets.Add(args.epsilonTopic)
-	if err != nil {
-		return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation")
-	}
+
+	args.Logger.Info("In CalcWeightsGivenWorkers(): stdDevRegretsPlusEpsilon", "stdDevRegretsPlusEpsilon", stdDevRegretsPlusEpsilon)
 
 	// Normalize the regrets and find the max normalized regret among them
 	normalizedInfererRegrets := make(map[Worker]Regret)
 	maxRegret := alloraMath.ZeroDec()
 	maxRegretInitialized := false
-	for _, worker := range args.inferers {
-		regret, ok := args.infererToRegret[worker]
+	for _, worker := range args.Inferers {
+		regret, ok := args.InfererToRegret[worker]
 		if !ok {
-			args.logger.Debug(fmt.Sprintf("Cannot find worker in InfererRegrets in CalcWeightsGivenWorkers %v", worker))
+			args.Logger.Debug(fmt.Sprintf("Cannot find worker in InfererRegrets in CalcWeightsGivenWorkers %v", worker))
 			continue
 		}
 		regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
@@ -81,10 +189,10 @@ func calcWeightsGivenWorkers(args calcWeightsGivenWorkersArgs) (RegretInformedWe
 
 	normalizedForecasterRegrets := make(map[Worker]Regret)
 	if len(forecasterRegrets) > 0 {
-		for _, worker := range args.forecasters {
-			regret, ok := args.forecasterToRegret[worker]
+		for _, worker := range args.Forecasters {
+			regret, ok := args.ForecasterToRegret[worker]
 			if !ok {
-				args.logger.Debug(fmt.Sprintf("Cannot find worker in ForecasterRegrets in CalcWeightsGivenWorkers %v", worker))
+				args.Logger.Debug(fmt.Sprintf("Cannot find worker in ForecasterRegrets in CalcWeightsGivenWorkers %v", worker))
 				continue
 			}
 			regretFrac, err := regret.Quo(stdDevRegretsPlusEpsilon)
@@ -105,9 +213,9 @@ func calcWeightsGivenWorkers(args calcWeightsGivenWorkersArgs) (RegretInformedWe
 	forecasterWeights := make(map[Worker]Weight)
 
 	// Calculate the weights from the normalized regrets
-	for _, worker := range args.inferers {
+	for _, worker := range args.Inferers {
 		// If there is more than one not-new inferer, calculate the weight for the ones that are not new
-		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, args.pNorm, args.cNorm)
+		infererWeight, err := CalcWeightFromNormalizedRegret(normalizedInfererRegrets[worker], maxRegret, args.PNorm, args.CNorm)
 		if err != nil {
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating inferer weight")
 		}
@@ -116,8 +224,8 @@ func calcWeightsGivenWorkers(args calcWeightsGivenWorkersArgs) (RegretInformedWe
 	}
 
 	if len(forecasterRegrets) > 0 {
-		for _, worker := range args.forecasters {
-			forecasterWeight, err := CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, args.pNorm, args.cNorm)
+		for _, worker := range args.Forecasters {
+			forecasterWeight, err := CalcWeightFromNormalizedRegret(normalizedForecasterRegrets[worker], maxRegret, args.PNorm, args.CNorm)
 			if err != nil {
 				return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error calculating forecaster weight")
 			}
@@ -234,6 +342,8 @@ func calcWeightedInference(args calcWeightedInferenceArgs) (InferenceValue, erro
 	return ret, nil
 }
 
+// getInfererRegretsSlice converts a map of inferer regrets into a slice, maintaining the order defined by the inferers array.
+// Returns an empty slice if the regret map is empty or if no valid regrets are found for the provided inferers.
 func getInfererRegretsSlice(
 	logger log.Logger,
 	inferers []Worker,
@@ -255,6 +365,8 @@ func getInfererRegretsSlice(
 	return regrets
 }
 
+// getForecasterRegretsSlice converts a map of forecaster regrets into a slice, maintaining the order defined by the forecasters array.
+// Returns an empty slice if the regret map is empty or if no valid regrets are found for the provided forecasters.
 func getForecasterRegretsSlice(
 	logger log.Logger,
 	forecasters []Worker,
@@ -388,4 +500,68 @@ func CalcWeightFromNormalizedRegret(
 	}
 
 	return weight, nil
+}
+
+// NormalizeWeights normalizes all weights so their sum equals 1.0 while preserving relative proportions
+func (w *RegretInformedWeights) NormalizeWeights() error {
+	// Calculate total sum of all weights
+	sum := alloraMath.ZeroDec()
+	var err error
+	for _, weight := range w.Inferers {
+		sum, err = sum.Add(weight)
+		if err != nil {
+			return errorsmod.Wrapf(err, "error adding inferer weight")
+		}
+	}
+	for _, weight := range w.Forecasters {
+		sum, err = sum.Add(weight)
+		if err != nil {
+			return errorsmod.Wrapf(err, "error adding forecaster weight")
+		}
+	}
+
+	// If sum is zero, we can't normalize
+	if sum.IsZero() {
+		return errorsmod.Wrap(emissionstypes.ErrInvalidValue, "cannot normalize weights: sum is zero")
+	}
+
+	// Normalize each weight
+	for worker, weight := range w.Inferers {
+		normalizedWeight, err := weight.Quo(sum)
+		if err != nil {
+			return errorsmod.Wrapf(err, "error normalizing inferer weight for %s", worker)
+		}
+		w.Inferers[worker] = normalizedWeight
+	}
+
+	for worker, weight := range w.Forecasters {
+		normalizedWeight, err := weight.Quo(sum)
+		if err != nil {
+			return errorsmod.Wrapf(err, "error normalizing forecaster weight for %s", worker)
+		}
+		w.Forecasters[worker] = normalizedWeight
+	}
+
+	return nil
+}
+
+// StoreLatestNormalizedWeights sets the latest weights for the given topic
+func StoreLatestNormalizedWeights(ctx sdk.Context, k keeper.Keeper, topicId TopicId, weights RegretInformedWeights) error {
+	// Set inferer weights
+	for worker, weight := range weights.Inferers {
+		err := k.SetLatestInfererWeight(ctx, topicId, worker, weight)
+		if err != nil {
+			return errorsmod.Wrapf(err, "error setting latest inferer weight for worker %s", worker)
+		}
+	}
+
+	// Set forecaster weights
+	for worker, weight := range weights.Forecasters {
+		err := k.SetLatestForecasterWeight(ctx, topicId, worker, weight)
+		if err != nil {
+			return errorsmod.Wrapf(err, "error setting latest forecaster weight for worker %s", worker)
+		}
+	}
+
+	return nil
 }

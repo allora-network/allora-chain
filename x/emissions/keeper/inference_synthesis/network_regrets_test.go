@@ -212,7 +212,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsTwoWorkers() {
 	require.Equal(worker3LastRegret.Value, alloraMath.ZeroDec())
 	require.True(worker3NoPriorRegret)
 
-	err = inferencesynthesis.GetCalcSetNetworkRegrets(
+	_, err = inferencesynthesis.GetCalcSetNetworkRegrets(
 		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 			Ctx:                   s.ctx,
 			K:                     s.emissionsKeeper,
@@ -366,7 +366,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsThreeWorkers()
 	err = k.SetOneInForecasterNetworkRegret(s.ctx, topicId, worker3, worker3, timestampedValue)
 	require.NoError(err)
 
-	err = inferencesynthesis.GetCalcSetNetworkRegrets(
+	_, err = inferencesynthesis.GetCalcSetNetworkRegrets(
 		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 			Ctx:                   s.ctx,
 			K:                     s.emissionsKeeper,
@@ -444,7 +444,7 @@ func (s *InferenceSynthesisTestSuite) TestGetCalcSetNetworkRegretsFromCsv() {
 	)
 	s.Require().NoError(err)
 
-	err = inferencesynthesis.GetCalcSetNetworkRegrets(
+	_, err = inferencesynthesis.GetCalcSetNetworkRegrets(
 		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 			Ctx:                   s.ctx,
 			K:                     s.emissionsKeeper,
@@ -631,7 +631,7 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 
 	resetRegrets()
 
-	err := inferencesynthesis.GetCalcSetNetworkRegrets(
+	_, err := inferencesynthesis.GetCalcSetNetworkRegrets(
 		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 			Ctx:                   s.ctx,
 			K:                     s.emissionsKeeper,
@@ -673,7 +673,7 @@ func (s *InferenceSynthesisTestSuite) TestHigherLossesLowerRegret() {
 
 	resetRegrets()
 
-	err = inferencesynthesis.GetCalcSetNetworkRegrets(
+	_, err = inferencesynthesis.GetCalcSetNetworkRegrets(
 		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 			Ctx:                   s.ctx,
 			K:                     s.emissionsKeeper,
@@ -881,7 +881,7 @@ func (s *InferenceSynthesisTestSuite) TestUpdateTopicInitialRegret() {
 	}
 
 	// Calculate and set network regrets
-	err = inferencesynthesis.GetCalcSetNetworkRegrets(inferencesynthesis.GetCalcSetNetworkRegretsArgs{
+	_, err = inferencesynthesis.GetCalcSetNetworkRegrets(inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 		Ctx:                   s.ctx,
 		K:                     k,
 		TopicId:               topicId,
@@ -1032,7 +1032,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcSetNetworkRegretsWithFallbackRegre
 	}
 
 	// Call GetCalcSetNetworkRegrets
-	err = inferencesynthesis.GetCalcSetNetworkRegrets(
+	_, err = inferencesynthesis.GetCalcSetNetworkRegrets(
 		inferencesynthesis.GetCalcSetNetworkRegretsArgs{
 			Ctx:                   s.ctx,
 			K:                     k,
