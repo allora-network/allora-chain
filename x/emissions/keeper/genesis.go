@@ -963,6 +963,33 @@ func (k *Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) erro
 		}
 	}
 
+	// Initialize latest regret stdnorm
+	for _, stdnorm := range data.LatestRegretStdNorm {
+		if stdnorm != nil {
+			if err := k.SetLatestRegretStdNorm(ctx, stdnorm.TopicId, stdnorm.Dec); err != nil {
+				return errors.Wrap(err, "error setting latest regret stdnorm")
+			}
+		}
+	}
+
+	// Initialize latest inferer weights
+	for _, weight := range data.LatestInfererWeights {
+		if weight != nil {
+			if err := k.SetLatestInfererWeight(ctx, weight.TopicId, weight.ActorId, weight.Dec); err != nil {
+				return errors.Wrap(err, "error setting latest inferer weight")
+			}
+		}
+	}
+
+	// Initialize latest forecaster weights
+	for _, weight := range data.LatestForecasterWeights {
+		if weight != nil {
+			if err := k.SetLatestForecasterWeight(ctx, weight.TopicId, weight.ActorId, weight.Dec); err != nil {
+				return errors.Wrap(err, "error setting latest forecaster weight")
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -2445,6 +2472,59 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		})
 	}
 
+	// Export latest regret stdnorm
+	latestRegretStdNorm := make([]*types.TopicIdAndDec, 0)
+	stdnormIter, err := k.latestRegretStdNorm.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate latest regret stdnorm")
+	}
+	for ; stdnormIter.Valid(); stdnormIter.Next() {
+		keyValue, err := stdnormIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: stdnormIter")
+		}
+		latestRegretStdNorm = append(latestRegretStdNorm, &types.TopicIdAndDec{
+			TopicId: keyValue.Key,
+			Dec:     keyValue.Value,
+		})
+	}
+
+	// Export latest inferer weights
+	latestInfererWeights := make([]*types.TopicIdActorIdDec, 0)
+	infererWeightsIter, err := k.latestInfererWeights.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate latest inferer weights")
+	}
+	for ; infererWeightsIter.Valid(); infererWeightsIter.Next() {
+		keyValue, err := infererWeightsIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: infererWeightsIter")
+		}
+		latestInfererWeights = append(latestInfererWeights, &types.TopicIdActorIdDec{
+			TopicId: keyValue.Key.K1(),
+			ActorId: keyValue.Key.K2(),
+			Dec:     keyValue.Value,
+		})
+	}
+
+	// Export latest forecaster weights
+	latestForecasterWeights := make([]*types.TopicIdActorIdDec, 0)
+	forecasterWeightsIter, err := k.latestForecasterWeights.Iterate(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to iterate latest forecaster weights")
+	}
+	for ; forecasterWeightsIter.Valid(); forecasterWeightsIter.Next() {
+		keyValue, err := forecasterWeightsIter.KeyValue()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get key value: forecasterWeightsIter")
+		}
+		latestForecasterWeights = append(latestForecasterWeights, &types.TopicIdActorIdDec{
+			TopicId: keyValue.Key.K1(),
+			ActorId: keyValue.Key.K2(),
+			Dec:     keyValue.Value,
+		})
+	}
+
 	return &types.GenesisState{
 		Params:                                         moduleParams,
 		NextTopicId:                                    nextTopicId,
@@ -2534,5 +2614,8 @@ func (k *Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error)
 		TopicReputerWhitelistEnabled:                   topicReputerWhitelistEnabled,
 		LastMedianInferences:                           lastMedianInferences,
 		MadInferences:                                  madInferences,
+		LatestRegretStdNorm:                            latestRegretStdNorm,
+		LatestInfererWeights:                           latestInfererWeights,
+		LatestForecasterWeights:                        latestForecasterWeights,
 	}, nil
 }

@@ -260,6 +260,13 @@ message GenesisState {
   repeated string global_worker_whitelist = 89;
   repeated string global_reputer_whitelist = 90;
   repeated string global_admin_whitelist = 91;
+
+  // REGRET STDNORM
+  repeated TopicIdAndDec latest_regret_std_norm = 92;
+
+  // WEIGHTS
+  repeated TopicIdActorIdDec latest_inferer_weights = 93;
+  repeated TopicIdActorIdDec latest_forecaster_weights = 94;
 }
 
 message TopicIdAndTopic {
