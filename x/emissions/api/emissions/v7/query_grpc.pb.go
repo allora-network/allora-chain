@@ -124,6 +124,9 @@ const (
 	QueryService_GetTopicInitialInfererEmaScore_FullMethodName                      = "/emissions.v7.QueryService/GetTopicInitialInfererEmaScore"
 	QueryService_GetTopicInitialForecasterEmaScore_FullMethodName                   = "/emissions.v7.QueryService/GetTopicInitialForecasterEmaScore"
 	QueryService_GetTopicInitialReputerEmaScore_FullMethodName                      = "/emissions.v7.QueryService/GetTopicInitialReputerEmaScore"
+	QueryService_GetLatestRegretStdNorm_FullMethodName                              = "/emissions.v7.QueryService/GetLatestRegretStdNorm"
+	QueryService_GetLatestInfererWeight_FullMethodName                              = "/emissions.v7.QueryService/GetLatestInfererWeight"
+	QueryService_GetLatestForecasterWeight_FullMethodName                           = "/emissions.v7.QueryService/GetLatestForecasterWeight"
 )
 
 // QueryServiceClient is the client API for QueryService service.
@@ -241,6 +244,12 @@ type QueryServiceClient interface {
 	GetTopicInitialForecasterEmaScore(ctx context.Context, in *GetTopicInitialForecasterEmaScoreRequest, opts ...grpc.CallOption) (*GetTopicInitialForecasterEmaScoreResponse, error)
 	// GetTopicInitialReputerEmaScore returns the initial EMA score for reputers in a topic
 	GetTopicInitialReputerEmaScore(ctx context.Context, in *GetTopicInitialReputerEmaScoreRequest, opts ...grpc.CallOption) (*GetTopicInitialReputerEmaScoreResponse, error)
+	// Get latest regret stdnorm for a topic
+	GetLatestRegretStdNorm(ctx context.Context, in *GetLatestRegretStdNormRequest, opts ...grpc.CallOption) (*GetLatestRegretStdNormResponse, error)
+	// Get latest inferer weight for a topic and actor
+	GetLatestInfererWeight(ctx context.Context, in *GetLatestInfererWeightRequest, opts ...grpc.CallOption) (*GetLatestInfererWeightResponse, error)
+	// Get latest forecaster weight for a topic and actor
+	GetLatestForecasterWeight(ctx context.Context, in *GetLatestForecasterWeightRequest, opts ...grpc.CallOption) (*GetLatestForecasterWeightResponse, error)
 }
 
 type queryServiceClient struct {
@@ -1301,6 +1310,36 @@ func (c *queryServiceClient) GetTopicInitialReputerEmaScore(ctx context.Context,
 	return out, nil
 }
 
+func (c *queryServiceClient) GetLatestRegretStdNorm(ctx context.Context, in *GetLatestRegretStdNormRequest, opts ...grpc.CallOption) (*GetLatestRegretStdNormResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLatestRegretStdNormResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetLatestRegretStdNorm_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetLatestInfererWeight(ctx context.Context, in *GetLatestInfererWeightRequest, opts ...grpc.CallOption) (*GetLatestInfererWeightResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLatestInfererWeightResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetLatestInfererWeight_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryServiceClient) GetLatestForecasterWeight(ctx context.Context, in *GetLatestForecasterWeightRequest, opts ...grpc.CallOption) (*GetLatestForecasterWeightResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLatestForecasterWeightResponse)
+	err := c.cc.Invoke(ctx, QueryService_GetLatestForecasterWeight_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServiceServer is the server API for QueryService service.
 // All implementations must embed UnimplementedQueryServiceServer
 // for forward compatibility.
@@ -1416,6 +1455,12 @@ type QueryServiceServer interface {
 	GetTopicInitialForecasterEmaScore(context.Context, *GetTopicInitialForecasterEmaScoreRequest) (*GetTopicInitialForecasterEmaScoreResponse, error)
 	// GetTopicInitialReputerEmaScore returns the initial EMA score for reputers in a topic
 	GetTopicInitialReputerEmaScore(context.Context, *GetTopicInitialReputerEmaScoreRequest) (*GetTopicInitialReputerEmaScoreResponse, error)
+	// Get latest regret stdnorm for a topic
+	GetLatestRegretStdNorm(context.Context, *GetLatestRegretStdNormRequest) (*GetLatestRegretStdNormResponse, error)
+	// Get latest inferer weight for a topic and actor
+	GetLatestInfererWeight(context.Context, *GetLatestInfererWeightRequest) (*GetLatestInfererWeightResponse, error)
+	// Get latest forecaster weight for a topic and actor
+	GetLatestForecasterWeight(context.Context, *GetLatestForecasterWeightRequest) (*GetLatestForecasterWeightResponse, error)
 	mustEmbedUnimplementedQueryServiceServer()
 }
 
@@ -1740,6 +1785,15 @@ func (UnimplementedQueryServiceServer) GetTopicInitialForecasterEmaScore(context
 }
 func (UnimplementedQueryServiceServer) GetTopicInitialReputerEmaScore(context.Context, *GetTopicInitialReputerEmaScoreRequest) (*GetTopicInitialReputerEmaScoreResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTopicInitialReputerEmaScore not implemented")
+}
+func (UnimplementedQueryServiceServer) GetLatestRegretStdNorm(context.Context, *GetLatestRegretStdNormRequest) (*GetLatestRegretStdNormResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestRegretStdNorm not implemented")
+}
+func (UnimplementedQueryServiceServer) GetLatestInfererWeight(context.Context, *GetLatestInfererWeightRequest) (*GetLatestInfererWeightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestInfererWeight not implemented")
+}
+func (UnimplementedQueryServiceServer) GetLatestForecasterWeight(context.Context, *GetLatestForecasterWeightRequest) (*GetLatestForecasterWeightResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestForecasterWeight not implemented")
 }
 func (UnimplementedQueryServiceServer) mustEmbedUnimplementedQueryServiceServer() {}
 func (UnimplementedQueryServiceServer) testEmbeddedByValue()                      {}
@@ -3652,6 +3706,60 @@ func _QueryService_GetTopicInitialReputerEmaScore_Handler(srv interface{}, ctx c
 	return interceptor(ctx, in, info, handler)
 }
 
+func _QueryService_GetLatestRegretStdNorm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLatestRegretStdNormRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetLatestRegretStdNorm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetLatestRegretStdNorm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetLatestRegretStdNorm(ctx, req.(*GetLatestRegretStdNormRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetLatestInfererWeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLatestInfererWeightRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetLatestInfererWeight(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetLatestInfererWeight_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetLatestInfererWeight(ctx, req.(*GetLatestInfererWeightRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _QueryService_GetLatestForecasterWeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLatestForecasterWeightRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServiceServer).GetLatestForecasterWeight(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: QueryService_GetLatestForecasterWeight_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServiceServer).GetLatestForecasterWeight(ctx, req.(*GetLatestForecasterWeightRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // QueryService_ServiceDesc is the grpc.ServiceDesc for QueryService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -4078,6 +4186,18 @@ var QueryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTopicInitialReputerEmaScore",
 			Handler:    _QueryService_GetTopicInitialReputerEmaScore_Handler,
+		},
+		{
+			MethodName: "GetLatestRegretStdNorm",
+			Handler:    _QueryService_GetLatestRegretStdNorm_Handler,
+		},
+		{
+			MethodName: "GetLatestInfererWeight",
+			Handler:    _QueryService_GetLatestInfererWeight_Handler,
+		},
+		{
+			MethodName: "GetLatestForecasterWeight",
+			Handler:    _QueryService_GetLatestForecasterWeight_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -905,6 +905,50 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 						{ProtoField: "topic_id"},
 					},
 				},
+				{
+					RpcMethod: "GetLatestRegretStdNorm",
+					Use:       "latest-regret-std-norm [topic-id]",
+					Short:     "Get the latest regret standard norm for a topic",
+					Long:      "Get the latest regret standard norm value for the specified topic ID",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{
+							ProtoField: "topic_id",
+							Optional:   false,
+						},
+					},
+				},
+				{
+					RpcMethod: "GetLatestInfererWeight",
+					Use:       "latest-inferer-weight [topic-id] [actor-id]",
+					Short:     "Get the latest inferer weight",
+					Long:      "Get the latest weight for an inferer in a specific topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{
+							ProtoField: "topic_id",
+							Optional:   false,
+						},
+						{
+							ProtoField: "actor_id",
+							Optional:   false,
+						},
+					},
+				},
+				{
+					RpcMethod: "GetLatestForecasterWeight",
+					Use:       "latest-forecaster-weight [topic-id] [actor-id]",
+					Short:     "Get the latest forecaster weight",
+					Long:      "Get the latest weight for a forecaster in a specific topic",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{
+							ProtoField: "topic_id",
+							Optional:   false,
+						},
+						{
+							ProtoField: "actor_id",
+							Optional:   false,
+						},
+					},
+				},
 			},
 			SubCommands:          nil,
 			EnhanceCustomCommand: false,

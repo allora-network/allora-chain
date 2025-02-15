@@ -547,6 +547,24 @@ service QueryService {
     option (cosmos.query.v1.module_query_safe) = true;
     option (google.api.http).get = "/emissions/v7/initial_reputer_ema_score/{topic_id}";
   }
+
+  // Get latest regret stdnorm for a topic
+  rpc GetLatestRegretStdNorm(GetLatestRegretStdNormRequest) returns (GetLatestRegretStdNormResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v7/latest_regret_stdnorm/{topic_id}";
+  }
+
+  // Get latest inferer weight for a topic and actor
+  rpc GetLatestInfererWeight(GetLatestInfererWeightRequest) returns (GetLatestInfererWeightResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v7/latest_inferer_weight/{topic_id}/{actor_id}";
+  }
+
+  // Get latest forecaster weight for a topic and actor
+  rpc GetLatestForecasterWeight(GetLatestForecasterWeightRequest) returns (GetLatestForecasterWeightResponse) {
+    option (cosmos.query.v1.module_query_safe) = true;
+    option (google.api.http).get = "/emissions/v7/latest_forecaster_weight/{topic_id}/{actor_id}";
+  }
 }
 
 message IsWhitelistedGlobalWorkerRequest {
@@ -1645,5 +1663,40 @@ message GetTopicInitialReputerEmaScoreResponse {
     (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
+  ];
+}
+
+message GetLatestRegretStdNormRequest {
+  uint64 topic_id = 1;
+}
+
+message GetLatestRegretStdNormResponse {
+  string value = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message GetLatestInfererWeightRequest {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+}
+
+message GetLatestInfererWeightResponse {
+  string weight = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message GetLatestForecasterWeightRequest {
+  uint64 topic_id = 1;
+  string actor_id = 2;
+}
+
+message GetLatestForecasterWeightResponse {
+  string weight = 1 [
+    (gogoproto.customtype) = "github.com/allora-network/allora-chain/math.Dec",
+    (gogoproto.nullable) = false
   ];
 }
