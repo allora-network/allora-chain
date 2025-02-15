@@ -192,3 +192,28 @@ func EmitNewTopicInitialEmaScoreSetEvent(ctx sdk.Context, actorType ActorType, t
 		ctx.Logger().Warn("Error emitting NewTopicInitialEmaScoreSetEvent: ", err.Error())
 	}
 }
+
+// Individual events
+func EmitNewRegretStdNormSetEvent(ctx sdk.Context, topicId uint64, blockHeight int64, stdNorm alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.REGRET_STDNORM_EVENT)
+	err := ctx.EventManager().EmitTypedEvent(NewRegretStdNormSetEventBase(topicId, blockHeight, stdNorm))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewRegretStdNormSetEvent: ", err.Error())
+	}
+}
+
+func EmitNewInfererWeightSetEvent(ctx sdk.Context, topicId uint64, blockHeight int64, address string, weight alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.INFERER_WEIGHTS_EVENT)
+	err := ctx.EventManager().EmitTypedEvent(NewInfererWeightSetEventBase(topicId, blockHeight, address, weight))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewInfererWeightSetEvent: ", err.Error())
+	}
+}
+
+func EmitNewForecasterWeightSetEvent(ctx sdk.Context, topicId uint64, blockHeight int64, address string, weight alloraMath.Dec) {
+	metrics.IncrProducerEventCount(metrics.FORECASTER_WEIGHTS_EVENT)
+	err := ctx.EventManager().EmitTypedEvent(NewForecasterWeightSetEventBase(topicId, blockHeight, address, weight))
+	if err != nil {
+		ctx.Logger().Warn("Error emitting NewForecasterWeightSetEvent: ", err.Error())
+	}
+}

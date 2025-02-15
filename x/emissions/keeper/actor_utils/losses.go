@@ -213,6 +213,16 @@ func CloseReputerNonce(
 		return err
 	}
 
+	// Emit the regret stdnorm set event
+	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, stdDevPlusEpsilon)
+	// Emit weights events, one per actor.
+	for _, inferer := range inferers {
+		types.EmitNewInfererWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, inferer, newWeights.Inferers[inferer])
+	}
+	for _, forecaster := range forecasters {
+		types.EmitNewForecasterWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, forecaster, newWeights.Forecasters[forecaster])
+	}
+
 	_, err = k.FulfillReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {
 		return err
