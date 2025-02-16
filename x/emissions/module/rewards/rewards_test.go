@@ -643,6 +643,11 @@ func (s *RewardsTestSuite) setUpTopic(
 	return s.setUpTopicWithEpochLength(blockHeight, workerIndexes, reputerIndexes, stake, alphaRegret, 10800)
 }
 
+// Creates topic
+// Registers workers and reputers from addresses in addrsStr
+// Mints stake to reputers
+// Funds topic
+// Returns topicId
 func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 	blockHeight int64,
 	workerIndexes []int,
@@ -723,6 +728,21 @@ func (s *RewardsTestSuite) setUpTopicWithEpochLength(
 	return topicId
 }
 
+// Moves to end of this epoch
+// Sets current block emission
+// Ends block
+// -------
+// Moves +1 block,
+// Inserts worker bundles from workers
+// Moves to end of epoch
+// Closes reputer nonce
+// Sets rewards distribution
+// Ends Block
+// -------
+// Insert reputer bundles from reputers
+// Moves to end of ground truth lag
+// Closes reputer nonce
+// Returns rewards distribution (GenerateRewardsDistributionByTopicParticipant)
 func (s *RewardsTestSuite) getRewardsDistribution(
 	topicId uint64,
 	workerValues []TestWorkerValue,
@@ -1582,6 +1602,123 @@ func (s *RewardsTestSuite) TestGenerateTasksRewardsShouldIncreaseRewardShareIfMo
 
 	// Check if the reward share increased
 	s.Require().True(secondTotalReputerReward.Gt(firstTotalReputerReward))
+}
+
+func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
+	require := s.Require()
+
+	// Initial setup
+	block := int64(1)
+	s.ctx = s.ctx.WithBlockHeight(block)
+
+	alphaRegret := alloraMath.MustNewDecFromString("0.1")
+	s.SetParamsForTest()
+
+	// Set up single topic with workers and reputers
+	workerIndexes := s.returnIndexes(0, 3)
+	reputerIndexes := s.returnIndexes(3, 3)
+
+	stake := cosmosMath.NewInt(1000).Mul(inferencesynthesis.CosmosIntOneE18())
+
+	// Create topic with shorter epoch length for testing multiple epochs
+	epochLength := int64(5)
+	topicId := s.setUpTopicWithEpochLength(block, workerIndexes, reputerIndexes, stake, alphaRegret, epochLength)
+
+	// Initial worker and reputer values
+	workerValues := []TestWorkerValue{
+		{Index: workerIndexes[0], Value: "0.1"},
+		{Index: workerIndexes[1], Value: "0.2"},
+		{Index: workerIndexes[2], Value: "0.3"},
+	}
+
+	reputerValues := []TestWorkerValue{
+		{Index: reputerIndexes[0], Value: "0.1"},
+		{Index: reputerIndexes[1], Value: "0.2"},
+		{Index: reputerIndexes[2], Value: "0.3"},
+	}
+
+	// Fund topic
+	initialStake := cosmosMath.NewInt(1000)
+	s.MintTokensToAddress(s.addrs[reputerIndexes[0]], initialStake)
+	fundTopicMessage := types.FundTopicRequest{
+		Sender:  s.addrsStr[reputerIndexes[0]],
+		TopicId: topicId,
+		Amount:  initialStake,
+	}
+	_, err := s.msgServer.FundTopic(s.ctx, &fundTopicMessage)
+	require.NoError(err)
+
+	// Track weights and stdnorm over epochs
+	var workerWeights map[string][]alloraMath.Dec = make(map[string][]alloraMath.Dec)
+	var stdNorms []alloraMath.Dec
+
+	numEpochs := 5
+	// Run multiple epochs
+	for epoch := 0; epoch < numEpochs; epoch++ {
+		// Get current weight and stdnorm before processing
+		stdNorm, err := s.emissionsKeeper.GetLatestRegretStdNorm(s.ctx, topicId)
+		require.NoError(err)
+		stdNorms = append(stdNorms, stdNorm)
+
+		// Process worker submissions
+		s.getRewardsDistribution(
+			topicId,
+			workerValues,
+			reputerValues,
+			s.addrs[workerIndexes[0]],
+			fmt.Sprintf("0.%d", epoch+1), // Varying predictions
+			fmt.Sprintf("0.%d", epoch+1), // Varying ground truth
+		)
+
+		for _, index := range workerIndexes {
+			weight, err := s.emissionsKeeper.GetLatestInfererWeight(s.ctx, topicId, s.addrsStr[index])
+			s.Require().NoError(err)
+			workerWeights[s.addrsStr[index]] = append(workerWeights[s.addrsStr[index]], weight)
+		}
+
+		// Mint rewards
+		s.MintTokensToModule(types.AlloraRewardsAccountName, cosmosMath.NewInt(1000))
+
+		// Move to next epoch
+		block += epochLength
+		s.ctx = s.ctx.WithBlockHeight(block)
+
+		// Distribute rewards
+		err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
+		require.NoError(err)
+		err = s.emissionsAppModule.EndBlock(s.ctx)
+		require.NoError(err)
+	}
+
+	// Verify weight evolution
+	require.Equal(3, len(workerWeights)) // one entry per worker
+	for i := 1; i < len(workerWeights); i++ {
+		// Weight for the same worker should change between epochs
+		currentWorker := s.addrsStr[i]
+		currentWorkerWeights := workerWeights[currentWorker]
+		// check weights are different from diff actors
+		for j := 1; j < len(currentWorkerWeights); j++ {
+			require.NotEqual(
+				currentWorkerWeights[j].String(),
+				currentWorkerWeights[j-1].String(),
+				"Weight should change between epochs %d and %d", j-1, j,
+			)
+		}
+		s.T().Logf("Worker %d , %s Weight: %v", i, s.addrsStr[i], currentWorkerWeights)
+	}
+
+	// Verify stdnorm evolution
+	require.Equal(numEpochs, len(stdNorms))
+	for i := 1; i < len(stdNorms); i++ {
+		// StdNorm should adapt based on predictions
+		require.NotEqual(
+			stdNorms[i].String(),
+			stdNorms[i-1].String(),
+			"StdNorm should change between epochs %d and %d", i-1, i,
+		)
+		s.T().Logf("StdNorm: %v", stdNorms[i].String())
+	}
+
 }
 
 func (s *RewardsTestSuite) TestRewardsIncreasesBalance() {
