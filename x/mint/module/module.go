@@ -169,7 +169,7 @@ func (am AppModule) BeginBlock(ctx context.Context) error {
 	if err != nil {
 		am.keeper.Logger(ctx).Error("BeginBlocker error! ", err)
 	}
-	return err
+	return nil
 }
 
 //
