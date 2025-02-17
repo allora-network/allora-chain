@@ -66,7 +66,7 @@ func NewEMAScoresSetEventBase(actorType ActorType, scores []Score, activations m
 /// Rewards
 
 // Assumes length of `rewards` is at least 1
-func NewRewardsSetEventBase(actorType ActorType, blockHeight BlockHeight, rewards []TaskReward) proto.Message {
+func NewRewardsSetEventBase(actorType ActorType, blockHeight, blockHeightTx BlockHeight, rewards []TaskReward) proto.Message {
 	topicId := rewards[0].TopicId
 	addresses := make([]string, len(rewards))
 	rewardValues := make([]alloraMath.Dec, len(rewards))
@@ -75,11 +75,12 @@ func NewRewardsSetEventBase(actorType ActorType, blockHeight BlockHeight, reward
 		rewardValues[i] = reward.Reward
 	}
 	return &EventRewardsSettled{
-		ActorType:   actorType,
-		TopicId:     topicId,
-		BlockHeight: blockHeight,
-		Addresses:   addresses,
-		Rewards:     rewardValues,
+		ActorType:     actorType,
+		TopicId:       topicId,
+		BlockHeight:   blockHeight,
+		Addresses:     addresses,
+		Rewards:       rewardValues,
+		BlockHeightTx: blockHeightTx,
 	}
 }
 

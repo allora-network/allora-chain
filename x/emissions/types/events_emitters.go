@@ -70,34 +70,34 @@ func EmitNewActorEMAScoresSetEvent(ctx sdk.Context, actorType ActorType, scores 
 
 /// Rewards
 
-func EmitNewInfererRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
+func EmitNewInfererRewardsSettledEvent(ctx sdk.Context, blockHeight, blockHeightTx BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.INFERER_REWARD_EVENT)
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_INFERER_UNSPECIFIED, blockHeight, blockHeightTx, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewInfererRewardsSettledEvent: ", err.Error())
 	}
 }
 
-func EmitNewForecasterRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
+func EmitNewForecasterRewardsSettledEvent(ctx sdk.Context, blockHeight, blockHeightTx BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.FORECASTER_REWARD_EVENT)
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_FORECASTER, blockHeight, blockHeightTx, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewForecasterRewardsSettledEvent: ", err.Error())
 	}
 }
 
-func EmitNewReputerAndDelegatorRewardsSettledEvent(ctx sdk.Context, blockHeight BlockHeight, rewards []TaskReward) {
+func EmitNewReputerAndDelegatorRewardsSettledEvent(ctx sdk.Context, blockHeight, blockHeightTx BlockHeight, rewards []TaskReward) {
 	if len(rewards) < 1 {
 		return
 	}
 	metrics.IncrProducerEventCount(metrics.REPUTER_REWARD_EVENT)
-	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_REPUTER, blockHeight, rewards))
+	err := ctx.EventManager().EmitTypedEvent(NewRewardsSetEventBase(ActorType_ACTOR_TYPE_REPUTER, blockHeight, blockHeightTx, rewards))
 	if err != nil {
 		ctx.Logger().Warn("Error emitting NewReputerAndDelegatorRewardsSettledEvent: ", err.Error())
 	}
