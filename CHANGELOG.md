@@ -68,6 +68,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+# v0.8.3
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+* [#749](https://github.com/allora-network/allora-chain/pull/749) Prevent conversion failure wither cosmos legacy dec
+
+### Security
+
 # v0.8.2
 
 ### Added
