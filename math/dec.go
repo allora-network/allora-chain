@@ -6,10 +6,12 @@ package math
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	goMath "math"
 	"math/big"
 	"math/bits"
+	"strings"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -487,6 +489,34 @@ func (x Dec) Floor() (Dec, error) {
 	return z, nil
 }
 
+// Truncate returns a Dec truncated to the given number of decimal places, without mutating x.
+func (x Dec) Truncate(decimalPlaces int64) (Dec, error) {
+	if decimalPlaces < 0 {
+		return Dec{}, errors.New("decimal places must be non-negative")
+	}
+
+	fullStr := x.String()
+
+	dotIndex := strings.Index(fullStr, ".")
+	if dotIndex == -1 {
+		return x, nil
+	}
+
+	endIndex := dotIndex + int(decimalPlaces) + 1
+	if endIndex > len(fullStr) {
+		return x, nil
+	}
+
+	truncatedStr := fullStr[:endIndex]
+
+	truncatedDec, err := NewDecFromString(truncatedStr)
+	if err != nil {
+		return Dec{}, errorsmod.Wrap(err, "failed to parse truncated decimal")
+	}
+
+	return truncatedDec, nil
+}
+
 // Int64 converts x to an int64 or returns an error if x cannot
 // fit precisely into an int64.
 func (x Dec) Int64() (int64, error) {
@@ -593,14 +623,19 @@ func (x Dec) SdkIntTrim() (sdkmath.Int, error) {
 	return sdkmath.NewIntFromBigInt(&r), nil
 }
 
-// SdkLegacyDec converts Dec to `sdkmath.LegacyDec`
+// SdkLegacyDec converts Dec to `sdkmath.LegacyDec`, truncating it if necessary.
 // can return nil if the value is not representable in a LegacyDec
 func (x Dec) SdkLegacyDec() (sdkmath.LegacyDec, error) {
 	if x.IsNaN() {
 		return sdkmath.LegacyDec{}, errorsmod.Wrap(ErrNaN, "cannot convert NaN to sdkmath.LegacyDec")
 	}
-	stringRep := x.dec.Text('f')
-	return sdkmath.LegacyNewDecFromStr(stringRep)
+
+	d, err := x.Truncate(18)
+	if err != nil {
+		return sdkmath.LegacyDec{}, err
+	}
+
+	return sdkmath.LegacyNewDecFromStr(d.dec.Text('f'))
 }
 
 func (x Dec) String() string {
