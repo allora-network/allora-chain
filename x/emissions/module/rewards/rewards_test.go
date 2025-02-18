@@ -1649,7 +1649,7 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 	require.NoError(err)
 
 	// Track weights and stdnorm over epochs
-	var workerWeights map[string][]alloraMath.Dec = make(map[string][]alloraMath.Dec)
+	var workerWeights = make(map[string][]alloraMath.Dec)
 	var stdNorms []alloraMath.Dec
 
 	numEpochs := 5
@@ -1691,7 +1691,7 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 	}
 
 	// Verify weight evolution
-	require.Equal(3, len(workerWeights)) // one entry per worker
+	require.Len(workerWeights, 3) // one entry per worker
 	for i := 1; i < len(workerWeights); i++ {
 		// Weight for the same worker should change between epochs
 		currentWorker := s.addrsStr[i]
@@ -1708,7 +1708,7 @@ func (s *RewardsTestSuite) TestMultipleEpochsWeightAndStdNormEvolution() {
 	}
 
 	// Verify stdnorm evolution
-	require.Equal(numEpochs, len(stdNorms))
+	require.Len(stdNorms, numEpochs)
 	for i := 1; i < len(stdNorms); i++ {
 		// StdNorm should adapt based on predictions
 		require.NotEqual(
@@ -2361,6 +2361,7 @@ func (s *RewardsTestSuite) SetParamsForTest() {
 		GlobalReputerWhitelistEnabled:       nil,
 		GlobalAdminWhitelistAppended:        nil,
 		MaxWhitelistInputArrayLength:        nil,
+		MinWeightThresholdForStdnorm:        nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -3167,7 +3168,7 @@ func (s *RewardsTestSuite) TestRewardForTopicGoesUpWhenRelativeStakeGoesUp() {
 	s.Require().NoError(err)
 	inDelta, err := alloraMath.InDelta(totalSumPreviousTopicWeights, sumWeights, alloraMath.MustNewDecFromString("0.0001"))
 	s.Require().NoError(err)
-	s.Require().True(inDelta, fmt.Sprintf("Total sum of previous topic weights %s + %s = %s is not equal to the sum of the weights of the two topics %s", topic0Weight1, topic1Weight0, totalSumPreviousTopicWeights, sumWeights))
+	s.Require().True(inDelta, "Total sum of previous topic weights %s + %s = %s is not equal to the sum of the weights of the two topics %s", topic0Weight1, topic1Weight0, totalSumPreviousTopicWeights, sumWeights)
 
 	err = s.emissionsKeeper.SetRewardCurrentBlockEmission(s.ctx, cosmosMath.NewInt(100))
 	s.Require().NoError(err)

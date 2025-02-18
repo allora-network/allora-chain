@@ -371,6 +371,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithFewTopElementsPerFore
 		GlobalReputerWhitelistEnabled:       nil,
 		GlobalAdminWhitelistAppended:        nil,
 		MaxWhitelistInputArrayLength:        nil,
+		MinWeightThresholdForStdnorm:        nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{
@@ -778,6 +779,7 @@ func (s *MsgServerTestSuite) TestMsgInsertWorkerPayloadWithLowScoreForecastsAreR
 		GlobalReputerWhitelistEnabled:       nil,
 		GlobalAdminWhitelistAppended:        nil,
 		MaxWhitelistInputArrayLength:        nil,
+		MinWeightThresholdForStdnorm:        nil,
 	}
 
 	updateMsg := &types.UpdateParamsRequest{

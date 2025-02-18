@@ -471,7 +471,7 @@ func (s *WeightsTestSuite) TestCalcStdDevForWeights() {
 				s.Require().NoError(err)
 			}
 
-			result, err := synth.CalcStdDevForWeights(synth.CalcStdDevForWeightsArgs{
+			result, err := synth.CalcRegretStdDevFilteredByWeights(synth.CalcRegretStdDevFilteredByWeightsArgs{
 				Ctx:                 s.ctx,
 				K:                   &s.emissionsKeeper,
 				Logger:              s.ctx.Logger(),

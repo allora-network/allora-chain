@@ -145,7 +145,8 @@ func CloseReputerNonce(
 		return err
 	}
 
-	// 0 get inferer and forecaster regrets
+	// Calculate the regret_stdnorm and the weights (multistep process).
+	// 0. Get inferer and forecaster regrets
 	infererRegrets := regrets.InfererRegrets
 	inferers := make([]synth.Worker, 0)
 	for inferer := range infererRegrets {
@@ -157,23 +158,25 @@ func CloseReputerNonce(
 		forecasters = append(forecasters, forecaster)
 	}
 
-	// 2. Calculate the regret_stdnorm based on the previous weights. If not, apply stddev.
-	stdDevPlusEpsilon, err := synth.CalcStdDevForWeights(synth.CalcStdDevForWeightsArgs{
-		Ctx:                 ctx,
-		K:                   k,
-		Logger:              ctx.Logger(),
-		TopicId:             topic.Id,
-		Inferers:            inferers,
-		Forecasters:         forecasters,
-		InfererToRegret:     infererRegrets,
-		ForecasterToRegret:  forecasterRegrets,
-		NegligibleThreshold: params.MinWeightThresholdForStdnorm,
-		EpsilonTopic:        topic.Epsilon,
-	})
+	// 2. Calculate the regret_stdnorm to be used in
+	// 2.a Calculate the regret_stdnorm filtered by ∫the previous weights. If not, apply stddev.
+	stdDevPlusEpsilon, err := synth.CalcRegretStdDevFilteredByWeights(
+		synth.CalcRegretStdDevFilteredByWeightsArgs{
+			Ctx:                 ctx,
+			K:                   k,
+			Logger:              ctx.Logger(),
+			TopicId:             topic.Id,
+			Inferers:            inferers,
+			Forecasters:         forecasters,
+			InfererToRegret:     infererRegrets,
+			ForecasterToRegret:  forecasterRegrets,
+			NegligibleThreshold: params.MinWeightThresholdForStdnorm,
+			EpsilonTopic:        topic.Epsilon,
+		},
+	)
 	if err != nil {
 		return err
 	}
-	ctx.Logger().Info("CloseReputerNonce: stdDevPlusEpsilon", "stdDevPlusEpsilon", stdDevPlusEpsilon)
 	// 2.b ... and store it.
 	err = k.SetLatestRegretStdNorm(ctx, topic.Id, stdDevPlusEpsilon)
 	if err != nil {
@@ -198,30 +201,27 @@ func CloseReputerNonce(
 		return err
 	}
 
-	// 4. Normalize weights!
+	// 4. Normalize weights! This was not done before, but it is needed for the filter of non-negligible weights.
 	err = newWeights.NormalizeWeights()
 	if err != nil {
 		return err
 	}
 
-	// 5. Clean previous weights for this topic
-	// TODO and TBD
-
-	// 6. Store the new weights
+	// 5. Store the new weights
 	err = synth.StoreLatestNormalizedWeights(ctx, *k, topic.Id, newWeights)
 	if err != nil {
 		return err
 	}
 
-	// Emit the regret stdnorm set event
+	// Emit events: the regret stdnorm set event
 	types.EmitNewRegretStdNormSetEvent(ctx, topic.Id, nonce.BlockHeight, stdDevPlusEpsilon)
-	// Emit weights events, one per actor.
 	for _, inferer := range inferers {
 		types.EmitNewInfererWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, inferer, newWeights.Inferers[inferer])
 	}
 	for _, forecaster := range forecasters {
 		types.EmitNewForecasterWeightSetEvent(ctx, topic.Id, nonce.BlockHeight, forecaster, newWeights.Forecasters[forecaster])
 	}
+	// -- end of regrets_stdnorm and weights multistep process
 
 	_, err = k.FulfillReputerNonce(ctx, topic.Id, &nonce)
 	if err != nil {

@@ -26,7 +26,7 @@ type CalcWeightsGivenWorkersArgs struct {
 	StdDevPlusEpsilon  alloraMath.Dec
 }
 
-type CalcStdDevForWeightsArgs struct {
+type CalcRegretStdDevFilteredByWeightsArgs struct {
 	Ctx                 sdk.Context
 	K                   *keeper.Keeper
 	Logger              log.Logger
@@ -42,7 +42,7 @@ type CalcStdDevForWeightsArgs struct {
 // Calculates the standard deviation of the regrets provided plus epsilon
 // It uses previous epoch's weights to filter the regrets of workers that had a negligible weight
 // If there are less than 2 non-negligible weights, it uses all regrets.
-func CalcStdDevForWeights(args CalcStdDevForWeightsArgs) (alloraMath.Dec, error) {
+func CalcRegretStdDevFilteredByWeights(args CalcRegretStdDevFilteredByWeightsArgs) (alloraMath.Dec, error) {
 	// Combine all weights and regrets
 	var filteredRegrets []alloraMath.Dec
 	nonNegligibleCount := 0
@@ -85,10 +85,8 @@ func CalcStdDevForWeights(args CalcStdDevForWeightsArgs) (alloraMath.Dec, error)
 		if err != nil {
 			return alloraMath.ZeroDec(), errorsmod.Wrapf(err, "Error gathering worker regrets")
 		}
-		args.Logger.Debug("calcStdDevForWeights() using all regrets")
 		return CalcStdDevPlusEpsilon(regrets, args.EpsilonTopic)
 	}
-	args.Logger.Debug("calcStdDevForWeights() using filtered regrets")
 	return CalcStdDevPlusEpsilon(filteredRegrets, args.EpsilonTopic)
 }
 
@@ -161,8 +159,6 @@ func CalcWeightsGivenWorkers(args CalcWeightsGivenWorkersArgs) (RegretInformedWe
 			return RegretInformedWeights{}, errorsmod.Wrapf(err, "Error adding epsilon to standard deviation")
 		}
 	}
-
-	args.Logger.Info("In CalcWeightsGivenWorkers(): stdDevRegretsPlusEpsilon", "stdDevRegretsPlusEpsilon", stdDevRegretsPlusEpsilon)
 
 	// Normalize the regrets and find the max normalized regret among them
 	normalizedInfererRegrets := make(map[Worker]Regret)

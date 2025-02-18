@@ -643,6 +643,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectCombinedInitialValueForEpoch(ep
 			EpsilonSafeDiv:                       epsilonSafeDiv,
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
+			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	alloratestutil.InEpsilon5(s.T(), combinedValue, epochGet[epoch]("network_inference").String())
@@ -681,6 +682,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectNaiveValueForEpoch(epoch int) {
 			EpsilonSafeDiv:                       epsilonSafeDiv,
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
+			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	alloratestutil.InEpsilon5(s.T(), naiveValue, epochGet[epoch]("network_naive_inference").String())
@@ -732,6 +734,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutInfererValuesForEpoch(epo
 			EpsilonSafeDiv:       epsilonSafeDiv,
 			PNorm:                pNorm,
 			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 
@@ -778,6 +781,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneOutForecasterValuesForEpoch(
 			EpsilonSafeDiv:                       epsilonSafeDiv,
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
+			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 
@@ -836,6 +840,7 @@ func (s *InferenceSynthesisTestSuite) testCorrectOneInForecasterValuesForEpoch(e
 			EpsilonSafeDiv:                       epsilonSafeDiv,
 			PNorm:                                pNorm,
 			CNorm:                                cNorm,
+			StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 
@@ -943,6 +948,7 @@ func (s *InferenceSynthesisTestSuite) TestBuildNetworkInferencesIncompleteData()
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
+		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 	}
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)
@@ -1055,6 +1061,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesTwoWorkerTwoForec
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
+		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 	}
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)
 	s.Require().NoError(err)
@@ -1197,6 +1204,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerThreeF
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
+		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 	}
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(
@@ -1343,6 +1351,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcNetworkInferencesThreeWorkerTwoFor
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
+		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 	}
 
 	valueBundle, weights, err := inferencesynthesis.CalcNetworkInferences(
@@ -1450,6 +1459,7 @@ func (s *InferenceSynthesisTestSuite) TestCalc0neInInferencesTwoForecastersOldTw
 		EpsilonSafeDiv:                       epsilonSafeDiv,
 		PNorm:                                pNorm,
 		CNorm:                                cNorm,
+		StdDevPlusEpsilon:                    alloraMath.ZeroDec(),
 	}
 
 	valueBundle, _, err := inferencesynthesis.CalcNetworkInferences(calcArgs)

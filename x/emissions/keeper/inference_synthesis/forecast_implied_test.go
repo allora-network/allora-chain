@@ -147,6 +147,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			EpsilonTopic:         epsilon,
 			PNorm:                pNorm,
 			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)
@@ -223,6 +224,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesTwoWorker
 			EpsilonTopic:         epsilon,
 			PNorm:                pNorm,
 			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)
@@ -317,6 +319,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForecastImpliedInferencesThreeWork
 			EpsilonTopic:         epsilon,
 			PNorm:                pNorm,
 			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
 		},
 	)
 	s.Require().NoError(err)
@@ -417,6 +420,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch2() {
 			EpsilonTopic:         epsilon,
 			PNorm:                pNorm,
 			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
@@ -509,6 +513,7 @@ func (s *InferenceSynthesisTestSuite) TestCalcForcastImpliedInferencesEpoch3() {
 			EpsilonTopic:         epsilon,
 			PNorm:                pNorm,
 			CNorm:                cNorm,
+			StdDevPlusEpsilon:    alloraMath.ZeroDec(),
 		})
 	s.Require().NoError(err)
 	for key, expectedValue := range expected {
