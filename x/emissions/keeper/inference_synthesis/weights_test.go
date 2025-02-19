@@ -145,7 +145,7 @@ func (s *WeightsTestSuite) SetupTest() {
 	s.Require().NoError(err)
 }
 
-func (s *WeightsTestSuite) TestNormalizeWeights2() {
+func (s *WeightsTestSuite) TestNormalizeWeights() {
 	testCases := []struct {
 		name        string
 		weights     synth.RegretInformedWeights
