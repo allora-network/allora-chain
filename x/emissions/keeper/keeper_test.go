@@ -5605,3 +5605,90 @@ func (s *KeeperTestSuite) TestLivenessPenaltyAppliedInAppendReputerLoss() {
 	s.Require().Equal(reputer, score.Address)
 	s.Require().Equal(topic.Id, score.TopicId)
 }
+
+func (s *KeeperTestSuite) TestLatestForecasterWeightFunctions() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+	forecaster := s.addrsStr[0]
+	weight := alloraMath.NewDecFromInt64(100)
+
+	// Test initial state (should be zero)
+	initialWeight, err := k.GetLatestForecasterWeight(ctx, topicId, forecaster)
+	s.Require().NoError(err)
+	s.Require().True(initialWeight.IsZero(), "Initial weight should be zero")
+
+	// Set weight
+	err = k.SetLatestForecasterWeight(ctx, topicId, forecaster, weight)
+	s.Require().NoError(err, "Setting latest forecaster weight should not fail")
+
+	// Get and verify weight
+	retrievedWeight, err := k.GetLatestForecasterWeight(ctx, topicId, forecaster)
+	s.Require().NoError(err)
+	s.Require().Equal(weight, retrievedWeight, "Retrieved weight should match set weight")
+
+	// Test with different topic ID
+	differentTopicId := uint64(2)
+	differentWeight, err := k.GetLatestForecasterWeight(ctx, differentTopicId, forecaster)
+	s.Require().NoError(err)
+	s.Require().True(differentWeight.IsZero(), "Weight for different topic should be zero")
+}
+
+func (s *KeeperTestSuite) TestLatestInfererWeightFunctions() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+	inferer := s.addrsStr[1]
+	weight := alloraMath.NewDecFromInt64(75)
+
+	// Test initial state (should be zero)
+	initialWeight, err := k.GetLatestInfererWeight(ctx, topicId, inferer)
+	s.Require().NoError(err)
+	s.Require().True(initialWeight.IsZero(), "Initial weight should be zero")
+
+	// Set weight
+	err = k.SetLatestInfererWeight(ctx, topicId, inferer, weight)
+	s.Require().NoError(err, "Setting latest inferer weight should not fail")
+
+	// Get and verify weight
+	retrievedWeight, err := k.GetLatestInfererWeight(ctx, topicId, inferer)
+	s.Require().NoError(err)
+	s.Require().Equal(weight, retrievedWeight, "Retrieved weight should match set weight")
+
+	// Test with different topic ID
+	differentTopicId := uint64(2)
+	differentWeight, err := k.GetLatestInfererWeight(ctx, differentTopicId, inferer)
+	s.Require().NoError(err)
+	s.Require().True(differentWeight.IsZero(), "Weight for different topic should be zero")
+}
+
+func (s *KeeperTestSuite) TestLatestRegretStdNormFunctions() {
+	ctx := s.ctx
+	k := s.emissionsKeeper
+	topicId := uint64(1)
+	stdNorm := alloraMath.NewDecFromInt64(50)
+
+	// Test initial state (should be zero)
+	initialStdNorm, err := k.GetLatestRegretStdNorm(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().True(initialStdNorm.IsZero(), "Initial stdNorm should be zero")
+
+	// Set stdNorm
+	err = k.SetLatestRegretStdNorm(ctx, topicId, stdNorm)
+	s.Require().NoError(err, "Setting latest regret stdNorm should not fail")
+
+	// Get and verify stdNorm
+	retrievedStdNorm, err := k.GetLatestRegretStdNorm(ctx, topicId)
+	s.Require().NoError(err)
+	s.Require().Equal(stdNorm, retrievedStdNorm, "Retrieved stdNorm should match set stdNorm")
+
+	// Test with different topic ID
+	differentTopicId := uint64(2)
+	differentStdNorm, err := k.GetLatestRegretStdNorm(ctx, differentTopicId)
+	s.Require().NoError(err)
+	s.Require().True(differentStdNorm.IsZero(), "StdNorm for different topic should be zero")
+
+	// Test setting zero value (should fail)
+	err = k.SetLatestRegretStdNorm(ctx, topicId, alloraMath.ZeroDec())
+	s.Require().Error(err, "Setting zero regret stdNorm should fail")
+}
