@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
 	cosmosMath "cosmossdk.io/math"
+	alloraMath "github.com/allora-network/allora-chain/math"
 	keeper "github.com/allora-network/allora-chain/x/emissions/keeper"
 	synth "github.com/allora-network/allora-chain/x/emissions/keeper/inference_synthesis"
 	"github.com/allora-network/allora-chain/x/emissions/types"
@@ -148,15 +149,9 @@ func CloseReputerNonce(
 	// Calculate the regret_stdnorm and the weights (multistep process).
 	// 0. Get inferer and forecaster regrets
 	infererRegrets := regrets.InfererRegrets
-	inferers := make([]synth.Worker, 0, len(infererRegrets))
-	for inferer := range infererRegrets {
-		inferers = append(inferers, inferer)
-	}
+	inferers := alloraMath.GetSortedKeys(infererRegrets)
 	forecasterRegrets := regrets.ForecasterRegrets
-	forecasters := make([]synth.Worker, 0, len(forecasterRegrets))
-	for forecaster := range forecasterRegrets {
-		forecasters = append(forecasters, forecaster)
-	}
+	forecasters := alloraMath.GetSortedKeys(forecasterRegrets)
 
 	// 2. Calculate the regret_stdnorm to be used in
 	// 2.a Calculate the regret_stdnorm filtered by ∫the previous weights. If not, apply stddev.
