@@ -525,8 +525,8 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
-				s.Require().Equal(1, len(result.Inferers))
-				s.Require().Equal(1, len(result.Forecasters))
+				s.Require().Len(result.Inferers, 1)
+				s.Require().Len(result.Forecasters, 1)
 				s.Require().True(result.Inferers[s.addrsStr[0]].Lt(result.Forecasters[s.addrsStr[1]]))
 			},
 		},
@@ -550,8 +550,8 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
 				s.T().Logf("Single worker test results:")
-				s.Require().Equal(1, len(result.Inferers))
-				s.Require().Equal(1, len(result.Forecasters))
+				s.Require().Len(result.Inferers, 1)
+				s.Require().Len(result.Forecasters, 1)
 				s.Require().True(result.Inferers[s.addrsStr[0]].Lt(result.Forecasters[s.addrsStr[1]]))
 			},
 		},
@@ -574,8 +574,8 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
-				s.Require().Equal(1, len(result.Inferers))
-				s.Require().Equal(1, len(result.Forecasters))
+				s.Require().Len(result.Inferers, 1)
+				s.Require().Len(result.Forecasters, 1)
 				s.Require().True(result.Inferers[s.addrsStr[0]].Gt(result.Forecasters[s.addrsStr[1]]))
 			},
 		},
@@ -600,8 +600,8 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 			},
 			expectedError: false,
 			checkResult: func(result synth.RegretInformedWeights) {
-				s.Require().Equal(2, len(result.Inferers))
-				s.Require().Equal(2, len(result.Forecasters))
+				s.Require().Len(result.Inferers, 2)
+				s.Require().Len(result.Forecasters, 2)
 
 				// Check that worker with higher regret has a higher weight
 				s.Require().True(result.Inferers[s.addrsStr[0]].Lt(result.Inferers[s.addrsStr[1]]))
@@ -612,7 +612,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 
 			},
 		},
-		{
+		{ // nolint: exhaustruct
 			name: "empty workers should error",
 			args: synth.CalcWeightsGivenWorkersArgs{
 				Logger:             s.ctx.Logger(),
@@ -627,7 +627,7 @@ func (s *WeightsTestSuite) TestCalcWeightsGivenWorkers() {
 			},
 			expectedError: true,
 		},
-		{
+		{ // nolint: exhaustruct
 			name: "missing regret values should error",
 			args: synth.CalcWeightsGivenWorkersArgs{
 				Logger:             s.ctx.Logger(),
