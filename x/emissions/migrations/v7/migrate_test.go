@@ -189,4 +189,5 @@ func (s *EmissionsV6MigrationTestSuite) TestMigrateParams() {
 	s.Require().True(paramsExpected.GlobalReputerWhitelistEnabled)
 	s.Require().True(paramsExpected.GlobalAdminWhitelistAppended)
 	s.Require().Equal(paramsExpected.MaxWhitelistInputArrayLength, params.MaxWhitelistInputArrayLength)
+	s.Require().Equal(paramsExpected.MinWeightThresholdForStdnorm, params.MinWeightThresholdForStdnorm)
 }

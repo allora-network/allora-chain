@@ -115,6 +115,7 @@ func MigrateParams(ctx sdk.Context, store storetypes.KVStore, cdc codec.BinaryCo
 		GlobalReputerWhitelistEnabled:      defaultParams.GlobalReputerWhitelistEnabled,
 		GlobalAdminWhitelistAppended:       defaultParams.GlobalAdminWhitelistAppended,
 		MaxWhitelistInputArrayLength:       defaultParams.MaxWhitelistInputArrayLength,
+		MinWeightThresholdForStdnorm:       defaultParams.MinWeightThresholdForStdnorm,
 	}
 
 	ctx.Logger().Info(fmt.Sprintf("MIGRATED PARAMS: %+v", newParams))

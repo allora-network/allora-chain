@@ -4002,7 +4002,7 @@ func mockUninitializedParams() types.Params {
 		GlobalReputerWhitelistEnabled:       true,
 		GlobalAdminWhitelistAppended:        true,
 		MaxWhitelistInputArrayLength:        uint64(10),
-		MinWeightThresholdForStdnorm:        alloraMath.ZeroDec(),
+		MinWeightThresholdForStdnorm:        alloraMath.MustNewDecFromString("0.000001"),
 	}
 }
 

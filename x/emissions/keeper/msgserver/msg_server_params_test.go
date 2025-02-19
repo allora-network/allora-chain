@@ -141,6 +141,7 @@ func (s *MsgServerTestSuite) TestUpdateAllParams() {
 	require.Equal(newParams.GlobalReputerWhitelistEnabled[0], updatedParams.GlobalReputerWhitelistEnabled)
 	require.Equal(newParams.GlobalAdminWhitelistAppended[0], updatedParams.GlobalAdminWhitelistAppended)
 	require.Equal(newParams.MaxWhitelistInputArrayLength[0], updatedParams.MaxWhitelistInputArrayLength)
+	require.Equal(newParams.MinWeightThresholdForStdnorm[0], updatedParams.MinWeightThresholdForStdnorm)
 }
 
 func (s *MsgServerTestSuite) TestUpdateParamsNonWhitelistedUser() {
