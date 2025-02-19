@@ -148,12 +148,12 @@ func CloseReputerNonce(
 	// Calculate the regret_stdnorm and the weights (multistep process).
 	// 0. Get inferer and forecaster regrets
 	infererRegrets := regrets.InfererRegrets
-	inferers := make([]synth.Worker, 0)
+	inferers := make([]synth.Worker, 0, len(infererRegrets))
 	for inferer := range infererRegrets {
 		inferers = append(inferers, inferer)
 	}
 	forecasterRegrets := regrets.ForecasterRegrets
-	forecasters := make([]synth.Worker, 0)
+	forecasters := make([]synth.Worker, 0, len(forecasterRegrets))
 	for forecaster := range forecasterRegrets {
 		forecasters = append(forecasters, forecaster)
 	}
