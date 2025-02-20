@@ -225,7 +225,7 @@ func (s *WeightsTestSuite) TestNormalizeWeights() {
 			s.Require().NoError(err)
 
 			// Verify each weight matches expected
-			for addr, expectedWeight := range tc.expected {
+			for addr, expectedWeight := range tc.expected { // nolint: maprange // reason: order not relevant
 				var actualWeight alloraMath.Dec
 				if weight, ok := tc.weights.Inferers[addr]; ok {
 					actualWeight = weight
@@ -241,11 +241,11 @@ func (s *WeightsTestSuite) TestNormalizeWeights() {
 
 			// Verify sum is 1.0
 			sum := alloraMath.ZeroDec()
-			for _, w := range tc.weights.Inferers {
+			for _, w := range tc.weights.Inferers { // nolint: maprange // reason: order not relevant
 				sum, err = sum.Add(w)
 				s.Require().NoError(err)
 			}
-			for _, w := range tc.weights.Forecasters {
+			for _, w := range tc.weights.Forecasters { // nolint: maprange // reason: order not relevant
 				sum, err = sum.Add(w)
 				s.Require().NoError(err)
 			}
@@ -275,7 +275,7 @@ func (s *WeightsTestSuite) TestStoreLatestNormalizedWeights() {
 		s.Require().NoError(err)
 
 		// Verify stored weights
-		for worker, expectedWeight := range weights.Inferers {
+		for worker, expectedWeight := range weights.Inferers { // nolint: maprange // reason: order not relevant
 			storedWeight, err := s.emissionsKeeper.GetLatestInfererWeight(s.ctx, topicId, worker)
 			s.Require().NoError(err)
 			s.Require().True(expectedWeight.Equal(storedWeight))
@@ -462,11 +462,11 @@ func (s *WeightsTestSuite) TestCalcStdDevForWeights() {
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
 			// Store weights in keeper
-			for worker, weight := range tc.infererWeights {
+			for worker, weight := range tc.infererWeights { // nolint: maprange // reason: order not relevant
 				err := s.emissionsKeeper.SetLatestInfererWeight(s.ctx, 1, worker, weight)
 				s.Require().NoError(err)
 			}
-			for worker, weight := range tc.forecasterWeights {
+			for worker, weight := range tc.forecasterWeights { // nolint: maprange // reason: order not relevant
 				err := s.emissionsKeeper.SetLatestForecasterWeight(s.ctx, 1, worker, weight)
 				s.Require().NoError(err)
 			}

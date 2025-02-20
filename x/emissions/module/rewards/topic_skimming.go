@@ -48,7 +48,7 @@ func SortTopicsByWeightDescWithRandomTiebreaker(topicIds []TopicId, weights map[
 // It is assumed that topicIds is of a reasonable size, throttled by perhaps MaxTopicsPerBlock global param
 func SkimTopTopicsByWeightDesc(ctx sdk.Context, weights map[TopicId]*alloraMath.Dec, N uint64, block BlockHeight) (map[TopicId]*alloraMath.Dec, []TopicId, error) {
 	topicIds := make([]TopicId, 0, len(weights))
-	for topicId := range weights {
+	for topicId := range weights { // nolint: maprange // reason: iteration to array before sorting
 		topicIds = append(topicIds, topicId)
 	}
 	// Sort topicIds by weight desc to ensure deterministic order. Tiebreak with topicId ascending
