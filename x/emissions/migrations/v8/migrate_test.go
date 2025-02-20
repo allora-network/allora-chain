@@ -73,7 +73,7 @@ func (s *EmissionsV7MigrationTestSuite) TestMigrateParams() {
 	cdc := s.emissionsKeeper.GetBinaryCodec()
 
 	defaultParams := emissionstypes.DefaultParams()
-	paramsOld := oldV7Types.Params{
+	paramsOld := oldV7Types.Params{ // nolint: exhaustruct // this is an old version of the params => expected to fail lint
 		Version:                             defaultParams.Version,
 		MaxSerializedMsgLength:              defaultParams.MaxSerializedMsgLength,
 		MinTopicWeight:                      defaultParams.MinTopicWeight,
