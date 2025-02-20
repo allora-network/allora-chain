@@ -13,16 +13,17 @@ import (
 )
 
 const (
-	AttributeKeyActorType    = "actor_type"
-	AttributeKeyTopicId      = "topic_id"
-	AttributeKeyBlockHeight  = "block_height"
-	AttributeKeyAddresses    = "addresses"
-	AttributeKeyScores       = "scores"
-	AttributeKeyRewards      = "rewards"
-	AttributeKeyValueBundle  = "value_bundle"
-	AttributeKeyCoefficients = "coefficients"
-	AttributeKeyRegrets      = "regrets"
-	AttributeKeyRegret       = "regret"
+	AttributeKeyActorType     = "actor_type"
+	AttributeKeyTopicId       = "topic_id"
+	AttributeKeyBlockHeight   = "block_height"
+	AttributeKeyBlockHeightTx = "block_height_tx"
+	AttributeKeyAddresses     = "addresses"
+	AttributeKeyScores        = "scores"
+	AttributeKeyRewards       = "rewards"
+	AttributeKeyValueBundle   = "value_bundle"
+	AttributeKeyCoefficients  = "coefficients"
+	AttributeKeyRegrets       = "regrets"
+	AttributeKeyRegret        = "regret"
 )
 
 func TestEmitNewInfererScoresSetEventWithScores(t *testing.T) {
@@ -219,7 +220,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 		},
 	}
 
-	types.EmitNewInfererRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
+	types.EmitNewInfererRewardsSettledEvent(ctx, types.BlockHeight(10), types.BlockHeight(20), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -228,7 +229,7 @@ func TestEmitNewInfererRewardsSettledEventWithRewards(t *testing.T) {
 	require.Equal(t, "emissions.v7.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 5)
+	require.Len(t, attributes, 6)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -255,7 +256,7 @@ func TestEmitNewInfererRewardsSettledEventWithNoRewards(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	rewards := []types.TaskReward{}
 
-	types.EmitNewInfererRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
+	types.EmitNewInfererRewardsSettledEvent(ctx, types.BlockHeight(10), types.BlockHeight(20), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Empty(t, events)
@@ -278,7 +279,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 		},
 	}
 
-	types.EmitNewForecasterRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
+	types.EmitNewForecasterRewardsSettledEvent(ctx, types.BlockHeight(10), types.BlockHeight(20), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -287,7 +288,7 @@ func TestEmitNewForecasterRewardsSettledEventWithRewards(t *testing.T) {
 	require.Equal(t, "emissions.v7.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 5)
+	require.Len(t, attributes, 6)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -314,7 +315,7 @@ func TestEmitNewForecasterRewardsSettledEventWithNoRewards(t *testing.T) {
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	rewards := []types.TaskReward{}
 
-	types.EmitNewForecasterRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
+	types.EmitNewForecasterRewardsSettledEvent(ctx, types.BlockHeight(10), types.BlockHeight(20), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Empty(t, events)
@@ -337,7 +338,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 		},
 	}
 
-	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
+	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, types.BlockHeight(10), types.BlockHeight(20), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Len(t, events, 1)
@@ -346,7 +347,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	require.Equal(t, "emissions.v7.EventRewardsSettled", event.Type)
 
 	attributes := event.Attributes
-	require.Len(t, attributes, 5)
+	require.Len(t, attributes, 6)
 
 	val, exists := event.GetAttribute(AttributeKeyActorType)
 	require.True(t, exists)
@@ -359,6 +360,10 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithRewards(t *testing.T) 
 	val, exists = event.GetAttribute(AttributeKeyBlockHeight)
 	require.True(t, exists)
 	require.Contains(t, val.GetValue(), "10")
+
+	val, exists = event.GetAttribute(AttributeKeyBlockHeightTx)
+	require.True(t, exists)
+	require.Contains(t, val.GetValue(), "20")
 
 	val, exists = event.GetAttribute(AttributeKeyAddresses)
 	require.True(t, exists)
@@ -373,7 +378,7 @@ func TestEmitNewReputerAndDelegatorRewardsSettledEventWithNoRewards(t *testing.T
 	ctx := sdk.Context{}.WithEventManager(sdk.NewEventManager())
 	rewards := []types.TaskReward{}
 
-	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, types.BlockHeight(10), rewards)
+	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, types.BlockHeight(10), types.BlockHeight(20), rewards)
 
 	events := ctx.EventManager().Events()
 	require.Empty(t, events)

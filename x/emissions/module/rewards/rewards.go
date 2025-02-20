@@ -207,7 +207,7 @@ func getDistributionAndPayoutRewardsToTopicActors(args GetDistributionAndPayoutR
 	}
 
 	// Pay out rewards to topic participants
-	payoutErrors := payoutRewards(args.Ctx, args.K, totalRewardsDistribution)
+	payoutErrors := payoutRewards(args.Ctx, args.K, totalRewardsDistribution, args.TopicRewardNonce)
 	if len(payoutErrors) > 0 {
 		for _, payoutErr := range payoutErrors {
 			Logger(args.Ctx).Warn(fmt.Sprintf("Failed to pay out rewards to participant in Topic %d: %s", args.TopicId, payoutErr.Error()))
@@ -577,12 +577,13 @@ func payoutRewards(
 	ctx sdk.Context,
 	k keeper.Keeper,
 	rewards []types.TaskReward,
+	nonce BlockHeight,
 ) []error {
 	ret := make([]error, 0) // errors to return from paying individual actors
 	reputerAndDelegatorRewards := make([]types.TaskReward, 0)
 	infererRewards := make([]types.TaskReward, 0)
 	forecasterRewards := make([]types.TaskReward, 0)
-	blockHeight := ctx.BlockHeight()
+	blockHeightTx := ctx.BlockHeight()
 	for _, reward := range rewards {
 		if reward.Reward.IsZero() {
 			continue
@@ -668,9 +669,9 @@ func payoutRewards(
 		}
 	}
 
-	types.EmitNewInfererRewardsSettledEvent(ctx, blockHeight, infererRewards)
-	types.EmitNewForecasterRewardsSettledEvent(ctx, blockHeight, forecasterRewards)
-	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, blockHeight, reputerAndDelegatorRewards)
+	types.EmitNewInfererRewardsSettledEvent(ctx, nonce, blockHeightTx, infererRewards)
+	types.EmitNewForecasterRewardsSettledEvent(ctx, nonce, blockHeightTx, forecasterRewards)
+	types.EmitNewReputerAndDelegatorRewardsSettledEvent(ctx, nonce, blockHeightTx, reputerAndDelegatorRewards)
 	return ret
 }
 
