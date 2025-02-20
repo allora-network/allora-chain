@@ -2,6 +2,7 @@ package inferencesynthesis
 
 import (
 	"fmt"
+	"sort"
 
 	"cosmossdk.io/log"
 
@@ -503,14 +504,29 @@ func (w *RegretInformedWeights) NormalizeWeights() error {
 	// Calculate total sum of all weights
 	sum := alloraMath.ZeroDec()
 	var err error
-	for _, weight := range w.Inferers {
-		sum, err = sum.Add(weight)
+
+	// Get sorted worker lists
+	infererWorkers := make([]string, 0, len(w.Inferers))
+	for worker := range w.Inferers {
+		infererWorkers = append(infererWorkers, worker)
+	}
+	sort.Strings(infererWorkers)
+
+	forecasterWorkers := make([]string, 0, len(w.Forecasters))
+	for worker := range w.Forecasters {
+		forecasterWorkers = append(forecasterWorkers, worker)
+	}
+	sort.Strings(forecasterWorkers)
+
+	// Sum weights in deterministic order
+	for _, worker := range infererWorkers {
+		sum, err = sum.Add(w.Inferers[worker])
 		if err != nil {
 			return errorsmod.Wrapf(err, "error adding inferer weight")
 		}
 	}
-	for _, weight := range w.Forecasters {
-		sum, err = sum.Add(weight)
+	for _, worker := range forecasterWorkers {
+		sum, err = sum.Add(w.Forecasters[worker])
 		if err != nil {
 			return errorsmod.Wrapf(err, "error adding forecaster weight")
 		}
@@ -521,17 +537,17 @@ func (w *RegretInformedWeights) NormalizeWeights() error {
 		return errorsmod.Wrap(emissionstypes.ErrInvalidValue, "cannot normalize weights: sum is zero")
 	}
 
-	// Normalize each weight
-	for worker, weight := range w.Inferers {
-		normalizedWeight, err := weight.Quo(sum)
+	// Normalize each weight in deterministic order
+	for _, worker := range infererWorkers {
+		normalizedWeight, err := w.Inferers[worker].Quo(sum)
 		if err != nil {
 			return errorsmod.Wrapf(err, "error normalizing inferer weight for %s", worker)
 		}
 		w.Inferers[worker] = normalizedWeight
 	}
 
-	for worker, weight := range w.Forecasters {
-		normalizedWeight, err := weight.Quo(sum)
+	for _, worker := range forecasterWorkers {
+		normalizedWeight, err := w.Forecasters[worker].Quo(sum)
 		if err != nil {
 			return errorsmod.Wrapf(err, "error normalizing forecaster weight for %s", worker)
 		}

@@ -19,7 +19,7 @@ const (
 	NAIVE_INFERER_NETWORK_REGRET_EVENT = "naive_inferer_network_regret_event"
 	TOPIC_INITIAL_REGRET_EVENT         = "topic_initial_regret_event"
 	TOPIC_INITIAL_EMA_SCORE_EVENT      = "topic_initial_ema_score_event"
-	REGRET_STDNORM_EVENT               = "regret_stdnorm"
-	INFERER_WEIGHTS_EVENT              = "inferer_weights"
-	FORECASTER_WEIGHTS_EVENT           = "forecaster_weights"
+	REGRET_STDNORM_EVENT               = "regret_stdnorm_event"
+	INFERER_WEIGHTS_EVENT              = "inferer_weights_event"
+	FORECASTER_WEIGHTS_EVENT           = "forecaster_weights_event"
 )

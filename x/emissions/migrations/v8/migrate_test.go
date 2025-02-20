@@ -3,8 +3,8 @@ package v8_test
 import (
 	"testing"
 
-	oldV7Types "github.com/allora-network/allora-chain/x/emissions/migrations/v7/oldtypes"
 	v8 "github.com/allora-network/allora-chain/x/emissions/migrations/v8"
+	oldV7Types "github.com/allora-network/allora-chain/x/emissions/migrations/v8/oldtypes"
 
 	codecAddress "github.com/cosmos/cosmos-sdk/codec/address"
 
@@ -120,6 +120,13 @@ func (s *EmissionsV7MigrationTestSuite) TestMigrateParams() {
 		GlobalWhitelistEnabled:              defaultParams.GlobalWhitelistEnabled,
 		TopicCreatorWhitelistEnabled:        defaultParams.TopicCreatorWhitelistEnabled,
 		MinExperiencedWorkerRegrets:         defaultParams.MinExperiencedWorkerRegrets,
+		InferenceOutlierDetectionThreshold:  defaultParams.InferenceOutlierDetectionThreshold,
+		InferenceOutlierDetectionAlpha:      defaultParams.InferenceOutlierDetectionAlpha,
+		LambdaInitialScore:                  defaultParams.LambdaInitialScore,
+		GlobalWorkerWhitelistEnabled:        defaultParams.GlobalWorkerWhitelistEnabled,
+		GlobalReputerWhitelistEnabled:       defaultParams.GlobalReputerWhitelistEnabled,
+		GlobalAdminWhitelistAppended:        defaultParams.GlobalAdminWhitelistAppended,
+		MaxWhitelistInputArrayLength:        defaultParams.MaxWhitelistInputArrayLength,
 	}
 
 	store.Set(emissionstypes.ParamsKey, cdc.MustMarshal(&paramsOld))
@@ -180,9 +187,9 @@ func (s *EmissionsV7MigrationTestSuite) TestMigrateParams() {
 	s.Require().True(paramsExpected.GlobalWhitelistEnabled)
 	s.Require().True(paramsExpected.TopicCreatorWhitelistEnabled)
 	s.Require().Equal(paramsExpected.MinExperiencedWorkerRegrets, params.MinExperiencedWorkerRegrets)
-	s.Require().Equal(paramsExpected.InferenceOutlierDetectionThreshold, params.InferenceOutlierDetectionThreshold)
-	s.Require().Equal(paramsExpected.InferenceOutlierDetectionAlpha, params.InferenceOutlierDetectionAlpha)
-	s.Require().Equal(paramsExpected.LambdaInitialScore, params.LambdaInitialScore)
+	s.Require().True(paramsExpected.InferenceOutlierDetectionThreshold.Equal(params.InferenceOutlierDetectionThreshold), "%s!=%s", paramsExpected.InferenceOutlierDetectionThreshold, params.InferenceOutlierDetectionThreshold)
+	s.Require().True(paramsExpected.InferenceOutlierDetectionAlpha.Equal(params.InferenceOutlierDetectionAlpha), "%s!=%s", paramsExpected.InferenceOutlierDetectionAlpha, params.InferenceOutlierDetectionAlpha)
+	s.Require().True(paramsExpected.LambdaInitialScore.Equal(params.LambdaInitialScore), "%s!=%s", paramsExpected.LambdaInitialScore, params.LambdaInitialScore)
 	s.Require().True(paramsExpected.GlobalWorkerWhitelistEnabled)
 	s.Require().True(paramsExpected.GlobalReputerWhitelistEnabled)
 	s.Require().True(paramsExpected.GlobalAdminWhitelistAppended)
